@@ -208,6 +208,12 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       marginTop: -50,
     },
+    audioVideoState: {
+      fontSize: 12,
+      fontWeight: 500,
+      margin: '10px 0 0',
+      color: '#b00020',
+    },
   };
 });
 interface ConsultProps {
@@ -242,14 +248,91 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
-  // const [subscribeToAudio, setSubscribeToAudio] = React.useState(props.isVideoCall ? false : true);
-  // const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
+  const [callerAudio, setCallerAudio] = React.useState<boolean>(true);
+  const [callerVideo, setCallerVideo] = React.useState<boolean>(true);
+  const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
+  const [reconnecting, setReconnecting] = React.useState<boolean>(false);
+
   const [docImg, setDocImg] = React.useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
 
   const patientProfile = currentPatient && currentPatient.photoUrl;
 
   const { doctorDetails, videoCall } = props;
+
+  const checkReconnecting = () => {
+    if (reconnecting)
+      return 'There is a problem with network connection. Reconnecting, Please wait...';
+    else return null;
+  };
+
+  const checkDowngradeToAudio = () => {
+    if (downgradeToAudio) return 'Falling back to audio due to bad network';
+    else return null;
+  };
+
+  const isPaused = () => {
+    if (!callerAudio && !callerVideo && getCookieValue() === 'videocall')
+      return `Doctor’s audio & video are paused`;
+    else if (!callerAudio) return `Doctor’s audio is paused`;
+    else if (!callerVideo && getCookieValue() === 'videocall') return `Doctor’s video is paused`;
+    else return null;
+  };
+
+  const sessionHandler = {
+    connectionDestroyed: (event: any) => {
+      console.log('session connectionDestroyed', event);
+      props.toggelChatVideo();
+      // props.stopAudioVideoCallpatient();
+      // props.setIscall(false);
+      // if (event.reason === 'networkDisconnected') {
+      //   props.setSessionError({
+      //     message: 'Call was disconnected due to Network problems on the patient end.',
+      //   });
+      // } else {
+      //   props.setSessionError({ message: 'Patient left the call.' });
+      // }
+    },
+    error: (error: any) => {
+      console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
+      //props.setSessionError(error);
+    },
+    connectionCreated: (event: string) => {
+      console.log('session stream connectionCreated!', event);
+    },
+    sessionConnected: (event: string) => {
+      console.log('session stream sessionConnected!', event);
+    },
+    sessionDisconnected: (event: any) => {
+      console.log('session stream sessionDisconnected!', event);
+      if (event.reason === 'clientDisconnected') {
+      }
+    },
+    sessionReconnected: (event: string) => {
+      console.log('session stream sessionReconnected!', event);
+      setReconnecting(false);
+    },
+    sessionReconnecting: (event: string) => {
+      console.log('session stream sessionReconnecting!', event);
+      setReconnecting(true);
+    },
+    signal: (event: string) => {
+      console.log('session stream signal!', event);
+    },
+    streamDestroyed: (event: any) => {
+      console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
+      if (event.reason === 'networkDisconnected') {
+      }
+    },
+    streamPropertyChanged: (event: any) => {
+      console.log('session streamPropertyChanged destroyed!', event);
+      const subscribers = event.target.getSubscribersForStream(event.stream);
+      if (subscribers.length) {
+        setCallerAudio(event.stream.hasAudio);
+        setCallerVideo(event.stream.hasVideo);
+      }
+    },
+  };
 
   return (
     <div className={classes.root}>
@@ -271,12 +354,23 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                   ' team has joined'}
               </div>
             )}
-            {/* {!props.showVideoChat && (
+            {!props.showVideoChat && (
               <span>
-                {`Time start ${props.timerMinuts.toString().length < 2 ? '0' + props.timerMinuts : props.timerMinuts} : 
-             ${props.timerSeconds.toString().length < 2 ? '0' + props.timerSeconds : props.timerSeconds}`}
+                {`${
+                  props.timerMinuts.toString().length < 2
+                    ? '0' + props.timerMinuts
+                    : props.timerMinuts
+                } : 
+             ${
+               props.timerSeconds.toString().length < 2
+                 ? '0' + props.timerSeconds
+                 : props.timerSeconds
+             }`}
+                <p className={classes.audioVideoState}>{checkReconnecting()}</p>
+                <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
+                <p className={classes.audioVideoState}>{isPaused()}</p>
               </span>
-            )} */}
+            )}
           </div>
         )}
 
@@ -285,12 +379,17 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
             apiKey={process.env.OPENTOK_KEY}
             sessionId={props.sessionId}
             token={props.token}
-            eventHandlers={{
-              connectionDestroyed: (event: any) => {
-                props.stopConsultCall();
-                setIscall(false);
-              },
+            eventHandlers={sessionHandler}
+            onError={(error: any) => {
+              console.log('Session Error', error);
+              //props.setSessionError(error);
             }}
+            // eventHandlers={{
+            //   connectionDestroyed: (event: any) => {
+            //     props.stopConsultCall();
+            //     setIscall(false);
+            //   },
+            // }}
           >
             <div
               className={`${classes.minimizeImg}
