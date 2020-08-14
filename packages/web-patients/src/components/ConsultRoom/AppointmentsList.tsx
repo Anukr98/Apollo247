@@ -430,7 +430,7 @@ export const AppointmentsList: React.FC<AppointmentProps> = (props) => {
     if (triggerInvoice) {
       setIsLoading(true);
       client
-        .query<getOrderInvoice>({
+        .query<GetOrderInvoice>({
           query: GET_CONSULT_INVOICE,
           variables: {
             appointmentId: successApptId,
