@@ -84,11 +84,14 @@ export const MedicineImageGallery: React.FC<MedicineInformationProps> = (props) 
 
   let images: any = [];
   props.data.image.map((img: any) => {
+    const altTitle = `${props.data.name}, Pack of ${getPackOfMedicine(props.data)}`;
     images.push({
       original: `${apiDetails.url}${img}`,
       thumbnail: `${apiDetails.url}${img}`,
-      originalAlt: `${props.data.name}, Pack of ${getPackOfMedicine(props.data)}`,
-      originalTitle: `${props.data.name}, Pack of ${getPackOfMedicine(props.data)}`,
+      originalAlt: altTitle,
+      originalTitle: altTitle,
+      thumbnailAlt: altTitle,
+      thumbnailTitle: altTitle,
     });
   });
 

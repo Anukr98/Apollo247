@@ -505,7 +505,7 @@ export async function sendCallsNotification(
       patientDetails.id,
       true,
       callType,
-      isDev,
+      isDev
     );
   }
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
@@ -603,7 +603,8 @@ export async function sendCallsNotification(
 
   //First payload (data only)
   let dataOnlyPayloadResponse = null;
-  const sendDataOnlyPayload = callType != APPT_CALL_TYPE.CHAT && numberOfParticipants && numberOfParticipants == 1;
+  const sendDataOnlyPayload =
+    callType != APPT_CALL_TYPE.CHAT && numberOfParticipants && numberOfParticipants == 1;
 
   if (sendDataOnlyPayload) {
     const dataOnlyPayload = {
@@ -969,7 +970,7 @@ export async function sendNotification(
     }
     const formattedAptDate = format(
       addMinutes(new Date(appointment.appointmentDateTime), +330),
-      "yyyy-MM-dd hh:mm a"
+      'yyyy-MM-dd hh:mm a'
     );
     let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
       '{0}',
@@ -977,9 +978,7 @@ export async function sendNotification(
     );
     doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
-    doctorSMS = doctorSMS
-      .replace('{3}', formattedAptDate)
-      .replace('{4}', doctorDetails.salutation);
+    doctorSMS = doctorSMS.replace('{3}', formattedAptDate).replace('{4}', doctorDetails.salutation);
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   }
 
@@ -1799,7 +1798,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -2176,6 +2175,7 @@ export async function sendMedicineOrderStatusNotification(
 
   let notificationTitle: string = '';
   let notificationBody: string = '';
+  let smsBody: string = '';
   let payloadDataType: string = '';
 
   switch (notificationType) {
@@ -2213,6 +2213,7 @@ export async function sendMedicineOrderStatusNotification(
       payloadDataType = 'Order_bill_changed';
       notificationTitle = ApiConstants.MEDICINE_ORDER_CHANGED_TITLE;
       notificationBody = ApiConstants.MEDICINE_ORDER_CHANGED_BODY;
+      smsBody = ApiConstants.MEDICINE_ORDER_CHANGED_SMS_BODY;
       break;
     default:
       payloadDataType = 'Order_Placed';
@@ -2226,13 +2227,20 @@ export async function sendMedicineOrderStatusNotification(
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
   notificationBody = notificationBody.replace(/\{1}/g, orderNumber);
+
   if (notificationType == NotificationType.MEDICINE_ORDER_READY_AT_STORE) {
     const shopAddress = JSON.parse(orderDetails.shopAddress);
     notificationBody = notificationBody.replace('{2}', shopAddress.storename);
     notificationBody = notificationBody.replace('{3}', shopAddress.phone);
   }
+  if (smsBody) {
+    smsBody = smsBody.replace('{0}', userName);
+    smsBody = smsBody.replace(/\{1}/g, orderNumber);
+  } else {
+    smsBody = notificationBody;
+  }
 
-  console.log(notificationBody, notificationType, 'med orders');
+  console.log(notificationBody, smsBody, notificationType, 'med orders');
   const payload = {
     notification: {
       title: notificationTitle,
@@ -2257,7 +2265,7 @@ export async function sendMedicineOrderStatusNotification(
   };
 
   //send SMS notification
-  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+  sendNotificationSMS(patientDetails.mobileNumber, smsBody);
 
   if (notificationType == NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY) {
     return { status: true };
@@ -2387,7 +2395,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, { }) => {
+> = async (parent, args, {}) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -3176,7 +3184,10 @@ export async function medicineOrderRefundNotification(
       await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
     }
 
-    if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS && ((refundAmount > 0 && isRefundSuccessful) || healthCreditsRefunded > 0)) {
+    if (
+      paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS &&
+      ((refundAmount > 0 && isRefundSuccessful) || healthCreditsRefunded > 0)
+    ) {
       if (refundAmount > 0 && isRefundSuccessful && healthCreditsRefunded > 0) {
         notificationBody = ApiConstants.ORDER_CANCEL_PAYMENT_HC_REFUND_BODY;
         notificationBody = notificationBody.replace(

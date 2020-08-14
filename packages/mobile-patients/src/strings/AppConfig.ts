@@ -51,10 +51,8 @@ const appStaticVariables = {
     'https://157e9636faf8c1b7296a749deb8789fa84314b27598eb7a9:82ac24fd451cbf85373a4ea90f083c9d321040ee9c3d26ed@api.exotel.com/v1/Accounts/apollo2471/Calls/connect.json',
   EXOTEL_CALLER_ID: '04049171522',
   HOME_SCREEN_COVID_HEADER_TEXT: string.common.covidHeading,
-  HOME_SCREEN_EMERGENCY_BANNER_TEXT: string.common.emergencyBannerText,
   HOME_SCREEN_COVID_CONTACT_TEXT: string.common.covidContactText,
   HOME_SCREEN_COVIDSCAN_BANNER_TEXT: string.common.covidScanBannerText,
-  HOME_SCREEN_EMERGENCY_BANNER_NUMBER: string.common.emergencyBannerPhoneNumber,
   CHENNAI_PHARMA_DELIVERY_PINCODES: ChennaiDeliveryPinCodes,
   CRYPTO_SECRET_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
   PHARMA_STATE_CODE_MAPPING: PharmaStateCodeMapping,
@@ -190,7 +188,7 @@ const PharmaApiConfig = {
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
-    MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
+    MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
     ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`,
@@ -228,7 +226,7 @@ const PharmaApiConfig = {
     ],
     GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
-    MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
+    MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
     ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedata`,

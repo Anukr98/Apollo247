@@ -252,7 +252,6 @@ export const calculateRefund = async (
     );
   } else if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS) {
     const updatePaymentRequest: Partial<MedicineOrderPayments> = {};
-
     /**
      * We cannot refund less than 1 rs as per Paytm refunds policy
      */
@@ -284,6 +283,9 @@ export const calculateRefund = async (
     }
 
     if (healthCreditsToRefund > 0) {
+      const blockedHealthCredits = +new Decimal(healthCreditsRedeemed).minus(healthCreditsToRefund);
+      updatePaymentRequest.healthCreditsRedeemed = blockedHealthCredits;
+
       // check if healthCredits were blocked for the order
       if (healthCreditsRedemptionRequest && healthCreditsRedemptionRequest.RequestNumber) {
         /**
@@ -308,12 +310,6 @@ export const calculateRefund = async (
           BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
           RedemptionRequestNumber: healthCreditsRedemptionRequest.RequestNumber.toString(),
         });
-
-        const blockedHealthCredits = +new Decimal(healthCreditsRedeemed).minus(
-          healthCreditsToRefund
-        );
-
-        updatePaymentRequest.healthCreditsRedeemed = blockedHealthCredits;
       } else {
         log(
           'profileServiceLogger',
@@ -322,15 +318,19 @@ export const calculateRefund = async (
           JSON.stringify(paymentInfo),
           'true'
         );
-        throw new AphError(AphErrorMessages.HEALTH_CREDITS_REQUEST_NOT_FOUND, undefined, {});
       }
-      if (Object.keys(updatePaymentRequest).length) {
-        medOrderRepo.updateMedicineOrderPayment(
-          orderDetails.id,
-          orderDetails.orderAutoId,
-          updatePaymentRequest
-        );
-      }
+    }
+
+    /**
+     * Update information about updated healthCredits redeemed
+     * and refundAmount in medicineOrderPayments
+     */
+    if (Object.keys(updatePaymentRequest).length) {
+      medOrderRepo.updateMedicineOrderPayment(
+        orderDetails.id,
+        orderDetails.orderAutoId,
+        updatePaymentRequest
+      );
     }
 
     //send refund SMS notification for partial refund
