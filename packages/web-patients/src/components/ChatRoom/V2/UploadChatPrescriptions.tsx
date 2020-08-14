@@ -195,7 +195,7 @@ export const UploadChatPrescription: React.FC<UploadPrescriptionProps> = (props)
           },
         })
         .then(({ data }) => {
-          res({ urls: data.downloadDocuments.downloadPaths });
+          res({ urls: data && data.downloadDocuments && data.downloadDocuments.downloadPaths });
         })
         .catch((err: any) => {
           console.log(err);
@@ -217,16 +217,6 @@ export const UploadChatPrescription: React.FC<UploadPrescriptionProps> = (props)
         const occupancyDoctor = data.filter((obj: any) => {
           return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
         });
-
-        // console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
-        // if (response.totalOccupancy >= 2) {
-        //   setSendMessageToDoctor(false);
-        // } else {
-        //   if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
-        //     setSendMessageToDoctor(true);
-        //     InsertMessageToDoctor(message);
-        //   }
-        // }
       })
       .catch((error) => {
         console.log(error);

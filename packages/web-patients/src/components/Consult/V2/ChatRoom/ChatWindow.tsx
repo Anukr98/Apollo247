@@ -1662,7 +1662,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               <span id="scrollDiv" ref={scrollDivRef}></span>
             </Scrollbars>
           </div>
-          {true ? (
+          {autoQuestionsCompleted ? (
             <div className={`${classes.chatWindowFooter} ${classes.chatWindowFooterInput}`}>
               <AphTextField
                 autoFocus

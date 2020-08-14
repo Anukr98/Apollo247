@@ -9,15 +9,12 @@ import { GET_PAST_CONSULTS_PRESCRIPTIONS } from 'graphql/profiles';
 import {
   getPatientPastConsultsAndPrescriptions,
   getPatientPastConsultsAndPrescriptionsVariables,
-  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as Consults,
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheet,
-  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders as MedicineOrder,
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems,
 } from 'graphql/types/getPatientPastConsultsAndPrescriptions';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
-import { useShoppingCart, EPrescription } from 'components/MedicinesCartProvider';
-import { clientRoutes } from 'helpers/clientRoutes';
+import { EPrescription } from 'components/MedicinesCartProvider';
 import { DoctorType } from 'graphql/types/globalTypes';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { GET_MEDICAL_PRISM_RECORD } from 'graphql/profiles';
