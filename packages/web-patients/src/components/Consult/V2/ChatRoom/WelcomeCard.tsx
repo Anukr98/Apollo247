@@ -22,13 +22,17 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'left',
       padding: 12,
       fontWeight: theme.typography.fontWeightMedium,
-      display: 'inline-block',
+      display: 'block',
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 #00000026',
       backgroundColor: '#0087ba',
       fontSize: 15,
       maxWidth: 240,
       margin: '0 0 10px 45px',
+      '& p': {
+        margin: 0,
+        padding: '5px 0 0 0',
+      },
     },
     chatTime: {
       fontSize: 10,
@@ -64,8 +68,9 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = (props) => {
         <p>2. Connect with your doctor</p>
         <p>3. Get a prescription and meds, if necessary</p>
         <p>4. Chat with your doctor for 7 days</p>
-        <p>
-          A doctor from ${props.doctorName}'s team will join you shortly to collect your medical
+      </div>
+      <div className={`${classes.blueBubble} ${classes.petient} `}>
+        <p>A doctor from ${props.doctorName}'s team will join you shortly to collect your medical
           details. These details are essential for ${props.doctorName} to help you and will take
           around 3-5 minutes.
         </p>
