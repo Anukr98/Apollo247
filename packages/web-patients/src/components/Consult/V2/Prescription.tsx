@@ -1,15 +1,7 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Route } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
-import {
-  Theme,
-  Typography,
-  MenuItem,
-  Popover,
-  CircularProgress,
-  Avatar,
-  LinearProgress,
-} from '@material-ui/core';
+import { Theme, Typography, LinearProgress, CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
@@ -22,21 +14,25 @@ import {
   getCaseSheet_getCaseSheet_patientDetails as PatientDetailsType,
   getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription as PrescriptionType,
 } from 'graphql/types/getCaseSheet';
-import { useApolloClient } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
 import { useQuery } from 'react-apollo-hooks';
 import {
   APPOINTMENT_TYPE,
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_TIMINGS,
+  MEDICINE_UNIT,
+  MEDICINE_CONSUMPTION_DURATION,
 } from 'graphql/types/globalTypes';
 import moment from 'moment';
 import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import { getMedicineDetailsApi } from 'helpers/MedicineApiCalls';
 import { ShareWidget } from 'components/ShareWidget';
+import { useShoppingCart, MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -44,6 +40,34 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
+    },
+    expertBox: {
+      padding: 20,
+      textAlign: 'center',
+      '& h2': {
+        fontSize: 16,
+        margin: 0,
+      },
+      '& button': {
+        marginTop: 20,
+      },
+    },
+    summaryDownloads: {
+      margin: '0 0 0 auto',
+      textAlign: 'right',
+      [theme.breakpoints.down('xs')]: {
+        paddingBottom: 10,
+      },
+      '& button': {
+        textTransform: 'uppercase',
+        color: '#fc9916',
+        backgroundColor: 'transparent',
+        border: 'none',
+        boxShadow: 'none',
+        padding: 0,
+        fontSize: 12,
+        minWidth: 52,
+      },
     },
     prescriptionContent: {
       background: '#f7f8f5',
@@ -352,7 +376,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     shareIcon: {
       display: 'flex',
-      marginRight: 40,
+      marginRight: 0,
       color: '#fcb716',
       fontSize: 16,
       fontWeight: 'bold',
@@ -376,10 +400,13 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 export const Prescription: React.FC = (props) => {
   const classes = useStyles({});
-  const apolloClient = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
+  const { addMultipleCartItems, setEPrescriptionData, ePrescriptionData } = useShoppingCart();
   const params = useParams<{ appointmentId: string }>();
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [showShareWidget, setShowShareWidget] = React.useState<boolean>(false);
+  const [cartItemsLoading, setCartItemsLoading] = React.useState<boolean>(false);
+  const [showInstockItemsPopup, setShowInstockItemsPopup] = React.useState<boolean>(false);
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -411,8 +438,8 @@ export const Prescription: React.FC = (props) => {
   };
 
   const getDoctorDetails = (appointment: AppointmentType) => {
-    return appointment && appointment.doctorInfo && appointment.doctorInfo.fullName
-      ? appointment.doctorInfo.fullName
+    return appointment && appointment.doctorInfo && appointment.doctorInfo.displayName
+      ? appointment.doctorInfo.displayName
       : '';
   };
 
@@ -422,14 +449,178 @@ export const Prescription: React.FC = (props) => {
       : '';
   };
 
-  const orderMedicines = (prescriptionDetails: PrescriptionType[]) => {
+  const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION | null) => {
+    return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
+      ? 30
+      : type == MEDICINE_CONSUMPTION_DURATION.WEEKS ||
+        type == MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+      ? 7
+      : 1;
+  };
+
+  const getQuantity = (
+    medicineUnit: MEDICINE_UNIT | null,
+    medicineTimings: (MEDICINE_TIMINGS | null)[] | null,
+    medicineDosage: string | null,
+    medicineCustomDosage: string | null /** E.g: (1-0-1/2-0.5), (1-0-2\3-3) etc.*/,
+    medicineConsumptionDurationInDays: string | null,
+    medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null,
+    mou: number // how many tablets per strip
+  ) => {
+    if (medicineUnit == MEDICINE_UNIT.TABLET || medicineUnit == MEDICINE_UNIT.CAPSULE) {
+      const medicineDosageMapping = medicineCustomDosage
+        ? medicineCustomDosage.split('-').map((item) => {
+            if (item.indexOf('/') > -1) {
+              const dosage = item.split('/').map((item) => Number(item));
+              return (dosage[0] || 1) / (dosage[1] || 1);
+            } else if (item.indexOf('\\') > -1) {
+              const dosage = item.split('\\').map((item) => Number(item));
+              return (dosage[0] || 1) / (dosage[1] || 1);
+            } else {
+              return Number(item);
+            }
+          })
+        : medicineDosage
+        ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
+        : [1, 1, 1, 1];
+
+      const medicineTimingsPerDayCount =
+        (medicineTimings || []).reduce(
+          (currTotal, currItem) =>
+            currTotal +
+            (currItem == MEDICINE_TIMINGS.MORNING
+              ? medicineDosageMapping[0]
+              : currItem == MEDICINE_TIMINGS.NOON
+              ? medicineDosageMapping[1]
+              : currItem == MEDICINE_TIMINGS.EVENING
+              ? medicineDosageMapping[2]
+              : currItem == MEDICINE_TIMINGS.NIGHT
+              ? medicineDosageMapping[3]
+              : (medicineDosage && Number(medicineDosage)) || 1),
+          0
+        ) || 1;
+
+      const totalTabletsNeeded =
+        medicineTimingsPerDayCount *
+        Number(medicineConsumptionDurationInDays || '1') *
+        getDaysCount(medicineConsumptionDurationUnit);
+
+      return Math.ceil(totalTabletsNeeded / mou);
+    } else {
+      // 1 for other than tablet or capsule
+      return 1;
+    }
+  };
+
+  const orderMedicines = (prescriptionDetails: PrescriptionType[], history: any) => {
+    const medPrescription = (prescriptionDetails || []).filter((item) => item!.id);
+    setCartItemsLoading(true);
     Promise.all(
-      prescriptionDetails.map(
+      medPrescription.map(
         (prescription) => prescription.id && getMedicineDetailsApi(prescription.id)
       )
     )
-      .then((res) => console.log(res))
-      .catch((e) => console.log(e));
+      .then((res: any) => {
+        if (res && res.length > 0) {
+          const medicinesAll = res.map(({ data }: any, index: number) => {
+            if (data && data.productdp && data.productdp[0]) {
+              const medicineDetails = data.productdp[0];
+              const item = medPrescription[index]!;
+              const qty = getQuantity(
+                item.medicineUnit,
+                item.medicineTimings,
+                item.medicineDosage,
+                item.medicineCustomDosage,
+                item.medicineConsumptionDurationInDays,
+                item.medicineConsumptionDurationUnit,
+                parseInt(medicineDetails.mou || '1', 10)
+              );
+              const {
+                url_key,
+                description,
+                id,
+                image,
+                is_in_stock,
+                is_prescription_required,
+                name,
+                price,
+                special_price,
+                sku,
+                small_image,
+                status,
+                thumbnail,
+                type_id,
+                mou,
+                isShippable,
+                MaxOrderQty,
+              } = medicineDetails;
+              return {
+                url_key,
+                description,
+                id,
+                image,
+                is_in_stock,
+                is_prescription_required,
+                name,
+                price,
+                special_price,
+                sku,
+                small_image,
+                status,
+                thumbnail,
+                type_id,
+                mou,
+                isShippable,
+                MaxOrderQty,
+                quantity: qty,
+                isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
+              } as MedicineCartItem;
+            }
+          });
+
+          const inStockItems = medicinesAll.filter(
+            (medicine: MedicineCartItem) => medicine && medicine.is_in_stock
+          ).length;
+
+          if (inStockItems && inStockItems.length) {
+            addMultipleCartItems(inStockItems as MedicineCartItem[]);
+            const rxMedicinesCount =
+              medicinesAll.length == 0
+                ? 0
+                : medicinesAll.filter(
+                    (medicineItem: MedicineCartItem) =>
+                      medicineItem && medicineItem.is_prescription_required
+                  ).length;
+
+            const presToAdd = {
+              id: caseSheetDetails.id,
+              uploadedUrl: `${process.env.REACT_APP_CASESHEET_LINK}${caseSheetDetails.blobName}`,
+              forPatient: (currentPatient && currentPatient.firstName) || '',
+              date: moment(caseSheetDetails.appointment.appointmentDateTime).format('DD MMM YYYY'),
+              medicines: (medicinesAll || [])
+                .map((medicine: MedicineCartItem) => medicine.name)
+                .join(', '),
+              doctorName: caseSheetDetails.appointment.doctorInfo.displayName,
+              prismPrescriptionFileId: '',
+            } as EPrescription;
+
+            if (rxMedicinesCount) {
+              setEPrescriptionData &&
+                setEPrescriptionData([
+                  ...ePrescriptionData.filter((item) => !(item.id == presToAdd.id)),
+                  presToAdd,
+                ]);
+            }
+            history.push(clientRoutes.medicinesCart());
+          } else {
+            setShowInstockItemsPopup(true);
+          }
+        }
+      })
+      .catch((e) => console.log(e))
+      .finally(() => {
+        setCartItemsLoading(false);
+      });
   };
 
   return (
@@ -466,7 +657,7 @@ export const Prescription: React.FC = (props) => {
             <div className={classes.drConsultContent}>
               <div className={classes.consultDetails}>
                 <Typography component="h2">
-                  {getDoctorDetails(caseSheetDetails.appointment)}
+                  Dr. {getDoctorDetails(caseSheetDetails.appointment)}
                 </Typography>
                 <Typography>
                   {getAppointmentDate(caseSheetDetails.appointment)},{' '}
@@ -474,42 +665,43 @@ export const Prescription: React.FC = (props) => {
                 </Typography>
               </div>
               <div className={classes.consultOptions}>
-                {/* <Link to="#" className={classes.viewConsult}>
-                  View Consult
-                </Link> */}
-                {/* <div
-                  className={`${classes.shareIcon} ${classes.desktopHide}`}
-                  onClick={(e) => {
-                    setShowShareWidget(true);
-                  }}
-                >
-                  <span>
-                    <img src={require('images/ic-share-yellow.svg')} alt="" />
-                  </span>
-                  <span>Share</span>
-                  {showShareWidget && (
-                    <ShareWidget
-                      title={'Share Prescription'}
-                      closeShareWidget={(e) => {
-                        e.stopPropagation();
-                        setShowShareWidget(false);
+                {caseSheetDetails && caseSheetDetails.blobName && (
+                  <>
+                    <div
+                      className={`${classes.shareIcon} `}
+                      onClick={(e) => {
+                        setShowShareWidget(true);
                       }}
-                      url={caseSheetDetails.blobName || ''}
-                    />
-                  )}
-                </div> */}
-                <ul className={classes.optionList}>
-                  <li>
-                    <Link to="#">
-                      <img src={require('images/ic_round-share.svg')} alt="Share" />
-                    </Link>
-                  </li>
-                  {caseSheetDetails && caseSheetDetails.blobName && (
-                    <li onClick={() => window.open(caseSheetDetails.blobName, '_blank')}>
+                    >
+                      <span>
+                        <img src={require('images/ic_round-share.svg')} alt="Share" />
+                      </span>
+                      {showShareWidget && (
+                        <ShareWidget
+                          title={'Share Prescription'}
+                          closeShareWidget={(e) => {
+                            e.stopPropagation();
+                            setShowShareWidget(false);
+                          }}
+                          url={`${process.env.REACT_APP_CASESHEET_LINK}${
+                            caseSheetDetails.blobName || ''
+                          }`}
+                        />
+                      )}
+                    </div>
+                    <div
+                      className={classes.shareIcon}
+                      onClick={() =>
+                        window.open(
+                          `${process.env.REACT_APP_CASESHEET_LINK}${caseSheetDetails.blobName}`,
+                          '_blank'
+                        )
+                      }
+                    >
                       <img src={require('images/ic_download.svg')} alt="download" />
-                    </li>
-                  )}
-                </ul>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             <div className={classes.expansionContainer}>
@@ -599,12 +791,23 @@ export const Prescription: React.FC = (props) => {
                                 </ul>
                               </div>
                             ))}
-                            <Link to="#">Order Medicines</Link>
-                            {/* <AphButton
-                              onClick={() => orderMedicines(caseSheetDetails.medicinePrescription)}
-                            >
-                              Order Medicines
-                            </AphButton> */}
+                            <div className={classes.summaryDownloads}>
+                              <Route
+                                render={({ history }) => (
+                                  <AphButton
+                                    onClick={() =>
+                                      orderMedicines(caseSheetDetails.medicinePrescription, history)
+                                    }
+                                  >
+                                    {cartItemsLoading ? (
+                                      <CircularProgress color="primary" size={22} />
+                                    ) : (
+                                      'Order Medicines'
+                                    )}
+                                  </AphButton>
+                                )}
+                              />
+                            </div>
                           </>
                         ) : (
                           <div className={classes.cdContainer}>No Medicines</div>
@@ -701,7 +904,14 @@ export const Prescription: React.FC = (props) => {
                                   </li>
                                 )}
                               </ul>
-                              <Link to="#">Book Follow Up </Link>
+                              <Link
+                                to={clientRoutes.doctorDetails(
+                                  readableParam(caseSheetDetails.appointment.doctorInfo.fullName),
+                                  caseSheetDetails.doctorId
+                                )}
+                              >
+                                Book Follow Up{' '}
+                              </Link>
                             </>
                           ) : (
                             'No Followup'
@@ -750,6 +960,16 @@ export const Prescription: React.FC = (props) => {
       ) : (
         error && <div className={classes.container}>No data found...:(</div>
       )}
+      <AphDialog open={showInstockItemsPopup} maxWidth="sm">
+        <AphDialogClose onClick={() => setShowInstockItemsPopup(false)} title={'Close'} />
+        <AphDialogTitle></AphDialogTitle>
+        <div className={classes.expertBox}>
+          <h2>All Items are in out of stock</h2>
+          <AphButton onClick={() => setShowInstockItemsPopup(false)} color="primary">
+            Ok, Got It
+          </AphButton>
+        </div>
+      </AphDialog>
     </div>
   );
 };
