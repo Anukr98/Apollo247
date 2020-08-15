@@ -14,10 +14,11 @@ import {
 } from '@aph/web-ui-components';
 import Slider from 'react-slick';
 import { ChatVideo } from 'components/Consult/V2/ChatRoom/ChatVideo';
+import WarningModel from 'components/WarningModel';
 import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
 import { DoctorCard } from 'components/Consult/V2/ChatRoom/DoctorCard';
 import { WelcomeCard } from 'components/Consult/V2/ChatRoom/WelcomeCard';
-import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
+import { BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import PubNub, { PubnubStatus, PublishResponse, HistoryResponse } from 'pubnub';
@@ -725,6 +726,17 @@ const useStyles = makeStyles((theme: Theme) => {
     patientCardMain: {
       textAlign: 'right',
     },
+    ringtone: {
+      position: 'absolute',
+      zIndex: -1,
+      height: 1,
+      width: 1,
+      padding: 0,
+      margin: -1,
+      overflow: 'hidden',
+      clip: 'rect(0,0,0,0)',
+      border: 0,
+    },
     ePrescriptionTitle: {
       zIndex: 9999,
     },
@@ -788,6 +800,7 @@ interface MessagesObjectProps {
 }
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
+const ringtoneUrl = require('images/phone_ringing.mp3');
 const autoMessageStrings: AutoMessageStrings = {
   videoCallMsg: '^^callme`video^^',
   audioCallMsg: '^^callme`audio^^',
@@ -854,6 +867,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const apolloClient = useApolloClient();
 
   //AV states
+  const [playRingtone, setPlayRingtone] = useState<boolean>(false);
   const [isCalled, setIsCalled] = useState<boolean>(false);
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
@@ -865,6 +879,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
   const [videoCall, setVideoCall] = useState(false);
   const [audiocallmsg, setAudiocallmsg] = useState(false);
+  //OT Error state
+  const [sessionError, setSessionError] = React.useState<boolean>(null);
+  const [publisherError, setPublisherError] = React.useState<boolean>(null);
+  const [subscriberError, setSubscriberError] = React.useState<boolean>(null);
 
   const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
@@ -953,10 +971,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             setIsVideoCall(
               message.message.message === autoMessageStrings.videoCallMsg ? true : false
             );
+            setPlayRingtone(true);
           }
           if (message.message && message.message.message === autoMessageStrings.endCallMsg) {
             setIsCalled(false);
             setShowVideo(false);
+            setPlayRingtone(false);
           }
           const messageObject = {
             timetoken: message.timetoken,
@@ -1107,6 +1127,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       cardType: 'patient',
     };
     publishMessage(appointmentId, composeMessage);
+    setPlayRingtone(false);
     updateAppointmentSessionCall();
     startIntervalTimer(0);
     setCookiesAcceptcall();
@@ -1882,6 +1903,32 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
   return (
     <div className={classes.consultRoom}>
+      {/* Ot Errors Start */}
+      <WarningModel
+        error={sessionError}
+        onClose={() => {
+          setSessionError(null);
+        }}
+      />
+      <WarningModel
+        error={publisherError}
+        onClose={() => {
+          setPublisherError(null);
+        }}
+      />
+      <WarningModel
+        error={subscriberError}
+        onClose={() => {
+          setSubscriberError(null);
+        }}
+      />
+      {/* Ot Errors Ends */}
+      {playRingtone && (
+        <audio controls autoPlay loop className={classes.ringtone}>
+          <source src={ringtoneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
       <div
         className={`${classes.chatSection} ${
           !showVideo ? classes.chatWindowContainer : classes.audioVideoContainer
@@ -1903,6 +1950,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             convertCall={() => convertCall()}
             videoCall={videoCall}
             audiocallmsg={audiocallmsg}
+            setSessionError={setSessionError}
+            setPublisherError={setPublisherError}
+            setSubscriberError={setSubscriberError}
           />
         )}
         {/* <div className={`${classes.chatSection}`}> */}

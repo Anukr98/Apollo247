@@ -231,6 +231,9 @@ interface ConsultProps {
   convertCall: () => void;
   videoCall: boolean;
   audiocallmsg: boolean;
+  setSessionError: (error: any) => void;
+  setPublisherError: (error: any) => void;
+  setSubscriberError: (error: any) => void;
 }
 function getCookieValue() {
   const name = 'action=';
@@ -246,18 +249,16 @@ function getCookieValue() {
 export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const classes = useStyles({});
   const [isCall, setIscall] = React.useState(true);
-  const [mute, setMute] = React.useState(true);
+  const [isPublishAudio, setIsPublishAudio] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const [callerAudio, setCallerAudio] = React.useState<boolean>(true);
   const [callerVideo, setCallerVideo] = React.useState<boolean>(true);
   const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
   const [reconnecting, setReconnecting] = React.useState<boolean>(false);
-
   const [docImg, setDocImg] = React.useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
-
   const patientProfile = currentPatient && currentPatient.photoUrl;
-
+  const isRetry = true;
   const { doctorDetails, videoCall } = props;
 
   const checkReconnecting = () => {
@@ -283,15 +284,15 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
     connectionDestroyed: (event: any) => {
       console.log('session connectionDestroyed', event);
       props.toggelChatVideo();
-      // props.stopAudioVideoCallpatient();
-      // props.setIscall(false);
-      // if (event.reason === 'networkDisconnected') {
-      //   props.setSessionError({
-      //     message: 'Call was disconnected due to Network problems on the patient end.',
-      //   });
-      // } else {
-      //   props.setSessionError({ message: 'Patient left the call.' });
-      // }
+      props.stopConsultCall();
+      setIscall(false);
+      if (event.reason === 'networkDisconnected') {
+        props.setSessionError({
+          message: 'Call was disconnected due to Network problems on the doctor end.',
+        });
+      } else {
+        props.setSessionError({ message: 'Doctor left the call.' });
+      }
     },
     error: (error: any) => {
       console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
@@ -331,6 +332,56 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
         setCallerAudio(event.stream.hasAudio);
         setCallerVideo(event.stream.hasVideo);
       }
+    },
+  };
+  const publisherHandler = {
+    streamCreated: (event: string) => {
+      console.log('Publisher stream created!', event);
+    },
+    streamDestroyed: (event: string) => {
+      console.log('Publisher stream destroyed!', event);
+    },
+    error: (error: any) => {
+      console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
+      props.setPublisherError(error);
+    },
+  };
+  const subscriberHandler = {
+    error: (error: any) => {
+      console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
+      props.setSubscriberError(error);
+    },
+    connected: (event: string) => {
+      console.log('Subscribe stream connected!', event);
+    },
+    disconnected: (event: string) => {
+      console.log('Subscribe stream disconnected!', event);
+    },
+    destroyed: (event: any) => {
+      console.log('Subscribe destroyed!', event);
+      if (event.reason === 'networkDisconnected') {
+      }
+    },
+    videoDisableWarning: (event: any) => {
+      console.log(`videoDisableWarning: ${JSON.stringify(event)}`);
+    },
+    videoDisableWarningLifted: (event: any) => {
+      console.log(`videoDisableWarningLifted: ${JSON.stringify(event)}`);
+    },
+    videoDisabled: (event: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(event)}`);
+      if (event.reason === 'quality') {
+        setDowngradeToAudio(true);
+      }
+    },
+    videoEnabled: (event: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(event)}`);
+      if (event.reason === 'quality') {
+        setDowngradeToAudio(false);
+      }
+    },
+    streamDestroyed: (event: any) => {
+      console.log('Subscribe stream destroyed!');
     },
   };
 
@@ -382,7 +433,7 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
             eventHandlers={sessionHandler}
             onError={(error: any) => {
               console.log('Session Error', error);
-              //props.setSessionError(error);
+              props.setSessionError(error);
             }}
             // eventHandlers={{
             //   connectionDestroyed: (event: any) => {
@@ -397,10 +448,24 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
             >
               <div>
                 <OTPublisher
-                  resolution={'352x288'}
                   properties={{
-                    publishAudio: mute,
+                    publishAudio: isPublishAudio,
                     publishVideo: subscribeToVideo,
+                  }}
+                  eventHandlers={publisherHandler}
+                  onError={(error: any) => {
+                    console.log('Publisher Error', error, error.name);
+                    if (error.name === 'OT_USER_MEDIA_ACCESS_DENIED') {
+                      props.setPublisherError({
+                        message: 'Audio/Video permissions are not provided',
+                      });
+                    } else if (error.name === 'OT_HARDWARE_UNAVAILABLE') {
+                      props.setPublisherError({ message: 'Audio/Video device is not connected.' });
+                    } else if (error.name === 'OT_CHROME_MICROPHONE_ACQUISITION_ERROR') {
+                      props.setPublisherError({ message: 'Audio device is not connected.' });
+                    } else {
+                      props.setPublisherError(error);
+                    }
                   }}
                 />
               </div>
@@ -446,9 +511,16 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
 
               <OTStreams>
                 <OTSubscriber
+                  eventHandlers={subscriberHandler}
+                  retry={isRetry}
+                  //className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
                   properties={{
                     width: '100%',
                     height: 'calc(100vh - 195px)',
+                  }}
+                  onError={(error: any) => {
+                    console.log('Subscriber Error', error);
+                    props.setSubscriberError(error);
                   }}
                 />
               </OTStreams>
@@ -503,13 +575,13 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                       )}
                     </Grid>
                     <Grid item xs={4} className={classes.middleActions}>
-                      {isCall && mute && (
-                        <Button onClick={() => setMute(!mute)}>
+                      {isCall && isPublishAudio && (
+                        <Button onClick={() => setIsPublishAudio(!isPublishAudio)}>
                           <img src={require('images/ic_mute.svg')} alt="mute" />
                         </Button>
                       )}
-                      {isCall && !mute && (
-                        <Button onClick={() => setMute(!mute)}>
+                      {isCall && !isPublishAudio && (
+                        <Button onClick={() => setIsPublishAudio(!isPublishAudio)}>
                           <img src={require('images/ic_unmute.svg')} alt="unmute" />
                         </Button>
                       )}
