@@ -233,7 +233,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     dialogActions: {
       padding: 10,
-      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.1)',
       position: 'relative',
       fontSize: 14,
       fontWeight: 600,
@@ -689,17 +688,27 @@ export const ChatRoom: React.FC = () => {
                   setIsPopoverOpen={setIsModalOpen}
                   doctorDetails={data.getDoctorDetailsById}
                   onBookConsult={(popover: boolean) => setIsModalOpen(popover)}
-                  isRescheduleConsult={true}
+                  isRescheduleConsult={rescheduleCount < 3 ? true : false}
                   appointmentId={params.appointmentId}
                   rescheduleAPI={rescheduleAPI}
                 />
               ) : (
                 <div>
                   <div className={classes.dialogContent}>
-                    <h6>
-                      We’re sorry that you have to reschedule. You can reschedule up to 3 times for
-                      free.
-                    </h6>
+                    {rescheduleCount < 3 ? (
+                      <h6>
+                        We’re sorry that you have to reschedule. You can reschedule up to 3 times
+                        for free.
+                      </h6>
+                    ) : (
+                      <h6>
+                        Since you have already rescheduled 3 times with Dr.{' '}
+                        {`${data &&
+                          data.getDoctorDetailsById &&
+                          data.getDoctorDetailsById.firstName}`}
+                        , We will consider this a new paid appointment.
+                      </h6>
+                    )}
                     <br />
                     <h6>
                       Next slot for Dr.{' '}
@@ -736,7 +745,9 @@ export const ChatRoom: React.FC = () => {
                           patientId: patientId,
                           rescheduledId: '',
                         };
-                        rescheduleAPI(bookRescheduleInput);
+                        rescheduleCount < 3
+                          ? rescheduleAPI(bookRescheduleInput)
+                          : setIsChangeSlot(true);
                       }}
                     >
                       {' '}
