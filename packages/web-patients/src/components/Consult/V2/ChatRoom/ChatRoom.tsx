@@ -5,6 +5,7 @@ import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ChatWindow } from 'components/Consult/V2/ChatRoom/ChatWindow';
 import { ConsultDoctorProfile } from 'components/Consult/V2/ChatRoom/ConsultDoctorProfile';
+import { OnlineConsult } from 'components/OnlineConsult';
 import { useParams } from 'hooks/routerHooks';
 import { useAuth } from 'hooks/authHooks';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
@@ -15,7 +16,7 @@ import {
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Paper from '@material-ui/core/Paper';
-import { AphButton, AphTextField, AphRadio } from '@aph/web-ui-components';
+import { AphButton, AphTextField, AphRadio, AphDialogTitle } from '@aph/web-ui-components';
 import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
 import {
@@ -92,7 +93,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 'calc(100% - 328px)',
       [theme.breakpoints.down('xs')]: {
         width: 'calc(100% - 10px)',
-      }
+      },
     },
     backArrow: {
       cursor: 'pointer',
@@ -200,12 +201,71 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     modalBox: {
-      maxWidth: 676,
       margin: 'auto',
       marginTop: 88,
       backgroundColor: theme.palette.common.white,
       position: 'relative',
       outline: 'none',
+    },
+    popupHeading: {
+      padding: '20px 10px',
+      '& h6': {
+        fontSize: 13,
+        color: '#01475b',
+        fontWeight: 600,
+        textAlign: 'center',
+        padding: '0 50px',
+      },
+    },
+    dialogContent: {
+      margin: 22,
+      minHeight: 400,
+      position: 'relative',
+      '& h6': {
+        fontSize: 15,
+        fontWeight: 500,
+        margin: 0,
+        lineHeight: 'normal',
+      },
+    },
+    highlightedText: {
+      color: '#0087BA',
+    },
+    dialogActions: {
+      padding: 10,
+      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.1)',
+      position: 'relative',
+      fontSize: 14,
+      fontWeight: 600,
+      maxWidth: 170,
+      display: 'inline-flex',
+      '& button': {
+        borderRadius: 10,
+        minwidth: 130,
+        padding: '8px 20px',
+        fontSize: 14,
+        fontWeight: 600,
+      },
+    },
+    primaryBtn: {
+      backgroundColor: '#fc9916 !important',
+      display: 'flex',
+      flex: '0 0 100%',
+    },
+    secondaryBtn: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: '#fc9916',
+      backgroundColor: 'transparent',
+      boxShadow: '0 2px 5px 0 rgba(0,0,0,0.2)',
+      border: 'none',
+      display: 'flex',
+      flex: '0 0 100%',
+      marginRight: 10,
+      '&:hover': {
+        backgroundColor: 'transparent',
+        color: '#fc9916',
+      },
     },
     tabsRoot: {
       backgroundColor: theme.palette.common.white,
@@ -441,7 +501,10 @@ export const ChatRoom: React.FC = () => {
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
   const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
+  const [isChangeSlot, setIsChangeSlot] = useState<boolean>(false);
   const [disaplayId, setDisplayId] = useState<number | null>(null);
+  const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
+  const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const patientId = (currentPatient && currentPatient.id) || '';
@@ -466,6 +529,8 @@ export const ChatRoom: React.FC = () => {
     })
       .then((data: any) => {
         setIsPopoverOpen(false);
+        setIsModalOpen(false);
+        setReschedulesRemaining(3 - rescheduleCount - 1);
         setIsRescheduleSuccess(true);
         setRescheduledSlot(bookRescheduleInput.newDateTimeslot);
       })
@@ -487,7 +552,10 @@ export const ChatRoom: React.FC = () => {
     });
 
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
-    const todayDate = moment.utc(date).local().format('YYYY-MM-DD');
+    const todayDate = moment
+      .utc(date)
+      .local()
+      .format('YYYY-MM-DD');
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
         try {
@@ -516,6 +584,10 @@ export const ChatRoom: React.FC = () => {
   const { allCurrentPatients } = useAllCurrentPatients();
   const onePrimaryUser = hasOnePrimaryUser();
 
+  const handleRescheduleOpen = () => {
+    nextAvailableSlot(params.doctorId, new Date());
+    setIsModalOpen(true);
+  };
   if (loading) {
     return <LinearProgress />;
   }
@@ -544,6 +616,8 @@ export const ChatRoom: React.FC = () => {
               {data && (
                 <ConsultDoctorProfile
                   setDisplayId={setDisplayId}
+                  setRescheduleCount={setRescheduleCount}
+                  handleRescheduleOpen={handleRescheduleOpen}
                   doctorDetails={data}
                   appointmentId={appointmentId}
                   hasDoctorJoined={hasDoctorJoined}
@@ -562,8 +636,7 @@ export const ChatRoom: React.FC = () => {
                       disabled: classes.disabledButton,
                     }}
                     onClick={() => {
-                      nextAvailableSlot(params.doctorId, new Date());
-                      setIsPopoverOpen(true);
+                      handleRescheduleOpen();
                     }}
                   >
                     Reschedule
@@ -592,6 +665,129 @@ export const ChatRoom: React.FC = () => {
         </div>
       </div>
       {!onePrimaryUser && <ManageProfile />}
+      {data && (
+        <Modal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <Paper className={classes.modalBox} style={{ width: isChangeSlot ? 700 : 328 }}>
+            <div
+              className={classes.modalBoxClose}
+              onClick={() => {
+                setIsModalOpen(false);
+                setIsChangeSlot(false);
+              }}
+            >
+              <img src={require('images/ic_cross_popup.svg')} alt="" />
+            </div>
+            <AphDialogTitle className={classes.popupHeading}>Reschedule</AphDialogTitle>
+            <div>
+              {isChangeSlot ? (
+                <OnlineConsult
+                  setIsPopoverOpen={setIsModalOpen}
+                  doctorDetails={data.getDoctorDetailsById}
+                  onBookConsult={(popover: boolean) => setIsModalOpen(popover)}
+                  isRescheduleConsult={true}
+                  appointmentId={params.appointmentId}
+                  rescheduleAPI={rescheduleAPI}
+                />
+              ) : (
+                <div>
+                  <div className={classes.dialogContent}>
+                    <h6>
+                      We’re sorry that you have to reschedule. You can reschedule up to 3 times for
+                      free.
+                    </h6>
+                    <br />
+                    <h6>
+                      Next slot for Dr.{' '}
+                      {`${data &&
+                        data.getDoctorDetailsById &&
+                        data.getDoctorDetailsById.firstName}`}
+                      is available on -
+                    </h6>
+                    <br />
+                    <h6 className={classes.highlightedText}>
+                      {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
+                    </h6>
+                  </div>
+
+                  <div className={classes.dialogActions}>
+                    <AphButton
+                      className={classes.secondaryBtn}
+                      color="primary"
+                      onClick={() => setIsChangeSlot(true)}
+                    >
+                      {'CHANGE SLOT'}
+                    </AphButton>
+
+                    <AphButton
+                      className={classes.primaryBtn}
+                      color="primary"
+                      onClick={() => {
+                        const bookRescheduleInput = {
+                          appointmentId: params.appointmentId,
+                          doctorId: params.doctorId,
+                          newDateTimeslot: nextSlotAvailable,
+                          initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+                          initiatedId: patientId,
+                          patientId: patientId,
+                          rescheduledId: '',
+                        };
+                        rescheduleAPI(bookRescheduleInput);
+                      }}
+                    >
+                      {' '}
+                      {'ACCEPT'}
+                    </AphButton>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Paper>
+        </Modal>
+      )}
+
+      <Popover
+        open={isRescheduleSuccess}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.windowBody}>
+              <p>`Hi! :)`</p>
+              <p>
+                Your appointment with Dr.
+                {` ${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName} `}
+                has been rescheduled for -{' '}
+                {rescheduledSlot && moment(rescheduledSlot).format('Do MMMM, dddd \nhh:mm a')}
+              </p>
+              {reschedulesRemaining >= 0 && (
+                <p>You have {reschedulesRemaining} free reschedueles left</p>
+              )}
+            </div>
+            <div className={classes.actions}>
+              <AphButton onClick={() => (window.location.href = clientRoutes.appointments())}>
+                OK, GOT IT
+              </AphButton>
+            </div>
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };

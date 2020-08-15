@@ -244,7 +244,7 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'inline-block',
         width: '100%',
         textAlign: 'center',
-      }
+      },
     },
     joinTime: {
       fontWeight: 600,
@@ -408,6 +408,8 @@ interface ConsultDoctorProfileProps {
   hasDoctorJoined: boolean;
   jrDoctorJoined: boolean;
   setDisplayId: (displayId: number | null) => void;
+  setRescheduleCount: (rescheduleCount: number | null) => void;
+  handleRescheduleOpen: any;
 }
 
 export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props) => {
@@ -416,7 +418,15 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const cancelAppointRef = useRef(null);
   const [isCancelPopoverOpen, setIsCancelPopoverOpen] = React.useState<boolean>(false);
 
-  const { doctorDetails, appointmentId, hasDoctorJoined, jrDoctorJoined, setDisplayId } = props;
+  const {
+    doctorDetails,
+    appointmentId,
+    hasDoctorJoined,
+    jrDoctorJoined,
+    setDisplayId,
+    setRescheduleCount,
+    handleRescheduleOpen,
+  } = props;
   const currentDate = new Date().toISOString().substring(0, 10);
 
   const [showMore, setShowMore] = useState<boolean>(true);
@@ -484,6 +494,9 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     } else {
       if (appointmentDetails.displayId) {
         setDisplayId(appointmentDetails.displayId);
+      }
+      if (appointmentDetails.rescheduleCount) {
+        setRescheduleCount(appointmentDetails.rescheduleCount);
       }
       const currentTime = new Date().getTime();
       const aptArray = appointmentDetails.appointmentDateTime
@@ -664,58 +677,58 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                         </span>
                       </div>
                     ) : (
-                        differenceInMinutes > 0 && // enables only for upcoming and active  appointments
-                        (hasDoctorJoined ? (
-                          <div className={`${classes.joinInSection} ${classes.doctorjoinSection}`}>
-                            <span>Doctor has joined!</span>
-                          </div>
-                        ) : (
-                            <div className={classes.joinInSection}>
-                              <span>Doctor Joining In</span>
-                              <span className={classes.joinTime}>{differenceInWords}</span>
-                            </div>
-                          ))
-                      ))}
+                      differenceInMinutes > 0 && // enables only for upcoming and active  appointments
+                      (hasDoctorJoined ? (
+                        <div className={`${classes.joinInSection} ${classes.doctorjoinSection}`}>
+                          <span>Doctor has joined!</span>
+                        </div>
+                      ) : (
+                        <div className={classes.joinInSection}>
+                          <span>Doctor Joining In</span>
+                          <span className={classes.joinTime}>{differenceInWords}</span>
+                        </div>
+                      ))
+                    ))}
                 </div>
                 {appointmentDetails &&
-                  !hasDoctorJoined &&
-                  appointmentDetails.status !== STATUS.COMPLETED ? (
-                    <div className={classes.appointmentDetails}>
-                      <div className={classes.sectionHead}>
-                        <div className={classes.appoinmentDetails}>Appointment Details</div>
-                      </div>
-                      <div className={`${classes.doctorInfoGroup} ${classes.noBorder}`}>
-                        <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                          <div className={classes.iconType}>
-                            <img src={require('images/ic_calendar_show.svg')} alt="" />
-                          </div>
-                          <div className={classes.details}>
-                            {difference <= 15 && difference > 0
-                              ? `in ${difference} mins`
-                              : otherDateMarkup(appointmentTime)}
-                          </div>
+                !hasDoctorJoined &&
+                appointmentDetails.status !== STATUS.COMPLETED ? (
+                  <div className={classes.appointmentDetails}>
+                    <div className={classes.sectionHead}>
+                      <div className={classes.appoinmentDetails}>Appointment Details</div>
+                    </div>
+                    <div className={`${classes.doctorInfoGroup} ${classes.noBorder}`}>
+                      <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                        <div className={classes.iconType}>
+                          <img src={require('images/ic_calendar_show.svg')} alt="" />
                         </div>
-                      </div>
-                      <div className={classes.consultGroup}>
-                        <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                          <div className={classes.iconType}>
-                            <img src={require('images/ic-rupee.svg')} alt="" />
-                          </div>
-                          <div className={classes.consultationDetails}>
-                            <div className={classes.details}>
-                              <div>Amount Paid</div>
-                              <div> Rs. {onlineConsultationFees || 0}</div>
-                            </div>
-                          </div>
+                        <div className={classes.details}>
+                          {difference <= 15 && difference > 0
+                            ? `in ${difference} mins`
+                            : otherDateMarkup(appointmentTime)}
                         </div>
-                      </div>
-                      <div className={classes.summaryDownloads}>
-                        <AphButton onClick={() => downloadInvoice(patientId, appointmentId)}>
-                          Invoice
-                      </AphButton>
                       </div>
                     </div>
-                  ) : null}
+                    <div className={classes.consultGroup}>
+                      <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                        <div className={classes.iconType}>
+                          <img src={require('images/ic-rupee.svg')} alt="" />
+                        </div>
+                        <div className={classes.consultationDetails}>
+                          <div className={classes.details}>
+                            <div>Amount Paid</div>
+                            <div> Rs. {onlineConsultationFees || 0}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={classes.summaryDownloads}>
+                      <AphButton onClick={() => downloadInvoice(patientId, appointmentId)}>
+                        Invoice
+                      </AphButton>
+                    </div>
+                  </div>
+                ) : null}
               </Scrollbars>
             </div>
             {hasDoctorJoined ? (
@@ -758,7 +771,14 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                   </p>
                 </div>
                 <div className={classes.actions}>
-                  <AphButton>Reschedule Instead</AphButton>
+                  <AphButton
+                    onClick={() => {
+                      handleRescheduleOpen();
+                      setShowCancelPopup(false);
+                    }}
+                  >
+                    Reschedule Instead
+                  </AphButton>
                   <AphButton onClick={() => cancelAppointmentApi()}>Cancel Consult</AphButton>
                 </div>
               </div>
