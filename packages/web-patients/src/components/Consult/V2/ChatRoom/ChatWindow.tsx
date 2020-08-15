@@ -2008,19 +2008,25 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   messageDetails.entry.message === autoMessageStrings.videoCallMsg ||
                   messageDetails.entry.message === autoMessageStrings.acceptedCallMsg ||
                   messageDetails.entry.message === autoMessageStrings.stopConsultMsg ||
-                  messageDetails.entry.message === autoMessageStrings.startConsultMsg ||
-                  messageDetails.entry.message === 'Audio call ended' ||
-                  messageDetails.entry.message === 'Video call ended'
+                  messageDetails.entry.message === autoMessageStrings.startConsultMsg
                 ) {
                   return null;
                 }
+                const duration = messageDetails.entry.duration;
+                console.log(duration);
                 if (cardType === 'welcome') {
                   return <WelcomeCard doctorName={doctorDisplayName} />;
                 } else if (cardType === 'doctor') {
-                  return <DoctorCard message={message} />;
+                  return <DoctorCard message={message} duration={duration} />;
                 } else {
                   return (
-                    <PatientCard message={message} chatTime={messageDetails.entry.messageDate} />
+                    <>
+                      <PatientCard
+                        message={message}
+                        duration={duration}
+                        chatTime={messageDetails.entry.messageDate}
+                      />
+                    </>
                   );
                 }
               })}

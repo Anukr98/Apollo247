@@ -51,6 +51,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface PatientCardProps {
   message: string;
   chatTime: string;
+  duration: string;
 }
 
 export const PatientCard: React.FC<PatientCardProps> = (props) => {
@@ -65,8 +66,28 @@ export const PatientCard: React.FC<PatientCardProps> = (props) => {
       <div className={classes.chatBub}>
         <div className={classes.chatBubble}>
           <div className={classes.chatQuesTxt}>
-            <div dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}></div>
+            {props.duration === '00 : 00' ? (
+              <div
+                dangerouslySetInnerHTML={{
+                  __html:
+                    message.toLocaleLowerCase() === 'video call ended'
+                      ? 'Doctor missed a video call'
+                      : 'Doctor missed a voice call',
+                }}
+              ></div>
+            ) : (
+              <>
+                <div
+                  dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}
+                ></div>
+              </>
+            )}
           </div>
+          {props.duration && props.duration !== '00 : 00' && (
+            <div className={`${classes.chatTime} ${classes.defaultChatTime}`}>
+              Duration {props.duration}
+            </div>
+          )}
           <div className={`${classes.chatTime} ${classes.defaultChatTime}`}>{chatTime}</div>
         </div>
       </div>

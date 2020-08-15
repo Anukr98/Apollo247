@@ -37,6 +37,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: 'rgba(255, 255, 255, 0.6)',
       margin: '10px 0 0 0',
     },
+    defaultChatTime: {
+      color: 'rgba(101, 143, 155, 0.6)',
+      textAlign: 'right',
+      margin: '2px 0 0 0',
+    },
     avatar: {
       width: 40,
       height: 40,
@@ -44,25 +49,55 @@ const useStyles = makeStyles((theme: Theme) => {
         verticalAlign: 'middle',
       },
     },
+    durationMsg: {
+      fontSize: 10,
+      marginTop: 2,
+      display: 'block',
+    },
   };
 });
 
 interface DoctorCardProps {
   message: string;
+  duration: string;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles({});
   const message = props.message.replace(/\n/g, '<br />');
+  console.log(props.message);
   return (
     <div className={classes.doctorCardMain}>
       <div className={classes.doctorAvatar}>
         <Avatar className={classes.avatar} src={require('images/ic_mascot_male.png')} alt="" />
       </div>
-      <div
-        className={`${classes.blueBubble} ${classes.petient} `}
-        dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}
-      ></div>
+      {props.duration === '00 : 00' ? (
+        <div
+          className={`${classes.blueBubble} ${classes.petient} `}
+          dangerouslySetInnerHTML={{
+            __html:
+              message.toLocaleLowerCase() === 'video call ended'
+                ? 'You missed a video call'
+                : 'You missed a voice call',
+          }}
+        ></div>
+      ) : props.duration ? (
+        <div>
+          <img src={require('images/ic_round_call.svg')} />
+          <div
+            className={`${classes.blueBubble} ${classes.petient} `}
+            dangerouslySetInnerHTML={{
+              __html: message.replace(/\<(?!br).*?\>/g, ''),
+            }}
+          ></div>
+          <span className={classes.durationMsg}>Duration- {props.duration}</span>
+        </div>
+      ) : (
+        <div
+          className={`${classes.blueBubble} ${classes.petient} `}
+          dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}
+        ></div>
+      )}
     </div>
   );
 };
