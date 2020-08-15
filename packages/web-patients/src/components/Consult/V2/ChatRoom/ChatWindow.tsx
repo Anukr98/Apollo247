@@ -6,6 +6,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import { AphButton, AphTextField, AphSelect } from '@aph/web-ui-components';
 import Slider from 'react-slick';
+import { ChatVideo } from 'components/Consult/V2/ChatRoom/ChatVideo';
 import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
 import { DoctorCard } from 'components/Consult/V2/ChatRoom/DoctorCard';
 import { WelcomeCard } from 'components/Consult/V2/ChatRoom/WelcomeCard';
@@ -15,11 +16,19 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import PubNub, { PubnubStatus, PublishResponse, HistoryResponse } from 'pubnub';
 import _startCase from 'lodash/startCase';
 import { useMutation } from 'react-apollo-hooks';
-import { JOIN_JDQ_WITH_AUTOMATED_QUESTIONS, GET_APPOINTMENT_DATA } from 'graphql/consult';
+import {
+  JOIN_JDQ_WITH_AUTOMATED_QUESTIONS,
+  GET_APPOINTMENT_DATA,
+  UPDATE_APPOINTMENT_SESSION,
+} from 'graphql/consult';
 import {
   AddToConsultQueueWithAutomatedQuestions,
   AddToConsultQueueWithAutomatedQuestionsVariables,
 } from 'graphql/types/AddToConsultQueueWithAutomatedQuestions';
+import {
+  UpdateAppointmentSession,
+  UpdateAppointmentSessionVariables,
+} from 'graphql/types/UpdateAppointmentSession';
 import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
 import { useApolloClient } from 'react-apollo-hooks';
 
@@ -326,6 +335,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       right: 17,
       top: 0,
+      zIndex: 9999,
     },
     incomingCallWindow: {
       position: 'relative',
@@ -764,7 +774,8 @@ interface MessagesObjectProps {
   // username: string;
   // text: string;
 }
-
+let timerIntervalId: any;
+let stoppedConsulTimer: number;
 const autoMessageStrings: AutoMessageStrings = {
   videoCallMsg: '^^callme`video^^',
   audioCallMsg: '^^callme`audio^^',
@@ -828,6 +839,27 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const scrollDivRef = useRef(null);
   const apolloClient = useApolloClient();
 
+  //AV states
+  const [isCalled, setIsCalled] = useState<boolean>(false);
+  const [showVideo, setShowVideo] = useState<boolean>(false);
+  const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
+  const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
+  const [sessionId, setsessionId] = useState<string>('');
+  const [token, settoken] = useState<string>('');
+  const [callAudio, setCallAudio] = useState(autoMessageStrings.audioCallMsg);
+  const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
+  const [convertVideo, setConvertVideo] = useState<boolean>(false);
+  const [videoCall, setVideoCall] = useState(false);
+  const [audiocallmsg, setAudiocallmsg] = useState(false);
+
+  const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
+  const [startingTime, setStartingTime] = useState<number>(0);
+
+  const timerMinuts = Math.floor(startingTime / 60);
+  const timerSeconds = startingTime - timerMinuts * 60;
+  const timerLastMinuts = Math.floor(startingTime / 60);
+  const timerLastSeconds = startingTime - timerMinuts * 60;
+
   const mutationAddToConsultQ = useMutation<
     AddToConsultQueueWithAutomatedQuestions,
     AddToConsultQueueWithAutomatedQuestionsVariables
@@ -847,7 +879,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     }, 200);
   };
 
-  // console.log('pubnub messages.......', messages);
+  //console.log('pubnub messages.......', messages);
   // console.log(appointmentDetails, 'appointment details.......');
   // console.log(autoQuestionsCompleted, 'auto question status.....................');
 
@@ -896,6 +928,22 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           console.log('status...............', status);
         },
         message: (message) => {
+          console.log(message);
+          if (
+            message.message &&
+            (message.message.message === autoMessageStrings.videoCallMsg ||
+              message.message.message === autoMessageStrings.audioCallMsg)
+          ) {
+            setIsCalled(true);
+            setShowVideo(false);
+            setIsVideoCall(
+              message.message.message === autoMessageStrings.videoCallMsg ? true : false
+            );
+          }
+          if (message.message && message.message.message === autoMessageStrings.endCallMsg) {
+            setIsCalled(false);
+            setShowVideo(false);
+          }
           const messageObject = {
             timetoken: message.timetoken,
             entry: message.message,
@@ -947,6 +995,144 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       }
     );
   };
+  const startIntervalTimer = (timer: number) => {
+    setstartTimerAppoinmentt(true);
+    timerIntervalId = setInterval(() => {
+      timer = timer + 1;
+      stoppedConsulTimer = timer;
+      setStartingTime(timer);
+    }, 1000);
+  };
+
+  const stopIntervalTimer = () => {
+    setStartingTime(0);
+    timerIntervalId && clearInterval(timerIntervalId);
+  };
+
+  const autoSend = () => {
+    const composeMessage = {
+      id: currentPatient && currentPatient.id,
+      message: autoMessageStrings.endCallMsg,
+      automatedText: '',
+      duration: `${
+        timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
+      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
+      url: '',
+      transferInfo: '',
+      messageDate: new Date(),
+      cardType: 'patient',
+    };
+    publishMessage(appointmentId, composeMessage);
+  };
+  const toggelChatVideo = () => {
+    setIsNewMsg(false);
+    setShowVideoChat(!showVideoChat);
+    //srollToBottomAction();
+  };
+
+  const stopConsultCall = () => {
+    autoSend();
+    setShowVideo(false);
+    setShowVideoChat(false);
+    setIsVideoCall(false);
+    setIsCalled(false);
+  };
+
+  const convertCall = () => {
+    setConvertVideo(!convertVideo);
+    setTimeout(() => {
+      const composeMessage = {
+        id: currentPatient && currentPatient.id,
+        message: convertVideo
+          ? autoMessageStrings.covertVideoMsg
+          : autoMessageStrings.covertAudioMsg,
+        automatedText: '',
+        duration: `${
+          timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
+        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
+        url: '',
+        transferInfo: '',
+        messageDate: new Date(),
+        cardType: 'patient',
+      };
+      publishMessage(appointmentId, composeMessage);
+    }, 10);
+  };
+
+  const stopAudioVideoCall = () => {
+    const cookieStr = `action=`;
+    document.cookie = cookieStr + ';path=/;';
+    const composeMessage = {
+      id: currentPatient && currentPatient.id,
+      message: `${isVideoCall ? 'Video' : 'Audio'} call ended`,
+      automatedText: '',
+      duration: `${
+        timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
+      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
+      url: '',
+      transferInfo: '',
+      messageDate: new Date(),
+      cardType: 'patient',
+    };
+    publishMessage(appointmentId, composeMessage);
+    stopIntervalTimer();
+    autoSend();
+    setShowVideo(false);
+    setIsVideoCall(false);
+    setIsCalled(false);
+  };
+  const actionBtn = () => {
+    const composeMessage = {
+      id: currentPatient && currentPatient.id,
+      message: autoMessageStrings.acceptedCallMsg,
+      automatedText: '',
+      duration: '',
+      url: '',
+      transferInfo: '',
+      messageDate: new Date(),
+      cardType: 'patient',
+    };
+    publishMessage(appointmentId, composeMessage);
+    updateAppointmentSessionCall();
+    startIntervalTimer(0);
+    setCookiesAcceptcall();
+    //audio.pause();
+    setShowVideo(true);
+    //setPlaying(!playing);
+  };
+
+  const mutationResponse = useMutation<UpdateAppointmentSession, UpdateAppointmentSessionVariables>(
+    UPDATE_APPOINTMENT_SESSION,
+    {
+      variables: {
+        UpdateAppointmentSessionInput: {
+          appointmentId: appointmentId,
+          requestRole: 'PATIENT',
+        },
+      },
+    }
+  );
+  const updateAppointmentSessionCall = () => {
+    mutationResponse()
+      .then((data) => {
+        if (data && data.data && data.data.updateAppointmentSession) {
+          settoken(data.data.updateAppointmentSession.appointmentToken);
+        }
+        if (data && data.data && data.data.updateAppointmentSession.sessionId) {
+          setsessionId(data.data.updateAppointmentSession.sessionId);
+        }
+      })
+      .catch(() => {
+        // setIsAlertOpen(true);
+        // setAlertMessage('An error occurred while loading :(');
+      });
+  };
+  const setCookiesAcceptcall = () => {
+    const cookieStr = `action=${
+      callAudio === autoMessageStrings.videoCallMsg ? 'videocall' : 'audiocall'
+    }`;
+    document.cookie = cookieStr + ';path=/;';
+  };
 
   const sliderSettings = {
     dots: true,
@@ -965,25 +1151,25 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           slidesToShow: 3,
           slidesToScroll: 3,
           infinite: true,
-          dots: true
-        }
+          dots: true,
+        },
       },
       {
         breakpoint: 600,
         settings: {
           slidesToShow: 2,
           slidesToScroll: 2,
-          initialSlide: 2
-        }
+          initialSlide: 2,
+        },
       },
       {
         breakpoint: 480,
         settings: {
           slidesToShow: 1,
-          slidesToScroll: 1
-        }
-      }
-    ]
+          slidesToScroll: 1,
+        },
+      },
+    ],
   };
 
   const sendWelcomeMessage = () => {
@@ -1001,9 +1187,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
 
   const sliderRef = useRef(null);
-
-  console.log(messages, 'pubnub messaes........');
-
   const heightQuestionContent = () => {
     return (
       <div>
@@ -1483,7 +1666,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '<30ml' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setDrinkPerWeek('<30ml')}
             >
               &lt; 30ml
@@ -1491,7 +1674,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '30ml-60ml' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setDrinkPerWeek('30ml-60ml')}
             >
               30ml-60ml
@@ -1499,7 +1682,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '>60ml' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setDrinkPerWeek('>60ml')}
             >
               &gt; 60ml
@@ -1530,7 +1713,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '99-100' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setTemperature('99-100')}
             >
               99-100
@@ -1538,7 +1721,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '100-101' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setTemperature('100-101')}
             >
               100-101
@@ -1546,7 +1729,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '102+' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setTemperature('102+')}
             >
               102+
@@ -1554,7 +1737,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === 'No Idea' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setTemperature('No Idea')}
             >
               No Idea
@@ -1630,9 +1813,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   // add to consult q with automated questions.
                   const lifeStyle = `Smoke: ${_startCase(smokeHabit)}${
                     smokeHabit === 'yes' ? ` ${smokes}` : ''
-                    }, Drink: ${_startCase(drinkHabit)}${
+                  }, Drink: ${_startCase(drinkHabit)}${
                     drinkHabit === 'yes' ? ` ${drinkPerWeek}` : ''
-                    }`;
+                  }`;
 
                   setConsultQMutationLoading(true);
 
@@ -1685,8 +1868,57 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
   return (
     <div className={classes.consultRoom}>
-      <div className={`${classes.chatSection}`}>
+      <div
+        className={`${classes.chatSection} ${
+          !showVideo ? classes.chatWindowContainer : classes.audioVideoContainer
+        } `}
+      >
+        {showVideo && sessionId !== '' && token !== '' && (
+          <ChatVideo
+            stopAudioVideoCall={() => stopAudioVideoCall()}
+            toggelChatVideo={() => toggelChatVideo()}
+            stopConsultCall={() => stopConsultCall()}
+            sessionId={sessionId}
+            token={token}
+            showVideoChat={showVideoChat}
+            isVideoCall={isVideoCall}
+            isNewMsg={isNewMsg}
+            timerMinuts={timerMinuts}
+            timerSeconds={timerSeconds}
+            doctorDetails={props.doctorDetails}
+            convertCall={() => convertCall()}
+            videoCall={videoCall}
+            audiocallmsg={audiocallmsg}
+          />
+        )}
+        {/* <div className={`${classes.chatSection}`}> */}
         <div>
+          {!showVideo && (
+            <div>
+              {isCalled && (
+                <div className={classes.incomingCallContainer}>
+                  <div className={classes.incomingCallWindow}>
+                    <img
+                      src={require('images/doctor_profile_image.png')}
+                      // src={
+                      //   profileImage !== null
+                      //     ? profileImage
+                      //     : require('images/doctor_profile_image.png')
+                      // }
+                    />
+                    <div className={classes.callOverlay}>
+                      <div className={classes.topText}>Ringing</div>
+                      <div className={classes.callActions}>
+                        <Button className={classes.callPickIcon} onClick={() => actionBtn()}>
+                          <img src={require('images/ic_callpick.svg')} alt="" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <div className={classes.chatContainer}>
             <Scrollbars
               // className={`${classes.chatContainerSection} ${
@@ -1705,6 +1937,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   messageDetails.entry && messageDetails.entry.message
                     ? messageDetails.entry.message
                     : '';
+                if (
+                  messageDetails.entry.message === autoMessageStrings.typingMsg ||
+                  messageDetails.entry.message === autoMessageStrings.endCallMsg ||
+                  messageDetails.entry.message === autoMessageStrings.audioCallMsg ||
+                  messageDetails.entry.message === autoMessageStrings.videoCallMsg ||
+                  messageDetails.entry.message === autoMessageStrings.acceptedCallMsg ||
+                  messageDetails.entry.message === autoMessageStrings.stopConsultMsg ||
+                  messageDetails.entry.message === autoMessageStrings.startConsultMsg ||
+                  messageDetails.entry.message === 'Audio call ended' ||
+                  messageDetails.entry.message === 'Video call ended'
+                ) {
+                  return null;
+                }
                 if (cardType === 'welcome') {
                   return <WelcomeCard doctorName={doctorDisplayName} />;
                 } else if (cardType === 'doctor') {
