@@ -208,3 +208,80 @@ export const JOIN_JDQ_WITH_AUTOMATED_QUESTIONS = gql`
     }
   }
 `;
+
+export const GET_CASESHEET_DETAILS = gql`
+  query getCaseSheet($appointmentId: String) {
+    getCaseSheet(appointmentId: $appointmentId) {
+      caseSheetDetails {
+        appointment {
+          id
+          appointmentDateTime
+          appointmentState
+          appointmentType
+          doctorId
+          hospitalId
+          patientId
+          parentId
+          status
+          displayId
+          isFollowUp
+          doctorInfo {
+            id
+            fullName
+            gender
+            photoUrl
+            displayName
+          }
+        }
+        consultType
+        diagnosis {
+          name
+        }
+        diagnosticPrescription {
+          itemname
+          testInstruction
+        }
+        blobName
+        doctorId
+        followUp
+        followUpAfterInDays
+        followUpDate
+        followUpConsultType
+        doctorType
+        id
+        medicinePrescription {
+          id
+          externalId
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineUnit
+          medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
+          medicineConsumptionDurationUnit
+          routeOfAdministration
+          medicineCustomDosage
+        }
+        notes
+        otherInstructions {
+          instruction
+        }
+        patientId
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+        }
+      }
+      patientDetails {
+        id
+      }
+      juniorDoctorNotes
+    }
+  }
+`;
