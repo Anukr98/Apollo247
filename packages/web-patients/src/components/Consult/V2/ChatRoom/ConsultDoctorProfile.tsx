@@ -409,6 +409,7 @@ interface ConsultDoctorProfileProps {
   jrDoctorJoined: boolean;
   setDisplayId: (displayId: number | null) => void;
   setRescheduleCount: (rescheduleCount: number | null) => void;
+  handleRescheduleOpen: any;
 }
 
 export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props) => {
@@ -424,6 +425,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     jrDoctorJoined,
     setDisplayId,
     setRescheduleCount,
+    handleRescheduleOpen,
   } = props;
   const currentDate = new Date().toISOString().substring(0, 10);
 
@@ -769,7 +771,14 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                   </p>
                 </div>
                 <div className={classes.actions}>
-                  <AphButton>Reschedule Instead</AphButton>
+                  <AphButton
+                    onClick={() => {
+                      handleRescheduleOpen();
+                      setShowCancelPopup(false);
+                    }}
+                  >
+                    Reschedule Instead
+                  </AphButton>
                   <AphButton onClick={() => cancelAppointmentApi()}>Cancel Consult</AphButton>
                 </div>
               </div>

@@ -584,6 +584,10 @@ export const ChatRoom: React.FC = () => {
   const { allCurrentPatients } = useAllCurrentPatients();
   const onePrimaryUser = hasOnePrimaryUser();
 
+  const handleRescheduleOpen = () => {
+    nextAvailableSlot(params.doctorId, new Date());
+    setIsModalOpen(true);
+  };
   if (loading) {
     return <LinearProgress />;
   }
@@ -613,6 +617,7 @@ export const ChatRoom: React.FC = () => {
                 <ConsultDoctorProfile
                   setDisplayId={setDisplayId}
                   setRescheduleCount={setRescheduleCount}
+                  handleRescheduleOpen={handleRescheduleOpen}
                   doctorDetails={data}
                   appointmentId={appointmentId}
                   hasDoctorJoined={hasDoctorJoined}
@@ -622,7 +627,7 @@ export const ChatRoom: React.FC = () => {
             </div>
             <div className={classes.rightSection}>
               <div className={classes.sectionHeader}>
-                {disaplayId && <span className={classes.caseNumber}>Case #{rescheduleCount} </span>}
+                {disaplayId && <span className={classes.caseNumber}>Case #{disaplayId} </span>}
                 <div className={classes.headerActions}>
                   <AphButton
                     disabled={jrDoctorJoined}
@@ -631,8 +636,7 @@ export const ChatRoom: React.FC = () => {
                       disabled: classes.disabledButton,
                     }}
                     onClick={() => {
-                      nextAvailableSlot(params.doctorId, new Date());
-                      setIsModalOpen(true);
+                      handleRescheduleOpen();
                     }}
                   >
                     Reschedule
