@@ -643,7 +643,7 @@ export const Prescription: React.FC = (props) => {
                       caseSheetDetails.appointment && caseSheetDetails.appointment.id
                         ? caseSheetDetails.appointment.id
                         : '',
-                      patientDetails && patientDetails.id ? patientDetails.id : ''
+                      caseSheetDetails && caseSheetDetails.doctorId ? caseSheetDetails.doctorId : ''
                     )}
                   >
                     Consult Room{' '}
@@ -667,7 +667,10 @@ export const Prescription: React.FC = (props) => {
               <div className={classes.consultOptions}>
                 {caseSheetDetails && caseSheetDetails.blobName && (
                   <>
-                    <div
+                    {/* <Link to="#" className={classes.viewConsult}>
+                  View Consult
+                </Link> */}
+                    {/* <div
                       className={`${classes.shareIcon} `}
                       onClick={(e) => {
                         setShowShareWidget(true);
@@ -688,7 +691,7 @@ export const Prescription: React.FC = (props) => {
                           }`}
                         />
                       )}
-                    </div>
+                    </div> */}
                     <div
                       className={classes.shareIcon}
                       onClick={() =>
