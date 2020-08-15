@@ -4,7 +4,14 @@ import { makeStyles } from '@material-ui/styles';
 import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
-import { AphButton, AphTextField, AphSelect } from '@aph/web-ui-components';
+import {
+  AphButton,
+  AphTextField,
+  AphSelect,
+  AphDialog,
+  AphDialogClose,
+  AphDialogTitle,
+} from '@aph/web-ui-components';
 import Slider from 'react-slick';
 import { ChatVideo } from 'components/Consult/V2/ChatRoom/ChatVideo';
 import WarningModel from 'components/WarningModel';
@@ -32,6 +39,8 @@ import {
 } from 'graphql/types/UpdateAppointmentSession';
 import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
 import { useApolloClient } from 'react-apollo-hooks';
+import { UploadChatPrescription } from 'components/ChatRoom/V2/UploadChatPrescriptions';
+import { UploadChatEPrescriptionCard } from 'components/ChatRoom/V2/UploadChatEPrescriptionCard';
 
 type Params = { appointmentId: string; doctorId: string };
 
@@ -728,6 +737,9 @@ const useStyles = makeStyles((theme: Theme) => {
       clip: 'rect(0,0,0,0)',
       border: 0,
     },
+    ePrescriptionTitle: {
+      zIndex: 9999,
+    },
   };
 });
 
@@ -843,6 +855,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [appointmentDetails, setAppointmentDetails] = useState(null);
   const [autoQuestionsCompleted, setAutoQuestionsCompleted] = useState(false);
   const [userMessage, setUserMessage] = useState<string>('');
+  const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
+  const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [appDataLoading, setAppDataLoading] = useState<boolean>(true);
   const [consultQMutationLoading, setConsultQMutationLoading] = useState<boolean>(false);
 
@@ -2061,8 +2075,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               >
                 <img src={require('images/ic_send.svg')} alt="" />
               </AphButton>
-              <AphButton className={classes.chatSubmitBtn}>
-                <img src={require('images/ic_paperclip.svg')} alt="" />
+              <AphButton
+                className={classes.chatSubmitBtn}
+                onClick={() => {
+                  setIsUploadPreDialogOpen(true);
+                }}
+              >
+                <img
+                  src={require('images/ic_paperclip.svg')}
+                  alt="Upload Records"
+                  title="Upload Records"
+                />
                 <span>Upload Records</span>
               </AphButton>
             </div>
@@ -2088,6 +2111,31 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               </Slider>
             </div>
           ) : null}
+          <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
+            <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
+            <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
+            <UploadChatPrescription
+              closeDialog={() => {
+                setIsUploadPreDialogOpen(false);
+              }}
+              appointmentId={props.appointmentId}
+              displayName={doctorDisplayName}
+              setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+            />
+          </AphDialog>
+          <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
+            <AphDialogClose
+              onClick={() => {
+                setIsEPrescriptionOpen(false);
+              }}
+              title={'Close'}
+            />
+            <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
+            <UploadChatEPrescriptionCard
+              setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+              appointmentId={props.appointmentId}
+            />
+          </AphDialog>
         </div>
       </div>
     </div>
