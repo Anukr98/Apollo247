@@ -643,7 +643,7 @@ export const Prescription: React.FC = (props) => {
                       caseSheetDetails.appointment && caseSheetDetails.appointment.id
                         ? caseSheetDetails.appointment.id
                         : '',
-                      patientDetails && patientDetails.id ? patientDetails.id : ''
+                      caseSheetDetails && caseSheetDetails.doctorId ? caseSheetDetails.doctorId : ''
                     )}
                   >
                     Consult Room{' '}
