@@ -672,8 +672,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                     (appointmentDetails.status === STATUS.COMPLETED ? (
                       <div className={classes.joinInSection}>
                         <span>
-                          {getAvailableFreeChatDays(appointmentDetails.appointmentDateTime)} days of
-                          free chat remaining!
+                          {getAvailableFreeChatDays(appointmentDetails.appointmentDateTime)}!
                         </span>
                       </div>
                     ) : (
