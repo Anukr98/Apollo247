@@ -65,7 +65,6 @@ interface DoctorCardProps {
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles({});
   const message = props.message.replace(/\n/g, '<br />');
-  console.log(props.message);
   return (
     <div className={classes.doctorCardMain}>
       <div className={classes.doctorAvatar}>

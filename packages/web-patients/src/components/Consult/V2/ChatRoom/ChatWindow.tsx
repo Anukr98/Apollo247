@@ -2020,13 +2020,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   return <DoctorCard message={message} duration={duration} />;
                 } else {
                   return (
-                    <>
-                      <PatientCard
-                        message={message}
-                        duration={duration}
-                        chatTime={messageDetails.entry.messageDate}
-                      />
-                    </>
+                    <PatientCard
+                      message={message}
+                      duration={duration}
+                      chatTime={messageDetails.entry.messageDate}
+                    />
                   );
                 }
               })}
