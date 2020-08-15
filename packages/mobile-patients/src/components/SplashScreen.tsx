@@ -50,6 +50,7 @@ import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { string } from '../strings/string';
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
+import Pubnub from 'pubnub';
 
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
@@ -107,7 +108,23 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const [appState, setAppState] = useState(AppState.currentState);
   const client = useApolloClient();
   const voipAppointmentId = useRef<string>('');
+  const voipPatientId = useRef<string>('');
+  const voipCallType = useRef<string>('');
 
+  const config: Pubnub.PubnubConfig = {
+    subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+    publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+    ssl: true,
+    uuid: `PATIENT_${voipPatientId.current}`,
+    restore: true,
+    keepAlive: true,
+    // autoNetworkDetection: true,
+    // listenToBrowserNetworkEvents: true,
+    // presenceTimeout: 20,
+    heartbeatInterval: 20,
+  };
+  const pubnub = new Pubnub(config);
+  
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
@@ -171,16 +188,51 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const payload = notification && notification.getData();
       if (payload && payload.appointmentId) {
         voipAppointmentId.current = notification.getData().appointmentId;
+        voipPatientId.current = notification.getData().patientId;
+        voipCallType.current = notification.getData().isVideo ? 'Video' : 'Audio';
       }
     });
   };
 
   const onAnswerCallAction = () => {
-    voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current);
+    voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current, false);
   };
 
   const onDisconnetCallAction = () => {
-    voipAppointmentId.current = '';
+
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: `${voipCallType.current} call ended`,
+          duration: '00: 00',
+          id: voipPatientId.current,
+          messageDate: new Date(),
+        },
+        channel: voipAppointmentId.current,
+        storeInHistory: true,
+      },
+      (status, response) => {}
+    );
+
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: '^^callme`stop^^',
+          id: voipPatientId.current,
+          messageDate: new Date(),
+        },
+        channel: voipAppointmentId.current,
+        storeInHistory: true,
+      },
+      (status, response) => {
+        voipAppointmentId.current = '';
+        voipPatientId.current = '';
+        voipCallType.current = '';
+      }
+    );
+
   };
 
   const handleDeepLink = () => {
