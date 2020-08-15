@@ -716,6 +716,17 @@ const useStyles = makeStyles((theme: Theme) => {
     patientCardMain: {
       textAlign: 'right',
     },
+    ringtone: {
+      position: 'absolute',
+      zIndex: -1,
+      height: 1,
+      width: 1,
+      padding: 0,
+      margin: -1,
+      overflow: 'hidden',
+      clip: 'rect(0,0,0,0)',
+      border: 0,
+    },
   };
 });
 
@@ -776,6 +787,7 @@ interface MessagesObjectProps {
 }
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
+const ringtoneUrl = require('images/phone_ringing.mp3');
 const autoMessageStrings: AutoMessageStrings = {
   videoCallMsg: '^^callme`video^^',
   audioCallMsg: '^^callme`audio^^',
@@ -840,6 +852,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const apolloClient = useApolloClient();
 
   //AV states
+  const [playRingtone, setPlayRingtone] = useState<boolean>(false);
   const [isCalled, setIsCalled] = useState<boolean>(false);
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
@@ -939,10 +952,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             setIsVideoCall(
               message.message.message === autoMessageStrings.videoCallMsg ? true : false
             );
+            setPlayRingtone(true);
           }
           if (message.message && message.message.message === autoMessageStrings.endCallMsg) {
             setIsCalled(false);
             setShowVideo(false);
+            setPlayRingtone(false);
           }
           const messageObject = {
             timetoken: message.timetoken,
@@ -1093,6 +1108,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       cardType: 'patient',
     };
     publishMessage(appointmentId, composeMessage);
+    setPlayRingtone(false);
     updateAppointmentSessionCall();
     startIntervalTimer(0);
     setCookiesAcceptcall();
@@ -1868,6 +1884,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
   return (
     <div className={classes.consultRoom}>
+      {playRingtone && (
+        <audio controls autoPlay loop className={classes.ringtone}>
+          <source src={ringtoneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
       <div
         className={`${classes.chatSection} ${
           !showVideo ? classes.chatWindowContainer : classes.audioVideoContainer
