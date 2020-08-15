@@ -12,14 +12,23 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
     },
     videoContainer: {
+      backgroundColor: '#F7F8F5',
+      overflow: 'hidden',
+      position: 'absolute',
+      zIndex: 8,
+      top: -60,
+      left: 15,
+      width: 'calc(100% - 15px)',
+      height: 'calc(100vh - 175px)',
+    },
+    videoBg: {
       backgroundColor: '#000',
+      height: 'calc(100vh - 300px)',
       borderRadius: 10,
       overflow: 'hidden',
-      position: 'relative',
-      zIndex: 8,
     },
     largeVideoContainer: {
-      height: 'calc(100vh - 195px)',
+      height: 'calc(100vh - 222px)',
     },
     smallVideoContainer: {
       position: 'absolute',
@@ -43,6 +52,7 @@ const useStyles = makeStyles((theme: Theme) => {
       bottom: 0,
       width: '100%',
       padding: 20,
+      borderTop: '0.5px solid #02475B',
       '& button': {
         backgroundColor: 'transparent',
         border: 0,
@@ -79,14 +89,23 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       minWidth: 48,
       minHeight: 48,
-      top: 0,
-      right: 0,
+      top: -40,
+      right: 20,
       zIndex: 9,
       borderRadius: 10,
-      width: 264,
-      height: 198,
+      width: 224,
+      height: 158,
       overflow: 'hidden',
       backgroundColor: '#000',
+      '& div': {
+        '& div': {
+          '& div': {
+            top: '0 !important',
+            right: '0 !important',
+            width: '228px !important',
+          },
+        },
+      },
     },
     minimizeVideoImg: {
       zIndex: 9,
@@ -105,7 +124,7 @@ const useStyles = makeStyles((theme: Theme) => {
       zIndex: 9,
       borderRadius: 10,
       width: 264,
-      height: 198,
+      height: 158,
       overflow: 'hidden',
       backgroundColor: '#000',
     },
@@ -144,22 +163,30 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     hideVideoContainer: {
       right: 15,
-      width: 170,
-      height: 170,
+      width: 150,
+      height: 150,
       position: 'absolute',
+      zIndex: 9,
       // bottom: 125,
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       borderRadius: 10,
       overflow: 'hidden',
-      top: 60,
+      top: -80,
       backgroundColor: '#000',
     },
     otPublisher: {
+      top: '0 !important',
+      right: '0 !important',
+      '&.OT_publisher': {
+        top: '0 !important',
+        right: '0 !important',
+      },
+
       '& >div': {
         '& >div': {
           position: 'absolute',
-          top: 20,
-          right: 38,
+          top: 0,
+          right: 0,
           zIndex: 9,
           borderRadius: 10,
         },
@@ -390,33 +417,33 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
       <div
         className={`${classes.videoChatWindow} ${
           props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''
-        }`}
+          }`}
       >
         {!props.showVideoChat && (
           <div className={classes.timerCls}>
-            {doctorDetails && doctorDetails.getDoctorDetailsById && (
+            {/* {doctorDetails && doctorDetails.getDoctorDetailsById && (
               <div className={classes.doctorName}>
                 {`${
                   doctorDetails && doctorDetails.getDoctorDetailsById
                     ? doctorDetails.getDoctorDetailsById.displayName
                     : ''
-                }` +
+                  }` +
                   "'s" +
                   ' team has joined'}
               </div>
-            )}
+            )} */}
             {!props.showVideoChat && (
               <span>
-                {`${
+                {/* {`${
                   props.timerMinuts.toString().length < 2
                     ? '0' + props.timerMinuts
                     : props.timerMinuts
-                } : 
+                  } : 
              ${
-               props.timerSeconds.toString().length < 2
-                 ? '0' + props.timerSeconds
-                 : props.timerSeconds
-             }`}
+                  props.timerSeconds.toString().length < 2
+                    ? '0' + props.timerSeconds
+                    : props.timerSeconds
+                  }`} */}
                 <p className={classes.audioVideoState}>{checkReconnecting()}</p>
                 <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
                 <p className={classes.audioVideoState}>{isPaused()}</p>
@@ -435,12 +462,12 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
               console.log('Session Error', error);
               props.setSessionError(error);
             }}
-            // eventHandlers={{
-            //   connectionDestroyed: (event: any) => {
-            //     props.stopConsultCall();
-            //     setIscall(false);
-            //   },
-            // }}
+          // eventHandlers={{
+          //   connectionDestroyed: (event: any) => {
+          //     props.stopConsultCall();
+          //     setIscall(false);
+          //   },
+          // }}
           >
             <div
               className={`${classes.minimizeImg}
@@ -473,156 +500,158 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
             <div
               className={props.showVideoChat ? classes.hideVideoContainer : classes.videoContainer}
             >
-              {!subscribeToVideo && !props.showVideoChat && getCookieValue() === 'videocall' && (
-                <img
-                  className={classes.minimizeImg}
-                  src={
-                    patientProfile !== null
-                      ? patientProfile
-                      : require('images/DefaultPatient_Video.svg')
-                  }
-                />
-              )}
-              {(!subscribeToVideo && !props.showVideoChat) ||
-                (videoCall && (
+              <div className={classes.videoBg}>
+                {!subscribeToVideo && !props.showVideoChat && getCookieValue() === 'videocall' && (
+                  <img
+                    className={classes.minimizeImg}
+                    src={
+                      patientProfile !== null
+                        ? patientProfile
+                        : require('images/DefaultPatient_Video.svg')
+                    }
+                  />
+                )}
+                {(!subscribeToVideo && !props.showVideoChat) ||
+                  (videoCall && (
+                    <img
+                      className={classes.maximizeImg}
+                      src={
+                        doctorDetails &&
+                          doctorDetails.getDoctorDetailsById &&
+                          doctorDetails.getDoctorDetailsById.photoUrl !== null
+                          ? doctorDetails.getDoctorDetailsById.photoUrl
+                          : require('images/DefaultPatient_Video.svg')
+                      }
+                    />
+                  ))}
+                {!subscribeToVideo && !props.showVideoChat && getCookieValue() === 'audiocall' && (
                   <img
                     className={classes.maximizeImg}
                     src={
                       doctorDetails &&
-                      doctorDetails.getDoctorDetailsById &&
-                      doctorDetails.getDoctorDetailsById.photoUrl !== null
+                        doctorDetails.getDoctorDetailsById &&
+                        doctorDetails.getDoctorDetailsById.photoUrl !== null
                         ? doctorDetails.getDoctorDetailsById.photoUrl
                         : require('images/DefaultPatient_Video.svg')
                     }
                   />
-                ))}
-              {!subscribeToVideo && !props.showVideoChat && getCookieValue() === 'audiocall' && (
-                <img
-                  className={classes.maximizeImg}
-                  src={
-                    doctorDetails &&
-                    doctorDetails.getDoctorDetailsById &&
-                    doctorDetails.getDoctorDetailsById.photoUrl !== null
-                      ? doctorDetails.getDoctorDetailsById.photoUrl
-                      : require('images/DefaultPatient_Video.svg')
-                  }
-                />
-              )}
+                )}
 
-              <OTStreams>
-                <OTSubscriber
-                  eventHandlers={subscriberHandler}
-                  retry={isRetry}
-                  //className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
-                  properties={{
-                    width: '100%',
-                    height: 'calc(100vh - 195px)',
-                  }}
-                  onError={(error: any) => {
-                    console.log('Subscriber Error', error);
-                    props.setSubscriberError(error);
-                  }}
-                />
-              </OTStreams>
-              {props.showVideoChat && (
-                <div>
-                  {!subscribeToVideo && (
-                    <div>
-                      <img
-                        src={
-                          doctorDetails &&
-                          doctorDetails.getDoctorDetailsById &&
-                          doctorDetails.getDoctorDetailsById.photoUrl !== null
-                            ? doctorDetails.getDoctorDetailsById.photoUrl
-                            : require('images/DefaultPatient_Video.svg')
-                        }
-                        className={classes.minimizeVideoImg}
-                      />
+                <OTStreams>
+                  <OTSubscriber
+                    eventHandlers={subscriberHandler}
+                    retry={isRetry}
+                    //className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
+                    properties={{
+                      width: '100%',
+                      height: 'calc(100vh - 195px)',
+                    }}
+                    onError={(error: any) => {
+                      console.log('Subscriber Error', error);
+                      props.setSubscriberError(error);
+                    }}
+                  />
+                </OTStreams>
+                {props.showVideoChat && (
+                  <div>
+                    {!subscribeToVideo && (
+                      <div>
+                        <img
+                          src={
+                            doctorDetails &&
+                              doctorDetails.getDoctorDetailsById &&
+                              doctorDetails.getDoctorDetailsById.photoUrl !== null
+                              ? doctorDetails.getDoctorDetailsById.photoUrl
+                              : require('images/DefaultPatient_Video.svg')
+                          }
+                          className={classes.minimizeVideoImg}
+                        />
+                      </div>
+                    )}
+                    <div className={classes.callActions}>
+                      <Button onClick={() => props.toggelChatVideo()}>
+                        <img src={require('images/ic_expand_circle.svg')} />
+                      </Button>
+                      <Button
+                        className={classes.stopCallBtn}
+                        onClick={() => {
+                          setIscall(false);
+                          props.stopAudioVideoCall();
+                        }}
+                      >
+                        <img src={require('images/ic_endcall_small.svg')} />
+                      </Button>
                     </div>
-                  )}
-                  <div className={classes.callActions}>
-                    <Button onClick={() => props.toggelChatVideo()}>
-                      <img src={require('images/ic_expand_circle.svg')} />
-                    </Button>
-                    <Button
-                      className={classes.stopCallBtn}
-                      onClick={() => {
-                        setIscall(false);
-                        props.stopAudioVideoCall();
-                      }}
-                    >
-                      <img src={require('images/ic_endcall_small.svg')} />
-                    </Button>
                   </div>
-                </div>
-              )}
+                )}
 
-              {!props.showVideoChat && (
-                <div className={classes.videoButtonContainer}>
-                  <Grid container alignItems="flex-start" spacing={0}>
-                    <Grid item xs={4}>
-                      {isCall && (
-                        <Button onClick={() => props.toggelChatVideo()}>
-                          <img
-                            src={
-                              props.isNewMsg
-                                ? require('images/ic_message.svg')
-                                : require('images/ic_chat_circle.svg')
-                            }
-                            alt="msgicon"
-                          />
-                        </Button>
-                      )}
-                    </Grid>
-                    <Grid item xs={4} className={classes.middleActions}>
-                      {isCall && isPublishAudio && (
-                        <Button onClick={() => setIsPublishAudio(!isPublishAudio)}>
-                          <img src={require('images/ic_mute.svg')} alt="mute" />
-                        </Button>
-                      )}
-                      {isCall && !isPublishAudio && (
-                        <Button onClick={() => setIsPublishAudio(!isPublishAudio)}>
-                          <img src={require('images/ic_unmute.svg')} alt="unmute" />
-                        </Button>
-                      )}
-                      {isCall && subscribeToVideo && getCookieValue() === 'videocall' && (
-                        <Button
-                          onClick={() => {
-                            props.convertCall();
-                            setSubscribeToVideo(!subscribeToVideo);
-                          }}
-                        >
-                          <img src={require('images/ic_videoon.svg')} alt="video on" />
-                        </Button>
-                      )}
-                      {isCall && !subscribeToVideo && getCookieValue() === 'videocall' && (
-                        <Button
-                          onClick={() => {
-                            props.convertCall();
-                            setSubscribeToVideo(!subscribeToVideo);
-                          }}
-                        >
-                          <img src={require('images/ic_videooff.svg')} alt="video off" />
-                        </Button>
-                      )}
-                    </Grid>
+                {!props.showVideoChat && (
+                  <div className={classes.videoButtonContainer}>
+                    <Grid container alignItems="flex-start" spacing={0}>
+                      <Grid item xs={4}>
+                        {isCall && (
+                          <Button onClick={() => props.toggelChatVideo()}>
+                            <img
+                              src={
+                                props.isNewMsg
+                                  ? require('images/ic_message.svg')
+                                  : require('images/ic_chat_circle.svg')
+                              }
+                              alt="msgicon"
+                            />
+                          </Button>
+                        )}
+                      </Grid>
+                      <Grid item xs={4} className={classes.middleActions}>
+                        {isCall && isPublishAudio && (
+                          <Button onClick={() => setIsPublishAudio(!isPublishAudio)}>
+                            <img src={require('images/ic_mute.svg')} alt="mute" />
+                          </Button>
+                        )}
+                        {isCall && !isPublishAudio && (
+                          <Button onClick={() => setIsPublishAudio(!isPublishAudio)}>
+                            <img src={require('images/ic_unmute.svg')} alt="unmute" />
+                          </Button>
+                        )}
+                        {isCall && subscribeToVideo && getCookieValue() === 'videocall' && (
+                          <Button
+                            onClick={() => {
+                              props.convertCall();
+                              setSubscribeToVideo(!subscribeToVideo);
+                            }}
+                          >
+                            <img src={require('images/ic_videoon.svg')} alt="video on" />
+                          </Button>
+                        )}
+                        {isCall && !subscribeToVideo && getCookieValue() === 'videocall' && (
+                          <Button
+                            onClick={() => {
+                              props.convertCall();
+                              setSubscribeToVideo(!subscribeToVideo);
+                            }}
+                          >
+                            <img src={require('images/ic_videooff.svg')} alt="video off" />
+                          </Button>
+                        )}
+                      </Grid>
 
-                    <Grid item xs={4} className={classes.rightActions}>
-                      {isCall && (
-                        <Button
-                          onClick={() => {
-                            props.toggelChatVideo();
-                            props.stopAudioVideoCall();
-                            setIscall(false);
-                          }}
-                        >
-                          <img src={require('images/ic_endcall_big.svg')} alt="end call" />
-                        </Button>
-                      )}
+                      <Grid item xs={4} className={classes.rightActions}>
+                        {isCall && (
+                          <Button
+                            onClick={() => {
+                              props.toggelChatVideo();
+                              props.stopAudioVideoCall();
+                              setIscall(false);
+                            }}
+                          >
+                            <img src={require('images/ic_endcall_big.svg')} alt="end call" />
+                          </Button>
+                        )}
+                      </Grid>
                     </Grid>
-                  </Grid>
-                </div>
-              )}
+                  </div>
+                )}
+              </div>
             </div>
           </OTSession>
         )}

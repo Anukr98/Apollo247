@@ -88,6 +88,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails {
   followUp: boolean | null;
   followUpAfterInDays: string | null;
   followUpDate: any | null;
+  followUpConsultType: APPOINTMENT_TYPE | null;
   doctorType: DoctorType | null;
   id: string | null;
   medicinePrescription: (getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null;
