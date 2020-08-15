@@ -7,10 +7,11 @@ import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDe
 import { AphButton, AphTextField, AphSelect } from '@aph/web-ui-components';
 import Slider from 'react-slick';
 import { ChatVideo } from 'components/Consult/V2/ChatRoom/ChatVideo';
+import WarningModel from 'components/WarningModel';
 import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
 import { DoctorCard } from 'components/Consult/V2/ChatRoom/DoctorCard';
 import { WelcomeCard } from 'components/Consult/V2/ChatRoom/WelcomeCard';
-import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
+import { BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import PubNub, { PubnubStatus, PublishResponse, HistoryResponse } from 'pubnub';
@@ -864,6 +865,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
   const [videoCall, setVideoCall] = useState(false);
   const [audiocallmsg, setAudiocallmsg] = useState(false);
+  //OT Error state
+  const [sessionError, setSessionError] = React.useState<boolean>(null);
+  const [publisherError, setPublisherError] = React.useState<boolean>(null);
+  const [subscriberError, setSubscriberError] = React.useState<boolean>(null);
 
   const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
@@ -1884,6 +1889,26 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
   return (
     <div className={classes.consultRoom}>
+      {/* Ot Errors Start */}
+      <WarningModel
+        error={sessionError}
+        onClose={() => {
+          setSessionError(null);
+        }}
+      />
+      <WarningModel
+        error={publisherError}
+        onClose={() => {
+          setPublisherError(null);
+        }}
+      />
+      <WarningModel
+        error={subscriberError}
+        onClose={() => {
+          setSubscriberError(null);
+        }}
+      />
+      {/* Ot Errors Ends */}
       {playRingtone && (
         <audio controls autoPlay loop className={classes.ringtone}>
           <source src={ringtoneUrl} type="audio/mpeg" />
@@ -1911,6 +1936,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             convertCall={() => convertCall()}
             videoCall={videoCall}
             audiocallmsg={audiocallmsg}
+            setSessionError={setSessionError}
+            setPublisherError={setPublisherError}
+            setSubscriberError={setSubscriberError}
           />
         )}
         {/* <div className={`${classes.chatSection}`}> */}
