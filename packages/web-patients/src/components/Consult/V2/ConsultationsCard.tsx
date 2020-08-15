@@ -549,12 +549,17 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                     </div>
                     <div className={classes.consultChatContainer}>
                       <Link
-                        to={clientRoutes.doctorDetails(
-                          appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.fullName
-                            ? readableParam(appointmentDetails.doctorInfo.fullName)
-                            : '',
-                          appointmentDetails.doctorId
-                        )}
+                        to={
+                          props.pastOrCurrent !== 'past'
+                            ? clientRoutes.doctorDetails(
+                                appointmentDetails.doctorInfo &&
+                                  appointmentDetails.doctorInfo.fullName
+                                  ? readableParam(appointmentDetails.doctorInfo.fullName)
+                                  : '',
+                                appointmentDetails.doctorId
+                              )
+                            : clientRoutes.chatRoom(appointmentId, doctorId)
+                        }
                       >
                         {appointmentDetails.status === STATUS.COMPLETED &&
                           appointmentDetails.isFollowUp === 'false' && (
