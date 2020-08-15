@@ -642,7 +642,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'ChatRoom':
         props.navigation.navigate(AppRoutes.ChatRoom, {
           data: id,
-          callType: '',
+          callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
           prescription: '',
           isCall: isCall,
           isVoipCall: voipAppointmentId.current ? true : false,
