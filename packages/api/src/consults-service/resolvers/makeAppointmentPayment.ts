@@ -29,10 +29,9 @@ import { ApiConstants } from 'ApiConstants';
 import { addMilliseconds, format, addDays, differenceInSeconds } from 'date-fns';
 import {
   sendNotification,
-  NotificationType,
   sendDoctorAppointmentNotification,
-} from 'notifications-service/resolvers/notifications';
-
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { DoctorType } from 'doctors-service/entities';
 import { appointmentPaymentEmailTemplate } from 'helpers/emailTemplates/appointmentPaymentEmailTemplate';
 import { log } from 'customWinstonLogger';
@@ -291,7 +290,7 @@ const makeAppointmentPayment: Resolver<
       ES_DOCTOR_SLOT_STATUS.BOOKED,
       processingAppointment.appointmentDateTime,
       processingAppointment
-    )
+    );
 
     //Send booking confirmation SMS,EMAIL & NOTIFICATION to patient
     sendPatientAcknowledgements(
@@ -327,7 +326,7 @@ const makeAppointmentPayment: Resolver<
     }
     if (
       timeDifference / 60 <=
-      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
+        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
       submitFlag == 1
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);

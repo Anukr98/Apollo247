@@ -15,7 +15,7 @@ import { PharmaCancelResult } from 'types/medicineOrderTypes';
 import { log } from 'customWinstonLogger';
 import { Connection } from 'typeorm';
 import {} from 'coupons-service/resolvers/validatePharmaCoupon';
-import { medicineOrderCancelled } from 'notifications-service/resolvers/notifications';
+import { medicineOrderCancelled } from 'notifications-service/handlers';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';

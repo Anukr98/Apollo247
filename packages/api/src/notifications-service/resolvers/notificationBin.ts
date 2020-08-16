@@ -1,4 +1,3 @@
-import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
 import {
@@ -18,81 +17,10 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { subDays, format, differenceInDays, addMinutes } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
-import { sendNotificationSMS } from 'notifications-service/handlers';
+import { sendNotificationSMS, sendChatMessageNotification } from 'notifications-service/handlers';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { sendChatMessageNotification } from 'notifications-service/handlers';
-
-export const notificationBinTypeDefs = gql`
-  enum notificationStatus {
-    READ
-    UNREAD
-  }
-
-  enum notificationEventName {
-    APPOINTMENT
-  }
-
-  enum notificationType {
-    CHAT
-  }
-
-  input MessageInput {
-    fromId: String!
-    toId: String!
-    eventName: notificationEventName!
-    eventId: String!
-    message: String!
-    status: notificationStatus!
-    type: notificationType!
-  }
-
-  type NotificationBinData {
-    fromId: String!
-    toId: String!
-    eventName: notificationEventName!
-    eventId: String!
-    message: String!
-    status: notificationStatus!
-    type: notificationType!
-    id: String
-  }
-
-  type NotificationData {
-    notificationData: NotificationBinData
-  }
-
-  type NotificationDataSet {
-    notificationData: [GetNotificationsResponse]
-  }
-
-  type NotificationBinDataSet {
-    notificationData: [NotificationBinData]
-  }
-
-  type GetNotificationsResponse {
-    appointmentId: String
-    doctorId: String
-    lastUnreadMessageDate: DateTime
-    patientId: String
-    patientFirstName: String
-    patientLastName: String
-    patientPhotoUrl: String
-    unreadNotificationsCount: Int
-  }
-
-  extend type Query {
-    getNotifications(toId: String!, startDate: Date, endDate: Date): NotificationDataSet
-    sendUnreadMessagesNotification: String
-    archiveMessages: String
-  }
-
-  extend type Mutation {
-    insertMessage(messageInput: MessageInput): NotificationData
-    markMessageToUnread(eventId: String): NotificationBinDataSet
-  }
-`;
 
 type MessageInput = {
   fromId: string;

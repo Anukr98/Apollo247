@@ -5,10 +5,9 @@ import { MEDICINE_ORDER_STATUS, MedicineOrdersStatus } from 'profiles-service/en
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import {
-  sendMedicineOrderStatusNotification,
-} from 'notifications-service/handlers';
+import { sendMedicineOrderStatusNotification } from 'notifications-service/handlers';
 import { NotificationType } from 'notifications-service/constants';
+
 export const pharmaOrderConfirmationTypeDefs = gql`
   input OrderConfirmationInput {
     ordersResult: OrderResult

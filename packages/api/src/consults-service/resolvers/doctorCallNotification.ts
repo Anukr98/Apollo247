@@ -9,10 +9,7 @@ import {
   sendCallsDisconnectNotification,
 } from 'notifications-service/handlers';
 import { NotificationType } from 'notifications-service/constants';
-import {
-  DOCTOR_CALL_TYPE,
-  APPT_CALL_TYPE,
-} from 'notifications-service/constants'
+import { DOCTOR_CALL_TYPE, APPT_CALL_TYPE } from 'notifications-service/constants';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -21,7 +18,6 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { format } from 'date-fns';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { DEVICE_TYPE } from 'profiles-service/entities';
 
@@ -138,7 +134,13 @@ const endCallNotification: Resolver<
   );
 
   if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']) {
-    hitCallKitCurl(voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'], doctorName, callDetails.appointment.id, false, APPT_CALL_TYPE.AUDIO)
+    hitCallKitCurl(
+      voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
+      doctorName,
+      callDetails.appointment.id,
+      false,
+      APPT_CALL_TYPE.AUDIO
+    );
   }
 
   await callDetailsRepo.updateCallDetails(args.appointmentCallId);

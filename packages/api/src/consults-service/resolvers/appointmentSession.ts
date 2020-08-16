@@ -23,13 +23,13 @@ import {
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { JuniorAppointmentsSessionRepository } from 'consults-service/repositories/juniorAppointmentsSessionRepository';
+import { sendNotification, sendNotificationSMS } from 'notifications-service/handlers';
+
 import {
   NotificationType,
-  sendNotification,
-  sendNotificationSMS,
   APPT_CALL_TYPE,
   DOCTOR_CALL_TYPE,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/constants';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';

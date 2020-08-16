@@ -25,10 +25,8 @@ import {
 } from 'types/diagnosticOrderTypes';
 import { format, differenceInYears } from 'date-fns';
 import { log } from 'customWinstonLogger';
-import {
-  sendDiagnosticOrderStatusNotification,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
+import { sendDiagnosticOrderStatusNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 
 export const saveDiagnosticOrderTypeDefs = gql`
   enum DIAGNOSTIC_ORDER_STATUS {

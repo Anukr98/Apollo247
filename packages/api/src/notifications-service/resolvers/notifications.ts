@@ -1,4 +1,3 @@
-import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import * as firebaseAdmin from 'firebase-admin';
 import { AphError } from 'AphError';
@@ -10,12 +9,7 @@ import { ApiConstants } from 'ApiConstants';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorDeviceTokenRepository } from 'doctors-service/repositories/doctorDeviceTokenRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import {
-  addMilliseconds,
-  format,
-  addDays,
-  addMinutes,
-} from 'date-fns';
+import { addMilliseconds, format, addDays, addMinutes } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { APPOINTMENT_TYPE, Appointment, STATUS } from 'consults-service/entities';
@@ -24,82 +18,8 @@ import {
   sendNotification,
   sendBrowserNotitication,
   sendDoctorNotificationWhatsapp,
-  sendNotificationSMS
+  sendNotificationSMS,
 } from 'notifications-service/handlers';
-export const getNotificationsTypeDefs = gql`
-  type PushNotificationMessage {
-    messageId: String
-  }
-
-  type PushNotificationSuccessMessage {
-    results: [PushNotificationMessage]
-    canonicalRegistrationTokenCount: Int
-    failureCount: Int
-    successCount: Int
-    multicastId: Int
-  }
-
-  enum NotificationPriority {
-    high
-    normal
-  }
-
-  enum NotificationType {
-    INITIATE_RESCHEDULE
-    INITIATE_TRANSFER
-  }
-
-  enum APPT_CALL_TYPE {
-    AUDIO
-    VIDEO
-    CHAT
-  }
-
-  enum DOCTOR_CALL_TYPE {
-    SENIOR
-    JUNIOR
-  }
-
-  input PushNotificationInput {
-    notificationType: NotificationType
-    appointmentId: String
-  }
-
-  input CartPushNotificationInput {
-    notificationType: NotificationType
-    orderAutoId: Int
-  }
-
-  type SendChatMessageToDoctorResult {
-    status: Boolean
-  }
-
-  type SendDoctorApptReminderResult {
-    status: Boolean
-    apptsListCount: Int
-  }
-
-  type SendSMS {
-    status: String
-    message: String
-  }
-
-  extend type Query {
-    sendPushNotification(
-      pushNotificationInput: PushNotificationInput
-    ): PushNotificationSuccessMessage
-
-    testPushNotification(deviceToken: String): PushNotificationSuccessMessage
-    sendDailyAppointmentSummary: String
-    sendFollowUpNotification: String
-    sendChatMessageToDoctor(
-      appointmentId: String
-      chatMessage: String
-    ): SendChatMessageToDoctorResult
-    sendMessageToMobileNumber(mobileNumber: String, textToSend: String): SendSMS
-    sendDoctorReminderNotifications(nextMin: Int): SendDoctorApptReminderResult
-  }
-`;
 
 type PushNotificationMessage = {
   messageId: string;
@@ -122,15 +42,12 @@ export type PushNotificationSuccessMessage = {
   multicastId: number;
 };
 
-
-
 type PushNotificationInput = {
   notificationType: NotificationType;
   appointmentId: string;
   doctorNotification?: boolean;
   blobName?: string;
 };
-
 
 type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput };
 
@@ -148,7 +65,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, { }) => {
+> = async (parent, args, {}) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -572,7 +489,6 @@ const sendDoctorReminderNotifications: Resolver<
   }
   return { status: true, apptsListCount };
 };
-
 
 export const getNotificationsResolvers = {
   Query: {

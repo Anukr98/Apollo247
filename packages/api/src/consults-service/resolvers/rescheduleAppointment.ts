@@ -27,10 +27,10 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import {
   sendReminderNotification,
-  NotificationType,
   sendNotification,
   sendDoctorRescheduleAppointmentNotification,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { addMilliseconds, differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
@@ -257,7 +257,7 @@ const checkIfReschedule: Resolver<
     } else {
       if (
         Math.abs(differenceInDays(apptDetails.appointmentDateTime, args.rescheduleDate)) >
-        ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
+          ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
         apptDetails.isFollowPaid === false
       ) {
         isPaid = 1;
@@ -371,7 +371,7 @@ const bookRescheduleAppointment: Resolver<
   //same doctor different slot - update datetime, and state = rescheduled
 
   /**
-   * ES UPDATIONS HAPPEN THROUGH 
+   * ES UPDATIONS HAPPEN THROUGH
    * SUBSCRIBER ON APPOINTMENT IN
    * OBSERVER.TS
    */
@@ -460,7 +460,8 @@ const bookRescheduleAppointment: Resolver<
         fromState: apptDetails.appointmentState,
         toState: apptDetails.appointmentState,
         userName: bookRescheduleAppointmentInput.patientId,
-        reason: ApiConstants.APPT_STATE_CHANGED_3.toString() + apptDetails.appointmentDateTime.toString(),
+        reason:
+          ApiConstants.APPT_STATE_CHANGED_3.toString() + apptDetails.appointmentDateTime.toString(),
       };
       appointmentRepo.saveAppointmentHistory(historyAttrs);
 
@@ -516,7 +517,8 @@ const bookRescheduleAppointment: Resolver<
         fromState: apptDetails.appointmentState,
         toState: APPOINTMENT_STATE.RESCHEDULE,
         userName: apptDetails.patientId,
-        reason: ApiConstants.APPT_STATE_CHANGED_2.toString() + apptDetails.appointmentDateTime.toString(),
+        reason:
+          ApiConstants.APPT_STATE_CHANGED_2.toString() + apptDetails.appointmentDateTime.toString(),
       };
       appointmentRepo.saveAppointmentHistory(historyAttrs);
     }
@@ -558,7 +560,8 @@ const bookRescheduleAppointment: Resolver<
         fromState: apptDetails.appointmentState,
         toState: apptDetails.appointmentState,
         userName: bookRescheduleAppointmentInput.doctorId,
-        reason: ApiConstants.APPT_STATE_CHANGED_3.toString() + apptDetails.appointmentDateTime.toString(),
+        reason:
+          ApiConstants.APPT_STATE_CHANGED_3.toString() + apptDetails.appointmentDateTime.toString(),
       };
       appointmentRepo.saveAppointmentHistory(historyAttrs);
       const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
@@ -613,7 +616,8 @@ const bookRescheduleAppointment: Resolver<
         fromState: apptDetails.appointmentState,
         toState: APPOINTMENT_STATE.RESCHEDULE,
         userName: bookRescheduleAppointmentInput.patientId,
-        reason: ApiConstants.APPT_STATE_CHANGED_2.toString() + apptDetails.appointmentDateTime.toString(),
+        reason:
+          ApiConstants.APPT_STATE_CHANGED_2.toString() + apptDetails.appointmentDateTime.toString(),
       };
       appointmentRepo.saveAppointmentHistory(historyAttrs);
     }
