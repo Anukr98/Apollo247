@@ -15,6 +15,7 @@ PODS:
   - AFNetworking/UIKit (3.2.1):
     - AFNetworking/NSURLSession
   - AppsFlyerFramework (5.2.0)
+  - Base64 (1.1.2)
   - boost-for-react-native (1.63.0)
   - BugfenderSDK/ObjC (1.7.0)
   - BugsnagReactNative (2.23.4):
@@ -25,6 +26,11 @@ PODS:
   - Charts (3.0.5):
     - Charts/Core (= 3.0.5)
   - Charts/Core (3.0.5)
+  - CodePush (6.3.0):
+    - Base64 (~> 1.1)
+    - JWT (~> 3.0.0-beta.12)
+    - React
+    - SSZipArchive (~> 2.2.2)
   - Crashlytics (3.14.0):
     - Fabric (~> 1.10.2)
   - DoubleConversion (1.1.6)
@@ -157,6 +163,8 @@ PODS:
     - GoogleUtilities/Logger
   - GTMSessionFetcher/Core (1.3.1)
   - IQKeyboardManager (6.5.5)
+  - JWT (3.0.0-beta.12):
+    - Base64 (~> 1.1.2)
   - JWTDecode (2.4.1)
   - leveldb-library (1.22)
   - nanopb (0.3.9011):
@@ -164,8 +172,8 @@ PODS:
     - nanopb/encode (= 0.3.9011)
   - nanopb/decode (0.3.9011)
   - nanopb/encode (0.3.9011)
-  - OpenTok (2.16.3)
-  - opentok-react-native (0.13.0):
+  - OpenTok (2.17.0)
+  - opentok-react-native (0.14.0):
     - OpenTok
     - React
   - Protobuf (3.11.4)
@@ -338,6 +346,8 @@ PODS:
   - react-native-appsflyer (5.2.0):
     - AppsFlyerFramework (~> 5.2.0)
     - React
+  - react-native-background-timer (2.2.0):
+    - React
   - react-native-fbsdk (1.1.2):
     - React
     - react-native-fbsdk/Core (= 1.1.2)
@@ -421,7 +431,11 @@ PODS:
   - RNBugfender (1.1.0):
     - BugfenderSDK/ObjC (~> 1.6)
     - React
+  - RNCallKeep (3.1.1):
+    - React
   - RNCAsyncStorage (1.11.0):
+    - React
+  - RNDateTimePicker (2.6.1):
     - React
   - RNDeviceInfo (5.4.1):
     - React
@@ -434,7 +448,7 @@ PODS:
     - Fabric
     - Firebase/Core
     - React
-  - RNGestureHandler (1.5.3):
+  - RNGestureHandler (1.5.0):
     - React
   - RNImageCropPicker (0.26.2):
     - QBImagePickerController
@@ -448,10 +462,13 @@ PODS:
     - React
   - RNVectorIcons (6.6.0):
     - React
+  - RNVoipPushNotification (2.1.0):
+    - React-Core
   - RSKImageCropper (2.2.3)
   - SDWebImage (5.7.2):
     - SDWebImage/Core (= 5.7.2)
   - SDWebImage/Core (5.7.2)
+  - SSZipArchive (2.2.3)
   - Stylish (1.0.2)
   - TGFoursquareLocationDetail (1.0.1)
   - TwilioChatClient (2.6.6)
@@ -469,6 +486,7 @@ DEPENDENCIES:
   - AFNetworking (~> 3.2.1)
   - BugsnagReactNative (from `../node_modules/bugsnag-react-native`)
   - Charts (~> 3.0.4)
+  - CodePush (from `../node_modules/react-native-code-push`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/Libraries/FBReactNativeSpec`)
@@ -485,7 +503,7 @@ DEPENDENCIES:
   - GoogleIDFASupport (~> 3.14.0)
   - IQKeyboardManager
   - JWTDecode (~> 2.4)
-  - OpenTok (= 2.16.3)
+  - OpenTok (= 2.17.0)
   - opentok-react-native (from `../node_modules/opentok-react-native`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTSystemSetting (from `../node_modules/react-native-system-setting`)
@@ -500,6 +518,7 @@ DEPENDENCIES:
   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - react-native-appsflyer (from `../node_modules/react-native-appsflyer`)
+  - react-native-background-timer (from `../node_modules/react-native-background-timer`)
   - react-native-fbsdk (from `../node_modules/react-native-fbsdk`)
   - "react-native-geolocation (from `../node_modules/@react-native-community/geolocation`)"
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
@@ -527,13 +546,16 @@ DEPENDENCIES:
   - ReverseExtension
   - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
   - "RNBugfender (from `../node_modules/@bugfender/rn-bugfender`)"
+  - RNCallKeep (from `../node_modules/react-native-callkeep`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-community/async-storage`)"
+  - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNFirebase (from `../node_modules/react-native-firebase/ios`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
   - RNSound (from `../node_modules/react-native-sound`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
+  - RNVoipPushNotification (from `../node_modules/react-native-voip-push-notification`)
   - SDWebImage (~> 5.0)
   - Stylish
   - TGFoursquareLocationDetail
@@ -548,6 +570,7 @@ SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - AFNetworking
     - AppsFlyerFramework
+    - Base64
     - boost-for-react-native
     - BugfenderSDK
     - Charts
@@ -573,6 +596,7 @@ SPEC REPOS:
     - GoogleUtilities
     - GTMSessionFetcher
     - IQKeyboardManager
+    - JWT
     - JWTDecode
     - leveldb-library
     - nanopb
@@ -582,6 +606,7 @@ SPEC REPOS:
     - ReverseExtension
     - RSKImageCropper
     - SDWebImage
+    - SSZipArchive
     - Stylish
     - TGFoursquareLocationDetail
     - TwilioChatClient
@@ -593,6 +618,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   BugsnagReactNative:
     :path: "../node_modules/bugsnag-react-native"
+  CodePush:
+    :path: "../node_modules/react-native-code-push"
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   FBLazyVector:
@@ -627,6 +654,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/jsinspector"
   react-native-appsflyer:
     :path: "../node_modules/react-native-appsflyer"
+  react-native-background-timer:
+    :path: "../node_modules/react-native-background-timer"
   react-native-fbsdk:
     :path: "../node_modules/react-native-fbsdk"
   react-native-geolocation:
@@ -677,8 +706,12 @@ EXTERNAL SOURCES:
     :path: "../node_modules/rn-fetch-blob"
   RNBugfender:
     :path: "../node_modules/@bugfender/rn-bugfender"
+  RNCallKeep:
+    :path: "../node_modules/react-native-callkeep"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-community/async-storage"
+  RNDateTimePicker:
+    :path: "../node_modules/@react-native-community/datetimepicker"
   RNDeviceInfo:
     :path: "../node_modules/react-native-device-info"
   RNFirebase:
@@ -691,16 +724,20 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-sound"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
+  RNVoipPushNotification:
+    :path: "../node_modules/react-native-voip-push-notification"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
   AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
   AppsFlyerFramework: 9b2a932d826a278413dab7d59ffbe104a972132b
+  Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   BugfenderSDK: cc587f83e8cec9ae1567ec1d837969a6df7dcbca
   BugsnagReactNative: bfa11ce45f7ee311962ecda93f190b6ea74329fe
   Charts: 45cdc985b764c838b35ee47eb1365d15735f6d1a
+  CodePush: 18dd72e6176d261832d036f22c70f910370d6b64
   Crashlytics: 540b7e5f5da5a042647227a5e3ac51d85eed06df
   DoubleConversion: 5805e889d232975c086db112ece9ed034df7a0b2
   Fabric: 706c8b8098fff96c33c0db69cbf81f9c551d0d74
@@ -728,11 +765,12 @@ SPEC CHECKSUMS:
   GoogleUtilities: ad0f3b691c67909d03a3327cc205222ab8f42e0e
   GTMSessionFetcher: cea130bbfe5a7edc8d06d3f0d17288c32ffe9925
   IQKeyboardManager: 3a8b9e603f8b0eeaf5f096a1f2b2cfcf121992ef
+  JWT: 9b5c05abbcc1a0e69c3c91e1655b3387fc7e581d
   JWTDecode: 4bd4da0cdf0f8154fd467fa48499f34ec057fb88
   leveldb-library: 55d93ee664b4007aac644a782d11da33fba316f7
   nanopb: 18003b5e52dab79db540fe93fe9579f399bd1ccd
-  OpenTok: e17e1333108837cf0669be5de8f3155d1eb7ac12
-  opentok-react-native: d48f9ce9bde178d088d836762b78ce2678bdb0e9
+  OpenTok: 8335775f5556f2b96945b485c00f13eee03daf92
+  opentok-react-native: d0f4f1bc784e80f62ffce64bda152f54e76120c2
   Protobuf: 176220c526ad8bd09ab1fb40a978eac3fef665f7
   QBImagePickerController: d54cf93db6decf26baf6ed3472f336ef35cae022
   RCTRequired: a72523286ea3381f97b28d87529c265baad3ad7d
@@ -746,6 +784,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: ae078e9df9c65bcdcf68f9a17656657932d95528
   React-jsinspector: a8939cc6909607eb5e8a5ecfff7c6226984e174d
   react-native-appsflyer: 106d4167da049f7e9d0cab09236f4e53b7142ff3
+  react-native-background-timer: 53c0e028a95d58b1f4498ef7ce152b6c6b337595
   react-native-fbsdk: c35d42169e64aaf66f01713c1e18d0674f7f6519
   react-native-geolocation: cbd9d6bd06bac411eed2671810f454d4908484a8
   react-native-image-picker: ba7fe85b3373ff33d4827210d989dfcbbd68f7f9
@@ -772,15 +811,19 @@ SPEC CHECKSUMS:
   ReverseExtension: 21c8dd4e767f93b56fb97d873686d24160f83945
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNBugfender: 5b5792c8b7d1b4e70ce29d730859650c9efce618
+  RNCallKeep: ea9f0cec0e5d30de94eb571f37f7423c445d14f9
   RNCAsyncStorage: db711e29e5e0500d9bd21aa0c2e397efa45302b1
+  RNDateTimePicker: f13c2d8c4cd1ea6d1a1f9ea7ddcdd24e82060770
   RNDeviceInfo: 54556486cd02538dbef727f39292d096abe0cf0e
   RNFirebase: ac0de8b24c6f91ae9459575491ed6a77327619c6
-  RNGestureHandler: 02905abe54e1f6e59c081a10b4bd689721e17aa6
+  RNGestureHandler: a4ddde1ffc6e590c8127b8b7eabfdade45475c74
   RNImageCropPicker: 9d1a7eea4f8368fc479cbd2bf26459bd3c74d9aa
   RNSound: c980916b596cc15c8dcd2f6ecd3b13c4881dbe20
   RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
+  RNVoipPushNotification: be6f70cac9d1fd73e020063093f635f64d97c9c6
   RSKImageCropper: a446db0e8444a036b34f3c43db01b2373baa4b2a
   SDWebImage: d9ea4959d99c52276dfada481987018fcaea3d58
+  SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   Stylish: 28b6e4f177bfb94fae32fd8e6b31a31b38035318
   TGFoursquareLocationDetail: e2255e26b6c12d97b34fb95d88b67ab84cba1128
   TwilioChatClient: 23168c2df8e306da1cedcad1d60ba69862235358
@@ -790,6 +833,6 @@ SPEC CHECKSUMS:
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
   youtube-ios-player-helper: 21ab92db027c7ff86cb17a3843a3f6eafc8158d2
 
-PODFILE CHECKSUM: a8afad18993f815a0ff4b8a1c17c2bb830fc9503
+PODFILE CHECKSUM: ce5bdfdfec8014600927395c8492df6aeca8f8c6
 
 COCOAPODS: 1.7.2
