@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
 import React from 'react';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
-import { RescheduleMessage } from 'components/ChatRoom/V2/RescheduleMessage';
+import { RescheduleMessage } from 'components/Consult/V2/ChatRoom/RescheduleMessage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
