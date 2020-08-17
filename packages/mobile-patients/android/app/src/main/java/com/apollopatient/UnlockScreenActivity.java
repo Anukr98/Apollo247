@@ -101,6 +101,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
 
         String host_name = intent.getStringExtra("DOCTOR_NAME");
         String appointment_id=intent.getStringExtra("APPOINTMENT_ID");
+        String incoming_call_type=intent.getStringExtra("CALL_TYPE");
         Boolean isAppRuning=intent.getBooleanExtra("APP_STATE",false);
 
         TextView tvName = (TextView)findViewById(R.id.callerName);
@@ -117,11 +118,13 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 WritableMap params = Arguments.createMap();
                 params.putBoolean("done", true);
                 params.putString("appointment_id",appointment_id);
+                params.putString("call_type",incoming_call_type);
 
                 if(isAppRuning){
                     Intent intent = new Intent(UnlockScreenActivity.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     intent.putExtra("APPOINTMENT_ID",appointment_id);
+                    intent.putExtra("CALL_TYPE",incoming_call_type);
                     startActivity(intent);
                     finish();
 
@@ -140,11 +143,13 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 WritableMap params = Arguments.createMap();
                 params.putBoolean("done", true);
                 params.putString("appointment_id",appointment_id);
+                params.putString("call_type",incoming_call_type);
                 onDisconnected(appointment_id);
                 if(isAppRuning){
                     Intent intent = new Intent(UnlockScreenActivity.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     intent.putExtra("APPOINTMENT_ID",appointment_id);
+                    intent.putExtra("CALL_TYPE",incoming_call_type);
                     startActivity(intent);
                     finish();
                 }
