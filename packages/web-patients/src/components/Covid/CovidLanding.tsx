@@ -190,9 +190,13 @@ const useStyles = makeStyles((theme: Theme) => {
       cursor: 'pointer',
     },
     headerCovid: {
+      position: 'relative',
       [theme.breakpoints.down('xs')]: {
         '& header': {
-          visibility: 'hidden',
+          display: 'none',
+        },
+        '& >div': {
+          position: 'static',
         },
       },
     },

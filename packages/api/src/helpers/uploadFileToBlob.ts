@@ -2,6 +2,7 @@ import path from 'path';
 import { format } from 'date-fns';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import fs from 'fs';
+import PDFDocument from 'pdfkit';
 
 export async function uploadFileToBlobStorage(
   fileType: string,
@@ -53,4 +54,41 @@ export async function uploadFileToBlobStorage(
     });
   fs.unlinkSync(localFilePath);
   return client.getBlobUrl(readmeBlob.name);
+}
+
+export async function uploadPdfFileToBlobStorage(
+  fileName: string,
+  filePath: string
+): Promise<string> {
+  const client = new AphStorageClient(
+    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+    process.env.AZURE_STORAGE_CONTAINER_NAME
+  );
+
+  const readmeBlob = await client.uploadFile({ name: fileName, filePath }).catch((error) => {
+    throw error;
+  });
+  fs.unlinkSync(filePath);
+  return client.getBlobUrl(readmeBlob.name);
+}
+
+export function textInRow(doc: PDFKit.PDFDocument, text: string, heigth: number, st: number) {
+  doc.y = heigth;
+  doc.x = st;
+  doc.fillColor('black');
+  doc.text(text, {
+    paragraphGap: 5,
+    indent: 5,
+    align: 'justify',
+    columns: 1,
+  });
+  return doc;
+}
+
+export function writeRow(doc: PDFKit.PDFDocument, heigth: number) {
+  doc
+    .lineJoin('miter')
+    .rect(30, heigth, 500, 20)
+    .stroke();
+  return doc;
 }
