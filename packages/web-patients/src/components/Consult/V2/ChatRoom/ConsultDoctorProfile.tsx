@@ -33,6 +33,7 @@ import {
   getAvailableFreeChatDays,
 } from 'helpers/commonHelpers';
 import { useApolloClient } from 'react-apollo-hooks';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -436,6 +437,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
 
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
+  const [apiLoading, setApiLoading] = useState<boolean>(false);
+  const [refreshTimer, setRefreshTimer] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -499,12 +502,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         setRescheduleCount(appointmentDetails.rescheduleCount);
       }
       const currentTime = new Date().getTime();
-      const aptArray = appointmentDetails.appointmentDateTime
-        ? appointmentDetails.appointmentDateTime.split('T')
-        : ['', ''];
-
-      const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
-      const difference = Math.round((appointmentTime - currentTime) / 60000);
+      const appointmentTime = new Date(appointmentDetails.appointmentDateTime);
       const differenceInWords = formatDistanceStrict(appointmentTime, currentTime);
 
       const {
@@ -521,7 +519,17 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         doctorHospital,
       } = doctorDetails && doctorDetails.getDoctorDetailsById;
 
+      const shouldRefreshComponent = (differenceInMinutes: number) => {
+        const id = setInterval(() => {
+          id && clearInterval(id);
+          if (differenceInMinutes >= 0 && differenceInMinutes <= 15) {
+            setRefreshTimer(!refreshTimer);
+          }
+        }, 60000);
+      };
+
       const differenceInMinutes = getDiffInMinutes(appointmentDetails.appointmentDateTime);
+      shouldRefreshComponent(differenceInMinutes);
       const specialityName = (specialty && specialty.name) || '';
 
       if (doctorHospital) {
@@ -535,11 +543,11 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         });
       }
 
-      const otherDateMarkup = (appointmentTime: number) => {
-        if (isTomorrow(new Date(appointmentTime))) {
-          return `Tomorrow ${format(new Date(appointmentTime), 'h:mm a')}`;
+      const otherDateMarkup = (appointmentTime: Date) => {
+        if (isTomorrow(appointmentTime)) {
+          return `Tomorrow ${format(appointmentTime, 'h:mm a')}`;
         } else {
-          return format(new Date(appointmentTime), 'dd MMM yyyy, h:mm a');
+          return format(appointmentTime, 'dd MMM yyyy, h:mm a');
         }
       };
 
@@ -559,13 +567,16 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       );
 
       const cancelAppointmentApi = () => {
+        setApiLoading(true);
         cancelMutation()
           .then((data: any) => {
+            setApiLoading(false);
             setShowCancelPopup(false);
             window.location.href = clientRoutes.appointments();
           })
           .catch((e: string) => {
             setShowCancelPopup(false);
+            setApiLoading(false);
             setIsAlertOpen(true);
             setAlertMessage(`Error occured while cancelling the appointment, ${e}`);
           });
@@ -684,7 +695,11 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                       ) : (
                         <div className={classes.joinInSection}>
                           <span>Doctor Joining In</span>
-                          <span className={classes.joinTime}>{differenceInWords}</span>
+                          <span className={classes.joinTime}>
+                            {differenceInMinutes > 0 && differenceInMinutes <= 15
+                              ? `${differenceInMinutes} minutes`
+                              : differenceInWords}
+                          </span>
                         </div>
                       ))
                     ))}
@@ -702,8 +717,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                           <img src={require('images/ic_calendar_show.svg')} alt="" />
                         </div>
                         <div className={classes.details}>
-                          {difference <= 15 && difference > 0
-                            ? `in ${difference} mins`
+                          {differenceInMinutes <= 15 && differenceInMinutes > 0
+                            ? `in ${differenceInMinutes} mins`
                             : otherDateMarkup(appointmentTime)}
                         </div>
                       </div>
@@ -778,7 +793,13 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                   >
                     Reschedule Instead
                   </AphButton>
-                  <AphButton onClick={() => cancelAppointmentApi()}>Cancel Consult</AphButton>
+                  <AphButton onClick={() => cancelAppointmentApi()}>
+                    {apiLoading ? (
+                      <CircularProgress size={22} color="secondary" />
+                    ) : (
+                      <span>Cancel Consult</span>
+                    )}
+                  </AphButton>
                 </div>
               </div>
             </div>

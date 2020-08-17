@@ -32,6 +32,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { Alerts } from 'components/Alerts/Alerts';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../../../helpers/onePrimaryUser';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -219,7 +220,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     dialogContent: {
       margin: 22,
-      minHeight: 400,
+
       position: 'relative',
       '& h6': {
         fontSize: 15,
@@ -233,7 +234,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     dialogActions: {
       padding: 10,
-      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.1)',
       position: 'relative',
       fontSize: 14,
       fontWeight: 600,
@@ -502,6 +502,7 @@ export const ChatRoom: React.FC = () => {
   const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
   const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
   const [isChangeSlot, setIsChangeSlot] = useState<boolean>(false);
+  const [apiLoading, setApiLoading] = useState<boolean>(false);
   const [disaplayId, setDisplayId] = useState<number | null>(null);
   const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
   const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
@@ -530,6 +531,7 @@ export const ChatRoom: React.FC = () => {
       .then((data: any) => {
         setIsPopoverOpen(false);
         setIsModalOpen(false);
+        setApiLoading(false);
         setReschedulesRemaining(3 - rescheduleCount - 1);
         setIsRescheduleSuccess(true);
         setRescheduledSlot(bookRescheduleInput.newDateTimeslot);
@@ -537,6 +539,9 @@ export const ChatRoom: React.FC = () => {
 
       .catch((e) => {
         console.log(e);
+        setApiLoading(false);
+        setIsAlertOpen(true);
+        setAlertMessage(`Error occured while rescheduling the appointment, ${e}`);
       });
   };
 
@@ -588,6 +593,21 @@ export const ChatRoom: React.FC = () => {
     nextAvailableSlot(params.doctorId, new Date());
     setIsModalOpen(true);
   };
+
+  const handleAcceptReschedule = () => {
+    setApiLoading(true);
+    const bookRescheduleInput = {
+      appointmentId: params.appointmentId,
+      doctorId: params.doctorId,
+      newDateTimeslot: nextSlotAvailable,
+      initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+      initiatedId: patientId,
+      patientId: patientId,
+      rescheduledId: '',
+    };
+    rescheduleCount < 3 ? rescheduleAPI(bookRescheduleInput) : setIsChangeSlot(true);
+  };
+
   if (loading) {
     return <LinearProgress />;
   }
@@ -689,17 +709,27 @@ export const ChatRoom: React.FC = () => {
                   setIsPopoverOpen={setIsModalOpen}
                   doctorDetails={data.getDoctorDetailsById}
                   onBookConsult={(popover: boolean) => setIsModalOpen(popover)}
-                  isRescheduleConsult={true}
+                  isRescheduleConsult={rescheduleCount < 3}
                   appointmentId={params.appointmentId}
                   rescheduleAPI={rescheduleAPI}
                 />
               ) : (
                 <div>
                   <div className={classes.dialogContent}>
-                    <h6>
-                      We’re sorry that you have to reschedule. You can reschedule up to 3 times for
-                      free.
-                    </h6>
+                    {rescheduleCount < 3 ? (
+                      <h6>
+                        We’re sorry that you have to reschedule. You can reschedule up to 3 times
+                        for free.
+                      </h6>
+                    ) : (
+                      <h6>
+                        {'Since you have already rescheduled 3 times with Dr. '}
+                        {`${data &&
+                          data.getDoctorDetailsById &&
+                          data.getDoctorDetailsById.firstName}`}{' '}
+                        {`, We will consider this a new paid appointment.`}
+                      </h6>
+                    )}
                     <br />
                     <h6>
                       Next slot for Dr.{' '}
@@ -727,20 +757,14 @@ export const ChatRoom: React.FC = () => {
                       className={classes.primaryBtn}
                       color="primary"
                       onClick={() => {
-                        const bookRescheduleInput = {
-                          appointmentId: params.appointmentId,
-                          doctorId: params.doctorId,
-                          newDateTimeslot: nextSlotAvailable,
-                          initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-                          initiatedId: patientId,
-                          patientId: patientId,
-                          rescheduledId: '',
-                        };
-                        rescheduleAPI(bookRescheduleInput);
+                        handleAcceptReschedule();
                       }}
                     >
-                      {' '}
-                      {'ACCEPT'}
+                      {apiLoading ? (
+                        <CircularProgress size={22} color="secondary" />
+                      ) : (
+                        <span>ACCEPT</span>
+                      )}
                     </AphButton>
                   </div>
                 </div>
@@ -788,6 +812,12 @@ export const ChatRoom: React.FC = () => {
           </div>
         </div>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

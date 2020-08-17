@@ -39,8 +39,8 @@ import {
 } from 'graphql/types/UpdateAppointmentSession';
 import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
 import { useApolloClient } from 'react-apollo-hooks';
-import { UploadChatPrescription } from 'components/ChatRoom/V2/UploadChatPrescriptions';
-import { UploadChatEPrescriptionCard } from 'components/ChatRoom/V2/UploadChatEPrescriptionCard';
+import { UploadChatPrescription } from 'components/Consult/V2/ChatRoom/UploadChatPrescriptions';
+import { UploadChatEPrescriptionCard } from 'components/Consult/V2/ChatRoom/UploadChatEPrescriptionCard';
 
 type Params = { appointmentId: string; doctorId: string };
 
