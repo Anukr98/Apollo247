@@ -500,8 +500,7 @@ export const MedicineLanding: React.FC = (props: any) => {
   const latestOrdereDetails = useMutation(GET_LATEST_MEDICINE_ORDER);
 
   const apiDetails = {
-    // url: process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND,
-    url: 'https://uat.apollopharmacy.in/apollo_24x7_api.php?version=v2',
+    url: process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
