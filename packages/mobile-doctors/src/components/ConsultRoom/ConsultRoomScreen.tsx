@@ -1518,10 +1518,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               break;
             case messageCodes.patientRejected:
               AsyncStorage.setItem('callDisconnected', 'true');
-              errorPopup('Patient has rejected the call.', theme.colors.APP_YELLOW, 10);
               hideFloatingContainer();
-              callOptions.stopCalls(false);
+              callOptions.stopCalls(true);
               callOptions.setCallAccepted(false);
+              errorPopup('Patient has rejected the call.', theme.colors.APP_YELLOW, 10);
               break;
             default:
           }
@@ -1552,10 +1552,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           messageText === messageCodes.patientRejected
         ) {
           AsyncStorage.setItem('callDisconnected', 'true');
-          errorPopup('Patient has rejected the call.', theme.colors.APP_YELLOW, 10);
           hideFloatingContainer();
-          callOptions.stopCalls(false);
+          callOptions.stopCalls(true);
           callOptions.setCallAccepted(false);
+          errorPopup('Patient has rejected the call.', theme.colors.APP_YELLOW, 10);
         } else {
           callData.setMessageReceived(true);
           addMessages(message);
