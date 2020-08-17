@@ -12,7 +12,7 @@ export interface MedicineCartItem {
   url_key: string;
   description: string;
   id: number;
-  arrId?: any[];
+  arrSku?: any[];
   image: string | null;
   is_in_stock: boolean;
   is_prescription_required: '0' | '1';
@@ -72,7 +72,7 @@ export interface MedicineCartContextProps {
   addCartItem: ((item: MedicineCartItem) => void) | null;
   removeCartItem: ((itemId: MedicineCartItem['id']) => void) | null;
   removeCartItemSku: ((sku: MedicineCartItem['sku']) => void) | null;
-  removeCartItems: ((itemId: MedicineCartItem['arrId']) => void) | null;
+  removeCartItems: ((itemId: MedicineCartItem['arrSku']) => void) | null;
   updateCartItem:
     | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
     | null;
@@ -354,8 +354,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
     setIsCartUpdated(true);
   };
 
-  const removeCartItems: MedicineCartContextProps['removeCartItems'] = (arrId) => {
-    const items = cartItems.filter((item) => !arrId.includes(item.id || Number(item.sku)));
+  const removeCartItems: MedicineCartContextProps['removeCartItems'] = (arrSku) => {
+    const items = cartItems.filter((item) => !arrSku.includes(item.id || Number(item.sku)));
     setCartItems(items);
     setIsCartUpdated(true);
   };

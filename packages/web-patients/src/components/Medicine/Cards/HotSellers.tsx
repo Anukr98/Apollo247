@@ -174,7 +174,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
     url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
-  const { cartItems, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const { cartItems, addCartItem, updateCartItem, removeCartItemSku } = useShoppingCart();
 
   const itemIndexInCart = (item: MedicineProduct) => {
     const index = cartItems.findIndex((cartItem) => cartItem.id == item.id);
@@ -345,7 +345,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                               },
                             });
                             /**Gtm code End  */
-                            removeCartItem && removeCartItem(hotSeller.id);
+                            removeCartItemSku && removeCartItemSku(hotSeller.sku);
                           }}
                         >
                           Remove
