@@ -276,7 +276,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const { setOpenTokKeys, setCallBacks, callData, callOptions, errorPopup } = useAudioVideo();
   useEffect(() => {
     getSpecialties();
-    postBackendWebEngage(WebEngageEvent.DOCTOR_IN_CHAT_WINDOW);
     console.log(appointmentData, 'appointmentData');
     // callAbandonmentCall();
     console.log('PatientConsultTime', PatientConsultTime);
@@ -287,7 +286,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 1000);
-    getCaseSheetAPI();
+    getCaseSheetAPI(() => {
+      postBackendWebEngage(WebEngageEvent.DOCTOR_IN_CHAT_WINDOW);
+    });
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
     });
@@ -460,16 +461,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         variables: {
           doctorConsultEventInput: {
             consultID: channel,
-            consultMode: (appointmentData.appointmentType ||
+            consultMode: (g(appointmentData, 'appointmentType') ||
               g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentType') ||
               ConsultMode.BOTH) as ConsultMode,
             displayId:
               (
-                appointmentData.displayId ||
+                g(appointmentData, 'displayId') ||
                 g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') ||
                 ''
               ).toString() ||
-              appointmentData.displayId.toString() ||
+              (g(appointmentData, 'displayId') || '').toString() ||
               '',
             doctorFullName:
               g(doctorDetails, 'fullName') ||
@@ -793,7 +794,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     }
     setCaseSheetVersion(g(caseSheet, 'caseSheetDetails', 'version') || 1);
   };
-  const getCaseSheetAPI = () => {
+  const getCaseSheetAPI = (callBack?: () => void) => {
     setLoading && setLoading(true);
     client
       .query<GetCaseSheet>({
@@ -854,7 +855,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               .filter((i) => i !== null || i !== '') as string[]),
           ]);
         }
-
+        callBack && callBack();
         setLoading && setLoading(false);
       })
       .catch((e) => {
