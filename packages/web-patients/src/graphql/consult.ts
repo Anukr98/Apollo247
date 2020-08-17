@@ -161,6 +161,37 @@ export const GET_CONSULT_INVOICE = gql`
   }
 `;
 
+export const UPLOAD_MEDIA_DOCUMENT_PRISM = gql`
+  mutation uploadMediaDocument(
+    $MediaPrescriptionUploadRequest: MediaPrescriptionUploadRequest
+    $uhid: String!
+    $appointmentId: ID!
+  ) {
+    uploadMediaDocument(
+      prescriptionInput: $MediaPrescriptionUploadRequest
+      uhid: $uhid
+      appointmentId: $appointmentId
+    ) {
+      recordId
+      fileUrl
+    }
+  }
+`;
+
+export const ADD_CHAT_DOCUMENTS = gql`
+  mutation addChatDocument($appointmentId: ID!, $documentPath: String, $prismFileId: String) {
+    addChatDocument(
+      appointmentId: $appointmentId
+      documentPath: $documentPath
+      prismFileId: $prismFileId
+    ) {
+      id
+      documentPath
+      prismFileId
+    }
+  }
+`;
+
 export const JOIN_JDQ_WITH_AUTOMATED_QUESTIONS = gql`
   mutation AddToConsultQueueWithAutomatedQuestions($ConsultQueueInput: ConsultQueueInput) {
     addToConsultQueueWithAutomatedQuestions(consultQueueInput: $ConsultQueueInput) {
@@ -174,6 +205,83 @@ export const JOIN_JDQ_WITH_AUTOMATED_QUESTIONS = gql`
       }
       totalJuniorDoctors
       isJdAllowed
+    }
+  }
+`;
+
+export const GET_CASESHEET_DETAILS = gql`
+  query getCaseSheet($appointmentId: String) {
+    getCaseSheet(appointmentId: $appointmentId) {
+      caseSheetDetails {
+        appointment {
+          id
+          appointmentDateTime
+          appointmentState
+          appointmentType
+          doctorId
+          hospitalId
+          patientId
+          parentId
+          status
+          displayId
+          isFollowUp
+          doctorInfo {
+            id
+            fullName
+            gender
+            photoUrl
+            displayName
+          }
+        }
+        consultType
+        diagnosis {
+          name
+        }
+        diagnosticPrescription {
+          itemname
+          testInstruction
+        }
+        blobName
+        doctorId
+        followUp
+        followUpAfterInDays
+        followUpDate
+        followUpConsultType
+        doctorType
+        id
+        medicinePrescription {
+          id
+          externalId
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineUnit
+          medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
+          medicineConsumptionDurationUnit
+          routeOfAdministration
+          medicineCustomDosage
+        }
+        notes
+        otherInstructions {
+          instruction
+        }
+        patientId
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+        }
+      }
+      patientDetails {
+        id
+      }
+      juniorDoctorNotes
     }
   }
 `;

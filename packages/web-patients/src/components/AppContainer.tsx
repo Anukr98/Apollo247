@@ -228,7 +228,11 @@ const App: React.FC = () => {
             component={MedicinePrescriptions}
           />
           <Route exact path={clientRoutes.covidProtocol()} component={covidProtocolLanding} />
-          <Route exact path={clientRoutes.prescription()} component={Prescription} />
+          <Route
+            exact
+            path={clientRoutes.prescription(':appointmentId')}
+            component={Prescription}
+          />
         </Switch>
       </div>
     </Scrollbars>

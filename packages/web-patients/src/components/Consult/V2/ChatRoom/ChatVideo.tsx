@@ -12,14 +12,23 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
     },
     videoContainer: {
+      backgroundColor: '#F7F8F5',
+      overflow: 'hidden',
+      position: 'absolute',
+      zIndex: 8,
+      top: -60,
+      left: 15,
+      width: 'calc(100% - 15px)',
+      height: 'calc(100vh - 175px)',
+    },
+    videoBg: {
       backgroundColor: '#000',
+      height: 'calc(100vh - 300px)',
       borderRadius: 10,
       overflow: 'hidden',
-      position: 'relative',
-      zIndex: 8,
     },
     largeVideoContainer: {
-      height: 'calc(100vh - 195px)',
+      height: 'calc(100vh - 222px)',
     },
     smallVideoContainer: {
       position: 'absolute',
@@ -43,6 +52,7 @@ const useStyles = makeStyles((theme: Theme) => {
       bottom: 0,
       width: '100%',
       padding: 20,
+      borderTop: '0.5px solid #02475B',
       '& button': {
         backgroundColor: 'transparent',
         border: 0,
@@ -79,14 +89,23 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       minWidth: 48,
       minHeight: 48,
-      top: 0,
-      right: 0,
+      top: -40,
+      right: 20,
       zIndex: 9,
       borderRadius: 10,
-      width: 264,
-      height: 198,
+      width: 224,
+      height: 158,
       overflow: 'hidden',
       backgroundColor: '#000',
+      '& div': {
+        '& div': {
+          '& div': {
+            top: '0 !important',
+            right: '0 !important',
+            width: '228px !important',
+          },
+        },
+      },
     },
     minimizeVideoImg: {
       zIndex: 9,
@@ -105,7 +124,7 @@ const useStyles = makeStyles((theme: Theme) => {
       zIndex: 9,
       borderRadius: 10,
       width: 264,
-      height: 198,
+      height: 158,
       overflow: 'hidden',
       backgroundColor: '#000',
     },
@@ -144,22 +163,30 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     hideVideoContainer: {
       right: 15,
-      width: 170,
-      height: 170,
+      width: 150,
+      height: 150,
       position: 'absolute',
+      zIndex: 9,
       // bottom: 125,
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       borderRadius: 10,
       overflow: 'hidden',
-      top: 60,
+      top: -80,
       backgroundColor: '#000',
     },
     otPublisher: {
+      top: '0 !important',
+      right: '0 !important',
+      '&.OT_publisher': {
+        top: '0 !important',
+        right: '0 !important',
+      },
+
       '& >div': {
         '& >div': {
           position: 'absolute',
-          top: 20,
-          right: 38,
+          top: 0,
+          right: 0,
           zIndex: 9,
           borderRadius: 10,
         },
@@ -208,6 +235,12 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       marginTop: -50,
     },
+    audioVideoState: {
+      fontSize: 12,
+      fontWeight: 500,
+      margin: '10px 0 0',
+      color: '#b00020',
+    },
   };
 });
 interface ConsultProps {
@@ -225,6 +258,9 @@ interface ConsultProps {
   convertCall: () => void;
   videoCall: boolean;
   audiocallmsg: boolean;
+  setSessionError: (error: any) => void;
+  setPublisherError: (error: any) => void;
+  setSubscriberError: (error: any) => void;
 }
 function getCookieValue() {
   const name = 'action=';
@@ -240,43 +276,179 @@ function getCookieValue() {
 export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const classes = useStyles({});
   const [isCall, setIscall] = React.useState(true);
-  const [mute, setMute] = React.useState(true);
+  const [isPublishAudio, setIsPublishAudio] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
-  // const [subscribeToAudio, setSubscribeToAudio] = React.useState(props.isVideoCall ? false : true);
-  // const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
+  const [callerAudio, setCallerAudio] = React.useState<boolean>(true);
+  const [callerVideo, setCallerVideo] = React.useState<boolean>(true);
+  const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
+  const [reconnecting, setReconnecting] = React.useState<boolean>(false);
   const [docImg, setDocImg] = React.useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
-
   const patientProfile = currentPatient && currentPatient.photoUrl;
-
+  const isRetry = true;
   const { doctorDetails, videoCall } = props;
+
+  const checkReconnecting = () => {
+    if (reconnecting)
+      return 'There is a problem with network connection. Reconnecting, Please wait...';
+    else return null;
+  };
+
+  const checkDowngradeToAudio = () => {
+    if (downgradeToAudio) return 'Falling back to audio due to bad network';
+    else return null;
+  };
+
+  const isPaused = () => {
+    if (!callerAudio && !callerVideo && getCookieValue() === 'videocall')
+      return `Doctor’s audio & video are paused`;
+    else if (!callerAudio) return `Doctor’s audio is paused`;
+    else if (!callerVideo && getCookieValue() === 'videocall') return `Doctor’s video is paused`;
+    else return null;
+  };
+
+  const sessionHandler = {
+    connectionDestroyed: (event: any) => {
+      console.log('session connectionDestroyed', event);
+      props.toggelChatVideo();
+      props.stopConsultCall();
+      setIscall(false);
+      if (event.reason === 'networkDisconnected') {
+        props.setSessionError({
+          message: 'Call was disconnected due to Network problems on the doctor end.',
+        });
+      } else {
+        props.setSessionError({ message: 'Doctor left the call.' });
+      }
+    },
+    error: (error: any) => {
+      console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
+      //props.setSessionError(error);
+    },
+    connectionCreated: (event: string) => {
+      console.log('session stream connectionCreated!', event);
+    },
+    sessionConnected: (event: string) => {
+      console.log('session stream sessionConnected!', event);
+    },
+    sessionDisconnected: (event: any) => {
+      console.log('session stream sessionDisconnected!', event);
+      if (event.reason === 'clientDisconnected') {
+      }
+    },
+    sessionReconnected: (event: string) => {
+      console.log('session stream sessionReconnected!', event);
+      setReconnecting(false);
+    },
+    sessionReconnecting: (event: string) => {
+      console.log('session stream sessionReconnecting!', event);
+      setReconnecting(true);
+    },
+    signal: (event: string) => {
+      console.log('session stream signal!', event);
+    },
+    streamDestroyed: (event: any) => {
+      console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
+      if (event.reason === 'networkDisconnected') {
+      }
+    },
+    streamPropertyChanged: (event: any) => {
+      console.log('session streamPropertyChanged destroyed!', event);
+      const subscribers = event.target.getSubscribersForStream(event.stream);
+      if (subscribers.length) {
+        setCallerAudio(event.stream.hasAudio);
+        setCallerVideo(event.stream.hasVideo);
+      }
+    },
+  };
+  const publisherHandler = {
+    streamCreated: (event: string) => {
+      console.log('Publisher stream created!', event);
+    },
+    streamDestroyed: (event: string) => {
+      console.log('Publisher stream destroyed!', event);
+    },
+    error: (error: any) => {
+      console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
+      props.setPublisherError(error);
+    },
+  };
+  const subscriberHandler = {
+    error: (error: any) => {
+      console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
+      props.setSubscriberError(error);
+    },
+    connected: (event: string) => {
+      console.log('Subscribe stream connected!', event);
+    },
+    disconnected: (event: string) => {
+      console.log('Subscribe stream disconnected!', event);
+    },
+    destroyed: (event: any) => {
+      console.log('Subscribe destroyed!', event);
+      if (event.reason === 'networkDisconnected') {
+      }
+    },
+    videoDisableWarning: (event: any) => {
+      console.log(`videoDisableWarning: ${JSON.stringify(event)}`);
+    },
+    videoDisableWarningLifted: (event: any) => {
+      console.log(`videoDisableWarningLifted: ${JSON.stringify(event)}`);
+    },
+    videoDisabled: (event: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(event)}`);
+      if (event.reason === 'quality') {
+        setDowngradeToAudio(true);
+      }
+    },
+    videoEnabled: (event: any) => {
+      console.log(`videoDisabled: ${JSON.stringify(event)}`);
+      if (event.reason === 'quality') {
+        setDowngradeToAudio(false);
+      }
+    },
+    streamDestroyed: (event: any) => {
+      console.log('Subscribe stream destroyed!');
+    },
+  };
 
   return (
     <div className={classes.root}>
       <div
         className={`${classes.videoChatWindow} ${
           props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''
-        }`}
+          }`}
       >
         {!props.showVideoChat && (
           <div className={classes.timerCls}>
-            {doctorDetails && doctorDetails.getDoctorDetailsById && (
+            {/* {doctorDetails && doctorDetails.getDoctorDetailsById && (
               <div className={classes.doctorName}>
                 {`${
                   doctorDetails && doctorDetails.getDoctorDetailsById
                     ? doctorDetails.getDoctorDetailsById.displayName
                     : ''
-                }` +
+                  }` +
                   "'s" +
                   ' team has joined'}
               </div>
-            )}
-            {/* {!props.showVideoChat && (
-              <span>
-                {`Time start ${props.timerMinuts.toString().length < 2 ? '0' + props.timerMinuts : props.timerMinuts} : 
-             ${props.timerSeconds.toString().length < 2 ? '0' + props.timerSeconds : props.timerSeconds}`}
-              </span>
             )} */}
+            {!props.showVideoChat && (
+              <span>
+                {/* {`${
+                  props.timerMinuts.toString().length < 2
+                    ? '0' + props.timerMinuts
+                    : props.timerMinuts
+                  } : 
+             ${
+                  props.timerSeconds.toString().length < 2
+                    ? '0' + props.timerSeconds
+                    : props.timerSeconds
+                  }`} */}
+                <p className={classes.audioVideoState}>{checkReconnecting()}</p>
+                <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
+                <p className={classes.audioVideoState}>{isPaused()}</p>
+              </span>
+            )}
           </div>
         )}
 
@@ -285,12 +457,17 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
             apiKey={process.env.OPENTOK_KEY}
             sessionId={props.sessionId}
             token={props.token}
-            eventHandlers={{
-              connectionDestroyed: (event: any) => {
-                props.stopConsultCall();
-                setIscall(false);
-              },
+            eventHandlers={sessionHandler}
+            onError={(error: any) => {
+              console.log('Session Error', error);
+              props.setSessionError(error);
             }}
+          // eventHandlers={{
+          //   connectionDestroyed: (event: any) => {
+          //     props.stopConsultCall();
+          //     setIscall(false);
+          //   },
+          // }}
           >
             <div
               className={`${classes.minimizeImg}
@@ -298,10 +475,24 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
             >
               <div>
                 <OTPublisher
-                  resolution={'352x288'}
                   properties={{
-                    publishAudio: mute,
+                    publishAudio: isPublishAudio,
                     publishVideo: subscribeToVideo,
+                  }}
+                  eventHandlers={publisherHandler}
+                  onError={(error: any) => {
+                    console.log('Publisher Error', error, error.name);
+                    if (error.name === 'OT_USER_MEDIA_ACCESS_DENIED') {
+                      props.setPublisherError({
+                        message: 'Audio/Video permissions are not provided',
+                      });
+                    } else if (error.name === 'OT_HARDWARE_UNAVAILABLE') {
+                      props.setPublisherError({ message: 'Audio/Video device is not connected.' });
+                    } else if (error.name === 'OT_CHROME_MICROPHONE_ACQUISITION_ERROR') {
+                      props.setPublisherError({ message: 'Audio device is not connected.' });
+                    } else {
+                      props.setPublisherError(error);
+                    }
                   }}
                 />
               </div>
@@ -309,149 +500,158 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
             <div
               className={props.showVideoChat ? classes.hideVideoContainer : classes.videoContainer}
             >
-              {!subscribeToVideo && !props.showVideoChat && getCookieValue() === 'videocall' && (
-                <img
-                  className={classes.minimizeImg}
-                  src={
-                    patientProfile !== null
-                      ? patientProfile
-                      : require('images/DefaultPatient_Video.svg')
-                  }
-                />
-              )}
-              {(!subscribeToVideo && !props.showVideoChat) ||
-                (videoCall && (
+              <div className={classes.videoBg}>
+                {!subscribeToVideo && !props.showVideoChat && getCookieValue() === 'videocall' && (
+                  <img
+                    className={classes.minimizeImg}
+                    src={
+                      patientProfile !== null
+                        ? patientProfile
+                        : require('images/DefaultPatient_Video.svg')
+                    }
+                  />
+                )}
+                {(!subscribeToVideo && !props.showVideoChat) ||
+                  (videoCall && (
+                    <img
+                      className={classes.maximizeImg}
+                      src={
+                        doctorDetails &&
+                          doctorDetails.getDoctorDetailsById &&
+                          doctorDetails.getDoctorDetailsById.photoUrl !== null
+                          ? doctorDetails.getDoctorDetailsById.photoUrl
+                          : require('images/DefaultPatient_Video.svg')
+                      }
+                    />
+                  ))}
+                {!subscribeToVideo && !props.showVideoChat && getCookieValue() === 'audiocall' && (
                   <img
                     className={classes.maximizeImg}
                     src={
                       doctorDetails &&
-                      doctorDetails.getDoctorDetailsById &&
-                      doctorDetails.getDoctorDetailsById.photoUrl !== null
+                        doctorDetails.getDoctorDetailsById &&
+                        doctorDetails.getDoctorDetailsById.photoUrl !== null
                         ? doctorDetails.getDoctorDetailsById.photoUrl
                         : require('images/DefaultPatient_Video.svg')
                     }
                   />
-                ))}
-              {!subscribeToVideo && !props.showVideoChat && getCookieValue() === 'audiocall' && (
-                <img
-                  className={classes.maximizeImg}
-                  src={
-                    doctorDetails &&
-                    doctorDetails.getDoctorDetailsById &&
-                    doctorDetails.getDoctorDetailsById.photoUrl !== null
-                      ? doctorDetails.getDoctorDetailsById.photoUrl
-                      : require('images/DefaultPatient_Video.svg')
-                  }
-                />
-              )}
+                )}
 
-              <OTStreams>
-                <OTSubscriber
-                  properties={{
-                    width: '100%',
-                    height: 'calc(100vh - 195px)',
-                  }}
-                />
-              </OTStreams>
-              {props.showVideoChat && (
-                <div>
-                  {!subscribeToVideo && (
-                    <div>
-                      <img
-                        src={
-                          doctorDetails &&
-                          doctorDetails.getDoctorDetailsById &&
-                          doctorDetails.getDoctorDetailsById.photoUrl !== null
-                            ? doctorDetails.getDoctorDetailsById.photoUrl
-                            : require('images/DefaultPatient_Video.svg')
-                        }
-                        className={classes.minimizeVideoImg}
-                      />
+                <OTStreams>
+                  <OTSubscriber
+                    eventHandlers={subscriberHandler}
+                    retry={isRetry}
+                    //className={!props.showVideoChat ? classes.subscriber : classes.minSubscriber}
+                    properties={{
+                      width: '100%',
+                      height: 'calc(100vh - 195px)',
+                    }}
+                    onError={(error: any) => {
+                      console.log('Subscriber Error', error);
+                      props.setSubscriberError(error);
+                    }}
+                  />
+                </OTStreams>
+                {props.showVideoChat && (
+                  <div>
+                    {!subscribeToVideo && (
+                      <div>
+                        <img
+                          src={
+                            doctorDetails &&
+                              doctorDetails.getDoctorDetailsById &&
+                              doctorDetails.getDoctorDetailsById.photoUrl !== null
+                              ? doctorDetails.getDoctorDetailsById.photoUrl
+                              : require('images/DefaultPatient_Video.svg')
+                          }
+                          className={classes.minimizeVideoImg}
+                        />
+                      </div>
+                    )}
+                    <div className={classes.callActions}>
+                      <Button onClick={() => props.toggelChatVideo()}>
+                        <img src={require('images/ic_expand_circle.svg')} />
+                      </Button>
+                      <Button
+                        className={classes.stopCallBtn}
+                        onClick={() => {
+                          setIscall(false);
+                          props.stopAudioVideoCall();
+                        }}
+                      >
+                        <img src={require('images/ic_endcall_small.svg')} />
+                      </Button>
                     </div>
-                  )}
-                  <div className={classes.callActions}>
-                    <Button onClick={() => props.toggelChatVideo()}>
-                      <img src={require('images/ic_expand_circle.svg')} />
-                    </Button>
-                    <Button
-                      className={classes.stopCallBtn}
-                      onClick={() => {
-                        setIscall(false);
-                        props.stopAudioVideoCall();
-                      }}
-                    >
-                      <img src={require('images/ic_endcall_small.svg')} />
-                    </Button>
                   </div>
-                </div>
-              )}
+                )}
 
-              {!props.showVideoChat && (
-                <div className={classes.videoButtonContainer}>
-                  <Grid container alignItems="flex-start" spacing={0}>
-                    <Grid item xs={4}>
-                      {isCall && (
-                        <Button onClick={() => props.toggelChatVideo()}>
-                          <img
-                            src={
-                              props.isNewMsg
-                                ? require('images/ic_message.svg')
-                                : require('images/ic_chat_circle.svg')
-                            }
-                            alt="msgicon"
-                          />
-                        </Button>
-                      )}
-                    </Grid>
-                    <Grid item xs={4} className={classes.middleActions}>
-                      {isCall && mute && (
-                        <Button onClick={() => setMute(!mute)}>
-                          <img src={require('images/ic_mute.svg')} alt="mute" />
-                        </Button>
-                      )}
-                      {isCall && !mute && (
-                        <Button onClick={() => setMute(!mute)}>
-                          <img src={require('images/ic_unmute.svg')} alt="unmute" />
-                        </Button>
-                      )}
-                      {isCall && subscribeToVideo && getCookieValue() === 'videocall' && (
-                        <Button
-                          onClick={() => {
-                            props.convertCall();
-                            setSubscribeToVideo(!subscribeToVideo);
-                          }}
-                        >
-                          <img src={require('images/ic_videoon.svg')} alt="video on" />
-                        </Button>
-                      )}
-                      {isCall && !subscribeToVideo && getCookieValue() === 'videocall' && (
-                        <Button
-                          onClick={() => {
-                            props.convertCall();
-                            setSubscribeToVideo(!subscribeToVideo);
-                          }}
-                        >
-                          <img src={require('images/ic_videooff.svg')} alt="video off" />
-                        </Button>
-                      )}
-                    </Grid>
+                {!props.showVideoChat && (
+                  <div className={classes.videoButtonContainer}>
+                    <Grid container alignItems="flex-start" spacing={0}>
+                      <Grid item xs={4}>
+                        {isCall && (
+                          <Button onClick={() => props.toggelChatVideo()}>
+                            <img
+                              src={
+                                props.isNewMsg
+                                  ? require('images/ic_message.svg')
+                                  : require('images/ic_chat_circle.svg')
+                              }
+                              alt="msgicon"
+                            />
+                          </Button>
+                        )}
+                      </Grid>
+                      <Grid item xs={4} className={classes.middleActions}>
+                        {isCall && isPublishAudio && (
+                          <Button onClick={() => setIsPublishAudio(!isPublishAudio)}>
+                            <img src={require('images/ic_mute.svg')} alt="mute" />
+                          </Button>
+                        )}
+                        {isCall && !isPublishAudio && (
+                          <Button onClick={() => setIsPublishAudio(!isPublishAudio)}>
+                            <img src={require('images/ic_unmute.svg')} alt="unmute" />
+                          </Button>
+                        )}
+                        {isCall && subscribeToVideo && getCookieValue() === 'videocall' && (
+                          <Button
+                            onClick={() => {
+                              props.convertCall();
+                              setSubscribeToVideo(!subscribeToVideo);
+                            }}
+                          >
+                            <img src={require('images/ic_videoon.svg')} alt="video on" />
+                          </Button>
+                        )}
+                        {isCall && !subscribeToVideo && getCookieValue() === 'videocall' && (
+                          <Button
+                            onClick={() => {
+                              props.convertCall();
+                              setSubscribeToVideo(!subscribeToVideo);
+                            }}
+                          >
+                            <img src={require('images/ic_videooff.svg')} alt="video off" />
+                          </Button>
+                        )}
+                      </Grid>
 
-                    <Grid item xs={4} className={classes.rightActions}>
-                      {isCall && (
-                        <Button
-                          onClick={() => {
-                            props.toggelChatVideo();
-                            props.stopAudioVideoCall();
-                            setIscall(false);
-                          }}
-                        >
-                          <img src={require('images/ic_endcall_big.svg')} alt="end call" />
-                        </Button>
-                      )}
+                      <Grid item xs={4} className={classes.rightActions}>
+                        {isCall && (
+                          <Button
+                            onClick={() => {
+                              props.toggelChatVideo();
+                              props.stopAudioVideoCall();
+                              setIscall(false);
+                            }}
+                          >
+                            <img src={require('images/ic_endcall_big.svg')} alt="end call" />
+                          </Button>
+                        )}
+                      </Grid>
                     </Grid>
-                  </Grid>
-                </div>
-              )}
+                  </div>
+                )}
+              </div>
             </div>
           </OTSession>
         )}

@@ -398,9 +398,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       status,
     } = appointmentDetails;
     if (isFollowUp === 'false' && status === STATUS.COMPLETED && props.pastOrCurrent !== 'past') {
-      return `${getAvailableFreeChatDays(
-        appointmentDetails.appointmentDateTime
-      )} days free chat remaining`;
+      return getAvailableFreeChatDays(appointmentDetails.appointmentDateTime);
     } else if (!isConsultStarted) {
       return 'Fill vitals to get started with the consult journey';
     } else if (!isJdQuestionsComplete) {
@@ -549,12 +547,17 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                     </div>
                     <div className={classes.consultChatContainer}>
                       <Link
-                        to={clientRoutes.doctorDetails(
-                          appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.fullName
-                            ? readableParam(appointmentDetails.doctorInfo.fullName)
-                            : '',
-                          appointmentDetails.doctorId
-                        )}
+                        to={
+                          props.pastOrCurrent !== 'past'
+                            ? clientRoutes.doctorDetails(
+                                appointmentDetails.doctorInfo &&
+                                  appointmentDetails.doctorInfo.fullName
+                                  ? readableParam(appointmentDetails.doctorInfo.fullName)
+                                  : '',
+                                appointmentDetails.doctorId
+                              )
+                            : clientRoutes.chatRoom(appointmentId, doctorId)
+                        }
                       >
                         {appointmentDetails.status === STATUS.COMPLETED &&
                           appointmentDetails.isFollowUp === 'false' && (
@@ -565,8 +568,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                               {props.pastOrCurrent !== 'past' &&
                                 appointmentDetails &&
                                 appointmentDetails.doctorInfo &&
-                                appointmentDetails.doctorInfo.fullName && (
-                                  <h6>With {appointmentDetails.doctorInfo.fullName}</h6>
+                                appointmentDetails.doctorInfo.displayName && (
+                                  <h6>With Dr. {appointmentDetails.doctorInfo.displayName}</h6>
                                 )}
                             </div>
                           )}
