@@ -33,6 +33,7 @@ import {
   getAvailableFreeChatDays,
 } from 'helpers/commonHelpers';
 import { useApolloClient } from 'react-apollo-hooks';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -436,6 +437,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
 
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
+  const [apiLoading, setApiLoading] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -554,13 +556,16 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       );
 
       const cancelAppointmentApi = () => {
+        setApiLoading(true);
         cancelMutation()
           .then((data: any) => {
+            setApiLoading(false);
             setShowCancelPopup(false);
             window.location.href = clientRoutes.appointments();
           })
           .catch((e: string) => {
             setShowCancelPopup(false);
+            setApiLoading(false);
             setIsAlertOpen(true);
             setAlertMessage(`Error occured while cancelling the appointment, ${e}`);
           });
@@ -773,7 +778,13 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                   >
                     Reschedule Instead
                   </AphButton>
-                  <AphButton onClick={() => cancelAppointmentApi()}>Cancel Consult</AphButton>
+                  <AphButton onClick={() => cancelAppointmentApi()}>
+                    {apiLoading ? (
+                      <CircularProgress size={22} color="secondary" />
+                    ) : (
+                      <span>Cancel Consult</span>
+                    )}
+                  </AphButton>
                 </div>
               </div>
             </div>
