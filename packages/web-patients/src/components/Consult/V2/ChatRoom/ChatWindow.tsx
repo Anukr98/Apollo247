@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef, useContext } from 'react';
-import { Theme, Grid, Button, Avatar, Modal, Popover, MenuItem } from '@material-ui/core';
+import React, { useEffect, useState, useRef } from 'react';
+import { Theme, Grid, Button, MenuItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -41,13 +41,14 @@ import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/G
 import { useApolloClient } from 'react-apollo-hooks';
 import { UploadChatPrescription } from 'components/Consult/V2/ChatRoom/UploadChatPrescriptions';
 import { UploadChatEPrescriptionCard } from 'components/Consult/V2/ChatRoom/UploadChatEPrescriptionCard';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
-type Params = { appointmentId: string; doctorId: string };
+// type Params = { appointmentId: string; doctorId: string };
 
-const client = new AphStorageClient(
-  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_PATIENTS,
-  process.env.AZURE_STORAGE_CONTAINER_NAME
-);
+// const client = new AphStorageClient(
+//   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_PATIENTS,
+//   process.env.AZURE_STORAGE_CONTAINER_NAME
+// );
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -866,6 +867,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const scrollDivRef = useRef(null);
   const apolloClient = useApolloClient();
 
+  console.log(currentPatient);
+
   //AV states
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
   const [isCalled, setIsCalled] = useState<boolean>(false);
@@ -1029,6 +1032,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       }
     );
   };
+
   const startIntervalTimer = (timer: number) => {
     setstartTimerAppoinmentt(true);
     timerIntervalId = setInterval(() => {
@@ -1115,6 +1119,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     setIsVideoCall(false);
     setIsCalled(false);
   };
+
   const actionBtn = () => {
     const composeMessage = {
       id: currentPatient && currentPatient.id,
@@ -1162,6 +1167,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         // setAlertMessage('An error occurred while loading :(');
       });
   };
+
   const setCookiesAcceptcall = () => {
     const cookieStr = `action=${
       callAudio === autoMessageStrings.videoCallMsg ? 'videocall' : 'audiocall'
@@ -1222,6 +1228,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
 
   const sliderRef = useRef(null);
+
   const heightQuestionContent = () => {
     return (
       <div>
@@ -1405,7 +1412,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     cardType: 'patient',
                   };
                   publishMessage(appointmentId, composeMessage);
-                  showNextSlide();
+                  if (drugAllergy === 'yes') showNextSlide();
+                  else slickGotoSlide(4);
                 }
               }}
             >
@@ -1454,6 +1462,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     cardType: 'patient',
                   };
                   publishMessage(appointmentId, composeMessage);
+                  if (dietAllergy === 'yes') showNextSlide();
+                  else slickGotoSlide(6);
                 }
               }}
             >
@@ -1502,6 +1512,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     cardType: 'patient',
                   };
                   publishMessage(appointmentId, composeMessage);
+                  if (smokeHabit === 'yes') showNextSlide();
+                  else slickGotoSlide(8);
                 }
               }}
             >
@@ -1550,6 +1562,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     cardType: 'patient',
                   };
                   publishMessage(appointmentId, composeMessage);
+                  if (drinkHabit === 'yes') showNextSlide();
+                  else slickGotoSlide(10);
                 }
               }}
             >
@@ -1807,6 +1821,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     );
   };
 
+  const slickGotoSlide = (slideNo: number) => {
+    sliderRef.current.slickGoTo(slideNo);
+  };
+
   const bpInput = () => {
     return (
       <div>
@@ -1851,9 +1869,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   }, Drink: ${_startCase(drinkHabit)}${
                     drinkHabit === 'yes' ? ` ${drinkPerWeek}` : ''
                   }`;
-
                   setConsultQMutationLoading(true);
-
                   // console.log(lifeStyle, 'life style is...........');
                   mutationAddToConsultQ({
                     variables: {
@@ -1872,10 +1888,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   })
                     .then((response) => {
                       setAutoQuestionsCompleted(true);
-                      console.log(response, 'response after mutation is.....');
+                      // console.log(response, 'response after mutation is.....');
                     })
                     .catch((error) => {
-                      console.log(error, 'error after mutation.......');
+                      // console.log(error, 'error after mutation.......');
                     });
                 } else {
                   setBpError(true);
@@ -2031,6 +2047,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               <span id="scrollDiv" ref={scrollDivRef}></span>
             </Scrollbars>
           </div>
+
           {autoQuestionsCompleted ? (
             <div className={`${classes.chatWindowFooter} ${classes.chatWindowFooterInput}`}>
               <AphTextField
@@ -2094,27 +2111,32 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               </AphButton>
             </div>
           ) : !appDataLoading ? (
-            <div className={classes.quesContainer}>
-              <Slider
-                {...sliderSettings}
-                className={classes.slider}
-                ref={(slider) => (sliderRef.current = slider)}
-              >
-                {heightQuestionContent()}
-                {weightQuestionContent()}
-                {drugAlergyQuestionChoice()}
-                {drugAllergy === 'yes' && drugsInput()}
-                {foodAlergyQuestionChoice()}
-                {dietAllergy === 'yes' && foodAlergyInput()}
-                {smokeQuestionChoice()}
-                {smokeHabit === 'yes' && smokeInput()}
-                {drinkQuestionChoice()}
-                {drinkHabit === 'yes' && drinkInput()}
-                {temperatureInput()}
-                {bpInput()}
-              </Slider>
-            </div>
+            consultQMutationLoading ? (
+              <CircularProgress size={22} color="primary" />
+            ) : (
+              <div className={classes.quesContainer}>
+                <Slider
+                  {...sliderSettings}
+                  className={classes.slider}
+                  ref={(slider) => (sliderRef.current = slider)}
+                >
+                  {heightQuestionContent()}
+                  {weightQuestionContent()}
+                  {drugAlergyQuestionChoice()}
+                  {drugsInput() /*slide 4 */}
+                  {foodAlergyQuestionChoice()}
+                  {foodAlergyInput() /*slide 6 */}
+                  {smokeQuestionChoice()}
+                  {smokeInput() /*slide 8 */}
+                  {drinkQuestionChoice()}
+                  {drinkInput() /*slide 10 */}
+                  {temperatureInput()}
+                  {bpInput()}
+                </Slider>
+              </div>
+            )
           ) : null}
+
           <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
             <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
             <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
