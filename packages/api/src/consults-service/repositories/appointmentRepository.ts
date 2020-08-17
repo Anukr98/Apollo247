@@ -69,13 +69,19 @@ export class AppointmentRepository extends Repository<Appointment> {
         cacheAppointment.cancelledDate = new Date(cacheAppointment.cancelledDate);
       }
       if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.createdDate) {
-        cacheAppointment.paymentInfo.createdDate = new Date(cacheAppointment.paymentInfo.createdDate);
+        cacheAppointment.paymentInfo.createdDate = new Date(
+          cacheAppointment.paymentInfo.createdDate
+        );
       }
       if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.paymentDateTime) {
-        cacheAppointment.paymentInfo.paymentDateTime = new Date(cacheAppointment.paymentInfo.paymentDateTime);
+        cacheAppointment.paymentInfo.paymentDateTime = new Date(
+          cacheAppointment.paymentInfo.paymentDateTime
+        );
       }
       if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.updatedDate) {
-        cacheAppointment.paymentInfo.updatedDate = new Date(cacheAppointment.paymentInfo.updatedDate);
+        cacheAppointment.paymentInfo.updatedDate = new Date(
+          cacheAppointment.paymentInfo.updatedDate
+        );
       }
       return this.create(cacheAppointment);
     }
@@ -576,28 +582,32 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getTodaysAppointments(startDate: Date) {
     //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + '18:30');
-    const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
-    const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+    //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    //const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+    const newStartDate = new Date('2020-08-01T18:30');
+    const newEndDate = new Date('2020-08-30T18:30');
 
-    return this.createQueryBuilder('appointment')
-      .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
-      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
-        fromDate: newStartDate,
-        toDate: newEndDate,
-      })
-      .andWhere(
-        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
-        {
-          status1: STATUS.CANCELLED,
-          status2: STATUS.PAYMENT_PENDING,
-          status3: STATUS.UNAVAILABLE_MEDMANTRA,
-          status4: STATUS.PAYMENT_FAILED,
-          status5: STATUS.PAYMENT_PENDING_PG,
-          status6: STATUS.PAYMENT_ABORTED,
-        }
-      )
-      .orderBy('appointment.doctorId', 'ASC')
-      .getMany();
+    return (
+      this.createQueryBuilder('appointment')
+        .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
+        .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+          fromDate: newStartDate,
+          toDate: newEndDate,
+        })
+        // .andWhere(
+        //   'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        //   {
+        //     status1: STATUS.CANCELLED,
+        //     status2: STATUS.PAYMENT_PENDING,
+        //     status3: STATUS.UNAVAILABLE_MEDMANTRA,
+        //     status4: STATUS.PAYMENT_FAILED,
+        //     status5: STATUS.PAYMENT_PENDING_PG,
+        //     status6: STATUS.PAYMENT_ABORTED,
+        //   }
+        // )
+        .orderBy('appointment.doctorId', 'ASC')
+        .getMany()
+    );
   }
 
   getDoctorAppointmentsByDates(doctorId: string, startDate: Date, endDate: Date) {
