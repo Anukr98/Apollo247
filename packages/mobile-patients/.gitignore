@@ -7,7 +7,6 @@ android/local.properties
 ios/build
 .Trash*
 .DS_Store
-types/
 
 # Ignore Xcode user-related files
 xcuserdata/
