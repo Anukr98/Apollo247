@@ -29,13 +29,17 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       textAlign: 'center',
       height: '100%',
+      [theme.breakpoints.down('xs')]: {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: ' space-between',
+      },
     },
     pdHeader: {
       [theme.breakpoints.down(500)]: {
         display: 'flex',
         alignItems: 'flex-start',
         padding: '0 0 10px',
-        minHeight: 80,
       },
     },
     bigAvatar: {
@@ -90,6 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         margin: 0,
         lineHeight: 'normal',
+        fontSize: 12,
       },
     },
     noStock: {
