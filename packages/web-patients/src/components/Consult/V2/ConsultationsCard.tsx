@@ -12,12 +12,8 @@ import { STATUS } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { AphButton } from '@aph/web-ui-components';
-import { ApolloError } from 'apollo-client';
-import { useMutation } from 'react-apollo-hooks';
-import { AddToConsultQueue, AddToConsultQueueVariables } from 'graphql/types/AddToConsultQueue';
-import { ADD_TO_CONSULT_QUEUE } from 'graphql/consult';
 import moment from 'moment';
-import { readableParam } from 'helpers/commonHelpers';
+import { readableParam, getAvailableFreeChatDays } from 'helpers/commonHelpers';
 import { Link, Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -41,8 +37,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
     },
     doctorAvatar: {
-      width: 80,
-      height: 80,
+      width: 70,
+      height: 70,
+      marginTop: 10,
     },
     doctorInfo: {
       paddingLeft: 15,
@@ -133,19 +130,26 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 134,
     },
     statusShow: {
-      fontSize: 9,
-      fontWeight: 'bold',
-      textAlign: 'center',
+      fontSize: 10,
+      fontWeight: 500,
+      textAlign: 'left',
       padding: '6px 12px',
-      color: '#ff748e',
-      textTransform: 'uppercase',
+      color: '#0087BA',
+      textTransform: 'capitalize',
       letterSpacing: 0.5,
       borderRadius: 10,
       position: 'absolute',
-      left: 0,
+      left: 8,
       top: 0,
       minWidth: 134,
+      '&.COMPLETED': {
+        color: '#00B38E',
+      },
+      '&.CANCELLED': {
+        color: '#DB0404',
+      },
     },
+
     availableNow: {
       backgroundColor: '#ff748e',
       color: theme.palette.common.white,
@@ -245,7 +249,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 6,
       textAlign: 'left',
       position: 'absolute',
-      left: 15,
+      left: 0,
       top: -6,
       '& h3': {
         fontSize: 13,
@@ -351,10 +355,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     }, 60000);
   };
 
-  const addConsultToQueue = useMutation<AddToConsultQueue, AddToConsultQueueVariables>(
-    ADD_TO_CONSULT_QUEUE
-  );
-
   const getAppointmentStatus = (status: STATUS, isConsultStarted: boolean | null) => {
     switch (status) {
       case STATUS.PENDING:
@@ -398,7 +398,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       status,
     } = appointmentDetails;
     if (isFollowUp === 'false' && status === STATUS.COMPLETED && props.pastOrCurrent !== 'past') {
-      return '7 days free chat remaining';
+      return getAvailableFreeChatDays(appointmentDetails.appointmentDateTime);
     } else if (!isConsultStarted) {
       return 'Fill vitals to get started with the consult journey';
     } else if (!isJdQuestionsComplete) {
@@ -502,7 +502,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       </div>
                       <div className={classes.doctorInfo}>
                         {showStatusAtTop(appointmentDetails) && (
-                          <div className={classes.statusShow}>
+                          // <div className={classes.statusShow}>
+                          <div className={`${classes.statusShow} ${appointmentState}`}>
                             {showStatusAtTop(appointmentDetails)}
                           </div>
                         )}
@@ -546,12 +547,17 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                     </div>
                     <div className={classes.consultChatContainer}>
                       <Link
-                        to={clientRoutes.doctorDetails(
-                          appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.fullName
-                            ? readableParam(appointmentDetails.doctorInfo.fullName)
-                            : '',
-                          appointmentDetails.doctorId
-                        )}
+                        to={
+                          props.pastOrCurrent !== 'past'
+                            ? clientRoutes.doctorDetails(
+                                appointmentDetails.doctorInfo &&
+                                  appointmentDetails.doctorInfo.fullName
+                                  ? readableParam(appointmentDetails.doctorInfo.fullName)
+                                  : '',
+                                appointmentDetails.doctorId
+                              )
+                            : clientRoutes.chatRoom(appointmentId, doctorId)
+                        }
                       >
                         {appointmentDetails.status === STATUS.COMPLETED &&
                           appointmentDetails.isFollowUp === 'false' && (
@@ -562,8 +568,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                               {props.pastOrCurrent !== 'past' &&
                                 appointmentDetails &&
                                 appointmentDetails.doctorInfo &&
-                                appointmentDetails.doctorInfo.fullName && (
-                                  <h6>With {appointmentDetails.doctorInfo.fullName}</h6>
+                                appointmentDetails.doctorInfo.displayName && (
+                                  <h6>With Dr. {appointmentDetails.doctorInfo.displayName}</h6>
                                 )}
                             </div>
                           )}

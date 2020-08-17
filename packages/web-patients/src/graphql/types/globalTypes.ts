@@ -322,6 +322,28 @@ export enum REQUEST_ROLES {
   SYSTEM = "SYSTEM",
 }
 
+export enum ROUTE_OF_ADMINISTRATION {
+  EAR_DROPS = "EAR_DROPS",
+  EYE_DROPS = "EYE_DROPS",
+  EYE_OINTMENT = "EYE_OINTMENT",
+  GARGLE = "GARGLE",
+  INHALE = "INHALE",
+  INTRAMUSCULAR = "INTRAMUSCULAR",
+  INTRANASAL_SPRAY = "INTRANASAL_SPRAY",
+  INTRAVAGINAL = "INTRAVAGINAL",
+  INTRAVENOUS = "INTRAVENOUS",
+  INTRA_ARTICULAR = "INTRA_ARTICULAR",
+  LOCAL_APPLICATION = "LOCAL_APPLICATION",
+  NASALLY = "NASALLY",
+  NASAL_DROPS = "NASAL_DROPS",
+  ORALLY = "ORALLY",
+  ORAL_DROPS = "ORAL_DROPS",
+  PER_RECTAL = "PER_RECTAL",
+  SUBCUTANEOUS = "SUBCUTANEOUS",
+  SUBLINGUAL = "SUBLINGUAL",
+  TRIGGER_POINT_INJECTION = "TRIGGER_POINT_INJECTION",
+}
+
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
@@ -394,6 +416,11 @@ export enum WeekDay {
   THURSDAY = "THURSDAY",
   TUESDAY = "TUESDAY",
   WEDNESDAY = "WEDNESDAY",
+}
+
+export enum mediaPrescriptionSource {
+  EPRESCRIPTION = "EPRESCRIPTION",
+  SELF = "SELF",
 }
 
 export interface AddMedicalRecordInput {
@@ -471,6 +498,20 @@ export interface CancelAppointmentInput {
   cancelReason?: string | null;
   cancelledBy: REQUEST_ROLES;
   cancelledById: string;
+}
+
+export interface ConsultQueueInput {
+  appointmentId: string;
+  height?: string | null;
+  weight?: string | null;
+  temperature?: string | null;
+  bp?: string | null;
+  lifeStyle?: string | null;
+  familyHistory?: string | null;
+  dietAllergies?: string | null;
+  drugAllergies?: string | null;
+  age?: number | null;
+  gender?: Gender | null;
 }
 
 export interface DiagnosticLineItem {
@@ -574,6 +615,22 @@ export interface LabResultFileProperties {
   fileName: string;
   mimeType: string;
   content: string;
+}
+
+export interface MediaPrescriptionFileProperties {
+  fileName: string;
+  mimeType: string;
+  content: string;
+}
+
+export interface MediaPrescriptionUploadRequest {
+  prescribedBy: string;
+  dateOfPrescription: any;
+  startDate?: any | null;
+  endDate?: any | null;
+  notes?: string | null;
+  prescriptionSource: mediaPrescriptionSource;
+  prescriptionFiles?: (MediaPrescriptionFileProperties | null)[] | null;
 }
 
 export interface MedicineCartOMSInput {

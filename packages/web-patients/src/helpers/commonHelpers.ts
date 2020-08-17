@@ -407,10 +407,27 @@ const getStoreName = (storeAddress: string) => {
   return store && store.storename ? _upperFirst(_lowerCase(store.storename)) : '';
 };
 
-const isPastAppointment = (appointmentDetails: AppointmentDetails) =>
-  moment(appointmentDetails.appointmentDateTime).add(7, 'days').isBefore(moment());
+const isPastAppointment = (appointmentDateTime: string) =>
+  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
+
+const getAvailableFreeChatDays = (appointmentTime: string) => {
+  const followUpDayMoment = moment(appointmentTime).add(7, 'days');
+  const diffInDays = followUpDayMoment.diff(appointmentTime, 'days');
+  if (diffInDays <= 0) {
+    const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
+    const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
+    return diffInHours > 0
+      ? `${diffInHours} hours free chat remaining`
+      : diffInMinutes > 0
+      ? `${diffInMinutes} minutes free chat remaining`
+      : '';
+  } else {
+    return `${diffInDays} days free chat remaining`;
+  }
+};
 
 export {
+  getAvailableFreeChatDays,
   isPastAppointment,
   AppointmentFilterObject,
   consultType,

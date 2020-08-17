@@ -12,7 +12,7 @@ import {
 } from 'graphql/types/GetDoctorAvailableSlots';
 import { GET_DOCTOR_AVAILABLE_SLOTS, BOOK_APPOINTMENT } from 'graphql/doctors';
 import { useMutation } from 'react-apollo-hooks';
-import { AppointmentType, BOOKINGSOURCE } from 'graphql/types/globalTypes';
+import { AppointmentType, BOOKINGSOURCE, TRANSFER_INITIATED_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getDeviceType, getDiffInMinutes, getAvailability } from 'helpers/commonHelpers';
@@ -203,6 +203,9 @@ interface OnlineConsultProps {
   setIsShownOnce?: (shownOnce: boolean) => void;
   isShownOnce?: boolean;
   doctorAvailableIn?: number;
+  isRescheduleConsult?: boolean;
+  appointmentId?: any;
+  rescheduleAPI?: any;
 }
 
 export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
@@ -234,7 +237,16 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const apolloClient = useApolloClient();
 
-  const { doctorDetails, setIsPopoverOpen, tabValue, isShownOnce, setIsShownOnce } = props;
+  const {
+    doctorDetails,
+    setIsPopoverOpen,
+    tabValue,
+    isShownOnce,
+    setIsShownOnce,
+    isRescheduleConsult,
+    appointmentId,
+    rescheduleAPI,
+  } = props;
 
   let slotAvailableNext = '',
     consultNowSlotTime = '';
@@ -700,7 +712,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
-        <Link to={clientRoutes.payOnlineConsult()}>
+        {isRescheduleConsult ? (
           <AphButton
             color="primary"
             disabled={
@@ -711,20 +723,16 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               (scheduleLater && timeSelected === '')
             }
             onClick={() => {
-              localStorage.setItem(
-                'consultBookDetails',
-                JSON.stringify({
-                  patientId: currentPatient ? currentPatient.id : '',
-                  doctorId: doctorId,
-                  doctorName,
-                  appointmentDateTime: appointmentDateTime,
-                  appointmentType: AppointmentType.ONLINE,
-                  hospitalId: hospitalId,
-                  couponCode: couponCode ? couponCode : null,
-                  amount: revisedAmount,
-                  speciality: getSpeciality(),
-                })
-              );
+              const bookRescheduleInput = {
+                appointmentId: appointmentId,
+                doctorId: doctorId,
+                newDateTimeslot: appointmentDateTime,
+                initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+                initiatedId: currentPatient ? currentPatient.id : '',
+                patientId: currentPatient ? currentPatient.id : '',
+                rescheduledId: '',
+              };
+              rescheduleAPI(bookRescheduleInput);
             }}
             className={
               disableSubmit ||
@@ -735,15 +743,56 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 ? classes.buttonDisable
                 : ''
             }
-            title={'Pay'}
+            title={'Reschedule'}
           >
-            {mutationLoading ? (
-              <CircularProgress size={22} color="secondary" />
-            ) : (
-              `PAY Rs. ${revisedAmount}`
-            )}
+            {mutationLoading ? <CircularProgress size={22} color="secondary" /> : `Reschedule`}
           </AphButton>
-        </Link>
+        ) : (
+          <Link to={clientRoutes.payOnlineConsult()}>
+            <AphButton
+              color="primary"
+              disabled={
+                disableSubmit ||
+                mutationLoading ||
+                isDialogOpen ||
+                (!consultNowAvailable && timeSelected === '') ||
+                (scheduleLater && timeSelected === '')
+              }
+              onClick={() => {
+                localStorage.setItem(
+                  'consultBookDetails',
+                  JSON.stringify({
+                    patientId: currentPatient ? currentPatient.id : '',
+                    doctorId: doctorId,
+                    doctorName,
+                    appointmentDateTime: appointmentDateTime,
+                    appointmentType: AppointmentType.ONLINE,
+                    hospitalId: hospitalId,
+                    couponCode: couponCode ? couponCode : null,
+                    amount: revisedAmount,
+                    speciality: getSpeciality(),
+                  })
+                );
+              }}
+              className={
+                disableSubmit ||
+                mutationLoading ||
+                isDialogOpen ||
+                (!consultNowAvailable && timeSelected === '') ||
+                (scheduleLater && timeSelected === '')
+                  ? classes.buttonDisable
+                  : ''
+              }
+              title={'Pay'}
+            >
+              {mutationLoading ? (
+                <CircularProgress size={22} color="secondary" />
+              ) : (
+                `PAY Rs. ${revisedAmount}`
+              )}
+            </AphButton>
+          </Link>
+        )}
       </div>
       <AphDialog
         open={isDialogOpen}

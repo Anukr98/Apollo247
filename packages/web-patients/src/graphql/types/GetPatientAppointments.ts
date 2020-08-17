@@ -9,6 +9,19 @@ import { PatientAppointmentsInput, APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, 
 // GraphQL query operation: GetPatientAppointments
 // ====================================================
 
+export interface GetPatientAppointments_getPatinetAppointments_patinetAppointments_appointmentPayments {
+  __typename: "AppointmentPayment";
+  id: string;
+  amountPaid: number;
+  paymentRefId: string | null;
+  paymentStatus: string;
+  paymentDateTime: any;
+  responseCode: string;
+  responseMessage: string;
+  bankTxnId: string;
+  orderId: string;
+}
+
 export interface GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_specialty {
   __typename: "DoctorSpecialties";
   name: string;
@@ -62,6 +75,7 @@ export interface GetPatientAppointments_getPatinetAppointments_patinetAppointmen
 
 export interface GetPatientAppointments_getPatinetAppointments_patinetAppointments {
   __typename: "PatinetAppointments";
+  appointmentPayments: (GetPatientAppointments_getPatinetAppointments_patinetAppointments_appointmentPayments | null)[] | null;
   id: string;
   patientId: string;
   doctorId: string;
@@ -70,9 +84,18 @@ export interface GetPatientAppointments_getPatinetAppointments_patinetAppointmen
   hospitalId: string | null;
   status: STATUS;
   bookingDate: any | null;
+  rescheduleCount: number | null;
   isConsultStarted: boolean | null;
   appointmentState: APPOINTMENT_STATE | null;
   isFollowUp: string;
+  displayId: number | null;
+  isJdQuestionsComplete: boolean | null;
+  isSeniorConsultStarted: boolean | null;
+  symptoms: string | null;
+  paymentOrderId: string | null;
+  couponCode: string | null;
+  actualAmount: number | null;
+  discountedAmount: number | null;
   doctorInfo: GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo | null;
 }
 

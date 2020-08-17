@@ -97,7 +97,7 @@ module.exports = {
         use: isLocal ? [rhlBabelLoader, tsLoader] : [tsLoader],
       },
       {
-        test: /\.(png|jpg|jpeg|svg|gif|webp)$/,
+        test: /\.(png|jpg|jpeg|svg|gif|webp|mp3)$/,
         use: [urlLoader],
       },
     ],

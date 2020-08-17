@@ -369,6 +369,17 @@ export const GET_PATIENT_APPOINTMENTS = gql`
   query GetPatientAppointments($patientAppointmentsInput: PatientAppointmentsInput) {
     getPatinetAppointments(patientAppointmentsInput: $patientAppointmentsInput) {
       patinetAppointments {
+        appointmentPayments {
+          id
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+          orderId
+        }
         id
         patientId
         doctorId
@@ -377,10 +388,19 @@ export const GET_PATIENT_APPOINTMENTS = gql`
         hospitalId
         status
         bookingDate
+        rescheduleCount
         isConsultStarted
         appointmentState
         isFollowUp
-
+        displayId
+        isConsultStarted
+        isJdQuestionsComplete
+        isSeniorConsultStarted
+        symptoms
+        paymentOrderId
+        couponCode
+        actualAmount
+        discountedAmount
         doctorInfo {
           id
           firstName
