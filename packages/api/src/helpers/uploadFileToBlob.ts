@@ -65,28 +65,6 @@ export async function uploadPdfFileToBlobStorage(
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
 
-  if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
-    await client
-      .deleteContainer()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error deleting', error));
-
-    await client
-      .setServiceProperties()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error setting service properties', error));
-
-    await client
-      .createContainer()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error creating', error));
-  }
-
-  await client
-    .testStorageConnection()
-    .then((res) => console.log(res))
-    .catch((error) => console.log('error testing', error));
-
   const readmeBlob = await client.uploadFile({ name: fileName, filePath }).catch((error) => {
     throw error;
   });
