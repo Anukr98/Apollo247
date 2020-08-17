@@ -546,6 +546,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const doctorAutoResponse = '^^#doctorAutoResponse';
   const leaveChatRoom = '^^#leaveChatRoom';
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
+  const patientRejectedCall = '^^#PATIENT_REJECTED_CALL';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -2171,11 +2172,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const checkAutomatedPatientText = () => {
     const result = insertText.filter((obj: any) => {
-      // console.log('resultinsertText', obj.message);
       return obj.message === consultPatientStartedMsg;
     });
-    if (result.length === 0) {
-      console.log('result.length ', result);
+    const startConsultResult = insertText.filter((obj: any) => {
+      return obj.message === startConsultMsg;
+    });
+    if (result.length === 0 && startConsultResult.length === 0) {
       automatedTextFromPatient();
     }
   };
@@ -4211,7 +4213,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === stopConsultMsg ||
       rowData.message === cancelConsultInitiated ||
       rowData.message === callAbandonment ||
-      rowData.message === appointmentComplete
+      rowData.message === appointmentComplete ||
+      rowData.message === patientRejectedCall
     ) {
       return null;
     }

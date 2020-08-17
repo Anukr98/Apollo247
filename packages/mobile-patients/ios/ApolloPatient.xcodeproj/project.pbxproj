@@ -11,7 +11,6 @@
 		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		183AD64C24E56CDF007CE678 /* callkitAppIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 183AD64A24E56CDF007CE678 /* callkitAppIcon.png */; };
 		2B93CC249171A2A7A321CE13 /* Pods_NotificationService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C46CEB21BE09F2326DAC50F /* Pods_NotificationService.framework */; };
 		37639A696E357A42651D9AF3 /* Pods_NotificationViewController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 198034DAAF6827F6A3EB58B3 /* Pods_NotificationViewController.framework */; };
 		6717258923016EF10088EE92 /* OTInstall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6717258823016EF10088EE92 /* OTInstall.swift */; };
@@ -33,11 +32,16 @@
 		9797AC2E2420DFD500AD397F /* NotificationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9797AC2D2420DFD500AD397F /* NotificationViewController.m */; };
 		9797AC312420DFD500AD397F /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9797AC2F2420DFD500AD397F /* MainInterface.storyboard */; };
 		9797AC352420DFD500AD397F /* NotificationViewController.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 9797AC282420DFD400AD397F /* NotificationViewController.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		97A2C4F12370490A00C1E867 /* incallmanager_ringtone.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 97A2C4B92370490900C1E867 /* incallmanager_ringtone.mp3 */; };
+		97A7C9D4249B430A00EDDFC0 /* incallmanager_ringtone.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 97A7C9D3249B430A00EDDFC0 /* incallmanager_ringtone.mp3 */; };
+		97A7C9D5249B430A00EDDFC0 /* incallmanager_ringtone.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 97A7C9D3249B430A00EDDFC0 /* incallmanager_ringtone.mp3 */; };
+		97A7C9D6249B430A00EDDFC0 /* incallmanager_ringtone.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 97A7C9D3249B430A00EDDFC0 /* incallmanager_ringtone.mp3 */; };
 		97A8D7962316F5E00010C1EB /* ExportDeviceToken.m in Sources */ = {isa = PBXBuildFile; fileRef = 97A8D7952316F5DF0010C1EB /* ExportDeviceToken.m */; };
+		97B123D924E53C1600B9D379 /* callkitAppIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 97B123D724E53C1600B9D379 /* callkitAppIcon.png */; };
 		97C4B2762385273500A64CD9 /* Fabric.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97C4B2742385273400A64CD9 /* Fabric.framework */; };
 		97C4B2772385273500A64CD9 /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97C4B2752385273500A64CD9 /* Crashlytics.framework */; };
+		97D79A1C24924D410029DE31 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 97D79A1A24924D410029DE31 /* main.jsbundle */; };
 		97EA49A623D5B006001B575B /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97EA49A523D5B006001B575B /* HealthKit.framework */; };
+		97EEE82D249A5F9F003A4ECF /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 97EEE82C249A5F9F003A4ECF /* assets */; };
 		97FA066823E55F4A006A4294 /* ApolloVitalsFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97FFBDB423E4843800E55E34 /* ApolloVitalsFramework.framework */; };
 		97FA066923E55F4A006A4294 /* ApolloVitalsFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 97FFBDB423E4843800E55E34 /* ApolloVitalsFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		97FFBDE523E4887B00E55E34 /* NSDate+Comparison.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FFBDD523E4887A00E55E34 /* NSDate+Comparison.swift */; };
@@ -122,8 +126,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
-		0FF9037AC02D41E2BD1B5BF7 /* Entypo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Entypo.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Apollo 247.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Apollo 247.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = ApolloPatient/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = ApolloPatient/AppDelegate.m; sourceTree = "<group>"; };
@@ -131,32 +133,21 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ApolloPatient/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ApolloPatient/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = ApolloPatient/main.m; sourceTree = "<group>"; };
-		183AD64A24E56CDF007CE678 /* callkitAppIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = callkitAppIcon.png; sourceTree = "<group>"; };
-		18A0BFC024C0839B009068A1 /* CodePush.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CodePush.h; path = "../node_modules/react-native-code-push/ios/CodePush/CodePush.h"; sourceTree = "<group>"; };
 		198034DAAF6827F6A3EB58B3 /* Pods_NotificationViewController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationViewController.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		24E5689BA4364D2CB5684A43 /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
-		2A9C08E64A1F4E7CBE132BF7 /* Foundation.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Foundation.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Foundation.ttf"; sourceTree = "<group>"; };
-		2CDCDFA820E042BF8F8A5A6A /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
 		2D16E6891FA4F8E400B85C8A /* libReact.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libReact.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		3B36C6BE33854568A69502C2 /* FontAwesome5_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Solid.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf"; sourceTree = "<group>"; };
-		42A258C4480F4BDE884A2520 /* MaterialCommunityIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialCommunityIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"; sourceTree = "<group>"; };
-		654706DA99AE4234848265B1 /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
 		6717258723016EF00088EE92 /* ApolloPatient-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ApolloPatient-Bridging-Header.h"; sourceTree = "<group>"; };
 		6717258823016EF10088EE92 /* OTInstall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTInstall.swift; sourceTree = "<group>"; };
 		6790F2152317D9880037D908 /* RSKImageCropper.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RSKImageCropper.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		684955F373C0448DAFFBE017 /* Zocial.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Zocial.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Zocial.ttf"; sourceTree = "<group>"; };
 		6C46CEB21BE09F2326DAC50F /* Pods_NotificationService.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NotificationService.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		72F617656E6541D1F4092240 /* Pods_ApolloPatient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ApolloPatient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		7A02AA7D2B0B47008D571A4B /* AntDesign.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = AntDesign.ttf; path = "../node_modules/react-native-vector-icons/Fonts/AntDesign.ttf"; sourceTree = "<group>"; };
 		8097225873FF04AEF5DA2ED7 /* Pods-NotificationViewController.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationViewController.release.xcconfig"; path = "Target Support Files/Pods-NotificationViewController/Pods-NotificationViewController.release.xcconfig"; sourceTree = "<group>"; };
 		80EAA264D827BADB6794E6F4 /* Pods-ApolloPatient.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient.debug.xcconfig"; path = "Target Support Files/Pods-ApolloPatient/Pods-ApolloPatient.debug.xcconfig"; sourceTree = "<group>"; };
-		858FE5191EAB4125BAD5DE53 /* FontAwesome5_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"; sourceTree = "<group>"; };
 		8D81C5135BEDE9E60C222C45 /* Pods-NotificationService.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.debug.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.debug.xcconfig"; sourceTree = "<group>"; };
 		970ECE9023CB50030022FE84 /* VitalsBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VitalsBridge.h; sourceTree = "<group>"; };
 		970ECE9123CB50030022FE84 /* VitalsBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VitalsBridge.m; sourceTree = "<group>"; };
 		970ECE9223CB50040022FE84 /* Vitals.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Vitals.swift; sourceTree = "<group>"; };
 		97381B2F22CA08CE001BA50A /* ApolloPatient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = ApolloPatient.entitlements; path = ApolloPatient/ApolloPatient.entitlements; sourceTree = "<group>"; };
-		975060FB9F1342D8B9C846D9 /* Feather.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Feather.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Feather.ttf"; sourceTree = "<group>"; };
 		977C7CF72369AEFB008DA5C8 /* OTScreenCapturer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTScreenCapturer.swift; sourceTree = "<group>"; };
 		978157C32420C86800749029 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		978157C52420C86800749029 /* UserNotificationsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotificationsUI.framework; path = System/Library/Frameworks/UserNotificationsUI.framework; sourceTree = SDKROOT; };
@@ -183,13 +174,16 @@
 		9797AC322420DFD500AD397F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9797AC392420DFF700AD397F /* NotificationViewController.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotificationViewController.entitlements; sourceTree = "<group>"; };
 		9797AC3A2420E00200AD397F /* NotificationService.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotificationService.entitlements; sourceTree = "<group>"; };
-		97A2C4B92370490900C1E867 /* incallmanager_ringtone.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = incallmanager_ringtone.mp3; sourceTree = "<group>"; };
+		97A7C9D3249B430A00EDDFC0 /* incallmanager_ringtone.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = incallmanager_ringtone.mp3; sourceTree = "<group>"; };
 		97A8D73D2316F5160010C1EB /* RNCAsyncStorage.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNCAsyncStorage.xcodeproj; path = "../node_modules/@react-native-community/async-storage/ios/RNCAsyncStorage.xcodeproj"; sourceTree = "<group>"; };
 		97A8D7942316F5DF0010C1EB /* ExportDeviceToken.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExportDeviceToken.h; sourceTree = "<group>"; };
 		97A8D7952316F5DF0010C1EB /* ExportDeviceToken.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExportDeviceToken.m; sourceTree = "<group>"; };
+		97B123D724E53C1600B9D379 /* callkitAppIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = callkitAppIcon.png; sourceTree = "<group>"; };
 		97C4B2742385273400A64CD9 /* Fabric.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Fabric.framework; sourceTree = "<group>"; };
 		97C4B2752385273500A64CD9 /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Crashlytics.framework; sourceTree = "<group>"; };
+		97D79A1A24924D410029DE31 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
 		97EA49A523D5B006001B575B /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
+		97EEE82C249A5F9F003A4ECF /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		97FFBDB423E4843800E55E34 /* ApolloVitalsFramework.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ApolloVitalsFramework.framework; sourceTree = "<group>"; };
 		97FFBDD523E4887A00E55E34 /* NSDate+Comparison.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSDate+Comparison.swift"; sourceTree = "<group>"; };
 		97FFBDD623E4887A00E55E34 /* ExclusionDate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExclusionDate.swift; sourceTree = "<group>"; };
@@ -205,16 +199,11 @@
 		97FFBDE223E4887A00E55E34 /* rrule.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = rrule.js; sourceTree = "<group>"; };
 		97FFBDE323E4887A00E55E34 /* nlp.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = nlp.js; sourceTree = "<group>"; };
 		97FFBDE423E4887A00E55E34 /* JavaScriptBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JavaScriptBridge.swift; sourceTree = "<group>"; };
-		A6134CEDEFD94875AD9A7290 /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SimpleLineIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; };
 		A749C30ED45DCE1AA003CE32 /* Pods-NotificationViewController.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationViewController.debug.xcconfig"; path = "Target Support Files/Pods-NotificationViewController/Pods-NotificationViewController.debug.xcconfig"; sourceTree = "<group>"; };
 		B5D21E095A9DC3D5465004F8 /* Pods-NotificationService.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.release.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.release.xcconfig"; sourceTree = "<group>"; };
 		BC164DC10808B8284C771748 /* Pods-ApolloPatient.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient.release.xcconfig"; path = "Target Support Files/Pods-ApolloPatient/Pods-ApolloPatient.release.xcconfig"; sourceTree = "<group>"; };
-		C513D5FC98894076A2743732 /* Ionicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Ionicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf"; sourceTree = "<group>"; };
-		C7845C307B4C455FAD9F76E7 /* FontAwesome.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf"; sourceTree = "<group>"; };
-		CEB81580D4D9407798F1EFEA /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
-		F029BFF5B90E4A73B79C2F6D /* FontAwesome5_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"; sourceTree = "<group>"; };
 		F1B3D75522B8D37100521684 /* IBMPlexSans-SemiBoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-SemiBoldItalic.ttf"; sourceTree = "<group>"; };
 		F1B3D75622B8D37100521684 /* IBMPlexSans-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-Medium.ttf"; sourceTree = "<group>"; };
 		F1B3D75722B8D37100521684 /* IBMPlexSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "IBMPlexSans-SemiBold.ttf"; sourceTree = "<group>"; };
@@ -269,11 +258,12 @@
 		13B07FAE1A68108700A75B9A /* ApolloPatient */ = {
 			isa = PBXGroup;
 			children = (
+				97A7C9D3249B430A00EDDFC0 /* incallmanager_ringtone.mp3 */,
 				97FFBDD423E4887A00E55E34 /* RRules */,
 				97381B2F22CA08CE001BA50A /* ApolloPatient.entitlements */,
 				F1B3D75422B8D37100521684 /* Fonts */,
-				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				9784DFB623A2282600CB4A28 /* GoogleService-Info.plist */,
+				97D79A1A24924D410029DE31 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
 				97A8D7942316F5DF0010C1EB /* ExportDeviceToken.h */,
@@ -292,7 +282,6 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				18A0BFC024C0839B009068A1 /* CodePush.h */,
 				97EA49A523D5B006001B575B /* HealthKit.framework */,
 				97873BBB237A9A3B0093DF91 /* libc++.tbd */,
 				97873BB9237A9A1C0093DF91 /* MobileCoreServices.framework */,
@@ -320,11 +309,11 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				183AD64A24E56CDF007CE678 /* callkitAppIcon.png */,
+				97B123D724E53C1600B9D379 /* callkitAppIcon.png */,
+				97EEE82C249A5F9F003A4ECF /* assets */,
 				97FFBDB423E4843800E55E34 /* ApolloVitalsFramework.framework */,
 				97C4B2752385273500A64CD9 /* Crashlytics.framework */,
 				97C4B2742385273400A64CD9 /* Fabric.framework */,
-				97A2C4B92370490900C1E867 /* incallmanager_ringtone.mp3 */,
 				6717258823016EF10088EE92 /* OTInstall.swift */,
 				977C7CF72369AEFB008DA5C8 /* OTScreenCapturer.swift */,
 				13B07FAE1A68108700A75B9A /* ApolloPatient */,
@@ -356,22 +345,7 @@
 		87A64E99AF3B40ACB04AECBE /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				7A02AA7D2B0B47008D571A4B /* AntDesign.ttf */,
-				0FF9037AC02D41E2BD1B5BF7 /* Entypo.ttf */,
-				CEB81580D4D9407798F1EFEA /* EvilIcons.ttf */,
-				975060FB9F1342D8B9C846D9 /* Feather.ttf */,
-				C7845C307B4C455FAD9F76E7 /* FontAwesome.ttf */,
-				F029BFF5B90E4A73B79C2F6D /* FontAwesome5_Brands.ttf */,
-				858FE5191EAB4125BAD5DE53 /* FontAwesome5_Regular.ttf */,
-				3B36C6BE33854568A69502C2 /* FontAwesome5_Solid.ttf */,
 				24E5689BA4364D2CB5684A43 /* Fontisto.ttf */,
-				2A9C08E64A1F4E7CBE132BF7 /* Foundation.ttf */,
-				C513D5FC98894076A2743732 /* Ionicons.ttf */,
-				42A258C4480F4BDE884A2520 /* MaterialCommunityIcons.ttf */,
-				654706DA99AE4234848265B1 /* MaterialIcons.ttf */,
-				2CDCDFA820E042BF8F8A5A6A /* Octicons.ttf */,
-				A6134CEDEFD94875AD9A7290 /* SimpleLineIcons.ttf */,
-				684955F373C0448DAFFBE017 /* Zocial.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -505,11 +479,11 @@
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
-				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				97F3119A2331FE9600C1A519 /* ShellScript */,
 				62A328F9A2DCEA8E27926931 /* [CP] Embed Pods Frameworks */,
 				970ECEB423CB550E0022FE84 /* Embed Frameworks */,
 				978157BD2420C84C00749029 /* Embed App Extensions */,
+				97EEE834249A6234003A4ECF /* Bundle React Native code and images */,
 			);
 			buildRules = (
 			);
@@ -656,15 +630,17 @@
 				F1B3D78C22B8D37200521684 /* IBMPlexSans-Medium.ttf in Resources */,
 				F1B3D79522B8D37200521684 /* IBMPlexSans-Light.ttf in Resources */,
 				F1B3D78B22B8D37200521684 /* IBMPlexSans-SemiBoldItalic.ttf in Resources */,
+				97B123D924E53C1600B9D379 /* callkitAppIcon.png in Resources */,
 				978D136323D1EE0B002841C4 /* OpenSans-ExtraBold.ttf in Resources */,
 				F1B3D79622B8D37200521684 /* IBMPlexSans-Italic.ttf in Resources */,
 				978D136623D1EE0B002841C4 /* Comfortaa_Regular.ttf in Resources */,
+				97EEE82D249A5F9F003A4ECF /* assets in Resources */,
+				97A7C9D4249B430A00EDDFC0 /* incallmanager_ringtone.mp3 in Resources */,
 				978D136823D1EE0B002841C4 /* OpenSans-Bold.ttf in Resources */,
-				97A2C4F12370490A00C1E867 /* incallmanager_ringtone.mp3 in Resources */,
 				97FFBDEC23E4887B00E55E34 /* Info-iOS.plist in Resources */,
-				183AD64C24E56CDF007CE678 /* callkitAppIcon.png in Resources */,
 				978D136423D1EE0B002841C4 /* OpenSans-Semibold.ttf in Resources */,
 				97FFBDF023E4887B00E55E34 /* nlp.js in Resources */,
+				97D79A1C24924D410029DE31 /* main.jsbundle in Resources */,
 				97FFBDEF23E4887B00E55E34 /* rrule.js in Resources */,
 				978D136723D1EE0B002841C4 /* OpenSans-Light.ttf in Resources */,
 			);
@@ -674,6 +650,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				97A7C9D5249B430A00EDDFC0 /* incallmanager_ringtone.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -682,26 +659,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				9797AC312420DFD500AD397F /* MainInterface.storyboard in Resources */,
+				97A7C9D6249B430A00EDDFC0 /* incallmanager_ringtone.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Bundle React Native code and images";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/bash;
-			shellScript = "export NODE_BINARY=$(which node)\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
-		};
 		03F04D45730E6C0CDEBD068B /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -916,6 +880,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		97EEE834249A6234003A4ECF /* Bundle React Native code and images */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Bundle React Native code and images";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export NODE_BINARY=$(which node)\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
+		};
 		97F3119A2331FE9600C1A519 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1041,7 +1023,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = ApolloPatient/ApolloPatient.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
@@ -1056,7 +1038,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 2.631;
+				MARKETING_VERSION = 4.13;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",
@@ -1064,7 +1046,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247;
 				PRODUCT_NAME = "Apollo 247";
-				PROVISIONING_PROFILE_SPECIFIER = Apollo247_Adhoc;
+				PROVISIONING_PROFILE_SPECIFIER = Apollo247_Dev;
 				SWIFT_OBJC_BRIDGING_HEADER = "ApolloPatient-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
@@ -1079,7 +1061,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = ApolloPatient/ApolloPatient.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
@@ -1093,7 +1075,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 2.631;
+				MARKETING_VERSION = 4.13;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",
@@ -1101,7 +1083,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247;
 				PRODUCT_NAME = "Apollo 247";
-				PROVISIONING_PROFILE_SPECIFIER = Apollo247_Adhoc;
+				PROVISIONING_PROFILE_SPECIFIER = Apollo247_Dev;
 				SWIFT_OBJC_BRIDGING_HEADER = "ApolloPatient-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -1218,7 +1200,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_ENTITLEMENTS = NotificationService/NotificationService.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -1228,12 +1210,12 @@
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 2.3;
+				MARKETING_VERSION = 4.13;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = Apollo247NSE_Adhoc;
+				PROVISIONING_PROFILE_SPECIFIER = Apollo247NSE_Dev;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -1250,7 +1232,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_ENTITLEMENTS = NotificationService/NotificationService.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1261,11 +1243,11 @@
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 2.3;
+				MARKETING_VERSION = 4.13;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = Apollo247NSE_Adhoc;
+				PROVISIONING_PROFILE_SPECIFIER = Apollo247NSE_Dev;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -1282,7 +1264,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_ENTITLEMENTS = NotificationViewController/NotificationViewController.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -1292,12 +1274,12 @@
 				INFOPLIST_FILE = NotificationViewController/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 2.3;
+				MARKETING_VERSION = 4.13;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationViewController;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = Apollo247NCE_Adhoc;
+				PROVISIONING_PROFILE_SPECIFIER = Apollo247NCE_Dev;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -1314,7 +1296,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_ENTITLEMENTS = NotificationViewController/NotificationViewController.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1325,11 +1307,11 @@
 				INFOPLIST_FILE = NotificationViewController/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 2.3;
+				MARKETING_VERSION = 4.13;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.apollo247.NotificationViewController;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = Apollo247NCE_Adhoc;
+				PROVISIONING_PROFILE_SPECIFIER = Apollo247NCE_Dev;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 1;
 			};

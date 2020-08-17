@@ -204,6 +204,9 @@ const useStyles = makeStyles((theme: Theme) => {
         justifyContent: 'center',
         background: '#fff',
         boxShadow: '0px 0px 5px rgba(128, 128, 128, 0.2)',
+        position: 'absolute',
+        top: 20,
+        right: 20,
       },
       '& img': {
         width: '100%',
@@ -219,8 +222,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 0,
         paddingLeft: 0,
-        width: '70%',
-        paddingRight: 10,
       },
       '& h1': {
         fontSize: 20,
@@ -231,12 +232,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     productBasicInfo: {
       [theme.breakpoints.down('xs')]: {
-        padding: '0 10px 0 0',
+        width: '70%',
+        minHeight: 150,
       },
     },
     productDetailed: {
       [theme.breakpoints.down('xs')]: {
-        padding: '20px 0',
+        padding: '20px 0 0',
       },
     },
     productInfo: {
@@ -286,6 +288,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 0,
       minHeight: 'auto',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
       // margin: '5px 0 0 0',
       '& svg': {
         color: '#02475b',
@@ -293,13 +296,13 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#f7f8f5',
       },
-      '&:before': {
-        content: '""',
-        borderTop: '0.5px solid rgba(2,71,91,0.3)',
-        position: 'absolute',
-        left: 0,
-        right: 0,
-      },
+      // '&:before': {
+      //   content: '""',
+      //   borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      //   position: 'absolute',
+      //   left: 0,
+      //   right: 0,
+      // },
     },
     tabRoot: {
       fontSize: 14,
@@ -352,7 +355,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
-        padding: '0 20px',
+        padding: '10px 20px',
+        borderRadius: 5,
       },
     },
     prescriptionBox: {
@@ -414,7 +418,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       padding: '20px 40px',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      marginTop: -48,
+      marginTop: -57,
       position: 'relative',
       display: 'flex',
       alignItems: 'center',
@@ -665,7 +669,7 @@ export const MedicineDetails: React.FC = (props) => {
                 title: `${name} Price, Uses, Side Effects - Apollo 247`,
                 description: `Buy ${name}, Pack of ${getPackOfMedicine(
                   data.productdp[0]
-                )} at Rs.${special_price ||
+                )} at &#8377;${special_price ||
                   price} in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
                 canonicalLink:
                   typeof window !== 'undefined' &&
@@ -996,51 +1000,53 @@ export const MedicineDetails: React.FC = (props) => {
                                   {getPackOfMedicine(medicineDetails)}
                                 </Typography>
                               </div>
-                              {Number(medicineDetails.is_prescription_required) !== 0 && (
-                                <div className={classes.prescriptionBox}>
-                                  <span>This medicine requires doctor’s prescription</span>
-                                  <span className={classes.preImg}>
-                                    <img src={require('images/ic_tablets.svg')} alt="" />
-                                  </span>
-                                </div>
-                              )}
                             </div>
+                            {Number(medicineDetails.is_prescription_required) !== 0 && (
+                              <div className={classes.prescriptionBox}>
+                                <span>This medicine requires doctor’s prescription</span>
+                                <span className={classes.preImg}>
+                                  <img src={require('images/ic_tablets.svg')} alt="" />
+                                </span>
+                              </div>
+                            )}
+                            {medicinePharmacyDetails &&
+                            medicinePharmacyDetails.length > 0 &&
+                            medicinePharmacyDetails[0].Overview &&
+                            medicinePharmacyDetails[0].Overview.length > 0 ? (
+                              <div className={classes.tabWrapper}>
+                                <Tabs
+                                  value={tabValue}
+                                  variant="scrollable"
+                                  scrollButtons="on"
+                                  classes={{
+                                    root: classes.tabsRoot,
+                                    indicator: classes.tabsIndicator,
+                                  }}
+                                  onChange={(e, newValue) => {
+                                    setTabValue(newValue);
+                                    const overviewData = getData(
+                                      medicinePharmacyDetails[0].Overview
+                                    );
+                                    const tabName = overviewData[newValue].key;
+                                    pharmacyPdpOverviewTracking(tabName);
+                                  }}
+                                >
+                                  {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
+                                </Tabs>
+                                {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
+                              </div>
+                            ) : medicineDetails.description ? (
+                              <div className={classes.productDetailed}>
+                                <div className={classes.productInfo}>Product Information</div>
+                                <div className={classes.productDescription}>
+                                  {medicineDetails.description && (
+                                    <div dangerouslySetInnerHTML={{ __html: renderInfo() }}></div>
+                                  )}
+                                </div>
+                              </div>
+                            ) : null}
                           </div>
                         </div>
-                        {medicinePharmacyDetails &&
-                        medicinePharmacyDetails.length > 0 &&
-                        medicinePharmacyDetails[0].Overview &&
-                        medicinePharmacyDetails[0].Overview.length > 0 ? (
-                          <div className={classes.tabWrapper}>
-                            <Tabs
-                              value={tabValue}
-                              variant="scrollable"
-                              scrollButtons="on"
-                              classes={{
-                                root: classes.tabsRoot,
-                                indicator: classes.tabsIndicator,
-                              }}
-                              onChange={(e, newValue) => {
-                                setTabValue(newValue);
-                                const overviewData = getData(medicinePharmacyDetails[0].Overview);
-                                const tabName = overviewData[newValue].key;
-                                pharmacyPdpOverviewTracking(tabName);
-                              }}
-                            >
-                              {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
-                            </Tabs>
-                            {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
-                          </div>
-                        ) : medicineDetails.description ? (
-                          <div className={classes.productDetailed}>
-                            <div className={classes.productInfo}>Product Information</div>
-                            <div className={classes.productDescription}>
-                              {medicineDetails.description && (
-                                <div dangerouslySetInnerHTML={{ __html: renderInfo() }}></div>
-                              )}
-                            </div>
-                          </div>
-                        ) : null}
                       </Scrollbars>
                     </div>
                     <MedicineInformation data={medicineDetails} />

@@ -433,7 +433,7 @@ const validateStoreItems = async (medicineCartOMSInput: MedicineCartOMSInput) =>
         productType:
           item.isMedicine == '1' ? CouponCategoryApplicable.PHARMA : CouponCategoryApplicable.FMCG,
         mrp: price,
-        specialPrice: orderLineItem.mrp * item.mou,
+        specialPrice: item.specialPrice || price,
         quantity: item.quantity,
       });
     }

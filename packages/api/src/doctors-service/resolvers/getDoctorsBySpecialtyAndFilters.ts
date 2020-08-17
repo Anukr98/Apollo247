@@ -33,6 +33,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   type brandType {
     name: String
     image: String
+    brandName: String
   }
 
   type cityType {
@@ -111,6 +112,7 @@ type cityType = {
 type brandType = {
   name: string
   image: string
+  brandName: string
 }
 
 type filters = {
@@ -556,6 +558,14 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
   }
 
+  function capitalize(input: string) {
+    const words = input.split('_');
+    const CapitalizedWords: string[] = [];
+    words.forEach((element: string) => {
+      CapitalizedWords.push(element[0].toUpperCase() + element.slice(1, element.length).toLowerCase());
+    });
+    return CapitalizedWords.join(' ');
+  }
 
   const filters: any = { city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: [] };
   let cityObj: { state: string, data: string[] };
@@ -581,7 +591,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
     // "doctor.photoUrl" needs to be replaced with actual brand images-links
     if (doctor.doctorType && !("name" in ifKeyExist(filters.brands, 'name', doctor.doctorType))) {
-      filters.brands.push({ 'name': doctor.doctorType, 'image': doctor.photoUrl });
+      filters.brands.push({ 'name': doctor.doctorType, 'image': doctor.photoUrl, 'brandName': capitalize(doctor.doctorType) });
     }
 
     if (doctor.languages instanceof Array) {
