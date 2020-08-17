@@ -290,12 +290,20 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
           options &&
           options.length > 0 &&
           options.map((option: any, index: any) => (
-            <TouchableOpacity
+            <Button
+              title={option.brandName.replace(
+                /\w+/g,
+                (w) => w[0].toUpperCase() + w.slice(1).toLowerCase()
+              )}
               style={[
-                styles.brandStyle,
+                styles.buttonStyle,
                 selectedOptions.includes(option.name)
                   ? { backgroundColor: theme.colors.APP_GREEN }
                   : null,
+              ]}
+              titleTextStyle={[
+                styles.buttonTextStyle,
+                selectedOptions.includes(option.name) ? { color: theme.colors.WHITE } : null,
               ]}
               onPress={() => {
                 let selectedData = [...data][id]['selectedOptions'] || [];
@@ -312,15 +320,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                 };
                 setData(dataCopy);
               }}
-            >
-              <IconBase
-                size="md"
-                style={{ width: 110, height: 40, borderRadius: 15 }}
-                source={{
-                  uri: option.image,
-                }}
-              />
-            </TouchableOpacity>
+            />
           ))}
       </View>
     );
