@@ -12,7 +12,6 @@ export enum AppsFlyerEventName {
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
-  BUY_NOW = 'Buy Now',
   PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
   DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart Viewed',
   PHARMACY_PROCEED_TO_PAY_CLICKED = 'Pharmacy Proceed To Pay Clicked',
@@ -156,18 +155,6 @@ export interface AppsFlyerEvents {
     // 'Patient Gender': string;
     // 'Mobile Number': string;
     // 'Customer ID': string;
-  };
-  [AppsFlyerEventName.BUY_NOW]: {
-    'product name': string;
-    'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
-    'category ID': string;
-    Price: number;
-    'Discounted Price': number;
-    Quantity: number;
-    'Service Area': 'Pharmacy' | 'Diagnostic';
   };
   [AppsFlyerEventName.PHARMACY_CART_VIEWED]: {
     'Total items in cart': number;

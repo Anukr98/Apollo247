@@ -30,7 +30,6 @@ export enum WebEngageEventName {
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
   PHARMACY_ADD_TO_CART_NONSERVICEABLE = 'Pharmacy Add to cart Nonserviceable',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
-  BUY_NOW = 'Buy Now',
   PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
   SKU_PRICE_MISMATCH = 'SKU Price Mismatch',
   TAT_API_FAILURE = 'Tat API Failure',
@@ -387,18 +386,6 @@ export interface WebEngageEvents {
     // 'Patient Gender': string;
     // 'Mobile Number': string;
     // 'Customer ID': string;
-  };
-  [WebEngageEventName.BUY_NOW]: {
-    'product name': string;
-    'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
-    'category ID': string;
-    Price: number;
-    'Discounted Price'?: number;
-    Quantity: number;
-    'Service Area': 'Pharmacy' | 'Diagnostic';
   };
   [WebEngageEventName.PHARMACY_CART_VIEWED]: {
     'Customer ID': string;
