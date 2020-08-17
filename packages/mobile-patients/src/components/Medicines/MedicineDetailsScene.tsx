@@ -563,6 +563,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const addToCart = () => updateQuantityCartItem(medicineDetails, itemQty + 1);
     const removeItemFromCart = () => updateQuantityCartItem(medicineDetails, itemQty - 1);
     const removeFromCart = () => removeCartItem!(sku);
+    const { special_price, price } = medicineDetails;
+    const priceDiff = price - Number(special_price);
+    const discountPercent = !!special_price ? 
+      parseInt((priceDiff / price) * 100)
+      : 0;
 
     return (
       <StickyBottomComponent style={{ height: 'auto' }}>
@@ -602,46 +607,46 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             />
           </View>
         ) : (
-          <View style={styles.bottomView}>
-            <View
-              style={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-start',
-                marginBottom: 10,
-                marginLeft: 15,
-              }}
-            >
-              <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22, 0.35)}>MRP.</Text>
-              <Text style={theme.viewStyles.text('SB', 17, '#01475b', 1, 20, 0.35)}>
-                ₹{medicineDetails.special_price || medicineDetails.price}
-              </Text>
-            </View>
+          <View style={styles.bottomView}> 
             <View style={styles.bottonButtonContainer}>
-              <Button
-                onPress={() => {
-                  CommonLogEvent(AppRoutes.MedicineDetailsScene, 'Update quantity cart item');
-                  !isMedicineAddedToCart && onAddCartItem(medicineDetails);
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.BUY_NOW] = {
-                    'product name': medicineDetails.name,
-                    'product id': medicineDetails.sku,
-                    Brand: '',
-                    'Brand ID': '',
-                    'category name': '',
-                    'category ID': medicineDetails.category_id!,
-                    Price: medicineDetails.price,
-                    'Discounted Price': Number(medicineDetails.special_price) || undefined,
-                    Quantity: Number(getItemQuantity(sku)),
-                    'Service Area': 'Pharmacy',
-                  };
-                  postWebEngageEvent(WebEngageEventName.BUY_NOW, eventAttributes);
-                  props.navigation.navigate(AppRoutes.YourCart);
+              <View
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'flex-start',
+                  marginLeft: 15,
                 }}
-                title="BUY NOW"
-                style={{ width: '45%', backgroundColor: theme.colors.WHITE }}
-                titleTextStyle={{ color: '#fc9916' }}
-              />
+              >
+                <Text style={theme.viewStyles.text('SB', 17, '#02475b', 1, 20, 0.35)}>
+                  ₹{medicineDetails.special_price || medicineDetails.price}
+                </Text>
+                {!!medicineDetails.special_price && (
+                  <View
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                    }}
+                  >
+                    <Text
+                      style={[
+                        theme.viewStyles.text('M', 13, '#01475b', 1, 20, 0.35),
+                        {
+                          textDecorationLine: 'line-through',
+                          color: '#01475b',
+                          opacity: 0.6,
+                          paddingRight: 5,
+                        },
+                      ]}
+                    >
+                      (₹{medicineDetails.price})
+                    </Text>
+                    <Text
+                      style={theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35)}
+                    >{discountPercent}% off</Text>
+                  </View>
+                )}
+              </View>
               {isMedicineAddedToCart ? (
                 <AddToCartButtons
                   numberOfItemsInCart={itemQty}
