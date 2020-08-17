@@ -340,12 +340,12 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
   const removeNonDeliverableItemsFromCart = () => {
     if (nonServicableSKU.length) {
-      let arrId: any[] = [];
+      let arrSku: any[] = [];
       nonServicableSKU.map((nonDeliverableSKU: string) => {
         let obj = cartItems.find((o) => o.sku === nonDeliverableSKU);
-        arrId.push(obj.id);
+        arrSku.push(obj.sku);
       });
-      removeCartItems && removeCartItems(arrId);
+      removeCartItems && removeCartItems(arrSku);
       setShowNonDeliverablePopup(false);
       setNonServicableSKU([]);
     }

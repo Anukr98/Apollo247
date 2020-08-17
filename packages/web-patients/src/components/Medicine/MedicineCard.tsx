@@ -177,7 +177,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
   };
   const params = useParams<Params>();
   const paramSearchText = params.searchText;
-  const { addCartItem, cartItems, updateCartItem, removeCartItem } = useShoppingCart();
+  const { addCartItem, cartItems, updateCartItem, removeCartItemSku } = useShoppingCart();
   const mascotRef = useRef(null);
   const [iśNotifyMeDialogOpen, setIsNotifyMeDialogOpen] = useState<boolean>(false);
   const [selectedMedicineName, setSelectedMedicineName] = useState<string>('');
@@ -327,7 +327,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                             value: product.special_price || product.price,
                           });
                           /* Gtm code end  */
-                          removeCartItem && removeCartItem(product.id);
+                          removeCartItemSku && removeCartItemSku(product.sku);
                         } else {
                           const cartItem: MedicineCartItem = {
                             MaxOrderQty: product.MaxOrderQty,
