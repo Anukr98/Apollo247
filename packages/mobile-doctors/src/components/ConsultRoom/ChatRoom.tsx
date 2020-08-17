@@ -481,7 +481,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         messageCodes.autoResponse,
         messageCodes.leaveChatRoom,
         messageCodes.patientJoined,
-      ].includes(rowData.message)
+        messageCodes.patientRejected,
+      ].includes(rowData.message) ||
+      JSON.stringify(messageCodes.patientRejected) === JSON.stringify(rowData)
     ) {
       return null;
     }
