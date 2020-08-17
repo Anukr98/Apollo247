@@ -70,7 +70,6 @@ export interface MedicineCartContextProps {
   cartItems: MedicineCartItem[];
   setCartItems: ((cartItems: MedicineCartItem[]) => void) | null;
   addCartItem: ((item: MedicineCartItem) => void) | null;
-  removeCartItem: ((itemId: MedicineCartItem['id']) => void) | null;
   removeCartItemSku: ((sku: MedicineCartItem['sku']) => void) | null;
   removeCartItems: ((itemId: MedicineCartItem['arrSku']) => void) | null;
   updateCartItem:
@@ -129,7 +128,6 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   cartItems: [],
   setCartItems: null,
   addCartItem: null,
-  removeCartItem: null,
   removeCartItemSku: null,
   removeCartItems: null,
   updateCartItem: null,
@@ -344,11 +342,6 @@ export const MedicinesCartProvider: React.FC = (props) => {
     }
   };
 
-  const removeCartItem: MedicineCartContextProps['removeCartItem'] = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
-    setIsCartUpdated(true);
-  };
-
   const removeCartItemSku: MedicineCartContextProps['removeCartItemSku'] = (sku: string) => {
     setCartItems(cartItems.filter((item) => item.sku !== sku));
     setIsCartUpdated(true);
@@ -485,7 +478,6 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setCartItems,
         itemsStr,
         addCartItem,
-        removeCartItem,
         removeCartItemSku,
         removeCartItems,
         updateCartItem,
@@ -542,7 +534,6 @@ export const useShoppingCart = () => ({
   cartItems: useShoppingCartContext().cartItems,
   setCartItems: useShoppingCartContext().setCartItems,
   addCartItem: useShoppingCartContext().addCartItem,
-  removeCartItem: useShoppingCartContext().removeCartItem,
   removeCartItemSku: useShoppingCartContext().removeCartItemSku,
   removeCartItems: useShoppingCartContext().removeCartItems,
   updateCartItem: useShoppingCartContext().updateCartItem,
