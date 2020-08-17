@@ -499,12 +499,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         setRescheduleCount(appointmentDetails.rescheduleCount);
       }
       const currentTime = new Date().getTime();
-      const aptArray = appointmentDetails.appointmentDateTime
-        ? appointmentDetails.appointmentDateTime.split('T')
-        : ['', ''];
-
-      const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
-      const difference = Math.round((appointmentTime - currentTime) / 60000);
+      const appointmentTime = new Date(appointmentDetails.appointmentDateTime);
       const differenceInWords = formatDistanceStrict(appointmentTime, currentTime);
 
       const {
@@ -535,11 +530,11 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         });
       }
 
-      const otherDateMarkup = (appointmentTime: number) => {
-        if (isTomorrow(new Date(appointmentTime))) {
-          return `Tomorrow ${format(new Date(appointmentTime), 'h:mm a')}`;
+      const otherDateMarkup = (appointmentTime: Date) => {
+        if (isTomorrow(appointmentTime)) {
+          return `Tomorrow ${format(appointmentTime, 'h:mm a')}`;
         } else {
-          return format(new Date(appointmentTime), 'dd MMM yyyy, h:mm a');
+          return format(appointmentTime, 'dd MMM yyyy, h:mm a');
         }
       };
 
@@ -702,8 +697,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                           <img src={require('images/ic_calendar_show.svg')} alt="" />
                         </div>
                         <div className={classes.details}>
-                          {difference <= 15 && difference > 0
-                            ? `in ${difference} mins`
+                          {differenceInMinutes <= 15 && differenceInMinutes > 0
+                            ? `in ${differenceInMinutes} mins`
                             : otherDateMarkup(appointmentTime)}
                         </div>
                       </div>
