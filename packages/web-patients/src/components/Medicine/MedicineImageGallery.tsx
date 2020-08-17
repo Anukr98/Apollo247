@@ -14,6 +14,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         width: 80,
+        position: 'absolute',
+        top: 20,
+        right: 20,
       },
       '& .image-gallery-slides': {
         border: 'solid 1px rgba(151,151,151,0.24)',
