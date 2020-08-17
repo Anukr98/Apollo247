@@ -396,7 +396,8 @@ export async function sendCallsDisconnectNotification(
   pushNotificationInput: PushNotificationInput,
   patientsDb: Connection,
   consultsDb: Connection,
-  doctorsDb: Connection
+  doctorsDb: Connection,
+  callType: APPT_CALL_TYPE,
 ) {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
@@ -426,6 +427,7 @@ export async function sendCallsDisconnectNotification(
       type: 'call_disconnect',
       appointmentId: appointment.id.toString(),
       doctorName: 'Dr. ' + doctorDetails.firstName,
+      callType: callType,
     },
   };
 
@@ -640,6 +642,10 @@ export async function sendCallsNotification(
         type: 'call_start',
         appointmentId: appointment.id.toString(),
         doctorName: 'Dr. ' + doctorDetails.firstName,
+        patientName: patientDetails.firstName,
+        callType: callType,
+        appointmentCallId: appointmentCallId,
+        doctorType: doctorType,
       },
     };
 
@@ -1826,7 +1832,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -2423,7 +2429,7 @@ const testPushNotification: Resolver<
   { deviceToken: String },
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
