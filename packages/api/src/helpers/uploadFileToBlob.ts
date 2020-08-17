@@ -64,8 +64,9 @@ export async function uploadPdfFileToBlobStorage(
     process.env.AZURE_STORAGE_CONNECTION_STRING_API,
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
-
+  console.log(filePath, fileName, 'file details');
   const readmeBlob = await client.uploadFile({ name: fileName, filePath }).catch((error) => {
+    console.log(error, 'file error');
     throw error;
   });
   fs.unlinkSync(filePath);
