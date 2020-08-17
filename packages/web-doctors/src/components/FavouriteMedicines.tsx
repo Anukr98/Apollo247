@@ -2126,19 +2126,10 @@ export const FavouriteMedicines: React.FC = () => {
     setTabletsCount('1');
   };
 
-  const handleFreeTextInputErr = (value: string) => {
-    if (value.trim().length == 0) {
-      setFreeTextErr(true);
-    } else {
-      setFreeTextErr(false);
-      setMedicineCustomDetails(value);
-    }
-  };
-
   const handleSaveFreeText = () => {
     if (!medicineCustomDetails) {
       setFreeTextErr(true);
-    } else if (medicineCustomDetails && medicineCustomDetails.length == 0) {
+    } else if (medicineCustomDetails && medicineCustomDetails.trim().length == 0) {
       setFreeTextErr(true);
     } else {
       setFreeTextErr(false);
@@ -2931,7 +2922,7 @@ export const FavouriteMedicines: React.FC = () => {
                                 placeholder="Type here..."
                                 value={medicineCustomDetails}
                                 onChange={(event: any) => {
-                                  handleFreeTextInputErr(event.target.value);
+                                  setMedicineCustomDetails(event.target.value);
                                 }}
                               />
                             </div>
