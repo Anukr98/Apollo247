@@ -149,4 +149,16 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .orderBy('case_sheet.version', 'DESC')
       .getMany();
   }
+
+  getSDLatestCompletedCaseSheet(appointmentId: string) {
+    const juniorDoctorType = DoctorType.JUNIOR;
+    return this.createQueryBuilder('case_sheet')
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+      .leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')
+      .where('case_sheet.appointment = :appointmentId', { appointmentId })
+      .andWhere('case_sheet.doctorType != :juniorDoctorType', { juniorDoctorType })
+      .andWhere('case_sheet.sentToPatient = :sentToPatient', { sentToPatient: true })
+      .orderBy('case_sheet.version', 'DESC')
+      .getOne();
+  }
 }
