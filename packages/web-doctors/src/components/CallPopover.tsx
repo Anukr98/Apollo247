@@ -1636,7 +1636,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status: any, response: any) => {}
     );
-    setPlayRingtone(true);
+    {
+      joinPrompt || floatingJoinPrompt ? setPlayRingtone(false) : setPlayRingtone(true);
+    }
+
     actionBtn();
   };
   const actionBtn = () => {
@@ -3731,7 +3734,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             setIsVideoCall(true);
             setDisableOnCancel(true);
             setIscall(true);
-            setPlayRingtone(false);
           }}
         >
           <img
@@ -3783,7 +3785,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 setDisableOnCancel(true);
                 setIscall(true);
                 setJoinPrompt(false);
-                setPlayRingtone(false);
               }}
             >
               {'PROCEED'}

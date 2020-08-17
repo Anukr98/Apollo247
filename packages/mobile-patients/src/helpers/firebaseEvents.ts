@@ -16,7 +16,6 @@ export enum FirebaseEventName {
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
-  BUY_NOW = 'Buy Now',
   PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
   DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart Viewed',
   PHARMACY_PROCEED_TO_PAY_CLICKED = 'Pharmacy Proceed To Pay Clicked',
@@ -228,18 +227,6 @@ export interface FirebaseEvents {
     // Gender: string;
     // 'Mobile Number': string;
     // 'Customer ID': string;
-  };
-  [FirebaseEventName.BUY_NOW]: {
-    productname: string;
-    productid: string; // (SKUID)
-    Brand: string;
-    BrandID: string;
-    categoryname: string;
-    categoryID: string;
-    Price: number;
-    DiscountedPrice: number;
-    Quantity: number;
-    ServiceArea: 'Pharmacy' | 'Diagnostic';
   };
   [FirebaseEventName.PHARMACY_CART_VIEWED]: {
     TotalItemsInCart: number;

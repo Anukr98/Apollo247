@@ -157,6 +157,7 @@ import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
 import { ChatRoom_NotRecorded_Value } from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import RNCallKeep from 'react-native-callkeep';
+import VoipPushNotification from 'react-native-voip-push-notification';
 
 interface OpentokStreamObject {
   connection: {
@@ -407,7 +408,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [PipView, setPipView] = useState<boolean>(false);
   const [isCall, setIsCall] = useState<boolean>(false);
   const [onSubscribe, setOnSubscribe] = useState<boolean>(false);
-  const [isAudio, setIsAudio] = useState<boolean>(false);
+  const isAudio = useRef<boolean>(false);
   const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
   const [showAudioPipView, setShowAudioPipView] = useState<boolean>(true);
   const [showPopup, setShowPopup] = useState(false);
@@ -673,6 +674,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }, 2000);
     if (isIos()) {
       handleCallkitEventListeners();
+      handleVoipEventListeners();
     }
   }, []);
 
@@ -687,6 +689,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const handleCallkitEventListeners = () => {
     RNCallKeep.addEventListener('endCall', onDisconnetCallAction);
     RNCallKeep.addEventListener('answerCall', onAnswerCallAction);
+  };
+
+  const handleVoipEventListeners = () => {
+    VoipPushNotification.addEventListener('notification', (notification) => {
+      // on receive voip push
+      const payload = notification && notification.getData();
+      if (payload && payload.appointmentId) {
+        isAudio.current = notification.getData().isVideo ? false : true;
+      }
+    });
   };
 
   const onAnswerCallAction = () => {
@@ -729,10 +741,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       callPermissions(() => {
         if (callType === 'VIDEO') {
           setOnSubscribe(true);
-          setIsAudio(false);
+          isAudio.current = false;
         } else if (callType === 'AUDIO') {
           setOnSubscribe(true);
-          setIsAudio(true);
+          isAudio.current = true;
           callhandelBack = false;
         }
         playSound();
@@ -1188,7 +1200,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (nextAppState === 'background' || nextAppState === 'inactive') {
       console.log('nextAppState :' + nextAppState, abondmentStarted);
       if (onSubscribe) {
-        props.navigation.setParams({ callType: isAudio ? 'AUDIO' : 'VIDEO' });
+        props.navigation.setParams({ callType: isAudio.current ? 'AUDIO' : 'VIDEO' });
       }
     } else if (nextAppState === 'active') {
       const permissionSettings: string | null = await AsyncStorage.getItem('permissionHandler');
@@ -1197,10 +1209,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           if (callType) {
             if (callType === 'VIDEO') {
               setOnSubscribe(true);
-              setIsAudio(false);
+              isAudio.current = false;
             } else if (callType === 'AUDIO') {
               setOnSubscribe(true);
-              setIsAudio(true);
+              isAudio.current = true;
               callhandelBack = false;
             }
             playSound();
@@ -1499,6 +1511,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
       console.log('Publisher stream created!', event);
+      stopSound();
     },
     streamDestroyed: (event: string) => {
       console.log('Publisher stream destroyed!', event);
@@ -2390,7 +2403,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (message.message.isTyping) {
       if (message.message.message === audioCallMsg && !patientJoinedCall.current) {
         // if patient has not joined meeting room
-        setIsAudio(true);
+        isAudio.current = true;
         setOnSubscribe(true);
         callhandelBack = false;
         // stopCallAbondmentTimer();
@@ -2400,7 +2413,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         // if patient has not joined meeting room
         setOnSubscribe(true);
         callhandelBack = false;
-        setIsAudio(false);
+        isAudio.current = false;
         // stopCallAbondmentTimer();
         playSound();
         setDoctorJoinedChat && setDoctorJoinedChat(true);
@@ -5503,7 +5516,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const endVoipCall = () => {
     if (isIos()) {
-      RNCallKeep.endCall(appointmentData.id);
+      RNCallKeep.endAllCalls();
     }
   };
 
@@ -5935,8 +5948,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       (status, response) => {}
     );
     AsyncStorage.setItem('callDisconnected', 'false');
-
-    if (isAudio && !patientJoinedCall.current) {
+    if (isAudio.current && !patientJoinedCall.current) {
       setIsAudioCall(true);
     } else {
       setIsCall(true);
@@ -5949,7 +5961,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {
         message: {
           isTyping: true,
-          message: isAudio ? 'Audio call ended' : 'Video call ended',
+          message: isAudio.current ? 'Audio call ended' : 'Video call ended',
           duration: callTimerStarted,
           id: patientId,
           messageDate: new Date(),
