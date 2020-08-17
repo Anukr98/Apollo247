@@ -66,6 +66,7 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     orderId: String
     paymentMode: PAYMENT_METHODS
     healthCredits: Float
+    partnerInfo: String
   }
 
   type SaveMedicineOrderPaymentMqResult {
@@ -98,6 +99,7 @@ type MedicinePaymentMqInput = {
   CODCity: CODCity;
   paymentMode: PAYMENT_METHODS_REVERSE;
   healthCredits: number;
+  partnerInfo: string;
 };
 
 enum CODCity {
@@ -172,6 +174,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
     responseCode: medicinePaymentMqInput.responseCode,
     responseMessage: medicinePaymentMqInput.responseMessage,
     bankTxnId: medicinePaymentMqInput.bankTxnId,
+    partnerInfo: medicinePaymentMqInput.partnerInfo,
   };
   if (medicinePaymentMqInput.healthCredits) {
     paymentAttrs.healthCreditsRedeemed = medicinePaymentMqInput.healthCredits;

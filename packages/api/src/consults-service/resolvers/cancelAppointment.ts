@@ -19,7 +19,7 @@ import { cancellationEmailTemplate } from 'helpers/emailTemplates/cancellationEm
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
-import { addMilliseconds, format, addDays } from 'date-fns';
+import { addMilliseconds, format } from 'date-fns';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';

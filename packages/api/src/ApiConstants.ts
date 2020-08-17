@@ -448,6 +448,8 @@ export enum ApiConstants {
   WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary',
 
   ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE = 'R000247',
+
+  PARTNER_SBI = 'SBIYONO',
 }
 
 export enum PATIENT_REPO_RELATIONS {
