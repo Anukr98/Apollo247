@@ -530,6 +530,7 @@ export interface AppointmentPaymentInput {
   bankName?: string | null;
   refundAmount?: number | null;
   paymentMode?: PAYMENT_METHODS | null;
+  partnerInfo?: string | null;
 }
 
 export interface BookAppointmentInput {
@@ -801,6 +802,7 @@ export interface MedicinePaymentMqInput {
   orderId?: string | null;
   paymentMode?: PAYMENT_METHODS | null;
   healthCredits?: number | null;
+  partnerInfo?: string | null;
 }
 
 export interface MessageInput {
@@ -934,11 +936,6 @@ export interface SaveDeviceTokenInput {
   patientId: string;
 }
 
-export interface VoipPushTokenInput {
-  patientId: string;
-  voipToken: string;
-}
-
 export interface SavePatientNotificationSettingsInput {
   patient: string;
   commissionNotification?: boolean | null;
@@ -1038,6 +1035,11 @@ export interface prescriptionFileProperties {
   fileName: string;
   mimeType: string;
   content: string;
+}
+
+export interface voipPushTokenInput {
+  patientId?: string | null;
+  voipToken?: string | null;
 }
 
 //==============================================================
