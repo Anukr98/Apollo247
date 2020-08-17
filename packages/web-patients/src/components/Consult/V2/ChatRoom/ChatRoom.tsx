@@ -587,6 +587,20 @@ export const ChatRoom: React.FC = () => {
     nextAvailableSlot(params.doctorId, new Date());
     setIsModalOpen(true);
   };
+
+  const handleAcceptReschedule = () => {
+    const bookRescheduleInput = {
+      appointmentId: params.appointmentId,
+      doctorId: params.doctorId,
+      newDateTimeslot: nextSlotAvailable,
+      initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+      initiatedId: patientId,
+      patientId: patientId,
+      rescheduledId: '',
+    };
+    rescheduleCount < 3 ? rescheduleAPI(bookRescheduleInput) : setIsChangeSlot(true);
+  };
+
   if (loading) {
     return <LinearProgress />;
   }
@@ -688,7 +702,7 @@ export const ChatRoom: React.FC = () => {
                   setIsPopoverOpen={setIsModalOpen}
                   doctorDetails={data.getDoctorDetailsById}
                   onBookConsult={(popover: boolean) => setIsModalOpen(popover)}
-                  isRescheduleConsult={rescheduleCount < 3 ? true : false}
+                  isRescheduleConsult={rescheduleCount < 3}
                   appointmentId={params.appointmentId}
                   rescheduleAPI={rescheduleAPI}
                 />
@@ -702,11 +716,11 @@ export const ChatRoom: React.FC = () => {
                       </h6>
                     ) : (
                       <h6>
-                        Since you have already rescheduled 3 times with Dr.{' '}
+                        {'Since you have already rescheduled 3 times with Dr. '}
                         {`${data &&
                           data.getDoctorDetailsById &&
-                          data.getDoctorDetailsById.firstName}`}
-                        , We will consider this a new paid appointment.
+                          data.getDoctorDetailsById.firstName}`}{' '}
+                        {`, We will consider this a new paid appointment.`}
                       </h6>
                     )}
                     <br />
@@ -736,18 +750,7 @@ export const ChatRoom: React.FC = () => {
                       className={classes.primaryBtn}
                       color="primary"
                       onClick={() => {
-                        const bookRescheduleInput = {
-                          appointmentId: params.appointmentId,
-                          doctorId: params.doctorId,
-                          newDateTimeslot: nextSlotAvailable,
-                          initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-                          initiatedId: patientId,
-                          patientId: patientId,
-                          rescheduledId: '',
-                        };
-                        rescheduleCount < 3
-                          ? rescheduleAPI(bookRescheduleInput)
-                          : setIsChangeSlot(true);
+                        handleAcceptReschedule();
                       }}
                     >
                       {' '}
