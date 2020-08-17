@@ -741,6 +741,11 @@ const useStyles = makeStyles((theme: Theme) => {
     ePrescriptionTitle: {
       zIndex: 9999,
     },
+    circlularProgress: {
+      display: 'flex',
+      padding: 20,
+      justifyContent: 'center',
+    },
   };
 });
 
@@ -1054,7 +1059,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       automatedText: '',
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
+        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
       url: '',
       transferInfo: '',
       messageDate: new Date(),
@@ -1087,7 +1092,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         automatedText: '',
         duration: `${
           timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
+          } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
         url: '',
         transferInfo: '',
         messageDate: new Date(),
@@ -1106,7 +1111,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       automatedText: '',
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
+        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
       url: '',
       transferInfo: '',
       messageDate: new Date(),
@@ -1171,7 +1176,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const setCookiesAcceptcall = () => {
     const cookieStr = `action=${
       callAudio === autoMessageStrings.videoCallMsg ? 'videocall' : 'audiocall'
-    }`;
+      }`;
     document.cookie = cookieStr + ';path=/;';
   };
 
@@ -1715,7 +1720,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '<30ml' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setDrinkPerWeek('<30ml')}
             >
               &lt; 30ml
@@ -1723,7 +1728,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '30ml-60ml' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setDrinkPerWeek('30ml-60ml')}
             >
               30ml-60ml
@@ -1731,7 +1736,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '>60ml' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setDrinkPerWeek('>60ml')}
             >
               &gt; 60ml
@@ -1762,7 +1767,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '99-100' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setTemperature('99-100')}
             >
               99-100
@@ -1770,7 +1775,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '100-101' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setTemperature('100-101')}
             >
               100-101
@@ -1778,7 +1783,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '102+' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setTemperature('102+')}
             >
               102+
@@ -1786,7 +1791,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === 'No Idea' ? classes.btnActive : ''
-              }`}
+                }`}
               onClick={() => setTemperature('No Idea')}
             >
               No Idea
@@ -1866,9 +1871,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   // add to consult q with automated questions.
                   const lifeStyle = `Smoke: ${_startCase(smokeHabit)}${
                     smokeHabit === 'yes' ? ` ${smokes}` : ''
-                  }, Drink: ${_startCase(drinkHabit)}${
+                    }, Drink: ${_startCase(drinkHabit)}${
                     drinkHabit === 'yes' ? ` ${drinkPerWeek}` : ''
-                  }`;
+                    }`;
                   setConsultQMutationLoading(true);
                   // console.log(lifeStyle, 'life style is...........');
                   mutationAddToConsultQ({
@@ -1948,7 +1953,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       <div
         className={`${classes.chatSection} ${
           !showVideo ? classes.chatWindowContainer : classes.audioVideoContainer
-        } `}
+          } `}
       >
         {showVideo && sessionId !== '' && token !== '' && (
           <ChatVideo
@@ -1980,11 +1985,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   <div className={classes.incomingCallWindow}>
                     <img
                       src={require('images/doctor_profile_image.png')}
-                      // src={
-                      //   profileImage !== null
-                      //     ? profileImage
-                      //     : require('images/doctor_profile_image.png')
-                      // }
+                    // src={
+                    //   profileImage !== null
+                    //     ? profileImage
+                    //     : require('images/doctor_profile_image.png')
+                    // }
                     />
                     <div className={classes.callOverlay}>
                       <div className={classes.topText}>Ringing</div>
@@ -2047,7 +2052,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               <span id="scrollDiv" ref={scrollDivRef}></span>
             </Scrollbars>
           </div>
-
           {autoQuestionsCompleted ? (
             <div className={`${classes.chatWindowFooter} ${classes.chatWindowFooterInput}`}>
               <AphTextField
@@ -2112,29 +2116,31 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             </div>
           ) : !appDataLoading ? (
             consultQMutationLoading ? (
-              <CircularProgress size={22} color="primary" />
-            ) : (
-              <div className={classes.quesContainer}>
-                <Slider
-                  {...sliderSettings}
-                  className={classes.slider}
-                  ref={(slider) => (sliderRef.current = slider)}
-                >
-                  {heightQuestionContent()}
-                  {weightQuestionContent()}
-                  {drugAlergyQuestionChoice()}
-                  {drugsInput() /*slide 4 */}
-                  {foodAlergyQuestionChoice()}
-                  {foodAlergyInput() /*slide 6 */}
-                  {smokeQuestionChoice()}
-                  {smokeInput() /*slide 8 */}
-                  {drinkQuestionChoice()}
-                  {drinkInput() /*slide 10 */}
-                  {temperatureInput()}
-                  {bpInput()}
-                </Slider>
+              <div className={classes.circlularProgress}>
+                <CircularProgress />
               </div>
-            )
+            ) : (
+                <div className={classes.quesContainer}>
+                  <Slider
+                    {...sliderSettings}
+                    className={classes.slider}
+                    ref={(slider) => (sliderRef.current = slider)}
+                  >
+                    {heightQuestionContent()}
+                    {weightQuestionContent()}
+                    {drugAlergyQuestionChoice()}
+                    {drugsInput() /*slide 4 */}
+                    {foodAlergyQuestionChoice()}
+                    {foodAlergyInput() /*slide 6 */}
+                    {smokeQuestionChoice()}
+                    {smokeInput() /*slide 8 */}
+                    {drinkQuestionChoice()}
+                    {drinkInput() /*slide 10 */}
+                    {temperatureInput()}
+                    {bpInput()}
+                  </Slider>
+                </div>
+              )
           ) : null}
 
           <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
