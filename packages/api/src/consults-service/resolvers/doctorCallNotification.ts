@@ -143,12 +143,12 @@ const endCallNotification: Resolver<
 
   if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']) {
     hitCallKitCurl(
-      voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'], 
-      doctorName, 
-      callDetails.appointment.id, 
+      voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
+      doctorName,
+      callDetails.appointment.id,
       callDetails.appointment.patientId,
-      false, 
-      APPT_CALL_TYPE.AUDIO, 
+      false,
+      APPT_CALL_TYPE.AUDIO,
       args.isDev)
   }
 
@@ -328,7 +328,8 @@ const sendCallDisconnectNotification: Resolver<
       pushNotificationInput,
       patientsDb,
       consultsDb,
-      doctorsDb
+      doctorsDb,
+      args.callType
     );
     console.log(notificationResult, 'doctor call appt notification');
   }
