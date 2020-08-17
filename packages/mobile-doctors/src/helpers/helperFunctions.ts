@@ -294,6 +294,7 @@ export const messageCodes = {
   autoResponse: '^^#doctorAutoResponse',
   leaveChatRoom: '^^#leaveChatRoom',
   patientJoined: '^^#patientJoinedMeetingRoom',
+  patientRejected: '^^#PATIENT_REJECTED_CALL',
 };
 
 export const formatFloating = (value: string) => {

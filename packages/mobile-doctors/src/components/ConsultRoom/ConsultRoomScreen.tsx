@@ -273,7 +273,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     // favTestLoading,
     // favTestError,
   } = CaseSheetAPI();
-  const { setOpenTokKeys, setCallBacks, callData, callOptions } = useAudioVideo();
+  const { setOpenTokKeys, setCallBacks, callData, callOptions, errorPopup } = useAudioVideo();
   useEffect(() => {
     getSpecialties();
     postBackendWebEngage(WebEngageEvent.DOCTOR_IN_CHAT_WINDOW);
@@ -1458,6 +1458,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         const messageText = message.message;
         if (message.isTyping) {
           const audioVideoMethod = () => {
+            AsyncStorage.setItem('callDisconnected', 'true');
             callhandelBack = true;
             addMessages(message);
             callOptions.stopCalls(false);
@@ -1515,6 +1516,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 }
               });
               break;
+            case messageCodes.patientRejected:
+              AsyncStorage.setItem('callDisconnected', 'true');
+              errorPopup('Patient has rejected the call.', theme.colors.APP_YELLOW, 10);
+              hideFloatingContainer();
+              callOptions.stopCalls(false);
+              callOptions.setCallAccepted(false);
+              break;
             default:
           }
         } else if (
@@ -1539,6 +1547,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               }
             }
           });
+        } else if (
+          message === messageCodes.patientRejected ||
+          messageText === messageCodes.patientRejected
+        ) {
+          AsyncStorage.setItem('callDisconnected', 'true');
+          errorPopup('Patient has rejected the call.', theme.colors.APP_YELLOW, 10);
+          hideFloatingContainer();
+          callOptions.stopCalls(false);
+          callOptions.setCallAccepted(false);
         } else {
           callData.setMessageReceived(true);
           addMessages(message);
