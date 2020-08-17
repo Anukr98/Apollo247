@@ -419,6 +419,7 @@ export const JDConsultRoom: React.FC = () => {
   const { patientId, appointmentId, queueId, isActive } = useParams<
     JDConsultRoomParams
   >();
+  const [isCall, setIscall] = React.useState(true);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);
   const [isNewMessage, setIsNewMessage] = React.useState(false);
@@ -1873,6 +1874,8 @@ export const JDConsultRoom: React.FC = () => {
                       setSessionError={setSessionError}
                       setPublisherError={setPublisherError}
                       setSubscriberError={setSubscriberError}
+                      isCall={isCall}
+                      setIscall={setIscall}
                     />
                   )}
                   <div className={classes.contentGroup}>
@@ -1911,6 +1914,8 @@ export const JDConsultRoom: React.FC = () => {
                             setSessionError={setSessionError}
                             setPublisherError={setPublisherError}
                             setSubscriberError={setSubscriberError}
+                            isCall={isCall}
+                            setIscall={setIscall}
                           />
                         </div>
                       </div>

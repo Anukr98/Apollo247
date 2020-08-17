@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 0,
     color: theme.colors.SHERPA_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(11),
+    ...theme.fonts.IBMPlexSansMedium(12),
     lineHeight: 15,
   },
   personNameTextStyle: {
@@ -194,11 +194,22 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
   const renderAddToCartView = () => {
     return (
       <TouchableOpacity
-        style={[styles.addToCartViewStyle, isInStock && { paddingHorizontal: 10 }]}
+        style={[styles.addToCartViewStyle, isInStock && { paddingHorizontal: 23.5 }]}
         activeOpacity={1}
         onPress={!isInStock ? onNotifyMeClicked : onPressAdd}
       >
-        <Text style={{ ...theme.viewStyles.text('SB', !isInStock ? 9 : 10, '#fc9916', 1, !isInStock ? 17 : 20, 0) }}>
+        <Text
+          style={{
+            ...theme.viewStyles.text(
+              'SB',
+              !isInStock ? 9 : 10,
+              '#fc9916',
+              1,
+              !isInStock ? 17 : 24.2,
+              0
+            ),
+          }}
+        >
           {!isInStock ? 'NOTIFY ME' : 'ADD'}
         </Text>
       </TouchableOpacity>

@@ -98,7 +98,7 @@ export enum ApiConstants {
   ORDER_CANCEL_PREPAID_BODY = 'We have processed for a refund of Rs {refund} for Order {orderId}, the amount should reflect in your A/C in 10-14 working days.',
   ORDER_CANCEL_HC_REFUND_BODY = 'We have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance for Order {orderId}.',
   ORDER_CANCEL_PAYMENT_HC_REFUND_BODY = 'We have processed for a refund of Rs {refund} for Order {orderId}, the amount should reflect in your A/C in 10-14 working days. Also, Health Credits worth Rs {healthCreditsRefund} have been added back to your personal health credits balance.',
-  
+
   // medicine order partial refund
   ORDER_PAYMENT_PARTIAL_REFUND_BODY = 'We have processed for a refund of Rs {refundAmount} for your order {orderId}, the amount should reflect in your A/C in 10-14 working days.',
   //medicine order partial refund health credits
@@ -193,7 +193,6 @@ export enum ApiConstants {
 
   //medicine COD email configuration starts
   MEDICINE_SUPPORT_EMAILID = 'sushma.voleti@popcornapps.com',
-  MEDICINE_SUPPORT_CC_EMAILID = 'sumeeth.kumar@popcornapps.com,',
   MEDICINE_SUPPORT_EMAILID_PRODUCTION = 'hd.chennai@apollopharmacy.org',
   MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION = '',
   //medicine COD email configuration ends
@@ -250,7 +249,6 @@ export enum ApiConstants {
   FROM_MAIL = 'info@popcornapps.com',
   APPT_MAIL_SUBJECT = 'Your appointment has been booked successfully',
   FROM_NAME = 'Admin',
-  PATIENT_APPT_EMAILID = 'sriram.kanchan@popcornapps.com',
   PATIENT_APPT_CC_EMAILID = 'chanti.reddy@popcornapps.com',
   PATIENT_APPT_CC_EMAILID_TRIGGER = 'chanti.reddy@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
@@ -447,9 +445,11 @@ export enum ApiConstants {
   WHATSAPP_SD_OTP = 'inf_sd_otp_message',
   WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation',
   WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
-  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary',
+  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_button_2',
 
   ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE = 'R000247',
+
+  PARTNER_SBI = 'SBIYONO',
 }
 
 export enum PATIENT_REPO_RELATIONS {

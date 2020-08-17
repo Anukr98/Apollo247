@@ -96,24 +96,12 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           aptType: aptType,
         };
       } else {
-        const {
-          paymentType,
-          paymentMode,
-          healthCreditsRedeemed,
-          amountPaid,
-          medicineOrderRefunds
-        } = medicineOrderPayments[0];
-        if (amountPaid == 0) {
-          type = healthCreditsRedeemed != 0 ? 'HC' : paymentType;
-        } else {
-          type = !paymentMode
-            ? paymentType
-            : healthCreditsRedeemed != 0
-            ? 'HC + ' + PaymentModes[paymentMode]
-            : PaymentModes[paymentMode];
-        }
-
-        status = currentStatus === 'CANCELLED' && medicineOrderRefunds.length ? REFUND : medicineOrderPayments[0].paymentStatus;
+        const { paymentType, paymentMode, medicineOrderRefunds } = medicineOrderPayments[0];
+        type = !paymentMode ? paymentType : PaymentModes[paymentMode];
+        status =
+          currentStatus === 'CANCELLED' && medicineOrderRefunds.length
+            ? REFUND
+            : medicineOrderPayments[0].paymentStatus;
         return {
           leftHeaderText: 'Order No. - ' + orderAutoId,
           dateAndTime: getDate(dateAndTime),

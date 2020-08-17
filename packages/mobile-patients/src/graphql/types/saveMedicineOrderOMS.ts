@@ -2,13 +2,13 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { MedicineCartInput } from "./globalTypes";
+import { MedicineCartOMSInput } from "./globalTypes";
 
 // ====================================================
-// GraphQL mutation operation: SaveMedicineOrder
+// GraphQL mutation operation: saveMedicineOrderOMS
 // ====================================================
 
-export interface SaveMedicineOrder_SaveMedicineOrder {
+export interface saveMedicineOrderOMS_saveMedicineOrderOMS {
   __typename: "SaveMedicineOrderResult";
   errorCode: number | null;
   errorMessage: string | null;
@@ -16,10 +16,10 @@ export interface SaveMedicineOrder_SaveMedicineOrder {
   orderAutoId: number;
 }
 
-export interface SaveMedicineOrder {
-  SaveMedicineOrder: SaveMedicineOrder_SaveMedicineOrder;
+export interface saveMedicineOrderOMS {
+  saveMedicineOrderOMS: saveMedicineOrderOMS_saveMedicineOrderOMS;
 }
 
-export interface SaveMedicineOrderVariables {
-  MedicineCartInput: MedicineCartInput;
+export interface saveMedicineOrderOMSVariables {
+  medicineCartOMSInput: MedicineCartOMSInput;
 }

@@ -435,7 +435,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       appsflyerEventAttributes,
       paymentTypeID: paymentMode,
       bankCode: bankCode,
-      coupon: coupon ? coupon.code : null,
+      coupon: coupon ? coupon.coupon : null,
       cartItems: cartItems,
     });
   };
@@ -456,7 +456,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
-        coupon: coupon ? coupon.code : '',
+        coupon: coupon ? coupon.coupon : '',
         couponDiscount: coupon ? getFormattedAmount(couponDiscount) : 0,
         productDiscount: getFormattedAmount(productDiscount) || 0,
         quoteId: null,
@@ -595,7 +595,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       itemObj.quantity = item.quantity; // "1" or actual quantity
       items.push(itemObj);
     });
-    let code: any = coupon ? coupon.code : null;
+    let code: any = coupon ? coupon.coupon : null;
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
       coupon: code,
       currency: 'INR',
@@ -885,7 +885,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           <View style={{ ...styles.subCont, marginTop: 2 }}>
             <View>
               <Text style={styles.discountTxt}>Coupon Applied</Text>
-              <Text style={styles.discountTxt}>({coupon?.code})</Text>
+              <Text style={styles.discountTxt}>({coupon?.coupon})</Text>
             </View>
             <Text style={styles.discountTxt}>- Rs. {getFormattedAmount(couponDiscount)}</Text>
           </View>
@@ -926,13 +926,17 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               setHCorder(false);
             } else {
               setisOneApolloSelected(true);
-              if (availableHC >= grandTotal) {
-                setBurnHC(grandTotal);
-                setHCorder(true);
-                setScrollToend(true);
-                setTimeout(() => {
-                  setScrollToend(false);
-                }, 500);
+              if (
+                availableHC >= getFormattedAmount(grandTotal - deliveryCharges - packagingCharges)
+              ) {
+                setBurnHC(getFormattedAmount(grandTotal - deliveryCharges - packagingCharges));
+                if (deliveryCharges + packagingCharges == 0) {
+                  setHCorder(true);
+                  setScrollToend(true);
+                  setTimeout(() => {
+                    setScrollToend(false);
+                  }, 500);
+                }
               } else {
                 setBurnHC(availableHC);
               }
@@ -1137,45 +1141,52 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               }, 500);
             }
           }}
+          disabled={!!isOneApolloSelected}
           style={{
             ...styles.paymentModeCard,
             marginBottom: 10,
+            flexDirection: 'column',
+            justifyContent: 'center',
+            height: isOneApolloSelected ? 'auto' : 0.08 * windowHeight,
+            paddingVertical: 20,
           }}
         >
-          <View
-            style={{
-              opacity: isOneApolloSelected ? 0.5 : 1,
-              flex: 0.16,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            {isCashOnDelivery ? <CheckedIcon /> : <CheckUnselectedIcon />}
+          <View style={{ flexDirection: 'row' }}>
+            <View
+              style={{
+                opacity: isOneApolloSelected ? 0.5 : 1,
+                flex: 0.16,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {isCashOnDelivery ? <CheckedIcon /> : <CheckUnselectedIcon />}
+            </View>
+            <View
+              style={{
+                opacity: isOneApolloSelected ? 0.5 : 1,
+                flex: 0.84,
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+              }}
+            >
+              <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.COD_TEXT, 1, 20) }}>
+                CASH ON DELIVERY
+              </Text>
+            </View>
           </View>
-          <View
-            style={{
-              opacity: isOneApolloSelected ? 0.5 : 1,
-              flex: 0.84,
-              justifyContent: 'center',
-              alignItems: 'flex-start',
-            }}
-          >
-            <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.COD_TEXT, 1, 20) }}>
-              CASH ON DELIVERY
+          {!!isOneApolloSelected && (
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18),
+                marginTop: 10,
+                marginHorizontal: 25,
+              }}
+            >
+              ! COD option is not available along with OneApollo Health Credits.
             </Text>
-          </View>
+          )}
         </TouchableOpacity>
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansMedium(14),
-            color: theme.colors.LIGHT_BLUE,
-            marginHorizontal: 0.05 * windowWidth,
-            lineHeight: 20,
-            marginBottom: 15,
-          }}
-        >
-          COD is not available if HC are used.
-        </Text>
       </View>
     );
   };

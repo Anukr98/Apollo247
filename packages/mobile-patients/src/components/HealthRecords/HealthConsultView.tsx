@@ -18,9 +18,9 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Linking,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
@@ -53,7 +53,6 @@ import { useUIElements } from '../UIElementsProvider';
 import { useAppCommonData, LocationData } from '../AppCommonDataProvider';
 import { useApolloClient } from 'react-apollo-hooks';
 import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
-// import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -155,7 +154,6 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  // console.log(props.PastData, 'pastData');
 
   let item = (g(props, 'PastData', 'caseSheet') || []).find((obj: any) => {
     return obj!.doctorType !== 'JUNIOR';
@@ -400,11 +398,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                         let item =
                           props.PastData!.caseSheet &&
                           props.PastData!.caseSheet.find((obj: any) => {
-                            return (
-                              obj.doctorType === 'STAR_APOLLO' ||
-                              obj.doctorType === 'APOLLO' ||
-                              obj.doctorType === 'PAYROLL'
-                            );
+                            return obj.doctorType !== DoctorType.JUNIOR;
                           });
 
                         if (item == undefined) {
@@ -504,7 +498,6 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                 addMultipleCartItems!(medicines as ShoppingCartItem[]);
 
                                 const totalItems = (item.medicinePrescription || []).length;
-                                // const customItems = medicineAll.length - medicines.length;
                                 const outOfStockItems = medicines.filter((item) => !item!.isInStock)
                                   .length;
                                 const outOfStockMeds = medicines
@@ -517,7 +510,6 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                     totalItems == outOfStockItems
                                       ? 'Unfortunately, we do not have any medicines available right now.'
                                       : `Out of ${totalItems} medicines, you are trying to order, following medicine(s) are out of stock.\n\n${outOfStockMeds}\n`;
-                                  // Alert.alert('Uh oh.. :(', alertMsg);
                                 }
 
                                 const rxMedicinesCount =
@@ -539,14 +531,6 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                 }
                                 // Adding tests to DiagnosticsCart
                                 if (!locationDetails) {
-                                  // Alert.alert(
-                                  //   'Uh oh.. :(',
-                                  //   string.diagnostics.nonServiceableMsg.replace(
-                                  //     '{{city_name}}',
-                                  //     g(locationDetails, 'displayName')!
-                                  //   )
-                                  // );
-                                  // return;
                                   try {
                                     location = await doRequestAndAccessLocation();
                                     location && setLocationDetails!(location);
@@ -560,10 +544,6 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                   }
                                 }
                                 if (!testPrescription.length) {
-                                  // Alert.alert(
-                                  //   'Uh oh.. :(',
-                                  //   'No items are available in your location for now.'
-                                  // );
                                   setGlobalLoading!(false);
                                   return Promise.resolve([]);
                                 } else {
@@ -592,7 +572,6 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                               .catch((e) => {
                                 CommonBugFender('HealthConsultView_getMedicineDetailsApi', e);
                                 console.log({ e });
-                                // Alert.alert('Uh oh.. :(', e);
                                 handleGraphQlError(e);
                               })
                               .finally(() => {

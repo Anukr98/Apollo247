@@ -69,13 +69,19 @@ export class AppointmentRepository extends Repository<Appointment> {
         cacheAppointment.cancelledDate = new Date(cacheAppointment.cancelledDate);
       }
       if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.createdDate) {
-        cacheAppointment.paymentInfo.createdDate = new Date(cacheAppointment.paymentInfo.createdDate);
+        cacheAppointment.paymentInfo.createdDate = new Date(
+          cacheAppointment.paymentInfo.createdDate
+        );
       }
       if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.paymentDateTime) {
-        cacheAppointment.paymentInfo.paymentDateTime = new Date(cacheAppointment.paymentInfo.paymentDateTime);
+        cacheAppointment.paymentInfo.paymentDateTime = new Date(
+          cacheAppointment.paymentInfo.paymentDateTime
+        );
       }
       if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.updatedDate) {
-        cacheAppointment.paymentInfo.updatedDate = new Date(cacheAppointment.paymentInfo.updatedDate);
+        cacheAppointment.paymentInfo.updatedDate = new Date(
+          cacheAppointment.paymentInfo.updatedDate
+        );
       }
       return this.create(cacheAppointment);
     }
@@ -576,8 +582,10 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getTodaysAppointments(startDate: Date) {
     //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + '18:30');
-    const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
-    const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+    //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    //const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+    const newStartDate = new Date('2020-08-01T18:30');
+    const newEndDate = new Date('2020-08-30T18:30');
 
     return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')

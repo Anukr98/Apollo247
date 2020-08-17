@@ -26,7 +26,7 @@ import { Connection } from 'typeorm';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
-import { addMilliseconds, format, addDays, differenceInSeconds } from 'date-fns';
+import { addMilliseconds, format, differenceInSeconds } from 'date-fns';
 import {
   sendNotification,
   NotificationType,
@@ -70,6 +70,7 @@ export const makeAppointmentPaymentTypeDefs = gql`
     bankName: String
     refundAmount: Float
     paymentMode: PAYMENT_METHODS
+    partnerInfo: String
   }
 
   type AppointmentPayment {
@@ -125,6 +126,7 @@ type AppointmentPaymentInput = {
   bankName: string;
   refundAmount: number;
   paymentMode: PAYMENT_METHODS_REVERSE;
+  partnerInfo: string;
 };
 
 type AppointmentInputArgs = { paymentInput: AppointmentPaymentInput };
@@ -291,7 +293,7 @@ const makeAppointmentPayment: Resolver<
       ES_DOCTOR_SLOT_STATUS.BOOKED,
       processingAppointment.appointmentDateTime,
       processingAppointment
-    )
+    );
 
     //Send booking confirmation SMS,EMAIL & NOTIFICATION to patient
     sendPatientAcknowledgements(
@@ -327,7 +329,7 @@ const makeAppointmentPayment: Resolver<
     }
     if (
       timeDifference / 60 <=
-      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
+        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
       submitFlag == 1
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
@@ -435,6 +437,7 @@ const makeAppointmentPayment: Resolver<
   paymentInfo.paymentStatus = paymentInput.paymentStatus;
   paymentInfo.responseCode = paymentInput.responseCode;
   paymentInfo.responseMessage = paymentInput.responseMessage;
+  paymentInfo.partnerInfo = paymentInput.partnerInfo;
   await apptsRepo.updateAppointment(
     processingAppointment.id,
     {
@@ -539,8 +542,14 @@ const sendPatientAcknowledgements = async (
       : subjectLine + ' from ' + process.env.NODE_ENV;
 
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
+  const ccEmailIds =
+    process.env.NODE_ENV == 'dev' ||
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
+      ? ApiConstants.PATIENT_APPT_CC_EMAILID
+      : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
-    //ccEmail: <string>ccEmailIds.toString(),
+    ccEmail: <string>ccEmailIds.toString(),
     toEmail: <string>toEmailId.toString(),
     subject: subject,
     fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
