@@ -3,22 +3,20 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
 import { GET_DIAGNOSTIC_ORDER_LIST } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
   getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
-import { g, getOrderStatusText } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View, Text, Linking } from 'react-native';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { useUIElements } from '../UIElementsProvider';
 import { TestOrderNewCard } from '../ui/TestOrderNewCard';
@@ -78,95 +76,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       });
   }, []);
 
-  // console.log('', currentPatient);
-  // let { data, error, loading, refetch } = useQuery<
-  //   getDiagnosticOrdersList,
-  //   getDiagnosticOrdersListVariables
-  // >(GET_DIAGNOSTIC_ORDER_LIST, {
-  //   variables: { patientId: currentPatient && currentPatient.id },
-  //   fetchPolicy: 'no-cache',
-  // });
-
-  // const orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[] = props.navigation.getParam(
-  //   'orders'
-  // )||
-  // (!loading && g(data, 'getDiagnosticOrdersList', 'ordersList')) ||
-  // [];
-
-  // console.log({ orders });
-
-  // useEffect(() => {
-  //   const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-  //     refetch()
-  //       .then((data) => {
-  //         console.log('test orders', data);
-  //       })
-  //       .catch((error) => {
-  //         console.log('trestotdr erroe', error);
-  //       });
-  //   });
-  //   return () => {
-  //     _didFocusSubscription && _didFocusSubscription.remove();
-  //   };
-  // }, []);
-
-  const getDeliverType = (
-    order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
-    type: string
-  ) => {
-    if (order.slotTimings) {
-      return 'Home Visit';
-    } else {
-      return 'Clinic Visit';
-    }
-    // switch (type) {
-    //   case 'H':
-    //     return 'Home Visit';
-    //     break;
-    //   case 'C':
-    //     return 'Clinic Visit';
-    //     break;
-    //   case 'HC':
-    //     return 'Home or Clinic Visit';
-    //     break;
-    //   default:
-    //     return 'Unknown';
-    //     break;
-    // }
-  };
-
-  const getSortedList = (
-    orderStatusList: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
-  ) => {
-    return orderStatusList.sort(
-      (a, b) =>
-        moment(b!.statusDate)
-          .toDate()
-          .getTime() -
-        moment(a!.statusDate)
-          .toDate()
-          .getTime()
-    );
-  };
-
-  const getStatusType = (
-    orderStatusList: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
-  ) => {
-    const sortedList = getSortedList(orderStatusList);
-    return g(sortedList[0], 'orderStatus')!;
-  };
-
-  const getStatusDesc = (
-    orderStatusList: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
-  ) => {
-    const sortedList = getSortedList(orderStatusList);
-    return getOrderStatusText(g(sortedList[0], 'orderStatus')!);
-  };
-
-  const getFormattedTime = (time: string) => {
-    return moment(time).format('D MMM YY, hh:mm A');
-  };
-
   const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
     return moment((slot.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
   };
@@ -203,37 +112,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     );
   };
 
-  // const renderOrder = (
-  //   order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
-  //   index: number
-  // ) => {
-  //   const title =
-  //     g(order, 'diagnosticOrderLineItems', '0' as any, 'diagnostics', 'itemName') || 'Test';
-  //   return (
-  //     <TestOrderCard
-  //       style={[
-  //         { marginHorizontal: 20 },
-  //         index < orders.length - 1 ? { marginBottom: 8 } : { marginBottom: 20 },
-  //         index == 0 ? { marginTop: 20 } : {},
-  //       ]}
-  //       key={`${order!.id}`}
-  //       orderId={`#${order!.displayId}`}
-  //       onPress={() => {
-  //         props.navigation.navigate(AppRoutes.TestOrderDetails, {
-  //           orderId: order!.id,
-  //           setOrders: (orders: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList[]) =>
-  //             setOrders(orders),
-  //           refetch: refetch,
-  //         });
-  //       }}
-  //       title={title}
-  //       description={getDeliverType(order, order!.orderType)}
-  //       statusDesc={order!.orderStatus!}
-  //       status={order!.orderStatus!}
-  //       dateTime={getFormattedTime(order!.createdDate)}
-  //     />
-  //   );
-  // };
   const [scrollOffSet, setScrollOffSet] = useState<number>(0);
   const [show, setShow] = useState<boolean>(true);
 
