@@ -1136,14 +1136,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       messageDate: new Date(),
       cardType: 'patient',
     };
+    setShowVideoChat(false);
     publishMessage(appointmentId, composeMessage);
     setPlayRingtone(false);
     updateAppointmentSessionCall();
     startIntervalTimer(0);
     setCookiesAcceptcall();
-    //audio.pause();
     setShowVideo(true);
-    //setPlaying(!playing);
   };
 
   const mutationResponse = useMutation<UpdateAppointmentSession, UpdateAppointmentSessionVariables>(
