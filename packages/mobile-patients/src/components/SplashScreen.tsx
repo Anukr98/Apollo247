@@ -124,7 +124,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
-  
+
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
@@ -132,10 +132,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       console.log('Accept Params', params);
+      voipCallType.current = params.call_type;
       getAppointmentDataAndNavigate(params.appointment_id, true);
     });
     DeviceEventEmitter.addListener('reject', (params) => {
       console.log('Reject Params', params);
+      voipCallType.current = params.call_type;
       getAppointmentDataAndNavigate(params.appointment_id, false);
     });
     setBugfenderPhoneNumber();
@@ -203,7 +205,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
 
   const onDisconnetCallAction = () => {
-
     pubnub.publish(
       {
         message: {
@@ -236,7 +237,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         voipCallType.current = '';
       }
     );
-
   };
 
   const handleDeepLink = () => {
