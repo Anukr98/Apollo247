@@ -2557,6 +2557,7 @@ const sendDailyAppointmentSummary: Resolver<
           .lineTo(420, totalAppointments * 30)
           .stroke();
         pdfDoc.end();
+        await delay(350);
         console.log('pdf end');
         const blobName = await uploadPdfFileToBlobStorage(fileName, uploadPath);
         blobNames += blobName + ', ';
@@ -2605,6 +2606,9 @@ const sendDailyAppointmentSummary: Resolver<
   });
   const final = countOfNotifications + ' - ' + blobNames;
   //const fn = await uploadFileToBlob(uploadPath);
+  function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
   return ApiConstants.DAILY_APPOINTMENT_SUMMARY_RESPONSE.replace('{0}', final.toString());
 };
 
