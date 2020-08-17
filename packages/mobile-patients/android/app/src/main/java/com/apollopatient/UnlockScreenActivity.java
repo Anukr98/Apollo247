@@ -33,12 +33,22 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.google.gson.JsonObject;
+import com.pubnub.api.PNConfiguration;
+import com.pubnub.api.PubNub;
+import com.pubnub.api.callbacks.PNCallback;
+import com.pubnub.api.models.consumer.PNPublishResult;
+import com.pubnub.api.models.consumer.PNStatus;
 
 import java.util.Iterator;
 import java.util.List;
 
 
 public class UnlockScreenActivity extends ReactActivity implements UnlockScreenActivityInterface {
+    //PubNub start
+    PNConfiguration pnConfiguration = new PNConfiguration();
+    PubNub pubnub = new PubNub(pnConfiguration);
+    //PubNub end
 
     private static final String TAG = "MessagingService";
     private Ringtone ringtone;
@@ -55,6 +65,9 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        pnConfiguration.setSubscribeKey("sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b");
+        pnConfiguration.setPublishKey("pub-c-75e6dc17-2d81-4969-8410-397064dae70e");
+        pnConfiguration.setSecure(true);
 
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
         IntentFilter mIntentFilter = new IntentFilter();
@@ -124,6 +137,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         rejectCallBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
+                onDisconnected(appointment_id);
                 finish();
             }
         });
@@ -156,10 +170,6 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         });
     }
 
-    @Override
-    public void onDisconnected() {
-
-    }
 
     @Override
     public void onConnectFailure() {
@@ -169,6 +179,25 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
     @Override
     public void onIncoming(ReadableMap params) {
 
+    }
+
+    private void onDisconnected(String appointmentID) {
+        String notifyMessage="^^#PATIENT_REJECTED_CALL";
+        pubnub.publish()
+                .message(notifyMessage)
+                .channel(appointmentID)
+                .shouldStore(true)
+                .usePOST(true)
+                .async(new PNCallback<PNPublishResult>() {
+                    public void onResponse(PNPublishResult result, PNStatus status) {
+                        // handle publish result, status always present, result if successful
+                        // status.isError() to see if error happened
+                        if(!status.isError()) {
+                            System.out.println("pub timetoken: " + result.getTimetoken());
+                        }
+                        System.out.println("pub status code: " + status.getStatusCode());
+                    }
+                });
     }
 
     private void sendEvent(ReactContext reactContext, String eventName, WritableMap params) {
