@@ -1137,45 +1137,52 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               }, 500);
             }
           }}
+          disabled={!!isOneApolloSelected}
           style={{
             ...styles.paymentModeCard,
             marginBottom: 10,
+            flexDirection: 'column',
+            justifyContent: 'center',
+            height: isOneApolloSelected ? 'auto' : 0.08 * windowHeight,
+            paddingVertical: 20,
           }}
         >
-          <View
-            style={{
-              opacity: isOneApolloSelected ? 0.5 : 1,
-              flex: 0.16,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            {isCashOnDelivery ? <CheckedIcon /> : <CheckUnselectedIcon />}
+          <View style={{ flexDirection: 'row' }}>
+            <View
+              style={{
+                opacity: isOneApolloSelected ? 0.5 : 1,
+                flex: 0.16,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {isCashOnDelivery ? <CheckedIcon /> : <CheckUnselectedIcon />}
+            </View>
+            <View
+              style={{
+                opacity: isOneApolloSelected ? 0.5 : 1,
+                flex: 0.84,
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+              }}
+            >
+              <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.COD_TEXT, 1, 20) }}>
+                CASH ON DELIVERY
+              </Text>
+            </View>
           </View>
-          <View
-            style={{
-              opacity: isOneApolloSelected ? 0.5 : 1,
-              flex: 0.84,
-              justifyContent: 'center',
-              alignItems: 'flex-start',
-            }}
-          >
-            <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.COD_TEXT, 1, 20) }}>
-              CASH ON DELIVERY
+          {!!isOneApolloSelected && (
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18),
+                marginTop: 10,
+                marginHorizontal: 25,
+              }}
+            >
+              ! COD option is not available along with OneApollo Health Credits.
             </Text>
-          </View>
+          )}
         </TouchableOpacity>
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansMedium(14),
-            color: theme.colors.LIGHT_BLUE,
-            marginHorizontal: 0.05 * windowWidth,
-            lineHeight: 20,
-            marginBottom: 15,
-          }}
-        >
-          COD is not available if HC are used.
-        </Text>
       </View>
     );
   };

@@ -1568,7 +1568,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const sessionEventHandlers = {
     error: (error: OpentokError) => {
       AsyncStorage.setItem('callDisconnected', 'true');
-      let message = error.message;
       if (
         [
           'ConnectionDropped',
@@ -2441,6 +2440,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
       ) {
+        AsyncStorage.setItem('callDisconnected', 'true');
         setOnSubscribe(false);
         callhandelBack = true;
         setIsCall(false);
@@ -5456,6 +5456,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
+              AsyncStorage.setItem('callDisconnected', 'true');
               setIsAudioCall(false);
               stopTimer();
               setHideStatusBar(false);
@@ -5531,6 +5532,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
+            AsyncStorage.setItem('callDisconnected', 'true');
             pipType === 'audio' && setIsAudioCall(false);
             pipType === 'video' && setIsCall(false);
             setIsPublishAudio(true);
@@ -5744,6 +5746,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const handleEndCall = () => {
+    AsyncStorage.setItem('callDisconnected', 'true');
     setIsCall(false);
     setIsPublishAudio(true);
     setShowVideo(true);

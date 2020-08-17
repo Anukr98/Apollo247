@@ -215,26 +215,27 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
   const params = useParams<Params>();
-  const { addCartItem, cartItems, updateCartItem, removeCartItem } = useShoppingCart();
+  const { addCartItem, cartItems, updateCartItem, removeCartItemSku } = useShoppingCart();
   const mascotRef = useRef(null);
   const [iśNotifyMeDialogOpen, setIsNotifyMeDialogOpen] = useState<boolean>(false);
   const [selectedMedicineName, setSelectedMedicineName] = useState<string>('');
   const { currentPatient } = useAllCurrentPatients();
 
   const isInCart = (medicine: MedicineProduct) => {
-    const index = cartItems.findIndex((item) => item.id === medicine.id);
+    const index = cartItems.findIndex((cartItem) => cartItem.sku == medicine.sku);
     return index > -1;
   };
 
   const getQuantity = (medicine: MedicineProduct) => {
-    return cartItems.find((item) => item.id === medicine.id).quantity;
+    const findItem = cartItems.find((item) => item.sku === medicine.sku);
+    return findItem ? findItem.quantity : 0;
   };
 
   return (
     <Grid container spacing={2}>
       {props.medicineList && props.medicineList.length > 0
         ? props.medicineList.map((product: MedicineProduct) => (
-            <Grid key={product.id} item xs={6} sm={6} md={4} lg={4} className={classes.gridItem}>
+            <Grid key={product.sku} item xs={6} sm={6} md={4} lg={4} className={classes.gridItem}>
               <div className={classes.root}>
                 <Link
                   to={clientRoutes.medicineDetails(product.url_key)}
@@ -331,7 +332,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                               },
                             });
                             /**Gtm code End  */
-                            const index = cartItems.findIndex((item) => item.id === cartItem.id);
+                            const index = cartItems.findIndex((item) => item.sku === cartItem.sku);
                             if (index >= 0) {
                               updateCartItem && updateCartItem(cartItem);
                             } else {
@@ -372,7 +373,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                               value: product.special_price || product.price,
                             });
                             /* Gtm code end  */
-                            removeCartItem && removeCartItem(product.id);
+                            removeCartItemSku && removeCartItemSku(product.sku);
                           } else {
                             const cartItem: MedicineCartItem = {
                               MaxOrderQty: product.MaxOrderQty,

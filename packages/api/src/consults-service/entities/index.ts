@@ -482,6 +482,9 @@ export class AppointmentPayments extends BaseEntity {
   @Column({ type: 'text' })
   responseMessage: string;
 
+  @Column({ nullable: true })
+  partnerInfo: string;
+
   @UpdateDateColumn({ nullable: true })
   updatedDate: Date;
 

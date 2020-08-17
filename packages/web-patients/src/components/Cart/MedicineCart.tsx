@@ -671,6 +671,7 @@ export const MedicineCart: React.FC = (props) => {
     durationDays,
     prescriptionDuration,
     clearCartInfo,
+    removeCartItemSku,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -684,7 +685,6 @@ export const MedicineCart: React.FC = (props) => {
 
   const urlParams = new URLSearchParams(window.location.search);
   const nonCartFlow = urlParams.get('prescription') === 'true';
-
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isChennaiCheckoutDialogOpen, setIsChennaiCheckoutDialogOpen] = React.useState<boolean>(
@@ -692,16 +692,12 @@ export const MedicineCart: React.FC = (props) => {
   );
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [priceDifferencePopover, setPriceDifferencePopover] = React.useState<boolean>(false);
-
   const [isApplyCouponDialogOpen, setIsApplyCouponDialogOpen] = React.useState<boolean>(false);
-
   const [paymentMethod, setPaymentMethod] = React.useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
-
   const { currentPincode } = useContext(LocationContext);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [uploadingFiles, setUploadingFiles] = React.useState<boolean>(false);
-
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const [priceDiffArr, setPriceDiffArr] = useState([]);
@@ -765,6 +761,12 @@ export const MedicineCart: React.FC = (props) => {
             parseFloat(item.price.toFixed(2)) !==
             parseFloat(Number(itemToBeMatched.mrp * parseInt(item.mou)).toFixed(2))
           ) {
+            if (itemToBeMatched.qty === 0) {
+              // item in cart has gone out of stock
+              removeCartItemSku(item.sku);
+              setPriceDifferencePopover(true);
+              return;
+            }
             let newItem = { ...item };
             newItem['price'] = parseFloat(
               Number(itemToBeMatched.mrp * parseInt(item.mou)).toFixed(2)
@@ -1246,7 +1248,7 @@ export const MedicineCart: React.FC = (props) => {
           itemCount: cartItems ? cartItems.length : 0,
           couponCode: couponCode ? couponCode : null,
           couponValue:
-            validateCouponResult && validateCouponResult.discountedTotals
+            validateCouponResult && validateCouponResult.discount
               ? validateCouponResult.discount.toFixed(2)
               : 0,
           finalBookingValue: totalWithCouponDiscount,
@@ -1572,7 +1574,7 @@ export const MedicineCart: React.FC = (props) => {
                                 </span>
                               </div>
                               <div className={classes.couponText}>
-                                {validateCouponResult ? validateCouponResult.successMessage : ''}
+                                {validateCouponResult ? validateCouponResult.reason : ''}
                               </div>
                             </>
                           )}
@@ -1580,7 +1582,7 @@ export const MedicineCart: React.FC = (props) => {
                       </div>
                       {couponCode.length > 0 &&
                         validateCouponResult &&
-                        validateCouponResult.discountedTotals &&
+                        validateCouponResult.discount &&
                         validateCouponResult.discount > 0 && (
                           <div className={classes.discountTotal}>
                             {`Savings of Rs.
@@ -1685,8 +1687,8 @@ export const MedicineCart: React.FC = (props) => {
                                 JSON.stringify({
                                   couponCode: couponCode == '' ? null : couponCode,
                                   couponValue:
-                                    validateCouponResult && validateCouponResult.discountedTotals
-                                      ? validateCouponResult.discount.toFixed(2)
+                                    validateCouponResult && validateCouponResult.discount
+                                      ? Number(validateCouponResult.discount).toFixed(2)
                                       : 0,
                                   totalWithCouponDiscount: totalWithCouponDiscount,
                                   deliveryTime: deliveryTime,
@@ -1819,12 +1821,10 @@ export const MedicineCart: React.FC = (props) => {
               <p>
                 <span>Important message for items in your Cart:</span> <br />
                 <br />
-                {priceDiffArr && priceDiffArr.length && (
-                  <div>
-                    We have updated your cart with the latest prices. Please check before you place
-                    the order.
-                  </div>
-                )}
+                <div>
+                  We have updated your cart with the latest prices. Please check before you place
+                  the order.
+                </div>
               </p>
               <div className={classes.bottomActions}>
                 <AphButton

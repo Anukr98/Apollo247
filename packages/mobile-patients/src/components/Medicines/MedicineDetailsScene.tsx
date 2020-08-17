@@ -492,7 +492,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               'product name': medicineDetails.name,
               pincode: Number(pincode),
               'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
-              'TAT Displayed': moment(deliveryDate).diff(currentDate, 'd'),
+              'Delivery TAT': moment(deliveryDate).diff(currentDate, 'd'),
               Serviceable: pinCodeNotServiceable ? 'No' : 'Yes',
             };
             postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
@@ -652,6 +652,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   isSolidContainer={true}
                   containerStyle={{
                     height: 40,
+                    width: '45%',
                     borderColor: '#fcb716',
                     borderRadius: 10,
                     backgroundColor: '#fcb716',

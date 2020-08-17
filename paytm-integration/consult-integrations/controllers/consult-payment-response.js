@@ -14,8 +14,10 @@ module.exports = async (req, res, next) => {
     logger.info(`${orderId} - Payload received - ${JSON.stringify(payload)}`);
     const checksum = payload.CHECKSUMHASH;
     delete payload.CHECKSUMHASH;
-
-    if (!verifychecksum(payload, process.env.PAYTM_MERCHANT_KEY_CONSULTS, checksum)) {
+    let merchantKey = process.env.PAYTM_MERCHANT_KEY_CONSULTS;
+    if (payload.MID == process.env.SBI_MID_CONSULTS)
+      merchantKey = process.env.SBI_PAYTM_MERCHANT_KEY_CONSULTS;
+    if (!verifychecksum(payload, merchantKey, checksum)) {
       logger.error(
         `${orderId} - consult-payment-response: checksum did not match - ${JSON.stringify(payload)}`
       );

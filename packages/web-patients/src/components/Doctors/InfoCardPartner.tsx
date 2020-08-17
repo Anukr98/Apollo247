@@ -227,7 +227,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
         <div className={classes.topContent}>
           <div className={classes.iconGroup}>
             <Avatar
-              alt={`Consult ${doctorInfo.fullName} ${props.specialityType} Online`}
+              alt={`Consult ${doctorInfo.fullName} (${props.specialityType}) Online`}
               src={doctorInfo.photoUrl || require('images/no_photo_icon_round.svg')}
               className={classes.doctorAvatar}
             />
