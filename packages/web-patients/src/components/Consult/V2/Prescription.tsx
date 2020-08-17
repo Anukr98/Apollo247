@@ -665,11 +665,19 @@ export const Prescription: React.FC = (props) => {
                 </Typography>
               </div>
               <div className={classes.consultOptions}>
+                <Link
+                  to={clientRoutes.chatRoom(
+                    caseSheetDetails.appointment && caseSheetDetails.appointment.id
+                      ? caseSheetDetails.appointment.id
+                      : '',
+                    caseSheetDetails && caseSheetDetails.doctorId ? caseSheetDetails.doctorId : ''
+                  )}
+                  className={classes.viewConsult}
+                >
+                  View Consult
+                </Link>
                 {caseSheetDetails && caseSheetDetails.blobName && (
                   <>
-                    {/* <Link to="#" className={classes.viewConsult}>
-                  View Consult
-                </Link> */}
                     {/* <div
                       className={`${classes.shareIcon} `}
                       onClick={(e) => {
