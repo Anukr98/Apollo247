@@ -671,7 +671,7 @@ export const MedicineCart: React.FC = (props) => {
     durationDays,
     prescriptionDuration,
     clearCartInfo,
-    removeCartItems,
+    removeCartItemSku,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -763,7 +763,7 @@ export const MedicineCart: React.FC = (props) => {
           ) {
             if (itemToBeMatched.qty === 0) {
               // item in cart has gone out of stock
-              removeCartItems([item.id]);
+              removeCartItemSku(item.sku);
               setPriceDifferencePopover(true);
               return;
             }
