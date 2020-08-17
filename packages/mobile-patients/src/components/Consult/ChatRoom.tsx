@@ -546,6 +546,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const doctorAutoResponse = '^^#doctorAutoResponse';
   const leaveChatRoom = '^^#leaveChatRoom';
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
+  const patientRejectedCall = '^^#PATIENT_REJECTED_CALL';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -4212,7 +4213,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === stopConsultMsg ||
       rowData.message === cancelConsultInitiated ||
       rowData.message === callAbandonment ||
-      rowData.message === appointmentComplete
+      rowData.message === appointmentComplete ||
+      rowData.message === patientRejectedCall
     ) {
       return null;
     }
