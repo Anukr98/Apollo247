@@ -5516,7 +5516,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const endVoipCall = () => {
     if (isIos()) {
-      RNCallKeep.endCall(appointmentData.id);
+      RNCallKeep.endAllCalls();
     }
   };
 
