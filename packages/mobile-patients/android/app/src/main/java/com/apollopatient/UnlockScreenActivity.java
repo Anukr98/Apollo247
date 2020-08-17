@@ -137,8 +137,21 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         rejectCallBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
+                WritableMap params = Arguments.createMap();
+                params.putBoolean("done", true);
+                params.putString("appointment_id",appointment_id);
                 onDisconnected(appointment_id);
-                finish();
+                if(isAppRuning){
+                    Intent intent = new Intent(UnlockScreenActivity.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    intent.putExtra("APPOINTMENT_ID",appointment_id);
+                    startActivity(intent);
+                    finish();
+                }
+                else{
+                    sendEvent(reactContext, "reject", params);
+                    finish();
+                }
             }
         });
 
