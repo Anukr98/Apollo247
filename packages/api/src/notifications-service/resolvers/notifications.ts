@@ -2480,6 +2480,8 @@ const sendDailyAppointmentSummary: Resolver<
   const allAppts = await appointmentRepo.getTodaysAppointments(new Date());
   console.log(allAppts.length, 'all appts count');
   let pdfDoc: PDFKit.PDFDocument; // = new PDFDocument();
+  let fileName = '',
+    uploadPath = '';
   let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
@@ -2512,11 +2514,11 @@ const sendDailyAppointmentSummary: Resolver<
         }
       }
 
-      const fileName = format(new Date(), 'dd-MM-yyyy-ss') + '_' + index + '.pdf';
-      const uploadPath = assetsDir + '/' + fileName;
       if (flag == 0) {
+        fileName = format(new Date(), 'dd-MM-yyyy') + '_' + appointment.doctorId + '.pdf';
+        uploadPath = assetsDir + '/' + fileName;
         pdfDoc = new PDFDocument();
-        console.log('came here', physicalAppointments, fileName);
+        console.log('came here', onlineAppointments, fileName);
         pdfDoc.pipe(fs.createWriteStream(uploadPath));
         rowHeadx = 90;
         rowx = 100;
