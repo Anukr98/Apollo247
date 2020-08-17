@@ -32,6 +32,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { Alerts } from 'components/Alerts/Alerts';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../../../helpers/onePrimaryUser';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -219,7 +220,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     dialogContent: {
       margin: 22,
-      minHeight: 400,
+
       position: 'relative',
       '& h6': {
         fontSize: 15,
@@ -501,6 +502,7 @@ export const ChatRoom: React.FC = () => {
   const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
   const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
   const [isChangeSlot, setIsChangeSlot] = useState<boolean>(false);
+  const [apiLoading, setApiLoading] = useState<boolean>(false);
   const [disaplayId, setDisplayId] = useState<number | null>(null);
   const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
   const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
@@ -529,6 +531,7 @@ export const ChatRoom: React.FC = () => {
       .then((data: any) => {
         setIsPopoverOpen(false);
         setIsModalOpen(false);
+        setApiLoading(false);
         setReschedulesRemaining(3 - rescheduleCount - 1);
         setIsRescheduleSuccess(true);
         setRescheduledSlot(bookRescheduleInput.newDateTimeslot);
@@ -536,6 +539,9 @@ export const ChatRoom: React.FC = () => {
 
       .catch((e) => {
         console.log(e);
+        setApiLoading(false);
+        setIsAlertOpen(true);
+        setAlertMessage(`Error occured while rescheduling the appointment, ${e}`);
       });
   };
 
@@ -589,6 +595,7 @@ export const ChatRoom: React.FC = () => {
   };
 
   const handleAcceptReschedule = () => {
+    setApiLoading(true);
     const bookRescheduleInput = {
       appointmentId: params.appointmentId,
       doctorId: params.doctorId,
@@ -753,8 +760,11 @@ export const ChatRoom: React.FC = () => {
                         handleAcceptReschedule();
                       }}
                     >
-                      {' '}
-                      {'ACCEPT'}
+                      {apiLoading ? (
+                        <CircularProgress size={22} color="secondary" />
+                      ) : (
+                        <span>ACCEPT</span>
+                      )}
                     </AphButton>
                   </div>
                 </div>
@@ -802,6 +812,12 @@ export const ChatRoom: React.FC = () => {
           </div>
         </div>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };
