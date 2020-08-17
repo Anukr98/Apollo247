@@ -70,8 +70,9 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = (props) => {
         <p>4. Chat with your doctor for 7 days</p>
       </div>
       <div className={`${classes.blueBubble} ${classes.petient} `}>
-        <p>A doctor from ${props.doctorName}'s team will join you shortly to collect your medical
-          details. These details are essential for ${props.doctorName} to help you and will take
+        <p>
+          A doctor from {props.doctorName}'s team will join you shortly to collect your medical
+          details. These details are essential for {props.doctorName} to help you and will take
           around 3-5 minutes.
         </p>
       </div>
