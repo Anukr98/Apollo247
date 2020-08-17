@@ -26,7 +26,7 @@ import { Connection } from 'typeorm';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
-import { addMilliseconds, format, addDays, differenceInSeconds } from 'date-fns';
+import { addMilliseconds, format, differenceInSeconds } from 'date-fns';
 import {
   sendNotification,
   sendDoctorAppointmentNotification,

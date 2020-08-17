@@ -4,7 +4,6 @@ import {
   STATUS,
   REQUEST_ROLES,
   APPOINTMENT_STATE,
-  ES_DOCTOR_SLOT_STATUS,
   AppointmentUpdateHistory,
   APPOINTMENT_UPDATED_BY,
   VALUE_TYPE,
@@ -20,7 +19,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { sendNotification } from 'notifications-service/handlers';
 import { NotificationType } from 'notifications-service/constants';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
-import { addMilliseconds, format, addDays } from 'date-fns';
+import { addMilliseconds, format } from 'date-fns';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';

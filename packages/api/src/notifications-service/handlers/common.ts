@@ -4,7 +4,6 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { Connection } from 'typeorm';
 import { Doctor } from 'doctors-service/entities';
 import * as firebaseAdmin from 'firebase-admin';
-
 import path from 'path';
 import { format } from 'date-fns';
 import { Appointment } from 'consults-service/entities';
