@@ -1244,7 +1244,11 @@ const submitJDCaseSheet: Resolver<
     args.appointmentId
   );
 
-  if (juniorDoctorcaseSheet && juniorDoctorcaseSheet.isJdConsultStarted) {
+  if (
+    juniorDoctorcaseSheet &&
+    juniorDoctorcaseSheet.isJdConsultStarted &&
+    juniorDoctorcaseSheet.status != CASESHEET_STATUS.COMPLETED
+  ) {
     return false;
   }
 

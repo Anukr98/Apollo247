@@ -460,7 +460,9 @@ const bookRescheduleAppointment: Resolver<
         toState: apptDetails.appointmentState,
         userName: bookRescheduleAppointmentInput.patientId,
         reason:
-          ApiConstants.APPT_STATE_CHANGED_3.toString() + apptDetails.appointmentDateTime.toString(),
+          ApiConstants.APPT_STATE_CHANGED_3.toString() +
+          ApiConstants.APPT_UPDATE_SEPERATOR +
+          apptDetails.appointmentDateTime.toString(),
       };
       appointmentRepo.saveAppointmentHistory(historyAttrs);
 
@@ -517,7 +519,9 @@ const bookRescheduleAppointment: Resolver<
         toState: APPOINTMENT_STATE.RESCHEDULE,
         userName: apptDetails.patientId,
         reason:
-          ApiConstants.APPT_STATE_CHANGED_2.toString() + apptDetails.appointmentDateTime.toString(),
+          ApiConstants.APPT_STATE_CHANGED_2.toString() +
+          ApiConstants.APPT_UPDATE_SEPERATOR +
+          apptDetails.appointmentDateTime.toString(),
       };
       appointmentRepo.saveAppointmentHistory(historyAttrs);
     }
@@ -560,7 +564,9 @@ const bookRescheduleAppointment: Resolver<
         toState: apptDetails.appointmentState,
         userName: bookRescheduleAppointmentInput.doctorId,
         reason:
-          ApiConstants.APPT_STATE_CHANGED_3.toString() + apptDetails.appointmentDateTime.toString(),
+          ApiConstants.APPT_STATE_CHANGED_3.toString() +
+          ApiConstants.APPT_UPDATE_SEPERATOR +
+          apptDetails.appointmentDateTime.toString(),
       };
       appointmentRepo.saveAppointmentHistory(historyAttrs);
       const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
@@ -616,7 +622,9 @@ const bookRescheduleAppointment: Resolver<
         toState: APPOINTMENT_STATE.RESCHEDULE,
         userName: bookRescheduleAppointmentInput.patientId,
         reason:
-          ApiConstants.APPT_STATE_CHANGED_2.toString() + apptDetails.appointmentDateTime.toString(),
+          ApiConstants.APPT_STATE_CHANGED_2.toString() +
+          ApiConstants.APPT_UPDATE_SEPERATOR +
+          apptDetails.appointmentDateTime.toString(),
       };
       appointmentRepo.saveAppointmentHistory(historyAttrs);
     }

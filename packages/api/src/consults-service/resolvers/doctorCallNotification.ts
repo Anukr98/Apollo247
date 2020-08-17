@@ -70,14 +70,16 @@ export const doctorCallNotificationTypeDefs = gql`
       appointmentId: String
       callType: APPT_CALL_TYPE
       doctorType: DOCTOR_CALL_TYPE
+      numberOfParticipants: Int
       sendNotification: Boolean
       doctorId: String
       doctorName: String
       deviceType: DEVICETYPE
       callSource: BOOKINGSOURCE
       appVersion: String
+      isDev: Boolean
     ): NotificationResult!
-    endCallNotification(appointmentCallId: String): EndCallResult!
+    endCallNotification(appointmentCallId: String, isDev: Boolean): EndCallResult!
     sendApptNotification: ApptNotificationResult!
     getCallDetails(appointmentCallId: String): CallDetailsResult!
     sendPatientWaitNotification(appointmentId: String): sendPatientWaitNotificationResult
@@ -107,7 +109,7 @@ type CallDetailsResult = {
 
 const endCallNotification: Resolver<
   null,
-  { appointmentCallId: string },
+  { appointmentCallId: string; isDev: boolean },
   ConsultServiceContext,
   EndCallResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
@@ -133,13 +135,19 @@ const endCallNotification: Resolver<
     DEVICE_TYPE.IOS
   );
 
+  if (!args.isDev) {
+    args.isDev = false;
+  }
+
   if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']) {
     hitCallKitCurl(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
       doctorName,
       callDetails.appointment.id,
+      callDetails.appointment.patientId,
       false,
-      APPT_CALL_TYPE.AUDIO
+      APPT_CALL_TYPE.AUDIO,
+      args.isDev
     );
   }
 
@@ -167,12 +175,14 @@ const sendCallNotification: Resolver<
     appointmentId: string;
     callType: APPT_CALL_TYPE;
     doctorType: DOCTOR_CALL_TYPE;
+    numberOfParticipants: number;
     sendNotification: Boolean;
     doctorId: string;
     doctorName: string;
     deviceType: DEVICETYPE;
     callSource: BOOKINGSOURCE;
     appVersion: string;
+    isDev: boolean;
   },
   ConsultServiceContext,
   NotificationResult
@@ -195,6 +205,11 @@ const sendCallNotification: Resolver<
   const appointmentCallDetails = await callDetailsRepo.saveAppointmentCallDetails(
     appointmentCallDetailsAttrs
   );
+
+  if (!args.isDev) {
+    args.isDev = false;
+  }
+
   if (args.callType != APPT_CALL_TYPE.CHAT) {
     const pushNotificationInput = {
       appointmentId: args.appointmentId,
@@ -207,7 +222,9 @@ const sendCallNotification: Resolver<
       doctorsDb,
       args.callType,
       args.doctorType,
-      appointmentCallDetails.id
+      appointmentCallDetails.id,
+      args.isDev,
+      args.numberOfParticipants
     );
     console.log(notificationResult, 'doctor call appt notification');
   } else {
@@ -222,7 +239,9 @@ const sendCallNotification: Resolver<
       doctorsDb,
       args.callType,
       args.doctorType,
-      appointmentCallDetails.id
+      appointmentCallDetails.id,
+      args.isDev,
+      args.numberOfParticipants
     );
     console.log(notificationResult, 'doctor call appt notification');
   }
@@ -308,7 +327,8 @@ const sendCallDisconnectNotification: Resolver<
       pushNotificationInput,
       patientsDb,
       consultsDb,
-      doctorsDb
+      doctorsDb,
+      args.callType
     );
     console.log(notificationResult, 'doctor call appt notification');
   }

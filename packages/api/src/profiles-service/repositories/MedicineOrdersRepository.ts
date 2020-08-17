@@ -87,7 +87,6 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     return MedicineOrderPayments.createQueryBuilder('medicineOrderPayments')
       .leftJoinAndSelect('medicineOrderPayments.medicineOrderRefunds', 'medicineOrderRefunds')
       .where('medicineOrderPayments.medicineOrders = :id', { id })
-      .andWhere('medicineOrderPayments.paymentType = :paymentType', { paymentType })
       .getOne();
   }
 
@@ -365,6 +364,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderLineItems',
         'medicineOrderPayments',
         'medicineOrdersStatus',
+        'medicineOrderRefunds',
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrdersStatus',
         'medicineOrderShipments.medicineOrderInvoice',

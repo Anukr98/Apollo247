@@ -167,7 +167,7 @@ const toBase64 = (file: any) =>
 
 const getDiffInDays = (nextAvailability: string) => {
   if (nextAvailability && nextAvailability.length > 0) {
-    const nextAvailabilityTime = moment(new Date(nextAvailability));
+    const nextAvailabilityTime = moment(new Date(nextAvailability.replace(/-/g, ' ')));
     const currentTime = moment(new Date());
     const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
     return differenceInDays;
@@ -391,7 +391,7 @@ const getStoreName = (storeAddress: string) => {
   return store && store.storename ? _upperFirst(_lowerCase(store.storename)) : '';
 };
 
-export const getPackOfMedicine = (medicineDetail: MedicineProductDetails) => {
+const getPackOfMedicine = (medicineDetail: MedicineProductDetails) => {
   return `${medicineDetail.mou} ${
     medicineDetail.PharmaOverview && medicineDetail.PharmaOverview.length > 0
       ? medicineDetail.PharmaOverview[0].Doseform
@@ -399,7 +399,19 @@ export const getPackOfMedicine = (medicineDetail: MedicineProductDetails) => {
   }${medicineDetail.mou && parseFloat(medicineDetail.mou) !== 1 ? 'S' : ''}`;
 };
 
+const getImageUrl = (imageUrl: string) => {
+  return (
+    imageUrl &&
+    imageUrl
+      .split(',')
+      .filter((imageUrl) => imageUrl)
+      .map((imageUrl) => `/catalog/product${imageUrl}`)[0]
+  );
+};
+
 export {
+  getPackOfMedicine,
+  getImageUrl,
   getStoreName,
   getAvailability,
   isRejectedStatus,

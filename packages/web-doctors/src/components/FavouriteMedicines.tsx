@@ -21,6 +21,7 @@ import {
   AphSelect,
   AphRadio,
   AphTooltip,
+  AphSwitch,
 } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
@@ -275,6 +276,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     radioGroup: {
+      marginBottom: 20,
       '& label': {
         width: '30%',
         color: 'rgba(2, 71, 91, 0.8)',
@@ -358,6 +360,12 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     helpText: {
+      paddingLeft: 0,
+      paddingRight: 20,
+      paddingBottom: 10,
+    },
+    errorText: {
+      color: 'red',
       paddingLeft: 0,
       paddingRight: 20,
       paddingBottom: 10,
@@ -983,10 +991,13 @@ export const FavouriteMedicines: React.FC = () => {
   const [forUnit, setforUnit] = useState(forOptions[0].id);
   const [searchInput, setSearchInput] = useState('');
   const [medicineForm, setMedicineForm] = useState<string>(MEDICINE_FORM_TYPES.OTHERS);
+  const [freeTextSwitch, setFreeTextSwitch] = useState<boolean>(false);
+  const [medicineCustomDetails, setMedicineCustomDetails] = useState<string>(null);
   const [genericName, setGenericName] = useState<string>('');
   const [includeGenericNameInPrescription, setIncludeGenericNameInPrescription] = useState<boolean>(
     false
   );
+  const [freeTextErr, setFreeTextErr] = useState<boolean>(false);
 
   useEffect(() => {
     if (isCustomform) {
@@ -1053,6 +1064,7 @@ export const FavouriteMedicines: React.FC = () => {
           setMedicineForm(medicineMappingObj['others'].defaultSetting);
           setRoaOption(medicineMappingObj['others'].defaultRoa);
         }
+        setMedicineCustomDetails(null);
         setShowDosage(true);
         setSelectedValue(suggestion.label);
         setSelectedId(suggestion.sku);
@@ -1269,6 +1281,10 @@ export const FavouriteMedicines: React.FC = () => {
       setIncludeGenericNameInPrescription(
         selectedMedicinesArr[idx].includeGenericNameInPrescription!
       );
+      setMedicineCustomDetails(selectedMedicinesArr[idx].medicineCustomDetails);
+      if (selectedMedicinesArr[idx].medicineCustomDetails) {
+        setFreeTextSwitch(true);
+      }
       setMedicineInstruction(selectedMedicinesArr[idx].medicineInstructions!);
       setConsumptionDuration(
         selectedMedicinesArr[idx].medicineConsumptionDurationInDays! &&
@@ -1485,7 +1501,8 @@ export const FavouriteMedicines: React.FC = () => {
     if (
       !isCustomform &&
       (tabletsCount.trim() === '' || tabletsCount.trim() === '0') &&
-      medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
+      medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
+      !medicineCustomDetails
     ) {
       setErrorState({
         ...errorState,
@@ -1498,7 +1515,8 @@ export const FavouriteMedicines: React.FC = () => {
       !isCustomform &&
       tabletsCount.trim() === '' &&
       medicineForm === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
-      medicineUnit !== 'AS_PRESCRIBED'
+      medicineUnit !== 'AS_PRESCRIBED' &&
+      !medicineCustomDetails
     ) {
       setErrorState({
         ...errorState,
@@ -1509,6 +1527,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
+      !medicineCustomDetails &&
       ((customDosageMorning.trim() === '' &&
         customDosageNoon.trim() === '' &&
         customDosageEvening.trim() === '' &&
@@ -1531,6 +1550,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
+      !medicineCustomDetails &&
       ((customDosageMorning.trim() !== '' &&
         customDosageMorning.trim() !== '0' &&
         daySlotsArr.indexOf('MORNING') < 0) ||
@@ -1545,6 +1565,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
+      !medicineCustomDetails &&
       ((customDosageNoon.trim() !== '' &&
         customDosageNoon.trim() !== '0' &&
         daySlotsArr.indexOf('NOON') < 0) ||
@@ -1559,6 +1580,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
+      !medicineCustomDetails &&
       ((customDosageEvening.trim() !== '' &&
         customDosageEvening.trim() !== '0' &&
         daySlotsArr.indexOf('EVENING') < 0) ||
@@ -1573,6 +1595,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
+      !medicineCustomDetails &&
       ((customDosageNight.trim() !== '' &&
         customDosageNight.trim() !== '0' &&
         daySlotsArr.indexOf('NIGHT') < 0) ||
@@ -1585,7 +1608,11 @@ export const FavouriteMedicines: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (isCustomform && customDosageArray.length > daySlotsArr.length) {
+    } else if (
+      isCustomform &&
+      !medicineCustomDetails &&
+      customDosageArray.length > daySlotsArr.length
+    ) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1593,7 +1620,7 @@ export const FavouriteMedicines: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (daySlotsArr.length === 0) {
+    } else if (daySlotsArr.length === 0 && !medicineCustomDetails) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1603,6 +1630,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
+      !medicineCustomDetails &&
       (consumptionDuration === '' ||
         isNaN(Number(consumptionDuration)) ||
         consumptionDuration === '0')
@@ -1633,6 +1661,7 @@ export const FavouriteMedicines: React.FC = () => {
         medicineFrequency: frequency,
         medicineConsumptionDurationUnit: forUnit,
         medicineFormTypes: medicineForm,
+        medicineCustomDetails: medicineCustomDetails,
         genericName: genericName,
         includeGenericNameInPrescription: includeGenericNameInPrescription,
       };
@@ -1649,6 +1678,7 @@ export const FavouriteMedicines: React.FC = () => {
         medicineFrequency: frequency,
         medicineConsumptionDurationUnit: forUnit,
         medicineFormTypes: medicineForm,
+        medicineCustomDetails: medicineCustomDetails,
         genericName: genericName,
         includeGenericNameInPrescription: includeGenericNameInPrescription,
       };
@@ -1692,6 +1722,7 @@ export const FavouriteMedicines: React.FC = () => {
               medicineInstructions: String(medicineInstruction),
               routeOfAdministration: roaOption,
               medicineCustomDosage: isCustomform ? medicineCustomDosage : '',
+              medicineCustomDetails: medicineCustomDetails,
               genericName: genericName,
               includeGenericNameInPrescription: includeGenericNameInPrescription,
             },
@@ -1700,6 +1731,7 @@ export const FavouriteMedicines: React.FC = () => {
         .then((data) => {
           getMedicineData();
         });
+      setMedicineCustomDetails(null);
       setGenericName('');
       setIncludeGenericNameInPrescription(false);
       setMedicineInstruction('');
@@ -1753,6 +1785,7 @@ export const FavouriteMedicines: React.FC = () => {
       customDosageArray.push(customDosageNight.trim());
     if (
       !isCustomform &&
+      !medicineCustomDetails &&
       (tabletsCount.trim() === '' || tabletsCount.trim() === '0') &&
       medicineForm !== MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT
     ) {
@@ -1765,6 +1798,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       !isCustomform &&
+      !medicineCustomDetails &&
       tabletsCount.trim() === '' &&
       medicineForm === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
       medicineUnit !== 'AS_PRESCRIBED'
@@ -1778,6 +1812,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
+      !medicineCustomDetails &&
       ((customDosageMorning.trim() === '' &&
         customDosageNoon.trim() === '' &&
         customDosageEvening.trim() === '' &&
@@ -1800,6 +1835,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
+      !medicineCustomDetails &&
       ((customDosageMorning.trim() !== '' &&
         customDosageMorning.trim() !== '0' &&
         daySlotsArr.indexOf('MORNING') < 0) ||
@@ -1814,6 +1850,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
+      !medicineCustomDetails &&
       ((customDosageNoon.trim() !== '' &&
         customDosageNoon.trim() !== '0' &&
         daySlotsArr.indexOf('NOON') < 0) ||
@@ -1828,6 +1865,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
+      !medicineCustomDetails &&
       ((customDosageEvening.trim() !== '' &&
         customDosageEvening.trim() !== '0' &&
         daySlotsArr.indexOf('EVENING') < 0) ||
@@ -1842,6 +1880,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       isCustomform &&
+      !medicineCustomDetails &&
       ((customDosageNight.trim() !== '' &&
         customDosageNight.trim() !== '0' &&
         daySlotsArr.indexOf('NIGHT') < 0) ||
@@ -1854,7 +1893,11 @@ export const FavouriteMedicines: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (isCustomform && customDosageArray.length > daySlotsArr.length) {
+    } else if (
+      isCustomform &&
+      !medicineCustomDetails &&
+      customDosageArray.length > daySlotsArr.length
+    ) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1862,7 +1905,7 @@ export const FavouriteMedicines: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (daySlotsArr.length === 0) {
+    } else if (daySlotsArr.length === 0 && !medicineCustomDetails) {
       setErrorState({
         ...errorState,
         durationErr: false,
@@ -1872,6 +1915,7 @@ export const FavouriteMedicines: React.FC = () => {
       });
     } else if (
       forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW &&
+      !medicineCustomDetails &&
       (consumptionDuration === '' ||
         isNaN(Number(consumptionDuration)) ||
         consumptionDuration === '0')
@@ -1906,6 +1950,7 @@ export const FavouriteMedicines: React.FC = () => {
         routeOfAdministration: roaOption,
         medicineFrequency: frequency,
         medicineCustomDosage: isCustomform ? medicineCustomDosage : '',
+        medicineCustomDetails: medicineCustomDetails,
         genericName: genericName,
         includeGenericNameInPrescription: includeGenericNameInPrescription,
       };
@@ -1924,6 +1969,7 @@ export const FavouriteMedicines: React.FC = () => {
         routeOfAdministration: roaOption,
         medicineFrequency: frequency,
         medicineCustomDosage: isCustomform ? medicineCustomDosage : '',
+        medicineCustomDetails: medicineCustomDetails,
         genericName: genericName,
         includeGenericNameInPrescription: includeGenericNameInPrescription,
       };
@@ -1969,6 +2015,7 @@ export const FavouriteMedicines: React.FC = () => {
               id: selectedId,
               routeOfAdministration: roaOption,
               medicineCustomDosage: isCustomform ? medicineCustomDosage : '',
+              medicineCustomDetails: medicineCustomDetails,
               genericName: genericName,
               includeGenericNameInPrescription: includeGenericNameInPrescription,
             },
@@ -1978,6 +2025,7 @@ export const FavouriteMedicines: React.FC = () => {
           console.log('data after mutation' + data);
           setMedicineLoader(false);
         });
+      setMedicineCustomDetails(null);
       setGenericName('');
       setIncludeGenericNameInPrescription(false);
       setMedicineInstruction('');
@@ -2069,6 +2117,44 @@ export const FavouriteMedicines: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
+
+  const clearForm = () => {
+    resetFrequencyFor();
+    setMedicineInstruction('');
+    setConsumptionDuration('');
+    setMedicineCustomDetails(null);
+    setTabletsCount('1');
+  };
+
+  const handleFreeTextInputErr = (value: string) => {
+    if (value.trim().length == 0) {
+      setFreeTextErr(true);
+    } else {
+      setFreeTextErr(false);
+      setMedicineCustomDetails(value);
+    }
+  };
+
+  const handleSaveFreeText = () => {
+    if (!medicineCustomDetails) {
+      setFreeTextErr(true);
+    } else if (medicineCustomDetails && medicineCustomDetails.length == 0) {
+      setFreeTextErr(true);
+    } else {
+      setFreeTextErr(false);
+      isUpdate ? addUpdateMedicines() : saveMedicines();
+    }
+  };
+
+  function handleFreeTextSwitch(value: string) {
+    clearForm();
+    if (value && typeof value === 'string') {
+      if (value.toLowerCase() === 'true') return true;
+      if (value.toLowerCase() === 'false') return false;
+    }
+    return value;
+  }
+
   const generateMedicineTypes =
     dosageList.length > 0
       ? dosageList.map((value: string, index: number) => {
@@ -2359,464 +2445,519 @@ export const FavouriteMedicines: React.FC = () => {
                   <div>
                     <Scrollbars autoHide={true} style={{ height: 'calc(65vh' }}>
                       <div className={`${classes.dialogContent} ${classes.dialogNewMedicine}`}>
-                        <Grid container spacing={2}>
-                          <Grid item lg={12} md={12} xs={12}>
-                            <RadioGroup
-                              className={classes.radioGroup}
-                              value={medicineForm}
-                              onChange={(e) => {
-                                setMedicineForm(
-                                  (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
-                                );
-                              }}
-                              row
-                            >
-                              <FormControlLabel
-                                value={MEDICINE_FORM_TYPES.OTHERS}
-                                label="Take"
-                                control={<AphRadio title="Take" />}
-                              />
-                              <FormControlLabel
-                                value={MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT}
-                                label="Apply"
-                                control={<AphRadio title="Apply" />}
-                              />
-                            </RadioGroup>
-                          </Grid>
-                          <Grid item lg={12} md={12} xs={12}>
-                            {isCustomform ? (
-                              <>
-                                <Grid container spacing={2}>
-                                  <Grid item lg={2} md={2} xs={2}>
-                                    <AphTextField
-                                      autoFocus
-                                      inputProps={{ maxLength: 6 }}
-                                      inputRef={customInputRef}
-                                      value={customDosageMorning}
-                                      onChange={(event: any) => {
-                                        setCustomDosageMorning(event.target.value);
-                                        if (
-                                          event.target.value &&
-                                          event.target.value.trim() !== '' &&
-                                          event.target.value.trim() !== '0' &&
-                                          (parseInt(event.target.value.trim()) > 0 ||
-                                            Number(event.target.value.trim()) > 0)
-                                        ) {
-                                          setInTheTime('morning', true);
-                                        } else {
-                                          setInTheTime('morning', false);
-                                        }
-                                      }}
-                                      onKeyPress={(e) => {
-                                        if (
-                                          isNaN(parseInt(e.key, 10)) &&
-                                          e.key !== '/' &&
-                                          e.key !== '.' &&
-                                          e.key !== ' '
-                                        )
-                                          e.preventDefault();
-                                      }}
-                                      InputProps={{
-                                        classes: {
-                                          root: classes.inputRootNew,
-                                        },
-                                      }}
-                                      //error={errorState.dosageErr}
-                                    />
-                                  </Grid>
+                        <Grid item lg={12} md={12} xs={12}>
+                          <RadioGroup
+                            className={classes.radioGroup}
+                            value={medicineForm}
+                            onChange={(e) => {
+                              setMedicineForm((e.target as HTMLInputElement)
+                                .value as MEDICINE_FORM_TYPES);
+                            }}
+                            row
+                          >
+                            <FormControlLabel
+                              value={MEDICINE_FORM_TYPES.OTHERS}
+                              label="Take"
+                              disabled={freeTextSwitch ? true : false}
+                              control={<AphRadio title="Take" />}
+                            />
+                            <FormControlLabel
+                              value={MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT}
+                              label="Apply"
+                              disabled={freeTextSwitch ? true : false}
+                              control={<AphRadio title="Apply" />}
+                            />
+                            <FormControlLabel
+                              label="Free Text Rx"
+                              labelPlacement="start"
+                              control={
+                                <AphSwitch
+                                  title="Free Text"
+                                  value={freeTextSwitch}
+                                  checked={freeTextSwitch}
+                                  onChange={(e: any) => {
+                                    setFreeTextSwitch(!handleFreeTextSwitch(e.target.value));
+                                  }}
+                                />
+                              }
+                            />
+                          </RadioGroup>
+                        </Grid>
+                        {!freeTextSwitch && (
+                          <Grid container spacing={2}>
+                            <Grid item lg={12} md={12} xs={12}>
+                              {isCustomform ? (
+                                <>
+                                  <Grid container spacing={2}>
+                                    <Grid item lg={2} md={2} xs={2}>
+                                      <AphTextField
+                                        autoFocus
+                                        inputProps={{ maxLength: 6 }}
+                                        inputRef={customInputRef}
+                                        value={customDosageMorning}
+                                        onChange={(event: any) => {
+                                          setCustomDosageMorning(event.target.value);
+                                          if (
+                                            event.target.value &&
+                                            event.target.value.trim() !== '' &&
+                                            event.target.value.trim() !== '0' &&
+                                            (parseInt(event.target.value.trim()) > 0 ||
+                                              Number(event.target.value.trim()) > 0)
+                                          ) {
+                                            setInTheTime('morning', true);
+                                          } else {
+                                            setInTheTime('morning', false);
+                                          }
+                                        }}
+                                        onKeyPress={(e) => {
+                                          if (
+                                            isNaN(parseInt(e.key, 10)) &&
+                                            e.key !== '/' &&
+                                            e.key !== '.' &&
+                                            e.key !== ' '
+                                          )
+                                            e.preventDefault();
+                                        }}
+                                        InputProps={{
+                                          classes: {
+                                            root: classes.inputRootNew,
+                                          },
+                                        }}
+                                        //error={errorState.dosageErr}
+                                      />
+                                    </Grid>
 
-                                  <Grid item lg={2} md={2} xs={2}>
-                                    <AphTextField
-                                      inputProps={{ maxLength: 6 }}
-                                      value={customDosageNoon}
-                                      onChange={(event: any) => {
-                                        setCustomDosageNoon(event.target.value);
-                                        if (
-                                          event.target.value &&
-                                          event.target.value.trim() !== '' &&
-                                          event.target.value.trim() !== '0' &&
-                                          (parseInt(event.target.value.trim()) > 0 ||
-                                            Number(event.target.value.trim()) > 0)
-                                        ) {
-                                          setInTheTime('noon', true);
-                                        } else {
-                                          setInTheTime('noon', false);
-                                        }
-                                      }}
-                                      onKeyPress={(e) => {
-                                        if (
-                                          isNaN(parseInt(e.key, 10)) &&
-                                          e.key !== '/' &&
-                                          e.key !== '.' &&
-                                          e.key !== ' '
-                                        )
-                                          e.preventDefault();
-                                      }}
-                                      InputProps={{
-                                        classes: {
-                                          root: classes.inputRootNew,
-                                        },
-                                      }}
-                                      //error={errorState.dosageErr}
-                                    />
-                                  </Grid>
+                                    <Grid item lg={2} md={2} xs={2}>
+                                      <AphTextField
+                                        inputProps={{ maxLength: 6 }}
+                                        value={customDosageNoon}
+                                        onChange={(event: any) => {
+                                          setCustomDosageNoon(event.target.value);
+                                          if (
+                                            event.target.value &&
+                                            event.target.value.trim() !== '' &&
+                                            event.target.value.trim() !== '0' &&
+                                            (parseInt(event.target.value.trim()) > 0 ||
+                                              Number(event.target.value.trim()) > 0)
+                                          ) {
+                                            setInTheTime('noon', true);
+                                          } else {
+                                            setInTheTime('noon', false);
+                                          }
+                                        }}
+                                        onKeyPress={(e) => {
+                                          if (
+                                            isNaN(parseInt(e.key, 10)) &&
+                                            e.key !== '/' &&
+                                            e.key !== '.' &&
+                                            e.key !== ' '
+                                          )
+                                            e.preventDefault();
+                                        }}
+                                        InputProps={{
+                                          classes: {
+                                            root: classes.inputRootNew,
+                                          },
+                                        }}
+                                        //error={errorState.dosageErr}
+                                      />
+                                    </Grid>
 
-                                  <Grid item lg={2} md={2} xs={2}>
-                                    <AphTextField
-                                      inputProps={{ maxLength: 6 }}
-                                      value={customDosageEvening}
-                                      onChange={(event: any) => {
-                                        setCustomDosageEvening(event.target.value);
-                                        if (
-                                          event.target.value &&
-                                          event.target.value.trim() !== '' &&
-                                          event.target.value.trim() !== '0' &&
-                                          (parseInt(event.target.value.trim()) > 0 ||
-                                            Number(event.target.value.trim()) > 0)
-                                        ) {
-                                          setInTheTime('evening', true);
-                                        } else {
-                                          setInTheTime('evening', false);
-                                        }
-                                      }}
-                                      onKeyPress={(e) => {
-                                        if (
-                                          isNaN(parseInt(e.key, 10)) &&
-                                          e.key !== '/' &&
-                                          e.key !== '.' &&
-                                          e.key !== ' '
-                                        )
-                                          e.preventDefault();
-                                      }}
-                                      InputProps={{
-                                        classes: {
-                                          root: classes.inputRootNew,
-                                        },
-                                      }}
-                                      //error={errorState.dosageErr}
-                                    />
+                                    <Grid item lg={2} md={2} xs={2}>
+                                      <AphTextField
+                                        inputProps={{ maxLength: 6 }}
+                                        value={customDosageEvening}
+                                        onChange={(event: any) => {
+                                          setCustomDosageEvening(event.target.value);
+                                          if (
+                                            event.target.value &&
+                                            event.target.value.trim() !== '' &&
+                                            event.target.value.trim() !== '0' &&
+                                            (parseInt(event.target.value.trim()) > 0 ||
+                                              Number(event.target.value.trim()) > 0)
+                                          ) {
+                                            setInTheTime('evening', true);
+                                          } else {
+                                            setInTheTime('evening', false);
+                                          }
+                                        }}
+                                        onKeyPress={(e) => {
+                                          if (
+                                            isNaN(parseInt(e.key, 10)) &&
+                                            e.key !== '/' &&
+                                            e.key !== '.' &&
+                                            e.key !== ' '
+                                          )
+                                            e.preventDefault();
+                                        }}
+                                        InputProps={{
+                                          classes: {
+                                            root: classes.inputRootNew,
+                                          },
+                                        }}
+                                        //error={errorState.dosageErr}
+                                      />
+                                    </Grid>
+                                    <Grid item lg={2} md={2} xs={2}>
+                                      <AphTextField
+                                        inputProps={{ maxLength: 6 }}
+                                        value={customDosageNight}
+                                        onChange={(event: any) => {
+                                          setCustomDosageNight(event.target.value);
+                                          if (
+                                            event.target.value &&
+                                            event.target.value.trim() !== '' &&
+                                            event.target.value.trim() !== '0' &&
+                                            (parseInt(event.target.value.trim()) > 0 ||
+                                              Number(event.target.value.trim()) > 0)
+                                          ) {
+                                            setInTheTime('night', true);
+                                          } else {
+                                            setInTheTime('night', false);
+                                          }
+                                        }}
+                                        onKeyPress={(e) => {
+                                          if (
+                                            isNaN(parseInt(e.key, 10)) &&
+                                            e.key !== '/' &&
+                                            e.key !== '.' &&
+                                            e.key !== ' '
+                                          )
+                                            e.preventDefault();
+                                        }}
+                                        InputProps={{
+                                          classes: {
+                                            root: classes.inputRootNew,
+                                          },
+                                        }}
+                                        //error={errorState.dosageErr}
+                                      />
+                                    </Grid>
+                                    <Grid item lg={4} md={4} xs={4}>
+                                      <AphSelect
+                                        style={{ paddingTop: 3 }}
+                                        value={medicineUnit}
+                                        MenuProps={{
+                                          classes: {
+                                            paper: classes.menuPaper,
+                                          },
+                                          anchorOrigin: {
+                                            vertical: 'bottom',
+                                            horizontal: 'right',
+                                          },
+                                          transformOrigin: {
+                                            vertical: 'top',
+                                            horizontal: 'right',
+                                          },
+                                        }}
+                                        onChange={(e: any) => {
+                                          setMedicineUnit(e.target.value as MEDICINE_UNIT);
+                                        }}
+                                      >
+                                        {generateMedicineTypes}
+                                      </AphSelect>
+                                    </Grid>
                                   </Grid>
-                                  <Grid item lg={2} md={2} xs={2}>
-                                    <AphTextField
-                                      inputProps={{ maxLength: 6 }}
-                                      value={customDosageNight}
-                                      onChange={(event: any) => {
-                                        setCustomDosageNight(event.target.value);
-                                        if (
-                                          event.target.value &&
-                                          event.target.value.trim() !== '' &&
-                                          event.target.value.trim() !== '0' &&
-                                          (parseInt(event.target.value.trim()) > 0 ||
-                                            Number(event.target.value.trim()) > 0)
-                                        ) {
-                                          setInTheTime('night', true);
-                                        } else {
-                                          setInTheTime('night', false);
-                                        }
-                                      }}
-                                      onKeyPress={(e) => {
-                                        if (
-                                          isNaN(parseInt(e.key, 10)) &&
-                                          e.key !== '/' &&
-                                          e.key !== '.' &&
-                                          e.key !== ' '
-                                        )
-                                          e.preventDefault();
-                                      }}
-                                      InputProps={{
-                                        classes: {
-                                          root: classes.inputRootNew,
-                                        },
-                                      }}
-                                      //error={errorState.dosageErr}
-                                    />
+                                  <Grid item lg={12} md={12} xs={12}>
+                                    {errorState.dosageErr && (
+                                      <FormHelperText
+                                        className={classes.helpText}
+                                        component="div"
+                                        error={errorState.dosageErr}
+                                      >
+                                        Please enter valid dosage.
+                                      </FormHelperText>
+                                    )}
                                   </Grid>
-                                  <Grid item lg={4} md={4} xs={4}>
-                                    <AphSelect
-                                      style={{ paddingTop: 3 }}
-                                      value={medicineUnit}
-                                      MenuProps={{
-                                        classes: {
-                                          paper: classes.menuPaper,
-                                        },
-                                        anchorOrigin: {
-                                          vertical: 'bottom',
-                                          horizontal: 'right',
-                                        },
-                                        transformOrigin: {
-                                          vertical: 'top',
-                                          horizontal: 'right',
-                                        },
-                                      }}
-                                      onChange={(e: any) => {
-                                        setMedicineUnit(e.target.value as MEDICINE_UNIT);
-                                      }}
-                                    >
-                                      {generateMedicineTypes}
-                                    </AphSelect>
-                                  </Grid>
-                                </Grid>
-                                <Grid item lg={12} md={12} xs={12}>
-                                  {errorState.dosageErr && (
-                                    <FormHelperText
-                                      className={classes.helpText}
-                                      component="div"
-                                      error={errorState.dosageErr}
-                                    >
-                                      Please enter valid dosage.
-                                    </FormHelperText>
-                                  )}
-                                </Grid>
-                              </>
-                            ) : (
-                              <>
-                                <Grid container spacing={2}>
-                                  <Grid item lg={3} md={3} xs={3}>
-                                    <AphTextField
-                                      autoFocus
-                                      inputProps={{ maxLength: 6 }}
-                                      value={tabletsCount}
-                                      inputRef={defaultInputRef}
-                                      onChange={(event: any) => {
-                                        setTabletsCount(event.target.value);
-                                      }}
-                                      onKeyPress={(e) => {
-                                        if (
-                                          isNaN(parseInt(e.key, 10)) &&
-                                          e.key !== '/' &&
-                                          e.key !== '.' &&
-                                          e.key !== ' '
-                                        )
-                                          e.preventDefault();
-                                      }}
-                                      InputProps={{
-                                        classes: {
-                                          root: classes.inputRootNew,
-                                        },
-                                      }}
-                                      //error={errorState.dosageErr}
-                                    />
-                                  </Grid>
+                                </>
+                              ) : (
+                                <>
+                                  <Grid container spacing={2}>
+                                    <Grid item lg={3} md={3} xs={3}>
+                                      <AphTextField
+                                        autoFocus
+                                        inputProps={{ maxLength: 6 }}
+                                        value={tabletsCount}
+                                        inputRef={defaultInputRef}
+                                        onChange={(event: any) => {
+                                          setTabletsCount(event.target.value);
+                                        }}
+                                        onKeyPress={(e) => {
+                                          if (
+                                            isNaN(parseInt(e.key, 10)) &&
+                                            e.key !== '/' &&
+                                            e.key !== '.' &&
+                                            e.key !== ' '
+                                          )
+                                            e.preventDefault();
+                                        }}
+                                        InputProps={{
+                                          classes: {
+                                            root: classes.inputRootNew,
+                                          },
+                                        }}
+                                        //error={errorState.dosageErr}
+                                      />
+                                    </Grid>
 
-                                  <Grid item lg={3} md={3} xs={3}>
-                                    <AphSelect
-                                      style={{ paddingTop: 3 }}
-                                      value={medicineUnit}
-                                      MenuProps={{
-                                        classes: {
-                                          paper: classes.menuPaper,
-                                        },
-                                        anchorOrigin: {
-                                          vertical: 'bottom',
-                                          horizontal: 'right',
-                                        },
-                                        transformOrigin: {
-                                          vertical: 'top',
-                                          horizontal: 'right',
-                                        },
-                                      }}
-                                      onChange={(e: any) => {
-                                        setMedicineUnit(e.target.value as MEDICINE_UNIT);
-                                      }}
-                                    >
-                                      {generateMedicineTypes}
-                                    </AphSelect>
+                                    <Grid item lg={3} md={3} xs={3}>
+                                      <AphSelect
+                                        style={{ paddingTop: 3 }}
+                                        value={medicineUnit}
+                                        MenuProps={{
+                                          classes: {
+                                            paper: classes.menuPaper,
+                                          },
+                                          anchorOrigin: {
+                                            vertical: 'bottom',
+                                            horizontal: 'right',
+                                          },
+                                          transformOrigin: {
+                                            vertical: 'top',
+                                            horizontal: 'right',
+                                          },
+                                        }}
+                                        onChange={(e: any) => {
+                                          setMedicineUnit(e.target.value as MEDICINE_UNIT);
+                                        }}
+                                      >
+                                        {generateMedicineTypes}
+                                      </AphSelect>
+                                    </Grid>
+                                    <Grid item lg={6} md={6} xs={6}>
+                                      <AphSelect
+                                        style={{ paddingTop: 3 }}
+                                        value={frequency}
+                                        MenuProps={{
+                                          classes: {
+                                            paper: classes.menuPaper,
+                                          },
+                                          anchorOrigin: {
+                                            vertical: 'bottom',
+                                            horizontal: 'left',
+                                          },
+                                          transformOrigin: {
+                                            vertical: 'top',
+                                            horizontal: 'left',
+                                          },
+                                        }}
+                                        onChange={(e: any) => {
+                                          setFrequency(e.target.value as MEDICINE_FREQUENCY);
+                                        }}
+                                      >
+                                        {generateFrequency}
+                                      </AphSelect>
+                                    </Grid>
                                   </Grid>
-                                  <Grid item lg={6} md={6} xs={6}>
-                                    <AphSelect
-                                      style={{ paddingTop: 3 }}
-                                      value={frequency}
-                                      MenuProps={{
-                                        classes: {
-                                          paper: classes.menuPaper,
-                                        },
-                                        anchorOrigin: {
-                                          vertical: 'bottom',
-                                          horizontal: 'left',
-                                        },
-                                        transformOrigin: {
-                                          vertical: 'top',
-                                          horizontal: 'left',
-                                        },
-                                      }}
-                                      onChange={(e: any) => {
-                                        setFrequency(e.target.value as MEDICINE_FREQUENCY);
-                                      }}
-                                    >
-                                      {generateFrequency}
-                                    </AphSelect>
+                                  <Grid item lg={12} md={12} xs={12}>
+                                    {errorState.dosageErr && (
+                                      <FormHelperText
+                                        className={classes.helpText}
+                                        component="div"
+                                        error={errorState.dosageErr}
+                                      >
+                                        Please enter valid dosage.
+                                      </FormHelperText>
+                                    )}
                                   </Grid>
-                                </Grid>
-                                <Grid item lg={12} md={12} xs={12}>
-                                  {errorState.dosageErr && (
-                                    <FormHelperText
-                                      className={classes.helpText}
-                                      component="div"
-                                      error={errorState.dosageErr}
-                                    >
-                                      Please enter valid dosage.
-                                    </FormHelperText>
-                                  )}
-                                </Grid>
-                              </>
-                            )}
-                          </Grid>
-                          <Grid item lg={12} md={12} xs={12}>
-                            <h4>
-                              <span
-                                onClick={() => {
-                                  setIsCustomForm(!isCustomform);
-                                  resetCustomTimeOptions();
-                                }}
-                              >
-                                {isCustomform ? 'DEFAULT' : 'CUSTOM'}
-                              </span>
-                            </h4>
-                          </Grid>
-                          <Grid item lg={12} xs={12}>
-                            <h6>In The</h6>
-                            <div className={`${classes.numberTablets} ${classes.daysOfWeek}`}>
-                              {daySlotsHtml}
-                            </div>
-                            {errorState.daySlotErr && (
-                              <FormHelperText
-                                className={classes.helpText}
-                                component="div"
-                                error={errorState.daySlotErr}
-                              >
-                                Please select valid time of the day.
-                              </FormHelperText>
-                            )}
-                          </Grid>
-                          <Grid item lg={6} md={6} xs={12}>
-                            <div className={classes.numberTablets}>{tobeTakenHtml}</div>
-                            {errorState.tobeTakenErr && (
-                              <FormHelperText
-                                className={classes.helpText}
-                                component="div"
-                                error={errorState.tobeTakenErr}
-                              >
-                                Please select to be taken.
-                              </FormHelperText>
-                            )}
-                          </Grid>
-                          <Grid item lg={6} md={6} xs={12}>
-                            &nbsp;
-                          </Grid>
-                          <Grid item lg={3} md={3} xs={3}>
-                            <h6>For</h6>
-                            <div className={classes.numberTablets}>
-                              <AphTextField
-                                placeholder=""
-                                inputProps={{ maxLength: 6 }}
-                                value={consumptionDuration}
-                                disabled={
-                                  forUnit === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
-                                    ? true
-                                    : false
-                                }
-                                onChange={(event: any) => {
-                                  setConsumptionDuration(event.target.value);
-                                }}
-                                onKeyPress={(e) => {
-                                  if (isNaN(parseInt(e.key, 10))) e.preventDefault();
-                                }}
-                                //error={errorState.durationErr}
-                              />
-                            </div>
-                          </Grid>
-                          <Grid item lg={3} md={3} xs={3}>
-                            <h6>&nbsp;</h6>
-                            <div className={classes.unitsSelect}>
-                              <AphSelect
-                                style={{ paddingTop: 3 }}
-                                value={forUnit}
-                                MenuProps={{
-                                  classes: {
-                                    paper: classes.menuPaper,
-                                  },
-                                  anchorOrigin: {
-                                    vertical: 'bottom',
-                                    horizontal: 'left',
-                                  },
-                                  transformOrigin: {
-                                    vertical: 'top',
-                                    horizontal: 'left',
-                                  },
-                                }}
-                                onChange={(e: any) => {
-                                  setforUnit(e.target.value as any);
-                                  if (
-                                    e.target.value ===
-                                    MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
-                                  ) {
-                                    setConsumptionDuration('');
-                                  }
-                                }}
-                              >
-                                {forOptionHtml}
-                              </AphSelect>
-                            </div>
-                          </Grid>
-                          <Grid item lg={6} md={6} xs={6}>
-                            <h6>Route of Administration</h6>
-                            <div className={classes.unitsSelect}>
-                              <AphSelect
-                                style={{ paddingTop: 3 }}
-                                value={roaOption}
-                                MenuProps={{
-                                  classes: {
-                                    paper: classes.menuPaper,
-                                  },
-                                  anchorOrigin: {
-                                    vertical: 'bottom',
-                                    horizontal: 'left',
-                                  },
-                                  transformOrigin: {
-                                    vertical: 'top',
-                                    horizontal: 'left',
-                                  },
-                                }}
-                                onChange={(e: any) => {
-                                  setRoaOption(e.target.value as ROUTE_OF_ADMINISTRATION);
-                                }}
-                              >
-                                {roaOptionHtml}
-                              </AphSelect>
-                            </div>
-                          </Grid>
-                          <div className={classes.numDays}>
-                            {errorState.durationErr &&
-                              forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW && (
+                                </>
+                              )}
+                            </Grid>
+                            <Grid item lg={12} md={12} xs={12}>
+                              <h4>
+                                <span
+                                  onClick={() => {
+                                    setIsCustomForm(!isCustomform);
+                                    resetCustomTimeOptions();
+                                  }}
+                                >
+                                  {isCustomform ? 'DEFAULT' : 'CUSTOM'}
+                                </span>
+                              </h4>
+                            </Grid>
+                            <Grid item lg={12} xs={12}>
+                              <h6>In The</h6>
+                              <div className={`${classes.numberTablets} ${classes.daysOfWeek}`}>
+                                {daySlotsHtml}
+                              </div>
+                              {errorState.daySlotErr && (
                                 <FormHelperText
                                   className={classes.helpText}
                                   component="div"
-                                  error={errorState.durationErr}
+                                  error={errorState.daySlotErr}
                                 >
-                                  Please enter valid number of {term(forUnit.toLowerCase(), '(s)')}
+                                  Please select valid time of the day.
                                 </FormHelperText>
                               )}
-                          </div>
-                          <GenericMedicineName
-                            value={genericName}
-                            setGenericName={setGenericName}
-                            setIsChecked={setIncludeGenericNameInPrescription}
-                            isChecked={includeGenericNameInPrescription}
-                          />
+                            </Grid>
+                            <Grid item lg={6} md={6} xs={12}>
+                              <div className={classes.numberTablets}>{tobeTakenHtml}</div>
+                              {errorState.tobeTakenErr && (
+                                <FormHelperText
+                                  className={classes.helpText}
+                                  component="div"
+                                  error={errorState.tobeTakenErr}
+                                >
+                                  Please select to be taken.
+                                </FormHelperText>
+                              )}
+                            </Grid>
+                            <Grid item lg={6} md={6} xs={12}>
+                              &nbsp;
+                            </Grid>
+                            <Grid item lg={3} md={3} xs={3}>
+                              <h6>For</h6>
+                              <div className={classes.numberTablets}>
+                                <AphTextField
+                                  placeholder=""
+                                  inputProps={{ maxLength: 6 }}
+                                  value={consumptionDuration}
+                                  disabled={
+                                    forUnit === MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+                                      ? true
+                                      : false
+                                  }
+                                  onChange={(event: any) => {
+                                    setConsumptionDuration(event.target.value);
+                                  }}
+                                  onKeyPress={(e) => {
+                                    if (isNaN(parseInt(e.key, 10))) e.preventDefault();
+                                  }}
+                                  //error={errorState.durationErr}
+                                />
+                              </div>
+                            </Grid>
+                            <Grid item lg={3} md={3} xs={3}>
+                              <h6>&nbsp;</h6>
+                              <div className={classes.unitsSelect}>
+                                <AphSelect
+                                  style={{ paddingTop: 3 }}
+                                  value={forUnit}
+                                  MenuProps={{
+                                    classes: {
+                                      paper: classes.menuPaper,
+                                    },
+                                    anchorOrigin: {
+                                      vertical: 'bottom',
+                                      horizontal: 'left',
+                                    },
+                                    transformOrigin: {
+                                      vertical: 'top',
+                                      horizontal: 'left',
+                                    },
+                                  }}
+                                  onChange={(e: any) => {
+                                    setforUnit(e.target.value as any);
+                                    if (
+                                      e.target.value ===
+                                      MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+                                    ) {
+                                      setConsumptionDuration('');
+                                    }
+                                  }}
+                                >
+                                  {forOptionHtml}
+                                </AphSelect>
+                              </div>
+                            </Grid>
+                            <Grid item lg={6} md={6} xs={6}>
+                              <h6>Route of Administration</h6>
+                              <div className={classes.unitsSelect}>
+                                <AphSelect
+                                  style={{ paddingTop: 3 }}
+                                  value={roaOption}
+                                  MenuProps={{
+                                    classes: {
+                                      paper: classes.menuPaper,
+                                    },
+                                    anchorOrigin: {
+                                      vertical: 'bottom',
+                                      horizontal: 'left',
+                                    },
+                                    transformOrigin: {
+                                      vertical: 'top',
+                                      horizontal: 'left',
+                                    },
+                                  }}
+                                  onChange={(e: any) => {
+                                    setRoaOption(e.target.value as ROUTE_OF_ADMINISTRATION);
+                                  }}
+                                >
+                                  {roaOptionHtml}
+                                </AphSelect>
+                              </div>
+                            </Grid>
+                            <div className={classes.numDays}>
+                              {errorState.durationErr &&
+                                forUnit !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW && (
+                                  <FormHelperText
+                                    className={classes.helpText}
+                                    component="div"
+                                    error={errorState.durationErr}
+                                  >
+                                    Please enter valid number of{' '}
+                                    {term(forUnit.toLowerCase(), '(s)')}
+                                  </FormHelperText>
+                                )}
+                            </div>
+                            <GenericMedicineName
+                              value={genericName}
+                              setGenericName={setGenericName}
+                              setIsChecked={setIncludeGenericNameInPrescription}
+                              isChecked={includeGenericNameInPrescription}
+                            />
+                            <Grid item lg={12} xs={12}>
+                              <h6 className={classes.instructionText}>Instructions/Notes</h6>
+                              <div className={classes.numberTablets}>
+                                <AphTextField
+                                  multiline
+                                  placeholder="Type here.."
+                                  value={medicineInstruction}
+                                  onChange={(event: any) => {
+                                    setMedicineInstruction(event.target.value);
+                                  }}
+                                />
+                              </div>
+                            </Grid>
+                          </Grid>
+                        )}
+                        {freeTextSwitch && (
                           <Grid item lg={12} xs={12}>
-                            <h6 className={classes.instructionText}>Instructions/Notes</h6>
+                            <h6 className={classes.instructionText}>Directions of the medicine</h6>
                             <div className={classes.numberTablets}>
                               <AphTextField
                                 multiline
-                                placeholder="Type here.."
-                                value={medicineInstruction}
+                                rows={6}
+                                placeholder="Type here..."
+                                value={medicineCustomDetails}
                                 onChange={(event: any) => {
-                                  setMedicineInstruction(event.target.value);
+                                  handleFreeTextInputErr(event.target.value);
                                 }}
                               />
                             </div>
+
+                            <Grid item lg={12} md={12} xs={12}>
+                              {freeTextErr && (
+                                <FormHelperText
+                                  className={classes.errorText}
+                                  component="div"
+                                  error={freeTextErr}
+                                >
+                                  Please enter valid Directions.
+                                </FormHelperText>
+                              )}
+                            </Grid>
+
+                            <span className="a2">
+                              <GenericMedicineName
+                                value={genericName}
+                                setGenericName={setGenericName}
+                                setIsChecked={setIncludeGenericNameInPrescription}
+                                isChecked={includeGenericNameInPrescription}
+                              />
+                            </span>
                           </Grid>
-                        </Grid>
+                        )}
                       </div>
                     </Scrollbars>
                   </div>
@@ -2836,24 +2977,37 @@ export const FavouriteMedicines: React.FC = () => {
                     >
                       Cancel
                     </AphButton>
-                    {isUpdate ? (
-                      <AphButton
-                        color="primary"
-                        onClick={() => {
-                          addUpdateMedicines();
-                        }}
-                      >
-                        Update Medicine
-                      </AphButton>
-                    ) : (
+                    {isUpdate
+                      ? !freeTextSwitch && (
+                          <AphButton
+                            color="primary"
+                            onClick={() => {
+                              addUpdateMedicines();
+                            }}
+                          >
+                            Update Medicine
+                          </AphButton>
+                        )
+                      : !freeTextSwitch && (
+                          <AphButton
+                            color="primary"
+                            className={classes.updateBtn}
+                            onClick={() => {
+                              saveMedicines();
+                            }}
+                          >
+                            Add Medicine
+                          </AphButton>
+                        )}
+                    {freeTextSwitch && (
                       <AphButton
                         color="primary"
                         className={classes.updateBtn}
                         onClick={() => {
-                          saveMedicines();
+                          handleSaveFreeText();
                         }}
                       >
-                        Add Medicine
+                        Submit Rx
                       </AphButton>
                     )}
                   </div>

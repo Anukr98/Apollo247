@@ -100,6 +100,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
     },
+    hideBtn: {
+      display: 'none',
+    },
     genderBtns: {
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       padding: '7px 13px 7px 13px',
@@ -167,6 +170,8 @@ const useStyles = makeStyles((theme: Theme) => {
     saveButton: {
       backgroundColor: '#fcb716',
       color: '#fff',
+      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      minWidth: 134,
       '&:hover': {
         backgroundColor: '#fcb716',
         color: '#fff',
@@ -454,7 +459,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
         <div className={classes.dialogContent}>
           <Scrollbars autoHide={true} autoHeight autoHeightMax={'48vh'}>
             <h6 className={classes.warningMsg}>
-              Important : You will not be able to edit these details once you have saved them!
+              {selectedPatientId.length > 0
+                ? 'You cannot edit Name, Date of Birth and Gender!'
+                : 'Important : You will not be able to edit these details once you have saved them!'}
             </h6>
             <div className={classes.customScrollBar}>
               <div className={classes.profileForm}>
@@ -516,7 +523,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     className={`${classes.formControl} ${classes.noMargin}`}
                     ref={disableFieldsRef}
                     onClick={
-                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => {}
+                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => { }
                     }
                     fullWidth
                   >
@@ -548,7 +555,7 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   <FormControl
                     className={`${classes.formControl}`}
                     onClick={
-                      selectedPatientId.length > 0 ? () => setIsDisablePopoverOpen(true) : () => {}
+                      selectedPatientId.length > 0 ? () => setIsDisablePopoverOpen(true) : () => { }
                     }
                     fullWidth
                   >
@@ -611,20 +618,29 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                   <FormControl
                     className={classes.formControl}
                     onClick={
-                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => {}
+                      selectedPatientId.length ? () => setIsDisablePopoverOpen(true) : () => { }
                     }
                   >
                     <label>Gender</label>
                     <Grid container spacing={2} className={classes.btnGroup}>
                       {orderedGenders.map((gender) => {
                         return (
-                          <Grid item xs={4} sm={4}>
+                          <Grid
+                            item
+                            xs={4}
+                            sm={4}
+                            className={`${
+                              selectedPatientId.length > 0 && gender !== genderSelected
+                                ? classes.hideBtn
+                                : ''
+                              }`}
+                          >
                             <AphButton
                               color="secondary"
                               disabled={selectedPatientId.length > 0}
                               className={`${classes.genderBtns} ${
                                 gender === genderSelected ? classes.btnActive : ''
-                              }`}
+                                }`}
                               value={genderSelected}
                               onClick={() => {
                                 setGenderSelected(gender as Gender);
@@ -669,6 +685,9 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
                     value={emailAddress}
                     onChange={(e) => {
                       setEmailAddress(e.target.value);
+                      if (e.target.value !== '') {
+                        setIsEmailAddressValid(isEmailValid(e.target.value));
+                      }
                     }}
                     onBlur={(e) => {
                       if (e.target.value !== '') {
@@ -796,7 +815,10 @@ export const AddNewProfile: React.FC<AddNewProfileProps> = (props) => {
       />
       <AphDialog open={isAddNewProfileConfirmDialogOpen} maxWidth="sm">
         <AphDialogClose
-          onClick={() => setIsAddNewProfileConfirmDialogOpen(false)}
+          onClick={() => {
+            setIsAddNewProfileConfirmDialogOpen(false);
+            closeHandler(false);
+          }}
           title={'Close'}
         />
         <AphDialogTitle className={classes.memberTitle}>New Member Details</AphDialogTitle>

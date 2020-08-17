@@ -61,9 +61,6 @@ export const CovidHealthScan: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/covid_ic_psychologist.png')} />
 );
 
-export const CovidExpert: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/covid_ic_family_doctor.png')} />
-);
 export const CloseCal: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/closeCal.png')} />
 );

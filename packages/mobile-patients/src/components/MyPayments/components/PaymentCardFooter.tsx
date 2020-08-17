@@ -21,7 +21,7 @@ interface PaymentCardFooterProps {
   navigationProps: any;
 }
 const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
-  const { SUCCESS, FAILED } = PaymentConstants;
+  const { SUCCESS, FAILED, REFUND } = PaymentConstants;
   const PaymentModes: any = {
     DEBIT_CARD: 'Debit Card',
     CREDIT_CARD: 'Credit Card',
@@ -81,7 +81,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
         };
       }
     } else {
-      const { medicineOrderPayments, orderAutoId, orderDateTime } = item;
+      const { medicineOrderPayments, orderAutoId, orderDateTime, currentStatus } = item;
       orderID = orderAutoId;
       dateAndTime = orderDateTime;
       if (!medicineOrderPayments || !medicineOrderPayments.length) {
@@ -96,23 +96,12 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
           aptType: aptType,
         };
       } else {
-        const {
-          paymentType,
-          paymentMode,
-          healthCreditsRedeemed,
-          amountPaid,
-        } = medicineOrderPayments[0];
-        if (amountPaid == 0) {
-          type = healthCreditsRedeemed != 0 ? 'HC' : paymentType;
-        } else {
-          type = !paymentMode
-            ? paymentType
-            : healthCreditsRedeemed != 0
-            ? 'HC + ' + PaymentModes[paymentMode]
-            : PaymentModes[paymentMode];
-        }
-
-        status = medicineOrderPayments[0].paymentStatus;
+        const { paymentType, paymentMode, medicineOrderRefunds } = medicineOrderPayments[0];
+        type = !paymentMode ? paymentType : PaymentModes[paymentMode];
+        status =
+          currentStatus === 'CANCELLED' && medicineOrderRefunds.length
+            ? REFUND
+            : medicineOrderPayments[0].paymentStatus;
         return {
           leftHeaderText: 'Order No. - ' + orderAutoId,
           dateAndTime: getDate(dateAndTime),
