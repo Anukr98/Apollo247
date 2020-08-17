@@ -1,3 +1,5 @@
+import { ApiConstants } from 'ApiConstants';
+
 export enum NotificationType {
   INITIATE_RESCHEDULE = 'INITIATE_RESCHEDULE',
   INITIATE_TRANSFER = 'INITIATE_TRANSFER',
@@ -84,3 +86,68 @@ export enum NotificationPriority {
   high = 'high',
   normal = 'normal',
 }
+
+export const NotificationMap = {
+  PATIENT_CANCEL_APPOINTMENT: {
+    title: ApiConstants.PATIENT_CANCEL_APPT_TITLE,
+    patient: {
+      sms: {
+        smsLink: process.env.SMS_LINK_BOOK_APOINTMENT,
+        body: ApiConstants.PATIENT_CANCEL_APPT_BODY,
+      },
+    },
+    doctor: {
+      sms: {
+        body: ApiConstants.DOCTOR_PATIENT_CANCEL_SMS,
+      },
+      browserNotification: true,
+    },
+  },
+  DOCTOR_CANCEL_APPOINTMENT: {
+    title: ApiConstants.CANCEL_APPT_TITLE,
+    patient: {
+      sms: {
+        smsLink: process.env.SMS_LINK_BOOK_APOINTMENT,
+        body: ApiConstants.CANCEL_APPT_BODY,
+      },
+    },
+  },
+  INITIATE_RESCHEDULE: {
+    title: ApiConstants.RESCHEDULE_INITIATION_TITLE,
+    patient: {
+      sms: {
+        smsLink: process.env.SMS_LINK_BOOK_APOINTMENT,
+        body: ApiConstants.RESCHEDULE_INITIATION_BODY,
+      },
+    },
+  },
+  DOCTOR_NO_SHOW_INITIATE_RESCHEDULE: {
+    title: ApiConstants.RESCHEDULE_INITIATION_TITLE,
+    patient: {
+      sms: {
+        smsLink: process.env.SMS_LINK_BOOK_APOINTMENT,
+        body: ApiConstants.RESCHEDULE_INITIATION_BODY,
+      },
+    },
+  },
+  PATIENT_NO_SHOW: {
+    title: ApiConstants.PATIENT_NO_SHOW_RESCHEDULE_TITLE,
+    patient: {
+      sms: {
+        smsLink: process.env.SMS_LINK_BOOK_APOINTMENT,
+        body: ApiConstants.PATIENT_NO_SHOW_RESCHEDULE_BODY,
+      },
+    },
+  },
+  INITIATE_TRANSFER: {},
+  INITIATE_JUNIOR_APPT_SESSION: {},
+  INITIATE_SENIOR_APPT_SESSION: {},
+  BOOK_APPOINTMENT: {},
+  PAYMENT_PENDING_SUCCESS: {},
+  PAYMENT_PENDING_FAILURE: {},
+  CALL_APPOINTMENT: {},
+  ACCEPT_RESCHEDULED_APPOINTMENT: {},
+  RESCHEDULE_APPOINTMENT_BY_PATIENT: {},
+  PRESCRIPTION_READY: {},
+  APPOINTMENT_PAYMENT_REFUND: {},
+};
