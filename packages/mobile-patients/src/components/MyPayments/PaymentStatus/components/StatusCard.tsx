@@ -70,21 +70,25 @@ const StatusCard: FC<StatusCardProps> = (props) => {
         orderID: orderID,
       };
     } else {
-      const { medicineOrderPayments, devliveryCharges, estimatedAmount, orderAutoId, currentStatus } = item;
+      const { medicineOrderPayments, orderAutoId, currentStatus } = item;
       orderID = 'Order ID: ' + String(orderAutoId);
       if (!medicineOrderPayments.length) {
         status = 'PENDING';
       } else {
-        const { paymentStatus, paymentRefId, amountPaid, medicineOrderRefunds, healthCreditsRedeemed } = medicineOrderPayments[0];
+        const {
+          paymentStatus,
+          paymentRefId,
+          amountPaid,
+          medicineOrderRefunds,
+        } = medicineOrderPayments[0];
         status = paymentStatus;
-        refId = paymentRefId;
+        refId =
+          currentStatus === 'CANCELLED' && medicineOrderRefunds.length
+            ? medicineOrderRefunds[0].refundId
+            : paymentRefId;
         price = amountPaid;
-        if (medicineOrderRefunds.length) {
-          status = currentStatus === 'CANCELLED' ? REFUND : paymentStatus;
-          price = currentStatus === 'CANCELLED'
-            ? amountPaid + healthCreditsRedeemed
-            : (amountPaid + healthCreditsRedeemed) - medicineOrderRefunds[0].refundAmount;
-        }  
+        status =
+          currentStatus === 'CANCELLED' && medicineOrderRefunds.length ? REFUND : paymentStatus;
       }
       return {
         status: status,

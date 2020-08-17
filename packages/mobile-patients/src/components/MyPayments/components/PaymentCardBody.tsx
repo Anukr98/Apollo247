@@ -62,16 +62,16 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
       if (!medicineOrderPayments.length) {
         status = 'PENDING';
       } else {
-        const { paymentStatus, paymentRefId, amountPaid, medicineOrderRefunds, healthCreditsRedeemed } = medicineOrderPayments[0];
-        status = paymentStatus;
+        const {
+          paymentStatus,
+          paymentRefId,
+          amountPaid,
+          medicineOrderRefunds,
+        } = medicineOrderPayments[0];
         refId = paymentRefId;
-        price = estimatedAmount;
-        if (medicineOrderRefunds.length) {
-          status = currentStatus === 'CANCELLED' ? REFUND : paymentStatus;
-          price = currentStatus === 'CANCELLED'
-            ? amountPaid + healthCreditsRedeemed
-            : (amountPaid + healthCreditsRedeemed) - medicineOrderRefunds[0].refundAmount;
-        }
+        price = amountPaid;
+        status =
+          currentStatus === 'CANCELLED' && medicineOrderRefunds.length ? REFUND : paymentStatus;
       }
       return { status: status, refId: refId, price: price };
     }
