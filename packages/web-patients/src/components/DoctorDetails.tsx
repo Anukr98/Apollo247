@@ -44,6 +44,7 @@ import { doctorProfileViewTracking } from 'webEngageTracking';
 import { getDiffInMinutes } from 'helpers/commonHelpers';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
+import { useLocation } from 'react-router';
 
 export interface DoctorDetailsProps {
   id: string;
@@ -269,8 +270,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       doctorProfileViewTracking(eventData);
     }
   }, [doctorSlots, doctorData]);
+  const location = useLocation();
 
   useEffect(() => {
+    if (location.pathname.includes('/specialties')) {
+      history.replaceState(null, '', clientRoutes.doctorDetails(params.name, params.id));
+    }
     setLoading(true);
     apolloClient
       .query<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>({
@@ -491,7 +496,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <>
                   {doctorData.specialty && doctorData.specialty.name ? (
                     <>
-                      <Link to={clientRoutes.specialties(params.specialty)}>
+                      <Link to={clientRoutes.specialties(readableParam(doctorData.specialty.name))}>
                         {doctorData.specialty.name}
                       </Link>
                       <img src={require('images/triangle.svg')} alt="" />

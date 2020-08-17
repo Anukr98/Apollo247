@@ -10,8 +10,8 @@ import { OrdersSummary } from 'components/Orders/OrderSummary';
 import { OrdersStorePickupSummary } from 'components/Orders/OrdersStorePickupSummary';
 import { useMutation } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { GET_MEDICINE_ORDER_OMS_DETAILS } from 'graphql/medicines';
-import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetails';
+import { GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS } from 'graphql/medicines';
+import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { MEDICINE_ORDER_STATUS, MEDICINE_ORDER_TYPE } from 'graphql/types/globalTypes';
 import { CancelOrderNotification } from 'components/Orders/CancelOrderNotification';
@@ -20,6 +20,8 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: '100%',
+      height: 'auto',
+      maxHeight: 'calc(100% - 65px)',
     },
     sectionHeader: {
       color: '#02475b',
@@ -56,10 +58,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
     },
     orderTrackCrads: {
-      margin: 20,
-      marginTop: 10,
       backgroundColor: '#f7f8f5',
       borderRadius: 5,
+      height: '100%',
+      margin: 20,
       [theme.breakpoints.down('xs')]: {
         margin: 0,
       },
@@ -211,7 +213,7 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
     setMoreActionsDialog(event.currentTarget);
   };
   const [orderDetailsData, setOrderDetailsData] = useState<OrderDetails | null>(null);
-  const orderDetails = useMutation(GET_MEDICINE_ORDER_OMS_DETAILS);
+  const orderDetails = useMutation(GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS);
 
   useEffect(() => {
     if (orderAutoId || billNumber) {
@@ -226,10 +228,11 @@ export const TrackOrders: React.FC<TrackOrdersProps> = (props) => {
         .then(({ data }: any) => {
           if (
             data &&
-            data.getMedicineOrderOMSDetails &&
-            data.getMedicineOrderOMSDetails.medicineOrderDetails
+            data.getMedicineOrderOMSDetailsWithAddress &&
+            data.getMedicineOrderOMSDetailsWithAddress.medicineOrderDetails
           ) {
-            const medicineOrderDetails = data.getMedicineOrderOMSDetails.medicineOrderDetails;
+            const medicineOrderDetails =
+              data.getMedicineOrderOMSDetailsWithAddress.medicineOrderDetails;
             if (medicineOrderDetails) {
               setOrderDetailsData(medicineOrderDetails);
               setNoOrderDetails(false);

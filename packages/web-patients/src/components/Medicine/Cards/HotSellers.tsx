@@ -12,17 +12,25 @@ import {
   pharmacyConfigSectionTracking,
   addToCartTracking,
   removeFromCartTracking,
+  pharmacyProductClickedTracking,
 } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: '100%',
-      '& >div >img': {
-        width: 24,
-        height: 24,
-        [theme.breakpoints.down('xs')]: {
-          display: 'none !important',
+      '& >div': {
+        '& >img': {
+          width: 24,
+          height: 24,
+          [theme.breakpoints.down('xs')]: {
+            display: 'none !important',
+          },
+        },
+        '& >div': {
+          [theme.breakpoints.down('xs')]: {
+            margin: '0 -20px 0 -10px',
+          },
         },
       },
     },
@@ -36,9 +44,6 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
-      [theme.breakpoints.down('xs')]: {
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      },
     },
     productIcon: {
       textAlign: 'center',
@@ -160,9 +165,9 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
       {
         breakpoint: 480,
         settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          centerMode: true,
+          slidesToShow: 2,
+          slidesToScroll: 2,
+          // centerMode: true,
           nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
           prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },
@@ -206,13 +211,19 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                     )}
                   <Link
                     to={clientRoutes.medicineDetails(hotSeller.url_key)}
-                    onClick={() =>
+                    onClick={() => {
                       pharmacyConfigSectionTracking({
                         sectionName: props.section,
                         productId: hotSeller.sku,
                         productName: hotSeller.name,
-                      })
-                    }
+                      });
+                      pharmacyProductClickedTracking({
+                        productName: hotSeller.name,
+                        source: 'Home',
+                        productId: hotSeller.sku,
+                        sectionName: props.section,
+                      });
+                    }}
                   >
                     <div className={classes.productIcon}>
                       <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />

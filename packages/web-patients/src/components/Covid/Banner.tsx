@@ -185,16 +185,16 @@ export const Banner: React.FC<BannerProps> = (props) => {
   return (
     <div
       className={classes.root}
-      style={{ backgroundImage: `url(${require('images/covid-banner.png')})` }}
+      style={{ backgroundImage: `url(${require('images/covid-banner.jpg')})` }}
     >
       <div className={classes.bannerTop}>
-        {!props.isWebView && (
+        {/* {!props.isWebView && (
           <Link to={props.backLocation || clientRoutes.welcome()}>
             <div className={classes.backArrow}>
               <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
             </div>
           </Link>
-        )}
+        )} */}
 
         <AphButton className={classes.subcribeBtn} onClick={() => setOpenSubscriptionForm(true)}>
           Subscribe

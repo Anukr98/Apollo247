@@ -12,6 +12,7 @@ import {
   Checkbox,
   FormControlLabel,
   Grid,
+  Box,
 } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { Prompt, Link } from 'react-router-dom';
@@ -34,6 +35,10 @@ import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
 } from 'graphql/types/EndAppointmentSession';
+import {
+  SendCallDisconnectNotification,
+  SendCallDisconnectNotificationVariables,
+} from 'graphql/types/SendCallDisconnectNotification';
 import { INITIATE_RESCHDULE_APPONITMENT, END_APPOINTMENT_SESSION } from 'graphql/profiles';
 import {
   REQUEST_ROLES,
@@ -57,7 +62,10 @@ import {
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { format } from 'date-fns';
 import { AvailableSlots } from '../components/AvailableSlots';
-import { INITIATE_CONFERENCE_TELEPHONE_CALL } from 'graphql/consults';
+import {
+  INITIATE_CONFERENCE_TELEPHONE_CALL,
+  SEND_CALL_DISCONNECT_NOTIFICATION,
+} from 'graphql/consults';
 import { getLocalStorageItem, updateLocalStorageItem } from './case-sheet/panels/LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -1009,9 +1017,67 @@ const useStyles = makeStyles((theme: Theme) => {
       clip: 'rect(0,0,0,0)',
       border: 0,
     },
+    toastMessage: {
+      width: '482px',
+      height: '40px',
+      borderRadius: '10px',
+      boxShadow: '0 1px 13px 0 rgba(0, 0, 0, 0.16)',
+      backgroundColor: '#00b38e',
+      position: 'relative',
+      top: '37px',
+      right: '529px',
+      marginBottom: '5px',
+    },
+    callButtonWrapperPrompt: {
+      marginLeft: 30,
+    },
+    floatingJoinPrompt: {
+      width: 80,
+      height: 80,
+      borderRadius: '50%',
+      background: '#FC9916',
+      position: 'fixed',
+      top: '80%',
+      right: '7%',
+      color: '#FFF',
+      padding: '15px 25px',
+    },
+    joinPrompt: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      background: '#FFF',
+      width: '100%',
+      position: 'fixed',
+      left: 0,
+      bottom: -10,
+      height: 100,
+      zIndex: 2,
+    },
+    joinPromptText: {
+      fontSize: 18,
+      width: 600,
+    },
+    collapse: {
+      fontSize: 16,
+      color: '#FC9916',
+    },
+    fadedBgJoinPromt: {
+      background: '#000',
+      opacity: 0.5,
+      top: 0,
+      left: 0,
+      position: 'fixed',
+      width: '100%',
+      height: '100%',
+      zIndex: 2,
+    },
   };
 });
 const ringtoneUrl = require('../images/phone_ringing.mp3');
+const joinToneUrl = require('../images/join_sound.mp3');
+const exitToneUrl = require('../images/left_sound.mp3');
+const shortToneUrl = require('../images/short_tone.mp3');
 
 interface errorObject {
   reasonError: boolean;
@@ -1057,6 +1123,7 @@ interface CallPopoverProps {
   setIsClickedOnPriview: (flag: boolean) => void;
   showConfirmPrescription: boolean;
   setShowConfirmPrescription: (flag: boolean) => void;
+  casesheetInfo: any;
 }
 let countdowntimer: any;
 let intervalId: any;
@@ -1139,6 +1206,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
+  const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
+  const leaveChatRoom = '^^#leaveChatRoom';
+  const videoCallEnded = 'Video call ended';
 
   const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
   const [iscallAbandonment, setIscallAbandonment] = React.useState<boolean>(false);
@@ -1156,6 +1226,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [isConfirmationChecked, setIsConfirmationChecked] = React.useState<boolean>(false);
   const [emptyFieldsString, setEmptyFieldsString] = useState<string>('');
   const [showToastMessage, setShowToastMessage] = useState<boolean>(false);
+
+  const [floatingJoinPrompt, setFloatingJoinPrompt] = useState<boolean>(false);
+  const [joinPrompt, setJoinPrompt] = useState<boolean>(false);
+  const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
 
   const moveCursorToEnd = (element: any) => {
     if (typeof element.selectionStart == 'number') {
@@ -1376,6 +1450,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
+  const { sessionClient } = useAuth();
   const [anchorElThreeDots, setAnchorElThreeDots] = React.useState(null);
   const [errorState, setErrorState] = React.useState<errorObject>({
     reasonError: false,
@@ -1396,6 +1471,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [consultStart, setConsultStart] = useState<boolean>(false);
   const [sendToPatientButtonDisable, setSendToPatientButtonDisable] = useState<boolean>(false);
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
+  const [playJoinTone, setPlayJoinTone] = useState<boolean>(false);
+  const [playExitTone, setPlayExitTone] = useState<boolean>(false);
+  const [playShortTone, setPlayShortTone] = useState<boolean>(false);
   const [isCall, setIscall] = React.useState(true);
 
   //OT Error state
@@ -1412,6 +1490,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+
+  useEffect(() => {
+    return () => {
+      if (isCall) sendCallDisconnectNotification();
+    };
+  }, []);
 
   useEffect(() => {
     if (props.appointmentStatus === STATUS.COMPLETED) {
@@ -1456,6 +1540,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setDisableOnCancel(false);
     clearInterval(intervalMissCall);
     setPlayRingtone(false);
+    if (!isCallAccepted) sendCallDisconnectNotification();
+
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
     const text = {
@@ -1498,6 +1584,41 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     props.endCallNotificationAction(true);
   };
 
+  const sendCallDisconnectNotification = () => {
+    const variables = {
+      appointmentId: props.appointmentId,
+      callType: isVideoCall ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO,
+    };
+    client
+      .query<SendCallDisconnectNotification, SendCallDisconnectNotificationVariables>({
+        query: SEND_CALL_DISCONNECT_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables,
+      })
+      .catch((error: ApolloError) => {
+        const patientName =
+          props.casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+          ' ' +
+          props.casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+        const logObject = {
+          api: 'EndCallNotification',
+          inputParam: JSON.stringify(variables),
+          appointmentId: props.appointmentId,
+          doctorId: currentPatient!.id,
+          doctorDisplayName: currentPatient!.displayName,
+          patientId: params.patientId,
+          patientName: patientName,
+          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
+            'MMMM DD YYYY h:mm:ss a'
+          ),
+          error: JSON.stringify(error),
+        };
+        sessionClient.notify(JSON.stringify(logObject));
+        console.log('Error in Send Call Disconnect Notification', error.message);
+      });
+  };
+
   const autoSend = (callType: string) => {
     const text = {
       id: props.doctorId,
@@ -1515,7 +1636,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status: any, response: any) => {}
     );
-    setPlayRingtone(true);
+    {
+      joinPrompt || floatingJoinPrompt ? setPlayRingtone(false) : setPlayRingtone(true);
+    }
+
     actionBtn();
   };
   const actionBtn = () => {
@@ -1775,13 +1899,31 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
         setIsCallAccepted(true);
         setPlayRingtone(false);
+        setPlayJoinTone(true);
+        setPlayExitTone(false);
         clearInterval(intervalMissCall);
         missedCallCounter = 0;
       }
       if (lastMsg.message && lastMsg.message.message === stopcallMsg) {
+        setPlayJoinTone(false);
+        setPlayExitTone(true);
         setTimeout(() => {
           if (isCall) forcelyDisconnect();
         }, 2000);
+      }
+      if (
+        isConsultStarted &&
+        lastMsg.message &&
+        lastMsg.message.message === patientJoinedMeetingRoom
+      ) {
+        setPlayShortTone(true);
+        setJoinPrompt(true);
+      }
+      if (isConsultStarted && lastMsg.message && lastMsg.message.message === videoCallEnded) {
+        setPlayShortTone(false);
+        setJoinPrompt(false);
+        setFloatingJoinPrompt(false);
+        setPlayExitTone(true);
       }
     }
   }, [props.lastMsg]);
@@ -2183,12 +2325,49 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </audio>
       )}
 
+      {playJoinTone && (
+        <audio controls autoPlay className={classes.ringtone}>
+          <source src={joinToneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
+
+      {playExitTone && (
+        <audio controls autoPlay className={classes.ringtone}>
+          <source src={exitToneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
+
+      {playShortTone && (
+        <audio controls autoPlay className={classes.ringtone}>
+          <source src={exitToneUrl} type="audio/mpeg" />
+          Your browser does not support the audio tag.
+        </audio>
+      )}
+
       <div className={classes.breadcrumbs}>
         <div>
           {(props.appointmentStatus !== STATUS.COMPLETED || props.isClickedOnEdit) && (
             <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>
           )}
-          <Link to={localStorage.getItem('callBackUrl')}>
+          <Link
+            to={localStorage.getItem('callBackUrl')}
+            onClick={() => {
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: leaveChatRoom,
+                  },
+                  channel: channel,
+                  storeInHistory: false,
+                  sendByPost: false,
+                },
+                (status: any, response: any) => {}
+              );
+            }}
+          >
             <div className={classes.backArrow}>
               <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
               <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -3542,6 +3721,104 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </Paper>
       </Modal>
       {/* referral field required popup end */}
+
+      {floatingJoinPrompt && (
+        <div
+          className={classes.floatingJoinPrompt}
+          style={{
+            cursor: 'pointer',
+          }}
+          onClick={() => {
+            handleClose();
+            autoSend(videoCallMsg);
+            setIsVideoCall(true);
+            setDisableOnCancel(true);
+            setIscall(true);
+          }}
+        >
+          <img
+            src={require('images/ic_joinPrompt_white.svg')}
+            alt=""
+            style={{
+              height: 30,
+              width: 30,
+            }}
+          />
+          {'JOIN'}
+        </div>
+      )}
+
+      {joinPrompt && <div className={classes.fadedBgJoinPromt}></div>}
+
+      {joinPrompt && (
+        <Box boxShadow={5} borderRadius={15} className={classes.joinPrompt}>
+          <img
+            src={require('images/ic_joinPrompt.svg')}
+            alt=""
+            style={{
+              height: 50,
+              width: 50,
+              position: 'relative',
+              marginRight: 30,
+            }}
+          />
+
+          <Typography component="h4" variant="h4" className={classes.joinPromptText}>
+            Patient "{patientName}" is waiting in the consult room. Please click on Proceed to join
+            consultation.
+          </Typography>
+
+          <div className={classes.callButtonWrapperPrompt}>
+            <AphButton
+              color="primary"
+              style={{
+                fontSize: 15,
+                borderRadius: 5,
+                boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+                backgroundColor: '#fc9916',
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                handleClose();
+                autoSend(videoCallMsg);
+                setIsVideoCall(true);
+                setDisableOnCancel(true);
+                setIscall(true);
+                setJoinPrompt(false);
+              }}
+            >
+              {'PROCEED'}
+            </AphButton>
+
+            <span
+              className={classes.collapse}
+              style={{
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                setPlayRingtone(false);
+                setJoinPrompt(false);
+                setFloatingJoinPrompt(true);
+              }}
+            >
+              <img
+                src={require('images/ic_collapse.svg')}
+                alt=""
+                style={{
+                  height: 18,
+                  width: 18,
+                  position: 'relative',
+                  marginLeft: 15,
+                  marginRight: 4,
+                  verticalAlign: 'middle',
+                }}
+              />
+              {'COLLAPSE'}
+            </span>
+          </div>
+        </Box>
+      )}
+
       {/* Ot Errors Start */}
       <Alert
         error={sessionError}

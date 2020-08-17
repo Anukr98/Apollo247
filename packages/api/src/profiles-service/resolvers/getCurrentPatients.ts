@@ -138,7 +138,10 @@ const getCurrentPatients: Resolver<
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>
   ): Promise<Patient> => {
-    return Patient.create(createOptions).save();
+    const existingPatient = await Patient.findOne({
+      where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
+    });
+    return existingPatient || Patient.create(createOptions).save();
   };
 
   let patientPromises: Object[] = [];
@@ -159,7 +162,7 @@ const getCurrentPatients: Resolver<
             : undefined,
           mobileNumber,
           uhid: data.uhid,
-          dateOfBirth: data.dob.length == 0 ? undefined : new Date(data.dob),
+          dateOfBirth: (!data.dob || data.dob.length == 0) ? undefined : new Date(data.dob),
           androidVersion: args.deviceType === DEVICE_TYPE.ANDROID ? args.appVersion : undefined,
           iosVersion: args.deviceType === DEVICE_TYPE.IOS ? args.appVersion : undefined,
           primaryUhid: data.uhid,

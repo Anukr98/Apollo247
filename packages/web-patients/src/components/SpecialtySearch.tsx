@@ -200,7 +200,19 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
     const requiredDoctor =
       searchDoctorsNextAvailability &&
       searchDoctorsNextAvailability.find((avail: NextAvailability) => avail.doctorId === id);
-    return requiredDoctor.availableInMinutes || '';
+    const differenceInMinutes = requiredDoctor && requiredDoctor.availableInMinutes;
+    if (differenceInMinutes > 0 && differenceInMinutes < 120) {
+      return `${differenceInMinutes} ${differenceInMinutes === 1 ? 'min' : 'mins'}`;
+    } else if (differenceInMinutes > 120 && differenceInMinutes < 1440) {
+      const differenceInHours = Math.floor(differenceInMinutes / 60);
+      return `${differenceInHours} ${differenceInHours === 1 ? 'hour' : 'hours'}`;
+    } else if (differenceInMinutes > 1440 && differenceInMinutes < 43200) {
+      const differenceInDays = Math.floor(differenceInMinutes / 1440);
+      return `${differenceInDays} ${differenceInDays === 1 ? 'Day' : 'Days'}`;
+    } else {
+      return '1 Month';
+    }
+    return (requiredDoctor && requiredDoctor.availableInMinutes) || '';
   };
   const searchRef = useRef(null);
   const pathCondition = location.pathname === clientRoutes.specialityListing();
@@ -218,6 +230,14 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
       };
     }
   }, [searchRef]);
+
+  const getConsultationFees = (onlineFees: string, physicalFees: string) => {
+    return onlineFees && physicalFees
+      ? onlineFees > physicalFees
+        ? physicalFees
+        : onlineFees
+      : onlineFees || physicalFees || '';
+  };
 
   return (
     <>
@@ -282,10 +302,7 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
                             <li key={doctor.id}>
                               <Link
                                 key={doctor.id}
-                                to={clientRoutes.specialtyDoctorDetails(
-                                  doctor.specialty && doctor.specialty.name
-                                    ? readableParam(doctor.specialty.name)
-                                    : '',
+                                to={clientRoutes.doctorDetails(
                                   readableParam(doctor.fullName),
                                   doctor.id
                                 )}
@@ -300,8 +317,12 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
                                       {doctor.specialty && doctor.specialty.name
                                         ? doctor.specialty.name
                                         : ''}{' '}
-                                      | {`${getDoctorAvailability(doctor.id)} mins`} |{' '}
-                                      {doctor.onlineConsultationFees} |{' '}
+                                      | {getDoctorAvailability(doctor.id)} |{' '}
+                                      {getConsultationFees(
+                                        doctor.onlineConsultationFees,
+                                        doctor.physicalConsultationFees
+                                      )}{' '}
+                                      |{' '}
                                       {doctor.doctorHospital &&
                                       doctor.doctorHospital[0] &&
                                       doctor.doctorHospital[0].facility

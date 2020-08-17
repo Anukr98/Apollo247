@@ -11,7 +11,7 @@ import _camelCase from 'lodash/camelCase';
 import _startCase from 'lodash/startCase';
 import { PharmaPaymentStatus_pharmaPaymentStatus as PharmaPaymentDetails } from 'graphql/types/PharmaPaymentStatus';
 import { PHRAMA_PAYMENT_STATUS } from 'graphql/medicines';
-import { GET_MEDICINE_ORDER_OMS_DETAILS } from 'graphql/medicines';
+import { GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS } from 'graphql/medicines';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { OrderStatusContent } from '../OrderStatusContent';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
@@ -74,7 +74,7 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
   const [showPaymentStatusModal, setShowPaymentStatusModal] = useState(true);
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(true);
   const pharmaPayments = useMutation(PHRAMA_PAYMENT_STATUS);
-  const orderDetails = useMutation(GET_MEDICINE_ORDER_OMS_DETAILS);
+  const orderDetails = useMutation(GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS);
 
   const getPaymentStatus = () => {
     if (!paymentStatusData) return '';
@@ -165,8 +165,8 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
         .then(({ data }: any) => {
           if (
             data &&
-            data.getMedicineOrderOMSDetails &&
-            data.getMedicineOrderOMSDetails.medicineOrderDetails
+            data.getMedicineOrderOMSDetailsWithAddress &&
+            data.getMedicineOrderOMSDetailsWithAddress.medicineOrderDetails
           ) {
             pharmaPayments({
               variables: {
@@ -178,7 +178,12 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
             })
               .then((resp: any) => {
                 if (resp && resp.data && resp.data.pharmaPaymentStatus) {
-                  const { paymentStatus, paymentRefId } = resp.data.pharmaPaymentStatus;
+                  const {
+                    paymentStatus,
+                    paymentRefId,
+                    paymentMode,
+                    amountPaid,
+                  } = resp.data.pharmaPaymentStatus;
                   setPaymentStatusData(resp.data.pharmaPaymentStatus);
                   /* WebEngage Tracking Start*/
                   paymentRefId &&
@@ -190,6 +195,25 @@ export const PaymentStatusModal: React.FC<PaymentStatusProps> = (props) => {
                         typeof params.orderAutoId === 'string'
                           ? parseInt(params.orderAutoId)
                           : params.orderAutoId,
+                    });
+                  const pharmacyCheckoutValues = sessionStorage.getItem('pharmacyCheckoutValues')
+                    ? JSON.parse(sessionStorage.getItem('pharmacyCheckoutValues'))
+                    : {};
+                  (resp.data.pharmaPaymentStatus.paymentStatus === 'PAYMENT_SUCCESS' ||
+                    paymentMode === 'COD') &&
+                    pharmacyCheckoutTracking({
+                      orderId:
+                        typeof params.orderAutoId === 'string'
+                          ? parseInt(params.orderAutoId)
+                          : params.orderAutoId,
+                      payStatus: 'success',
+                      payType: paymentMode,
+                      serviceArea: 'pharmacy',
+                      shippingInfo: '',
+                      grandTotal: pharmacyCheckoutValues && pharmacyCheckoutValues.grandTotal,
+                      discountAmount:
+                        pharmacyCheckoutValues && pharmacyCheckoutValues.discountAmount,
+                      netAfterDiscount: amountPaid,
                     });
                   /* WebEngage Tracking End*/
                 } else {

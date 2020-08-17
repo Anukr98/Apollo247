@@ -185,9 +185,13 @@ export const GET_MEDICINE_ORDERS_OMS_LIST = gql`
   }
 `;
 
-export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
-  query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int, $billNumber: String) {
-    getMedicineOrderOMSDetails(
+export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
+  query getMedicineOrderOMSDetailsWithAddress(
+    $patientId: String
+    $orderAutoId: Int
+    $billNumber: String
+  ) {
+    getMedicineOrderOMSDetailsWithAddress(
       patientId: $patientId
       orderAutoId: $orderAutoId
       billNumber: $billNumber
@@ -280,6 +284,15 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
             zipcode
           }
         }
+        medicineOrderAddress {
+          addressLine1
+          addressLine2
+          city
+          state
+          zipcode
+          name
+          mobileNumber
+        }
       }
     }
   }
@@ -299,6 +312,16 @@ export const SAVE_PHARMACOLOGIST_CONSULT = gql`
   ) {
     savePharmacologistConsult(savePharmacologistConsultInput: $savePharmacologistConsultInput) {
       status
+    }
+  }
+`;
+
+export const GET_PATIENT_FEEDBACK = gql`
+  query GetPatientFeedback($patientId: String, $transactionId: String) {
+    getPatientFeedback(patientId: $patientId, transactionId: $transactionId) {
+      feedback {
+        rating
+      }
     }
   }
 `;

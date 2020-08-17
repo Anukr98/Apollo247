@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetails';
+import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
 import moment from 'moment';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as LatestOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
@@ -15,7 +15,7 @@ export interface MedicineProduct {
   url_key: string;
   description: string;
   id: number;
-  image: string | null;
+  image: string[] | null;
   is_in_stock: boolean;
   is_prescription_required: '0' | '1'; //1 for required
   name: string;
@@ -332,7 +332,7 @@ export const reOrderItems = async (
         ({
           ...item,
           description: '',
-          image: '',
+          image: [],
           mou: isOfflineOrder
             ? Math.ceil(lineItems[index].price / lineItems[index].mrp / lineItems[index].quantity)
             : item.mou,

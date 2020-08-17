@@ -3,9 +3,10 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import moment from 'moment';
 import {
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails,
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderPayments as Payments,
-} from 'graphql/types/getMedicineOrderOMSDetails';
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails as OrderDetails,
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderPayments as Payments,
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderAddress as OrderAddress,
+} from 'graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { CircularProgress } from '@material-ui/core';
 import {
   MEDICINE_ORDER_PAYMENT_TYPE,
@@ -14,18 +15,12 @@ import {
 } from 'graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
-import {
-  GetPatientAddressList,
-  GetPatientAddressListVariables,
-  GetPatientAddressList_getPatientAddressList_addressList as AddressDetails,
-} from 'graphql/types/GetPatientAddressList';
-import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import { deliveredOrderDetails } from './OrderStatusCard';
 import { ORDER_BILLING_STATUS_STRINGS } from 'helpers/commonHelpers';
 import { MedicineOrderBilledItem } from 'helpers/MedicineApiCalls';
 import { pharmacyOrderSummaryTracking } from 'webEngageTracking';
 import { ReOrder } from './ReOrder';
-import { PatientsList } from 'components/PatientsList';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -383,53 +378,16 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
       ? 'Prepaid'
       : 'No Payment');
 
-  const getAddressDetails = (deliveryAddressId: string, id: string) => {
-    client
-      .query<GetPatientAddressList, GetPatientAddressListVariables>({
-        query: GET_PATIENT_ADDRESSES_LIST,
-        variables: {
-          patientId: id || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        if (
-          _data.data &&
-          _data.data.getPatientAddressList &&
-          _data.data.getPatientAddressList.addressList
-        ) {
-          const addresses = _data.data.getPatientAddressList.addressList.reverse();
-          if (addresses && addresses.length > 0) {
-            setDeliveryAddresses && setDeliveryAddresses(addresses);
-            getPatientAddress(addresses);
-          } else {
-            setDeliveryAddresses && setDeliveryAddresses([]);
-          }
-        }
-      })
-      .catch((e) => {
-        console.log('Error occured while fetching Doctor', e);
-      });
-  };
-
-  const getPatientAddress = (deliveryAddresses: AddressDetails[]) => {
-    if (deliveryAddresses.length > 0 && orderDetailsData && orderDetailsData.patientAddressId) {
-      const selectedAddress = deliveryAddresses.find(
-        (address: AddressDetails) => address.id == orderDetailsData.patientAddressId
-      );
-      const addressData = selectedAddress
-        ? `${selectedAddress.addressLine1 ? `${selectedAddress.addressLine1}, ` : ''}${
-            selectedAddress.addressLine2 ? `${selectedAddress.addressLine2}, ` : ''
-          }${selectedAddress.city ? `${selectedAddress.city}, ` : ''}${
-            selectedAddress.state ? `${selectedAddress.state}, ` : ''
-          }${selectedAddress.zipcode || ''}`
+  const getPatientAddress = (deliveryAddress: OrderAddress) => {
+    if (deliveryAddress) {
+      const address1 = deliveryAddress.addressLine1 ? `${deliveryAddress.addressLine1}, ` : '';
+      const address2 = deliveryAddress.addressLine2 ? `${deliveryAddress.addressLine2}, ` : '';
+      const city = deliveryAddress.city ? `${deliveryAddress.city}, ` : '';
+      const state = deliveryAddress.state ? `${deliveryAddress.state}, ` : '';
+      const addressData = deliveryAddress
+        ? `${address1}${address2}${city}${state}${deliveryAddress.zipcode || ''}`
         : '';
       return addressData;
-    } else {
-      orderDetailsData &&
-        orderDetailsData.patient &&
-        orderDetailsData.patient.id &&
-        getAddressDetails(orderDetailsData.patientAddressId, orderDetailsData.patient.id);
     }
   };
 
@@ -501,17 +459,18 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
     orderDetailsData &&
     Math.round(orderDetailsData.productDiscount + orderDetailsData.couponDiscount) <
       Math.round(billedPaymentDetails && billedPaymentDetails.discountValue);
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     if (orderDetailsData) {
-      const { id, orderTat, orderType, currentStatus, patient } = orderDetailsData;
+      const { id, orderTat, orderType, currentStatus, medicineOrderAddress } = orderDetailsData;
       const data = {
         orderId: id,
-        orderDate: getFormattedDateTime('webengage'),
+        orderDate: getFormattedDateTime('webengage') || '',
         orderType,
-        customerId: patient ? patient.id : '',
+        customerId: currentPatient ? currentPatient.id : '',
         deliveryDate: moment(orderTat).format('DD-MM-YYYY'),
-        mobileNumber: patient ? patient.mobileNumber : null,
+        mobileNumber: medicineOrderAddress ? medicineOrderAddress.mobileNumber : '',
         orderStatus: currentStatus,
       };
       pharmacyOrderSummaryTracking(data);
@@ -560,15 +519,15 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
           <span>Shipping Address</span>
         </div>
         <div className={classes.addressDetails}>
-          {orderDetailsData.patient && (
+          {orderDetailsData.medicineOrderAddress && (
             <div className={classes.addressRow}>
               <label>Name -</label>
-              <span>{`${orderDetailsData.patient.firstName} ${orderDetailsData.patient.lastName}`}</span>
+              <span>{`${orderDetailsData.medicineOrderAddress.name}`}</span>
             </div>
           )}
           <div className={classes.addressRow}>
             <label>Address -</label>
-            <span>{getPatientAddress(deliveryAddresses)}</span>
+            <span>{getPatientAddress(orderDetailsData.medicineOrderAddress)}</span>
           </div>
         </div>
 
@@ -756,8 +715,8 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
             orderDetailsData={orderDetailsData}
             type="Order Details"
             patientName={
-              orderDetailsData.patient && orderDetailsData.patient.firstName
-                ? orderDetailsData.patient.firstName
+              orderDetailsData.medicineOrderAddress && orderDetailsData.medicineOrderAddress.name
+                ? orderDetailsData.medicineOrderAddress.name
                 : ''
             }
           />
