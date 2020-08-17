@@ -438,6 +438,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
 
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
   const [apiLoading, setApiLoading] = useState<boolean>(false);
+  const [refreshTimer, setRefreshTimer] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -518,7 +519,17 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         doctorHospital,
       } = doctorDetails && doctorDetails.getDoctorDetailsById;
 
+      const shouldRefreshComponent = (differenceInMinutes: number) => {
+        const id = setInterval(() => {
+          id && clearInterval(id);
+          if (differenceInMinutes >= 0 && differenceInMinutes <= 15) {
+            setRefreshTimer(!refreshTimer);
+          }
+        }, 60000);
+      };
+
       const differenceInMinutes = getDiffInMinutes(appointmentDetails.appointmentDateTime);
+      shouldRefreshComponent(differenceInMinutes);
       const specialityName = (specialty && specialty.name) || '';
 
       if (doctorHospital) {
@@ -684,7 +695,11 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                       ) : (
                         <div className={classes.joinInSection}>
                           <span>Doctor Joining In</span>
-                          <span className={classes.joinTime}>{differenceInWords}</span>
+                          <span className={classes.joinTime}>
+                            {differenceInMinutes > 0 && differenceInMinutes <= 15
+                              ? `${differenceInMinutes} minutes`
+                              : differenceInWords}
+                          </span>
                         </div>
                       ))
                     ))}
