@@ -22,6 +22,8 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { DEVICE_TYPE } from 'profiles-service/entities';
+import path from 'path';
+import fs from 'fs';
 
 export const doctorCallNotificationTypeDefs = gql`
   type AppointmentCallDetails {
@@ -78,7 +80,7 @@ export const doctorCallNotificationTypeDefs = gql`
       doctorName: String
       deviceType: DEVICETYPE
       callSource: BOOKINGSOURCE
-      appVersion: String,
+      appVersion: String
       isDev: Boolean
     ): NotificationResult!
     endCallNotification(appointmentCallId: String, isDev: Boolean): EndCallResult!
@@ -111,7 +113,7 @@ type CallDetailsResult = {
 
 const endCallNotification: Resolver<
   null,
-  { appointmentCallId: string, isDev: boolean },
+  { appointmentCallId: string; isDev: boolean },
   ConsultServiceContext,
   EndCallResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
@@ -142,7 +144,15 @@ const endCallNotification: Resolver<
   }
 
   if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']) {
-    hitCallKitCurl(voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'], doctorName, callDetails.appointment.id, false, APPT_CALL_TYPE.AUDIO, args.isDev)
+    hitCallKitCurl(
+      voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
+      doctorName,
+      callDetails.appointment.id,
+      callDetails.appointment.patientId,
+      false,
+      APPT_CALL_TYPE.AUDIO,
+      args.isDev
+    );
   }
 
   await callDetailsRepo.updateCallDetails(args.appointmentCallId);
@@ -176,7 +186,7 @@ const sendCallNotification: Resolver<
     deviceType: DEVICETYPE;
     callSource: BOOKINGSOURCE;
     appVersion: string;
-    isDev: boolean
+    isDev: boolean;
   },
   ConsultServiceContext,
   NotificationResult
@@ -218,7 +228,7 @@ const sendCallNotification: Resolver<
       args.doctorType,
       appointmentCallDetails.id,
       args.isDev,
-      args.numberOfParticipants,
+      args.numberOfParticipants
     );
     console.log(notificationResult, 'doctor call appt notification');
   } else {
@@ -235,7 +245,7 @@ const sendCallNotification: Resolver<
       args.doctorType,
       appointmentCallDetails.id,
       args.isDev,
-      args.numberOfParticipants,
+      args.numberOfParticipants
     );
     console.log(notificationResult, 'doctor call appt notification');
   }
@@ -321,7 +331,8 @@ const sendCallDisconnectNotification: Resolver<
       pushNotificationInput,
       patientsDb,
       consultsDb,
-      doctorsDb
+      doctorsDb,
+      args.callType
     );
     console.log(notificationResult, 'doctor call appt notification');
   }
@@ -333,14 +344,18 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
   args,
   { consultsDb, doctorsDb }
 ) => {
+  let content = '\n-----------------\n' + format(new Date(), 'yyyy-MM-dd hh:mm');
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.getNotStartedAppointments();
   const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
+  content += '\nappts length: ' + apptDetails.length.toString();
   if (apptDetails.length > 0) {
     const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
     apptDetails.forEach(async (appt) => {
+      content += '\n apptId: ' + appt.id + ' - ' + appt.doctorId;
       const doctorDetails = await docRepo.findById(appt.doctorId);
       if (doctorDetails) {
+        content += doctorDetails.doctorSecretary.secretary.mobileNumber + '\n';
         const templateData: string[] = [appt.appointmentType, appt.patientName, devLink];
         sendDoctorNotificationWhatsapp(
           ApiConstants.WHATSAPP_SD_CONSULT_DELAY,
@@ -350,6 +365,18 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
       }
     });
   }
+  const fileName =
+    process.env.NODE_ENV + '_docsecretarytnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
+  fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+    if (err) {
+      console.log('file saving error', err);
+    }
+    console.log('notification results saved');
+  });
   console.log(apptDetails.length, 'apptDetails.length');
   return { status: true };
 };

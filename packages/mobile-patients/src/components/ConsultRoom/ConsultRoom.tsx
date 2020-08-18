@@ -12,7 +12,6 @@ import {
   Ambulance,
   CartIcon,
   ConsultationRoom,
-  CovidExpert,
   CovidRiskLevel,
   Diabetes,
   DoctorIcon,
@@ -1430,11 +1429,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           'Take a mental health scan'
         )} */}
         {renderCovidBlueButtons(
-          onPressCallExperts,
-          <CovidExpert style={{ width: 24, height: 24 }} />,
-          `${AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_TEXT}`
-        )}
-        {renderCovidBlueButtons(
           onPressKavach,
           <KavachIcon style={{ width: 24, height: 24 }} />,
           `${AppConfig.Configuration.HOME_SCREEN_KAVACH_TEXT}`
@@ -1543,20 +1537,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
     } catch (e) {}
 
-    // props.navigation.navigate(AppRoutes.CovidScan, {
-    //   covidUrl: AppConfig.Configuration.KAVACH_URL,
-    // });
-  };
-
-  // const onPressMentalHealth = () => {
-  //   console.log('onPressMentalHealth');
-  // }
-
-  const onPressCallExperts = () => {
-    const phoneNumber = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_NUMBER;
-    postHomeWEGEvent(WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT);
-    Linking.openURL(`tel:${phoneNumber}`);
-    console.log('onPressCallExperts');
   };
 
   const renderCovidScanBanner = () => {
@@ -1605,96 +1585,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </TouchableOpacity>
     );
   };
-
-  const renderEmergencyCallBanner = () => {
-    const phoneNumber = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_NUMBER;
-    return (
-      <TouchableOpacity
-        activeOpacity={0.5}
-        onPress={() => {
-          {
-            postHomeWEGEvent(WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT);
-            Linking.openURL(`tel:${phoneNumber}`);
-          }
-        }}
-        style={{
-          height: 0.06 * height,
-          marginHorizontal: 20,
-          marginVertical: 16,
-          borderRadius: 10,
-          flex: 1,
-          flexDirection: 'row',
-          backgroundColor: '#d13135',
-        }}
-      >
-        <View
-          style={{
-            flex: 0.17,
-            borderTopLeftRadius: 10,
-            borderBottomLeftRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Ambulance style={{ height: 30, width: 30 }} />
-        </View>
-        <View
-          style={{
-            flex: 0.83,
-            borderTopRightRadius: 10,
-            borderBottomRightRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'flex-start',
-          }}
-        >
-          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20) }}>
-            {AppConfig.Configuration.HOME_SCREEN_COVID_CONTACT_TEXT}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  // const renderEmergencyCallBanner = () => {
-  //   const heading = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_TEXT;
-  //   const phoneNumber = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_NUMBER;
-  //   return (
-  //     <TouchableOpacity
-  //       activeOpacity={1}
-  //       onPress={() => {
-  //         {
-  //           postHomeWEGEvent(WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT);
-  //           Linking.openURL(`tel:${phoneNumber}`);
-  //         }
-  //       }}
-  //     >
-  //       <View
-  //         style={{
-  //           marginHorizontal: 20,
-  //           marginVertical: 16,
-  //           paddingHorizontal: 10,
-  //           alignItems: 'center',
-  //           flexDirection: 'row',
-  //           justifyContent: 'space-between',
-  //           backgroundColor: '#d13135',
-  //           borderRadius: 10,
-  //         }}
-  //       >
-  //         <Text
-  //           style={{
-  //             flex: 1,
-  //             paddingVertical: 10,
-  //             paddingRight: 10,
-  //             ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20),
-  //           }}
-  //         >
-  //           {heading}
-  //         </Text>
-  //         <Ambulance style={{ height: 41, width: 41 }} />
-  //       </View>
-  //     </TouchableOpacity>
-  //   );
-  // };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
     return (

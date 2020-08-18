@@ -374,7 +374,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const getFormattedDate = (time: string) => {
-    return moment(time).format('D MMMM, YYYY');
+    // To support two different TAT formats (JS Date type & DD-MMM-YYYY hh:mm)
+    return (moment(time).isValid()
+      ? moment(time)
+      : moment(time, AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT)
+    ).format('D MMMM, YYYY');
   };
 
   const getFormattedTime = (time: string) => {

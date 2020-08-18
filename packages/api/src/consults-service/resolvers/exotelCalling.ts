@@ -227,8 +227,8 @@ const initateConferenceTelephoneCall: Resolver<
   let createObj = {
     callSid: exotelResponse['Call']['Sid'],
     accountSid: exotelResponse['Call']['AccountSid'],
-    doctorMobileNumber: exotelResponse['Call']['From'],
-    patientMobileNumber: exotelResponse['Call']['To'],
+    doctorMobileNumber: fromMobileNumber,
+    patientMobileNumber: toMobileNumber,
     callerId: exotelResponse['Call']['PhoneNumberSid'],
     status: exotelResponse['Call']['Status'],
     callStartTime: exotelResponse['Call']['StartTime'],

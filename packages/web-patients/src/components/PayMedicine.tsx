@@ -511,16 +511,10 @@ export const PayMedicine: React.FC = (props) => {
     }
   }, [validateConsultCouponResult]);
 
-  const getDiscountedLineItemPrice = (id: number) => {
-    if (
-      couponCode.length > 0 &&
-      validateCouponResult &&
-      validateCouponResult.pharmaLineItemsWithDiscountedPrice
-    ) {
-      const item = validateCouponResult.pharmaLineItemsWithDiscountedPrice.find(
-        (item: pharmaCouponItem) => item.itemId === id.toString()
-      );
-      return item.applicablePrice.toFixed(2);
+  const getDiscountedLineItemPrice = (sku: string) => {
+    if (couponCode.length > 0 && validateCouponResult && validateCouponResult.products) {
+      const item: any = validateCouponResult.products.find((item: any) => item.sku === sku);
+      return item.specialPrice.toFixed(2);
     }
   };
 
@@ -532,15 +526,15 @@ export const PayMedicine: React.FC = (props) => {
             medicineName: cartItemDetails.name,
             price:
               couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
-            itemValue: cartItemDetails.quantity * cartItemDetails.price,
+            itemValue: Number((cartItemDetails.quantity * cartItemDetails.price).toFixed(2)),
             itemDiscount: Number(
               (
                 cartItemDetails.quantity *
                 (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                  ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                  ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.sku))
                   : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
               ).toFixed(2)
             ),
@@ -654,7 +648,7 @@ export const PayMedicine: React.FC = (props) => {
         grandTotal: mrpTotal,
         discountAmount:
           (productDiscount && productDiscount.toFixed(2)) ||
-          (couponValue && couponValue.toFixed(2)),
+          (couponValue && parseFloat(couponValue).toFixed(2)),
       })
     );
     setMutationLoading(true);
@@ -946,7 +940,7 @@ export const PayMedicine: React.FC = (props) => {
                           <div style={{ paddingLeft: 10 }}>
                             SBI YONO CASHLESS CARD
                             <div className={classes.offerMessage}>
-                              You are eligible for ${process.env.SBI_CASHCARD_DISCOUNT}% cashback
+                              You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}% cashback
                             </div>
                           </div>
                         </li>

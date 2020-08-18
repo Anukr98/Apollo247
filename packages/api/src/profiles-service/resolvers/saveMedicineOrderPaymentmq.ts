@@ -10,6 +10,7 @@ import {
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
   DEVICE_TYPE,
+  MedicineOrders,
 } from 'profiles-service/entities';
 import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 
@@ -65,6 +66,7 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     orderId: String
     paymentMode: PAYMENT_METHODS
     healthCredits: Float
+    partnerInfo: String
   }
 
   type SaveMedicineOrderPaymentMqResult {
@@ -97,6 +99,7 @@ type MedicinePaymentMqInput = {
   CODCity: CODCity;
   paymentMode: PAYMENT_METHODS_REVERSE;
   healthCredits: number;
+  partnerInfo: string;
 };
 
 enum CODCity {
@@ -171,6 +174,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
     responseCode: medicinePaymentMqInput.responseCode,
     responseMessage: medicinePaymentMqInput.responseMessage,
     bankTxnId: medicinePaymentMqInput.bankTxnId,
+    partnerInfo: medicinePaymentMqInput.partnerInfo,
   };
   if (medicinePaymentMqInput.healthCredits) {
     paymentAttrs.healthCreditsRedeemed = medicinePaymentMqInput.healthCredits;
@@ -191,6 +195,12 @@ const SaveMedicineOrderPaymentMq: Resolver<
   let savePaymentDetails: MedicineOrderPayments | undefined;
 
   if ((savePaymentDetails = await medicineOrdersRepo.findMedicineOrderPayment(orderDetails.id))) {
+    if (
+      savePaymentDetails.paymentStatus !== 'PENDING' &&
+      savePaymentDetails.paymentMode != PAYMENT_METHODS_REVERSE.COD
+    ) {
+      throw new AphError(AphErrorMessages.PAYMENT_ALREADY_PROCESSED, undefined, {});
+    }
     await medicineOrdersRepo.updateMedicineOrderPayment(
       orderDetails.id,
       orderDetails.orderAutoId,
@@ -288,55 +298,37 @@ const SaveMedicineOrderPaymentMq: Resolver<
         medicinePaymentMqInput.healthCredits &&
         !Object.keys(savePaymentDetails.healthCreditsRedemptionRequest).length
       ) {
-        const oneApolloresponse = await blockOneApolloUserPoints(
-          {
-            mobileNumber: orderDetails.patient.mobileNumber.slice(3),
-            deviceType: orderDetails.deviceType,
-            creditsToBlock: medicinePaymentMqInput.healthCredits,
-            orderId: orderDetails.orderAutoId,
-            id: orderDetails.id,
-          },
-          profilesDb
-        );
-        if (!oneApolloresponse.Success) {
+        try {
+          const oneApolloresponse = await blockOneApolloUserPoints(
+            {
+              mobileNumber: orderDetails.patient.mobileNumber.slice(3),
+              deviceType: orderDetails.deviceType,
+              creditsToBlock: medicinePaymentMqInput.healthCredits,
+              orderId: orderDetails.orderAutoId,
+              id: orderDetails.id,
+            },
+            profilesDb
+          );
+
+          if (!oneApolloresponse.Success) {
+            log(
+              'profileServiceLogger',
+              `Points block request failed - ${orderDetails.orderAutoId}`,
+              'blockUserPoints()',
+              JSON.stringify(oneApolloresponse),
+              'true'
+            );
+            await handleOneApolloFailure(orderDetails, medicineOrdersRepo, profilesDb);
+          }
+        } catch (e) {
           log(
             'profileServiceLogger',
-            `Redemption request failed - ${orderDetails.orderAutoId}`,
+            `Points block request exception - ${orderDetails.orderAutoId}`,
             'blockUserPoints()',
-            JSON.stringify(oneApolloresponse),
+            e.stack,
             'true'
           );
-
-          let cancelOrderUpdates: Promise<MedicineOrdersStatus | UpdateResult>[] = [];
-
-          const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-            orderStatus: MEDICINE_ORDER_STATUS.CANCELLED,
-            medicineOrders: orderDetails,
-            statusDate: new Date(),
-            statusMessage: '' + ApiConstants.ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE,
-          };
-          cancelOrderUpdates.push(
-            medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId)
-          );
-
-          cancelOrderUpdates.push(
-            medicineOrdersRepo.updateMedicineOrderDetails(
-              orderDetails.id,
-              orderDetails.orderAutoId,
-              new Date(),
-              MEDICINE_ORDER_STATUS.CANCELLED
-            )
-          );
-          await Promise.all(cancelOrderUpdates);
-
-          calculateRefund(
-            orderDetails,
-            0,
-            profilesDb,
-            medicineOrdersRepo,
-            ApiConstants.ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE
-          );
-          throw new AphError(AphErrorMessages.ONEAPOLLO_CREDITS_BLOCK_FAILED, undefined, {});
+          await handleOneApolloFailure(orderDetails, medicineOrdersRepo, profilesDb);
         }
       }
 
@@ -466,6 +458,43 @@ const blockOneApolloUserPoints = async (
     healthCreditsRedemptionRequest: response,
   });
   return response;
+};
+
+const handleOneApolloFailure = async (
+  orderDetails: MedicineOrders,
+  medicineOrdersRepo: MedicineOrdersRepository,
+  profilesDb: Connection
+) => {
+  let cancelOrderUpdates: Promise<MedicineOrdersStatus | UpdateResult>[] = [];
+
+  const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+    orderStatus: MEDICINE_ORDER_STATUS.CANCELLED,
+    medicineOrders: orderDetails,
+    statusDate: new Date(),
+    statusMessage: '' + ApiConstants.ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE,
+  };
+  cancelOrderUpdates.push(
+    medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId)
+  );
+
+  cancelOrderUpdates.push(
+    medicineOrdersRepo.updateMedicineOrderDetails(
+      orderDetails.id,
+      orderDetails.orderAutoId,
+      new Date(),
+      MEDICINE_ORDER_STATUS.CANCELLED
+    )
+  );
+  await Promise.all(cancelOrderUpdates);
+
+  calculateRefund(
+    orderDetails,
+    0,
+    profilesDb,
+    medicineOrdersRepo,
+    ApiConstants.ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE
+  );
+  throw new AphError(AphErrorMessages.ONEAPOLLO_CREDITS_BLOCK_FAILED, undefined, {});
 };
 
 export const saveMedicineOrderPaymentMqResolvers = {

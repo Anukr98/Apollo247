@@ -231,6 +231,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         thumbnail,
         isInStock: true,
         maxOrderQty: MaxOrderQty,
+        productType: type_id,
       },
       pharmacyPincode!,
       addCartItem,
@@ -777,7 +778,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
                       marginHorizontal: showListView ? 20 : 5,
                     },
                   ]}
-                >{`Matching results — ${filteredProductsList.length}`}</Text>
+                >{` `}</Text>
                 {renderFilterAndListView(true)}
               </View>
             ) : null

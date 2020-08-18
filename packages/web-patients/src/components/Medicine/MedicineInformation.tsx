@@ -587,7 +587,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           <div className={classes.customScroll}>
             {substitutes && (
               <>
-                <div className={classes.sectionTitle}>Substitute Drugs</div>
+                <Typography
+                  component="h2"
+                  className={classes.sectionTitle}
+                >{`${data.name} alternatives`}</Typography>
 
                 <div className={classes.webView}>
                   <div
@@ -602,7 +605,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       {substitutes.length === 1 ? ' substitute' : ' substitutes'}
                     </span>
                     <div className={classes.dropDownArrow}>
-                      <img src={require('images/ic_dropdown_green.svg')} alt="" />
+                      <img
+                        src={require('images/ic_dropdown_green.svg')}
+                        alt="Dropdown"
+                        title="Dropdown"
+                      />
                     </div>
                   </div>
                 </div>
@@ -953,7 +960,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
+              <img src={require('images/ic-mascot.png')} alt="Mascot Icon" title="Mascot Icon" />
             </div>
             <NotifyMeNotification
               medicineName={data.name}
@@ -997,7 +1004,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
+              <img src={require('images/ic-mascot.png')} alt="Mascot Icon" title="Mascot Icon" />
             </div>
             <AddToCartPopover
               setShowPopup={setShowPopup}

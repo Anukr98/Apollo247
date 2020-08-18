@@ -410,9 +410,9 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
           minute: moment('06:00', 'HH:mm').get('minute'),
         })
     );
-    if (differenceMinute < 120) {
+    if (differenceMinute < 60) {
       return `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
-    } else if (differenceMinute >= 120 && !isTomorrow) {
+    } else if (differenceMinute >= 60 && !isTomorrow) {
       return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
     } else if (isTomorrow && diffDays < 2) {
       return `${type} Tomorrow${
@@ -711,6 +711,7 @@ export const reOrderMedicines = async (
         thumbnail: item.thumbnail || item.image,
         isInStock: item.is_in_stock == 1,
         maxOrderQty: item.MaxOrderQty,
+        productType: item.type_id,
       } as ShoppingCartItem)
   );
   const unavailableItems = billedLineItems
@@ -948,12 +949,7 @@ export const postwebEngageAddToCartEvent = (
     price,
     special_price,
     category_id,
-  }: Partial<MedicineProduct> & {
-    sku: MedicineProduct['sku'];
-    name: MedicineProduct['name'];
-    price: MedicineProduct['price'];
-    special_price: MedicineProduct['special_price'];
-  },
+  }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'],
   section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'],
   sectionName?: string
@@ -1105,20 +1101,26 @@ export const InitiateAppsFlyer = (
   );
 
   onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution(async (res) => {
-    try {
-      AsyncStorage.setItem('deeplink', res.data.af_dp);
-      AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+    // for iOS universal links
+    if (Platform.OS === 'ios') {
+      try {
+        AsyncStorage.setItem('deeplink', res.data.af_dp);
+        AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
 
-      console.log('res.data.af_dp_onAppOpenAttribution', decodeURIComponent(res.data.af_dp));
-      setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
-      setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
+        console.log('res.data.af_dp_onAppOpenAttribution', decodeURIComponent(res.data.af_dp));
+        setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
+        setBugFenderLog(
+          'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
+          res.data.af_sub1
+        );
 
-      setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
-    } catch (error) {}
+        setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
+      } catch (error) {}
 
-    const userLoggedIn = await AsyncStorage.getItem('logginHappened');
-    if (userLoggedIn == 'true') {
-      handleUniversalLinks(res.data, navigation);
+      const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+      if (userLoggedIn == 'true') {
+        handleUniversalLinks(res.data, navigation);
+      }
     }
   });
 };
@@ -1194,12 +1196,7 @@ export const postAppsFlyerAddToCartEvent = (
     type_id,
     price,
     special_price,
-  }: Partial<MedicineProduct> & {
-    sku: MedicineProduct['sku'];
-    name: MedicineProduct['name'];
-    price: MedicineProduct['price'];
-    special_price: MedicineProduct['special_price'];
-  },
+  }: Pick<MedicineProduct, 'sku' | 'type_id' | 'price' | 'special_price'>,
   id: string
 ) => {
   const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART] = {

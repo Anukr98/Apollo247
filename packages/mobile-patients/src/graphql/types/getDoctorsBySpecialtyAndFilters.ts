@@ -92,6 +92,7 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   __typename: "brandType";
   name: string | null;
   image: string | null;
+  brandName:string|null;
 }
 
 export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_language {

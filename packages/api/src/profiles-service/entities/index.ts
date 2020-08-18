@@ -790,6 +790,9 @@ export class MedicineOrderPayments extends BaseEntity {
   @Column({ nullable: true })
   responseMessage: string;
 
+  @Column({ nullable: true })
+  partnerInfo: string;
+
   @Column({
     nullable: true,
     type: 'jsonb',

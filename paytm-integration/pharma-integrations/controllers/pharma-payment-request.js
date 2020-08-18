@@ -29,25 +29,26 @@ module.exports = async (req, res) => {
       data: {
         query: `
               query {
-                getMedicineOrderDetails(patientId:"${patientId}", orderAutoId:${orderAutoId}) {
-                  MedicineOrderDetails {
+                getMedicineOrderOMSDetails(patientId:"${patientId}", orderAutoId:${orderAutoId}) {
+                  medicineOrderDetails {
                     id
                     orderAutoId
                     estimatedAmount
                     bookingSource
+                    packagingCharges
+                    devliveryCharges
                   }
                 }
               }
             `,
       },
     });
-
     if (
       response &&
       response.data &&
       response.data.data &&
-      response.data.data.getMedicineOrderDetails &&
-      response.data.data.getMedicineOrderDetails.MedicineOrderDetails
+      response.data.data.getMedicineOrderOMSDetails &&
+      response.data.data.getMedicineOrderOMSDetails.medicineOrderDetails
     ) {
       logger.info(`${orderId} - getMedicineOrderDetails -  ${JSON.stringify(response.data)}`);
       let addParams = {};
@@ -64,8 +65,15 @@ module.exports = async (req, res) => {
         orderAutoId: responseOrderId,
         estimatedAmount: responseAmount,
         bookingSource,
-      } = response.data.data.getMedicineOrderDetails.MedicineOrderDetails;
-      if (responseAmount != effectiveAmount) {
+        devliveryCharges: deliveryCharges,
+        packagingCharges
+      } = response.data.data.getMedicineOrderOMSDetails.medicineOrderDetails;
+
+      /**
+       * Health credits can be used for products only and not for delivery|packaging charges
+       */
+      const maxApplicableHC = new Decimal(effectiveAmount).minus(+deliveryCharges).minus(+packagingCharges);
+      if (responseAmount != effectiveAmount || maxApplicableHC < healthCredits) {
         return res.status(400).json({
           status: 'failed',
           reason: PAYMENT_REQUEST_FAILURE_INVALID_PARAMETERS,
@@ -79,7 +87,8 @@ module.exports = async (req, res) => {
         responseOrderId.toString(),
         amount,
         merc_unq_ref,
-        addParams
+        addParams,
+        req.query.paymentTypeID
       );
       return res.render('paytmRedirect.ejs', {
         resultData: success,

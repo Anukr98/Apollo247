@@ -149,12 +149,12 @@ const useStyles = makeStyles((theme: Theme) => {
         borderLeft: 'none',
         flexGrow: 1,
         textAlign: 'left',
-        justifyContent: 'left',
         width: '50%',
-        // minHeight: 45,
+        justifyContent: 'space-between',
       },
       [theme.breakpoints.up('xs')]: {
         minWidth: 110,
+        padding: '0 10px 0 0',
       },
     },
     selectMenuItem: {
@@ -191,7 +191,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         padding: '0 10px',
         textAlign: 'left',
-        minWidth: 'auto',
       },
     },
     mrpText: {

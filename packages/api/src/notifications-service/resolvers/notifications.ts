@@ -37,8 +37,10 @@ import { log } from 'customWinstonLogger';
 import { APPOINTMENT_TYPE, Appointment, STATUS } from 'consults-service/entities';
 import Pubnub from 'pubnub';
 import fetch from 'node-fetch';
-import { Doctor, DoctorType } from 'doctors-service/entities';
+import { Doctor } from 'doctors-service/entities';
 import * as child_process from 'child_process';
+import PDFDocument from 'pdfkit';
+import { writeRow, textInRow, uploadPdfFileToBlobStorage } from 'helpers/uploadFileToBlob';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -292,23 +294,49 @@ export const sendDoctorNotificationWhatsapp = async (
   console.log(keyResp.key, 'scenario key');
   const url = process.env.WHATSAPP_SEND_URL ? process.env.WHATSAPP_SEND_URL : '';
   if (keyResp) {
-    const response = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify({
-        scenarioKey: keyResp.key,
-        destinations: [{ to: { phoneNumber } }],
-        whatsApp: {
-          templateName,
-          templateData,
-          language: 'en',
+    if (templateName == ApiConstants.WHATSAPP_DOC_SUMMARY) {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          scenarioKey: keyResp.key,
+          destinations: [{ to: { phoneNumber } }],
+          whatsApp: {
+            templateName,
+            mediaTemplateData: {
+              header: {
+                documentUrl: templateData[0],
+                documentFilename: templateData[1],
+              },
+              body: { placeholders: [templateData[2], templateData[3]] },
+            },
+            language: 'en',
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: process.env.WHATSAPP_AUTH_HEADER ? process.env.WHATSAPP_AUTH_HEADER : '',
         },
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: process.env.WHATSAPP_AUTH_HEADER ? process.env.WHATSAPP_AUTH_HEADER : '',
-      },
-    });
-    console.log(response, 'response');
+      });
+      console.log(response, 'response');
+    } else {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          scenarioKey: keyResp.key,
+          destinations: [{ to: { phoneNumber } }],
+          whatsApp: {
+            templateName,
+            templateData,
+            language: 'en',
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: process.env.WHATSAPP_AUTH_HEADER ? process.env.WHATSAPP_AUTH_HEADER : '',
+        },
+      });
+      console.log(response, 'response');
+    }
   }
 };
 
@@ -339,6 +367,7 @@ export async function hitCallKitCurl(
   token: string,
   doctorName: string,
   apptId: string,
+  patientId: string,
   connecting: boolean,
   callType: APPT_CALL_TYPE,
   isDev: boolean
@@ -353,7 +382,7 @@ export async function hitCallKitCurl(
     const curlCommand = `curl -v -d '{"name": "${doctorName}", 
       "${connecting ? 'isVideo' : 'disconnectCall'}": 
       ${connecting ? (callType == APPT_CALL_TYPE.VIDEO ? true : false) : true}, 
-      "appointmentId" : "${apptId}"}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
+      "appointmentId" : "${apptId}", "patientId": "${patientId}" }' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
     const resp = child_process.execSync(curlCommand);
     const result = resp.toString('utf-8');
     console.log('voipCallKit result > ', result);
@@ -367,7 +396,8 @@ export async function sendCallsDisconnectNotification(
   pushNotificationInput: PushNotificationInput,
   patientsDb: Connection,
   consultsDb: Connection,
-  doctorsDb: Connection
+  doctorsDb: Connection,
+  callType: APPT_CALL_TYPE,
 ) {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
@@ -397,6 +427,7 @@ export async function sendCallsDisconnectNotification(
       type: 'call_disconnect',
       appointmentId: appointment.id.toString(),
       doctorName: 'Dr. ' + doctorDetails.firstName,
+      callType: callType,
     },
   };
 
@@ -496,14 +527,16 @@ export async function sendCallsNotification(
     voipPushtoken.length &&
     voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
     callType != APPT_CALL_TYPE.CHAT
+    && numberOfParticipants && numberOfParticipants < 2
   ) {
     hitCallKitCurl(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
       doctorDetails.displayName,
       appointment.id,
+      patientDetails.id,
       true,
       callType,
-      isDev,
+      isDev
     );
   }
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
@@ -601,7 +634,8 @@ export async function sendCallsNotification(
 
   //First payload (data only)
   let dataOnlyPayloadResponse = null;
-  const sendDataOnlyPayload = callType != APPT_CALL_TYPE.CHAT && numberOfParticipants && numberOfParticipants == 1;
+  const sendDataOnlyPayload =
+    callType != APPT_CALL_TYPE.CHAT && numberOfParticipants && numberOfParticipants == 1;
 
   if (sendDataOnlyPayload) {
     const dataOnlyPayload = {
@@ -609,6 +643,10 @@ export async function sendCallsNotification(
         type: 'call_start',
         appointmentId: appointment.id.toString(),
         doctorName: 'Dr. ' + doctorDetails.firstName,
+        patientName: patientDetails.firstName,
+        callType: callType,
+        appointmentCallId: appointmentCallId,
+        doctorType: doctorType,
       },
     };
 
@@ -965,15 +1003,17 @@ export async function sendNotification(
         templateData
       );
     }
+    const formattedAptDate = format(
+      addMinutes(new Date(appointment.appointmentDateTime), +330),
+      'yyyy-MM-dd hh:mm a'
+    );
     let doctorSMS = ApiConstants.DOCTOR_BOOK_APPOINTMENT_SMS.replace(
       '{0}',
       doctorDetails.firstName
     );
     doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
-    doctorSMS = doctorSMS
-      .replace('{3}', apptDate.toString())
-      .replace('{4}', doctorDetails.salutation);
+    doctorSMS = doctorSMS.replace('{3}', formattedAptDate).replace('{4}', doctorDetails.salutation);
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
   }
 
@@ -2170,6 +2210,7 @@ export async function sendMedicineOrderStatusNotification(
 
   let notificationTitle: string = '';
   let notificationBody: string = '';
+  let smsBody: string = '';
   let payloadDataType: string = '';
 
   switch (notificationType) {
@@ -2207,6 +2248,7 @@ export async function sendMedicineOrderStatusNotification(
       payloadDataType = 'Order_bill_changed';
       notificationTitle = ApiConstants.MEDICINE_ORDER_CHANGED_TITLE;
       notificationBody = ApiConstants.MEDICINE_ORDER_CHANGED_BODY;
+      smsBody = ApiConstants.MEDICINE_ORDER_CHANGED_SMS_BODY;
       break;
     default:
       payloadDataType = 'Order_Placed';
@@ -2220,13 +2262,20 @@ export async function sendMedicineOrderStatusNotification(
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
   notificationBody = notificationBody.replace(/\{1}/g, orderNumber);
+
   if (notificationType == NotificationType.MEDICINE_ORDER_READY_AT_STORE) {
     const shopAddress = JSON.parse(orderDetails.shopAddress);
     notificationBody = notificationBody.replace('{2}', shopAddress.storename);
     notificationBody = notificationBody.replace('{3}', shopAddress.phone);
   }
+  if (smsBody) {
+    smsBody = smsBody.replace('{0}', userName);
+    smsBody = smsBody.replace(/\{1}/g, orderNumber);
+  } else {
+    smsBody = notificationBody;
+  }
 
-  console.log(notificationBody, notificationType, 'med orders');
+  console.log(notificationBody, smsBody, notificationType, 'med orders');
   const payload = {
     notification: {
       title: notificationTitle,
@@ -2251,7 +2300,7 @@ export async function sendMedicineOrderStatusNotification(
   };
 
   //send SMS notification
-  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+  sendNotificationSMS(patientDetails.mobileNumber, smsBody);
 
   if (notificationType == NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY) {
     return { status: true };
@@ -2434,23 +2483,35 @@ const sendDailyAppointmentSummary: Resolver<
   string
 > = async (parent, args, { doctorsDb, consultsDb }) => {
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  //const doctors = await doctorRepo.getAllDoctors('0', args.docLimit, args.docOffset);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const allAppts = await appointmentRepo.getTodaysAppointments(new Date());
+  console.log(allAppts.length, 'all appts count');
+  let pdfDoc: PDFKit.PDFDocument; // = new PDFDocument();
+  let fileName = '',
+    uploadPath = '';
+  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
+  let blobNames = '';
   const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
     let doctorsCount = 0;
     if (allAppts.length == 0) {
       resolve(doctorsCount);
     }
+
     let prevDoc = allAppts.length > 0 ? allAppts[0].doctorId : '';
     let onlineAppointments = 0;
     let physicalAppointments = 0;
+    let flag = 0;
+    let rowHeadx = 90;
+    let rowx = 100;
     const docIds: string[] = [];
     allAppts.forEach((appt) => {
       docIds.push(appt.doctorId);
     });
-
     const allDoctorDetails = await doctorRepo.getAllDocsById(docIds);
+
     allAppts.forEach(async (appointment, index, array) => {
       if (appointment.status != STATUS.COMPLETED) {
         if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
@@ -2459,16 +2520,57 @@ const sendDailyAppointmentSummary: Resolver<
           onlineAppointments++;
         }
       }
+
+      if (flag == 0) {
+        fileName = format(new Date(), 'dd-MM-yyyy') + '_' + appointment.doctorId + '.pdf';
+        uploadPath = assetsDir + '/' + fileName;
+        pdfDoc = new PDFDocument();
+        console.log('came here', onlineAppointments, fileName);
+        pdfDoc.pipe(fs.createWriteStream(uploadPath));
+        rowHeadx = 90;
+        rowx = 100;
+        writeRow(pdfDoc, rowHeadx);
+        textInRow(pdfDoc, 'Patient Name', rowx, 30);
+        textInRow(pdfDoc, 'Appointment Date Time', rowx, 201);
+        textInRow(pdfDoc, 'Appt. Type', rowx, 341);
+        textInRow(pdfDoc, 'Display ID', rowx, 441);
+        flag = 1;
+      }
+      rowHeadx += 20;
+      rowx += 18;
+      writeRow(pdfDoc, rowHeadx);
+      textInRow(pdfDoc, appointment.patientName, rowx, 30);
+      textInRow(
+        pdfDoc,
+        format(addMinutes(appointment.appointmentDateTime, +330), 'yyyy-MM-dd hh:mm:ss'),
+        rowx,
+        201
+      );
+      textInRow(pdfDoc, appointment.appointmentType, rowx, 341);
+      textInRow(pdfDoc, appointment.displayId.toString(), rowx, 441);
+
       if (prevDoc != appointment.doctorId || index + 1 == array.length) {
         const doctorDetails = allDoctorDetails.filter((item) => {
           return item.id == prevDoc;
         });
+        const totalAppointments = onlineAppointments + physicalAppointments;
+        pdfDoc
+          .lineCap('butt')
+          .moveTo(200, 90)
+          .lineTo(200, totalAppointments * 30)
+          .moveTo(340, 90)
+          .lineTo(340, totalAppointments * 30)
+          .moveTo(420, 90)
+          .lineTo(420, totalAppointments * 30)
+          .stroke();
+        pdfDoc.end();
+        await delay(350);
+        console.log('pdf end');
+        const blobName = await uploadPdfFileToBlobStorage(fileName, uploadPath);
+        blobNames += blobName + ', ';
+        console.log(blobName, 'blob names');
         if (doctorDetails) {
-          const totalAppointments = onlineAppointments + physicalAppointments;
           doctorsCount++;
-          const whatsAppLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT
-            ? process.env.WHATSAPP_LINK_BOOK_APOINTMENT
-            : '';
           let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
             '{0}',
             doctorDetails[0].firstName
@@ -2484,22 +2586,23 @@ const sendDailyAppointmentSummary: Resolver<
           messageBody += onlineAppointmentsText + physicalAppointmentsText;
           sendBrowserNotitication(doctorDetails[0].id, messageBody);
 
-          sendNotificationSMS(doctorDetails[0].mobileNumber, messageBody);
+          sendNotificationSMS('+918019677178', messageBody);
           const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
           const templateData: string[] = [
-            todaysDate + ' as of 8 AM',
-            whatsAppLink,
+            'https://apolloaphstorage.blob.core.windows.net/doctors/2020-08-12-2b3572d7-9623-44ea-89be-ece581d2e522.pdf',
+            todaysDate + ' Appointments List',
+            todaysDate,
             totalAppointments.toString(),
           ];
-
           sendDoctorNotificationWhatsapp(
             ApiConstants.WHATSAPP_DOC_SUMMARY,
-            doctorDetails[0].mobileNumber,
+            '+918019677178',
             templateData
           );
           onlineAppointments = 0;
           physicalAppointments = 0;
           prevDoc = appointment.doctorId;
+          flag = 0;
         }
       }
 
@@ -2508,11 +2611,12 @@ const sendDailyAppointmentSummary: Resolver<
       }
     });
   });
-
-  return ApiConstants.DAILY_APPOINTMENT_SUMMARY_RESPONSE.replace(
-    '{0}',
-    countOfNotifications.toString()
-  );
+  const final = countOfNotifications + ' - ' + blobNames;
+  //const fn = await uploadFileToBlob(uploadPath);
+  function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+  return ApiConstants.DAILY_APPOINTMENT_SUMMARY_RESPONSE.replace('{0}', final.toString());
 };
 
 const sendFollowUpNotification: Resolver<null, {}, NotificationsServiceContext, string> = async (
@@ -3170,7 +3274,10 @@ export async function medicineOrderRefundNotification(
       await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
     }
 
-    if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS && ((refundAmount > 0 && isRefundSuccessful) || healthCreditsRefunded > 0)) {
+    if (
+      paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS &&
+      ((refundAmount > 0 && isRefundSuccessful) || healthCreditsRefunded > 0)
+    ) {
       if (refundAmount > 0 && isRefundSuccessful && healthCreditsRefunded > 0) {
         notificationBody = ApiConstants.ORDER_CANCEL_PAYMENT_HC_REFUND_BODY;
         notificationBody = notificationBody.replace(

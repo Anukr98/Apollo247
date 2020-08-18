@@ -855,6 +855,7 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         brands {
           name
           image
+          brandName
         }
         language {
           name
@@ -1458,9 +1459,12 @@ export const UPDATE_DIAGNOSTIC_ORDER = gql`
   }
 `;
 
-
 export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
-  query getMedicineOrderOMSDetailsWithAddress($patientId: String, $orderAutoId: Int, $billNumber: String) {
+  query getMedicineOrderOMSDetailsWithAddress(
+    $patientId: String
+    $orderAutoId: Int
+    $billNumber: String
+  ) {
     getMedicineOrderOMSDetailsWithAddress(
       patientId: $patientId
       orderAutoId: $orderAutoId
@@ -2823,6 +2827,8 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
             refundAmount
             createdDate
             refundStatus
+            refundId
+            txnId
           }
         }
       }

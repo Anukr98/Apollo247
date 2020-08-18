@@ -17,6 +17,7 @@ import {
   removeFromCartTracking,
   pharmacyProductClickedTracking,
 } from 'webEngageTracking';
+import { getImageUrl } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -52,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     productTitle: {
-      fontSize: 14,
+      fontSize: 12,
       color: '#01475b',
       fontWeight: 500,
       textAlign: 'center',
@@ -187,9 +188,8 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
       {
         breakpoint: 480,
         settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          centerMode: true,
+          slidesToShow: 2,
+          slidesToScroll: 2,
           nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
           prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },
@@ -223,52 +223,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
             res.data.getRecommendedProductsList.recommendedProducts
           ) {
             const dataList = res.data.getRecommendedProductsList.recommendedProducts;
-            setRecommendedProductsList(
-              dataList.map((data: recommendedProductsType) => {
-                const {
-                  productSku,
-                  productName,
-                  productImage,
-                  productPrice,
-                  productSpecialPrice,
-                  isPrescriptionNeeded,
-                  categoryName,
-                  status,
-                  mou,
-                  imageBaseUrl,
-                  id,
-                  is_in_stock,
-                  small_image,
-                  thumbnail,
-                  type_id,
-                  quantity,
-                  isShippable,
-                  MaxOrderQty,
-                  urlKey,
-                } = data;
-                return {
-                  id,
-                  image: productImage ? getImageUrl(productImage) : null,
-                  is_in_stock,
-                  is_prescription_required: isPrescriptionNeeded,
-                  name: productName,
-                  price: productPrice,
-                  special_price: productSpecialPrice,
-                  sku: productSku,
-                  small_image,
-                  status,
-                  categoryName,
-                  thumbnail,
-                  type_id,
-                  quantity,
-                  mou,
-                  isShippable,
-                  MaxOrderQty,
-                  imageBaseUrl,
-                  url_key: urlKey,
-                };
-              })
-            );
+            setRecommendedProductsList(dataList);
           } else {
             setRecommendedProductsList([]);
           }
@@ -282,13 +237,6 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
   const itemIndexInCart = (item: recommendedProductsType) => {
     const index = cartItems.findIndex((cartItem) => cartItem.sku == item.productSku);
     return index;
-  };
-
-  const getImageUrl = (fileIds: string) => {
-    return fileIds
-      .split(',')
-      .filter((fileId) => fileId)
-      .map((fileId) => `${apiDetails.url}/catalog/product${fileId}`)[0];
   };
 
   return (
@@ -324,7 +272,10 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                     }}
                   >
                     <div className={classes.productIcon}>
-                      <img src={getImageUrl(productList.productImage)} alt="" />
+                      <img
+                        src={`${apiDetails.url}${getImageUrl(productList.productImage || '')}`}
+                        alt=""
+                      />
                     </div>
                     <div className={classes.productTitle}>{productList.productName}</div>
                   </Link>
@@ -347,12 +298,14 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                       {itemIndexInCart(productList) === -1 ? (
                         <AphButton
                           onClick={() => {
+                            const imageList = [];
+                            imageList.push(productList.productImage);
                             const cartItem: MedicineCartItem = {
                               MaxOrderQty: null,
                               url_key: productList.productSku,
                               description: null,
                               id: Number(productList.categoryName),
-                              image: productList.productImage || null,
+                              image: imageList,
                               is_in_stock: true,
                               is_prescription_required: '1',
                               name: productList.productName,
