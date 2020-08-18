@@ -519,6 +519,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
   const patientJoinedCall = useRef<boolean>(false); // using ref to get the current values on listener events
   const subscriberConnected = useRef<boolean>(false);
+  const jrDoctorPresent = useRef<boolean>(false);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -749,7 +750,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           callhandelBack = false;
         }
         playSound();
-        setDoctorJoinedChat && setDoctorJoinedChat(true);
       });
     }
     if (prescription) {
@@ -1217,7 +1217,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               callhandelBack = false;
             }
             playSound();
-            setDoctorJoinedChat && setDoctorJoinedChat(true);
+            !jrDoctorPresent.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
           } else {
             if (onSubscribe) {
               setOnSubscribe(false);
@@ -1407,6 +1407,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const CheckDoctorPresentInChat = () => {
     if (status === STATUS.COMPLETED) return; // no need to show join button if consultation has been completed
+
     pubnub
       .hereNow({
         channels: [channel],
@@ -1414,8 +1415,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       })
       .then((response: HereNowResponse) => {
         console.log('hereNowresponse', response);
-
-        if (response.totalOccupancy >= 2) {
+        const data: any = response.channels && response.channels[appointmentData.id] && response.channels[appointmentData.id].occupants;
+        const occupancyDoctor = data && data.length > 0 && data.filter((obj: any) => {
+          return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
+        });
+        const occupancyJrDoctor = data && data.length > 0 && data.filter((obj: any) => {
+          return obj.uuid === 'JUNIOR' || obj.uuid.indexOf('JUNIOR_') > -1;
+        });
+        if(occupancyJrDoctor && occupancyJrDoctor.length >=1){
+          jrDoctorPresent.current = true;
+        }
+        if (occupancyDoctor && occupancyDoctor.length >= 1 && response.totalOccupancy >= 2) {
           setDoctorJoined(true);
           setDoctorJoinedChat && setDoctorJoinedChat(true);
           setTimeout(() => {
@@ -2401,7 +2411,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { showAphAlert, audioTrack, setPrevVolume, maxVolume } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     console.log('pubNubMessages', message.message.sentBy);
-
     if (message.message.isTyping) {
       if (message.message.message === audioCallMsg && !patientJoinedCall.current) {
         // if patient has not joined meeting room
@@ -2410,7 +2419,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callhandelBack = false;
         // stopCallAbondmentTimer();
         playSound();
-        setDoctorJoinedChat && setDoctorJoinedChat(true);
+        !jrDoctorPresent.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === videoCallMsg && !patientJoinedCall.current) {
         // if patient has not joined meeting room
         setOnSubscribe(true);
@@ -2418,7 +2427,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         isAudio.current = false;
         // stopCallAbondmentTimer();
         playSound();
-        setDoctorJoinedChat && setDoctorJoinedChat(true);
+        !jrDoctorPresent.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === startConsultMsg) {
         setjrDoctorJoined(false);
         stopInterval();
