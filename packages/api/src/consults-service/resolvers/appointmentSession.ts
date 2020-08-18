@@ -389,6 +389,26 @@ const createAppointmentSession: Resolver<
     );
   }
 
+  //post to webengage starts
+  const eventName =
+    createAppointmentSessionInput.requestRole == REQUEST_ROLES.DOCTOR
+      ? ApiConstants.DOCTOR_STARTED_CONSULTATION_EVENT_NAME.toString()
+      : ApiConstants.JD_CONSULTATION_STARTED_EVENT_NAME.toString();
+
+  const postBody: Partial<WebEngageInput> = {
+    userId: patientData ? patientData.mobileNumber : '',
+    eventName: eventName,
+    eventData: {
+      consultID: apptDetails.id,
+      displayID: apptDetails.displayId.toString(),
+      consultMode: apptDetails.appointmentType.toString(),
+      doctorName: doctorData ? doctorData.fullName : '',
+    },
+  };
+  postEvent(postBody);
+
+  //post to webengage ends
+
   // send notification
   const pushNotificationInput = {
     appointmentId: createAppointmentSessionInput.appointmentId,
@@ -432,26 +452,6 @@ const createAppointmentSession: Resolver<
     reason: 'SD ' + ApiConstants.APPT_SESSION_HISTORY.toString(),
   };
   apptRepo.saveAppointmentHistory(historyAttrs);
-
-  //post to webengage starts
-  const eventName =
-    createAppointmentSessionInput.requestRole === REQUEST_ROLES.DOCTOR
-      ? ApiConstants.DOCTOR_STARTED_CONSULTATION_EVENT_NAME.toString()
-      : ApiConstants.JD_CONSULTATION_STARTED_EVENT_NAME.toString();
-
-  const postBody: Partial<WebEngageInput> = {
-    userId: patientData ? patientData.mobileNumber : '',
-    eventName: eventName,
-    eventData: {
-      consultID: apptDetails.id,
-      displayID: apptDetails.displayId.toString(),
-      consultMode: apptDetails.appointmentType.toString(),
-      doctorName: doctorData ? doctorData.fullName : '',
-    },
-  };
-  postEvent(postBody);
-
-  //post to webengage ends
 
   return {
     sessionId: sessionId,
