@@ -539,78 +539,101 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         if (prescription!.medicineCustomDosage && prescription!.medicineCustomDosage! !== '') {
           const dosageTimingArray = prescription!.medicineCustomDosage!.split('-');
           const customTimingArray = [];
-          if (dosageTimingArray && dosageTimingArray[0] && dosageTimingArray[0] !== '0')
+          if (dosageTimingArray && dosageTimingArray[0] && dosageTimingArray[0] !== '0') {
             customTimingArray.push(dosageTimingArray[0] + unitHtmls);
-          if (dosageTimingArray && dosageTimingArray[1] && dosageTimingArray[1] !== '0')
+          }
+          if (dosageTimingArray && dosageTimingArray[1] && dosageTimingArray[1] !== '0') {
             customTimingArray.push(dosageTimingArray[1] + unitHtmls);
-          if (dosageTimingArray && dosageTimingArray[2] && dosageTimingArray[2] !== '0')
+          }
+          if (dosageTimingArray && dosageTimingArray[2] && dosageTimingArray[2] !== '0') {
             customTimingArray.push(dosageTimingArray[2] + unitHtmls);
-          if (dosageTimingArray && dosageTimingArray[3] && dosageTimingArray[3] !== '0')
+          }
+          if (dosageTimingArray && dosageTimingArray[3] && dosageTimingArray[3] !== '0') {
             customTimingArray.push(dosageTimingArray[3] + unitHtmls);
+          }
           dosageHtml = customTimingArray.join(' - ');
         } else {
           dosageHtml = prescription!.medicineDosage! + ' ' + unitHtmls;
         }
+        const genericName = prescription.includeGenericNameInPrescription! &&
+          prescription.genericName!.trim().length > 0 && (
+            <div>{`Contains ${prescription.genericName}`}</div>
+          );
         return (
-          <li>
-            {prescription.medicineName}
-            <br />
-            <span>
-              {prescription.includeGenericNameInPrescription! &&
-                prescription.genericName!.length > 0 && (
-                  <div>{`Contains ${prescription.genericName}`}</div>
-                )}
+          <div>
+            {prescription.medicineCustomDetails ? (
+              <li>
+                {prescription.medicineName}
+                <br />
+                <span>
+                  {genericName}
+                  {prescription.medicineCustomDetails}
+                </span>
+              </li>
+            ) : (
+              <li>
+                {prescription.medicineName}
+                <br />
+                <span>
+                  {genericName}
 
-              {`${prescription!.medicineFormTypes! === 'OTHERS' ? 'Take' : 'Apply'} ${
-                dosageHtml ? dosageHtml.toLowerCase() : ''
-              }${
-                timesString.length > 0 &&
-                prescription!.medicineCustomDosage! &&
-                prescription!.medicineCustomDosage! !== ''
-                  ? ' (' + timesString + ') '
-                  : ' '
-              }${
-                prescription!.medicineCustomDosage! && prescription!.medicineCustomDosage! !== ''
-                  ? ''
-                  : prescription!.medicineFrequency
-                  ? prescription!.medicineFrequency === MEDICINE_FREQUENCY.STAT
-                    ? 'STAT (Immediately)'
-                    : prescription!.medicineFrequency
-                        .split('_')
-                        .join(' ')
-                        .toLowerCase()
-                  : dosageFrequency[0].id
-                      .split('_')
-                      .join(' ')
-                      .toLowerCase()
-              } ${duration} ${whenString.length > 0 ? whenString : ''} ${
-                timesString.length > 0 &&
-                prescription!.medicineCustomDosage! &&
-                prescription!.medicineCustomDosage! !== ''
-                  ? ''
-                  : timesString
-              }`}
-            </span>
-            {prescription.routeOfAdministration &&
-              !isEmpty(trim(prescription.routeOfAdministration)) && (
-                <>
-                  <br />
-                  <span>{`${
-                    prescription.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'
-                  }: ${prescription.routeOfAdministration
-                    .split('_')
-                    .join(' ')
-                    .toLowerCase()}`}</span>
-                </>
-              )}
-            {prescription.medicineInstructions &&
-              !isEmpty(trim(prescription.medicineInstructions)) && (
-                <>
-                  <br />
-                  <span>{prescription.medicineInstructions}</span>
-                </>
-              )}
-          </li>
+                  {`${prescription!.medicineFormTypes! === 'OTHERS' ? 'Take' : 'Apply'} ${
+                    dosageHtml ? dosageHtml.toLowerCase() : ''
+                  }${
+                    timesString.length > 0 &&
+                    prescription!.medicineCustomDosage! &&
+                    prescription!.medicineCustomDosage! !== ''
+                      ? ' (' + timesString + ') '
+                      : ' '
+                  }${
+                    prescription!.medicineCustomDosage! &&
+                    prescription!.medicineCustomDosage! !== ''
+                      ? ''
+                      : prescription!.medicineFrequency
+                      ? prescription!.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                        ? 'STAT (Immediately)'
+                        : prescription!.medicineFrequency
+                            .split('_')
+                            .join(' ')
+                            .toLowerCase()
+                      : dosageFrequency[0].id
+                          .split('_')
+                          .join(' ')
+                          .toLowerCase()
+                  } ${duration} ${whenString.length > 0 ? whenString : ''} ${
+                    timesString.length > 0 &&
+                    prescription!.medicineCustomDosage! &&
+                    prescription!.medicineCustomDosage! !== ''
+                      ? ''
+                      : timesString
+                  }`}
+                </span>
+                {prescription.routeOfAdministration &&
+                  !isEmpty(trim(prescription.routeOfAdministration)) && (
+                    <>
+                      <br />
+                      <span>
+                        {`${
+                          prescription.medicineFormTypes === 'OTHERS'
+                            ? 'To be taken'
+                            : 'To be Applied'
+                        }: ${prescription.routeOfAdministration
+                          .split('_')
+                          .join(' ')
+                          .toLowerCase()}`}
+                      </span>
+                    </>
+                  )}
+                {prescription.medicineInstructions &&
+                  !isEmpty(trim(prescription.medicineInstructions)) && (
+                    <>
+                      <br />
+                      <span>{prescription.medicineInstructions}</span>
+                    </>
+                  )}
+              </li>
+            )}
+          </div>
         );
       }
     );
@@ -657,11 +680,13 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 </p>
               )}
 
-              <p className={classes.specialty}>{`${
-                createdDoctorProfile.specialty.specialistSingularTerm
-                  ? createdDoctorProfile.specialty.specialistSingularTerm
-                  : ''
-              } | Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</p>
+              <p className={classes.specialty}>
+                {`${
+                  createdDoctorProfile.specialty.specialistSingularTerm
+                    ? createdDoctorProfile.specialty.specialistSingularTerm
+                    : ''
+                } | Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}
+              </p>
               {doctorFacilityDetails ? (
                 <>
                   <p className={classes.address}>
@@ -719,9 +744,11 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                   <div className={classes.infoRow}>
                     <div className={classes.label}>Contact</div>
                     <div className={classes.labelContent}>
-                      <div className={classes.labelBlue}>{`${
-                        patientDetails.emailAddress ? `${patientDetails.emailAddress} | ` : ''
-                      } ${patientDetails.mobileNumber ? patientDetails.mobileNumber : ''}`}</div>
+                      <div className={classes.labelBlue}>
+                        {`${
+                          patientDetails.emailAddress ? `${patientDetails.emailAddress} | ` : ''
+                        } ${patientDetails.mobileNumber ? patientDetails.mobileNumber : ''}`}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -821,7 +848,8 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
             (medicinePrescription && medicinePrescription.length > 0)) ? (
             <div className={classes.prescriptionSection}>
               <div className={classes.sectionHeader}>
-                <img src={require('images/ic-medicines.svg')} /> Medication Prescribed
+                <img src={require('images/ic-medicines.svg')} />
+                Medication Prescribed
               </div>
               <div className={classes.medicationList}>
                 <ol>
@@ -834,7 +862,8 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           {!loader && diagnosticPrescription && diagnosticPrescription.length > 0 ? (
             <div className={classes.prescriptionSection}>
               <div className={classes.sectionHeader}>
-                <img src={require('images/ic-microscope-solid.svg')} /> Diagnostic Tests
+                <img src={require('images/ic-microscope-solid.svg')} />
+                Diagnostic Tests
               </div>
               <div className={classes.medicationList}>
                 <ol>
@@ -843,7 +872,12 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                       (prescription.itemname || prescription.itemName) && (
                         <li>
                           {prescription.itemname || prescription.itemName}
-                          <span style={{ whiteSpace: 'pre-line', display: 'block' }}>
+                          <span
+                            style={{
+                              whiteSpace: 'pre-line',
+                              display: 'block',
+                            }}
+                          >
                             {prescription.testInstruction}
                           </span>
                         </li>
@@ -862,7 +896,8 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 !isEmpty(referralDescription)) ? (
                 <div className={classes.prescriptionSection}>
                   <div className={classes.sectionHeader}>
-                    <img src={require('images/ic-doctors-2.svg')} /> ADVICE/INSTRUCTIONS
+                    <img src={require('images/ic-doctors-2.svg')} />
+                    ADVICE/INSTRUCTIONS
                   </div>
                   <div className={classes.adviceInstruction}>
                     {otherInstructions && otherInstructions.length > 0 && (
@@ -887,7 +922,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                         <div>
                           {!isEmpty(referralSpecialtyName) && (
                             <div className={classes.followContent} style={{ marginBottom: 5 }}>
-                              {referralSpecialtyName}
+                              {`Consult a ${referralSpecialtyName}`}
                             </div>
                           )}
                           {!isEmpty(referralDescription) && (
