@@ -23,6 +23,7 @@ import { log } from 'customWinstonLogger';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 import { ApiConstants } from 'ApiConstants';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
 
 type RefundInput = {
   refundAmount: number;
@@ -338,7 +339,20 @@ export const calculateRefund = async (
         updatePaymentRequest
       );
     }
-
+    //send event to web-engage
+    if((refundAmount > 0 && isRefundSuccessful) || healthCreditsToRefund > 0){
+      const postBody: Partial<WebEngageInput> = {
+        userId: orderDetails.patient.mobileNumber,
+        eventName: ApiConstants.MEDICINE_ORDER_REFUND_PROCESSED_EVENT_NAME.toString(),
+        eventData: {
+          orderId: orderDetails.orderAutoId,
+          orderStatus:paymentInfo.medicineOrders.currentStatus,
+          refundAmount: refundAmount,
+          healthCreditsToRefund: healthCreditsToRefund,
+        },
+      };
+      postEvent(postBody);
+    }
     //send refund SMS notification for partial refund
     let isPartialRefund: boolean;
     if (totalOrderBilling > 0) {
