@@ -358,7 +358,7 @@ const useStyles = makeStyles((theme: Theme) => {
         left: 0,
         bottom: 0,
         backgroundColor: '#dcdfce',
-        zIndex: 999,
+        zIndex: 9999,
       },
     },
     dialogContent: {
@@ -1663,118 +1663,118 @@ export const MedicineCart: React.FC = (props) => {
               )}
             </div>
           </Scrollbars>
-          <div className={classes.checkoutBtn}>
-            {currentPatient && currentPatient.id ? (
-              <Route
-                render={({ history }) => (
-                  <AphButton
-                    onClick={() => {
-                      const zipCodeInt = parseInt(selectedZip);
-
-                      if (cartItems && cartItems.length > 0 && !nonCartFlow) {
-                        if (prescriptions && prescriptions.length > 0) {
-                          uploadMultipleFiles(prescriptions);
-                        }
-                        if (
-                          checkForCartChanges(shopId).then((res) => {
-                            if (res) {
-                              if (isChennaiZipCode(zipCodeInt)) {
-                                // redirect to chennai orders form
-                                setIsChennaiCheckoutDialogOpen(true);
-                                return;
-                              }
-                              sessionStorage.setItem(
-                                'cartValues',
-                                JSON.stringify({
-                                  couponCode: couponCode == '' ? null : couponCode,
-                                  couponValue:
-                                    validateCouponResult && validateCouponResult.discount
-                                      ? Number(validateCouponResult.discount).toFixed(2)
-                                      : 0,
-                                  totalWithCouponDiscount: totalWithCouponDiscount,
-                                  deliveryTime: deliveryTime,
-                                  validateCouponResult: validateCouponResult,
-                                  shopId: shopId,
-                                })
-                              );
-                              history.push(clientRoutes.payMedicine('pharmacy'));
-                            }
-                          })
-                        ) {
-                        }
-                      } else if (
-                        nonCartFlow &&
-                        ((prescriptions && prescriptions.length > 0) ||
-                          (ePrescriptionData && ePrescriptionData.length > 0))
-                      ) {
-                        if (isChennaiZipCode(zipCodeInt)) {
-                          // redirect to chennai orders form
-                          setIsChennaiCheckoutDialogOpen(true);
-                          return;
-                        }
-                        onPressSubmit();
-                      }
-                      pharmacyProceedToPayTracking({
-                        totalItems: cartItems.length,
-                        serviceArea: 'Pharmacy',
-                        subTotal: mrpTotal,
-                        deliveryCharge: deliveryCharges,
-                        netAfterDiscount: totalWithCouponDiscount,
-                        isPrescription:
-                          ePrescriptionData && ePrescriptionData.length > 0 ? true : false,
-                        cartId: '',
-                        deliveryMode,
-                        deliveryDateTime: deliveryTime,
-                        pincode: currentPincode,
-                      });
-                    }}
-                    color="primary"
-                    fullWidth
-                    disabled={
-                      (!nonCartFlow
-                        ? (!cartTat && deliveryTime === '') || (cartItems && cartItems.length === 0)
-                        : !deliveryAddressId ||
-                          (deliveryAddressId && deliveryAddressId.length === 0)) ||
-                      !isPaymentButtonEnable ||
-                      disableSubmit
-                    }
-                    className={
-                      (!nonCartFlow
-                        ? (!cartTat && deliveryTime === '') || (cartItems && cartItems.length === 0)
-                        : !deliveryAddressId ||
-                          (deliveryAddressId && deliveryAddressId.length === 0)) ||
-                      !isPaymentButtonEnable ||
-                      disableSubmit
-                        ? classes.buttonDisable
-                        : ''
-                    }
-                    title={'Proceed to pay bill'}
-                  >
-                    {cartItems && cartItems.length > 0 && !nonCartFlow ? (
-                      `Proceed to pay — RS. ${totalWithCouponDiscount.toFixed(2)}`
-                    ) : uploadingFiles ? (
-                      <CircularProgress size={22} color="secondary" />
-                    ) : (
-                      'Place order'
-                    )}
-                  </AphButton>
-                )}
-              />
-            ) : (
+        </div>
+      </div>
+      <div className={classes.checkoutBtn}>
+        {currentPatient && currentPatient.id ? (
+          <Route
+            render={({ history }) => (
               <AphButton
+                onClick={() => {
+                  const zipCodeInt = parseInt(selectedZip);
+
+                  if (cartItems && cartItems.length > 0 && !nonCartFlow) {
+                    if (prescriptions && prescriptions.length > 0) {
+                      uploadMultipleFiles(prescriptions);
+                    }
+                    if (
+                      checkForCartChanges(shopId).then((res) => {
+                        if (res) {
+                          if (isChennaiZipCode(zipCodeInt)) {
+                            // redirect to chennai orders form
+                            setIsChennaiCheckoutDialogOpen(true);
+                            return;
+                          }
+                          sessionStorage.setItem(
+                            'cartValues',
+                            JSON.stringify({
+                              couponCode: couponCode == '' ? null : couponCode,
+                              couponValue:
+                                validateCouponResult && validateCouponResult.discount
+                                  ? Number(validateCouponResult.discount).toFixed(2)
+                                  : 0,
+                              totalWithCouponDiscount: totalWithCouponDiscount,
+                              deliveryTime: deliveryTime,
+                              validateCouponResult: validateCouponResult,
+                              shopId: shopId,
+                            })
+                          );
+                          history.push(clientRoutes.payMedicine('pharmacy'));
+                        }
+                      })
+                    ) {
+                    }
+                  } else if (
+                    nonCartFlow &&
+                    ((prescriptions && prescriptions.length > 0) ||
+                      (ePrescriptionData && ePrescriptionData.length > 0))
+                  ) {
+                    if (isChennaiZipCode(zipCodeInt)) {
+                      // redirect to chennai orders form
+                      setIsChennaiCheckoutDialogOpen(true);
+                      return;
+                    }
+                    onPressSubmit();
+                  }
+                  pharmacyProceedToPayTracking({
+                    totalItems: cartItems.length,
+                    serviceArea: 'Pharmacy',
+                    subTotal: mrpTotal,
+                    deliveryCharge: deliveryCharges,
+                    netAfterDiscount: totalWithCouponDiscount,
+                    isPrescription:
+                      ePrescriptionData && ePrescriptionData.length > 0 ? true : false,
+                    cartId: '',
+                    deliveryMode,
+                    deliveryDateTime: deliveryTime,
+                    pincode: currentPincode,
+                  });
+                }}
                 color="primary"
                 fullWidth
-                title={'Login to continue'}
-                onClick={() => {
-                  const signInPopup = document.getElementById('loginPopup');
-                  signInPopup && document.getElementById('loginPopup')!.click();
-                }}
+                disabled={
+                  (!nonCartFlow
+                    ? (!cartTat && deliveryTime === '') || (cartItems && cartItems.length === 0)
+                    : !deliveryAddressId ||
+                      (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                  !isPaymentButtonEnable ||
+                  disableSubmit
+                }
+                className={
+                  (!nonCartFlow
+                    ? (!cartTat && deliveryTime === '') || (cartItems && cartItems.length === 0)
+                    : !deliveryAddressId ||
+                      (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                  !isPaymentButtonEnable ||
+                  disableSubmit
+                    ? classes.buttonDisable
+                    : ''
+                }
+                title={'Proceed to pay bill'}
               >
-                Login to continue
+                {cartItems && cartItems.length > 0 && !nonCartFlow ? (
+                  `Proceed to pay — RS. ${totalWithCouponDiscount.toFixed(2)}`
+                ) : uploadingFiles ? (
+                  <CircularProgress size={22} color="secondary" />
+                ) : (
+                  'Place order'
+                )}
               </AphButton>
             )}
-          </div>
-        </div>
+          />
+        ) : (
+          <AphButton
+            color="primary"
+            fullWidth
+            title={'Login to continue'}
+            onClick={() => {
+              const signInPopup = document.getElementById('loginPopup');
+              signInPopup && document.getElementById('loginPopup')!.click();
+            }}
+          >
+            Login to continue
+          </AphButton>
+        )}
       </div>
       <Popover
         open={showOrderPopup}
