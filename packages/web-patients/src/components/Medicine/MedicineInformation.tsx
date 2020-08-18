@@ -29,6 +29,7 @@ import {
   findAddrComponents,
   OUT_OF_STOCK,
   NO_ONLINE_SERVICE,
+  NOTIFY_WHEN_IN_STOCK,
 } from 'helpers/commonHelpers';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import moment from 'moment';
@@ -643,7 +644,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             setIsPopoverOpen(true);
           }}
         >
-          Notify when in stock
+          {NOTIFY_WHEN_IN_STOCK}
         </AphButton>
       </div>
     ) : (
