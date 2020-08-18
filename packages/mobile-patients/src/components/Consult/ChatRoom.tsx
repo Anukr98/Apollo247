@@ -1700,15 +1700,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const config: Pubnub.PubnubConfig = {
+    origin: 'apollo.pubnubapi.com',
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
     uuid: `PATIENT_${patientId}`,
     restore: true,
     keepAlive: true,
-    // autoNetworkDetection: true,
-    // listenToBrowserNetworkEvents: true,
-    // presenceTimeout: 20,
     heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
