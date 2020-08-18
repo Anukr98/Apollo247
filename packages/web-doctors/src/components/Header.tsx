@@ -344,6 +344,7 @@ const HeaderComponent: React.FC<any> = (props) => {
     subscribeKey: subscribekey,
     publishKey: publishkey,
     ssl: true,
+    origin : 'apollo.pubnubapi.com',
   };
   const pubnub = new Pubnub(config);
   const sendNotification = (notificationText: string) => {

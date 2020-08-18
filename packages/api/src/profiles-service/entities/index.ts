@@ -66,6 +66,11 @@ export interface TransactionLineItemsPartial {
   DiscountAmount: number;
 }
 
+export interface PaginateParams {
+  take?: number;
+  skip?: number;
+}
+
 export interface TransactionLineItems extends TransactionLineItemsPartial {
   ProductName: string;
   ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY;
@@ -784,6 +789,9 @@ export class MedicineOrderPayments extends BaseEntity {
 
   @Column({ nullable: true })
   responseMessage: string;
+
+  @Column({ nullable: true })
+  partnerInfo: string;
 
   @Column({
     nullable: true,

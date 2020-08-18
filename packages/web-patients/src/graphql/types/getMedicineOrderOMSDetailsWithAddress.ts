@@ -102,6 +102,8 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   city: string | null;
   state: string | null;
   zipcode: string | null;
+  name: string | null;
+  mobileNumber: string | null;
 }
 
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails {

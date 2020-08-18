@@ -14,7 +14,7 @@ interface PharmacyPaymentsListProps {
 }
 const PharmacyPaymentsList: FC<PharmacyPaymentsListProps> = (props) => {
   const { patientId, navigationProps } = props;
-  const { payments, loading } = useGetPayments('pharmacy', patientId, navigationProps);
+  const { payments, loading, meta } = useGetPayments(1, 8, 'pharmacy', patientId, navigationProps);
 
   if (loading) {
     return <Spinner />;
@@ -24,6 +24,7 @@ const PharmacyPaymentsList: FC<PharmacyPaymentsListProps> = (props) => {
       patientId={patientId}
       payments={payments}
       type="pharmacy"
+      meta={meta}
       navigationProps={navigationProps}
     />
   );
