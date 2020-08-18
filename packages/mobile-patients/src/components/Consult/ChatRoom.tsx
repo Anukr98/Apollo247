@@ -1425,7 +1425,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           jrDoctorJoined.current = true;
         }
         if (occupancyDoctor && occupancyDoctor.length >= 1 && response.totalOccupancy >= 2) {
-          jrDoctorJoined.current = true;
           setDoctorJoined(true);
           setDoctorJoinedChat && setDoctorJoinedChat(true);
           setTimeout(() => {
