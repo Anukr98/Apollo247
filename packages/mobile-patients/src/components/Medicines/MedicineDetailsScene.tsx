@@ -37,7 +37,8 @@ import {
   postAppsFlyerAddToCartEvent,
   g,
   isDeliveryDateWithInXDays,
-  getMaxQtyForMedicineItem,
+  productsThumbnailUrl,
+  getDiscountPercentage,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -52,25 +53,23 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ListRenderItemInfo,
+  FlatList,
+  ScrollView,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import {
-  FlatList,
-  NavigationScreenProps,
-  ScrollView,
-  StackActions,
-  NavigationActions,
-} from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import HTML from 'react-native-render-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { AddToCartButtons } from './AddToCartButtons';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
 
 const { width, height } = Dimensions.get('window');
 
@@ -84,7 +83,6 @@ const styles = StyleSheet.create({
   mainView: {
     backgroundColor: theme.colors.CARD_BG,
     paddingTop: 20,
-    ...theme.viewStyles.shadowStyle,
   },
   doctorNameStyle: {
     paddingTop: 8,
@@ -322,7 +320,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const getItemQuantity = (id: string) => {
     const foundItem = cartItems.find((item) => item.id == id);
-    return foundItem ? foundItem.quantity : 1;
+    return foundItem ? foundItem.quantity : 0;
   };
   const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == sku) != -1;
   const isOutOfStock = !medicineDetails!.is_in_stock;
@@ -405,7 +403,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     }
   };
 
-  const onAddCartItem = (item: MedicineProductDetails) => {
+  const onAddCartItem = (item: MedicineProductDetails | MedicineProduct) => {
     const {
       sku,
       mou,
@@ -440,7 +438,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     postAppsFlyerAddToCartEvent(item, id);
   };
 
-  const updateQuantityCartItem = ({ sku }: MedicineProductDetails, quantity: number) => {
+  const updateQuantityCartItem = (
+    { sku }: Pick<MedicineProductDetails, 'sku'>,
+    quantity: number
+  ) => {
     updateCartItem!({
       id: sku,
       quantity,
@@ -564,10 +565,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const removeItemFromCart = () => updateQuantityCartItem(medicineDetails, itemQty - 1);
     const removeFromCart = () => removeCartItem!(sku);
     const { special_price, price } = medicineDetails;
-    const priceDiff = price - Number(special_price);
-    const discountPercent = !!special_price ? 
-      parseInt((priceDiff / price) * 100)
-      : 0;
+    const discountPercent = getDiscountPercentage(price, special_price);
 
     return (
       <StickyBottomComponent style={{ height: 'auto' }}>
@@ -607,7 +605,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             />
           </View>
         ) : (
-          <View style={styles.bottomView}> 
+          <View style={styles.bottomView}>
             <View style={styles.bottonButtonContainer}>
               <View
                 style={{
@@ -641,9 +639,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     >
                       (₹{medicineDetails.price})
                     </Text>
-                    <Text
-                      style={theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35)}
-                    >{discountPercent}% off</Text>
+                    <Text style={theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35)}>
+                      {discountPercent}% off
+                    </Text>
                   </View>
                 )}
               </View>
@@ -954,7 +952,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const renderDeliveryView = () => {
     return (
       <View>
-        <View style={styles.labelViewStyle}>
+        <View style={[styles.labelViewStyle, { paddingTop: 0 }]}>
           <Text style={styles.labelStyle}>CHECK DELIVERY TIME</Text>
         </View>
         <View
@@ -1222,6 +1220,62 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     } catch (error) {}
   };
 
+  const renderSimilarProducts = (products: MedicineProduct[]) => {
+    const renderItem = ({ item, index }: ListRenderItemInfo<MedicineProduct>) => {
+      const { sku, name, image, price, special_price } = item;
+      const itemQty = getItemQuantity(sku);
+      const addToCart = () => updateQuantityCartItem({ sku }, itemQty + 1);
+      const removeItemFromCart = () => updateQuantityCartItem({ sku }, itemQty - 1);
+      const removeFromCart = () => removeCartItem!(sku);
+      const onPress = () =>
+        props.navigation.push(AppRoutes.MedicineDetailsScene, {
+          sku: sku,
+          title: name,
+        });
+
+      return (
+        <ProductUpSellingCard
+          key={sku}
+          title={name}
+          price={price}
+          specialPrice={special_price}
+          imageUrl={productsThumbnailUrl(image)}
+          onAddToCart={() => onAddCartItem(item)}
+          onPress={onPress}
+          numberOfItemsInCart={itemQty}
+          maxOrderQty={medicineDetails.MaxOrderQty}
+          addToCart={addToCart}
+          removeItemFromCart={removeItemFromCart}
+          removeFromCart={removeFromCart}
+          containerStyle={[
+            { marginRight: 10, marginBottom: 30 },
+            index === 0 && { marginLeft: 20 },
+          ]}
+        />
+      );
+    };
+
+    const sectionName = medicineDetails.name
+      ? `SIMILAR TO ${medicineDetails.name}`.toUpperCase()
+      : 'SIMILAR PRODUCTS';
+
+    return (
+      <>
+        <View style={[styles.labelViewStyle, { paddingTop: 10 }]}>
+          <Text style={styles.labelStyle}>{sectionName}</Text>
+        </View>
+        <FlatList
+          bounces={false}
+          keyExtractor={({ sku }) => sku}
+          showsHorizontalScrollIndicator={false}
+          horizontal
+          data={products}
+          renderItem={renderItem}
+        />
+      </>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -1267,6 +1321,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             {renderTopView()}
             {medicineOverview.length > 0 && renderTabs()}
             {Substitutes.length ? renderSubstitutes() : null}
+            {!!g(medicineDetails, 'similar_products', 'length') &&
+              renderSimilarProducts(medicineDetails.similar_products)}
             {!isOutOfStock && renderDeliveryView()}
             <View style={{ height: 130 }} />
           </KeyboardAwareScrollView>
