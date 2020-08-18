@@ -44,7 +44,7 @@ export interface WebEngageEventData {
   orderStatus: MEDICINE_ORDER_STATUS;
   refundAmount:number;
   healthCreditsToRefund:number;
-  paymentTransactionId:string;
+  paymentRefundId:string;
 }
 
 export enum WebEngageEvent {

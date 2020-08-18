@@ -296,7 +296,7 @@ export const calculateRefund = async (
           eventName: ApiConstants.MEDICINE_ORDER_REFUND_SUCCESSFUL_EVENT_NAME.toString(),
           eventData: {
             orderId: orderDetails.orderAutoId,
-            paymentTransactionId: refundResp.refundId.toString()
+            paymentRefundId: refundResp.refundId.toString()
           },
         };
         postEvent(postBody);
