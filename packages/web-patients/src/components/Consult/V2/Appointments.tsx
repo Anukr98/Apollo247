@@ -442,8 +442,13 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }: any) => {
-          if (data && data.getAppointmentData && data.getAppointmentData.appointmentsHistory) {
-            setAppointmentHistory(data.getAppointmentData.appointmentsHistory);
+          if (
+            data &&
+            data.getAppointmentData &&
+            data.getAppointmentData.appointmentsHistory &&
+            data.getAppointmentData.appointmentsHistory.length > 0
+          ) {
+            setAppointmentHistory(data.getAppointmentData.appointmentsHistory[0]);
           }
         })
         .catch((e) => {
