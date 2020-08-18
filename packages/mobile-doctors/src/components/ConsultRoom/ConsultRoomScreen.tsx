@@ -477,10 +477,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'fullName') ||
               '',
             eventName: eventType,
-            mobileNumber:
-              g(doctorDetails, 'mobileNumber') ||
-              g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'mobileNumber') ||
-              '',
+            mobileNumber: g(caseSheet, 'patientDetails', 'mobileNumber') || '',
           },
         },
       })
