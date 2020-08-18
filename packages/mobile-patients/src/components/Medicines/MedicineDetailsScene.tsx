@@ -97,7 +97,6 @@ const styles = StyleSheet.create({
   },
   labelViewStyle: {
     marginHorizontal: 20,
-    paddingTop: 24,
     flexDirection: 'row',
     justifyContent: 'space-between',
     ...theme.viewStyles.lightSeparatorStyle,
@@ -810,6 +809,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             flex: 1,
             padding: 20,
             ...theme.viewStyles.shadowStyle,
+            marginBottom: 30,
           },
         ]}
       >
@@ -862,7 +862,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
     if (!!description)
       return (
-        <View>
+        <View style={{ marginBottom: 30 }}>
           <Text
             style={{
               ...theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1),
@@ -927,7 +927,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     });
 
     return (
-      <View>
+      <View style={{ marginBottom: 10 }}>
         <View style={styles.labelViewStyle}>
           <Text style={styles.labelStyle}>SUBSTITUTE DRUGS</Text>
         </View>
@@ -952,18 +952,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const renderDeliveryView = () => {
     return (
       <View>
-        <View style={[styles.labelViewStyle, { paddingTop: 0 }]}>
+        <View style={styles.labelViewStyle}>
           <Text style={styles.labelStyle}>CHECK DELIVERY TIME</Text>
         </View>
-        <View
-          style={[
-            styles.cardStyle,
-            {
-              margin: 20,
-              padding: 0,
-            },
-          ]}
-        >
+        <View style={[styles.cardStyle, { padding: 0 }]}>
           <View
             style={{
               padding: 16,
@@ -1261,7 +1253,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
     return (
       <>
-        <View style={[styles.labelViewStyle, { paddingTop: 10 }]}>
+        <View style={styles.labelViewStyle}>
           <Text style={styles.labelStyle}>{sectionName}</Text>
         </View>
         <FlatList

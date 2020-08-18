@@ -64,9 +64,7 @@ export const ProductUpSellingCard: React.FC<Props> = ({
           </Text>
         )}
         <View style={[styles.priceAndAddToCartButton, { marginTop: !!discount ? 0 : 12 }]}>
-          <Text numberOfLines={3} style={styles.price}>
-            {`Rs. ${discount ? specialPrice : price}`}
-          </Text>
+          <Text style={styles.price}>{`Rs. ${discount ? specialPrice : price}`}</Text>
           {renderAddToCartButton()}
         </View>
       </View>
@@ -101,7 +99,7 @@ const styles = StyleSheet.create({
     marginVertical: 16,
     marginHorizontal: 0,
     paddingVertical: 12,
-    width: Dimensions.get('window').width * 0.5,
+    width: Dimensions.get('window').width * 0.55,
   },
   imageAndTitle: { flexDirection: 'row', alignItems: 'center' },
   image: {
