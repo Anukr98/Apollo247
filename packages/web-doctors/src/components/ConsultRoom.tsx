@@ -370,7 +370,7 @@ interface ConsultRoomProps {
   sessionClient: any;
   lastMsg: any;
   messages: MessagesObjectProps[];
-  postDoctorConsultEventAction: (eventType: WebEngageEvent) => void;
+  postDoctorConsultEventAction: (eventType: WebEngageEvent, displayId: string) => void;
   appointmentStatus: string;
 }
 
@@ -521,7 +521,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessageText('');
         srollToBottomAction();
         if (props.appointmentStatus === 'COMPLETED') {
-          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE);
+          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE, (appointmentInfo && appointmentInfo.displayId) || '');
         }
       }
     );
@@ -617,7 +617,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (status: any, response: any) => {
         resetMessagesAction();
         if (props.appointmentStatus === 'COMPLETED') {
-          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE);
+          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE, (appointmentInfo && appointmentInfo.displayId) || '');
         }
       }
     );

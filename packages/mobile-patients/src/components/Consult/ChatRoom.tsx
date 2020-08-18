@@ -1610,7 +1610,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setTimeout(() => {
           setSnackbarState(true);
           setHandlerMessage('Check the network connection.');
-        }, 50);
+        }, 2050);
       } else {
         setSnackBar();
       }
@@ -1621,12 +1621,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('session stream connectionCreated!', event);
     },
     connectionDestroyed: (event: string) => {
-      AsyncStorage.getItem('callDisconnected').then((data) => {
-        if (!JSON.parse(data || 'false')) {
-          setSnackbarState(true);
-          setHandlerMessage('Call disconnected due to Network issues at the Doctor side');
-        }
-      });
+      setTimeout(() => {
+        AsyncStorage.getItem('callDisconnected').then((data) => {
+          if (!JSON.parse(data || 'false')) {
+            setSnackbarState(true);
+            setHandlerMessage('Call disconnected due to Network issues at the Doctor side');
+          }
+        });
+      }, 2000);
       console.log('session stream connectionDestroyed!', event);
       eventsAfterConnectionDestroyed();
     },
