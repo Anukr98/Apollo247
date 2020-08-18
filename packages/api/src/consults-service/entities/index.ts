@@ -27,6 +27,7 @@ import {
   trackWebEngageEventForCasesheetUpdate,
   trackWebEngageEventForCasesheetInsert,
   trackWebEngageEventForExotelCall,
+  trackWebEngageEventForAppointmentComplete,
 } from 'notifications-service/resolvers/webEngageAPI';
 
 export enum APPOINTMENT_UPDATED_BY {
@@ -404,6 +405,11 @@ export class Appointment extends BaseEntity {
   @AfterUpdate()
   async dropAppointmentCache() {
     await delCache(`patient:appointment:${this.id}`);
+  }
+
+  @AfterUpdate()
+  trackWebEngageEventForAppointmentComplete() {
+    trackWebEngageEventForAppointmentComplete(this);
   }
 
   @AfterUpdate()
