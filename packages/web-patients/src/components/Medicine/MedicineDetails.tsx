@@ -666,7 +666,7 @@ export const MedicineDetails: React.FC = (props) => {
                 description: `Buy ${name}, Pack of ${getPackOfMedicine(
                   data.productdp[0]
                 )} at Rs.${special_price ||
-                  price} in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
+                price} in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
                 canonicalLink:
                   typeof window !== 'undefined' &&
                   window.location &&
@@ -777,14 +777,14 @@ export const MedicineDetails: React.FC = (props) => {
               x.value = `${x.value}
               ${getHeader(v.Caption)}: \n
               ${v.CaptionDesc.split('&amp;lt')
-                .join('<')
-                .split('&amp;gt;')
-                .join('>')
-                .replace(/(<([^>]+)>)/gi, '')
-                .replace(/&amp;amp;/g, '&')
-                .replace(/&amp;nbsp;/g, ' ')
-                .replace(/&amp;/g, '&')
-                .replace(/\.t/g, '.')}; \n
+                  .join('<')
+                  .split('&amp;gt;')
+                  .join('>')
+                  .replace(/(<([^>]+)>)/gi, '')
+                  .replace(/&amp;amp;/g, '&')
+                  .replace(/&amp;nbsp;/g, ' ')
+                  .replace(/&amp;/g, '&')
+                  .replace(/\.t/g, '.')}; \n
                 `;
             }
           });
@@ -828,8 +828,8 @@ export const MedicineDetails: React.FC = (props) => {
     if (typeof overView !== 'string') {
       return data.map(
         (item, index) =>
-          tabValue === index && (
-            <div key={index} className={classes.tabContainer}>
+          (
+            <div style={{ display: tabValue === index ? 'block' : 'none' }} key={index} className={classes.tabContainer}>
               {item.value.split(';').map((description, idx) => {
                 if (item.key === 'Usage') {
                   return <div key={index}>{getUsageDesc(description)}</div>;
@@ -963,18 +963,18 @@ export const MedicineDetails: React.FC = (props) => {
                           {medicineDetails.image && medicineDetails.image.length > 0 ? (
                             <MedicineImageGallery data={medicineDetails} />
                           ) : (
-                            <div className={classes.noImageWrapper}>
-                              <img
-                                src={require('images/medicine.svg')}
-                                alt={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
-                                  medicineDetails
-                                )}`}
-                                title={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
-                                  medicineDetails
-                                )}`}
-                              />
-                            </div>
-                          )}
+                              <div className={classes.noImageWrapper}>
+                                <img
+                                  src={require('images/medicine.svg')}
+                                  alt={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
+                                    medicineDetails
+                                  )}`}
+                                  title={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
+                                    medicineDetails
+                                  )}`}
+                                />
+                              </div>
+                            )}
                           <div className={classes.productDetails}>
                             <div className={classes.productBasicInfo}>
                               <h1>{medicineDetails.name}</h1>
@@ -1008,48 +1008,48 @@ export const MedicineDetails: React.FC = (props) => {
                           </div>
                         </div>
                         {medicinePharmacyDetails &&
-                        medicinePharmacyDetails.length > 0 &&
-                        medicinePharmacyDetails[0].Overview &&
-                        medicinePharmacyDetails[0].Overview.length > 0 ? (
-                          <div className={classes.tabWrapper}>
-                            <Tabs
-                              value={tabValue}
-                              variant="scrollable"
-                              scrollButtons="on"
-                              classes={{
-                                root: classes.tabsRoot,
-                                indicator: classes.tabsIndicator,
-                              }}
-                              onChange={(e, newValue) => {
-                                setTabValue(newValue);
-                                const overviewData = getData(medicinePharmacyDetails[0].Overview);
-                                const tabName = overviewData[newValue].key;
-                                pharmacyPdpOverviewTracking(tabName);
-                              }}
-                            >
-                              {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
-                            </Tabs>
-                            {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
-                          </div>
-                        ) : medicineDetails.description ? (
-                          <div className={classes.productDetailed}>
-                            <div className={classes.productInfo}>Product Information</div>
-                            <div className={classes.productDescription}>
-                              {medicineDetails.description && (
-                                <div dangerouslySetInnerHTML={{ __html: renderInfo() }}></div>
-                              )}
+                          medicinePharmacyDetails.length > 0 &&
+                          medicinePharmacyDetails[0].Overview &&
+                          medicinePharmacyDetails[0].Overview.length > 0 ? (
+                            <div className={classes.tabWrapper}>
+                              <Tabs
+                                value={tabValue}
+                                variant="scrollable"
+                                scrollButtons="on"
+                                classes={{
+                                  root: classes.tabsRoot,
+                                  indicator: classes.tabsIndicator,
+                                }}
+                                onChange={(e, newValue) => {
+                                  setTabValue(newValue);
+                                  const overviewData = getData(medicinePharmacyDetails[0].Overview);
+                                  const tabName = overviewData[newValue].key;
+                                  pharmacyPdpOverviewTracking(tabName);
+                                }}
+                              >
+                                {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
+                              </Tabs>
+                              {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
                             </div>
-                          </div>
-                        ) : null}
+                          ) : medicineDetails.description ? (
+                            <div className={classes.productDetailed}>
+                              <div className={classes.productInfo}>Product Information</div>
+                              <div className={classes.productDescription}>
+                                {medicineDetails.description && (
+                                  <div dangerouslySetInnerHTML={{ __html: renderInfo() }}></div>
+                                )}
+                              </div>
+                            </div>
+                          ) : null}
                       </Scrollbars>
                     </div>
                     <MedicineInformation data={medicineDetails} />
                   </div>
                 ) : (
-                  <div className={classes.progressLoader}>
-                    <CircularProgress size={30} />
-                  </div>
-                )}
+                    <div className={classes.progressLoader}>
+                      <CircularProgress size={30} />
+                    </div>
+                  )}
               </div>
             </div>
           </>
