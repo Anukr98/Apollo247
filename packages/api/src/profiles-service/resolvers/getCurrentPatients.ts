@@ -139,21 +139,17 @@ const getCurrentPatients: Resolver<
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>
   ): Promise<Patient> => {
-    let islocked: boolean = false;
     const lockKey = `${REDIS_PATIENT_LOCK_PREFIX}${mobileNumber}`;
     const lockedProfile = await getCache(lockKey);
     if (lockedProfile && typeof lockedProfile == 'string') {
-      islocked = true;
-    }
-    if (!islocked) {
+      throw new Error(AphErrorMessages.INVALID_PATIENT_DETAILS);
+    } else {
       await setCache(lockKey, 'true', ApiConstants.CACHE_EXPIRATION_120);
       const existingPatient = await Patient.findOne({
         where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
       });
       await delCache(lockKey);
       return existingPatient || Patient.create(createOptions).save();
-    } else {
-      throw new Error(AphErrorMessages.INVALID_PATIENT_DETAILS);
     }
   };
 
