@@ -2141,7 +2141,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               checkingAppointmentDates();
             }
             if (newmessage[newmessage.length - 1].message === startConsultjr) {
-              jrDoctorJoined.current = false;
+              jrDoctorJoined.current = true;
               updateSessionAPI();
               checkingAppointmentDates();
             }
