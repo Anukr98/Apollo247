@@ -24,7 +24,11 @@ import {
   GetDoctorNextAvailableSlotVariables,
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
-import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
+import {
+  TRANSFER_INITIATED_TYPE,
+  BookRescheduleAppointmentInput,
+  STATUS,
+} from 'graphql/types/globalTypes';
 import { BOOK_APPOINTMENT_RESCHEDULE } from 'graphql/profiles';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useMutation } from 'react-apollo-hooks';
@@ -505,6 +509,7 @@ export const ChatRoom: React.FC = () => {
   const [apiLoading, setApiLoading] = useState<boolean>(false);
   const [disaplayId, setDisplayId] = useState<number | null>(null);
   const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
+  const [appointmentStatus, setAppointmentStatus] = useState<STATUS | null>(null);
   const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -646,23 +651,25 @@ export const ChatRoom: React.FC = () => {
               )}
             </div>
             <div className={classes.rightSection}>
-              <div className={classes.sectionHeader}>
-                {disaplayId && <span className={classes.caseNumber}>Case #{disaplayId} </span>}
-                <div className={classes.headerActions}>
-                  <AphButton
-                    disabled={jrDoctorJoined}
-                    classes={{
-                      root: classes.viewButton,
-                      disabled: classes.disabledButton,
-                    }}
-                    onClick={() => {
-                      handleRescheduleOpen();
-                    }}
-                  >
-                    Reschedule
-                  </AphButton>
+              {appointmentStatus !== STATUS.CANCELLED && appointmentStatus !== STATUS.COMPLETED && (
+                <div className={classes.sectionHeader}>
+                  {disaplayId && <span className={classes.caseNumber}>Case #{disaplayId} </span>}
+                  <div className={classes.headerActions}>
+                    <AphButton
+                      disabled={jrDoctorJoined}
+                      classes={{
+                        root: classes.viewButton,
+                        disabled: classes.disabledButton,
+                      }}
+                      onClick={() => {
+                        handleRescheduleOpen();
+                      }}
+                    >
+                      Reschedule
+                    </AphButton>
+                  </div>
                 </div>
-              </div>
+              )}
               {data && (
                 <ChatWindow
                   doctorDetails={data}
@@ -678,6 +685,7 @@ export const ChatRoom: React.FC = () => {
                   nextSlotAvailable={nextSlotAvailable}
                   availableNextSlot={nextAvailableSlot}
                   rescheduleAPI={rescheduleAPI}
+                  setAppointmentStatus={setAppointmentStatus}
                 />
               )}
             </div>

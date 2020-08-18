@@ -402,11 +402,13 @@ const getStoreName = (storeAddress: string) => {
 };
 
 const isPastAppointment = (appointmentDateTime: string) =>
-  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
+  moment(appointmentDateTime)
+    .add(7, 'days')
+    .isBefore(moment());
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const followUpDayMoment = moment(appointmentTime).add(7, 'days');
-  const diffInDays = followUpDayMoment.diff(appointmentTime, 'days');
+  const diffInDays = followUpDayMoment.diff(moment(), 'days');
   if (diffInDays <= 0) {
     const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
     const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');

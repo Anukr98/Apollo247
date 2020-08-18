@@ -590,13 +590,16 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                 src={photoUrl !== null ? photoUrl || '' : require('images/no_photo.png')}
                 alt={firstName || ''}
               />
-              <div
-                onClick={() => setIsCancelPopoverOpen(true)}
-                ref={cancelAppointRef}
-                className={classes.moreProfileActions}
-              >
-                <img src={require('images/ic_more.svg')} alt="" />
-              </div>
+              {appointmentDetails.status !== STATUS.COMPLETED &&
+                appointmentDetails.status !== STATUS.CANCELLED && (
+                  <div
+                    onClick={() => setIsCancelPopoverOpen(true)}
+                    ref={cancelAppointRef}
+                    className={classes.moreProfileActions}
+                  >
+                    <img src={require('images/ic_more.svg')} alt="" />
+                  </div>
+                )}
             </div>
             <div className={classes.doctorInfo}>
               <div className={classes.doctorName}>{_startCase(_toLower(fullName || ''))}</div>
@@ -793,6 +796,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                   >
                     Reschedule Instead
                   </AphButton>
+
                   <AphButton onClick={() => cancelAppointmentApi()}>
                     {apiLoading ? (
                       <CircularProgress size={22} color="secondary" />
