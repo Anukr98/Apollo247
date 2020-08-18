@@ -4006,8 +4006,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             variant="h4"
             className={classes.joinPromptText}
           >
-            Patient "{patientName}" is waiting in the consult room. Please click
-            on Proceed to join consultation.
+            Patient "{patientName}" is waiting on the call. Please click on the
+            'Join' button to join the call.
           </Typography>
 
           <div className={classes.callButtonWrapperPrompt}>
@@ -4029,7 +4029,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 setJoinPrompt(false);
               }}
             >
-              {"PROCEED"}
+              {"JOIN"}
             </AphButton>
 
             <span
