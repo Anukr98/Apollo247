@@ -458,6 +458,7 @@ export const ConsultTabs: React.FC = () => {
   const config: Pubnub.PubnubConfig = {
     subscribeKey: subscribekey,
     publishKey: publishkey,
+    origin : 'apollo.pubnubapi.com',
     ssl: true,
     restore: true,
     keepAlive: true,
