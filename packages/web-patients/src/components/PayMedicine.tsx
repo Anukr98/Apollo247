@@ -509,7 +509,7 @@ export const PayMedicine: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (params.payType === 'consults') {
+    if (params.payType === 'consults' && !consultCouponCode) {
       getCouponByMobileNumber();
     }
   }, []);
