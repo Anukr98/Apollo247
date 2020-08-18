@@ -279,6 +279,9 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
                 item && (
                   <View>
                     <Text style={styles.medicineName}>{item.medicineName}</Text>
+                    {item.includeGenericNameInPrescription && item.genericName ? (
+                      <Text style={styles.medDescription}>{item.genericName}</Text>
+                    ) : null}
                     <Text style={styles.medDescription}>{medicineDescription(item)}</Text>
                   </View>
                 )
