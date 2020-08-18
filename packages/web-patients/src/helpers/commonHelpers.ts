@@ -204,6 +204,10 @@ const INVALID_FILE_TYPE_ERROR =
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
 const OUT_OF_STOCK_MESSAGE = 'Sorry, this item is out of stock in your area';
 const TAT_API_TIMEOUT_IN_MILLI_SEC = 10000; // in milli sec
+const NO_ONLINE_SERVICE = 'NOT AVAILABLE FOR ONLINE SALE';
+const OUT_OF_STOCK = 'Out Of Stock';
+const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
+const PINCODE_MAXLENGTH = 6;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -449,4 +453,8 @@ export {
   getTypeOfProduct,
   kavachHelpline,
   isActualUser,
+  NO_ONLINE_SERVICE,
+  OUT_OF_STOCK,
+  NOTIFY_WHEN_IN_STOCK,
+  PINCODE_MAXLENGTH,
 };
