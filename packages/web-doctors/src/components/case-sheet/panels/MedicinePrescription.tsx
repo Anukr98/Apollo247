@@ -2340,7 +2340,14 @@ export const MedicinePrescription: React.FC = () => {
                 />
               </AphButton>,
             ];
-
+        const genericName = (
+          <span>
+            {medicine.includeGenericNameInPrescription! &&
+              medicine.genericName!.trim().length > 0 && (
+                <h6>{`Contains ${medicine.genericName}`}</h6>
+              )}
+          </span>
+        );
         return (
           <div style={{ position: 'relative' }} key={index}>
             {medicine.medicineCustomDetails ? (
@@ -2352,6 +2359,8 @@ export const MedicinePrescription: React.FC = () => {
                     <s>{medicine.medicineName}</s>
                   </h5>
                 )}
+                {genericName}
+
                 {!isPresent && (
                   <p className={classes.removed}>This medicine has been discontinued </p>
                 )}
@@ -2367,6 +2376,7 @@ export const MedicinePrescription: React.FC = () => {
                     <s>{medicine.medicineName}</s>
                   </h5>
                 )}
+                {genericName}
                 {!isPresent && (
                   <p className={classes.removed}>This medicine has been discontinued </p>
                 )}
@@ -2526,6 +2536,14 @@ export const MedicinePrescription: React.FC = () => {
                   } else {
                     favDosageHtml = favDosageCount + ' ' + favUnitHtmls;
                   }
+                  const genericName = (
+                    <span>
+                      {favMedicine.includeGenericNameInPrescription! &&
+                        favMedicine.genericName!.trim().length > 0 && (
+                          <h6>{`Contains ${favMedicine.genericName}`}</h6>
+                        )}
+                    </span>
+                  );
                   return (
                     <div className={classes.paper} key={id}>
                       {favMedicine.medicineCustomDetails ? (
@@ -2535,10 +2553,12 @@ export const MedicinePrescription: React.FC = () => {
                           {favMedicine.medicineCustomDetails && (
                             <h6>{favMedicine.medicineCustomDetails}</h6>
                           )}
+                          {genericName}
                         </Paper>
                       ) : (
                         <Paper className={classes.favMedBg}>
                           <h5>{favMedicine.medicineName}</h5>
+                          {genericName}
                           <h6>
                             {`${
                               favMedicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
@@ -2640,8 +2660,9 @@ export const MedicinePrescription: React.FC = () => {
                         className={classes.radioGroup}
                         value={medicineForm}
                         onChange={(e) => {
-                          setMedicineForm((e.target as HTMLInputElement)
-                            .value as MEDICINE_FORM_TYPES);
+                          setMedicineForm(
+                            (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                          );
                         }}
                         row
                       >
@@ -3292,8 +3313,9 @@ export const MedicinePrescription: React.FC = () => {
                           className={classes.radioGroup}
                           value={medicineForm}
                           onChange={(e) => {
-                            setMedicineForm((e.target as HTMLInputElement)
-                              .value as MEDICINE_FORM_TYPES);
+                            setMedicineForm(
+                              (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                            );
                           }}
                           row
                         >
