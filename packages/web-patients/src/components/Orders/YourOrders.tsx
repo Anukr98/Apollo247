@@ -180,7 +180,8 @@ export const YourOrders: React.FC = (props) => {
           if (
             data &&
             data.getMedicineOrdersOMSList &&
-            data.getMedicineOrdersOMSList.medicineOrdersList
+            data.getMedicineOrdersOMSList.medicineOrdersList &&
+            data.getMedicineOrdersOMSList.medicineOrdersList.length > 0
           ) {
             setOrderListData(data.getMedicineOrdersOMSList.medicineOrdersList || []);
             if (!isSmallScreen) {
@@ -198,6 +199,7 @@ export const YourOrders: React.FC = (props) => {
         })
         .catch((e) => {
           console.log(e);
+          setError(true);
         })
         .finally(() => {
           setLoading(false);
