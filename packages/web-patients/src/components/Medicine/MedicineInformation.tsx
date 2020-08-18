@@ -27,6 +27,8 @@ import {
   TAT_API_TIMEOUT_IN_MILLI_SEC,
   OUT_OF_STOCK_MESSAGE,
   findAddrComponents,
+  OUT_OF_STOCK,
+  NO_ONLINE_SERVICE,
 } from 'helpers/commonHelpers';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import moment from 'moment';
@@ -601,9 +603,59 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     Array(Number(data.MaxOrderQty) || process.env.PHARMACY_MEDICINE_QUANTITY),
     (_, x) => x + 1
   );
+  const {
+    MaxOrderQty,
+    url_key,
+    description,
+    id,
+    image,
+    is_in_stock,
+    is_prescription_required,
+    name,
+    price,
+    sku,
+    special_price,
+    small_image,
+    status,
+    thumbnail,
+    type_id,
+    mou,
+    category_id,
+    sell_online,
+  } = data;
+
+  const notAvailableContext = () => {
+    return sell_online ? (
+      <div className={classes.outOfStock}>
+        <div className={classes.medicineNoStock}>{OUT_OF_STOCK}</div>
+        <AphButton
+          fullWidth
+          className={classes.notifyBtn}
+          onClick={() => {
+            const { sku, name, category_id } = data;
+            /* WebEngage event start */
+            notifyMeTracking({
+              sku,
+              category_id,
+              name,
+            });
+            /* WebEngage event end */
+            setIsPopoverOpen(true);
+          }}
+        >
+          Notify when in stock
+        </AphButton>
+      </div>
+    ) : (
+      <div className={classes.outOfOnline}>
+        <div className={classes.medicineNoOnline}>{NO_ONLINE_SERVICE}</div>
+      </div>
+    );
+  };
+
   return (
     <div className={classes.root}>
-      {data.sell_online ? (
+      {sell_online ? (
         <div className={`${classes.medicineSection}`}>
           <Scrollbars
             className={classes.scrollResponsive}
@@ -618,7 +670,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   <Typography
                     component="h2"
                     className={classes.sectionTitle}
-                  >{`${data.name} alternatives`}</Typography>
+                  >{`${name} alternatives`}</Typography>
 
                   <div className={classes.webView}>
                     <div
@@ -653,7 +705,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   </div>
                 </>
               )}
-              {data.is_in_stock ? (
+              {is_in_stock ? (
                 <>
                   <div className={classes.sectionTitle}>Check Delivery Time</div>
                   <div className={classes.deliveryInfo}>
@@ -713,12 +765,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       ) : (
         ''
       )}
-      <div
-        className={data.sell_online ? classes.bottomGroupResponsive : classes.bottomGroupResponse}
-      >
+      <div className={sell_online ? classes.bottomGroupResponsive : classes.bottomGroupResponse}>
         {!errorMessage ? (
           <>
-            {data.is_in_stock && data.sell_online ? (
+            {is_in_stock && sell_online ? (
               <div className={classes.priceGroup}>
                 <div className={classes.priceWrap}>
                   <div className={classes.leftGroup}>
@@ -737,20 +787,20 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                               gtmTracking({
                                 category: 'Pharmacy',
                                 action: quantity > medicineQty ? 'Add to Cart' : 'Remove From Cart',
-                                label: data.name,
-                                value: data.special_price || data.price,
+                                label: name,
+                                value: special_price || price,
                                 ecommObj: {
                                   event:
                                     quantity > medicineQty ? 'add_to_cart' : 'remove_from_cart',
                                   ecommerce: {
                                     items: [
                                       {
-                                        item_name: data.name,
-                                        item_id: data.sku,
-                                        price: data.special_price || data.price,
+                                        item_name: name,
+                                        item_id: sku,
+                                        price: special_price || price,
                                         item_category: 'Pharmacy',
-                                        item_category_2: data.type_id
-                                          ? data.type_id.toLowerCase() === 'pharma'
+                                        item_category_2: type_id
+                                          ? type_id.toLowerCase() === 'pharma'
                                             ? 'Drugs'
                                             : 'FMCG'
                                           : null,
@@ -787,41 +837,16 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     </div>
                   </div>
                   <div className={classes.medicinePrice}>
-                    {data.special_price && (
-                      <span className={classes.regularPrice}>(Rs. {data.price})</span>
-                    )}
-                    Rs. {data.special_price || data.price}
+                    {special_price && <span className={classes.regularPrice}>(Rs. {price})</span>}
+                    Rs. {special_price || price}
                   </div>
                 </div>
               </div>
-            ) : data.sell_online ? (
-              <div className={classes.outOfStock}>
-                <div className={classes.medicineNoStock}>Out Of Stock</div>
-                <AphButton
-                  fullWidth
-                  className={classes.notifyBtn}
-                  onClick={() => {
-                    const { sku, name, category_id } = data;
-                    /* WebEngage event start */
-                    notifyMeTracking({
-                      sku,
-                      category_id,
-                      name,
-                    });
-                    /* WebEngage event end */
-                    setIsPopoverOpen(true);
-                  }}
-                >
-                  Notify when in stock
-                </AphButton>
-              </div>
             ) : (
-              <div className={classes.outOfOnline}>
-                <div className={classes.medicineNoOnline}>NOT AVAILABLE FOR ONLINE SALE</div>
-              </div>
+              notAvailableContext()
             )}
 
-            {data.is_in_stock && data.sell_online ? (
+            {is_in_stock && sell_online ? (
               <div className={classes.bottomActions}>
                 <AphButton
                   disabled={addMutationLoading || updateMutationLoading}
@@ -830,54 +855,54 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     setClickAddCart(true);
                     setAddMutationLoading(true);
                     const cartItem: MedicineCartItem = {
-                      MaxOrderQty: data.MaxOrderQty,
-                      url_key: data.url_key,
-                      description: data.description,
-                      id: data.id,
-                      image: data.image,
-                      is_in_stock: data.is_in_stock,
-                      is_prescription_required: data.is_prescription_required,
-                      name: data.name,
-                      price: data.price,
-                      sku: data.sku,
-                      special_price: data.special_price,
-                      small_image: data.small_image,
-                      status: data.status,
-                      thumbnail: data.thumbnail,
-                      type_id: data.type_id,
-                      mou: data.mou,
+                      MaxOrderQty,
+                      url_key,
+                      description,
+                      id,
+                      image,
+                      is_in_stock,
+                      is_prescription_required,
+                      name,
+                      price,
+                      sku: sku,
+                      special_price: special_price,
+                      small_image: small_image,
+                      status: status,
+                      thumbnail: thumbnail,
+                      type_id: type_id,
+                      mou: mou,
                       quantity: medicineQty,
                       isShippable: true,
                     };
                     addToCartTracking({
-                      productName: data.name,
+                      productName: name,
                       source: 'Pharmacy PDP',
-                      productId: data.sku,
+                      productId: sku,
                       brand: '',
                       brandId: '',
                       categoryName: params.searchText || '',
-                      categoryId: data.category_id,
-                      discountedPrice: data.special_price || data.price,
-                      price: data.price,
+                      categoryId: category_id,
+                      discountedPrice: special_price || price,
+                      price: price,
                       quantity: 1,
                     });
                     /**Gtm code start  */
                     gtmTracking({
                       category: 'Pharmacy',
                       action: 'Add to Cart',
-                      label: data.name,
-                      value: data.special_price || data.price,
+                      label: name,
+                      value: special_price || price,
                       ecommObj: {
                         event: 'add_to_cart',
                         ecommerce: {
                           items: [
                             {
-                              item_name: data.name,
-                              item_id: data.sku,
-                              price: data.special_price || data.price,
+                              item_name: name,
+                              item_id: sku,
+                              price: special_price || price,
                               item_category: 'Pharmacy',
-                              item_category_2: data.type_id
-                                ? data.type_id.toLowerCase() === 'pharma'
+                              item_category_2: type_id
+                                ? type_id.toLowerCase() === 'pharma'
                                   ? 'Drugs'
                                   : 'FMCG'
                                 : null,
@@ -909,22 +934,22 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   onClick={() => {
                     setUpdateMutationLoading(true);
                     const cartItem: MedicineCartItem = {
-                      MaxOrderQty: data.MaxOrderQty,
-                      url_key: data.url_key,
-                      description: data.description,
-                      id: data.id,
-                      image: data.image,
-                      is_in_stock: data.is_in_stock,
-                      is_prescription_required: data.is_prescription_required,
-                      name: data.name,
-                      price: data.price,
-                      sku: data.sku,
-                      special_price: data.special_price,
-                      small_image: data.small_image,
-                      status: data.status,
-                      thumbnail: data.thumbnail,
-                      type_id: data.type_id,
-                      mou: data.mou,
+                      MaxOrderQty: MaxOrderQty,
+                      url_key: url_key,
+                      description: description,
+                      id: id,
+                      image: image,
+                      is_in_stock: is_in_stock,
+                      is_prescription_required: is_prescription_required,
+                      name: name,
+                      price: price,
+                      sku: sku,
+                      special_price: special_price,
+                      small_image: small_image,
+                      status: status,
+                      thumbnail: thumbnail,
+                      type_id: type_id,
+                      mou: mou,
                       quantity: medicineQty,
                       isShippable: true,
                     };
@@ -933,15 +958,15 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       window.location.href = clientRoutes.medicinesCart();
                     }, 3000);
                     buyNowTracking({
-                      productName: data.name,
+                      productName: name,
                       serviceArea: pinCode,
-                      productId: data.sku,
+                      productId: sku,
                       brand: '',
                       brandId: '',
                       categoryName: params.searchText || '',
-                      categoryId: data.category_id,
-                      discountedPrice: data.special_price,
-                      price: data.price,
+                      categoryId: category_id,
+                      discountedPrice: special_price,
+                      price: price,
                       quantity: medicineQty,
                     });
                   }}
@@ -955,31 +980,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               </div>
             ) : null}
           </>
-        ) : data.sell_online ? (
-          <div className={classes.outOfStock}>
-            <div className={classes.medicineNoStock}>Out Of Stock</div>
-            <AphButton
-              fullWidth
-              className={classes.notifyBtn}
-              onClick={() => {
-                const { sku, name, category_id } = data;
-                /* WebEngage event start */
-                notifyMeTracking({
-                  sku,
-                  category_id,
-                  name,
-                });
-                /* WebEngage event end */
-                setIsPopoverOpen(true);
-              }}
-            >
-              Notify when in stock
-            </AphButton>
-          </div>
         ) : (
-          <div className={classes.outOfOnline}>
-            <div className={classes.medicineNoOnline}>NOT AVAILABLE FOR ONLINE SALE</div>
-          </div>
+          notAvailableContext()
         )}
       </div>
 
@@ -1001,10 +1003,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             <div className={classes.mascotIcon}>
               <img src={require('images/ic-mascot.png')} alt="Mascot Icon" title="Mascot Icon" />
             </div>
-            <NotifyMeNotification
-              medicineName={data.name}
-              setIsNotifyMeDialogOpen={setIsPopoverOpen}
-            />
+            <NotifyMeNotification medicineName={name} setIsNotifyMeDialogOpen={setIsPopoverOpen} />
           </div>
         </div>
       </Popover>
