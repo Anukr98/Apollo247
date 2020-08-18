@@ -29,7 +29,7 @@ export class AppointmentCallDetailsRepository extends Repository<AppointmentCall
   }
 
   getCallDetails(id: string) {
-    return this.findOne({ where: { id } });
+    return this.findOne({ where: { id }, relations: ['appointment'] });
   }
 
   findByAppointmentId(appointmentId: string) {

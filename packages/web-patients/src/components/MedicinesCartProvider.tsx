@@ -13,7 +13,7 @@ export interface MedicineCartItem {
   description: string;
   id: number;
   arrId?: any[];
-  image: string | null;
+  image: string[] | null;
   is_in_stock: boolean;
   is_prescription_required: '0' | '1';
   name: string;
@@ -361,7 +361,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
   };
 
   const updateCartItem: MedicineCartContextProps['updateCartItem'] = (itemUpdates) => {
-    const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
+    const foundIndex = cartItems.findIndex((item) => item.sku == itemUpdates.sku);
     if (foundIndex !== -1) {
       if (cartItems && itemUpdates && itemUpdates.quantity) {
         cartItems[foundIndex].quantity = cartItems[foundIndex].quantity + itemUpdates.quantity;
@@ -376,7 +376,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
     per the passed input and its usages are corrected everywhere
   */
   const updateCartItemPrice: MedicineCartContextProps['updateCartItemPrice'] = (itemUpdates) => {
-    const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
+    const foundIndex = cartItems.findIndex((item) => item.sku == itemUpdates.sku);
     if (foundIndex !== -1) {
       if (cartItems && itemUpdates && itemUpdates.price) {
         cartItems[foundIndex].price = itemUpdates.price;
@@ -389,7 +389,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
   };
 
   const updateItemShippingStatus = (itemUpdates: any) => {
-    const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
+    const foundIndex = cartItems.findIndex((item) => item.sku == itemUpdates.sku);
     if (foundIndex !== -1) {
       if (cartItems && itemUpdates) {
         cartItems[foundIndex].isShippable = itemUpdates.isShippable;
@@ -400,7 +400,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
   };
 
   const updateCartItemQty: MedicineCartContextProps['updateCartItemQty'] = (itemUpdates) => {
-    const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
+    const foundIndex = cartItems.findIndex((item) => item.sku == itemUpdates.sku);
     if (foundIndex !== -1) {
       if (cartItems && itemUpdates) {
         cartItems[foundIndex].quantity = itemUpdates.quantity;
@@ -422,7 +422,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
     const existingCartItems = cartItems;
     const newCartItems = cartItems;
     itemsToAdd.forEach((item: MedicineCartItem) => {
-      const foundIdx = existingCartItems.findIndex((existingItem) => existingItem.id === item.id);
+      const foundIdx = existingCartItems.findIndex((existingItem) => existingItem.sku === item.sku);
       if (foundIdx >= 0) {
         newCartItems[foundIdx].quantity = newCartItems[foundIdx].quantity + item.quantity;
       } else {

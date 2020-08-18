@@ -423,6 +423,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
+  const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
+  const leaveChatRoom = '^^#leaveChatRoom';
 
   const { doctorId, patientId } = props;
   const channel = props.appointmentId;
@@ -491,7 +493,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         lastMsg.message.message !== cancelConsultInitiated &&
         lastMsg.message.message !== callAbandonment &&
         lastMsg.message.message !== appointmentComplete &&
-        lastMsg.message.message !== doctorAutoResponse
+        lastMsg.message.message !== doctorAutoResponse &&
+        lastMsg.message.message !== patientJoinedMeetingRoom &&
+        lastMsg.message.message !== leaveChatRoom
       ) {
         setIsNewMsg(true);
       } else {
@@ -652,7 +656,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
       rowData.message !== appointmentComplete &&
-      rowData.message !== doctorAutoResponse
+      rowData.message !== doctorAutoResponse &&
+      rowData.message !== patientJoinedMeetingRoom &&
+      rowData.message !== leaveChatRoom
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -758,7 +764,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
       rowData.message !== appointmentComplete &&
-      rowData.message !== doctorAutoResponse
+      rowData.message !== doctorAutoResponse &&
+      rowData.message !== patientJoinedMeetingRoom &&
+      rowData.message !== leaveChatRoom
     ) {
       leftComponent = 0;
       jrDrComponent = 0;
@@ -871,7 +879,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
       rowData.message !== appointmentComplete &&
-      rowData.message !== doctorAutoResponse
+      rowData.message !== doctorAutoResponse &&
+      rowData.message !== patientJoinedMeetingRoom &&
+      rowData.message !== leaveChatRoom
     ) {
       jrDrComponent++;
       leftComponent = 0;

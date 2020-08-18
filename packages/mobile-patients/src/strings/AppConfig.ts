@@ -3,13 +3,6 @@ import { ChennaiDeliveryPinCodes } from '@aph/mobile-patients/src/strings/Chenna
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
 
-export type PharmacyHomepageInfo = {
-  section_key: string;
-  section_name: string;
-  section_position: string;
-  visible: boolean;
-};
-
 export enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
@@ -21,7 +14,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -44,6 +37,8 @@ const testApiCredentialsProd = {
 const appStaticVariables = {
   iOS_Version: DeviceInfo.getVersion(),
   Android_Version: DeviceInfo.getVersion(),
+  MED_DELIVERY_DATE_API_FORMAT: 'DD-MMM-YYYY hh:mm',
+  MED_DELIVERY_DATE_DISPLAY_FORMAT: 'D MMM YYYY | hh:mm A',
   DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES: 60, // slots visible after this period for current date
   DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS: 2, // slots can be booked upto this period
   DIAGNOSTIC_MAX_SLOT_TIME: '12:00', // 24 hours format
@@ -56,87 +51,11 @@ const appStaticVariables = {
     'https://157e9636faf8c1b7296a749deb8789fa84314b27598eb7a9:82ac24fd451cbf85373a4ea90f083c9d321040ee9c3d26ed@api.exotel.com/v1/Accounts/apollo2471/Calls/connect.json',
   EXOTEL_CALLER_ID: '04049171522',
   HOME_SCREEN_COVID_HEADER_TEXT: string.common.covidHeading,
-  HOME_SCREEN_EMERGENCY_BANNER_TEXT: string.common.emergencyBannerText,
   HOME_SCREEN_COVID_CONTACT_TEXT: string.common.covidContactText,
   HOME_SCREEN_COVIDSCAN_BANNER_TEXT: string.common.covidScanBannerText,
-  HOME_SCREEN_EMERGENCY_BANNER_NUMBER: string.common.emergencyBannerPhoneNumber,
   CHENNAI_PHARMA_DELIVERY_PINCODES: ChennaiDeliveryPinCodes,
   CRYPTO_SECRET_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
   PHARMA_STATE_CODE_MAPPING: PharmaStateCodeMapping,
-  PHARMACY_HOMEPAGE_INFO: [
-    {
-      section_key: 'banners',
-      section_name: 'BANNERS',
-      section_position: '1',
-      visible: true,
-    },
-    {
-      section_key: 'orders',
-      section_name: 'ORDERS',
-      section_position: '2',
-      visible: true,
-    },
-    {
-      section_key: 'upload_prescription',
-      section_name: 'UPLOAD PRESCRIPTION',
-      section_position: '3',
-      visible: true,
-    },
-    {
-      section_key: 'recommended_products',
-      section_name: 'RECOMMENDED PRODUCTS',
-      section_position: '4',
-      visible: true,
-    },
-    {
-      section_key: 'healthareas',
-      section_name: 'SHOP BY HEALTH AREAS',
-      section_position: '5',
-      visible: true,
-    },
-    {
-      section_key: 'deals_of_the_day',
-      section_name: 'DEALS OF THE DAY',
-      section_position: '6',
-      visible: true,
-    },
-    {
-      section_key: 'hot_sellers',
-      section_name: 'HOT SELLERS',
-      section_position: '7',
-      visible: true,
-    },
-    {
-      section_key: 'shop_by_category',
-      section_name: 'SHOP BY CATEGORY',
-      section_position: '8',
-      visible: true,
-    },
-    {
-      section_key: 'monsoon_essentials',
-      section_name: 'MONSOON ESSENTIALS',
-      section_position: '9',
-      visible: true,
-    },
-    {
-      section_key: 'widget_2',
-      section_name: 'IMMUNITY BOOSTERS',
-      section_position: '10',
-      visible: true,
-    },
-    {
-      section_key: 'widget_3',
-      section_name: 'BABY CARE',
-      section_position: '11',
-      visible: true,
-    },
-    {
-      section_key: 'shop_by_brand',
-      section_name: 'SHOP BY BRAND',
-      section_position: '12',
-      visible: true,
-    },
-  ] as PharmacyHomepageInfo[],
   CART_ITEM_MAX_QUANTITY: 10, // max. allowed qty to add to cart
   HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
   MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
@@ -269,7 +188,7 @@ const PharmaApiConfig = {
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
-    MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
+    MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
     ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`,
@@ -307,7 +226,7 @@ const PharmaApiConfig = {
     ],
     GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
-    MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
+    MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
     ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
       `https://report.apollodiagnostics.in/Apollo/AskApollo.aspx?cmd=getpackagedata`,

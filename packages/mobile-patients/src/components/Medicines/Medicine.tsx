@@ -55,20 +55,18 @@ import {
   getNearByStoreDetailsApi,
   callToExotelApi,
   OfferBannerSection,
+  DealsOfTheDaySection,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   doRequestAndAccessLocationModified,
   g,
   isValidSearch,
-  postAppsFlyerAddToCartEvent,
-  postwebEngageAddToCartEvent,
   postWebEngageEvent,
   addPharmaItemToCart,
   productsThumbnailUrl,
   reOrderMedicines,
   getMaxQtyForMedicineItem,
-  doRequestAndAccessLocation,
-  getNetStatus,
+  setWebEngageScreenNames,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -98,7 +96,7 @@ import {
   ViewStyle,
   Platform,
 } from 'react-native';
-import { Image, Input, ListItem } from 'react-native-elements';
+import { Image, ListItem } from 'react-native-elements';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import Carousel from 'react-native-snap-carousel';
@@ -115,29 +113,10 @@ import {
   MedicineReOrderOverlayProps,
   MedicineReOrderOverlay,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
-import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
+import { AddToCartButtons } from './AddToCartButtons';
+import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '../../graphql/types/getMedicineOrderOMSDetailsWithAddress';
 
 const styles = StyleSheet.create({
-  hiTextStyle: {
-    marginLeft: 20,
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(36),
-  },
-  nameTextContainerStyle: {
-    maxWidth: '65%',
-  },
-  nameTextStyle: {
-    marginLeft: 5,
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(36),
-  },
-  seperatorStyle: {
-    height: 2,
-    backgroundColor: '#00b38e',
-    //marginTop: 5,
-    marginHorizontal: 5,
-    marginBottom: 6,
-  },
   sliderDotStyle: {
     height: 8,
     width: 8,
@@ -166,6 +145,16 @@ const styles = StyleSheet.create({
     height: '100%',
   },
 });
+
+const filterBanners = (banners: OfferBannerSection[]) => {
+  return banners
+    .filter((banner) => Number(banner.status))
+    .filter(
+      (banner) =>
+        moment() >= moment(banner.start_time, 'YYYY-MM-DD hh:mm:ss') &&
+        moment() <= moment(banner.end_time, 'YYYY-MM-DD hh:mm:ss')
+    );
+};
 
 export interface MedicineProps
   extends NavigationScreenProps<{
@@ -206,19 +195,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [serviceabilityMsg, setServiceabilityMsg] = useState('');
   const hasLocation = locationDetails || pharmacyLocation;
   const { showAphAlert, hideAphAlert, setLoading: globalLoading } = useUIElements();
-  const {
-    data: latestMedicineOrderData,
-    loading: latestMedicineOrderLoading,
-    error: latestMedicineOrderError,
-    // refetch: latestMedicineOrderRefetch,
-  } = useQuery<getLatestMedicineOrder, getLatestMedicineOrderVariables>(GET_LATEST_MEDICINE_ORDER, {
-    variables: { patientUhid: g(currentPatient, 'uhid') || '' },
-    fetchPolicy: 'no-cache',
-  });
-  const latestMedicineOrder =
-    latestMedicineOrderLoading || latestMedicineOrderError
-      ? null
-      : g(latestMedicineOrderData, 'getLatestMedicineOrder', 'medicineOrderDetails');
+  const [latestMedicineOrder, setLatestMedicineOrder] = useState<
+    getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails
+  >();
+
+  const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
+  const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
+  const [loading, setLoading] = useState<boolean>(!medicinePageAPiResponse);
+  const [error, setError] = useState<boolean>(false);
+  const banners = !loading && !error && data ? filterBanners(g(data, 'mainbanners') || []) : [];
+  const [imgHeight, setImgHeight] = useState(120);
+  const { width: winWidth } = Dimensions.get('window');
+  const [bannerLoading, setBannerLoading] = useState(true);
 
   const postwebEngageProductClickedEvent = (
     { name, sku, category_id }: MedicineProduct,
@@ -231,7 +219,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       Brand: '',
       'Brand ID': '',
       'category name': '',
-      'category ID': category_id,
+      'category ID': category_id!,
       Source: source,
       'Section Name': sectionName,
     };
@@ -411,9 +399,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, [pharmacyPincode]);
 
   useEffect(() => {
+    setWebEngageScreenNames('Medicine Home Page');
     fetchMedicinePageProducts();
-    fetchRecommendedProducts();
   }, []);
+
+  useEffect(() => {
+    if (g(currentPatient, 'uhid')) {
+      fetchRecommendedProducts();
+      fetchLatestMedicineOrder();
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     checkLocation();
@@ -460,35 +455,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
   };
 
-  const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
-  const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
-  const [loading, setLoading] = useState<boolean>(!medicinePageAPiResponse);
-  const [error, setError] = useState<boolean>(false);
-  const banners = (g(data, 'mainbanners') || [])
-    .filter((banner) => Number(banner.status))
-    .filter(
-      (banner) =>
-        moment() >= moment(banner.start_time, 'YYYY-MM-DD hh:mm:ss') &&
-        moment() <= moment(banner.end_time, 'YYYY-MM-DD hh:mm:ss')
-    );
-  const healthAreas = g(data, 'healthareas') || [];
-  const dealsOfTheDay = g(data, 'deals_of_the_day') || [];
-  const shopByCategory = g(data, 'shop_by_category') || [];
-  const shopByBrand = g(data, 'shop_by_brand') || [];
-  const hotSellers = g(data, 'hot_sellers', 'products') || [];
-  const hotSellersCategoryId = g(data, 'hot_sellers', 'category_id') || [];
-  const monsoonEssentials = g(data, 'monsoon_essentials', 'products') || [];
-  const monsoonEssentialsCategoryId = g(data, 'monsoon_essentials', 'category_id') || 0;
-  const widget2 = g(data, 'widget_2', 'products') || [];
-  const widget2CategoryId = g(data, 'widget_2', 'category_id') || 0;
-  const widget3 = g(data, 'widget_3', 'products') || [];
-  const widget3CategoryId = g(data, 'widget_3', 'category_id') || 0;
-
   useEffect(() => {
-    if (!loading && !banners.length) {
-      setBannerLoading(false);
+    if (!loading && banners.length) {
+      ImageNative.getSize(
+        productsThumbnailUrl(g(banners, '0' as any, 'image')!),
+        (width, height) => {
+          setImgHeight(height * (winWidth / width));
+          setBannerLoading(false);
+        },
+        () => {
+          setBannerLoading(false);
+        }
+      );
     }
-  }, [loading]);
+  }, [loading, banners]);
 
   const getImageUrl = (fileIds: string) => {
     return fileIds
@@ -565,6 +545,19 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       }
     } catch (e) {
       CommonBugFender(`${AppRoutes.Medicine}_fetchRecommendedProducts`, e);
+    }
+  };
+
+  const fetchLatestMedicineOrder = async () => {
+    try {
+      const response = await client.query<getLatestMedicineOrder, getLatestMedicineOrderVariables>({
+        query: GET_LATEST_MEDICINE_ORDER,
+        variables: { patientUhid: g(currentPatient, 'uhid') || '' },
+        fetchPolicy: 'no-cache',
+      });
+      setLatestMedicineOrder(response.data.getLatestMedicineOrder.medicineOrderDetails!);
+    } catch (e) {
+      CommonBugFender(`${AppRoutes.Medicine}_fetchLatestMedicineOrder`, e);
     }
   };
 
@@ -819,31 +812,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const [imgHeight, setImgHeight] = useState(120);
-  const { width: winWidth } = Dimensions.get('window');
-  const [bannerLoading, setBannerLoading] = useState(true);
-
-  const renderBannerImageToGetAspectRatio = () => {
-    const imageUri = g(banners, '0' as any, 'image');
-    const imageFullUri = imageUri ? productsThumbnailUrl(imageUri) : '';
-    return (
-      !!imageFullUri &&
-      bannerLoading && (
-        <View style={{ height: 0 }}>
-          <ImageNative
-            onLoad={(value) => {
-              const { height, width } = value.nativeEvent.source;
-              setImgHeight(height * (winWidth / width));
-              setBannerLoading(false);
-            }}
-            style={{ width: '100%', height: 120 }}
-            source={{ uri: imageFullUri }}
-          />
-        </View>
-      )
-    );
-  };
-
   const renderSliderItem = ({ item, index }: { item: OfferBannerSection; index: number }) => {
     const handleOnPress = () => {
       const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_BANNER_CLICK] = {
@@ -884,10 +852,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (loading || bannerLoading) {
       return (
         <View style={[styles.sliderPlaceHolderStyle, { height: imgHeight }]}>
-          <Spinner
-            // spinnerProps={{ size: 'small' }}
-            style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
-          />
+          <Spinner style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }} />
         </View>
       );
     } else if (banners.length && !isSelectPrescriptionVisible) {
@@ -1040,7 +1005,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       );
 
       const orderDetails = ((!loading && order) ||
-        {}) as getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails;
+        {}) as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails;
 
       const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
         orderType: !!g(order, 'billNumber')
@@ -1265,7 +1230,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderDealsOfTheDay = (title: string) => {
+  const renderDealsOfTheDay = (title: string, dealsOfTheDay: DealsOfTheDaySection[]) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
@@ -1328,6 +1293,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     price: number;
     specialPrice?: number;
     isAddedToCart: boolean;
+    numberOfItemsInCart: number;
+    addToCart: (action?: string) => void;
+    removeFromCart: () => void;
+    removeItemFromCart: () => void;
+    maxOrderQty: number;
     onAddOrRemoveCartItem: () => void;
     onPress: () => void;
     style?: ViewStyle;
@@ -1412,15 +1382,47 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
           <Spearator style={{ marginBottom: 7.5 }} />
           {renderDiscountedPrice()}
-          <Text
-            style={{
-              ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
-              textAlign: 'center',
-            }}
-            onPress={data.onAddOrRemoveCartItem}
-          >
-            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
-          </Text>
+          {data.isAddedToCart ? (
+            <AddToCartButtons
+              numberOfItemsInCart={data.numberOfItemsInCart}
+              maxOrderQty={data.maxOrderQty}
+              addToCart={data.addToCart}
+              removeItemFromCart={data.removeItemFromCart}
+              removeFromCart={data.removeFromCart}
+              isSolidContainer={false}
+              deleteIconStyle={{
+                resizeMode: 'contain',
+                width: 10,
+                height: 14,
+                paddingLeft: 10,
+                paddingRight: 10,
+              }}
+              minusIconStyle={{
+                resizeMode: 'contain',
+                width: 10,
+                height: 20,
+                paddingLeft: 10,
+                paddingRight: 10,
+              }}
+              plusIconStyle={{
+                resizeMode: 'contain',
+                width: 15,
+                height: 15,
+                paddingLeft: 10,
+                paddingRight: 10,
+              }}
+            />
+          ) : (
+            <Text
+              style={{
+                ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+                textAlign: 'center',
+              }}
+              onPress={data.onAddOrRemoveCartItem}
+            >
+              ADD TO CART
+            </Text>
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -1441,37 +1443,46 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       category_id,
     } = data.item;
 
-    const addToCart = () => {
-      addPharmaItemToCart(
-        {
-          id: sku,
-          mou: mou,
-          name: name,
-          price: price,
-          specialPrice: special_price
-            ? typeof special_price == 'string'
-              ? Number(special_price)
-              : special_price
-            : undefined,
-          prescriptionRequired: is_prescription_required == '1',
-          isMedicine: (type_id || '').toLowerCase() == 'pharma',
-          quantity: 1,
-          thumbnail,
-          isInStock: true,
-          maxOrderQty: MaxOrderQty,
-        },
-        pharmacyPincode!,
-        addCartItem,
-        globalLoading,
-        props.navigation,
-        currentPatient,
-        !!isPharmacyLocationServiceable,
-        { source: 'Pharmacy Home', section: title, categoryId: category_id }
-      );
-    };
-
     const removeFromCart = () => removeCartItem!(sku);
+    const itemInCart = cartItems.find((item) => item.id == sku);
     const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
+    const numberOfItemsInCart = foundMedicineInCart && itemInCart ? itemInCart.quantity : 0;
+
+    const removeItemFromCart = () => onUpdateCartItem(sku, numberOfItemsInCart - 1);
+
+    const addToCart = () => {
+      if (numberOfItemsInCart) {
+        onUpdateCartItem(sku, numberOfItemsInCart + 1);
+      } else {
+        addPharmaItemToCart(
+          {
+            id: sku,
+            mou: mou,
+            name: name,
+            price: price,
+            specialPrice: special_price
+              ? typeof special_price == 'string'
+                ? Number(special_price)
+                : special_price
+              : undefined,
+            prescriptionRequired: is_prescription_required == '1',
+            isMedicine: (type_id || '').toLowerCase() == 'pharma',
+            quantity: 1,
+            thumbnail,
+            isInStock: true,
+            maxOrderQty: MaxOrderQty,
+            productType: type_id,
+          },
+          pharmacyPincode!,
+          addCartItem,
+          globalLoading,
+          props.navigation,
+          currentPatient,
+          !!isPharmacyLocationServiceable,
+          { source: 'Pharmacy Home', section: title, categoryId: category_id }
+        );
+      }
+    };
 
     return hotSellerCard({
       name,
@@ -1483,6 +1494,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           : special_price
         : undefined,
       isAddedToCart: foundMedicineInCart,
+      addToCart,
+      removeItemFromCart,
+      removeFromCart,
+      maxOrderQty: MaxOrderQty,
+      numberOfItemsInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
       onPress: () => {
         const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK] = {
@@ -1495,7 +1511,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           eventAttributes
         );
         postwebEngageProductClickedEvent(data.item, title, 'Home');
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'widget' });
+        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          sku,
+          movedFrom: 'widget',
+          sectionName: title,
+        });
       },
       style: {
         marginHorizontal: 4,
@@ -1548,7 +1568,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderShopByBrand = (title: string) => {
+  const renderShopByBrand = (title: string, shopByBrand: MedicinePageSection[]) => {
     if (shopByBrand.length == 0) return null;
     return (
       <View>
@@ -1639,7 +1659,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
   };
 
-  const renderSearchBar = () => {
+  const renderSearchInput = () => {
     const shouldEnableSearchSend = searchText.length > 2;
     const rigthIconView = (
       <TouchableOpacity
@@ -1751,6 +1771,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         thumbnail: thumbnail,
         isInStock: true,
         maxOrderQty: MaxOrderQty,
+        productType: type_id,
       },
       pharmacyPincode!,
       addCartItem,
@@ -1819,14 +1840,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           marginHorizontal: 20,
           paddingBottom: index == medicineList.length - 1 ? 10 : 0,
         }}
+        maxOrderQty={getMaxQtyForMedicineItem(item.MaxOrderQty)}
+        removeCartItem={() => onRemoveCartItem(item.sku)}
       />
     );
   };
 
-  const renderSearchSuggestions = () => {
+  const renderSearchResults = () => {
     // if (medicineList.length == 0) return null;
     return (
-      <View style={{ width: '100%', position: 'absolute' }}>
+      <>
         {searchSate == 'load' ? (
           <View style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
             {renderSectionLoader(266)}
@@ -1852,112 +1875,60 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             />
           )
         )}
-      </View>
+      </>
     );
-  };
-
-  const renderSearchBarAndSuggestions = () => {
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => {
-          Keyboard.dismiss();
-        }}
-        style={[
-          (searchSate == 'success' || searchSate == 'fail') && medicineList.length == 0
-            ? {
-                height: '100%',
-                width: '100%',
-              }
-            : searchText.length > 2
-            ? {
-                height: '100%',
-                width: '100%',
-                backgroundColor: 'rgba(0,0,0,0.8)',
-              }
-            : {},
-        ]}
-      >
-        {renderSearchSuggestions()}
-      </TouchableOpacity>
-    );
-  };
-
-  const renderRecommendedProducts = () => {
-    return renderHotSellers(string.medicine.recommendedForYou, recommendedProducts, -1);
   };
 
   const renderSections = () => {
-    const info = AppConfig.Configuration.PHARMACY_HOMEPAGE_INFO;
-    const sectionMapping = {
-      healthareas: renderCategories,
-      deals_of_the_day: renderDealsOfTheDay,
-      shop_by_category: renderCategories,
-      shop_by_brand: renderShopByBrand,
-      hot_sellers: renderHotSellers,
-      monsoon_essentials: renderHotSellers,
-      widget_2: renderHotSellers,
-      widget_3: renderHotSellers,
-      renderBannerImageToGetAspectRatio: renderBannerImageToGetAspectRatio,
-      banners: renderBanners,
-      orders: renderYourOrders,
-      upload_prescription: renderUploadPrescriptionSection,
-      recommended_products: renderRecommendedProducts,
-    };
-    const sectionDataMapping = {
-      healthareas: [healthAreas, 0],
-      deals_of_the_day: [[], 0],
-      shop_by_category: [shopByCategory, 0],
-      shop_by_brand: [[], 0],
-      hot_sellers: [hotSellers, hotSellersCategoryId],
-      monsoon_essentials: [monsoonEssentials, monsoonEssentialsCategoryId],
-      widget_2: [widget2, widget2CategoryId],
-      widget_3: [widget3, widget3CategoryId],
-      renderBannerImageToGetAspectRatio: [[], 0],
-      banners: [[], 0],
-      orders: [[], 0],
-      upload_prescription: [[], 0],
-      recommended_products: [[], 0],
-    };
-    const bannersKey = info.findIndex((i) => i.section_key == 'banners');
-    const sectionsView = [
-      {
-        section_key: 'renderBannerImageToGetAspectRatio',
-        section_name: 'Banners',
-        section_position: bannersKey > -1 ? info[bannersKey].section_position : '0',
-        visible: bannersKey > -1 ? info[bannersKey].visible : false,
-      },
-      ...info,
-    ]
+    if (loading) {
+      return renderSectionLoader(200);
+    }
+    if (!data) {
+      return null;
+    }
+    const metaData = g(data, 'metadata') || [];
+    const staticSectionKeys = [
+      'banners',
+      'orders',
+      'upload_prescription',
+      'recommended_products',
+      'shop_by_brand',
+    ];
+    const sectionsView = metaData
       .filter((item) => item.visible)
       .sort((a, b) => Number(a.section_position) - Number(b.section_position))
-      .map((item) => {
-        const sectionsView =
-          item.section_key &&
-          item.section_name &&
-          sectionMapping[item.section_key as keyof typeof sectionMapping];
-        const sectionData =
-          sectionsView && sectionDataMapping[item.section_key as keyof typeof sectionDataMapping];
+      .map(({ section_key, section_name }) => {
+        const isStaticSection = staticSectionKeys.includes(section_key);
+        if (isStaticSection) {
+          return section_key === 'banners'
+            ? renderBanners()
+            : section_key === 'orders'
+            ? renderYourOrders()
+            : section_key === 'upload_prescription'
+            ? renderUploadPrescriptionSection()
+            : section_key === 'recommended_products'
+            ? renderHotSellers(section_name, recommendedProducts, -1)
+            : section_key === 'shop_by_brand'
+            ? renderShopByBrand(section_name, data[section_key] || [])
+            : null;
+        } else {
+          const products = g(data, section_key, 'products');
+          const isCategoriesType = g(data, section_key, '0', 'title');
 
-        return sectionsView
-          ? sectionsView(item.section_name, sectionData[0] as [], sectionData[1] as number)
-          : null;
+          return products
+            ? renderHotSellers(section_name, products || [], g(data, section_key, 'category_id'))
+            : isCategoriesType
+            ? renderCategories(section_name, data[section_key] || [])
+            : renderDealsOfTheDay(section_name, data[section_key] || []);
+        }
       });
 
     return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => {
-          if (medicineList.length == 0 && !searchText) return;
-          setSearchText('');
-          setMedicineList([]);
-        }}
-        style={{ flex: 1 }}
-      >
+      <ScrollView bounces={false}>
         <View style={{ height: 10 }} />
         {sectionsView}
         {!error && <View style={{ height: 20 }} />}
-      </TouchableOpacity>
+      </ScrollView>
     );
   };
 
@@ -1982,47 +1953,49 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderOverlay = () => {
+    const isNoResultsFound =
+      searchSate != 'load' && searchText.length > 2 && medicineList.length == 0;
+    const overlayStyle = {
+      flex: 1,
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      width: Dimensions.get('window').width,
+      height: Dimensions.get('window').height,
+    } as ViewStyle;
+
+    return (
+      (!!medicineList.length || searchSate == 'load' || isNoResultsFound) && (
+        <View style={overlayStyle}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={overlayStyle}
+            onPress={() => {
+              if (medicineList.length == 0 && !searchText) return;
+              setSearchText('');
+              setMedicineList([]);
+              setSearchFocused(false);
+            }}
+          />
+        </View>
+      )
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
-        {renderTopView()}
-        <ScrollView
-          keyboardShouldPersistTaps="always"
-          showsVerticalScrollIndicator={false}
-          style={{ flex: 1 }}
-          bounces={false}
-          stickyHeaderIndices={[0]}
-          scrollEventThrottle={20}
-          // contentContainerStyle={[isSearchFocused ? { flex: 1 } : {}]}
-          contentContainerStyle={[
-            isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
-          ]}
-        >
-          <View
-            style={[isSearchFocused ? styles.searchBarAndSuggestionMainViewStyle : { flex: 1 }]}
-          >
-            <View
-              style={{
-                backgroundColor: 'white',
-                position: isSearchFocused ? 'absolute' : 'relative',
-                width: '100%',
-              }}
-            >
-              {renderSearchBar()}
-            </View>
-            <View style={styles.searchBarSuggestionsViewStyle}>
-              {renderSearchBarAndSuggestions()}
-            </View>
-          </View>
-          <View
-            style={[
-              { marginTop: isSearchFocused ? 76 : 0 },
-              isSearchFocused && searchText.length > 2 ? { height: 0, marginTop: 104 } : {},
-            ]}
-          >
-            {renderSections()}
-          </View>
-        </ScrollView>
+        <View style={{ backgroundColor: 'white' }}>
+          {renderTopView()}
+          {renderSearchInput()}
+          {renderSearchResults()}
+        </View>
+        <View style={{ flex: 1 }}>
+          {renderSections()}
+          {renderOverlay()}
+        </View>
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {ShowPopop && renderUploadPrescriprionPopup()}

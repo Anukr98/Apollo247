@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -7,6 +7,7 @@ import {
   Linking,
   AppStateStatus,
   AppState,
+  DeviceEventEmitter,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -25,6 +26,7 @@ import {
   CommonBugFender,
   setBugFenderLog,
   setBugfenderPhoneNumber,
+  isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
@@ -44,6 +46,11 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import RNCallKeep from 'react-native-callkeep';
+import VoipPushNotification from 'react-native-voip-push-notification';
+import { string } from '../strings/string';
+import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
+import Pubnub from 'pubnub';
 
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
@@ -94,16 +101,44 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
+  const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const { setAllPatients, setMobileAPICalled } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const client = useApolloClient();
+  const voipAppointmentId = useRef<string>('');
+  const voipPatientId = useRef<string>('');
+  const voipCallType = useRef<string>('');
+
+  const config: Pubnub.PubnubConfig = {
+    subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+    publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+    ssl: true,
+    uuid: `PATIENT_${voipPatientId.current}`,
+    restore: true,
+    keepAlive: true,
+    // autoNetworkDetection: true,
+    // listenToBrowserNetworkEvents: true,
+    // presenceTimeout: 20,
+    heartbeatInterval: 20,
+  };
+  const pubnub = new Pubnub(config);
+
   // const { setVirtualConsultationFee } = useAppCommonData();
 
   useEffect(() => {
     getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
-    InitiateAppsFlyer();
+    InitiateAppsFlyer(props.navigation);
+    DeviceEventEmitter.addListener('accept', (params) => {
+      console.log('Accept Params', params);
+      voipCallType.current = params.call_type;
+      getAppointmentDataAndNavigate(params.appointment_id, true);
+    });
+    DeviceEventEmitter.addListener('reject', (params) => {
+      console.log('Reject Params', params);
+      getAppointmentDataAndNavigate(params.appointment_id, false);
+    });
     setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
     checkForVersionUpdate();
@@ -125,6 +160,83 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   useEffect(() => {
     handleDeepLink();
   }, []);
+
+  useEffect(() => {
+    if (isIos()) {
+      initializeCallkit();
+      handleVoipEventListeners();
+    }
+  }, []);
+
+  const initializeCallkit = () => {
+    const callkeepOptions = {
+      ios: {
+        appName: string.LocalStrings.appName,
+        imageName: 'callkitAppIcon.png',
+      },
+    };
+
+    try {
+      RNCallKeep.setup(callkeepOptions);
+    } catch (err) {
+      CommonBugFender('InitializeCallKeep_Error', err.message);
+    }
+
+    // Add RNCallKeep Events
+    RNCallKeep.addEventListener('answerCall', onAnswerCallAction);
+    RNCallKeep.addEventListener('endCall', onDisconnetCallAction);
+  };
+
+  const handleVoipEventListeners = () => {
+    VoipPushNotification.addEventListener('notification', (notification) => {
+      // on receive voip push
+      const payload = notification && notification.getData();
+      if (payload && payload.appointmentId) {
+        voipAppointmentId.current = notification.getData().appointmentId;
+        voipPatientId.current = notification.getData().patientId;
+        voipCallType.current = notification.getData().isVideo ? 'Video' : 'Audio';
+      }
+    });
+  };
+
+  const onAnswerCallAction = () => {
+    voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current, false);
+  };
+
+  const onDisconnetCallAction = () => {
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: `${voipCallType.current} call ended`,
+          duration: '00: 00',
+          id: voipPatientId.current,
+          messageDate: new Date(),
+        },
+        channel: voipAppointmentId.current,
+        storeInHistory: true,
+      },
+      (status, response) => {}
+    );
+
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: '^^callme`stop^^',
+          id: voipPatientId.current,
+          messageDate: new Date(),
+        },
+        channel: voipAppointmentId.current,
+        storeInHistory: true,
+      },
+      (status, response) => {
+        voipAppointmentId.current = '';
+        voipPatientId.current = '';
+        voipCallType.current = '';
+      }
+    );
+  };
 
   const handleDeepLink = () => {
     try {
@@ -156,7 +268,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
   const handleOpenURL = (event: any) => {
     try {
-      console.log('event', event);
+      if (Platform.OS === 'ios') {
+        // for ios universal links
+        InitiateAppsFlyer(props.navigation);
+      }
       let route;
 
       route = event.replace('apollopatients://', '');
@@ -235,7 +350,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           break;
 
         case 'ChatRoom':
-          if (data.length === 2) getAppointmentDataAndNavigate(linkId);
+          if (data.length === 2) getAppointmentDataAndNavigate(linkId, false);
           break;
 
         case 'Order':
@@ -291,7 +406,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {}
   };
 
-  const getData = (routeName: String, id?: String, timeout?: boolean) => {
+  const getData = (routeName: String, id?: String, timeout?: boolean, isCall?: boolean) => {
     async function fetchData() {
       firebase.analytics().setAnalyticsCollectionEnabled(true);
       // const onboarding = await AsyncStorage.getItem('onboarding');
@@ -367,7 +482,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
             if (mePatient) {
               if (mePatient.firstName !== '') {
-                pushTheView(routeName, id ? id : undefined);
+                pushTheView(routeName, id ? id : undefined, isCall);
               } else {
                 props.navigation.replace(AppRoutes.Login);
               }
@@ -406,7 +521,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
     fetchData();
   };
-  const getAppointmentDataAndNavigate = (appointmentID: string) => {
+  const getAppointmentDataAndNavigate = (appointmentID: string, isCall: boolean) => {
     client
       .query<getAppointmentDataQuery, getAppointmentDataVariables>({
         query: GET_APPOINTMENT_DATA,
@@ -418,7 +533,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       .then((_data) => {
         const appointmentData: any = _data.data.getAppointmentData!.appointmentsHistory;
         if (appointmentData[0]!.doctorInfo !== null) {
-          getData('ChatRoom', appointmentData[0], true);
+          getData('ChatRoom', appointmentData[0], true, isCall);
         }
       })
       .catch((error) => {
@@ -426,7 +541,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       });
   };
 
-  const pushTheView = (routeName: String, id?: any) => {
+  const pushTheView = (routeName: String, id?: any, isCall?: boolean) => {
     console.log('pushTheView', routeName);
     setBugFenderLog('DEEP_LINK_PUSHVIEW', { routeName, id });
     switch (routeName) {
@@ -486,8 +601,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         const cityBrandFilter = id ? id.split('%20') : '';
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
-          city: cityBrandFilter.length > 1 ? cityBrandFilter[1] : null,
-          brand: cityBrandFilter.length > 2 ? cityBrandFilter[2] : null,
+          city:
+            cityBrandFilter.length > 1 && !isUpperCase(cityBrandFilter[1])
+              ? cityBrandFilter[1]
+              : null,
+          brand:
+            cityBrandFilter.length > 2
+              ? cityBrandFilter[2]
+              : isUpperCase(cityBrandFilter[1])
+              ? cityBrandFilter[1]
+              : null,
         });
         break;
       case 'Doctor':
@@ -522,8 +645,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'ChatRoom':
         props.navigation.navigate(AppRoutes.ChatRoom, {
           data: id,
-          callType: '',
+          callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
           prescription: '',
+          isCall: isCall,
+          isVoipCall: voipAppointmentId.current ? true : false,
         });
         break;
       case 'Order':
@@ -647,6 +772,102 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     setAppState(nextAppState);
   };
 
+  type RemoteConfigKeysType = {
+    QA?: string;
+    DEV?: string;
+    PROD: string;
+  };
+
+  const RemoteConfigKeys = {
+    Android_mandatory: {
+      QA: 'QA_Android_mandatory',
+      PROD: 'Android_mandatory',
+    },
+    android_latest_version: {
+      QA: 'QA_android_latest_version',
+      PROD: 'android_latest_version',
+    },
+    ios_mandatory: {
+      QA: 'QA_ios_mandatory',
+      PROD: 'ios_mandatory',
+    },
+    ios_Latest_version: {
+      QA: 'QA_ios_latest_version',
+      PROD: 'ios_Latest_version',
+    },
+    Enable_Conditional_Management: {
+      PROD: 'Enable_Conditional_Management',
+    },
+    Virtual_consultation_fee: {
+      QA: 'QA_Virtual_consultation_fee',
+      PROD: 'Virtual_consultation_fee',
+    },
+    Need_Help_To_Contact_In: {
+      PROD: 'Need_Help_To_Contact_In',
+    },
+    Min_Value_For_Pharmacy_Free_Delivery: {
+      QA: 'QA_Min_Value_For_Pharmacy_Free_Delivery',
+      PROD: 'Min_Value_For_Pharmacy_Free_Delivery',
+    },
+    Pharmacy_Delivery_Charges: {
+      PROD: 'Pharmacy_Delivery_Charges',
+    },
+    top6_specailties: {
+      QA: 'QA_top6_specailties',
+      DEV: 'DEV_top6_specailties',
+      PROD: 'top6_specailties',
+    },
+    min_value_to_nudge_users_to_avail_free_delivery: {
+      QA: 'QA_min_value_to_nudge_users_to_avail_free_delivery',
+      PROD: 'min_value_to_nudge_users_to_avail_free_delivery',
+    },
+    Doctor_Partner_Text: {
+      QA: 'QA_Doctor_Partner_Text',
+      PROD: 'Doctor_Partner_Text',
+    },
+  };
+
+  const getConfigStringBasedOnEnv = (
+    currentEnv: AppEnv,
+    config: typeof RemoteConfigKeys,
+    _key: keyof typeof RemoteConfigKeys
+  ) => {
+    const valueBasedOnEnv = config[_key] as RemoteConfigKeysType;
+    return currentEnv === AppEnv.PROD
+      ? valueBasedOnEnv.PROD
+      : currentEnv === AppEnv.QA || currentEnv === AppEnv.QA2
+      ? valueBasedOnEnv.QA || valueBasedOnEnv.PROD
+      : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
+  };
+
+  const getRemoteConfigKeys = (): string[] => {
+    return (Object.keys(RemoteConfigKeys) as (keyof typeof RemoteConfigKeys)[]).map((configKey) =>
+      getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, configKey)
+    );
+  };
+
+  const getRemoteConfigValue = (
+    remoteConfigKey: keyof typeof RemoteConfigKeys,
+    snapshot: {
+      [key: string]: { val(): any };
+    }
+  ) => snapshot[getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey)].val();
+
+  const setAppConfig = (
+    remoteConfigKey: keyof typeof RemoteConfigKeys,
+    appConfigKey: keyof typeof AppConfig.Configuration,
+    snapshot: {
+      [key: string]: { val(): any };
+    },
+    processValue?: (val: string | number) => any
+  ) => {
+    const _val = snapshot[
+      getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey)
+    ].val();
+    const finalValue = processValue ? processValue(_val) : _val;
+    updateAppConfig(appConfigKey, finalValue);
+  };
+
   const checkForVersionUpdate = () => {
     console.log('checkForVersionUpdate');
 
@@ -662,179 +883,55 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           return firebase.config().activateFetched();
         })
         .then(() => {
-          return firebase
-            .config()
-            .getValues([
-              'Android_mandatory',
-              'android_latest_version',
-              'ios_mandatory',
-              'ios_Latest_version',
-              'QA_Android_mandatory',
-              'QA_android_latest_version',
-              'QA_ios_mandatory',
-              'QA_ios_latest_version',
-              'Enable_Conditional_Management',
-              'Virtual_consultation_fee',
-              'QA_Virtual_consultation_fee',
-              'Need_Help_To_Contact_In',
-              'Min_Value_For_Pharmacy_Free_Delivery',
-              'QA_Min_Value_For_Pharmacy_Free_Delivery',
-              'Pharmacy_Delivery_Charges',
-              'home_screen_emergency_banner',
-              'home_screen_emergency_number',
-              'QA_top6_specailties',
-              'DEV_top6_specailties',
-              'top6_specailties',
-              'QA_min_value_to_nudge_users_to_avail_free_delivery',
-              'min_value_to_nudge_users_to_avail_free_delivery',
-              'QA_pharmacy_homepage',
-              'pharmacy_homepage',
-              'Doctor_Partner_Text',
-              'QA_Doctor_Partner_Text',
-            ]);
+          return firebase.config().getValues(getRemoteConfigKeys());
         })
         .then((snapshot) => {
-          const remoteConfigValuesCount = Object.keys(snapshot).length - 1;
-
-          const needHelpToContactInMessage = snapshot['Need_Help_To_Contact_In'].val();
+          const needHelpToContactInMessage = getRemoteConfigValue(
+            'Need_Help_To_Contact_In',
+            snapshot
+          );
           needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
 
-          const pharmacyHomepageInfoQA = JSON.parse(snapshot['QA_pharmacy_homepage'].val() || null);
-          pharmacyHomepageInfoQA &&
-            AppConfig.APP_ENV != AppEnv.PROD &&
-            updateAppConfig(
-              'PHARMACY_HOMEPAGE_INFO',
-              pharmacyHomepageInfoQA as PharmacyHomepageInfo[]
+          setAppConfig(
+            'Min_Value_For_Pharmacy_Free_Delivery',
+            'MIN_CART_VALUE_FOR_FREE_DELIVERY',
+            snapshot
+          );
+
+          setAppConfig(
+            'min_value_to_nudge_users_to_avail_free_delivery',
+            'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+            snapshot
+          );
+
+          setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', snapshot);
+
+          setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', snapshot);
+
+          setAppConfig('top6_specailties', 'TOP_SPECIALITIES', snapshot, (val: any) =>
+            JSON.parse(val)
+          );
+
+          try {
+            AsyncStorage.setItem(
+              'CMEnable',
+              JSON.stringify(getRemoteConfigValue('Enable_Conditional_Management', snapshot))
             );
+          } catch (error) {}
 
-          const pharmacyHomepageInfo = JSON.parse(snapshot['pharmacy_homepage'].val() || null);
-          pharmacyHomepageInfo &&
-            AppConfig.APP_ENV == AppEnv.PROD &&
-            updateAppConfig(
-              'PHARMACY_HOMEPAGE_INFO',
-              pharmacyHomepageInfo as PharmacyHomepageInfo[]
-            );
-
-          const minValueForPharmacyFreeDelivery = snapshot[
-            'Min_Value_For_Pharmacy_Free_Delivery'
-          ].val();
-          const QAMinValueForPharmacyFreeDelivery = snapshot[
-            'QA_Min_Value_For_Pharmacy_Free_Delivery'
-          ].val();
-          const QAMinValueToNudgeUsersToAvailFreeDelivery = snapshot[
-            'QA_min_value_to_nudge_users_to_avail_free_delivery'
-          ].val();
-          QAMinValueToNudgeUsersToAvailFreeDelivery &&
-            AppConfig.APP_ENV != AppEnv.PROD &&
-            updateAppConfig(
-              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
-              QAMinValueToNudgeUsersToAvailFreeDelivery
-            );
-          const minValueToNudgeUsersToAvailFreeDelivery = snapshot[
-            'min_value_to_nudge_users_to_avail_free_delivery'
-          ].val();
-          minValueToNudgeUsersToAvailFreeDelivery &&
-            AppConfig.APP_ENV == AppEnv.PROD &&
-            updateAppConfig(
-              'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
-              minValueToNudgeUsersToAvailFreeDelivery
-            );
-
-          minValueForPharmacyFreeDelivery &&
-            AppConfig.APP_ENV == AppEnv.PROD &&
-            updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', minValueForPharmacyFreeDelivery);
-
-          QAMinValueForPharmacyFreeDelivery &&
-            AppConfig.APP_ENV != AppEnv.PROD &&
-            updateAppConfig('MIN_CART_VALUE_FOR_FREE_DELIVERY', QAMinValueForPharmacyFreeDelivery);
-
-          const pharmacyDeliveryCharges = snapshot['Pharmacy_Delivery_Charges'].val();
-          pharmacyDeliveryCharges && updateAppConfig('DELIVERY_CHARGES', pharmacyDeliveryCharges);
-
-          const homeScreenEmergencyBannerText = snapshot['home_screen_emergency_banner'].val();
-          homeScreenEmergencyBannerText &&
-            updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_TEXT', homeScreenEmergencyBannerText);
-
-          const homeScreenEmergencyBannerNumber = snapshot['home_screen_emergency_number'].val();
-          homeScreenEmergencyBannerNumber &&
-            updateAppConfig('HOME_SCREEN_EMERGENCY_BANNER_NUMBER', homeScreenEmergencyBannerNumber);
-
-          const doctorPartnerText = snapshot['Doctor_Partner_Text'].val();
-          doctorPartnerText &&
-            AppConfig.APP_ENV == AppEnv.PROD &&
-            updateAppConfig('DOCTOR_PARTNER_TEXT', doctorPartnerText);
-          const QADoctorPartnerText = snapshot['QA_Doctor_Partner_Text'].val();
-          QADoctorPartnerText &&
-            AppConfig.APP_ENV != AppEnv.PROD &&
-            updateAppConfig('DOCTOR_PARTNER_TEXT', QADoctorPartnerText);
-
-          if (AppConfig.APP_ENV === 'DEV') {
-            const DEV_top6_specailties = snapshot['DEV_top6_specailties'].val();
-            DEV_top6_specailties &&
-              updateAppConfig('TOP_SPECIALITIES', JSON.parse(DEV_top6_specailties));
-          } else if (AppConfig.APP_ENV === 'QA' || AppConfig.APP_ENV === 'QA2') {
-            const QA_top6_specailties = snapshot['QA_top6_specailties'].val();
-            QA_top6_specailties &&
-              updateAppConfig('TOP_SPECIALITIES', JSON.parse(QA_top6_specailties));
+          if (Platform.OS === 'ios') {
+            const iosVersion = AppConfig.Configuration.iOS_Version;
+            const iosLatestVersion = getRemoteConfigValue('ios_Latest_version', snapshot);
+            const isMandatory: boolean = getRemoteConfigValue('ios_mandatory', snapshot);
+            if (`${iosLatestVersion}` > iosVersion) {
+              showUpdateAlert(isMandatory);
+            }
           } else {
-            const top6_specailties = snapshot['top6_specailties'].val();
-            top6_specailties && updateAppConfig('TOP_SPECIALITIES', JSON.parse(top6_specailties));
-          }
-
-          const myValye = snapshot;
-          let index: number = 0;
-          const nietos = [];
-          const Android_version: string = AppConfig.Configuration.Android_Version;
-          const iOS_version: string = AppConfig.Configuration.iOS_Version;
-
-          for (const val in myValye) {
-            if (myValye.hasOwnProperty(val)) {
-              index++;
-              const element = myValye[val];
-              nietos.push({ index: index, value: element.val() });
-              if (nietos.length === remoteConfigValuesCount) {
-                console.log(
-                  'nietos',
-                  parseFloat(nietos[1].value),
-                  parseFloat(iOS_version),
-                  parseFloat(Android_version),
-                  parseFloat(nietos[5].value),
-                  parseFloat(nietos[7].value),
-                  nietos[8].value
-                );
-
-                AsyncStorage.setItem('CMEnable', JSON.stringify(nietos[8].value));
-
-                // if (buildName() === 'PROD') {
-                //   setVirtualConsultationFee &&
-                //     setVirtualConsultationFee(JSON.stringify(nietos[9].value));
-                // } else {
-                //   setVirtualConsultationFee &&
-                //     setVirtualConsultationFee(JSON.stringify(nietos[10].value));
-                // }
-
-                if (Platform.OS === 'ios') {
-                  if (buildName() === 'QA') {
-                    if (parseFloat(nietos[7].value) > parseFloat(iOS_version)) {
-                      showUpdateAlert(nietos[6].value);
-                    }
-                  } else {
-                    if (parseFloat(nietos[3].value) > parseFloat(iOS_version)) {
-                      showUpdateAlert(nietos[2].value);
-                    }
-                  }
-                } else {
-                  if (buildName() === 'QA') {
-                    if (parseFloat(nietos[5].value) > parseFloat(Android_version)) {
-                      showUpdateAlert(nietos[4].value);
-                    }
-                  } else {
-                    if (parseFloat(nietos[1].value) > parseFloat(Android_version)) {
-                      showUpdateAlert(nietos[0].value);
-                    }
-                  }
-                }
-              }
+            const androidVersion = AppConfig.Configuration.Android_Version;
+            const androidLatestVersion = getRemoteConfigValue('android_latest_version', snapshot);
+            const isMandatory: boolean = getRemoteConfigValue('Android_mandatory', snapshot);
+            if (`${androidLatestVersion}` > androidVersion) {
+              showUpdateAlert(isMandatory);
             }
           }
         })
