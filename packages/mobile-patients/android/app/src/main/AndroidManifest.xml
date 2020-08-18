@@ -61,6 +61,7 @@
               <category android:name="android.intent.category.BROWSABLE" />
               <!-- Accepts URIs that begin with "link://patienturl -->
               <data android:scheme="apollopatients" />
+              <data android:scheme="https" android:host="www.apollo247.com"/>
           </intent-filter>
       </activity>
       <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
