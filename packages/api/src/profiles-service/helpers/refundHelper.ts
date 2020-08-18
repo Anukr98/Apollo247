@@ -263,6 +263,18 @@ export const calculateRefund = async (
      * We cannot refund less than 1 rs as per Paytm refunds policy
      */
     if (refundAmount >= 1) {
+      const postBody: Partial<WebEngageInput> = {
+        userId: orderDetails.patient.mobileNumber,
+        eventName: ApiConstants.MEDICINE_ORDER_REFUND_PROCESSED_EVENT_NAME.toString(),
+        eventData: {
+          orderId: orderDetails.orderAutoId,
+          orderStatus:paymentInfo.medicineOrders.currentStatus,
+          refundAmount: refundAmount,
+          healthCreditsToRefund: healthCreditsToRefund > 0 ? healthCreditsToRefund : 0,
+        },
+      };
+      postEvent(postBody);
+
       let refundResp = await initiateRefund(
         {
           refundAmount,
@@ -278,6 +290,17 @@ export const calculateRefund = async (
         isRefundSuccessful = true;
         const totalAmountRefunded = +new Decimal(refundAmount).plus(totalRefundAmount);
         updatePaymentRequest.refundAmount = totalAmountRefunded;
+
+        const postBody: Partial<WebEngageInput> = {
+          userId: orderDetails.patient.mobileNumber,
+          eventName: ApiConstants.MEDICINE_ORDER_REFUND_SUCCESSFUL_EVENT_NAME.toString(),
+          eventData: {
+            orderId: orderDetails.orderAutoId,
+            paymentTransactionId: refundResp.refundId.toString()
+          },
+        };
+        postEvent(postBody);
+
       } else {
         log(
           'profileServiceLogger',
@@ -339,20 +362,7 @@ export const calculateRefund = async (
         updatePaymentRequest
       );
     }
-    //send event to web-engage
-    if((refundAmount > 0 && isRefundSuccessful) || healthCreditsToRefund > 0){
-      const postBody: Partial<WebEngageInput> = {
-        userId: orderDetails.patient.mobileNumber,
-        eventName: ApiConstants.MEDICINE_ORDER_REFUND_PROCESSED_EVENT_NAME.toString(),
-        eventData: {
-          orderId: orderDetails.orderAutoId,
-          orderStatus:paymentInfo.medicineOrders.currentStatus,
-          refundAmount: refundAmount,
-          healthCreditsToRefund: healthCreditsToRefund,
-        },
-      };
-      postEvent(postBody);
-    }
+
     //send refund SMS notification for partial refund
     let isPartialRefund: boolean;
     if (totalOrderBilling > 0) {
