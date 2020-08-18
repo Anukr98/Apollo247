@@ -19,13 +19,10 @@ import {
   pharmacyPaymentInitiateTracking,
 } from 'webEngageTracking';
 import { useMutation } from 'react-apollo-hooks';
-import { getDeviceType } from 'helpers/commonHelpers';
+import { getDeviceType, getCouponByUserMobileNumber } from 'helpers/commonHelpers';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
 import _lowerCase from 'lodash/lowerCase';
 
-import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
-
-// import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
 import {
   saveMedicineOrderOMS,
   saveMedicineOrderOMSVariables,
@@ -496,20 +493,12 @@ export const PayMedicine: React.FC = (props) => {
   });
 
   const getCouponByMobileNumber = () => {
-    fetchUtil(
-      `${process.env.GET_PHARMA_AVAILABLE_COUPONS}?mobile=${localStorage.getItem('userMobileNo')}`,
-      'GET',
-      {},
-      '',
-      false
-    )
+    getCouponByUserMobileNumber()
       .then((resp: any) => {
-        if (resp.errorCode == 0) {
-          if (resp.response && resp.response.length > 0) {
-            const couponCode = resp.response[0].coupon;
-            setConsultCouponCode(couponCode);
-          }
-        } else if (resp && resp.errorMsg && resp.errorMsg.length > 0) {
+        if (resp.errorCode == 0 && resp.response && resp.response.length > 0) {
+          const couponCode = resp.response[0].coupon;
+          setConsultCouponCode(couponCode || '');
+        } else {
           setConsultCouponCode('');
         }
       })

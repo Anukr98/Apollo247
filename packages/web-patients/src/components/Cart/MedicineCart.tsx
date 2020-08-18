@@ -30,7 +30,7 @@ import {
 } from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { getDeviceType } from 'helpers/commonHelpers';
+import { getDeviceType, getCouponByUserMobileNumber } from 'helpers/commonHelpers';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 import _compact from 'lodash/compact';
 import _find from 'lodash/find';
@@ -951,21 +951,12 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const getCouponByMobileNumber = () => {
-    fetchUtil(
-      `${process.env.GET_PHARMA_AVAILABLE_COUPONS}?mobile=${localStorage.getItem('userMobileNo')}`,
-      'GET',
-      {},
-      '',
-      false
-    )
+    getCouponByUserMobileNumber()
       .then((resp: any) => {
-        if (resp.errorCode == 0) {
-          if (resp.response && resp.response.length > 0) {
-            const couponCode = resp.response[0].coupon;
-            setCouponCode(couponCode);
-          }
-        } else if (resp && resp.errorMsg && resp.errorMsg.length > 0) {
-          setErrorMessage(resp.errorMsg);
+        if (resp.errorCode == 0 && resp.response && resp.response.length > 0) {
+          const couponCode = resp.response[0].coupon;
+          setCouponCode(couponCode || '');
+        } else {
           setCouponCode && setCouponCode('');
         }
       })
