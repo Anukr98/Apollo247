@@ -556,9 +556,10 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
             {prescription.medicineName}
             <br />
             <span>
-              {prescription.includeGenericNameInPrescription && (
-                <div>{`Contains ${prescription.genericName}`}</div>
-              )}
+              {prescription.includeGenericNameInPrescription! &&
+                prescription.genericName!.length > 0 && (
+                  <div>{`Contains ${prescription.genericName}`}</div>
+                )}
 
               {`${prescription!.medicineFormTypes! === 'OTHERS' ? 'Take' : 'Apply'} ${
                 dosageHtml ? dosageHtml.toLowerCase() : ''
