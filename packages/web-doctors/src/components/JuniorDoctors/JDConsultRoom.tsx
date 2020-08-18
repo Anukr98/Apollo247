@@ -450,6 +450,7 @@ export const JDConsultRoom: React.FC = () => {
     //presenceTimeout: 20,
     heartbeatInterval: 20,
     uuid: REQUEST_ROLES.JUNIOR,
+    origin : 'apollo.pubnubapi.com',
   };
   const pubnub = new Pubnub(config);
 

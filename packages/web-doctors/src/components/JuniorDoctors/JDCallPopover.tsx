@@ -1241,6 +1241,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     subscribeKey: subscribekey,
     publishKey: publishkey,
     ssl: true,
+    origin : 'apollo.pubnubapi.com',
   };
   const { setCaseSheetEdit, autoCloseCaseSheet } = useContext(
     CaseSheetContextJrd,
