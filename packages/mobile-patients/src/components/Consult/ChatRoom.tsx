@@ -741,14 +741,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
       callPermissions(() => {
         if (callType === 'VIDEO') {
-          setOnSubscribe(true);
+          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
           isAudio.current = false;
         } else if (callType === 'AUDIO') {
-          setOnSubscribe(true);
+          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
           isAudio.current = true;
           callhandelBack = false;
         }
-        playSound();
+        isVoipCall || fromIncomingCall ? null : playSound();
         setDoctorJoinedChat && setDoctorJoinedChat(true);
       });
     }
