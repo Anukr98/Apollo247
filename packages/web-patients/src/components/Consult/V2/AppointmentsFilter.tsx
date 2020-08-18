@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Theme, Modal } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
+import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { AphButton } from '@aph/web-ui-components';
+import DateFnsUtils from '@date-io/date-fns';
+import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import {
   genderList,
   consultType,
@@ -10,6 +12,7 @@ import {
   AppointmentFilterObject,
 } from 'helpers/commonHelpers';
 import _uniq from 'lodash/uniq';
+import { createMuiTheme } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -106,6 +109,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 8,
       borderRight: '0.5px solid rgba(2,71,91,0.3)',
       width: '25%',
+      position: 'relative',
       [theme.breakpoints.down('sm')]: {
         display: 'inline-block',
         width: '100%',
@@ -189,7 +193,55 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#fff',
       },
     },
+    keyboardDatepicker: {
+      position: 'absolute',
+      right: 0,
+      '& svg': {
+        color: '#02475B',
+      },
+      '& div': {
+        '&:before': {
+          borderBottom: 'none !important',
+        },
+        '&:after': {
+          borderBottom: 'none !important',
+        },
+      },
+      '& input': {
+        width: 0,
+      },
+    },
   };
+});
+
+const defaultMaterialTheme = createMuiTheme({
+  palette: {
+    primary: {
+      main: '#00b38e',
+    },
+    text: {
+      primary: '#00b38e',
+    },
+    action: {
+      selected: '#fff',
+    },
+  },
+  typography: {
+    fontWeightMedium: 600,
+    htmlFontSize: 14,
+    fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
+    body1: {
+      fontSize: 14,
+      color: '#02475b',
+      fontWeight: 500,
+    },
+    body2: {
+      fontWeight: 600,
+    },
+    caption: {
+      fontSize: 0,
+    },
+  },
 });
 
 interface AppointmentsFilterProps {
@@ -234,6 +286,14 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
     }
   };
 
+  const [selectedDate, setSelectedDate] = React.useState<Date | null>(
+    new Date('2014-08-18T21:11:54')
+  );
+
+  const handleDateChange = (date: Date | null) => {
+    setSelectedDate(date);
+  };
+
   return (
     <div className={classes.dialogPaper}>
       <div className={classes.dialogHeader}>
@@ -267,6 +327,24 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
           </div>
           <div className={classes.filterType}>
             <h4>Date</h4>
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <ThemeProvider theme={defaultMaterialTheme}>
+                <KeyboardDatePicker
+                  className={classes.keyboardDatepicker}
+                  disableToolbar
+                  variant="inline"
+                  format="MM/dd/yyyy"
+                  value={selectedDate}
+                  // onChange={handleDateChange}
+                  KeyboardButtonProps={{
+                    'aria-label': 'change date',
+                  }}
+                  onChange={(date) => handleDateChange((date as unknown) as Date)}
+                  onFocus={() => {}}
+                  onBlur={() => {}}
+                />
+              </ThemeProvider>
+            </MuiPickersUtilsProvider>
             <div className={classes.filterBtns}>
               {availabilityList.map((availability: string) => (
                 <AphButton
