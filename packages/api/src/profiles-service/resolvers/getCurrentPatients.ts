@@ -142,7 +142,7 @@ const getCurrentPatients: Resolver<
     const lockKey = `${REDIS_PATIENT_LOCK_PREFIX}${mobileNumber}`;
     const lockedProfile = await getCache(lockKey);
     if (lockedProfile && typeof lockedProfile == 'string') {
-      throw new Error(AphErrorMessages.INVALID_PATIENT_DETAILS);
+      throw new Error(AphErrorMessages.PROFILE_CREATION_IN_PROGRESS);
     } else {
       await setCache(lockKey, 'true', ApiConstants.CACHE_EXPIRATION_120);
       const existingPatient = await Patient.findOne({
