@@ -399,7 +399,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               onPress={() => {
                 connectCall('V', true);
               }}
-              title={'PROCEED'}
+              title={'JOIN'}
               style={styles.joinButtonStyle}
             />
           </View>
