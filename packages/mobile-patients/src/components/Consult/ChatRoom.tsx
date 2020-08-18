@@ -493,7 +493,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [doctorScheduleId, setDoctorScheduleId] = useState<string>('');
   const [dropDownBottomStyle, setDropDownBottomStyle] = useState<number>(isIphoneX() ? 50 : 15);
-  const [jrDoctorJoined, setjrDoctorJoined] = useState<boolean>(false);
+  const jrDoctorJoined = useRef<boolean>(false); // using ref to get the current updated values on event listeners
   const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
   const [displayUploadHealthRecords, setDisplayUploadHealthRecords] = useState<boolean>(false);
   const [userAnswers, setUserAnswers] = useState<ConsultQueueInput>();
@@ -519,7 +519,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
   const patientJoinedCall = useRef<boolean>(false); // using ref to get the current values on listener events
   const subscriberConnected = useRef<boolean>(false);
-  const jrDoctorPresent = useRef<boolean>(false);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -1217,7 +1216,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               callhandelBack = false;
             }
             playSound();
-            !jrDoctorPresent.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
+            !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
           } else {
             if (onSubscribe) {
               setOnSubscribe(false);
@@ -1423,7 +1422,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           return obj.uuid === 'JUNIOR' || obj.uuid.indexOf('JUNIOR_') > -1;
         });
         if(occupancyJrDoctor && occupancyJrDoctor.length >=1){
-          jrDoctorPresent.current = true;
+          jrDoctorJoined.current = true;
         }
         if (occupancyDoctor && occupancyDoctor.length >= 1 && response.totalOccupancy >= 2) {
           setDoctorJoined(true);
@@ -2139,12 +2138,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           if (messages.length !== newmessage.length) {
             if (newmessage[newmessage.length - 1].message === startConsultMsg) {
-              setjrDoctorJoined(false);
+              jrDoctorJoined.current = false;
               updateSessionAPI();
               checkingAppointmentDates();
             }
             if (newmessage[newmessage.length - 1].message === startConsultjr) {
-              setjrDoctorJoined(true);
+              jrDoctorJoined.current = false;
               updateSessionAPI();
               checkingAppointmentDates();
             }
@@ -2233,7 +2232,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const thirtySecondCall = () => {
-    if (jrDoctorJoined == false) {
+    if (jrDoctorJoined.current == false) {
       // console.log('Alert Shows After 30000 Seconds of Delay.');
 
       const result = insertText.filter((obj: any) => {
@@ -2305,7 +2304,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const minuteCaller = () => {
-    if (jrDoctorJoined == false) {
+    if (jrDoctorJoined.current == false) {
       // console.log('Alert Shows After 60000 Seconds of Delay.');
 
       const result = insertText.filter((obj: any) => {
@@ -2348,7 +2347,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         !appointmentData.isJdQuestionsComplete &&
         jdCount > 0 &&
         isJdAllowed === true &&
-        !!(textChange && !jrDoctorJoined) &&
+        !!(textChange && !jrDoctorJoined.current) &&
         status !== STATUS.COMPLETED
       ) {
         // console.log('result.length ', result);
@@ -2419,7 +2418,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callhandelBack = false;
         // stopCallAbondmentTimer();
         playSound();
-        !jrDoctorPresent.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
+        !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === videoCallMsg && !patientJoinedCall.current) {
         // if patient has not joined meeting room
         setOnSubscribe(true);
@@ -2427,12 +2426,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         isAudio.current = false;
         // stopCallAbondmentTimer();
         playSound();
-        !jrDoctorPresent.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
+        !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === startConsultMsg) {
-        setjrDoctorJoined(false);
+        jrDoctorJoined.current = false;
         stopInterval();
         startInterval(timer);
-        setjrDoctorJoined(false);
         updateSessionAPI();
         checkingAppointmentDates();
         addMessages(message);
@@ -2484,7 +2482,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === startConsultjr) {
         console.log('succss1');
-        setjrDoctorJoined(true);
+        jrDoctorJoined.current = true;
         updateSessionAPI();
         checkingAppointmentDates();
         stopJoinTimer();
@@ -4721,7 +4719,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
     // console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
 
-    if (textChange && !jrDoctorJoined) {
+    if (textChange && !jrDoctorJoined.current) {
       time = 'Consult is In-progress';
     } else {
       if (status === STATUS.COMPLETED) {
@@ -6600,7 +6598,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 marginLeft: 20,
               }}
             >
-              {jrDoctorJoined
+              {jrDoctorJoined.current
                 ? `${appointmentData.doctorInfo.displayName}'s team doctor has joined`
                 : `${appointmentData.doctorInfo.displayName} has joined!`}
             </Text>
