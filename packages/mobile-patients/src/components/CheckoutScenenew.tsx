@@ -79,6 +79,7 @@ import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -247,7 +248,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       description: `${desc || ''}`.trim(),
     });
 
-  const getPrepaidCheckoutCompletedEventAttributes = (orderAutoId: string) => {
+  const getPrepaidCheckoutCompletedEventAttributes = (orderAutoId: string, isCOD?: boolean) => {
     try {
       const addr = deliveryAddressId && addresses.find((item) => item.id == deliveryAddressId);
       const store = storeId && stores.find((item) => item.storeid == storeId);
@@ -267,7 +268,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         'Delivery charge': deliveryCharges,
         'Net after discount': getFormattedAmount(grandTotal),
         'Payment status': 1,
-        'Payment Type': 'Prepaid',
+        'Payment Type': isCOD ? 'COD' : 'Prepaid',
         'Service Area': 'Pharmacy',
         'Mode of Delivery': deliveryAddressId ? 'Home' : 'Pickup',
         af_revenue: getFormattedAmount(grandTotal),
@@ -297,9 +298,13 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     return appsflyerEventAttributes;
   };
 
-  const postwebEngageCheckoutCompletedEvent = (orderAutoId: string, orderId: string) => {
+  const postwebEngageCheckoutCompletedEvent = (
+    orderAutoId: string,
+    orderId: string,
+    isCOD?: boolean
+  ) => {
     const eventAttributes = {
-      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`),
+      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, isCOD),
     };
     postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, eventAttributes);
 
@@ -330,7 +335,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     }
   };
 
-  const placeOrder = (orderId: string, orderAutoId: number, orderType: string) => {
+  const placeOrder = (orderId: string, orderAutoId: number, orderType: string, isCOD?: boolean) => {
     console.log('placeOrder\t', { orderId, orderAutoId });
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
       medicinePaymentMqInput: {
@@ -371,7 +376,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           // Order-Success, Show popup here & clear cart info
           try {
-            postwebEngageCheckoutCompletedEvent(`${orderAutoId}`, orderId);
+            postwebEngageCheckoutCompletedEvent(
+              `${orderAutoId}`,
+              orderId,
+              orderType == 'COD',
+              isCOD
+            );
             firePurchaseEvent(orderId);
           } catch (error) {
             console.log(error);
@@ -409,7 +419,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const token = await firebase.auth().currentUser!.getIdToken();
     console.log({ token });
     const checkoutEventAttributes = {
-      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`),
+      ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, false),
     };
     const appsflyerEventAttributes = {
       ...getPrepaidCheckoutCompletedAppsFlyerEventAttributes(`${orderId}`),
@@ -425,7 +435,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       appsflyerEventAttributes,
       paymentTypeID: paymentMode,
       bankCode: bankCode,
-      coupon: coupon ? coupon.code : null,
+      coupon: coupon ? coupon.coupon : null,
       cartItems: cartItems,
     });
   };
@@ -446,7 +456,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
-        coupon: coupon ? coupon.code : '',
+        coupon: coupon ? coupon.coupon : '',
         couponDiscount: coupon ? getFormattedAmount(couponDiscount) : 0,
         productDiscount: getFormattedAmount(productDiscount) || 0,
         quoteId: null,
@@ -530,10 +540,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         } else {
           if (isCOD) {
             console.log('isCashOnDelivery\t', { orderId, orderAutoId });
-            placeOrder(orderId, orderAutoId, 'COD');
+            placeOrder(orderId, orderAutoId, 'COD', true);
           } else if (hcOrder) {
             console.log('HCorder\t', { orderId, orderAutoId });
-            placeOrder(orderId, orderAutoId, 'HCorder');
+            placeOrder(orderId, orderAutoId, 'HCorder', false);
           } else {
             console.log('Redirect To Payment Gateway');
             redirectToPaymentGateway(orderId, orderAutoId, paymentMode, bankCode)
@@ -585,7 +595,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       itemObj.quantity = item.quantity; // "1" or actual quantity
       items.push(itemObj);
     });
-    let code: any = coupon ? coupon.code : null;
+    let code: any = coupon ? coupon.coupon : null;
     const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
       coupon: code,
       currency: 'INR',
@@ -604,6 +614,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         key: null,
         actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
       })
+    );
+    const deliveryTimeMomentFormat = moment(
+      deliveryTime,
+      AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
     );
     showAphAlert!({
       // unDismissable: true,
@@ -650,7 +664,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               {`#${orderAutoId}`}
             </Text>
           </View>
-          {moment(deliveryTime).isValid() && (
+          {deliveryTimeMomentFormat.isValid() && (
             <>
               <View
                 style={{
@@ -668,7 +682,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
                   }}
                 >
                   {deliveryTime &&
-                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm A')}`}
+                    `Delivery By: ${deliveryTimeMomentFormat.format(
+                      AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
+                    )}`}
                 </Text>
               </View>
             </>
@@ -869,7 +885,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           <View style={{ ...styles.subCont, marginTop: 2 }}>
             <View>
               <Text style={styles.discountTxt}>Coupon Applied</Text>
-              <Text style={styles.discountTxt}>({coupon?.code})</Text>
+              <Text style={styles.discountTxt}>({coupon?.coupon})</Text>
             </View>
             <Text style={styles.discountTxt}>- Rs. {getFormattedAmount(couponDiscount)}</Text>
           </View>
@@ -910,13 +926,17 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               setHCorder(false);
             } else {
               setisOneApolloSelected(true);
-              if (availableHC >= grandTotal) {
-                setBurnHC(grandTotal);
-                setHCorder(true);
-                setScrollToend(true);
-                setTimeout(() => {
-                  setScrollToend(false);
-                }, 500);
+              if (
+                availableHC >= getFormattedAmount(grandTotal - deliveryCharges - packagingCharges)
+              ) {
+                setBurnHC(getFormattedAmount(grandTotal - deliveryCharges - packagingCharges));
+                if (deliveryCharges + packagingCharges == 0) {
+                  setHCorder(true);
+                  setScrollToend(true);
+                  setTimeout(() => {
+                    setScrollToend(false);
+                  }, 500);
+                }
               } else {
                 setBurnHC(availableHC);
               }
@@ -1121,45 +1141,52 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               }, 500);
             }
           }}
+          disabled={!!isOneApolloSelected}
           style={{
             ...styles.paymentModeCard,
             marginBottom: 10,
+            flexDirection: 'column',
+            justifyContent: 'center',
+            height: isOneApolloSelected ? 'auto' : 0.08 * windowHeight,
+            paddingVertical: 20,
           }}
         >
-          <View
-            style={{
-              opacity: isOneApolloSelected ? 0.5 : 1,
-              flex: 0.16,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            {isCashOnDelivery ? <CheckedIcon /> : <CheckUnselectedIcon />}
+          <View style={{ flexDirection: 'row' }}>
+            <View
+              style={{
+                opacity: isOneApolloSelected ? 0.5 : 1,
+                flex: 0.16,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {isCashOnDelivery ? <CheckedIcon /> : <CheckUnselectedIcon />}
+            </View>
+            <View
+              style={{
+                opacity: isOneApolloSelected ? 0.5 : 1,
+                flex: 0.84,
+                justifyContent: 'center',
+                alignItems: 'flex-start',
+              }}
+            >
+              <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.COD_TEXT, 1, 20) }}>
+                CASH ON DELIVERY
+              </Text>
+            </View>
           </View>
-          <View
-            style={{
-              opacity: isOneApolloSelected ? 0.5 : 1,
-              flex: 0.84,
-              justifyContent: 'center',
-              alignItems: 'flex-start',
-            }}
-          >
-            <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.COD_TEXT, 1, 20) }}>
-              CASH ON DELIVERY
+          {!!isOneApolloSelected && (
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18),
+                marginTop: 10,
+                marginHorizontal: 25,
+              }}
+            >
+              ! COD option is not available along with OneApollo Health Credits.
             </Text>
-          </View>
+          )}
         </TouchableOpacity>
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansMedium(14),
-            color: theme.colors.LIGHT_BLUE,
-            marginHorizontal: 0.05 * windowWidth,
-            lineHeight: 20,
-            marginBottom: 15,
-          }}
-        >
-          COD is not available if HC are used.
-        </Text>
       </View>
     );
   };

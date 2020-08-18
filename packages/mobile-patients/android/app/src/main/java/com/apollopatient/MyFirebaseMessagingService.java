@@ -101,6 +101,7 @@ public class MyFirebaseMessagingService
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 i.putExtra("DOCTOR_NAME", remoteMessage.getData().get("doctorName"));
                 i.putExtra("APPOINTMENT_ID",remoteMessage.getData().get("appointmentId"));
+                i.putExtra("CALL_TYPE",remoteMessage.getData().get("callType"));
                 i.putExtra("APP_STATE",isAppRunning);
                 startActivity(i);
         }else if(disconnectCallType.equals((notifDataType))){

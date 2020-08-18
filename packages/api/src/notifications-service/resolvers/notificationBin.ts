@@ -145,8 +145,11 @@ const insertMessage: Resolver<
     if (appointmentData.status != STATUS.COMPLETED)
       throw new AphError(AphErrorMessages.APPOINTMENT_NOT_COMPLETED);
 
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const consultDate = format(appointmentData.sdConsultationDate, 'yyyy-MM-dd');
+    const today = format(addMinutes(new Date(), +0), 'yyyy-MM-dd');
+    const consultDate = format(
+      addMinutes(new Date(appointmentData.sdConsultationDate), +0),
+      'yyyy-MM-dd'
+    );
     const difference = differenceInDays(new Date(today), new Date(consultDate));
 
     if (difference > parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10))
@@ -250,8 +253,8 @@ const sendUnreadMessagesNotification: Resolver<
     //Filtering the last date appointments
     const lastDayAppointments = appointmentsData.filter((appointment) => {
       if (!appointment.sdConsultationDate) return false;
-      const today = format(new Date(), 'yyyy-MM-dd');
-      const consultDate = format(appointment.sdConsultationDate, 'yyyy-MM-dd');
+      const today = format(addMinutes(new Date(), +0), 'yyyy-MM-dd');
+      const consultDate = format(addMinutes(appointment.sdConsultationDate, +0), 'yyyy-MM-dd');
       const difference = differenceInDays(new Date(today), new Date(consultDate));
       return difference == parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10) - 1;
     });
