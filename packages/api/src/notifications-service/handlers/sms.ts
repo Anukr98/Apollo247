@@ -1,12 +1,22 @@
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ApiConstants } from 'ApiConstants';
-import { MedicineOrders } from 'profiles-service/entities';
+import {
+  MedicineOrders,
+  MedicineOrderPayments,
+  MEDICINE_ORDER_PAYMENT_TYPE,
+} from 'profiles-service/entities';
 import { log } from 'customWinstonLogger';
+import { Connection } from 'typeorm';
+import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 
 type MedicineOrderRefundNotificationInput = {
   refundAmount: number;
-  healthCreditsRefund: number;
+  healthCreditsRefunded: number;
+  paymentInfo: MedicineOrderPayments;
+  reasonCode?: string;
+  isPartialRefund: boolean;
+  isRefundSuccessful: boolean;
 };
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
@@ -34,44 +44,108 @@ export const sendNotificationSMS = async (mobileNumber: string, message: string)
 
 export async function medicineOrderRefundNotification(
   orderDetails: MedicineOrders,
-  medicineOrderRefundNotificationInput: MedicineOrderRefundNotificationInput
+  medicineOrderRefundNotificationInput: MedicineOrderRefundNotificationInput,
+  patientsDb: Connection
 ) {
   let notificationBody: string = '';
-  if (
-    medicineOrderRefundNotificationInput.refundAmount > 0 ||
-    medicineOrderRefundNotificationInput.healthCreditsRefund > 0
-  ) {
-    if (
-      medicineOrderRefundNotificationInput.refundAmount > 0 &&
-      medicineOrderRefundNotificationInput.healthCreditsRefund > 0
-    ) {
-      notificationBody = ApiConstants.ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY;
-      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
-      notificationBody = notificationBody.replace(
-        '{refundAmount}',
-        medicineOrderRefundNotificationInput.refundAmount.toString()
-      );
-      notificationBody = notificationBody.replace(
-        '{healthCreditsRefund}',
-        medicineOrderRefundNotificationInput.healthCreditsRefund.toString()
-      );
-    } else if (medicineOrderRefundNotificationInput.refundAmount > 0) {
-      notificationBody = ApiConstants.ORDER_PAYMENT_PARTIAL_REFUND_BODY;
-      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
-      notificationBody = notificationBody.replace(
-        '{refundAmount}',
-        medicineOrderRefundNotificationInput.refundAmount.toString()
-      );
-    } else if (medicineOrderRefundNotificationInput.healthCreditsRefund > 0) {
-      notificationBody = ApiConstants.ORDER_HC_PARTIAL_REFUND_BODY;
-      notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
-      notificationBody = notificationBody.replace(
-        '{healthCreditsRefund}',
-        medicineOrderRefundNotificationInput.healthCreditsRefund.toString()
-      );
+  const {
+    paymentInfo,
+    isPartialRefund,
+    isRefundSuccessful,
+    reasonCode,
+    healthCreditsRefunded,
+    refundAmount,
+  } = medicineOrderRefundNotificationInput;
+
+  /**
+   * If partial refund happens, it means order is not cancelled but billing amount is less
+   * Otherwise, order was cancelled and user should have been refunded
+   */
+  if (isPartialRefund === true) {
+    if ((refundAmount > 0 && isRefundSuccessful) || healthCreditsRefunded > 0) {
+      if (refundAmount > 0 && isRefundSuccessful && healthCreditsRefunded > 0) {
+        notificationBody = ApiConstants.ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY;
+        notificationBody = notificationBody.replace(
+          '{orderId}',
+          orderDetails.orderAutoId.toString()
+        );
+        notificationBody = notificationBody.replace('{refundAmount}', refundAmount.toString());
+        notificationBody = notificationBody.replace(
+          '{healthCreditsRefund}',
+          healthCreditsRefunded.toString()
+        );
+      } else if (refundAmount > 0 && isRefundSuccessful) {
+        notificationBody = ApiConstants.ORDER_PAYMENT_PARTIAL_REFUND_BODY;
+        notificationBody = notificationBody.replace(
+          '{orderId}',
+          orderDetails.orderAutoId.toString()
+        );
+        notificationBody = notificationBody.replace('{refundAmount}', refundAmount.toString());
+      } else if (healthCreditsRefunded > 0) {
+        notificationBody = ApiConstants.ORDER_HC_PARTIAL_REFUND_BODY;
+        notificationBody = notificationBody.replace(
+          '{orderId}',
+          orderDetails.orderAutoId.toString()
+        );
+        notificationBody = notificationBody.replace(
+          '{healthCreditsRefund}',
+          healthCreditsRefunded.toString()
+        );
+      }
+      await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
     }
-    //console.log(notificationBody);
-    await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+  } else {
+    notificationBody = ApiConstants.ORDER_CANCEL_BODY;
+    const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
+    notificationBody = notificationBody.replace('{name}', orderDetails.patient.firstName);
+    notificationBody = notificationBody.replace('{orderId}', orderDetails.orderAutoId.toString());
+    if (reasonCode) {
+      const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
+        reasonCode
+      );
+      if (cancellationReasons) {
+        notificationBody = notificationBody.replace('{reason}', cancellationReasons.displayMessage);
+      } else {
+        notificationBody = notificationBody.replace('{reason}', 'Your order has been cancelled');
+      }
+      await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+    }
+
+    if (
+      paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS &&
+      ((refundAmount > 0 && isRefundSuccessful) || healthCreditsRefunded > 0)
+    ) {
+      if (refundAmount > 0 && isRefundSuccessful && healthCreditsRefunded > 0) {
+        notificationBody = ApiConstants.ORDER_CANCEL_PAYMENT_HC_REFUND_BODY;
+        notificationBody = notificationBody.replace(
+          '{orderId}',
+          orderDetails.orderAutoId.toString()
+        );
+        notificationBody = notificationBody.replace('{refund}', refundAmount.toString());
+        notificationBody = notificationBody.replace(
+          '{healthCreditsRefund}',
+          healthCreditsRefunded.toString()
+        );
+      } else if (refundAmount > 0 && isRefundSuccessful) {
+        notificationBody = ApiConstants.ORDER_CANCEL_PREPAID_BODY;
+        notificationBody = notificationBody.replace(
+          '{orderId}',
+          orderDetails.orderAutoId.toString()
+        );
+        notificationBody = notificationBody.replace('{refund}', refundAmount.toString());
+      } else if (healthCreditsRefunded > 0) {
+        notificationBody = ApiConstants.ORDER_CANCEL_HC_REFUND_BODY;
+        notificationBody = notificationBody.replace(
+          '{orderId}',
+          orderDetails.orderAutoId.toString()
+        );
+        notificationBody = notificationBody.replace(
+          '{healthCreditsRefund}',
+          healthCreditsRefunded.toString()
+        );
+      }
+      await sendNotificationSMS(orderDetails.patient.mobileNumber, notificationBody);
+    }
   }
   return;
 }

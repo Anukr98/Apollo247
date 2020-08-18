@@ -34,6 +34,8 @@ import { checkForValid } from './common';
 import * as firebaseAdmin from 'firebase-admin';
 import { sendBrowserNotitication } from './browser';
 import { sendNotificationSMS } from './sms';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { hitCallKitCurl } from 'notifications-service/handlers';
 
 type PushNotificationInput = {
   notificationType: NotificationType;
@@ -54,16 +56,23 @@ export async function sendCallsNotification(
   doctorsDb: Connection,
   callType: APPT_CALL_TYPE,
   doctorType: DOCTOR_CALL_TYPE,
-  appointmentCallId: string
+  appointmentCallId: string,
+  isDev: boolean,
+  numberOfParticipants: number
 ) {
-  const { appointmentId } = pushNotificationInput;
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
+  if (appointment == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
-  const { appointment, doctorDetails, patientDetails } = await checkForValid({
-    appointmentId,
-    patientsDb,
-    doctorsDb,
-    consultsDb,
-  });
+  //get doctor details
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+
+  const doctorDetails = await doctorRepo.findById(appointment.doctorId);
+  if (doctorDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+  //check patient existence and get his details
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
 
@@ -71,27 +80,21 @@ export async function sendCallsNotification(
     patientDetails.id,
     DEVICE_TYPE.IOS
   );
-  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']) {
-    const token = voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'];
-    const CERT_PATH = ApiConstants.ASSETS_DIR + '/voipCert.pem';
-    const passphrase = process.env.VOIP_CALLKIT_PASSPHRASE || 'apollo@123';
-    const domain =
-      process.env.VOIP_CALLKIT_DOMAIN || 'https://api.development.push.apple.com/3/device/';
-
-    try {
-      const curlCommand = `curl -v -d '{"name": ${
-        doctorDetails.displayName
-      }, "isVideo": ${true}, "appointmentId" : ${
-        appointment.id
-      }}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
-      const resp = child_process.execSync(curlCommand);
-      const result = resp.toString('utf-8');
-      console.info('voipCallKit result > ', result);
-    } catch (err) {
-      console.error('voipCallKit error > ', err);
-    }
+  if (
+    voipPushtoken.length &&
+    voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
+    callType != APPT_CALL_TYPE.CHAT
+  ) {
+    hitCallKitCurl(
+      voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
+      doctorDetails.displayName,
+      appointment.id,
+      patientDetails.id,
+      true,
+      callType,
+      isDev
+    );
   }
-
   if (callType == APPT_CALL_TYPE.CHAT && doctorType == DOCTOR_CALL_TYPE.SENIOR) {
     const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
     let whatsappMsg = ApiConstants.WHATSAPP_SD_CONSULT_START_REMINDER.replace(
@@ -168,8 +171,6 @@ export async function sendCallsNotification(
   };
   let notificationPayloadResponse;
   const registrationToken: string[] = [];
-
-  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const allpatients = await patientRepo.getIdsByMobileNumber(patientDetails.mobileNumber);
   const listOfIds: string[] = [];
   allpatients.map((value) => listOfIds.push(value.id));
@@ -182,10 +183,65 @@ export async function sendCallsNotification(
     });
   }
   /*patientDetails.patientDeviceTokens.forEach((values) => {
-      registrationToken.push(values.deviceToken);
-    });*/
+    registrationToken.push(values.deviceToken);
+  });*/
   console.log(registrationToken.length, patientDetails.mobileNumber, 'token length');
   if (registrationToken.length == 0) return;
+
+  //First payload (data only)
+  let dataOnlyPayloadResponse = null;
+  const sendDataOnlyPayload =
+    callType != APPT_CALL_TYPE.CHAT && numberOfParticipants && numberOfParticipants == 1;
+
+  if (sendDataOnlyPayload) {
+    const dataOnlyPayload = {
+      data: {
+        type: 'call_start',
+        appointmentId: appointment.id.toString(),
+        doctorName: 'Dr. ' + doctorDetails.firstName,
+        patientName: patientDetails.firstName,
+        callType: callType,
+        appointmentCallId: appointmentCallId,
+        doctorType: doctorType,
+      },
+    };
+
+    admin
+      .messaging()
+      .sendToDevice(registrationToken, dataOnlyPayload, options)
+      .then((response: PushNotificationSuccessMessage) => {
+        dataOnlyPayloadResponse = response;
+        if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+          const fileName =
+            process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+          let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+          if (process.env.NODE_ENV != 'local') {
+            assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+          }
+          let content =
+            format(new Date(), 'yyyy-MM-dd hh:mm') +
+            '\n apptid: ' +
+            pushNotificationInput.appointmentId +
+            '\n multicastId: ';
+          content +=
+            response.multicastId.toString() +
+            '\n------------------------------------------------------------------------------------\n';
+          fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+            if (err) {
+              console.log('file saving error', err);
+            }
+            console.log('notification results saved');
+          });
+        }
+      })
+      .catch((error: JSON) => {
+        console.log('PushNotification Failed::' + error);
+        throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+      });
+
+    console.log(dataOnlyPayloadResponse, 'dataOnlyPayloadResponse');
+  }
+
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -221,57 +277,11 @@ export async function sendCallsNotification(
 
   console.log(notificationPayloadResponse, 'notificationPayloadResponse');
 
-  //second payload
-  let dataOnlyPayloadResponse;
-  const dataOnlyPayload = {
-    data: {
-      type: 'call_start',
-      appointmentId: appointment.id.toString(),
-      doctorName: 'Dr. ' + doctorDetails.firstName,
-    },
-  };
-
-  admin
-    .messaging()
-    .sendToDevice(registrationToken, dataOnlyPayload, options)
-    .then((response: PushNotificationSuccessMessage) => {
-      dataOnlyPayloadResponse = response;
-      if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
-        const fileName =
-          process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
-        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-        if (process.env.NODE_ENV != 'local') {
-          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-        }
-        let content =
-          format(new Date(), 'yyyy-MM-dd hh:mm') +
-          '\n apptid: ' +
-          pushNotificationInput.appointmentId +
-          '\n multicastId: ';
-        content +=
-          response.multicastId.toString() +
-          '\n------------------------------------------------------------------------------------\n';
-        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
-          if (err) {
-            console.log('file saving error', err);
-          }
-          console.log('notification results saved');
-        });
-      }
-    })
-    .catch((error: JSON) => {
-      console.log('PushNotification Failed::' + error);
-      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
-    });
-
-  console.log(dataOnlyPayloadResponse, 'dataOnlyPayloadResponse');
-
   return {
     notificationPayloadResponse: notificationPayloadResponse,
     dataOnlyPayloadResponse: dataOnlyPayloadResponse,
   };
 }
-
 export async function sendReminderNotification(
   pushNotificationInput: PushNotificationInput,
   patientsDb: Connection,
@@ -704,20 +714,27 @@ export async function sendReminderNotification(
   console.log(notificationResponse, 'notificationResponse');
   return notificationResponse;
 }
-
 export async function sendCallsDisconnectNotification(
   pushNotificationInput: PushNotificationInput,
   patientsDb: Connection,
   consultsDb: Connection,
-  doctorsDb: Connection
+  doctorsDb: Connection,
+  callType: APPT_CALL_TYPE
 ) {
-  const { appointmentId } = pushNotificationInput;
-  const { appointment, doctorDetails, patientDetails } = await checkForValid({
-    appointmentId,
-    patientsDb,
-    doctorsDb,
-    consultsDb,
-  });
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
+  if (appointment == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  //get doctor details
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+
+  const doctorDetails = await doctorRepo.findById(appointment.doctorId);
+  if (doctorDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+  //check patient existence and get his details
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+
   //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
@@ -732,6 +749,7 @@ export async function sendCallsDisconnectNotification(
       type: 'call_disconnect',
       appointmentId: appointment.id.toString(),
       doctorName: 'Dr. ' + doctorDetails.firstName,
+      callType: callType,
     },
   };
 
@@ -744,7 +762,6 @@ export async function sendCallsDisconnectNotification(
   };
   let notificationResponse;
   const registrationToken: string[] = [];
-  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const allpatients = await patientRepo.getIdsByMobileNumber(patientDetails.mobileNumber);
   const listOfIds: string[] = [];
   allpatients.map((value) => listOfIds.push(value.id));

@@ -457,18 +457,22 @@ export async function hitCallKitCurl(
   token: string,
   doctorName: string,
   apptId: string,
+  patientId: string,
   connecting: boolean,
-  callType: APPT_CALL_TYPE
+  callType: APPT_CALL_TYPE,
+  isDev: boolean
 ) {
   const CERT_PATH = process.env.VOIP_CALLKIT_CERT_PATH + '/voipCert.pem';
   const passphrase = process.env.VOIP_CALLKIT_PASSPHRASE || 'apollo@123';
-  const domain =
-    process.env.VOIP_CALLKIT_DOMAIN || 'https://api.development.push.apple.com/3/device/';
+  let domain = process.env.VOIP_CALLKIT_DOMAIN || 'https://api.push.apple.com/3/device/';
+  if (isDev) {
+    domain = 'https://api.development.push.apple.com/3/device/';
+  }
   try {
     const curlCommand = `curl -v -d '{"name": "${doctorName}", 
-        "${connecting ? 'isVideo' : 'disconnectCall'}": 
-        ${connecting ? (callType == APPT_CALL_TYPE.VIDEO ? true : false) : true}, 
-        "appointmentId" : "${apptId}"}' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
+      "${connecting ? 'isVideo' : 'disconnectCall'}": 
+      ${connecting ? (callType == APPT_CALL_TYPE.VIDEO ? true : false) : true}, 
+      "appointmentId" : "${apptId}", "patientId": "${patientId}" }' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
     const resp = child_process.execSync(curlCommand);
     const result = resp.toString('utf-8');
     console.log('voipCallKit result > ', result);
