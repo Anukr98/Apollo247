@@ -1274,6 +1274,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         >
           {item.medicineName}
         </Text>
+        {item.includeGenericNameInPrescription && item.genericName ? (
+          <Text style={theme.viewStyles.text('S', 12, '#02475b', 1, undefined, 0.02)}>
+            {`Contains ${item.genericName}`}
+          </Text>
+        ) : null}
         {removedItem ? (
           <Text style={theme.viewStyles.text('S', 12, theme.colors.DARK_RED, 1, undefined, 0.02)}>
             {strings.case_sheet.med_remove}
