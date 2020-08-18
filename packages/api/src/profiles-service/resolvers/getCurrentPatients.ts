@@ -5,11 +5,12 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Resolver } from 'api-gateway';
 import { getConnection } from 'typeorm';
-
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 import { Gender } from 'doctors-service/entities';
 import { getRegisteredUsers } from 'helpers/phrV1Services';
+import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
+import { ApiConstants } from 'ApiConstants';
 
 export const getCurrentPatientsTypeDefs = gql`
   enum Gender {
@@ -123,7 +124,7 @@ export const getCurrentPatientsTypeDefs = gql`
     getCurrentPatients(appVersion: String, deviceType: DEVICE_TYPE): GetCurrentPatientsResult
   }
 `;
-
+const REDIS_PATIENT_LOCK_PREFIX = `patient:lock:`;
 export type GetCurrentPatientsResult = {
   patients: Object[] | null;
 };
@@ -138,10 +139,18 @@ const getCurrentPatients: Resolver<
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>
   ): Promise<Patient> => {
-    const existingPatient = await Patient.findOne({
-      where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
-    });
-    return existingPatient || Patient.create(createOptions).save();
+    const lockKey = `${REDIS_PATIENT_LOCK_PREFIX}${mobileNumber}`;
+    const lockedProfile = await getCache(lockKey);
+    if (lockedProfile && typeof lockedProfile == 'string') {
+      throw new Error(AphErrorMessages.PROFILE_CREATION_IN_PROGRESS);
+    } else {
+      await setCache(lockKey, 'true', ApiConstants.CACHE_EXPIRATION_120);
+      const existingPatient = await Patient.findOne({
+        where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
+      });
+      await delCache(lockKey);
+      return existingPatient || Patient.create(createOptions).save();
+    }
   };
 
   let patientPromises: Object[] = [];
@@ -162,7 +171,7 @@ const getCurrentPatients: Resolver<
             : undefined,
           mobileNumber,
           uhid: data.uhid,
-          dateOfBirth: (!data.dob || data.dob.length == 0) ? undefined : new Date(data.dob),
+          dateOfBirth: !data.dob || data.dob.length == 0 ? undefined : new Date(data.dob),
           androidVersion: args.deviceType === DEVICE_TYPE.ANDROID ? args.appVersion : undefined,
           iosVersion: args.deviceType === DEVICE_TYPE.IOS ? args.appVersion : undefined,
           primaryUhid: data.uhid,

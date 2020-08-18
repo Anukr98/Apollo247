@@ -741,14 +741,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
       callPermissions(() => {
         if (callType === 'VIDEO') {
-          setOnSubscribe(true);
+          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
           isAudio.current = false;
         } else if (callType === 'AUDIO') {
-          setOnSubscribe(true);
+          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
           isAudio.current = true;
           callhandelBack = false;
         }
-        playSound();
+        isVoipCall || fromIncomingCall ? null : playSound();
       });
     }
     if (prescription) {
@@ -1709,15 +1709,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const config: Pubnub.PubnubConfig = {
+    origin: 'apollo.pubnubapi.com',
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
     uuid: `PATIENT_${patientId}`,
     restore: true,
     keepAlive: true,
-    // autoNetworkDetection: true,
-    // listenToBrowserNetworkEvents: true,
-    // presenceTimeout: 20,
     heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
