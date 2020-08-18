@@ -495,6 +495,36 @@ export const PayMedicine: React.FC = (props) => {
     }
   });
 
+  const getCouponByMobileNumber = () => {
+    fetchUtil(
+      `${process.env.GET_PHARMA_AVAILABLE_COUPONS}?mobile=${localStorage.getItem('userMobileNo')}`,
+      'GET',
+      {},
+      '',
+      false
+    )
+      .then((resp: any) => {
+        if (resp.errorCode == 0) {
+          if (resp.response && resp.response.length > 0) {
+            const couponCode = resp.response[0].coupon;
+            setConsultCouponCode(couponCode);
+          }
+        } else if (resp && resp.errorMsg && resp.errorMsg.length > 0) {
+          setConsultCouponCode('');
+        }
+      })
+      .catch((e: any) => {
+        console.log(e);
+        setConsultCouponCode('');
+      });
+  };
+
+  useEffect(() => {
+    if (params.payType === 'consults') {
+      getCouponByMobileNumber();
+    }
+  }, []);
+
   useEffect(() => {
     if (validateConsultCouponResult && validateConsultCouponResult.valid) {
       setRevisedAmount(
@@ -989,8 +1019,9 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${totalWithCouponDiscount &&
-                          totalWithCouponDiscount.toFixed(2)} on delivery`
+                        `Pay Rs.${
+                          totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)
+                        } on delivery`
                       )}
                     </AphButton>
                   )}
