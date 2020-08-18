@@ -289,9 +289,9 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     },
     {
       key: 'followup',
-      value: 'Follow up (Free)',
+      value: 'Follow Up Chat Days',
       state: followUpPanelState,
-      component: <FollowUp startAppointment={props.startAppointment} />,
+      component: <div />,
     },
     {
       key: 'refferal',
@@ -439,7 +439,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
               key={item.key}
               expanded={item.state}
               onChange={handlePanelExpansion(item.key)}
-              className={`${classes.expandIcon} ${item.key === 'followup' && classes.none}`}
+              className={`${classes.expandIcon}`}
             >
               <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="h3">{item.value}</Typography>
