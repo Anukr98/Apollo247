@@ -30,6 +30,7 @@ import {
   OUT_OF_STOCK,
   NO_ONLINE_SERVICE,
   NOTIFY_WHEN_IN_STOCK,
+  PINCODE_MAXLENGTH,
 } from 'helpers/commonHelpers';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import moment from 'moment';
@@ -654,6 +655,27 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     );
   };
 
+  const cartItem: MedicineCartItem = {
+    MaxOrderQty,
+    url_key,
+    description,
+    id,
+    image,
+    is_in_stock,
+    is_prescription_required,
+    name,
+    price,
+    sku,
+    special_price,
+    small_image,
+    status,
+    thumbnail,
+    type_id,
+    mou,
+    quantity: medicineQty,
+    isShippable: true,
+  };
+
   return (
     <div className={classes.root}>
       {sell_online ? (
@@ -714,12 +736,12 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       <AphTextField
                         placeholder="Enter Pin Code"
                         inputProps={{
-                          maxLength: 6,
+                          maxLength: PINCODE_MAXLENGTH,
                           type: 'text',
                         }}
                         onChange={(e) => {
                           setPinCode(e.target.value);
-                          if (e.target.value.length < 6) {
+                          if (e.target.value.length < PINCODE_MAXLENGTH) {
                             setDeliveryTime('');
                           }
                         }}
@@ -729,7 +751,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         value={pinCode}
                       />
                       <AphButton
-                        disabled={pinCode.length !== 6}
+                        disabled={pinCode.length !== PINCODE_MAXLENGTH}
                         classes={{
                           root: classes.checkBtn,
                           disabled: classes.checkBtnDisabled,
@@ -855,26 +877,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     setIsUpdateQuantity(false);
                     setClickAddCart(true);
                     setAddMutationLoading(true);
-                    const cartItem: MedicineCartItem = {
-                      MaxOrderQty,
-                      url_key,
-                      description,
-                      id,
-                      image,
-                      is_in_stock,
-                      is_prescription_required,
-                      name,
-                      price,
-                      sku: sku,
-                      special_price: special_price,
-                      small_image: small_image,
-                      status: status,
-                      thumbnail: thumbnail,
-                      type_id: type_id,
-                      mou: mou,
-                      quantity: medicineQty,
-                      isShippable: true,
-                    };
                     addToCartTracking({
                       productName: name,
                       source: 'Pharmacy PDP',
@@ -934,26 +936,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                   disabled={addMutationLoading || updateMutationLoading}
                   onClick={() => {
                     setUpdateMutationLoading(true);
-                    const cartItem: MedicineCartItem = {
-                      MaxOrderQty: MaxOrderQty,
-                      url_key: url_key,
-                      description: description,
-                      id: id,
-                      image: image,
-                      is_in_stock: is_in_stock,
-                      is_prescription_required: is_prescription_required,
-                      name: name,
-                      price: price,
-                      sku: sku,
-                      special_price: special_price,
-                      small_image: small_image,
-                      status: status,
-                      thumbnail: thumbnail,
-                      type_id: type_id,
-                      mou: mou,
-                      quantity: medicineQty,
-                      isShippable: true,
-                    };
                     applyCartOperations(cartItem);
                     setTimeout(() => {
                       window.location.href = clientRoutes.medicinesCart();
