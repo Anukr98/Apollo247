@@ -281,13 +281,16 @@ export const YourOrders: React.FC = (props) => {
             <CircularProgress />
           </div>
         ) : (
-          <div className={classes.noOrdersWrapper}>
-            <div>Uh oh! :)</div>
-            <div className={classes.noOrdersText}>No Orders Found!</div>
-            <Link to={clientRoutes.medicines()} className={classes.orderNowButton}>
-              Order Now
-            </Link>
-          </div>
+          orderListData &&
+          orderListData.length === 0 && (
+            <div className={classes.noOrdersWrapper}>
+              <div>Uh oh! :)</div>
+              <div className={classes.noOrdersText}>No Orders Found!</div>
+              <Link to={clientRoutes.medicines()} className={classes.orderNowButton}>
+                Order Now
+              </Link>
+            </div>
+          )
         )}
       </div>
       <div
