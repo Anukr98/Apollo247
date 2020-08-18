@@ -247,6 +247,9 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
       },
     },
+    dialogActionsProgress: {
+      marginLeft: 135,
+    },
     primaryBtn: {
       backgroundColor: '#fc9916 !important',
       display: 'flex',
@@ -502,6 +505,7 @@ export const ChatRoom: React.FC = () => {
   const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
   const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
   const [isChangeSlot, setIsChangeSlot] = useState<boolean>(false);
+  const [isNextSlotLoading, setIsNextSlotLoading] = useState<boolean>(false);
   const [apiLoading, setApiLoading] = useState<boolean>(false);
   const [disaplayId, setDisplayId] = useState<number | null>(null);
   const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
@@ -557,6 +561,7 @@ export const ChatRoom: React.FC = () => {
     });
 
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
+    setIsNextSlotLoading(true);
     const todayDate = moment
       .utc(date)
       .local()
@@ -572,6 +577,7 @@ export const ChatRoom: React.FC = () => {
             setNextSlotAvailable(
               data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
             );
+            setIsNextSlotLoading(false);
           }
         } catch (error) {
           setNextSlotAvailable('');
@@ -739,33 +745,42 @@ export const ChatRoom: React.FC = () => {
                       is available on -
                     </h6>
                     <br />
-                    <h6 className={classes.highlightedText}>
-                      {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
-                    </h6>
+                    {!isNextSlotLoading && (
+                      <h6 className={classes.highlightedText}>
+                        {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
+                      </h6>
+                    )}
                   </div>
-
                   <div className={classes.dialogActions}>
-                    <AphButton
-                      className={classes.secondaryBtn}
-                      color="primary"
-                      onClick={() => setIsChangeSlot(true)}
-                    >
-                      {'CHANGE SLOT'}
-                    </AphButton>
+                    {isNextSlotLoading ? (
+                      <div className={classes.dialogActionsProgress}>
+                        <CircularProgress size={22} color="primary" />
+                      </div>
+                    ) : (
+                      <>
+                        <AphButton
+                          className={classes.secondaryBtn}
+                          color="primary"
+                          onClick={() => setIsChangeSlot(true)}
+                        >
+                          {'CHANGE SLOT'}
+                        </AphButton>
 
-                    <AphButton
-                      className={classes.primaryBtn}
-                      color="primary"
-                      onClick={() => {
-                        handleAcceptReschedule();
-                      }}
-                    >
-                      {apiLoading ? (
-                        <CircularProgress size={22} color="secondary" />
-                      ) : (
-                        <span>ACCEPT</span>
-                      )}
-                    </AphButton>
+                        <AphButton
+                          className={classes.primaryBtn}
+                          color="primary"
+                          onClick={() => {
+                            handleAcceptReschedule();
+                          }}
+                        >
+                          {apiLoading ? (
+                            <CircularProgress size={22} color="secondary" />
+                          ) : (
+                            <span>ACCEPT</span>
+                          )}
+                        </AphButton>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
