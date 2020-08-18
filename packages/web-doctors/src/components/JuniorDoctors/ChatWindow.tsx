@@ -448,6 +448,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     subscribeKey: subscribekey,
     publishKey: publishkey,
     ssl: true,
+    origin : 'apollo.pubnubapi.com',
   };
   let leftComponent = 0;
   let rightComponent = 0;
