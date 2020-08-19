@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export interface PatientsListProps {}
 
-export const PatientsList: React.FC<PatientsListProps> = (props) => {
+const PatientsList: React.FC<PatientsListProps> = (props) => {
   const classes = useStyles({});
   const { data, error, loading } = useQueryWithSkip<GetPatients>(GET_PATIENTS);
   if (loading) return <CircularProgress />;
@@ -48,3 +48,5 @@ export const PatientsList: React.FC<PatientsListProps> = (props) => {
     </div>
   );
 };
+
+export default PatientsList;
