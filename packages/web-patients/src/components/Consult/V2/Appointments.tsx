@@ -6,7 +6,7 @@ import { History } from 'history';
 import { Header } from 'components/Header';
 import { useApolloClient } from 'react-apollo-hooks';
 
-import { AphSelect, AphButton } from '@aph/web-ui-components';
+import { AphSelect, AphButton, AphInput } from '@aph/web-ui-components';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { ConsultationsCard } from 'components/Consult/V2/ConsultationsCard';
 import { NavigationBottom } from 'components/NavigationBottom';
@@ -45,6 +45,8 @@ import { GetAppointmentData } from 'graphql/types/GetAppointmentData';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as appointmentsHistoryType } from 'graphql/types/GetAppointmentData';
 import { PaymentTransactionStatus_paymentTransactionStatus_appointment as paymentTransactionAppointmentType } from 'graphql/types/PaymentTransactionStatus';
 import _uniq from 'lodash/uniq';
+import FormControl from '@material-ui/core/FormControl';
+import CloseIcon from '@material-ui/icons/Close';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -106,10 +108,13 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     consultationsHeader: {
-      padding: '10px 40px 30px 40px',
+      padding: '10px 40px',
       '& h1': {
         display: 'flex',
         fontSize: 50,
+        '& span': {
+          padding: '0 0 0 10px',
+        },
         [theme.breakpoints.down('xs')]: {
           fontSize: 30,
         },
@@ -126,7 +131,6 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         color: '#0087ba',
         margin: 0,
-        paddingTop: 10,
       },
     },
     selectMenuRoot: {
@@ -163,8 +167,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       backgroundColor: 'transparent',
       marginLeft: 30,
-      paddingBottom: 0,
-      paddingRight: 0,
+
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -346,12 +349,7 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'center',
     },
-    filterIcon: {
-      float: 'right',
-      position: 'relative',
-      top: '-3px',
-      cursor: 'pointer',
-    },
+    filterIcon: {},
     modalDialog: {
       display: 'flex',
       alignItems: 'center',
@@ -365,6 +363,84 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: '22px',
         fontWeight: 'bold',
         margin: '45px 0 0 20px',
+      },
+    },
+    consultationContent: {
+      display: 'flex',
+      alignItems: 'center',
+      padding: '10px 0',
+    },
+    appointmentOptions: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '10px 0',
+    },
+    formControl: {
+      width: ' 50%',
+      position: 'relative',
+      margin: '0 0 0 30px',
+      '& img': {
+        position: 'absolute',
+        left: 0,
+        top: 10,
+      },
+    },
+    searchInput: {
+      padding: '0 0 0 30px',
+    },
+    memberOption: {
+      display: 'flex',
+      alignItems: 'center',
+    },
+    afContainer: {
+      padding: '0 16px',
+    },
+    appliedFilters: {
+      borderRadius: '10px 10px 0 0',
+      boxShadow: '0px 5px 20px rgba(128, 128, 128, 0.3)',
+      background: '#fff',
+      padding: 10,
+      display: 'flex',
+      alignItems: 'center',
+      '& p': {
+        fontSize: 12,
+        fontWeight: 500,
+        textTransform: 'uppercase',
+        padding: '0 10px',
+      },
+    },
+    filterList: {
+      margin: 0,
+      padding: 0,
+      listStyle: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      '& li': {
+        padding: '0 6px',
+      },
+    },
+    filterBtn: {
+      padding: '7px 10px',
+      background: '#00B38E',
+      fontSize: 10,
+      color: '#fff',
+      fontWeight: 500,
+      borderRadius: 10,
+      display: 'flex',
+      alignItems: 'center',
+      '&:hover': {
+        background: '#00B38E',
+        color: '#fff',
+      },
+    },
+    clearFilter: {
+      lineHeight: '10px',
+      '& svg': {
+        width: 14,
+        height: 14,
+        margin: '0 0 0 10px',
       },
     },
   };
@@ -868,53 +944,21 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
             <div className={`${classes.consultationsHeader}`}>
               {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
                 <Typography variant="h1">
-                  <span>hi</span>
-                  <AphSelect
-                    value={currentPatient.id}
-                    onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
-                    classes={{
-                      root: classes.selectMenuRoot,
-                      selectMenu: classes.selectMenuItem,
-                    }}
-                  >
-                    {allCurrentPatients.map((patient) => {
-                      const isSelected = patient.id === currentPatient.id;
-                      const name = isSelected
-                        ? (patient.firstName || '').toLocaleLowerCase()
-                        : (patient.firstName || '').toLocaleLowerCase();
-                      return (
-                        <MenuItem
-                          selected={isSelected}
-                          value={patient.id}
-                          classes={{ selected: classes.menuSelected }}
-                          key={patient.id}
-                        >
-                          {name}
-                        </MenuItem>
-                      );
-                    })}
-                    <MenuItem classes={{ selected: classes.menuSelected }}>
-                      <AphButton
-                        color="primary"
-                        classes={{ root: classes.addMemberBtn }}
-                        onClick={() => {
-                          setIsAddNewProfileDialogOpen(true);
-                        }}
-                      >
-                        Add Member
-                      </AphButton>
-                    </MenuItem>
-                  </AphSelect>
+                  hi<span>Seema</span>
                 </Typography>
               ) : (
                 <Typography variant="h1">hello there!</Typography>
               )}
-              <p>
-                {filteredAppointmentsList && !mutationLoading && appointmentText()}{' '}
-                <span className={classes.filterIcon} onClick={() => setIsFilterOpen(true)}>
-                  <img src={require('images/ic_filterblack.svg')} alt="" />
-                </span>
-              </p>
+              <div className={classes.consultationContent}>
+                <p>{filteredAppointmentsList && !mutationLoading && appointmentText()} </p>
+                <FormControl className={classes.formControl}>
+                  <img src={require('images/ic-search.svg')} alt="Search Doctors" />
+                  <AphInput
+                    className={classes.searchInput}
+                    placeholder="Search appointments by Doctor Name or Speciality"
+                  />
+                </FormControl>
+              </div>
 
               <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
                 <AphDialogClose
@@ -932,6 +976,79 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                   isProfileDelete={false}
                 />
               </AphDialog>
+
+              <div className={classes.appointmentOptions}>
+                <div className={classes.memberOption}>
+                  <Typography>View appointments of another member?</Typography>
+                  <AphButton
+                    color="primary"
+                    classes={{ root: classes.addMemberBtn }}
+                    onClick={() => {
+                      setIsAddNewProfileDialogOpen(true);
+                    }}
+                  >
+                    Add Member
+                  </AphButton>
+                </div>
+                <div className={classes.filterIcon} onClick={() => setIsFilterOpen(true)}>
+                  <img src={require('images/ic_filterblack.svg')} alt="" />
+                </div>
+              </div>
+            </div>
+            <div className={classes.afContainer}>
+              <div className={classes.appliedFilters}>
+                <Typography>Filters Applied:</Typography>
+                <ul className={classes.filterList}>
+                  <li>
+                    <AphButton className={classes.filterBtn}>
+                      Active
+                      <a href="javascript:void(0)" className={classes.clearFilter}>
+                        <CloseIcon />
+                      </a>
+                    </AphButton>
+                  </li>
+                  <li>
+                    <AphButton className={classes.filterBtn}>
+                      Now
+                      <a href="javascript:void(0)" className={classes.clearFilter}>
+                        <CloseIcon />
+                      </a>
+                    </AphButton>
+                  </li>
+                  <li>
+                    <AphButton className={classes.filterBtn}>
+                      3 Days
+                      <a href="javascript:void(0)" className={classes.clearFilter}>
+                        <CloseIcon />
+                      </a>
+                    </AphButton>
+                  </li>
+                  <li>
+                    <AphButton className={classes.filterBtn}>
+                      Dr.Simran Rai
+                      <a href="javascript:void(0)" className={classes.clearFilter}>
+                        <CloseIcon />
+                      </a>
+                    </AphButton>
+                  </li>
+                  <li>
+                    <AphButton className={classes.filterBtn}>
+                      Dr. Garima Suri
+                      <a href="javascript:void(0)" className={classes.clearFilter}>
+                        <CloseIcon />
+                      </a>
+                    </AphButton>
+                  </li>
+                  <li>
+                    <AphButton className={classes.filterBtn}>
+                      General Physician
+                      <a href="javascript:void(0)" className={classes.clearFilter}>
+                        <CloseIcon />
+                      </a>
+                    </AphButton>
+                  </li>
+                </ul>
+              </div>
             </div>
             <div>
               <Tabs
