@@ -1987,12 +1987,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 <div className={classes.incomingCallContainer}>
                   <div className={classes.incomingCallWindow}>
                     <img
-                      src={require('images/doctor_profile_image.png')}
-                      // src={
-                      //   profileImage !== null
-                      //     ? profileImage
-                      //     : require('images/doctor_profile_image.png')
-                      // }
+                      src={
+                        props.doctorDetails &&
+                        props.doctorDetails.getDoctorDetailsById &&
+                        props.doctorDetails.getDoctorDetailsById.photoUrl !== null
+                          ? props.doctorDetails.getDoctorDetailsById.photoUrl
+                          : require('images/doctor_profile_image.png')
+                      }
                     />
                     <div className={classes.callOverlay}>
                       <div className={classes.topText}>Ringing</div>
