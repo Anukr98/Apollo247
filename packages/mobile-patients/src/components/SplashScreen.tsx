@@ -206,27 +206,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const onDisconnetCallAction = () => {
     pubnub.publish(
       {
-        message: {
-          isTyping: true,
-          message: `${voipCallType.current} call ended`,
-          duration: '00: 00',
-          id: voipPatientId.current,
-          messageDate: new Date(),
-        },
-        channel: voipAppointmentId.current,
-        storeInHistory: true,
-      },
-      (status, response) => {}
-    );
-
-    pubnub.publish(
-      {
-        message: {
-          isTyping: true,
-          message: '^^#PATIENT_REJECTED_CALL',
-          id: voipPatientId.current,
-          messageDate: new Date(),
-        },
+        message: '^^#PATIENT_REJECTED_CALL',
         channel: voipAppointmentId.current,
         storeInHistory: true,
       },
