@@ -121,6 +121,7 @@ export interface PrescriptionUploadRequest {
   }[];
   speciality: string;
   hospital_name: string;
+  hospitalId: string;
   address: string;
   city: string;
   pincode: string;
