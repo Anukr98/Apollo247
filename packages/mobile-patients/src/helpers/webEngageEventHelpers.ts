@@ -58,13 +58,17 @@ export const postPharmacyAddNewAddressCompleted = (
   source: PharmacyAddNewAddressCompleted['Source'],
   pincode: PharmacyAddNewAddressCompleted['Pincode'],
   deliveryAddress: PharmacyAddNewAddressCompleted['Delivery address'],
-  success?: PharmacyAddNewAddressCompleted['Success']
+  tat: PharmacyAddNewAddressCompleted['TAT Displayed'],
+  deliveryTat: PhamracyCartAddressSelectedSuccess['Delivery TAT'],
+  success?: PharmacyAddNewAddressCompleted['Success'],
 ) => {
   const eventAttributes: PharmacyAddNewAddressCompleted = {
     Source: source,
     Success: success,
     'Delivery address': deliveryAddress,
     Pincode: pincode,
+    'TAT Displayed': tat,
+    'Delivery TAT': deliveryTat,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_NEW_ADDRESS_COMPLETED, eventAttributes);
 };
@@ -75,24 +79,28 @@ export const postPhamracyCartAddressSelectedSuccess = (
   pincode: PhamracyCartAddressSelectedSuccess['Pincode'],
   deliveryAddress: PhamracyCartAddressSelectedSuccess['Delivery Address'],
   success: PhamracyCartAddressSelectedSuccess['Delivery Successful'],
-  tatDisplayed?: PhamracyCartAddressSelectedSuccess['TAT Displayed']
+  tatDisplayed: PhamracyCartAddressSelectedSuccess['TAT Displayed'],
+  deliveryTat: PhamracyCartAddressSelectedSuccess['Delivery TAT']
 ) => {
   const eventAttributes: PhamracyCartAddressSelectedSuccess = {
     'TAT Displayed': tatDisplayed,
     'Delivery Successful': success,
     'Delivery Address': deliveryAddress,
     Pincode: pincode,
+    'Delivery TAT': deliveryTat
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, eventAttributes);
 };
 
+type PhamracyCartAddressSelectedFailure = WebEngageEvents[WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE];
+
 export const postPhamracyCartAddressSelectedFailure = (
-  pincode: PhamracyCartAddressSelectedSuccess['Pincode'],
-  deliveryAddress: PhamracyCartAddressSelectedSuccess['Delivery Address'],
-  success: PhamracyCartAddressSelectedSuccess['Delivery Successful'],
-  tatDisplayed?: PhamracyCartAddressSelectedSuccess['TAT Displayed']
+  pincode: PhamracyCartAddressSelectedFailure['Pincode'],
+  deliveryAddress: PhamracyCartAddressSelectedFailure['Delivery Address'],
+  success: PhamracyCartAddressSelectedFailure['Delivery Successful'],
+  tatDisplayed?: PhamracyCartAddressSelectedFailure['TAT Displayed']
 ) => {
-  const eventAttributes: PhamracyCartAddressSelectedSuccess = {
+  const eventAttributes: PhamracyCartAddressSelectedFailure = {
     'TAT Displayed': tatDisplayed,
     'Delivery Successful': success,
     'Delivery Address': deliveryAddress,

@@ -210,7 +210,7 @@ export const HeroBanner: React.FC = () => {
       <div className={`${classes.bannerImg} ${isSignedIn ? classes.loginbannerImg : ''}`}>
         <img
           className={classes.mobileBanner}
-          src={require('images/img_doctors_xxhdpi.png')}
+          src={require('images/img_doctors_xxhdpi.jpg')}
           alt="Online Doctor Consultation & Medicines"
         />
         <img
@@ -261,8 +261,8 @@ export const HeroBanner: React.FC = () => {
             </AphSelect>
           </Typography>
         ) : (
-          <span className={classes.mainHead}>hello there!</span>
-        )}
+            <span className={classes.mainHead}>hello there!</span>
+          )}
         <p>How can we help you today? :)</p>
         <OurServices />
       </div>

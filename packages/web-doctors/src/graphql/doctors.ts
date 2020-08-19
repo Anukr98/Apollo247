@@ -223,6 +223,9 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_DOCTOR = gql`
         externalId
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        includeGenericNameInPrescription
+        genericName
       }
       allowedDosages
     }

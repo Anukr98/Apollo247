@@ -70,7 +70,7 @@ export const RefundStatus: React.FC<RefundStatusProps> = (props) => {
   };
 
   const statusText = () => {
-    let message = 'REFUND INITIATED';
+    let message = 'REFUND PROCESSED';
     let textColor = theme.colors.REFUND_TEXT;
     return textComponent(message, undefined, textColor, false);
   };
