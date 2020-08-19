@@ -18,7 +18,6 @@ import {
 import path from 'path';
 import fs from 'fs';
 import { APPOINTMENT_TYPE } from 'consults-service/entities';
-import * as child_process from 'child_process';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
@@ -30,9 +29,9 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { sendNotificationWhatsapp, sendDoctorNotificationWhatsapp } from './whatsApp';
-import { checkForValid } from './common';
+import { checkForValidAppointmentDoctorAndPatient } from './common';
 import * as firebaseAdmin from 'firebase-admin';
-import { sendBrowserNotitication } from './browser';
+import { sendBrowserNotitication } from './browserNotification';
 import { sendNotificationSMS } from './sms';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { hitCallKitCurl } from 'notifications-service/handlers';
@@ -290,7 +289,11 @@ export async function sendReminderNotification(
 ) {
   const { appointmentId } = pushNotificationInput;
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const { appointment, doctorDetails, patientDetails } = await checkForValid({
+  const {
+    appointment,
+    doctorDetails,
+    patientDetails,
+  } = await checkForValidAppointmentDoctorAndPatient({
     appointmentId,
     patientsDb,
     doctorsDb,
@@ -951,7 +954,11 @@ export async function sendNotification(
 ) {
   const { appointmentId } = pushNotificationInput;
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const { appointment, doctorDetails, patientDetails } = await checkForValid({
+  const {
+    appointment,
+    doctorDetails,
+    patientDetails,
+  } = await checkForValidAppointmentDoctorAndPatient({
     appointmentId,
     patientsDb,
     doctorsDb,

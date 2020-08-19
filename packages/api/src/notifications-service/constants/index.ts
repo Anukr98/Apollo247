@@ -41,26 +41,8 @@ export enum NotificationType {
   WHATSAPP_CHAT_NOTIFICATION = 'WHATSAPP_CHAT_NOTIFICATION',
 }
 
-type PushNotificationInput = {
-  notificationType: NotificationType;
-  appointmentId: string;
-  doctorNotification?: boolean;
-  blobName?: string;
-};
-
-type CartPushNotificationInput = {
-  notificationType: NotificationType;
-  orderAutoId: number;
-};
-
-type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput };
-
 type PushNotificationMessage = {
   messageId: string;
-};
-
-type SendChatMessageToDoctorResult = {
-  status: boolean;
 };
 
 export type PushNotificationSuccessMessage = {

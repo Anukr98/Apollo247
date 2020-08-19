@@ -1,4 +1,3 @@
-import * as firebaseAdmin from 'firebase-admin';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Connection } from 'typeorm';
@@ -372,13 +371,9 @@ export async function sendChatMessageNotification(
   const registrationToken: string[] = [];
   if (deviceTokensList.length > 0) {
     //initialize firebaseadmin
-    const config = {
-      credential: firebaseAdmin.credential.applicationDefault(),
-      databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-    };
-    let admin = require('firebase-admin');
+
     let notificationResponse: PushNotificationSuccessMessage;
-    admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
+    const admin = await getInitializedFirebaseAdmin();
     const options = {
       priority: NotificationPriority.high,
       timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
@@ -491,13 +486,9 @@ export async function sendDoctorAppointmentNotification(
 ) {
   console.log('doctor appt notification begin');
   //initialize firebaseadmin
-  const config = {
-    credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-  };
-  let admin = require('firebase-admin');
+
   let notificationResponse: PushNotificationSuccessMessage;
-  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
+  const admin = await getInitializedFirebaseAdmin();
   const options = {
     priority: NotificationPriority.high,
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
@@ -579,13 +570,9 @@ export async function sendDoctorRescheduleAppointmentNotification(
 ) {
   console.log('doctor appt notification begin');
   //initialize firebaseadmin
-  const config = {
-    credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-  };
-  let admin = require('firebase-admin');
+
   let notificationResponse: PushNotificationSuccessMessage;
-  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
+  const admin = await getInitializedFirebaseAdmin();
   const options = {
     priority: NotificationPriority.high,
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline

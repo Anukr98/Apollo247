@@ -27,7 +27,9 @@ type validCheckOutput = {
   patientDetails: Patient;
 };
 
-export const checkForValid = async function(args: validCheckInput): Promise<validCheckOutput> {
+export const checkForValidAppointmentDoctorAndPatient = async function(
+  args: validCheckInput
+): Promise<validCheckOutput> {
   const { consultsDb, doctorsDb, patientsDb, appointmentId } = args;
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(appointmentId);
