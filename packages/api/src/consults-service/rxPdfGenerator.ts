@@ -64,6 +64,7 @@ export const convertCaseSheetToRxPdfData = async (
       const ingredients = [] as string[];
       let frequency;
       let genericName;
+      let routeOfAdministration;
       const plural =
         csRx.medicineUnit == MEDICINE_UNIT.ML ||
         csRx.medicineUnit == MEDICINE_UNIT.MG ||
@@ -204,7 +205,11 @@ export const convertCaseSheetToRxPdfData = async (
         frequency += '.';
       }
       const instructions = csRx.medicineInstructions;
-      const routeOfAdministration = _capitalize(csRx.routeOfAdministration);
+      if(csRx.medicineCustomDetails){
+        routeOfAdministration = null;
+      }else{
+        routeOfAdministration = _capitalize(csRx.routeOfAdministration);
+      }
       if (csRx.includeGenericNameInPrescription) {
         genericName = csRx.genericName;
       }
