@@ -16,6 +16,7 @@ import {
 import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 import { createPrismUser } from 'helpers/phrV1Services';
 import { getCache, delCache } from 'profiles-service/database/connectRedis';
+import { setCache } from 'consults-service/database/connectRedis';
 
 const REDIS_PATIENT_LOCK_PREFIX = `patient:lock:`;
 export const updatePatientTypeDefs = gql`
@@ -93,12 +94,16 @@ const updatePatient: Resolver<
   }
   Object.assign(patient, updateAttrs);
   if (patient.uhid == '' || patient.uhid == null) {
+    await setCache(lockKey, 'true', ApiConstants.CACHE_EXPIRATION_120);
     const uhidResp = await patientRepo.getNewUhid(patient);
     if (uhidResp.retcode == '0') {
       patient.uhid = uhidResp.result;
       patient.primaryUhid = uhidResp.result;
       patient.uhidCreatedDate = new Date();
-      await createPrismUser(patient, uhidResp.result.toString());
+      await createPrismUser(patient, uhidResp.result.toString()).catch(async (err) => {
+        throw new Error(AphErrorMessages.PRISM_CREATE_UHID_ERROR);
+        await delCache(lockKey);
+      });
     }
   }
   await patient.save();
