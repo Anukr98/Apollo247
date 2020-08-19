@@ -45,6 +45,12 @@ const useStyles = makeStyles((theme: Theme) => {
     chatQuesTxt: {
       lineHeight: '22px',
     },
+    imageUpload: {
+      overflow: 'hidden',
+      borderRadius: 10,
+      width: 130,
+      cursor: 'pointer',
+    },
   };
 });
 
@@ -52,6 +58,7 @@ interface PatientCardProps {
   message: string;
   chatTime: string;
   duration: string;
+  messageDetails: any;
 }
 
 export const PatientCard: React.FC<PatientCardProps> = (props) => {
@@ -75,6 +82,22 @@ export const PatientCard: React.FC<PatientCardProps> = (props) => {
                       : 'Doctor missed a voice call',
                 }}
               ></div>
+            ) : props.messageDetails.message === '^^#DocumentUpload' ? (
+              <div className={classes.imageUpload}>
+                {props.messageDetails.fileType === 'pdf' ? (
+                  <a href={props.messageDetails.url} target="_blank">
+                    <img src={require('images/pdf_thumbnail.png')} />
+                  </a>
+                ) : (
+                  <img
+                    src={props.messageDetails.url}
+                    alt={props.messageDetails.url}
+                    // onError={(e: any) => {
+                    //   handleImageError(e, props.messageDetails.url);
+                    // }}
+                  />
+                )}
+              </div>
             ) : (
               <>
                 <div
