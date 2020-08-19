@@ -267,6 +267,9 @@ function getCookieValue() {
   const ca = document.cookie.split(';');
   for (let i = 0; i < ca.length; i++) {
     let c = ca[i];
+    while (c.charAt(0) === ' ') {
+      c = c.substring(1);
+    }
     if (c.indexOf(name) === 0) {
       return c.substring(name.length, c.length);
     }
@@ -306,6 +309,8 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
     else if (!callerVideo && getCookieValue() === 'videocall') return `Doctor’s video is paused`;
     else return null;
   };
+  console.log(isCall, !subscribeToVideo, getCookieValue());
+  console.log(isCall && !subscribeToVideo && getCookieValue() === 'videocall');
 
   const sessionHandler = {
     connectionDestroyed: (event: any) => {
@@ -417,7 +422,7 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
       <div
         className={`${classes.videoChatWindow} ${
           props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''
-          }`}
+        }`}
       >
         {!props.showVideoChat && (
           <div className={classes.timerCls}>
@@ -462,12 +467,12 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
               console.log('Session Error', error);
               props.setSessionError(error);
             }}
-          // eventHandlers={{
-          //   connectionDestroyed: (event: any) => {
-          //     props.stopConsultCall();
-          //     setIscall(false);
-          //   },
-          // }}
+            // eventHandlers={{
+            //   connectionDestroyed: (event: any) => {
+            //     props.stopConsultCall();
+            //     setIscall(false);
+            //   },
+            // }}
           >
             <div
               className={`${classes.minimizeImg}
@@ -517,8 +522,8 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                       className={classes.maximizeImg}
                       src={
                         doctorDetails &&
-                          doctorDetails.getDoctorDetailsById &&
-                          doctorDetails.getDoctorDetailsById.photoUrl !== null
+                        doctorDetails.getDoctorDetailsById &&
+                        doctorDetails.getDoctorDetailsById.photoUrl !== null
                           ? doctorDetails.getDoctorDetailsById.photoUrl
                           : require('images/DefaultPatient_Video.svg')
                       }
@@ -529,8 +534,8 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                     className={classes.maximizeImg}
                     src={
                       doctorDetails &&
-                        doctorDetails.getDoctorDetailsById &&
-                        doctorDetails.getDoctorDetailsById.photoUrl !== null
+                      doctorDetails.getDoctorDetailsById &&
+                      doctorDetails.getDoctorDetailsById.photoUrl !== null
                         ? doctorDetails.getDoctorDetailsById.photoUrl
                         : require('images/DefaultPatient_Video.svg')
                     }
@@ -559,8 +564,8 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                         <img
                           src={
                             doctorDetails &&
-                              doctorDetails.getDoctorDetailsById &&
-                              doctorDetails.getDoctorDetailsById.photoUrl !== null
+                            doctorDetails.getDoctorDetailsById &&
+                            doctorDetails.getDoctorDetailsById.photoUrl !== null
                               ? doctorDetails.getDoctorDetailsById.photoUrl
                               : require('images/DefaultPatient_Video.svg')
                           }

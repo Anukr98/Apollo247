@@ -1177,9 +1177,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
 
   const setCookiesAcceptcall = () => {
-    const cookieStr = `action=${
-      callAudio === autoMessageStrings.videoCallMsg ? 'videocall' : 'audiocall'
-    }`;
+    // const cookieStr = `action=${
+    //   callAudio === autoMessageStrings.videoCallMsg ? 'videocall' : 'audiocall'
+    // }`;
+    const cookieStr = `action=${isVideoCall ? 'videocall' : 'audiocall'}`;
     document.cookie = cookieStr + ';path=/;';
   };
 
@@ -2033,7 +2034,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   messageDetails.entry.message === autoMessageStrings.videoCallMsg ||
                   messageDetails.entry.message === autoMessageStrings.acceptedCallMsg ||
                   messageDetails.entry.message === autoMessageStrings.stopConsultMsg ||
-                  messageDetails.entry.message === autoMessageStrings.startConsultMsg
+                  messageDetails.entry.message === autoMessageStrings.startConsultMsg ||
+                  messageDetails.entry.message === autoMessageStrings.covertVideoMsg ||
+                  messageDetails.entry.message === autoMessageStrings.covertAudioMsg
                 ) {
                   return null;
                 }
