@@ -688,7 +688,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const handleCallkitEventListeners = () => {
-    RNCallKeep.addEventListener('endCall', onDisconnetCallAction);
     RNCallKeep.addEventListener('answerCall', onAnswerCallAction);
   };
 
@@ -704,10 +703,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const onAnswerCallAction = () => {
     joinCallHandler();
-  };
-
-  const onDisconnetCallAction = () => {
-    handleEndCall();
   };
 
   const playSound = () => {
