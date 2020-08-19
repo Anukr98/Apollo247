@@ -51,6 +51,14 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 130,
       cursor: 'pointer',
     },
+    chatImgBubble: {
+      padding: 0,
+      border: 'none',
+      '& img': {
+        maxWidth: '100%',
+        verticalAlign: 'middle',
+      },
+    },
   };
 });
 
@@ -85,26 +93,28 @@ export const PatientCard: React.FC<PatientCardProps> = (props) => {
                 }}
               ></div>
             ) : props.messageDetails.message === '^^#DocumentUpload' ? (
-              <div
-                className={classes.imageUpload}
-                onClick={() => {
-                  props.setModalOpen(props.messageDetails.fileType === 'pdf' ? false : true);
-                  props.setImgPrevUrl(props.messageDetails.url);
-                }}
-              >
-                {props.messageDetails.fileType === 'pdf' ? (
-                  <a href={props.messageDetails.url} target="_blank">
-                    <img src={require('images/pdf_thumbnail.png')} />
-                  </a>
-                ) : (
-                  <img
-                    src={props.messageDetails.url}
-                    alt={props.messageDetails.url}
-                    // onError={(e: any) => {
-                    //   handleImageError(e, props.messageDetails.url);
-                    // }}
-                  />
-                )}
+              <div className={classes.chatImgBubble}>
+                <div
+                  className={classes.imageUpload}
+                  onClick={() => {
+                    props.setModalOpen(props.messageDetails.fileType === 'pdf' ? false : true);
+                    props.setImgPrevUrl(props.messageDetails.url);
+                  }}
+                >
+                  {props.messageDetails.fileType === 'pdf' ? (
+                    <a href={props.messageDetails.url} target="_blank">
+                      <img src={require('images/pdf_thumbnail.png')} />
+                    </a>
+                  ) : (
+                    <img
+                      src={props.messageDetails.url}
+                      alt={props.messageDetails.url}
+                      // onError={(e: any) => {
+                      //   handleImageError(e, props.messageDetails.url);
+                      // }}
+                    />
+                  )}
+                </div>
               </div>
             ) : (
               <>

@@ -60,6 +60,14 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 2,
       display: 'block',
     },
+    chatImgBubble: {
+      padding: 0,
+      border: 'none',
+      '& img': {
+        maxWidth: '100%',
+        verticalAlign: 'middle',
+      },
+    },
   };
 });
 
@@ -77,7 +85,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   return (
     <div className={classes.doctorCardMain}>
       <div className={classes.doctorAvatar}>
-        <Avatar className={classes.avatar} src={require('images/ic_mascot_male.png')} alt="" />
+        {message.toLocaleLowerCase() !== 'video call ended' &&
+          message.toLocaleLowerCase() !== 'audio call ended' && (
+            <Avatar className={classes.avatar} src={require('images/ic_mascot_male.png')} alt="" />
+          )}
       </div>
       {props.duration === '00 : 00' ? (
         <div
@@ -101,20 +112,22 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <span className={classes.durationMsg}>Duration- {props.duration}</span>
         </div>
       ) : props.messageDetails.message === '^^#DocumentUpload' ? (
-        <div
-          className={classes.imageUpload}
-          onClick={() => {
-            props.setModalOpen(props.messageDetails.fileType === 'pdf' ? false : true);
-            props.setImgPrevUrl(props.messageDetails.url);
-          }}
-        >
-          {props.messageDetails.fileType === 'pdf' ? (
-            <a href={props.messageDetails.url} target="_blank">
-              <img src={require('images/pdf_thumbnail.png')} />
-            </a>
-          ) : (
-            <img src={props.messageDetails.url} alt={props.messageDetails.url} />
-          )}
+        <div className={classes.chatImgBubble}>
+          <div
+            className={classes.imageUpload}
+            onClick={() => {
+              props.setModalOpen(props.messageDetails.fileType === 'pdf' ? false : true);
+              props.setImgPrevUrl(props.messageDetails.url);
+            }}
+          >
+            {props.messageDetails.fileType === 'pdf' ? (
+              <a href={props.messageDetails.url} target="_blank">
+                <img src={require('images/pdf_thumbnail.png')} />
+              </a>
+            ) : (
+              <img src={props.messageDetails.url} alt={props.messageDetails.url} />
+            )}
+          </div>
         </div>
       ) : (
         <div
