@@ -59,6 +59,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 10,
       marginTop: 2,
       display: 'block',
+      position: 'relative',
+      top: -15,
+      left: 30,
+      width: '70%',
     },
     chatImgBubble: {
       padding: 0,
@@ -67,6 +71,22 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: '100%',
         verticalAlign: 'middle',
       },
+    },
+    audioCall: {
+      background: 'transparent',
+      boxShadow: 'none',
+      padding: 0,
+      color: '#02475B',
+      marginLeft: 10,
+      position: 'relative',
+      top: -4,
+    },
+    missedCall: {
+      background: 'transparent',
+      boxShadow: 'none',
+      padding: 0,
+      color: '#890000',
+      marginLeft: 10,
     },
   };
 });
@@ -91,26 +111,30 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           )}
       </div>
       {props.duration === '00 : 00' ? (
-        <div
-          className={`${classes.blueBubble} ${classes.petient} `}
-          dangerouslySetInnerHTML={{
-            __html:
-              message.toLocaleLowerCase() === 'video call ended'
-                ? 'You missed a video call'
-                : 'You missed a voice call',
-          }}
-        ></div>
+        <>
+          <img src={require('images/ic_missedcall.svg')} />
+          <div
+            className={`${classes.blueBubble} ${classes.petient} ${classes.missedCall}`}
+            dangerouslySetInnerHTML={{
+              __html:
+                message.toLocaleLowerCase() === 'video call ended'
+                  ? 'You missed a video call'
+                  : 'You missed a voice call',
+            }}
+          ></div>
+        </>
+
       ) : props.duration ? (
         <div>
           <img src={require('images/ic_round_call.svg')} />
           <div
-            className={`${classes.blueBubble} ${classes.petient} `}
+            className={`${classes.blueBubble} ${classes.petient} ${classes.audioCall}`}
             dangerouslySetInnerHTML={{
               __html: message.replace(/\<(?!br).*?\>/g, ''),
             }}
           ></div>
           <span className={classes.durationMsg}>Duration- {props.duration}</span>
-        </div>
+        </div >
       ) : props.messageDetails.message === '^^#DocumentUpload' ? (
         <div className={classes.chatImgBubble}>
           <div
@@ -125,16 +149,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 <img src={require('images/pdf_thumbnail.png')} />
               </a>
             ) : (
-              <img src={props.messageDetails.url} alt={props.messageDetails.url} />
-            )}
+                <img src={props.messageDetails.url} alt={props.messageDetails.url} />
+              )}
           </div>
         </div>
       ) : (
-        <div
-          className={`${classes.blueBubble} ${classes.petient} `}
-          dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}
-        ></div>
-      )}
-    </div>
+              <div
+                className={`${classes.blueBubble} ${classes.petient} `}
+                dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}
+              ></div>
+            )}
+    </div >
   );
 };
