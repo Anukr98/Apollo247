@@ -75,6 +75,8 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       width: 680,
       outline: 'none',
+      maxHeight: '90vh',
+      overflow: 'auto',
     },
     dialogHeader: {
       padding: 20,
@@ -142,6 +144,7 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '4px 0',
         marginRight: 8,
         minWidth: 'auto',
+        wordBreak: 'break-all',
         [theme.breakpoints.down('sm')]: {
           marginRight: 6,
         },
