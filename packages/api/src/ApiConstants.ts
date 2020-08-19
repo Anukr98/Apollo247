@@ -163,7 +163,8 @@ export enum ApiConstants {
   DAILY_APPOINTMENT_SUMMARY_RESPONSE = 'Daily Appointment summaries have been sent to {0} Doctor(s) successfully',
   FOLLOW_UP_NOTIFICATION_RESPONSE = 'Follow up notifications sent to {0} patients successfully',
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
-  PRESCRIPTION_READY_BODY = 'Hi {0}! Your prescription from consultation with Doctor {1} for appointment {2} on {3} is ready :) ',
+  PRESCRIPTION_READY_BODY = 'Hi {0}! Your prescription from consultation with Doctor {1} for appointment {2} on {3} is ready :)',
+
 
   REFERRAL_CODE_TEXT = 'Hi {0}, Use code "CARE247" to avail discount up to Rs. 149  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
   REFERRAL_CODE_TEXT_WITH_COUPON = 'Hi {0}, Use code "{1}" to avail discount up to Rs. 299  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/XF7MWPebtkw',
@@ -452,6 +453,9 @@ export enum ApiConstants {
   ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE = 'R000247',
 
   PARTNER_SBI = 'SBIYONO',
+
+  PRESCRIPTION_DEEPLINK_PLACEHOLDER = '<caseSheetId>',
+  PRESCRIPTION_CLICK_HERE = 'Click here to access the Prescription:'
 }
 
 export enum PATIENT_REPO_RELATIONS {

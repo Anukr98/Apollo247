@@ -209,6 +209,7 @@ type PushNotificationInput = {
   appointmentId: string;
   doctorNotification?: boolean;
   blobName?: string;
+  data?: any
 };
 
 type CartPushNotificationInput = {
@@ -1139,11 +1140,25 @@ export async function sendNotification(
       .replace('{1}', doctorDetails.firstName)
       .replace('{2}', appointment.displayId.toString())
       .replace('{3}', format(appointment.appointmentDateTime, 'yyyy-MM-dd'));
-    let smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
 
-    smsLink = notificationBody + smsLink;
-    //notificationBody = notificationBody + process.env.SMS_LINK ? process.env.SMS_LINK : '';
-    sendNotificationSMS(patientDetails.mobileNumber, smsLink);
+
+    if (!process.env.DEEPLINK_PRESCRIPTION) {
+      log('notificationServiceLogger', AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING, 'notifications.ts/sendNotification', '', AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING);
+      throw new AphError(AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING, undefined, undefined);
+    }
+
+    let prescriptionDeeplink: string = process.env.DEEPLINK_PRESCRIPTION
+
+    const { caseSheetId = null } = pushNotificationInput.data;
+    if (!caseSheetId) {
+      throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined, undefined);
+    }
+
+    prescriptionDeeplink = `${notificationBody} ${ApiConstants.PRESCRIPTION_CLICK_HERE} ${prescriptionDeeplink.replace(ApiConstants.PRESCRIPTION_DEEPLINK_PLACEHOLDER, caseSheetId)}`;
+
+    sendNotificationSMS(patientDetails.mobileNumber, prescriptionDeeplink);
+
+    // not sending whatsapp, leaving code here for future implementation purposes
     //sendNotificationWhatsapp(patientDetails.mobileNumber, smsLink);
   } else if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_PAYMENT_REFUND
