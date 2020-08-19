@@ -223,7 +223,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       {
         message: {
           isTyping: true,
-          message: '^^callme`stop^^',
+          message: '^^#PATIENT_REJECTED_CALL',
           id: voipPatientId.current,
           messageDate: new Date(),
         },
