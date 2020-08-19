@@ -8,7 +8,7 @@ APPCENTER_OWNER_NAME = "sankeerth.obulam-popcornapps.com"
 APPCENTER_APP_NAME_IOS = "Apollo"
 APPCENTER_APP_NAME_ANDROID = "Apollo-1"
 APPCENTER_DISTRIBUTE_DESTINATIONS = "Internal Testers,Bibhas"
-APPCENTER_DISTRIBUTE_RELEASE_NOTES = "Env: QA, ReleaseTag: v4.0.0"
+APPCENTER_DISTRIBUTE_RELEASE_NOTES = "Env: , ReleaseTag: "
 # Set to false if you don't want to notify testers of your new release
 APPCENTER_DISTRIBUTE_NOTIFY_TESTERS = true 
 
