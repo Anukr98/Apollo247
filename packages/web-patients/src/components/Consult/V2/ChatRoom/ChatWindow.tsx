@@ -29,6 +29,8 @@ import {
   GET_APPOINTMENT_DATA,
   UPDATE_APPOINTMENT_SESSION,
 } from 'graphql/consult';
+import { downloadDocuments } from 'graphql/types/downloadDocuments';
+import { DOWNLOAD_DOCUMENT } from 'graphql/profiles';
 import {
   AddToConsultQueueWithAutomatedQuestions,
   AddToConsultQueueWithAutomatedQuestionsVariables,
@@ -802,9 +804,8 @@ interface MessagesObjectProps {
   transferInfo: any;
   messageDate: string;
   cardType: string;
-  // username: string;
-  // text: string;
 }
+let insertText: MessagesObjectProps[] = [];
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
 const ringtoneUrl = require('../../../../images/phone_ringing.mp3');
@@ -873,8 +874,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const scrollDivRef = useRef(null);
   const apolloClient = useApolloClient();
 
-  console.log(currentPatient);
-
   //AV states
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
   const [isCalled, setIsCalled] = useState<boolean>(false);
@@ -906,11 +905,33 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     AddToConsultQueueWithAutomatedQuestionsVariables
   >(JOIN_JDQ_WITH_AUTOMATED_QUESTIONS);
 
+  const getPrismUrls = (patientId: string, fileIds: string[]) => {
+    return new Promise((res, rej) => {
+      apolloClient
+        .query<downloadDocuments>({
+          query: DOWNLOAD_DOCUMENT,
+          fetchPolicy: 'no-cache',
+          variables: {
+            downloadDocumentsInput: {
+              patientId: patientId,
+              fileIds: fileIds,
+            },
+          },
+        })
+        .then(({ data }) => {
+          res({ urls: data && data.downloadDocuments && data.downloadDocuments.downloadPaths });
+        })
+        .catch((err: any) => {
+          console.log(err);
+        });
+    });
+  };
   const pubnubClient = new PubNub({
     publishKey: process.env.PUBLISH_KEY,
     subscribeKey: process.env.SUBSCRIBE_KEY,
     uuid: currentPatient && currentPatient.id,
     ssl: false,
+    origin: 'apollo.pubnubapi.com',
   });
 
   const scrollToBottomAction = () => {
@@ -919,10 +940,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       scrollDiv.scrollIntoView();
     }, 200);
   };
-
-  //console.log('pubnub messages.......', messages);
-  // console.log(appointmentDetails, 'appointment details.......');
-  // console.log(autoQuestionsCompleted, 'auto question status.....................');
 
   // subscribe for any udpates
   useEffect(() => {
@@ -990,11 +1007,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             setShowVideo(false);
             setPlayRingtone(false);
           }
-          const messageObject = {
-            timetoken: message.timetoken,
-            entry: message.message,
-          };
-          setNewMessage(messageObject);
+          // const messageObject = {
+          //   timetoken: message.timetoken,
+          //   entry: message.message,
+          // };
+          insertText[insertText.length] = message.message;
+          setMessages(() => [...insertText]);
           scrollToBottomAction();
         },
       });
@@ -1003,9 +1021,22 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       pubnubClient.history(
         { channel: appointmentId, count: 100, stringifiedTimeToken: true },
         (status: PubnubStatus, response: HistoryResponse) => {
-          console.log(response.messages.length, 'messages length.......');
           if (response.messages.length === 0) sendWelcomeMessage();
-          setMessages(response.messages);
+
+          const newmessage: MessagesObjectProps[] = messages;
+          response.messages.forEach((element: any, index: number) => {
+            const item = element.entry;
+            if (item.prismId) {
+              getPrismUrls(currentPatient && currentPatient.id, item.prismId).then((data: any) => {
+                item.url = (data && data.urls[0]) || item.url;
+              });
+              newmessage[index] = item;
+            } else {
+              newmessage.push(element.entry);
+            }
+          });
+          insertText = newmessage;
+          setMessages(newmessage);
           scrollToBottomAction();
         }
       );
@@ -1015,14 +1046,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     }
   }, [appointmentId]);
 
-  useEffect(() => {
-    // console.log(newMessage, 'new message in useeffect is.......');
-    if (Object.keys(newMessage).length > 0) {
-      const exisitingMessages = messages;
-      exisitingMessages.push(newMessage);
-      setMessages([...exisitingMessages]);
-    }
-  }, [newMessage]);
+  // useEffect(() => {
+  //   // console.log(newMessage, 'new message in useeffect is.......');
+  //   if (Object.keys(newMessage).length > 0) {
+  //     const exisitingMessages = messages;
+  //     exisitingMessages.push(newMessage);
+  //     setMessages([...exisitingMessages]);
+  //   }
+  // }, [newMessage]);
 
   // publish a message to pubnub channel
   const publishMessage = (channelName: string, message: any) => {
@@ -1177,9 +1208,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
 
   const setCookiesAcceptcall = () => {
-    const cookieStr = `action=${
-      callAudio === autoMessageStrings.videoCallMsg ? 'videocall' : 'audiocall'
-    }`;
+    const cookieStr = `action=${isVideoCall ? 'videocall' : 'audiocall'}`;
     document.cookie = cookieStr + ';path=/;';
   };
 
@@ -1832,7 +1861,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const slickGotoSlide = (slideNo: number) => {
     sliderRef.current.slickGoTo(slideNo);
   };
-
+  const getCardType = (messageDetails: any) => {
+    if (messageDetails && messageDetails.cardType) {
+      return messageDetails.cardType;
+    } else if (messageDetails.id === currentPatient.id) {
+      return 'patient';
+    } else {
+      return 'doctor';
+    }
+  };
   const bpInput = () => {
     return (
       <div>
@@ -1987,12 +2024,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 <div className={classes.incomingCallContainer}>
                   <div className={classes.incomingCallWindow}>
                     <img
-                      src={require('images/doctor_profile_image.png')}
-                      // src={
-                      //   profileImage !== null
-                      //     ? profileImage
-                      //     : require('images/doctor_profile_image.png')
-                      // }
+                      src={
+                        props.doctorDetails &&
+                        props.doctorDetails.getDoctorDetailsById &&
+                        props.doctorDetails.getDoctorDetailsById.photoUrl !== null
+                          ? props.doctorDetails.getDoctorDetailsById.photoUrl
+                          : require('images/doctor_profile_image.png')
+                      }
                     />
                     <div className={classes.callOverlay}>
                       <div className={classes.topText}>Ringing</div>
@@ -2017,37 +2055,44 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               autoHeightMax={'calc(100vh - 332px)'}
             >
               {messages.map((messageDetails: any) => {
-                const cardType =
-                  messageDetails.entry && messageDetails.entry.cardType
-                    ? messageDetails.entry.cardType
-                    : 'doctor';
+                const cardType = getCardType(messageDetails);
+
                 const message =
-                  messageDetails.entry && messageDetails.entry.message
-                    ? messageDetails.entry.message
-                    : '';
+                  messageDetails && messageDetails.message ? messageDetails.message : '';
+                if (messageDetails.message === '^^#DocumentUpload') {
+                  console.log(messageDetails);
+                }
                 if (
-                  messageDetails.entry.message === autoMessageStrings.typingMsg ||
-                  messageDetails.entry.message === autoMessageStrings.endCallMsg ||
-                  messageDetails.entry.message === autoMessageStrings.audioCallMsg ||
-                  messageDetails.entry.message === autoMessageStrings.videoCallMsg ||
-                  messageDetails.entry.message === autoMessageStrings.acceptedCallMsg ||
-                  messageDetails.entry.message === autoMessageStrings.stopConsultMsg ||
-                  messageDetails.entry.message === autoMessageStrings.startConsultMsg
+                  messageDetails.message === autoMessageStrings.typingMsg ||
+                  messageDetails.message === autoMessageStrings.endCallMsg ||
+                  messageDetails.message === autoMessageStrings.audioCallMsg ||
+                  messageDetails.message === autoMessageStrings.videoCallMsg ||
+                  messageDetails.message === autoMessageStrings.acceptedCallMsg ||
+                  messageDetails.message === autoMessageStrings.stopConsultMsg ||
+                  messageDetails.message === autoMessageStrings.startConsultMsg ||
+                  messageDetails.message === autoMessageStrings.covertVideoMsg ||
+                  messageDetails.message === autoMessageStrings.covertAudioMsg
                 ) {
                   return null;
                 }
-                const duration = messageDetails.entry.duration;
-                console.log(duration);
+                const duration = messageDetails.duration;
                 if (cardType === 'welcome') {
                   return <WelcomeCard doctorName={doctorDisplayName} />;
                 } else if (cardType === 'doctor') {
-                  return <DoctorCard message={message} duration={duration} />;
+                  return (
+                    <DoctorCard
+                      message={message}
+                      duration={duration}
+                      messageDetails={messageDetails}
+                    />
+                  );
                 } else {
                   return (
                     <PatientCard
                       message={message}
                       duration={duration}
-                      chatTime={messageDetails.entry.messageDate}
+                      chatTime={messageDetails.messageDate}
+                      messageDetails={messageDetails}
                     />
                   );
                 }
