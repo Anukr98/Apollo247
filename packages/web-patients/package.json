@@ -7,12 +7,12 @@
   "private": true,
   "scripts": {
     "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./node_modules/@aph/api-schema/schema.json --target=typescript --queries=./src/graphql/**.ts",
-    "build": "webpack",
+    "build": "TS_NODE_PROJECT=tsconfig.webpack.json webpack",
     "format": "prettier --list-different '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "format:fix": "prettier --write '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
-    "start": "rm -rf dist/* && npm run apollo:codegen && webpack-dev-server",
+    "start": "npm run apollo:codegen && TS_NODE_PROJECT=tsconfig.webpack.json webpack-dev-server --compress",
     "test": "cypress open --project src",
     "typecheck": "tsc --project . --noEmit"
   },

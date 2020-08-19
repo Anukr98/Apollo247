@@ -39,6 +39,14 @@ const plugins = [
     inject: true,
     favicon: './favicon.svg',
   }),
+  // new webpack.optimize.AggressiveSplittingPlugin({
+  //   minSize: 1000000,
+  //   maxSize: 3000000,
+  // }),
+  // new AggressiveMergingPlugin({
+  //   minSizeReduce: 2,
+  //   moveToParents: true,
+  // }),
   new MomentLocalesPlugin(),
   // new BundleAnalyzerPlugin(),
 ];
