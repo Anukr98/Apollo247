@@ -311,6 +311,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       AsyncStorage.removeItem('scrollToEnd');
       AsyncStorage.removeItem('callDataSend');
       AsyncStorage.removeItem('patientName');
+      AsyncStorage.removeItem('postWebEngageData');
       KeepAwake.deactivate();
       pubnub.unsubscribeAll();
       pubnub.stop();
@@ -454,18 +455,27 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
-  const postBackendWebEngage = (eventType: WebEngageEvent) => {
+  const postBackendWebEngage = async (eventType: WebEngageEvent) => {
+    const postData: {
+      consultMode: ConsultMode;
+      displayId: string;
+      doctorFullName: string;
+      mobileNumber: string;
+    } | null = JSON.parse((await AsyncStorage.getItem('postWebEngageData')) || '');
     client
       .mutate<postDoctorConsultEvent, postDoctorConsultEventVariables>({
         mutation: POST_WEB_ENGAGE,
         variables: {
           doctorConsultEventInput: {
             consultID: channel,
-            consultMode: (g(appointmentData, 'appointmentType') ||
+            consultMode:
+              (postData && postData.consultMode) ||
+              g(appointmentData, 'appointmentType') ||
               g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentType') ||
-              ConsultMode.BOTH) as ConsultMode,
+              ConsultMode.BOTH,
             displayId:
               (
+                (postData && postData.displayId) ||
                 g(appointmentData, 'displayId') ||
                 g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') ||
                 ''
@@ -473,11 +483,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               (g(appointmentData, 'displayId') || '').toString() ||
               '',
             doctorFullName:
+              (postData && postData.doctorFullName) ||
               g(doctorDetails, 'fullName') ||
               g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'fullName') ||
               '',
             eventName: eventType,
-            mobileNumber: g(caseSheet, 'patientDetails', 'mobileNumber') || '',
+            mobileNumber:
+              (postData && postData.mobileNumber) ||
+              g(caseSheet, 'patientDetails', 'mobileNumber') ||
+              '',
           },
         },
       })
@@ -598,6 +612,19 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     return famHist;
   };
   const setData = (caseSheet: GetCaseSheet_getCaseSheet | null | undefined) => {
+    AsyncStorage.setItem(
+      'postWebEngageData',
+      JSON.stringify({
+        consultMode:
+          g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentType') || ConsultMode.BOTH,
+        displayId:
+          (g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') || '').toString() || '',
+        doctorFullName:
+          g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'fullName') || '',
+        mobileNumber: g(caseSheet, 'patientDetails', 'mobileNumber') || '',
+      })
+    );
+
     callData.setCallerName(
       `${g(caseSheet, 'patientDetails', 'firstName') || ''} ${g(
         caseSheet,
