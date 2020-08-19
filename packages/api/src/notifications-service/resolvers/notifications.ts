@@ -526,8 +526,9 @@ export async function sendCallsNotification(
   if (
     voipPushtoken.length &&
     voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
-    callType != APPT_CALL_TYPE.CHAT
-    && numberOfParticipants && numberOfParticipants < 2
+    callType != APPT_CALL_TYPE.CHAT &&
+    numberOfParticipants &&
+    numberOfParticipants < 2
   ) {
     hitCallKitCurl(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
@@ -2570,7 +2571,7 @@ const sendDailyAppointmentSummary: Resolver<
         //await delay(350);
         console.log('pdf end');
         //const blobName = await uploadPdfFileToBlobStorage(fileName, uploadPath);
-        blobNames += fileName + ', ';
+        //blobNames += fileName + ', ';
         const pdfurl = fileName + '/' + totalAppointments + '/' + doctorDetails[0].mobileNumber;
         allPdfs.push(pdfurl);
         //console.log(blobName, 'blob names');
