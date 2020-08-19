@@ -30,7 +30,7 @@ import {
 } from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { getDeviceType } from 'helpers/commonHelpers';
+import { getDeviceType, getCouponByUserMobileNumber } from 'helpers/commonHelpers';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 import _compact from 'lodash/compact';
 import _find from 'lodash/find';
@@ -75,12 +75,8 @@ import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
 import { gtmTracking, _obTracking } from '../../gtmTracking';
-import {
-  validatePharmaCoupon_validatePharmaCoupon,
-  validatePharmaCoupon,
-} from 'graphql/types/validatePharmaCoupon';
+import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
 import { Route } from 'react-router-dom';
-import { VALIDATE_PHARMA_COUPONS } from 'graphql/medicines';
 import { getItemSpecialPrice } from '../PayMedicine';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
@@ -909,8 +905,6 @@ export const MedicineCart: React.FC = (props) => {
 
   // coupon related code
 
-  const couponMutation = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS);
-
   const validateCoupon = () => {
     if (couponCode.length > 0 && currentPatient && currentPatient.id) {
       const data = {
@@ -956,11 +950,33 @@ export const MedicineCart: React.FC = (props) => {
     }
   };
 
+  const getCouponByMobileNumber = () => {
+    getCouponByUserMobileNumber()
+      .then((resp: any) => {
+        if (resp.errorCode == 0 && resp.response && resp.response.length > 0) {
+          const couponCode = resp.response[0].coupon;
+          setCouponCode(couponCode || '');
+        } else {
+          setCouponCode && setCouponCode('');
+        }
+      })
+      .catch((e: any) => {
+        console.log(e);
+        setCouponCode('');
+      });
+  };
+
   useEffect(() => {
     if (!nonCartFlow && cartItems.length > 0 && couponCode.length > 0) {
       validateCoupon();
     }
   }, [couponCode, cartItems]);
+
+  useEffect(() => {
+    if (!nonCartFlow && cartItems.length > 0 && !couponCode) {
+      getCouponByMobileNumber();
+    }
+  }, []);
 
   const paymentMutation = useMutation<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>(
     SAVE_MEDICINE_ORDER_OMS,
@@ -1157,7 +1173,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);

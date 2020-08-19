@@ -85,6 +85,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getRefundsAndPaymentsByOrderId(id: MedicineOrders['id']) {
     const paymentType = MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS;
     return MedicineOrderPayments.createQueryBuilder('medicineOrderPayments')
+      .innerJoinAndSelect('medicineOrderPayments.medicineOrders', 'medicineOrders')
       .leftJoinAndSelect('medicineOrderPayments.medicineOrderRefunds', 'medicineOrderRefunds')
       .where('medicineOrderPayments.medicineOrders = :id', { id })
       .getOne();

@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
+import { getToken } from 'profiles-service/helpers/itdoseHelper'
 import {
   DIAGNOSTICS_TYPE,
   TEST_COLLECTION_TYPE,
@@ -10,8 +11,9 @@ import {
 import { DiagnosticsRepository } from 'profiles-service/repositories/diagnosticsRepository';
 import { DiagnosticOrgansRepository } from 'profiles-service/repositories/diagnosticOrgansRepository';
 import fetch from 'node-fetch';
+import FormData from 'form-data'
 import { format } from 'date-fns';
-import { AphError } from 'AphError';
+import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 
@@ -61,6 +63,15 @@ export const diagnosticsTypeDefs = gql`
     diagnosticBranchCode: String
   }
 
+  type DiagnosticItdoseSlotsResult{
+    slotInfo: [ItdoseSlotInfo]
+  }
+
+  type ItdoseSlotInfo {
+    TimeslotID: String
+    Timeslot: String
+  }
+
   type EmployeeSlots {
     employeeCode: String
     employeeName: String
@@ -108,6 +119,11 @@ export const diagnosticsTypeDefs = gql`
       selectedDate: Date
       zipCode: Int
     ): DiagnosticSlotsResult!
+    getDiagnosticItDoseSlots(
+      patientId: String
+      selectedDate: Date
+      zipCode: Int
+    ): DiagnosticItdoseSlotsResult!
     getDiagnosticsData: DiagnosticsData!
   }
 `;
@@ -145,6 +161,15 @@ type DiagnosticSlotsResult = {
   diagnosticSlot: EmployeeSlots[];
   diagnosticBranchCode: string;
 };
+
+type DiagnosticItdoseSlotsResult = {
+  slotInfo: ItdoseSlotInfo[];
+}
+
+type ItdoseSlotInfo = {
+  TimeslotID: string;
+  Timeslot: string;
+}
 
 type EmployeeSlots = {
   employeeCode: string;
@@ -264,6 +289,51 @@ const getDiagnosticSlots: Resolver<
   return { diagnosticBranchCode: hubDetails.route, diagnosticSlot };
 };
 
+const getDiagnosticItDoseSlots: Resolver<
+  null,
+  { patientId: String; selectedDate: Date; zipCode: number },
+  ProfilesServiceContext,
+  DiagnosticItdoseSlotsResult
+> = async (patient, args, { profilesDb }) => {
+  const token = await getToken()
+  const diagnosticRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
+  const area = await diagnosticRepo.findAreabyZipCode(args.zipCode.toString());
+  if (!area || !area?.area_id) {
+    throw new AphUserInputError(AphErrorMessages.INVALID_ZIPCODE)
+  }
+  const diagnosticSlotURL = process.env.DIAGNOSTICS_ITDOSE_SLOTS_URL
+  if (!diagnosticSlotURL) {
+    throw new AphError(AphErrorMessages.ITDOSE_GET_SLOTS_ERROR, undefined, { "cause": "add env DIAGNOSTICS_ITDOSE_LOGIN_URL" })
+  }
+  const formatDate = format(args.selectedDate, 'yyyy-MM-dd');
+  const apiUrl = `${diagnosticSlotURL}`
+  const form = new FormData();
+  form.append('AreaID', area?.area_id);
+  form.append('Pincode', args.zipCode.toString())
+  form.append('AppointmentDate', formatDate)
+  let options = {
+    method: 'POST',
+    body: form,
+    headers: { authorization: `Bearer ${token}`, ...form.getHeaders() }
+  }
+  const diagnosticSlot = await fetch(apiUrl, options)
+    .then((res) => res.json())
+    .catch((error) => {
+      log(
+        'profileServiceLogger',
+        'API_CALL_ERROR',
+        'getDiagnosticSlots()->CATCH_BLOCK',
+        '',
+        JSON.stringify(error)
+      );
+      throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, { "cause": error.toString() });
+    });
+  if (diagnosticSlot.status != true || !diagnosticSlot.data) {
+    throw new AphError(AphErrorMessages.ITDOSE_GET_SLOTS_ERROR, undefined, { "response": diagnosticSlot });
+  }
+  return { slotInfo: diagnosticSlot.data };
+}
+
 const getDiagnosticsData: Resolver<null, {}, ProfilesServiceContext, DiagnosticsData> = async (
   patent,
   args,
@@ -280,6 +350,7 @@ export const diagnosticsResolvers = {
     searchDiagnostics,
     getDiagnosticsCites,
     getDiagnosticSlots,
+    getDiagnosticItDoseSlots,
     getDiagnosticsData,
     searchDiagnosticsById,
   },
