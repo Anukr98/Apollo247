@@ -157,7 +157,11 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
       //console.log(redisMedKeys[k], 'key');
       const skuDets = await hgetAllCache(redisMedKeys[k]);
       //console.log(skuDets, 'indise key');
-      if (skuDets && skuDets.url_key && skuDets.status == 'Enabled') {
+      if (
+        skuDets &&
+        skuDets.url_key &&
+        (skuDets.status == 'Enabled' || skuDets.status == 'enabled')
+      ) {
         medicineUrls += `<url>\n<loc>${
           process.env.SITEMAP_BASE_URL
         }medicine/${skuDets.url_key.toString()}</loc>\n<lastmod>${modifiedDate}</lastmod>\n</url>\n`;
