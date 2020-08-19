@@ -13,7 +13,6 @@ import {
   AphDialogTitle,
 } from '@aph/web-ui-components';
 import Slider from 'react-slick';
-import ApolloClient from 'apollo-client';
 import { ChatVideo } from 'components/Consult/V2/ChatRoom/ChatVideo';
 import WarningModel from 'components/WarningModel';
 import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
