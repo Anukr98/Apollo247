@@ -1833,7 +1833,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const slickGotoSlide = (slideNo: number) => {
     sliderRef.current.slickGoTo(slideNo);
   };
-
+  const getCardType = (messageDetails: any) => {
+    if (messageDetails.entry && messageDetails.entry.cardType) {
+      return messageDetails.entry.cardType;
+    } else if (messageDetails.entry.id === currentPatient.id) {
+      return 'patient';
+    } else {
+      return 'doctor';
+    }
+  };
   const bpInput = () => {
     return (
       <div>
@@ -2019,14 +2027,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               autoHeightMax={'calc(100vh - 332px)'}
             >
               {messages.map((messageDetails: any) => {
-                const cardType =
-                  messageDetails.entry && messageDetails.entry.cardType
-                    ? messageDetails.entry.cardType
-                    : 'doctor';
+                const cardType = getCardType(messageDetails);
+
                 const message =
                   messageDetails.entry && messageDetails.entry.message
                     ? messageDetails.entry.message
                     : '';
+                if (messageDetails.entry.message === '^^#DocumentUpload') {
+                  console.log(messageDetails.entry);
+                }
                 if (
                   messageDetails.entry.message === autoMessageStrings.typingMsg ||
                   messageDetails.entry.message === autoMessageStrings.endCallMsg ||
@@ -2041,17 +2050,23 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   return null;
                 }
                 const duration = messageDetails.entry.duration;
-                console.log(duration);
                 if (cardType === 'welcome') {
                   return <WelcomeCard doctorName={doctorDisplayName} />;
                 } else if (cardType === 'doctor') {
-                  return <DoctorCard message={message} duration={duration} />;
+                  return (
+                    <DoctorCard
+                      message={message}
+                      duration={duration}
+                      messageDetails={messageDetails.entry}
+                    />
+                  );
                 } else {
                   return (
                     <PatientCard
                       message={message}
                       duration={duration}
                       chatTime={messageDetails.entry.messageDate}
+                      messageDetails={messageDetails.entry}
                     />
                   );
                 }

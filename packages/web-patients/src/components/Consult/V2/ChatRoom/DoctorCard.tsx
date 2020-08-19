@@ -17,6 +17,12 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.common.white,
       marginBottom: 5,
     },
+    imageUpload: {
+      overflow: 'hidden',
+      borderRadius: 10,
+      width: 130,
+      cursor: 'pointer',
+    },
     petient: {
       color: '#fff',
       textAlign: 'left',
@@ -60,6 +66,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface DoctorCardProps {
   message: string;
   duration: string;
+  messageDetails: any;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -90,6 +97,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             }}
           ></div>
           <span className={classes.durationMsg}>Duration- {props.duration}</span>
+        </div>
+      ) : props.messageDetails.message === '^^#DocumentUpload' ? (
+        <div className={classes.imageUpload}>
+          {props.messageDetails.fileType === 'pdf' ? (
+            <a href={props.messageDetails.url} target="_blank">
+              <img src={require('images/pdf_thumbnail.png')} />
+            </a>
+          ) : (
+            <img src={props.messageDetails.url} alt={props.messageDetails.url} />
+          )}
         </div>
       ) : (
         <div
