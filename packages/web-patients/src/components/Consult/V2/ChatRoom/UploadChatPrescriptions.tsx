@@ -291,11 +291,10 @@ export const UploadChatPrescription: React.FC<UploadPrescriptionProps> = (props)
                                             const text = {
                                               id: patientId,
                                               message: '^^#DocumentUpload',
-                                              fileType: ((data.urls && data.urls[0]) || '').match(
-                                                /\.(pdf)$/
-                                              )
-                                                ? 'pdf'
-                                                : 'image',
+                                              fileType:
+                                                fileExtension.toLowerCase() === 'pdf'
+                                                  ? 'pdf'
+                                                  : 'image',
                                               prismId: recordId,
                                               url: (data.urls && data.urls[0]) || '',
                                               messageDate: new Date(),
