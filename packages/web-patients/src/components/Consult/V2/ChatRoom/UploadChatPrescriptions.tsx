@@ -174,10 +174,8 @@ export const UploadChatPrescription: React.FC<UploadPrescriptionProps> = (props)
     uuid: `PATIENT_${patientId}`,
     restore: true,
     keepAlive: true,
-    // autoNetworkDetection: true,
-    // listenToBrowserNetworkEvents: true,
-    // presenceTimeout: 20,
     heartbeatInterval: 20,
+    origin: 'apollo.pubnubapi.com',
   };
   const pubnub = new Pubnub(config);
 
