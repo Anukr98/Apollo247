@@ -24,6 +24,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   medicineConsumptionDurationInDays: string | null;
   medicineDosage: string | null;
   id: string | null;
+  medicineCustomDetails: string | null;
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   medicineFormTypes: MEDICINE_FORM_TYPES | null;
   medicineFrequency: MEDICINE_FREQUENCY | null;
