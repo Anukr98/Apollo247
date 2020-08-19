@@ -530,6 +530,7 @@ export const JDConsultRoom: React.FC = () => {
   const [sessionError, setSessionError] = React.useState<boolean>(null);
   const [publisherError, setPublisherError] = React.useState<boolean>(null);
   const [subscriberError, setSubscriberError] = React.useState<boolean>(null);
+  const [rejectedByPatientBeforeAnswer, setRejectedByPatientBeforeAnswer] = React.useState(null);
 
   /* case sheet data*/
   let customNotes = '',
@@ -1697,6 +1698,8 @@ export const JDConsultRoom: React.FC = () => {
                     setSubscriberError={setSubscriberError}
                     isCall={isCall}
                     setIscall={setIscall}
+                    rejectedByPatientBeforeAnswer={rejectedByPatientBeforeAnswer}
+                    setRejectedByPatientBeforeAnswer={setRejectedByPatientBeforeAnswer}
                   />
                 )}
                 <div className={classes.contentGroup}>
@@ -1802,6 +1805,21 @@ export const JDConsultRoom: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/** Patient rejected call before answer */}
+      <Alert
+        error={
+          rejectedByPatientBeforeAnswer
+            ? {
+                message: rejectedByPatientBeforeAnswer,
+              }
+            : null
+        }
+        onClose={() => {
+          setRejectedByPatientBeforeAnswer(null);
+        }}
+      />
+
       {/* Ot Errors Start */}
       <Alert
         error={sessionError}
