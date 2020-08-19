@@ -67,6 +67,8 @@ interface DoctorCardProps {
   message: string;
   duration: string;
   messageDetails: any;
+  setModalOpen: (flag: boolean) => void;
+  setImgPrevUrl: (url: string) => void;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -99,7 +101,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <span className={classes.durationMsg}>Duration- {props.duration}</span>
         </div>
       ) : props.messageDetails.message === '^^#DocumentUpload' ? (
-        <div className={classes.imageUpload}>
+        <div
+          className={classes.imageUpload}
+          onClick={() => {
+            props.setModalOpen(props.messageDetails.fileType === 'pdf' ? false : true);
+            props.setImgPrevUrl(props.messageDetails.url);
+          }}
+        >
           {props.messageDetails.fileType === 'pdf' ? (
             <a href={props.messageDetails.url} target="_blank">
               <img src={require('images/pdf_thumbnail.png')} />
