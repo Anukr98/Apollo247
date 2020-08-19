@@ -875,8 +875,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const scrollDivRef = useRef(null);
   const apolloClient = useApolloClient();
 
-  console.log(currentPatient);
-
   //AV states
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
   const [isCalled, setIsCalled] = useState<boolean>(false);
@@ -942,10 +940,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       scrollDiv.scrollIntoView();
     }, 200);
   };
-
-  //console.log('pubnub messages.......', messages);
-  // console.log(appointmentDetails, 'appointment details.......');
-  // console.log(autoQuestionsCompleted, 'auto question status.....................');
 
   // subscribe for any udpates
   useEffect(() => {
@@ -1019,8 +1013,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           // };
           insertText[insertText.length] = message.message;
           setMessages(() => [...insertText]);
-
-          //setNewMessage(messageObject);
           scrollToBottomAction();
         },
       });
@@ -1029,7 +1021,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       pubnubClient.history(
         { channel: appointmentId, count: 100, stringifiedTimeToken: true },
         (status: PubnubStatus, response: HistoryResponse) => {
-          console.log(response.messages.length, 'messages length.......');
           if (response.messages.length === 0) sendWelcomeMessage();
 
           const newmessage: MessagesObjectProps[] = messages;
@@ -1046,8 +1037,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           });
           insertText = newmessage;
           setMessages(newmessage);
-
-          //setMessages(response.messages);
           scrollToBottomAction();
         }
       );
@@ -1219,9 +1208,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
 
   const setCookiesAcceptcall = () => {
-    // const cookieStr = `action=${
-    //   callAudio === autoMessageStrings.videoCallMsg ? 'videocall' : 'audiocall'
-    // }`;
     const cookieStr = `action=${isVideoCall ? 'videocall' : 'audiocall'}`;
     document.cookie = cookieStr + ';path=/;';
   };
