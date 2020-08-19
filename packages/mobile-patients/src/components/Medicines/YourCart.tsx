@@ -212,6 +212,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setAddresses,
     couponProducts,
     setCouponProducts,
+    addMultipleCartItems,
   } = useShoppingCart();
   const { setAddresses: setTestAddresses } = useDiagnosticsCart();
   const [activeStores, setActiveStores] = useState<Store[]>([]);
@@ -245,7 +246,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   useEffect(() => {
     return () => {
       setCoupon!(null);
-      setCouponProducts!([]);
+      if (couponProducts.length) {
+        removeFreeProductsFromCart();
+      }
       setStoreId!('');
     };
   }, []);
@@ -380,6 +383,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   }, [cartTotal]);
 
+  const removeFreeProductsFromCart = () => {
+    const updatedCartItems = cartItems.filter((item) => item.price != 0);
+    setCartItems!(updatedCartItems);
+    setCouponProducts!([]);
+  };
+
   const renderAlert = (message: string) => {
     showAphAlert!({
       title: string.common.uhOh,
@@ -403,11 +412,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           mou: medicineDetails.mou,
           name: medicineDetails!.name,
           price: couponProducts[index]!.mrp,
-          specialPrice: medicineDetails.special_price
-            ? typeof medicineDetails.special_price == 'string'
-              ? Number(medicineDetails.special_price)
-              : medicineDetails.special_price
-            : undefined,
+          specialPrice: Number(medicineDetails.special_price) || undefined,
           quantity: couponProducts[index]!.quantity ,
           prescriptionRequired: medicineDetails.is_prescription_required == '1',
           isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
@@ -417,13 +422,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           productType: medicineDetails.type_id,
         } as ShoppingCartItem;
       });
-      const cartItemSkus = cartItems.map((i) => i.id);
-      console.log('cartItemSkus: ', cartItemSkus);
-      const productsToAddInCart = [
-        ...cartItems,
-        ...medicinesAll.filter((item) => !cartItemSkus.includes(item.id!))
-      ];
-      setCartItems!(productsToAddInCart as ShoppingCartItem[]);
+      addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
     })
     .catch((e) => {
       setLoading && setLoading(false);
@@ -743,7 +742,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const removeCouponWithAlert = (message: string) => {
     setCoupon!(null);
-    setCouponProducts!([]);
+    if (couponProducts.length) {
+      removeFreeProductsFromCart();
+    }
     renderAlert(message);
   };
 
@@ -874,7 +875,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 } else {
                   props.navigation.navigate('MEDICINES', { focusSearch: true });
                   setCoupon!(null);
-                  setCouponProducts!([]);
+                  if (couponProducts.length) {
+                    removeFreeProductsFromCart();
+                  }
                   // to stop triggering useEffect on every change in cart items
                   setStoreId!('');
                   setselectedTab(tabs[0].title);
@@ -1416,7 +1419,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             postWebEngageEvent(WebEngageEventName.CART_APPLY_COUPON_CLCIKED, eventAttributes);
             props.navigation.navigate(AppRoutes.ApplyCouponScene);
             setCoupon!(null);
-            setCouponProducts!([]);
+            if (couponProducts.length) {
+              removeFreeProductsFromCart();
+            }
           }
         }}
       >
