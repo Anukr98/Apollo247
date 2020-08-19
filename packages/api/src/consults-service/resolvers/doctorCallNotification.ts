@@ -363,7 +363,7 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
       const doctorDetails = await docRepo.getDoctorSecretary(appt.doctorId);
       if (doctorDetails) {
         //console.log(doctorDetails.id, doctorDetails.doctorSecretary, 'doc details');
-        content =
+        content +=
           doctorDetails.id + '-' + doctorDetails.doctorSecretary.secretary.mobileNumber + '\n';
         fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
         const templateData: string[] = [appt.appointmentType, appt.patientName, devLink];
