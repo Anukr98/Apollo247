@@ -717,7 +717,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fillColor('#333333')
         .text(`${index + 1}.  ${prescription.name}`, margin + 15)
         .moveDown(0.5);
-      if (prescription.genericName!.trim().length > 0) {
+      if (prescription.genericName && prescription.genericName!.trim().length > 0) {
         doc
           .fontSize(9)
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
