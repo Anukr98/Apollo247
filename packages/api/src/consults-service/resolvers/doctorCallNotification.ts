@@ -350,11 +350,12 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
   const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   content += '\nappts length: ' + apptDetails.length.toString();
   if (apptDetails.length > 0) {
-    const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
     apptDetails.forEach(async (appt) => {
+      const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
       content += '\n apptId: ' + appt.id + ' - ' + appt.doctorId;
-      const doctorDetails = await docRepo.findById(appt.doctorId);
+      const doctorDetails = await docRepo.getDoctorSecretary(appt.doctorId);
       if (doctorDetails) {
+        console.log(doctorDetails.id, doctorDetails.doctorSecretary, 'doc details');
         content += doctorDetails.doctorSecretary.secretary.mobileNumber + '\n';
         const templateData: string[] = [appt.appointmentType, appt.patientName, devLink];
         sendDoctorNotificationWhatsapp(
