@@ -86,26 +86,23 @@ const updatePatient: Resolver<
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-
+  const lockKey = `${REDIS_PATIENT_LOCK_PREFIX}${patient.mobileNumber}`;
+  const lockedProfile = await getCache(lockKey);
+  if (lockedProfile && typeof lockedProfile == 'string') {
+    throw new Error(AphErrorMessages.PROFILE_CREATION_IN_PROGRESS);
+  }
   Object.assign(patient, updateAttrs);
   if (patient.uhid == '' || patient.uhid == null) {
-    const lockKey = `${REDIS_PATIENT_LOCK_PREFIX}${patient.mobileNumber}`;
-    const lockedProfile = await getCache(lockKey);
-    if (lockedProfile && typeof lockedProfile == 'string') {
-      throw new Error(AphErrorMessages.PROFILE_CREATION_IN_PROGRESS);
-    } else {
-      const uhidResp = await patientRepo.getNewUhid(patient);
-      if (uhidResp.retcode == '0') {
-        patient.uhid = uhidResp.result;
-        patient.primaryUhid = uhidResp.result;
-        patient.uhidCreatedDate = new Date();
-        await createPrismUser(patient, uhidResp.result.toString());
-        await delCache(lockKey);
-      }
+    const uhidResp = await patientRepo.getNewUhid(patient);
+    if (uhidResp.retcode == '0') {
+      patient.uhid = uhidResp.result;
+      patient.primaryUhid = uhidResp.result;
+      patient.uhidCreatedDate = new Date();
+      await createPrismUser(patient, uhidResp.result.toString());
     }
   }
   await patient.save();
-
+  await delCache(lockKey);
   //Doubt: Do we need to check getPatientList.length == 1 since it is getting called only on first call
 
   // const getPatientList = await patientRepo.findByMobileNumber(patient.mobileNumber);
@@ -136,7 +133,6 @@ const updatePatient: Resolver<
       }
     }
   }
-
   const patientObjWithRelations = await patientRepo.findByIdWithRelations(patientInput.id, [
     PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
     PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
