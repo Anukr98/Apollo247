@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Typography, Divider } from '@material-ui/core';
 import React from 'react';
 import { GET_PATIENTS } from 'graphql/profiles';
-import { LocalHospital } from '@material-ui/icons';
+import LocalHospital from '@material-ui/icons/LocalHospital';
 import { GetPatients } from 'graphql/types/GetPatients';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 
