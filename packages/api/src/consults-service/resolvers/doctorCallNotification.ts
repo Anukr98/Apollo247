@@ -353,8 +353,9 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
     const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
     apptDetails.forEach(async (appt) => {
       content += '\n apptId: ' + appt.id + ' - ' + appt.doctorId;
-      const doctorDetails = await docRepo.findById(appt.doctorId);
+      const doctorDetails = await docRepo.getDoctorSecretary(appt.doctorId);
       if (doctorDetails) {
+        console.log(doctorDetails.id, doctorDetails.doctorSecretary, 'doc details');
         content += doctorDetails.doctorSecretary.secretary.mobileNumber + '\n';
         const templateData: string[] = [appt.appointmentType, appt.patientName, devLink];
         sendDoctorNotificationWhatsapp(
