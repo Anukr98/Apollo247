@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Theme, Grid, Button, MenuItem } from '@material-ui/core';
+import { Theme, Grid, Button, MenuItem, Modal } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -867,6 +867,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [appDataLoading, setAppDataLoading] = useState<boolean>(true);
   const [consultQMutationLoading, setConsultQMutationLoading] = useState<boolean>(false);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
 
   const { currentPatient } = useAllCurrentPatients();
   const doctorDisplayName = props.doctorDetails.getDoctorDetailsById.displayName;
@@ -1007,10 +1009,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             setShowVideo(false);
             setPlayRingtone(false);
           }
-          // const messageObject = {
-          //   timetoken: message.timetoken,
-          //   entry: message.message,
-          // };
           insertText[insertText.length] = message.message;
           setMessages(() => [...insertText]);
           scrollToBottomAction();
@@ -2084,6 +2082,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                       message={message}
                       duration={duration}
                       messageDetails={messageDetails}
+                      setModalOpen={(flag: boolean) => setModalOpen(flag)}
+                      setImgPrevUrl={(url: string) => setImgPrevUrl(url)}
                     />
                   );
                 } else {
@@ -2093,6 +2093,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                       duration={duration}
                       chatTime={messageDetails.messageDate}
                       messageDetails={messageDetails}
+                      setModalOpen={(flag: boolean) => setModalOpen(flag)}
+                      setImgPrevUrl={(url: string) => setImgPrevUrl(url)}
                     />
                   );
                 }
@@ -2218,6 +2220,26 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           </AphDialog>
         </div>
       </div>
+      {/* model popup for image preview start */}
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+        <div className={classes.modalWindowWrap}>
+          <div className={classes.tableContent}>
+            <div className={classes.modalWindow}>
+              <div className={classes.modalHeader}>
+                <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
+                  <img src={require('images/ic_round_clear.svg')} alt="" />
+                </div>
+              </div>
+              <div className={classes.modalContent}>
+                <img src={imgPrevUrl} alt="" />
+                {/* <ReactPanZoom image={imgPrevUrl} alt="" /> */}
+              </div>
+              <div className={classes.modalFooter}></div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+      {/* model popup for image preview ends */}
     </div>
   );
 };
