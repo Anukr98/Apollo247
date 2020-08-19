@@ -826,20 +826,21 @@ export const MedicineDetails: React.FC = (props) => {
   const renderOverviewTabDesc = (overView: MedicineOverView) => {
     const data = getData(overView);
     if (typeof overView !== 'string') {
-      return data.map(
-        (item, index) =>
-          tabValue === index && (
-            <div key={index} className={classes.tabContainer}>
-              {item.value.split(';').map((description, idx) => {
-                if (item.key === 'Usage') {
-                  return <div key={index}>{getUsageDesc(description)}</div>;
-                } else {
-                  return <p key={idx}>{description}</p>;
-                }
-              })}
-            </div>
-          )
-      );
+      return data.map((item, index) => (
+        <div
+          style={{ display: tabValue === index ? 'block' : 'none' }}
+          key={index}
+          className={classes.tabContainer}
+        >
+          {item.value.split(';').map((description, idx) => {
+            if (item.key === 'Usage') {
+              return <div key={index}>{getUsageDesc(description)}</div>;
+            } else {
+              return <p key={idx}>{description}</p>;
+            }
+          })}
+        </div>
+      ));
     }
     return [];
   };

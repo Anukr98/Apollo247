@@ -7,6 +7,7 @@ import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
+import fetchUtil from 'helpers/fetch';
 
 declare global {
   interface Window {
@@ -413,7 +414,18 @@ const getImageUrl = (imageUrl: string) => {
   );
 };
 
+const getCouponByUserMobileNumber = () => {
+  return fetchUtil(
+    `${process.env.GET_PHARMA_AVAILABLE_COUPONS}?mobile=${localStorage.getItem('userMobileNo')}`,
+    'GET',
+    {},
+    '',
+    false
+  );
+};
+
 export {
+  getCouponByUserMobileNumber,
   getPackOfMedicine,
   getImageUrl,
   getStoreName,
