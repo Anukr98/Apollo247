@@ -180,7 +180,8 @@ export const YourOrders: React.FC = (props) => {
           if (
             data &&
             data.getMedicineOrdersOMSList &&
-            data.getMedicineOrdersOMSList.medicineOrdersList
+            data.getMedicineOrdersOMSList.medicineOrdersList &&
+            data.getMedicineOrdersOMSList.medicineOrdersList.length > 0
           ) {
             setOrderListData(data.getMedicineOrdersOMSList.medicineOrdersList || []);
             if (!isSmallScreen) {
@@ -281,7 +282,7 @@ export const YourOrders: React.FC = (props) => {
           </div>
         ) : (
           orderListData &&
-          orderListData.length > 0 && (
+          orderListData.length === 0 && (
             <div className={classes.noOrdersWrapper}>
               <div>Uh oh! :)</div>
               <div className={classes.noOrdersText}>No Orders Found!</div>

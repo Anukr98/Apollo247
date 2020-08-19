@@ -7,6 +7,7 @@ import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
+import fetchUtil from 'helpers/fetch';
 
 declare global {
   interface Window {
@@ -204,6 +205,10 @@ const INVALID_FILE_TYPE_ERROR =
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
 const OUT_OF_STOCK_MESSAGE = 'Sorry, this item is out of stock in your area';
 const TAT_API_TIMEOUT_IN_MILLI_SEC = 10000; // in milli sec
+const NO_ONLINE_SERVICE = 'NOT AVAILABLE FOR ONLINE SALE';
+const OUT_OF_STOCK = 'Out Of Stock';
+const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
+const PINCODE_MAXLENGTH = 6;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -409,7 +414,18 @@ const getImageUrl = (imageUrl: string) => {
   );
 };
 
+const getCouponByUserMobileNumber = () => {
+  return fetchUtil(
+    `${process.env.GET_PHARMA_AVAILABLE_COUPONS}?mobile=${localStorage.getItem('userMobileNo')}`,
+    'GET',
+    {},
+    '',
+    false
+  );
+};
+
 export {
+  getCouponByUserMobileNumber,
   getPackOfMedicine,
   getImageUrl,
   getStoreName,
@@ -449,4 +465,8 @@ export {
   getTypeOfProduct,
   kavachHelpline,
   isActualUser,
+  NO_ONLINE_SERVICE,
+  OUT_OF_STOCK,
+  NOTIFY_WHEN_IN_STOCK,
+  PINCODE_MAXLENGTH,
 };

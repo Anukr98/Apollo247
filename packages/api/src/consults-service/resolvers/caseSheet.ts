@@ -1368,6 +1368,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
 
     const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientData);
     const pdfDocument = generateRxPdfDocument(rxPdfData);
+
     const uploadedPdfData = await uploadRxPdf(client, args.caseSheetId, pdfDocument);
     if (uploadedPdfData == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
 
@@ -1386,12 +1387,18 @@ const updatePatientPrescriptionSentStatus: Resolver<
       doctorData,
       getCaseSheetData
     );
+
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
+      data: {
+        caseSheetId: getCaseSheetData.id
+      }
     };
+
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
+
     caseSheetAttrs = {
       sentToPatient: args.sentToPatient,
       blobName: uploadedPdfData.name,
@@ -1510,10 +1517,14 @@ const generatePrescriptionTemp: Resolver<
       doctorData,
       getCaseSheetData
     );
+
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
+      data: {
+        caseSheetId: getCaseSheetData.id
+      }
     };
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
     caseSheetAttrs = {
