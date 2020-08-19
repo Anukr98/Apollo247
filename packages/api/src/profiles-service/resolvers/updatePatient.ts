@@ -100,8 +100,8 @@ const updatePatient: Resolver<
       patient.primaryUhid = uhidResp.result;
       patient.uhidCreatedDate = new Date();
       await createPrismUser(patient, uhidResp.result.toString()).catch(async (err) => {
-        throw new Error(AphErrorMessages.PRISM_CREATE_UHID_ERROR);
         await delCache(lockKey);
+        throw new Error(AphErrorMessages.PRISM_CREATE_UHID_ERROR);
       });
     }
   }
