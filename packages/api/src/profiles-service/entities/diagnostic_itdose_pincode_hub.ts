@@ -5,6 +5,7 @@ export class DiagnosticItdosePincodeHubs extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Index('DiagnosticItdosePincodeHubs_pincode')
     @Column({ nullable: true })
     pincode: number;
 
