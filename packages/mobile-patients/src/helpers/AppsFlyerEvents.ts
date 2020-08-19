@@ -12,7 +12,6 @@ export enum AppsFlyerEventName {
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
-  BUY_NOW = 'Buy Now',
   PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
   DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart Viewed',
   PHARMACY_PROCEED_TO_PAY_CLICKED = 'Pharmacy Proceed To Pay Clicked',
@@ -41,7 +40,6 @@ export enum AppsFlyerEventName {
   MANAGE_DIABETES = 'Manage Diabetes',
   TRACK_SYMPTOMS = 'Track Symptoms',
   VIEW_HELATH_RECORDS = 'View Helath Records',
-  CORONA_VIRUS_TALK_TO_OUR_EXPERT = 'Corona Virus?Talk to our expert',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
   NEED_HELP = 'Need Help?',
   MY_ACCOUNT = 'My Account',
@@ -104,7 +102,6 @@ export interface AppsFlyerEvents {
   [AppsFlyerEventName.MANAGE_DIABETES]: PatientInfo;
   [AppsFlyerEventName.TRACK_SYMPTOMS]: PatientInfo;
   [AppsFlyerEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
-  [AppsFlyerEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
   [AppsFlyerEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [AppsFlyerEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [AppsFlyerEventName.MY_ACCOUNT]: PatientInfo;
@@ -158,18 +155,6 @@ export interface AppsFlyerEvents {
     // 'Patient Gender': string;
     // 'Mobile Number': string;
     // 'Customer ID': string;
-  };
-  [AppsFlyerEventName.BUY_NOW]: {
-    'product name': string;
-    'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
-    'category ID': string;
-    Price: number;
-    'Discounted Price': number;
-    Quantity: number;
-    'Service Area': 'Pharmacy' | 'Diagnostic';
   };
   [AppsFlyerEventName.PHARMACY_CART_VIEWED]: {
     'Total items in cart': number;

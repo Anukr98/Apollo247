@@ -12,10 +12,21 @@ import {
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-
-export const useGetPayments = (type?: string, patientId?: string, navigationProps?: any) => {
+interface meta {
+  total: number;
+  pageSize: number;
+  pageNo: number;
+}
+export const useGetPayments = (
+  pageNo: number,
+  pageSize: number,
+  type?: string,
+  patientId?: string,
+  navigationProps?: any
+) => {
   const [payments, setPayments] = useState();
   const [loading, setLoading] = useState(true);
+  const [meta, setmeta] = useState<meta>();
   const client = useApolloClient();
   const { showAphAlert } = useUIElements();
 
@@ -31,6 +42,8 @@ export const useGetPayments = (type?: string, patientId?: string, navigationProp
         query: CONSULT_ORDER_PAYMENT_DETAILS,
         variables: {
           patientId: patientId,
+          pageNo: pageNo,
+          pageSize: pageSize,
         },
         fetchPolicy: 'no-cache',
       })
@@ -38,8 +51,10 @@ export const useGetPayments = (type?: string, patientId?: string, navigationProp
         const { data } = res;
         const { consultOrders } = data;
         const { appointments } = consultOrders;
+        const { meta } = consultOrders;
         console.log('payments-->', appointments.length);
-        setPayments(appointments.reverse());
+        setPayments(appointments);
+        setmeta(meta);
         setLoading(false);
       })
       .catch((error) => {
@@ -56,6 +71,8 @@ export const useGetPayments = (type?: string, patientId?: string, navigationProp
         query: PHARMACY_ORDER_PAYMENT_DETAILS,
         variables: {
           patientId: patientId,
+          pageNo: pageNo,
+          pageSize: pageSize,
         },
         fetchPolicy: 'no-cache',
       })
@@ -63,7 +80,9 @@ export const useGetPayments = (type?: string, patientId?: string, navigationProp
         const { data } = res;
         const { pharmacyOrders } = data;
         const { pharmaOrders } = pharmacyOrders;
+        const { meta } = pharmacyOrders;
         setPayments(pharmaOrders);
+        setmeta(meta);
         setLoading(false);
         // console.log('paymentsPharma-->', pharmaOrders);
       })
@@ -94,5 +113,5 @@ export const useGetPayments = (type?: string, patientId?: string, navigationProp
     setPaymentsFromAPI();
   }, []);
 
-  return { payments, loading };
+  return { payments, loading, meta };
 };

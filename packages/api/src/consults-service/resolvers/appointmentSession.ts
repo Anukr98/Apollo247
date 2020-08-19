@@ -272,6 +272,25 @@ const createAppointmentSession: Resolver<
 
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
 
+  //post to webengage starts
+  const eventName =
+    createAppointmentSessionInput.requestRole == REQUEST_ROLES.DOCTOR
+      ? ApiConstants.DOCTOR_STARTED_CONSULTATION_EVENT_NAME.toString()
+      : ApiConstants.JD_CONSULTATION_STARTED_EVENT_NAME.toString();
+
+  const postBody: Partial<WebEngageInput> = {
+    userId: patientData ? patientData.mobileNumber : '',
+    eventName: eventName,
+    eventData: {
+      consultID: apptDetails.id,
+      displayID: apptDetails.displayId.toString(),
+      consultMode: apptDetails.appointmentType.toString(),
+      doctorName: doctorData ? doctorData.fullName : '',
+    },
+  };
+  postEvent(postBody);
+  //post to webengage ends
+
   if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
     const juniorDoctorcaseSheet = await caseSheetRepo.getJDCaseSheetByAppointmentId(apptDetails.id);
     if (juniorDoctorcaseSheet && juniorDoctorcaseSheet.status == CASESHEET_STATUS.COMPLETED) {
@@ -432,26 +451,6 @@ const createAppointmentSession: Resolver<
     reason: 'SD ' + ApiConstants.APPT_SESSION_HISTORY.toString(),
   };
   apptRepo.saveAppointmentHistory(historyAttrs);
-
-  //post to webengage starts
-  const eventName =
-    createAppointmentSessionInput.requestRole === REQUEST_ROLES.DOCTOR
-      ? ApiConstants.DOCTOR_STARTED_CONSULTATION_EVENT_NAME.toString()
-      : ApiConstants.JD_CONSULTATION_STARTED_EVENT_NAME.toString();
-
-  const postBody: Partial<WebEngageInput> = {
-    userId: patientData ? patientData.mobileNumber : '',
-    eventName: eventName,
-    eventData: {
-      consultID: apptDetails.id,
-      displayID: apptDetails.displayId.toString(),
-      consultMode: apptDetails.appointmentType.toString(),
-      doctorName: doctorData ? doctorData.fullName : '',
-    },
-  };
-  postEvent(postBody);
-
-  //post to webengage ends
 
   return {
     sessionId: sessionId,

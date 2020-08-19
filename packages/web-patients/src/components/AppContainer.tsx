@@ -35,7 +35,15 @@ import { MedicineDetails } from 'components/Medicine/MedicineDetails';
 import { AddressBook } from 'components/MyAccount/AddressBook';
 import Scrollbars from 'react-custom-scrollbars';
 import { LocationProvider } from 'components/LocationProvider';
-import { SymptomsTracker } from 'components/SymptomsTracker/SymptomsTracker';
+// import { SymptomsTracker } from 'components/SymptomsTracker/SymptomsTracker';
+const SymptomsTracker = React.lazy(() =>
+  import(
+    /*
+  webpackChunkName: "symptoms-tracker",
+  webpackPrefetch: true
+*/ 'components/SymptomsTracker/SymptomsTracker'
+  )
+);
 import { SymptomsTrackerSDK } from 'components/SymptomsTracker/SymptomsTrackerSDK';
 import { TestsLanding } from 'components/Tests/TestsLanding';
 import { TestDetails } from 'components/Tests/TestDetails';
@@ -59,11 +67,27 @@ import { PayMedicine } from 'components/PayMedicine';
 import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
 import { ClinicCheckout } from './Checkout/ClinicCheckout';
 import { PrescriptionReview } from 'components/PrescriptionReview';
-import { SpecialityListing } from 'components/SpecialityListing';
+// import { SpecialityListing } from 'components/SpecialityListing';
+const SpecialityListing = React.lazy(() =>
+  import(
+    /*
+  webpackChunkName: "speciality-listing",
+  webpackPrefetch: true
+*/ 'components/SpecialityListing'
+  )
+);
 import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
 import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 import { MedicineSearch } from './Medicine/MedicineSearch';
-import { DoctorsLanding } from 'components/DoctorsLanding';
+// import { DoctorsLanding } from 'components/DoctorsLanding';
+const DoctorsLanding = React.lazy(() =>
+  import(
+    /*
+  webpackChunkName: "doctors-landing",
+  webpackPrefetch: true
+*/ 'components/DoctorsLanding'
+  )
+);
 import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
 import { Loader } from 'components/Loader';
 
@@ -244,7 +268,9 @@ const AppContainer: React.FC = () => {
             <MedicinesCartProvider>
               <DiagnosticsCartProvider>
                 <LocationProvider>
-                  <App />
+                  <React.Suspense fallback={<div>Loading...</div>}>
+                    <App />
+                  </React.Suspense>
                 </LocationProvider>
               </DiagnosticsCartProvider>
             </MedicinesCartProvider>

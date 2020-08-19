@@ -16,7 +16,6 @@ export enum FirebaseEventName {
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
-  BUY_NOW = 'Buy Now',
   PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
   DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart Viewed',
   PHARMACY_PROCEED_TO_PAY_CLICKED = 'Pharmacy Proceed To Pay Clicked',
@@ -47,7 +46,6 @@ export enum FirebaseEventName {
   MANAGE_DIABETES = 'MANAGE_DIABETES',
   TRACK_SYMPTOMS = 'TRACK_SYMPTOMS',
   VIEW_HELATH_RECORDS = 'VIEW_HELATH_RECORDS',
-  CORONA_VIRUS_TALK_TO_OUR_EXPERT = 'Corona Virus?Talk to our expert',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
   NEED_HELP = 'Need Help?',
   MY_ACCOUNT = 'MY_ACCOUNT',
@@ -154,7 +152,6 @@ export interface FirebaseEvents {
   [FirebaseEventName.TRACK_SYMPTOMS]: PatientInfoWithSource;
   [FirebaseEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
   [FirebaseEventName.FIND_A_DOCTOR]: PatientInfoWithSource;
-  [FirebaseEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
   [FirebaseEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [FirebaseEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [FirebaseEventName.MY_ACCOUNT]: PatientInfo;
@@ -230,18 +227,6 @@ export interface FirebaseEvents {
     // Gender: string;
     // 'Mobile Number': string;
     // 'Customer ID': string;
-  };
-  [FirebaseEventName.BUY_NOW]: {
-    productname: string;
-    productid: string; // (SKUID)
-    Brand: string;
-    BrandID: string;
-    categoryname: string;
-    categoryID: string;
-    Price: number;
-    DiscountedPrice: number;
-    Quantity: number;
-    ServiceArea: 'Pharmacy' | 'Diagnostic';
   };
   [FirebaseEventName.PHARMACY_CART_VIEWED]: {
     TotalItemsInCart: number;
