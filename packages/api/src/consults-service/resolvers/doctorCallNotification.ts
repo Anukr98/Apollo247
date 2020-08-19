@@ -344,19 +344,28 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
   args,
   { consultsDb, doctorsDb }
 ) => {
-  let content = '\n-----------------\n' + format(new Date(), 'yyyy-MM-dd hh:mm');
+  let content = '\n-----------------\n' + format(new Date(), 'yyyy-MM-dd HH:mm');
+  const fileName =
+    process.env.NODE_ENV + '_docsecretarytnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.getNotStartedAppointments();
   const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   content += '\nappts length: ' + apptDetails.length.toString();
+  fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
   if (apptDetails.length > 0) {
     const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
     apptDetails.forEach(async (appt) => {
       content += '\n apptId: ' + appt.id + ' - ' + appt.doctorId;
       const doctorDetails = await docRepo.getDoctorSecretary(appt.doctorId);
       if (doctorDetails) {
-        console.log(doctorDetails.id, doctorDetails.doctorSecretary, 'doc details');
-        content += doctorDetails.doctorSecretary.secretary.mobileNumber + '\n';
+        //console.log(doctorDetails.id, doctorDetails.doctorSecretary, 'doc details');
+        content =
+          doctorDetails.id + '-' + doctorDetails.doctorSecretary.secretary.mobileNumber + '\n';
+        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
         const templateData: string[] = [appt.appointmentType, appt.patientName, devLink];
         sendDoctorNotificationWhatsapp(
           ApiConstants.WHATSAPP_SD_CONSULT_DELAY,
@@ -366,19 +375,6 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
       }
     });
   }
-  const fileName =
-    process.env.NODE_ENV + '_docsecretarytnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
-  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-  if (process.env.NODE_ENV != 'local') {
-    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-  }
-  fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
-    if (err) {
-      console.log('file saving error', err);
-    }
-    console.log('notification results saved');
-  });
-  console.log(apptDetails.length, 'apptDetails.length');
   return { status: true };
 };
 
