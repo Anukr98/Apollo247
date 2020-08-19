@@ -132,6 +132,9 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#0087ba',
         margin: 0,
       },
+      [theme.breakpoints.down('xs')]: {
+        padding: '10px 16px',
+      },
     },
     selectMenuRoot: {
       paddingRight: 55,
@@ -166,8 +169,7 @@ const useStyles = makeStyles((theme: Theme) => {
     addMemberBtn: {
       boxShadow: 'none',
       backgroundColor: 'transparent',
-      marginLeft: 30,
-
+      fontWeight: 700,
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -369,12 +371,19 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       padding: '10px 0',
+      [theme.breakpoints.down('xs')]: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+      },
     },
     appointmentOptions: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '10px 0',
+      [theme.breakpoints.down('xs')]: {
+        alignItems: 'flex-start',
+      },
     },
     formControl: {
       width: ' 50%',
@@ -385,6 +394,10 @@ const useStyles = makeStyles((theme: Theme) => {
         left: 0,
         top: 10,
       },
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        margin: 0,
+      },
     },
     searchInput: {
       padding: '0 0 0 30px',
@@ -392,6 +405,15 @@ const useStyles = makeStyles((theme: Theme) => {
     memberOption: {
       display: 'flex',
       alignItems: 'center',
+      '& p': {
+        fontSize: 14,
+        color: '#02475B',
+        fontWeight: 500,
+      },
+      [theme.breakpoints.down('xs')]: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+      },
     },
     afContainer: {
       padding: '0 16px',
@@ -409,6 +431,10 @@ const useStyles = makeStyles((theme: Theme) => {
         textTransform: 'uppercase',
         padding: '0 10px',
       },
+      [theme.breakpoints.down('xs')]: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+      },
     },
     filterList: {
       margin: 0,
@@ -418,7 +444,11 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       flexWrap: 'wrap',
       '& li': {
-        padding: '0 6px',
+        padding: 6,
+        [theme.breakpoints.down('xs')]: {
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+        },
       },
     },
     filterBtn: {
@@ -987,7 +1017,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                       setIsAddNewProfileDialogOpen(true);
                     }}
                   >
-                    Add Member
+                    Select Member
                   </AphButton>
                 </div>
                 <div className={classes.filterIcon} onClick={() => setIsFilterOpen(true)}>
