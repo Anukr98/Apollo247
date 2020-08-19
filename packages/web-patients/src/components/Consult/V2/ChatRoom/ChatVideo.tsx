@@ -309,8 +309,6 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
     else if (!callerVideo && getCookieValue() === 'videocall') return `Doctor’s video is paused`;
     else return null;
   };
-  console.log(isCall, !subscribeToVideo, getCookieValue());
-  console.log(isCall && !subscribeToVideo && getCookieValue() === 'videocall');
 
   const sessionHandler = {
     connectionDestroyed: (event: any) => {
