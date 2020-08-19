@@ -215,11 +215,15 @@ const useStyles = makeStyles((theme: Theme) => {
     consultChatContainer: {
       position: 'relative',
     },
-    consultChat: {
+    consultRow: {
       borderTop: '1px solid  rgb(2,71,91, 0.4)',
-      paddingTop: 10,
       marginTop: 6,
+    },
+    consultChat: {
+      paddingTop: 10,
+      marginTop: 0,
       textAlign: 'right',
+      position: 'relative',
       '& h3': {
         fontSize: 13,
         lineHeight: '24px',
@@ -250,7 +254,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'left',
       position: 'absolute',
       left: 0,
-      top: -6,
+      top: -5,
       '& h3': {
         fontSize: 13,
         lineHeight: '24px',
@@ -318,7 +322,8 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
       textAlign: 'left',
       textTransform: 'none',
-      marginBottom: 10,
+      marginBottom: 5,
+      marginTop: 15,
       '&:hover': {
         background: 'rgba(229,0,0,0.1)',
       },
@@ -463,8 +468,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 return day1.diff(day2, 'days') == 0
                   ? 'Today'
                   : day1.diff(day2, 'days') +
-                      ' more ' +
-                      (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
+                  ' more ' +
+                  (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
               };
               const clinicList = doctorHospital || [];
               let facilityName = '',
@@ -479,7 +484,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 facilityName = clinicList[0].facility.name;
                 streetName =
                   clinicList[0].facility.streetLine1 &&
-                  clinicList[0].facility.streetLine1.length > 0
+                    clinicList[0].facility.streetLine1.length > 0
                     ? clinicList[0].facility.streetLine1
                     : '';
               }
@@ -510,7 +515,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         <div
                           className={`${classes.availability} ${
                             difference <= 15 && difference > 0 ? classes.availableNow : ''
-                          }`}
+                            }`}
                         >
                           {appointmentDetails.appointmentType === 'ONLINE'
                             ? difference <= 15 && difference > 0
@@ -539,8 +544,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                             {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
                               <img src={require('images/ic-video.svg')} alt="" />
                             ) : (
-                              <img src={require('images/fa-solid-hospital.svg')} alt="" />
-                            )}
+                                <img src={require('images/fa-solid-hospital.svg')} alt="" />
+                              )}
                           </span>
                         </div>
                       </div>
@@ -550,16 +555,16 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         to={
                           props.pastOrCurrent !== 'past'
                             ? clientRoutes.doctorDetails(
-                                appointmentDetails.doctorInfo &&
-                                  appointmentDetails.doctorInfo.fullName
-                                  ? readableParam(appointmentDetails.doctorInfo.fullName)
-                                  : '',
-                                appointmentDetails.doctorId
-                              )
+                              appointmentDetails.doctorInfo &&
+                                appointmentDetails.doctorInfo.fullName
+                                ? readableParam(appointmentDetails.doctorInfo.fullName)
+                                : '',
+                              appointmentDetails.doctorId
+                            )
                             : clientRoutes.chatRoom(appointmentId, doctorId)
                         }
                       >
-                        {appointmentDetails.status === STATUS.COMPLETED &&
+                        {/* {appointmentDetails.status === STATUS.COMPLETED &&
                           appointmentDetails.isFollowUp === 'false' && (
                             <div className={classes.bookFollowup}>
                               <h3>
@@ -572,68 +577,85 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                   <h6>With Dr. {appointmentDetails.doctorInfo.displayName}</h6>
                                 )}
                             </div>
-                          )}
+                          )} */}
                       </Link>
-                      <div className={classes.consultChat}>
-                        {/* <h5>Previous Prescription</h5>
+                      <div className={classes.consultRow}>
+                        {appointmentDetails.appointmentState ===
+                          APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
+                            <AphButton className={classes.errorButton}>
+                              Sorry, we had to reschedule this appointment. Please pick another slot.
+                            </AphButton>
+                          )}
+                        <div className={classes.consultChat}>
+                          {/* <h5>Previous Prescription</h5>
                         <AphButton className={classes.presButton}>
                           <img src={require('images/ic_prescription_white.svg')} alt="" />
                           <span className={classes.btnContent}>Cytoplam, Metformin, Insulin…</span>
                           <img src={require('images/ic_arrow_right_white.svg')} alt="" />
                         </AphButton> */}
-                        {appointmentDetails.appointmentState ===
-                          APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
-                          <AphButton className={classes.errorButton}>
-                            Sorry, we had to reschedule this appointment. Please pick another slot.
-                          </AphButton>
-                        )}
-                        <Route
-                          render={({ history }) => (
-                            <div
-                              style={{ cursor: 'pointer' }}
-                              onClick={() => {
-                                const pickAnotherSlot =
-                                  appointmentDetails.status === STATUS.NO_SHOW ||
-                                  appointmentDetails.status === STATUS.CALL_ABANDON ||
-                                  appointmentDetails.appointmentState ===
-                                    APPOINTMENT_STATE.AWAITING_RESCHEDULE;
-                                const doctorName =
+                          {appointmentDetails.status === STATUS.COMPLETED &&
+                            appointmentDetails.isFollowUp === 'false' && (
+                              <div className={classes.bookFollowup}>
+                                <h3>
+                                  {props.pastOrCurrent !== 'past' ? 'BOOK FOLLOWUP' : 'VIEW DETAILS'}
+                                </h3>
+                                {props.pastOrCurrent !== 'past' &&
+                                  appointmentDetails &&
                                   appointmentDetails.doctorInfo &&
-                                  appointmentDetails.doctorInfo.fullName
-                                    ? readableParam(appointmentDetails.doctorInfo.fullName)
-                                    : '';
-                                if (pickAnotherSlot) {
-                                  setOpenSlotPopup(true);
-                                } else {
-                                  appointmentDetails.status === STATUS.CANCELLED ||
-                                  (appointmentDetails.status === STATUS.COMPLETED &&
-                                    props.pastOrCurrent === 'past')
-                                    ? history.push(
+                                  appointmentDetails.doctorInfo.displayName && (
+                                    <h6>With Dr. {appointmentDetails.doctorInfo.displayName}</h6>
+                                  )}
+                              </div>
+                            )}
+
+                          <Route
+                            render={({ history }) => (
+                              <div
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => {
+                                  const pickAnotherSlot =
+                                    appointmentDetails.status === STATUS.NO_SHOW ||
+                                    appointmentDetails.status === STATUS.CALL_ABANDON ||
+                                    appointmentDetails.appointmentState ===
+                                    APPOINTMENT_STATE.AWAITING_RESCHEDULE;
+                                  const doctorName =
+                                    appointmentDetails.doctorInfo &&
+                                      appointmentDetails.doctorInfo.fullName
+                                      ? readableParam(appointmentDetails.doctorInfo.fullName)
+                                      : '';
+                                  if (pickAnotherSlot) {
+                                    setOpenSlotPopup(true);
+                                  } else {
+                                    appointmentDetails.status === STATUS.CANCELLED ||
+                                      (appointmentDetails.status === STATUS.COMPLETED &&
+                                        props.pastOrCurrent === 'past')
+                                      ? history.push(
                                         clientRoutes.doctorDetails(
                                           doctorName,
                                           appointmentDetails.doctorId
                                         )
                                       )
-                                    : history.push(clientRoutes.chatRoom(appointmentId, doctorId));
-                                }
-                              }}
-                            >
-                              <h3>
-                                {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-                                  ? showAppointmentAction(
+                                      : history.push(clientRoutes.chatRoom(appointmentId, doctorId));
+                                  }
+                                }}
+                              >
+                                <h3>
+                                  {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+                                    ? showAppointmentAction(
                                       appointmentState,
                                       status,
                                       isConsultStarted
                                     )
-                                  : 'VIEW DETAILS'}
-                              </h3>
-                            </div>
-                          )}
-                        />
-                        {appointmentDetails.appointmentState !==
-                          APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
-                          <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
-                        )}
+                                    : 'VIEW DETAILS'}
+                                </h3>
+                              </div>
+                            )}
+                          />
+                          {appointmentDetails.appointmentState !==
+                            APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
+                              <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
+                            )}
+                        </div>
                       </div>
                     </div>
                   </div>
