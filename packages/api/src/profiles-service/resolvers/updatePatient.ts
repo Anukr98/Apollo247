@@ -15,8 +15,7 @@ import {
 } from 'profiles-service/repositories/couponRepository';
 import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 import { createPrismUser } from 'helpers/phrV1Services';
-import { getCache, delCache } from 'profiles-service/database/connectRedis';
-import { setCache } from 'consults-service/database/connectRedis';
+import { getCache, delCache, setCache } from 'profiles-service/database/connectRedis';
 
 const REDIS_PATIENT_LOCK_PREFIX = `patient:lock:`;
 export const updatePatientTypeDefs = gql`

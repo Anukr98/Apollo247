@@ -148,16 +148,10 @@ const getCurrentPatients: Resolver<
       const existingPatient = await Patient.findOne({
         where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
       });
-      if (existingPatient) {
-        await delCache(lockKey);
-        return existingPatient;
-      } else {
-        return Patient.create(createOptions)
-          .save()
-          .finally(() => {
-            delCache(lockKey);
-          });
-      }
+
+      const patient = existingPatient || Patient.create(createOptions).save();
+      await delCache(lockKey);
+      return patient;
     }
   };
 
