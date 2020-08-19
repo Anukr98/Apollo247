@@ -29,10 +29,7 @@ declare global {
 
 ReactDOM.render(<AppContainer />, document.getElementById('root'));
 
-if (
-  'serviceWorker' in navigator &&
-  (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging')
-) {
+if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/service-worker.js')
