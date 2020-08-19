@@ -13,6 +13,7 @@ import {
   AphDialogTitle,
 } from '@aph/web-ui-components';
 import Slider from 'react-slick';
+import ApolloClient from 'apollo-client';
 import { ChatVideo } from 'components/Consult/V2/ChatRoom/ChatVideo';
 import WarningModel from 'components/WarningModel';
 import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
@@ -29,6 +30,8 @@ import {
   GET_APPOINTMENT_DATA,
   UPDATE_APPOINTMENT_SESSION,
 } from 'graphql/consult';
+import { downloadDocuments } from 'graphql/types/downloadDocuments';
+import { DOWNLOAD_DOCUMENT } from 'graphql/profiles';
 import {
   AddToConsultQueueWithAutomatedQuestions,
   AddToConsultQueueWithAutomatedQuestionsVariables,
@@ -802,9 +805,8 @@ interface MessagesObjectProps {
   transferInfo: any;
   messageDate: string;
   cardType: string;
-  // username: string;
-  // text: string;
 }
+let insertText: MessagesObjectProps[] = [];
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
 const ringtoneUrl = require('../../../../images/phone_ringing.mp3');
@@ -906,6 +908,27 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     AddToConsultQueueWithAutomatedQuestionsVariables
   >(JOIN_JDQ_WITH_AUTOMATED_QUESTIONS);
 
+  const getPrismUrls = (patientId: string, fileIds: string[]) => {
+    return new Promise((res, rej) => {
+      apolloClient
+        .query<downloadDocuments>({
+          query: DOWNLOAD_DOCUMENT,
+          fetchPolicy: 'no-cache',
+          variables: {
+            downloadDocumentsInput: {
+              patientId: patientId,
+              fileIds: fileIds,
+            },
+          },
+        })
+        .then(({ data }) => {
+          res({ urls: data && data.downloadDocuments && data.downloadDocuments.downloadPaths });
+        })
+        .catch((err: any) => {
+          console.log(err);
+        });
+    });
+  };
   const pubnubClient = new PubNub({
     publishKey: process.env.PUBLISH_KEY,
     subscribeKey: process.env.SUBSCRIBE_KEY,
@@ -990,11 +1013,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             setShowVideo(false);
             setPlayRingtone(false);
           }
-          const messageObject = {
-            timetoken: message.timetoken,
-            entry: message.message,
-          };
-          setNewMessage(messageObject);
+          // const messageObject = {
+          //   timetoken: message.timetoken,
+          //   entry: message.message,
+          // };
+          insertText[insertText.length] = message.message;
+          setMessages(() => [...insertText]);
+
+          //setNewMessage(messageObject);
           scrollToBottomAction();
         },
       });
@@ -1005,7 +1031,23 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         (status: PubnubStatus, response: HistoryResponse) => {
           console.log(response.messages.length, 'messages length.......');
           if (response.messages.length === 0) sendWelcomeMessage();
-          setMessages(response.messages);
+
+          const newmessage: MessagesObjectProps[] = messages;
+          response.messages.forEach((element: any, index: number) => {
+            const item = element.entry;
+            if (item.prismId) {
+              getPrismUrls(currentPatient && currentPatient.id, item.prismId).then((data: any) => {
+                item.url = (data && data.urls[0]) || item.url;
+              });
+              newmessage[index] = item;
+            } else {
+              newmessage.push(element.entry);
+            }
+          });
+          insertText = newmessage;
+          setMessages(newmessage);
+
+          //setMessages(response.messages);
           scrollToBottomAction();
         }
       );
@@ -1015,14 +1057,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     }
   }, [appointmentId]);
 
-  useEffect(() => {
-    // console.log(newMessage, 'new message in useeffect is.......');
-    if (Object.keys(newMessage).length > 0) {
-      const exisitingMessages = messages;
-      exisitingMessages.push(newMessage);
-      setMessages([...exisitingMessages]);
-    }
-  }, [newMessage]);
+  // useEffect(() => {
+  //   // console.log(newMessage, 'new message in useeffect is.......');
+  //   if (Object.keys(newMessage).length > 0) {
+  //     const exisitingMessages = messages;
+  //     exisitingMessages.push(newMessage);
+  //     setMessages([...exisitingMessages]);
+  //   }
+  // }, [newMessage]);
 
   // publish a message to pubnub channel
   const publishMessage = (channelName: string, message: any) => {
@@ -1834,9 +1876,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     sliderRef.current.slickGoTo(slideNo);
   };
   const getCardType = (messageDetails: any) => {
-    if (messageDetails.entry && messageDetails.entry.cardType) {
-      return messageDetails.entry.cardType;
-    } else if (messageDetails.entry.id === currentPatient.id) {
+    if (messageDetails && messageDetails.cardType) {
+      return messageDetails.cardType;
+    } else if (messageDetails.id === currentPatient.id) {
       return 'patient';
     } else {
       return 'doctor';
@@ -2030,26 +2072,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 const cardType = getCardType(messageDetails);
 
                 const message =
-                  messageDetails.entry && messageDetails.entry.message
-                    ? messageDetails.entry.message
-                    : '';
-                if (messageDetails.entry.message === '^^#DocumentUpload') {
-                  console.log(messageDetails.entry);
+                  messageDetails && messageDetails.message ? messageDetails.message : '';
+                if (messageDetails.message === '^^#DocumentUpload') {
+                  console.log(messageDetails);
                 }
                 if (
-                  messageDetails.entry.message === autoMessageStrings.typingMsg ||
-                  messageDetails.entry.message === autoMessageStrings.endCallMsg ||
-                  messageDetails.entry.message === autoMessageStrings.audioCallMsg ||
-                  messageDetails.entry.message === autoMessageStrings.videoCallMsg ||
-                  messageDetails.entry.message === autoMessageStrings.acceptedCallMsg ||
-                  messageDetails.entry.message === autoMessageStrings.stopConsultMsg ||
-                  messageDetails.entry.message === autoMessageStrings.startConsultMsg ||
-                  messageDetails.entry.message === autoMessageStrings.covertVideoMsg ||
-                  messageDetails.entry.message === autoMessageStrings.covertAudioMsg
+                  messageDetails.message === autoMessageStrings.typingMsg ||
+                  messageDetails.message === autoMessageStrings.endCallMsg ||
+                  messageDetails.message === autoMessageStrings.audioCallMsg ||
+                  messageDetails.message === autoMessageStrings.videoCallMsg ||
+                  messageDetails.message === autoMessageStrings.acceptedCallMsg ||
+                  messageDetails.message === autoMessageStrings.stopConsultMsg ||
+                  messageDetails.message === autoMessageStrings.startConsultMsg ||
+                  messageDetails.message === autoMessageStrings.covertVideoMsg ||
+                  messageDetails.message === autoMessageStrings.covertAudioMsg
                 ) {
                   return null;
                 }
-                const duration = messageDetails.entry.duration;
+                const duration = messageDetails.duration;
                 if (cardType === 'welcome') {
                   return <WelcomeCard doctorName={doctorDisplayName} />;
                 } else if (cardType === 'doctor') {
@@ -2057,7 +2097,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     <DoctorCard
                       message={message}
                       duration={duration}
-                      messageDetails={messageDetails.entry}
+                      messageDetails={messageDetails}
                     />
                   );
                 } else {
@@ -2065,8 +2105,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     <PatientCard
                       message={message}
                       duration={duration}
-                      chatTime={messageDetails.entry.messageDate}
-                      messageDetails={messageDetails.entry}
+                      chatTime={messageDetails.messageDate}
+                      messageDetails={messageDetails}
                     />
                   );
                 }
