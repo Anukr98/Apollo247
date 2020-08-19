@@ -1096,7 +1096,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               getNetStatus()
                 .then((status) => {
                   if (status) {
-                    fetchSpecialityFilterData(filterMode, FilterData, latlng);
+                    fetchSpecialityFilterData(
+                      filterMode,
+                      FilterData,
+                      latlng,
+                      sortValue,
+                      undefined,
+                      doctorsType === 'PARTNERS' ? true : false
+                    );
                   } else {
                     setshowSpinner(false);
                     setshowOfflinePopup(true);
@@ -1610,7 +1617,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             getNetStatus()
               .then((status) => {
                 if (status) {
-                  fetchSpecialityFilterData(filterMode, selecteddata);
+                  fetchSpecialityFilterData(
+                    filterMode,
+                    selecteddata,
+                    latlng,
+                    sortValue,
+                    undefined,
+                    doctorsType === 'PARTNERS' ? true : false
+                  );
                   CommonLogEvent(
                     AppRoutes.DoctorSearchListing,
                     `Filter selected data ${selecteddata}`
