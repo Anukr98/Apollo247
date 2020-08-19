@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     productTitle: {
-      fontSize: 14,
+      fontSize: 12,
       color: '#01475b',
       fontWeight: 500,
       textAlign: 'center',

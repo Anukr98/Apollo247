@@ -546,6 +546,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const doctorAutoResponse = '^^#doctorAutoResponse';
   const leaveChatRoom = '^^#leaveChatRoom';
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
+  const patientRejectedCall = '^^#PATIENT_REJECTED_CALL';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -740,14 +741,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
       callPermissions(() => {
         if (callType === 'VIDEO') {
-          setOnSubscribe(true);
+          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
           isAudio.current = false;
         } else if (callType === 'AUDIO') {
-          setOnSubscribe(true);
+          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
           isAudio.current = true;
           callhandelBack = false;
         }
-        playSound();
+        isVoipCall || fromIncomingCall ? null : playSound();
         setDoctorJoinedChat && setDoctorJoinedChat(true);
       });
     }
@@ -1599,7 +1600,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setTimeout(() => {
           setSnackbarState(true);
           setHandlerMessage('Check the network connection.');
-        }, 50);
+        }, 2050);
       } else {
         setSnackBar();
       }
@@ -1610,12 +1611,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('session stream connectionCreated!', event);
     },
     connectionDestroyed: (event: string) => {
-      AsyncStorage.getItem('callDisconnected').then((data) => {
-        if (!JSON.parse(data || 'false')) {
-          setSnackbarState(true);
-          setHandlerMessage('Call disconnected due to Network issues at the Doctor side');
-        }
-      });
+      setTimeout(() => {
+        AsyncStorage.getItem('callDisconnected').then((data) => {
+          if (!JSON.parse(data || 'false')) {
+            setSnackbarState(true);
+            setHandlerMessage('Call disconnected due to Network issues at the Doctor side');
+          }
+        });
+      }, 2000);
       console.log('session stream connectionDestroyed!', event);
       eventsAfterConnectionDestroyed();
     },
@@ -1699,15 +1702,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const config: Pubnub.PubnubConfig = {
+    origin: 'apollo.pubnubapi.com',
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
     uuid: `PATIENT_${patientId}`,
     restore: true,
     keepAlive: true,
-    // autoNetworkDetection: true,
-    // listenToBrowserNetworkEvents: true,
-    // presenceTimeout: 20,
     heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
@@ -2171,11 +2172,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const checkAutomatedPatientText = () => {
     const result = insertText.filter((obj: any) => {
-      // console.log('resultinsertText', obj.message);
       return obj.message === consultPatientStartedMsg;
     });
-    if (result.length === 0) {
-      console.log('result.length ', result);
+    const startConsultResult = insertText.filter((obj: any) => {
+      return obj.message === startConsultMsg;
+    });
+    if (result.length === 0 && startConsultResult.length === 0) {
       automatedTextFromPatient();
     }
   };
@@ -4211,7 +4213,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === stopConsultMsg ||
       rowData.message === cancelConsultInitiated ||
       rowData.message === callAbandonment ||
-      rowData.message === appointmentComplete
+      rowData.message === appointmentComplete ||
+      rowData.message === patientRejectedCall
     ) {
       return null;
     }

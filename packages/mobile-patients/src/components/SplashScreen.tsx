@@ -137,7 +137,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
     DeviceEventEmitter.addListener('reject', (params) => {
       console.log('Reject Params', params);
-      voipCallType.current = params.call_type;
       getAppointmentDataAndNavigate(params.appointment_id, false);
     });
     setBugfenderPhoneNumber();

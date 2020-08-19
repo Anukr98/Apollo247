@@ -1101,20 +1101,26 @@ export const InitiateAppsFlyer = (
   );
 
   onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution(async (res) => {
-    try {
-      AsyncStorage.setItem('deeplink', res.data.af_dp);
-      AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+    // for iOS universal links
+    if (Platform.OS === 'ios') {
+      try {
+        AsyncStorage.setItem('deeplink', res.data.af_dp);
+        AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
 
-      console.log('res.data.af_dp_onAppOpenAttribution', decodeURIComponent(res.data.af_dp));
-      setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
-      setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
+        console.log('res.data.af_dp_onAppOpenAttribution', decodeURIComponent(res.data.af_dp));
+        setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
+        setBugFenderLog(
+          'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
+          res.data.af_sub1
+        );
 
-      setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
-    } catch (error) {}
+        setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
+      } catch (error) {}
 
-    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
-    if (userLoggedIn == 'true') {
-      handleUniversalLinks(res.data, navigation);
+      const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+      if (userLoggedIn == 'true') {
+        handleUniversalLinks(res.data, navigation);
+      }
     }
   });
 };

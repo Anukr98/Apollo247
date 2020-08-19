@@ -419,6 +419,7 @@ export const JDConsultRoom: React.FC = () => {
   const { patientId, appointmentId, queueId, isActive } = useParams<
     JDConsultRoomParams
   >();
+  const [isCall, setIscall] = React.useState(true);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);
   const [isNewMessage, setIsNewMessage] = React.useState(false);
@@ -449,6 +450,7 @@ export const JDConsultRoom: React.FC = () => {
     //presenceTimeout: 20,
     heartbeatInterval: 20,
     uuid: REQUEST_ROLES.JUNIOR,
+    origin : 'apollo.pubnubapi.com',
   };
   const pubnub = new Pubnub(config);
 
@@ -1873,6 +1875,8 @@ export const JDConsultRoom: React.FC = () => {
                       setSessionError={setSessionError}
                       setPublisherError={setPublisherError}
                       setSubscriberError={setSubscriberError}
+                      isCall={isCall}
+                      setIscall={setIscall}
                     />
                   )}
                   <div className={classes.contentGroup}>
@@ -1911,6 +1915,8 @@ export const JDConsultRoom: React.FC = () => {
                             setSessionError={setSessionError}
                             setPublisherError={setPublisherError}
                             setSubscriberError={setSubscriberError}
+                            isCall={isCall}
+                            setIscall={setIscall}
                           />
                         </div>
                       </div>

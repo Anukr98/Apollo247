@@ -286,6 +286,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
 
   useEffect(() => {
+    checkLocation();
     setDeepLinkFilter();
     setDeepLinkDoctorTypeFilter();
     if (!currentPatient) {
