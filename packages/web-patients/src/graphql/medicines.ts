@@ -290,6 +290,8 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           city
           state
           zipcode
+          name
+          mobileNumber
         }
       }
     }

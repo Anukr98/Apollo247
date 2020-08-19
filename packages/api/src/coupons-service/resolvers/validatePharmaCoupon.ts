@@ -128,11 +128,12 @@ export const validatePharmaCoupon: Resolver<
     billAmount = billAmount + amountToBeConsidered * item.quantity;
 
     const product: CouponProduct = {
-      sku: parseInt(item.itemId, 10),
+      sku: item.itemId,
       mrp: item.mrp,
       specialPrice: item.specialPrice,
       quantity: item.quantity,
       totalCost: amountToBeConsidered * item.quantity,
+      categoryId: item.productType.toString(),
     };
     couponProduct.push(product);
   });
@@ -150,7 +151,6 @@ export const validatePharmaCoupon: Resolver<
   };
 
   const couponData = await validateCoupon(payload);
-
   let validityStatus = false;
   let reasonForInvalidStatus = '';
   const lineItemsWithDiscount: PharmaLineItems[] = [];
@@ -159,9 +159,7 @@ export const validatePharmaCoupon: Resolver<
     validityStatus = couponData.response.valid;
     reasonForInvalidStatus = couponData.response.reason || '';
     couponData.response.products.map((item) => {
-      const orderLineItemData = orderLineItems.filter(
-        (item1) => item1.itemId == item.sku.toString()
-      );
+      const orderLineItemData = orderLineItems.filter((item1) => item1.itemId == item.sku);
       mrpPriceTotal = mrpPriceTotal + item.mrp * item.quantity;
       specialPriceTotal = specialPriceTotal + item.specialPrice * item.quantity;
 
@@ -182,7 +180,7 @@ export const validatePharmaCoupon: Resolver<
   }
 
   const productDiscount = Number((mrpPriceTotal - specialPriceTotal).toFixed(2));
-  const totalDiscountPrice = mrpPriceTotal - couponData.response!.discount;
+  const totalDiscountPrice = couponData.response!.discount;
 
   const discountedTotals: DiscountedTotals = {
     couponDiscount: Number((totalDiscountPrice - productDiscount).toFixed(2)),

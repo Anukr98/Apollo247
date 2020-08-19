@@ -137,6 +137,7 @@ export enum DoctorType {
   STAR_APOLLO = "STAR_APOLLO",
   SUGAR = "SUGAR",
   WHITE_DENTAL = "WHITE_DENTAL",
+  SENIOR = "SENIOR"
 }
 
 export enum FEEDBACKTYPE {
@@ -321,14 +322,14 @@ export enum PAYMENT_METHODS {
 }
 
 export enum PAYMENT_METHODS_REVERSE {
-  DEBIT_CARD ="DEBIT_CARD",
-  CREDIT_CARD="CREDIT_CARD",
-  NET_BANKING="NET_BANKING",
-  PAYTM_WALLET="PAYTM_WALLET",
-  CREDIT_CARD_EMI="CREDIT_CARD_EMI",
-  UPI="UPI",
-  PAYTM_POSTPAID="PAYTM_POSTPAID",
-  COD="COD",
+  COD = "COD",
+  CREDIT_CARD = "CREDIT_CARD",
+  CREDIT_CARD_EMI = "CREDIT_CARD_EMI",
+  DEBIT_CARD = "DEBIT_CARD",
+  NET_BANKING = "NET_BANKING",
+  PAYTM_POSTPAID = "PAYTM_POSTPAID",
+  PAYTM_WALLET = "PAYTM_WALLET",
+  UPI = "UPI",
 }
 
 export enum PRISM_DOCUMENT_CATEGORY {
@@ -530,6 +531,7 @@ export interface AppointmentPaymentInput {
   bankName?: string | null;
   refundAmount?: number | null;
   paymentMode?: PAYMENT_METHODS | null;
+  partnerInfo?: string | null;
 }
 
 export interface BookAppointmentInput {
@@ -801,6 +803,7 @@ export interface MedicinePaymentMqInput {
   orderId?: string | null;
   paymentMode?: PAYMENT_METHODS | null;
   healthCredits?: number | null;
+  partnerInfo?: string | null;
 }
 
 export interface MessageInput {
@@ -1035,29 +1038,11 @@ export interface prescriptionFileProperties {
   content: string;
 }
 
-export interface MedicineOrderOMSRefunds {
-  refundAmount: number;
-  refundStatus: REFUND_STATUS;
-  refundId: String;
-  orderId: String;
-  createdDate: any;
-  }
-
-export interface MedicineOrderOMSPayments{
-  id?: string;
-  paymentType?: MEDICINE_ORDER_PAYMENT_TYPE;
-  amountPaid?: number;
-  paymentRefId?: String;
-  paymentStatus?: String;
-  paymentDateTime?: any;
-  responseCode?: String;
-  responseMessage?: String;
-  bankTxnId?: String;
-  healthCreditsRedeemed?: number;
-  healthCreditsRedemptionRequest?: any;
-  paymentMode?: PAYMENT_METHODS_REVERSE
-  refundAmount?: number;
+export interface voipPushTokenInput {
+  patientId?: string | null;
+  voipToken?: string | null;
 }
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================

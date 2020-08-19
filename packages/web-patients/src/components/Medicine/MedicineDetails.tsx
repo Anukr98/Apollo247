@@ -25,13 +25,16 @@ import { useCurrentPatient } from 'hooks/authHooks';
 import {
   uploadPrescriptionTracking,
   pharmacyPdpOverviewTracking,
-  pharmacyProductClickTracking,
+  pharmacyProductViewTracking,
 } from 'webEngageTracking';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
 import { useHistory } from 'react-router';
+import { Link } from 'react-router-dom';
+import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getPackOfMedicine } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -81,7 +84,7 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
         paddingLeft: 20,
         paddingRight: 20,
-        boxShadow: '0 15px 20px 0 rgba(0, 0, 0, 0.1)',
+        boxShadow: '0px 0px 5px rgba(128, 128, 128, 0.2)',
         textAlign: 'center',
       },
     },
@@ -91,7 +94,8 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '20px',
       },
       [theme.breakpoints.down('xs')]: {
-        marginTop: 99,
+        marginTop: 27,
+        background: '#F7F8F5',
       },
     },
     medicineDetailsHeader: {
@@ -179,8 +183,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down(768)]: {
         display: 'flex',
-        padding: '20px 0 0 0',
         backgroundColor: '#f7f8f5',
+        flexDirection: 'row-reverse',
+        justifyContent: 'flex-end',
       },
     },
     noImageWrapper: {
@@ -192,8 +197,16 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         width: 80,
+        height: 80,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#fff',
+        boxShadow: '0px 0px 5px rgba(128, 128, 128, 0.2)',
         position: 'absolute',
-        marginLeft: 20,
+        top: 20,
+        right: 20,
       },
       '& img': {
         width: '100%',
@@ -215,18 +228,17 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         color: '#02475b',
         margin: 0,
-        paddingBottom: 10,
       },
     },
     productBasicInfo: {
       [theme.breakpoints.down('xs')]: {
-        paddingLeft: 115,
-        minHeight: 160,
+        width: '70%',
+        minHeight: 150,
       },
     },
     productDetailed: {
       [theme.breakpoints.down('xs')]: {
-        padding: '20px 0',
+        padding: '20px 0 0',
       },
     },
     productInfo: {
@@ -239,8 +251,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         borderTop: '0.5px solid rgba(2,71,91,0.3)',
-        margin: '0 20px',
-        padding: '20px 0',
+        padding: '10px 20px',
       },
     },
     textInfo: {
@@ -277,27 +288,28 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 0,
       minHeight: 'auto',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      margin: '5px 0 0 0',
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      // margin: '5px 0 0 0',
       '& svg': {
         color: '#02475b',
       },
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#f7f8f5',
       },
-      '&:before': {
-        content: '""',
-        borderTop: '0.5px solid rgba(2,71,91,0.3)',
-        position: 'absolute',
-        left: 20,
-        right: 20,
-      },
+      // '&:before': {
+      //   content: '""',
+      //   borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      //   position: 'absolute',
+      //   left: 0,
+      //   right: 0,
+      // },
     },
     tabRoot: {
       fontSize: 14,
       fontWeight: 500,
       textAlign: 'center',
       color: '#02475b',
-      padding: '10px 0',
+      padding: '10px 12px',
       textTransform: 'none',
       opacity: 0.5,
       lineHeight: 'normal',
@@ -312,6 +324,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     tabSelected: {
       opacity: 1,
+      fontWeight: 700,
     },
     tabsIndicator: {
       backgroundColor: '#00b38e',
@@ -342,7 +355,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
-        padding: 20,
+        padding: '10px 20px',
+        borderRadius: 5,
       },
     },
     prescriptionBox: {
@@ -356,6 +370,9 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       marginTop: 8,
       marginBottom: 16,
+      [theme.breakpoints.down('xs')]: {
+        background: '#fff',
+      },
     },
     preImg: {
       marginLeft: 'auto',
@@ -401,7 +418,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       padding: '20px 40px',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      marginTop: -48,
+      marginTop: -57,
       position: 'relative',
       display: 'flex',
       alignItems: 'center',
@@ -449,6 +466,37 @@ const useStyles = makeStyles((theme: Theme) => {
         marginRight: 10,
       },
     },
+    itemCount: {
+      width: 14,
+      height: 14,
+      borderRadius: '50%',
+      backgroundColor: '#ff748e',
+      position: 'absolute',
+      right: -4,
+      top: -7,
+      fontSize: 9,
+      fontWeight: 'bold',
+      color: theme.palette.common.white,
+      lineHeight: '14px',
+      textAlign: 'center',
+    },
+    cartContainer: {
+      '& a': {
+        position: 'relative',
+        display: 'block',
+      },
+    },
+    mobileView: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    tabWrapper: {
+      padding: 20,
+      [theme.breakpoints.down('xs')]: {
+        padding: 0,
+      },
+    },
   };
 });
 
@@ -471,6 +519,8 @@ export const MedicineDetails: React.FC = (props) => {
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [metaTagProps, setMetaTagProps] = React.useState(null);
+  const { cartItems } = useShoppingCart();
+  const { diagnosticsCartItems } = useDiagnosticsCart();
 
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
@@ -526,7 +576,7 @@ export const MedicineDetails: React.FC = (props) => {
               category_id,
             } = data && data.productdp && data.productdp.length && data.productdp[0];
             let { description } = data.productdp[0];
-            pharmacyProductClickTracking({
+            pharmacyProductViewTracking({
               productName: name,
               source: '',
               productId: sku,
@@ -619,8 +669,8 @@ export const MedicineDetails: React.FC = (props) => {
                 title: `${name} Price, Uses, Side Effects - Apollo 247`,
                 description: `Buy ${name}, Pack of ${getPackOfMedicine(
                   data.productdp[0]
-                )} at Rs. ${special_price ||
-                  price} in India. Order ${name} online at get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
+                )} at &#8377;${special_price ||
+                  price} in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
                 canonicalLink:
                   typeof window !== 'undefined' &&
                   window.location &&
@@ -780,20 +830,21 @@ export const MedicineDetails: React.FC = (props) => {
   const renderOverviewTabDesc = (overView: MedicineOverView) => {
     const data = getData(overView);
     if (typeof overView !== 'string') {
-      return data.map(
-        (item, index) =>
-          tabValue === index && (
-            <div key={index} className={classes.tabContainer}>
-              {item.value.split(';').map((description, idx) => {
-                if (item.key === 'Usage') {
-                  return <div key={index}>{getUsageDesc(description)}</div>;
-                } else {
-                  return <p key={idx}>{description}</p>;
-                }
-              })}
-            </div>
-          )
-      );
+      return data.map((item, index) => (
+        <div
+          style={{ display: tabValue === index ? 'block' : 'none' }}
+          key={index}
+          className={classes.tabContainer}
+        >
+          {item.value.split(';').map((description, idx) => {
+            if (item.key === 'Usage') {
+              return <div key={index}>{getUsageDesc(description)}</div>;
+            } else {
+              return <p key={idx}>{description}</p>;
+            }
+          })}
+        </div>
+      ));
     }
     return [];
   };
@@ -859,10 +910,20 @@ export const MedicineDetails: React.FC = (props) => {
                     </div>
                   </a>
                   <div className={classes.detailsHeader}>Product Detail</div>
+                  <div className={classes.cartContainer}>
+                    <Link to={clientRoutes.medicinesCart()}>
+                      <img src={require('images/ic_cart.svg')} alt="Cart" title={'cart'} />
+                      <span className={classes.itemCount}>
+                        {cartItems.length + diagnosticsCartItems.length || 0}
+                      </span>
+                    </Link>
+                  </div>
                 </div>
-
                 <div className={classes.autoSearch}>
-                  <MedicineAutoSearch />
+                  <div className={classes.mobileView}>
+                    <MedicineAutoSearch />
+                  </div>
+
                   <div className={classes.searchRight}>
                     <AphButton
                       className={classes.uploadPreBtn}
@@ -904,7 +965,7 @@ export const MedicineDetails: React.FC = (props) => {
                         autoHeightMax={'calc(100vh - 215px'}
                       >
                         <div className={classes.productInformation}>
-                          {medicineDetails.image && medicineDetails.image.includes('.') ? (
+                          {medicineDetails.image && medicineDetails.image.length > 0 ? (
                             <MedicineImageGallery data={medicineDetails} />
                           ) : (
                             <div className={classes.noImageWrapper}>
@@ -940,20 +1001,20 @@ export const MedicineDetails: React.FC = (props) => {
                                   {getPackOfMedicine(medicineDetails)}
                                 </Typography>
                               </div>
-                              {Number(medicineDetails.is_prescription_required) !== 0 && (
-                                <div className={classes.prescriptionBox}>
-                                  <span>This medicine requires doctor’s prescription</span>
-                                  <span className={classes.preImg}>
-                                    <img src={require('images/ic_tablets.svg')} alt="" />
-                                  </span>
-                                </div>
-                              )}
                             </div>
+                            {Number(medicineDetails.is_prescription_required) !== 0 && (
+                              <div className={classes.prescriptionBox}>
+                                <span>This medicine requires doctor’s prescription</span>
+                                <span className={classes.preImg}>
+                                  <img src={require('images/ic_tablets.svg')} alt="" />
+                                </span>
+                              </div>
+                            )}
                             {medicinePharmacyDetails &&
                             medicinePharmacyDetails.length > 0 &&
                             medicinePharmacyDetails[0].Overview &&
                             medicinePharmacyDetails[0].Overview.length > 0 ? (
-                              <>
+                              <div className={classes.tabWrapper}>
                                 <Tabs
                                   value={tabValue}
                                   variant="scrollable"
@@ -974,7 +1035,7 @@ export const MedicineDetails: React.FC = (props) => {
                                   {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
                                 </Tabs>
                                 {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
-                              </>
+                              </div>
                             ) : medicineDetails.description ? (
                               <div className={classes.productDetailed}>
                                 <div className={classes.productInfo}>Product Information</div>

@@ -69,6 +69,7 @@ import {
   MedicineOrderAddress,
   PatientEntitiySubscriber,
 } from 'profiles-service/entities';
+import { DiagnosticItdosePincodeHubs } from 'profiles-service/entities/diagnostic_itdose_pincode_hub';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
 import {
@@ -115,6 +116,7 @@ export const connect = async () => {
         DiagnosticOrdersStatus,
         DiagnosticOrgans,
         DiagnosticPincodeHubs,
+        DiagnosticItdosePincodeHubs,
         Diagnostics,
         LoginOtp,
         LoginOtpArchive,

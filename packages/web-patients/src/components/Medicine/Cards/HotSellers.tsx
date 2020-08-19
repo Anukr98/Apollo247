@@ -12,6 +12,7 @@ import {
   pharmacyConfigSectionTracking,
   addToCartTracking,
   removeFromCartTracking,
+  pharmacyProductClickedTracking,
 } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -52,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     productTitle: {
-      fontSize: 14,
+      fontSize: 12,
       color: '#01475b',
       fontWeight: 500,
       textAlign: 'center',
@@ -178,7 +179,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
     url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
-  const { cartItems, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const { cartItems, addCartItem, updateCartItem, removeCartItemSku } = useShoppingCart();
 
   const itemIndexInCart = (item: MedicineProduct) => {
     const index = cartItems.findIndex((cartItem) => cartItem.id == item.id);
@@ -210,13 +211,19 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                     )}
                   <Link
                     to={clientRoutes.medicineDetails(hotSeller.url_key)}
-                    onClick={() =>
+                    onClick={() => {
                       pharmacyConfigSectionTracking({
                         sectionName: props.section,
                         productId: hotSeller.sku,
                         productName: hotSeller.name,
-                      })
-                    }
+                      });
+                      pharmacyProductClickedTracking({
+                        productName: hotSeller.name,
+                        source: 'Home',
+                        productId: hotSeller.sku,
+                        sectionName: props.section,
+                      });
+                    }}
                   >
                     <div className={classes.productIcon}>
                       <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
@@ -349,7 +356,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                               },
                             });
                             /**Gtm code End  */
-                            removeCartItem && removeCartItem(hotSeller.id);
+                            removeCartItemSku && removeCartItemSku(hotSeller.sku);
                           }}
                         >
                           Remove

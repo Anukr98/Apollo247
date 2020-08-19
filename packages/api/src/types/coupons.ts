@@ -27,11 +27,12 @@ export interface ValidateCouponRequestPharma {
 }
 
 export interface CouponProduct {
-  sku: number;
+  sku: string;
   mrp: number;
   specialPrice: number;
   quantity: number;
   totalCost: number;
+  categoryId: string;
 }
 
 export interface ValidateCouponResponse {
@@ -47,8 +48,8 @@ export interface ValidateCouponResponse {
     pinCode: string;
     consultations: [];
     products: {
-      sku: number;
-      categoryId: number;
+      sku: string;
+      categoryId: string;
       subCategoryId: number;
       mrp: number;
       specialPrice: number;

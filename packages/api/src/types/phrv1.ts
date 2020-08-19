@@ -121,6 +121,7 @@ export interface PrescriptionUploadRequest {
   }[];
   speciality: string;
   hospital_name: string;
+  hospitalId: string;
   address: string;
   city: string;
   pincode: string;
@@ -175,8 +176,8 @@ export interface CreateNewUsersResponse {
 }
 
 export interface GetAuthTokenResponse {
-  errorCode: null;
-  errorMsg: null;
-  errorType: null;
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
   response: string;
 }

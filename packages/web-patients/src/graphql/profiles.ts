@@ -174,6 +174,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             medicineConsumptionDurationInDays
             medicineDosage
             id
+            medicineCustomDetails
             medicineConsumptionDurationUnit
             medicineFormTypes
             medicineFrequency
@@ -414,6 +415,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           # labTestDate
           date
           labTestRefferedBy
+          siteDisplayName
           additionalNotes
           observation
           labTestResults {

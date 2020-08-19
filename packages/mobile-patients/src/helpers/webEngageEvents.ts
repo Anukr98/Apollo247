@@ -24,13 +24,13 @@ export enum WebEngageEventName {
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   CATEGORY_FILTER_CLICKED = 'Pharmacy Category Filter Clicked',
   CATEGORY_FILTER_APPLIED = 'Pharmacy Category Filter Applied',
+  CATEGORY_LIST_GRID_VIEW = 'Listing view',
   SHOW_PRESCRIPTION_AT_STORE_SELECTED = 'Show prescription at store selected',
   PHARMACY_STORE_PICKUP_VIEWED = 'Pharmacy store pickup viewed', // Every time a new pincode is entered, the event must be triggered
   PHARMACY_STORE_SELECTED_SUCCESS = 'Pharmacy store selected success',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
   PHARMACY_ADD_TO_CART_NONSERVICEABLE = 'Pharmacy Add to cart Nonserviceable',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
-  BUY_NOW = 'Buy Now',
   PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
   SKU_PRICE_MISMATCH = 'SKU Price Mismatch',
   TAT_API_FAILURE = 'Tat API Failure',
@@ -88,7 +88,6 @@ export enum WebEngageEventName {
   MANAGE_DIABETES = 'Manage Diabetes',
   TRACK_SYMPTOMS = 'Track Symptoms',
   VIEW_HELATH_RECORDS = 'View Helath Records',
-  CORONA_VIRUS_TALK_TO_OUR_EXPERT = 'Corona Virus?Talk to our expert',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
   CHECK_YOUR_RISK_LEVEL = 'Check your risk level',
   NOTIFICATION_ICON = 'Notification Icon clicked',
@@ -238,7 +237,6 @@ export interface WebEngageEvents {
   [WebEngageEventName.MANAGE_DIABETES]: PatientInfo;
   [WebEngageEventName.TRACK_SYMPTOMS]: PatientInfo;
   [WebEngageEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
-  [WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
   [WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS]: { clicked: true };
   [WebEngageEventName.CHECK_YOUR_RISK_LEVEL]: { clicked: true };
   [WebEngageEventName.APOLLO_KAVACH_PROGRAM]: { clicked: true };
@@ -286,7 +284,7 @@ export interface WebEngageEvents {
     'customer id': string;
     pincode: number;
     Serviceable: 'Yes' | 'No';
-    'TAT Displayed': number;
+    'Delivery TAT': number;
   };
   [WebEngageEventName.PRODUCT_DETAIL_TAB_CLICKED]: {
     tabName: string;
@@ -321,6 +319,12 @@ export interface WebEngageEvents {
     discount: string;
     'sort by': string;
     price: string;
+  };
+  [WebEngageEventName.CATEGORY_LIST_GRID_VIEW]: {
+    'Category name'?: string;
+    'Category id'?: string;
+    'Type': 'Grid' | 'List';
+    'Source': 'Search' | 'Category';
   };
   [WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED]: {
     value: boolean;
@@ -390,18 +394,6 @@ export interface WebEngageEvents {
     // 'Mobile Number': string;
     // 'Customer ID': string;
   };
-  [WebEngageEventName.BUY_NOW]: {
-    'product name': string;
-    'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
-    'category ID': string;
-    Price: number;
-    'Discounted Price': number;
-    Quantity: number;
-    'Service Area': 'Pharmacy' | 'Diagnostic';
-  };
   [WebEngageEventName.PHARMACY_CART_VIEWED]: {
     'Customer ID': string;
     'Total items in cart': number;
@@ -421,6 +413,7 @@ export interface WebEngageEvents {
     'Magento MRP': number;
     'Magento Pack Size': number;
     'Store API MRP': number;
+    'Price Change In Cart': 'Yes' | 'No';
   };
 
   [WebEngageEventName.TAT_API_FAILURE]: {
@@ -445,7 +438,7 @@ export interface WebEngageEvents {
     'Sub Total': number;
     'Delivery charge': number;
     'Net after discount': number;
-    'Prescription Needed?': 'Yes' | 'No';
+    'Prescription Needed?': boolean;
     'Cart ID'?: string; // we don't have cartId before placing order
     'Mode of Delivery': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
     'Delivery Date Time'?: string; // Optional (only if Home)
@@ -870,12 +863,15 @@ export interface WebEngageEvents {
     Success?: YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery address': string;
     Pincode: string;
+    'TAT Displayed': Date;
+    'Delivery TAT': number;
   };
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS]: {
-    'TAT Displayed'?: number;
+    'TAT Displayed'?: Date;
     'Delivery Successful': YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery Address': string;
     Pincode: string;
+    'Delivery TAT': number;
   };
 
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {

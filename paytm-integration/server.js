@@ -141,7 +141,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateUtilizationCapacity Response\n' +
         JSON.stringify(response.data.data.updateUtilizationCapacity) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -162,7 +162,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdatePhrDocSummary Response\n' +
         JSON.stringify(response.data.data.updatePhrDocSummary) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -184,7 +184,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\ngetAvailableDoctorsCount Response\n' +
         JSON.stringify(response.data.data.getAvailableDoctorsCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -206,7 +206,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateConsultRating Response\n' +
         JSON.stringify(response.data.data.updateConsultRating) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -241,7 +241,7 @@ app.get('/updateSpecialtyCount', (req, res) => {
         '\nupdateSpecialtyCount Response\n' +
         JSON.stringify(response.data.data.updateSpecialtyCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -280,7 +280,7 @@ app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
         '\nupdateDoctorsAwayAndOnlineCount Response\n' +
         JSON.stringify(response.data.data.updateDoctorsAwayAndOnlineCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -412,10 +412,7 @@ app.get('/diagnosticpayment', (req, res) => {
             req.query.price
           )}|APOLLO247|${firstName}|${emailAddress}|||||||||||eCwWELxi`;
 
-          const hash = crypto
-            .createHash('sha512')
-            .update(code)
-            .digest('hex');
+          const hash = crypto.createHash('sha512').update(code).digest('hex');
 
           console.log('paymentCode==>', code);
           console.log('paymentHash==>', hash);
@@ -853,7 +850,7 @@ app.get('/processOrders', (req, res) => {
                   '\n---------------------------\n' +
                   JSON.stringify(pharmaInput) +
                   '\n-------------------\n';
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -873,7 +870,7 @@ app.get('/processOrders', (req, res) => {
                     console.log('pharma resp', resp, resp.data.ordersResult);
                     //const orderData = JSON.parse(resp.data);
                     content = resp.data.ordersResult + '\n==================================\n';
-                    fs.appendFile(fileName, content, function(err) {
+                    fs.appendFile(fileName, content, function (err) {
                       if (err) throw err;
                       console.log('Updated!');
                     });
@@ -976,7 +973,11 @@ app.get('/processOmsOrders', (req, res) => {
           url: process.env.API_URL,
           method: 'post',
           data: {
-            query: getMedicineOrderQuery('getMedicineOrderOMSDetails', patientId, orderAutoId),
+            query: getMedicineOrderQuery(
+              'getMedicineOrderOMSDetailsWithAddress',
+              patientId,
+              orderAutoId
+            ),
           },
         })
           .then(async (response) => {
@@ -984,8 +985,8 @@ app.get('/processOmsOrders', (req, res) => {
               response &&
               response.data &&
               response.data.data &&
-              response.data.data.getMedicineOrderOMSDetails &&
-              response.data.data.getMedicineOrderOMSDetails.medicineOrderDetails;
+              response.data.data.getMedicineOrderOMSDetailsWithAddress &&
+              response.data.data.getMedicineOrderOMSDetailsWithAddress.medicineOrderDetails;
             if (orderDetails) {
               logger.info(
                 `message from topic -processOrders() OMS->getMedicineOrderDetails()-> ${JSON.stringify(
@@ -1003,30 +1004,16 @@ app.get('/processOmsOrders', (req, res) => {
                   deliveryStateCode = 'TS',
                   lat = 0,
                   long = 0;
-                if (orderDetails.patientAddressId) {
-                  const patientAddressDetails = await getAddressDetails(
-                    orderDetails.patientAddressId
-                  );
-                  if (patientAddressDetails) {
-                    deliveryState = patientAddressDetails.state;
-                    deliveryAddress1 = patientAddressDetails.addressLine1;
-                    deliveryAddress2 = patientAddressDetails.addressLine2;
-                    landmark = patientAddressDetails.landmark || landmark;
-                    lat = patientAddressDetails.latitude || lat;
-                    long = patientAddressDetails.longitude || long;
-                    deliveryStateCode = patientAddressDetails.stateCode || deliveryStateCode;
-                    deliveryAddress =
-                      patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
-                    deliveryCity = patientAddressDetails.city || deliveryCity;
-                    deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
-                  }
-                }
-                if (orderDetails.shopId && orderDetails.shopId !== '0') {
+                const patientAddressDetails = orderDetails.medicineOrderAddress;
+                if (orderDetails.deliveryType == 'STORE_PICKUP') {
                   if (!orderDetails.shopAddress) {
                     logger.error(
                       `store address details not present for store pick ${orderDetails.orderAutoId}`
                     );
-                    return;
+                    res.send({
+                      status: 'Failed',
+                      reason: 'store address not present',
+                    });
                   }
                   const shopAddress = JSON.parse(orderDetails.shopAddress);
                   deliveryState = shopAddress.state;
@@ -1035,6 +1022,18 @@ app.get('/processOmsOrders', (req, res) => {
                   deliveryAddress = shopAddress.address || '';
                   deliveryStateCode = shopAddress.stateCode;
                 } else {
+                  deliveryState = patientAddressDetails.state;
+                  deliveryAddress1 = patientAddressDetails.addressLine1;
+                  deliveryAddress2 = patientAddressDetails.addressLine2;
+                  landmark = patientAddressDetails.landmark || landmark;
+                  lat = patientAddressDetails.latitude || lat;
+                  long = patientAddressDetails.longitude || long;
+                  deliveryStateCode = patientAddressDetails.stateCode || deliveryStateCode;
+                  deliveryAddress = deliveryAddress1 + ' ' + deliveryAddress2;
+                  deliveryCity = patientAddressDetails.city || deliveryCity;
+                  deliveryZipcode = patientAddressDetails.zipcode || deliveryZipcode;
+                }
+                if (orderDetails.shopId == '0') {
                   orderDetails.shopId = '';
                 }
                 const orderLineItems = [];
@@ -1106,6 +1105,10 @@ app.get('/processOmsOrders', (req, res) => {
                         orderDetails.orderAutoId
                       } ${JSON.stringify(e)}`
                     );
+                    res.send({
+                      status: 'Failed',
+                      reason: 'error while fetching prescription urls',
+                    });
                   }
                 }
                 if (!orderDetails.orderTat) {
@@ -1175,7 +1178,7 @@ app.get('/processOmsOrders', (req, res) => {
                     customername:
                       patientDetails.firstName +
                       (patientDetails.lastName ? ' ' + patientDetails.lastName : ''),
-                    primarycontactno: patientDetails.mobileNumber.substr(3),
+                    primarycontactno: patientAddressDetails.mobileNumber.substr(3),
                     secondarycontactno: '',
                     age: patientAge,
                     emailid: patientDetails.emailAddress || '',
@@ -1594,7 +1597,7 @@ app.get('/processOrderById', (req, res) => {
             '\n---------------------------\n' +
             JSON.stringify(pharmaInput) +
             '\n-------------------\n';
-          fs.appendFile(fileName, content, function(err) {
+          fs.appendFile(fileName, content, function (err) {
             if (err) throw err;
             console.log('Updated!');
           });
@@ -1609,7 +1612,7 @@ app.get('/processOrderById', (req, res) => {
               console.log('pharma resp', resp, resp.data.ordersResult);
               //const orderData = JSON.parse(resp.data);
               content = resp.data.ordersResult + '\n==================================\n';
-              fs.appendFile(fileName, content, function(err) {
+              fs.appendFile(fileName, content, function (err) {
                 if (err) throw err;
                 console.log('Updated!');
               });

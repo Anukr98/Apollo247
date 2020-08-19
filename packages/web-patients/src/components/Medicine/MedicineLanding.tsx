@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorListingPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        marginTop: 80,
+        marginTop: 70,
       },
     },
     pageTopHeader: {
@@ -68,7 +68,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     medicineTopGroup: {
       display: 'flex',
-      paddingTop: 25,
+      // paddingTop: 25,
       [theme.breakpoints.down('xs')]: {
         display: 'block',
         paddingTop: 0,
@@ -386,6 +386,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 13,
       '& a': {
         color: '#fc9916',
+        [theme.breakpoints.down('xs')]: {
+          display: 'block',
+          margin: '5px 0 0',
+        },
       },
       '& p': {
         marginBottom: 0,
@@ -423,6 +427,13 @@ const useStyles = makeStyles((theme: Theme) => {
       display: ' none',
       [theme.breakpoints.down(500)]: {
         display: 'block',
+      },
+    },
+    medicineHeader: {
+      [theme.breakpoints.down('xs')]: {
+        '& header': {
+          boxShadow: 'none',
+        },
       },
     },
   };
@@ -577,7 +588,7 @@ export const MedicineLanding: React.FC = (props: any) => {
               const renderValue = () => {
                 if (sectionData) {
                   return sectionData.products ? (
-                    <HotSellers data={sectionData} />
+                    <HotSellers data={sectionData} section={section.section_name} />
                   ) : sectionData.length > 0 && sectionData[0].title ? (
                     section.section_key === 'shop_by_brand' ? (
                       <ShopByBrand data={sectionData} sectionName={section.section_key} />
@@ -601,7 +612,6 @@ export const MedicineLanding: React.FC = (props: any) => {
             }
           });
           setMetadata(updatedMetadata);
-          console.log('updatedMetadata', updatedMetadata);
         }
         /**Gtm code start  */
         gtmTracking({ category: 'Pharmacy', action: 'Landing Page', label: 'Listing Page Viewed' });
@@ -650,7 +660,9 @@ export const MedicineLanding: React.FC = (props: any) => {
   return (
     <div className={classes.root}>
       <MetaTagsComp {...metaTagProps} />
-      <Header />
+      <div className={classes.medicineHeader}>
+        <Header />
+      </div>
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.pageTopHeader}>

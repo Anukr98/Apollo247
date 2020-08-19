@@ -21,6 +21,7 @@ import {
   REQUEST_ROLES,
   PATIENT_TYPE,
   AppointmentUpdateHistory,
+  PaginateParams,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -51,7 +52,37 @@ export class AppointmentRepository extends Repository<Appointment> {
   async findById(id: string) {
     const cache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
     if (cache && typeof cache === 'string') {
-      const cacheAppointment: Appointment = JSON.parse(cache);
+      let cacheAppointment: Appointment = JSON.parse(cache);
+      if (cacheAppointment.sdConsultationDate) {
+        cacheAppointment.sdConsultationDate = new Date(cacheAppointment.sdConsultationDate);
+      }
+      if (cacheAppointment.bookingDate) {
+        cacheAppointment.bookingDate = new Date(cacheAppointment.bookingDate);
+      }
+      if (cacheAppointment.appointmentDateTime) {
+        cacheAppointment.appointmentDateTime = new Date(cacheAppointment.appointmentDateTime);
+      }
+      if (cacheAppointment.updatedDate) {
+        cacheAppointment.updatedDate = new Date(cacheAppointment.updatedDate);
+      }
+      if (cacheAppointment.cancelledDate) {
+        cacheAppointment.cancelledDate = new Date(cacheAppointment.cancelledDate);
+      }
+      if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.createdDate) {
+        cacheAppointment.paymentInfo.createdDate = new Date(
+          cacheAppointment.paymentInfo.createdDate
+        );
+      }
+      if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.paymentDateTime) {
+        cacheAppointment.paymentInfo.paymentDateTime = new Date(
+          cacheAppointment.paymentInfo.paymentDateTime
+        );
+      }
+      if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.updatedDate) {
+        cacheAppointment.paymentInfo.updatedDate = new Date(
+          cacheAppointment.paymentInfo.updatedDate
+        );
+      }
       return this.create(cacheAppointment);
     }
     const appointment = await this.findOne({ id }).catch((getApptError) => {
@@ -551,8 +582,10 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getTodaysAppointments(startDate: Date) {
     //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + '18:30');
-    const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
-    const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+    //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    //const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+    const newStartDate = new Date('2020-08-01T18:30');
+    const newEndDate = new Date('2020-08-30T18:30');
 
     return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
@@ -647,6 +680,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           status6: STATUS.PAYMENT_ABORTED,
         }
       )
+      .orderBy('appointment.sdConsultationDate', 'DESC')
       .getMany();
   }
 
@@ -943,9 +977,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-          .getUTCMinutes()
-          .toString()
-          .padStart(2, '0')}:00.000Z`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
       console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
       console.log(checkStart, checkEnd, 'check start end');
@@ -1103,9 +1137,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1382,17 +1416,43 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
-  getAllAppointmentsByPatientId(ids: string[]) {
-    return this.createQueryBuilder('appointment')
-      .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-      .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
-      .where('appointment.patientId IN (:...ids)', { ids })
-      .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
-      .andWhere('appointment.status not in(:status1)', {
-        status1: STATUS.PAYMENT_ABORTED,
-      })
-      .orderBy('appointment.bookingDate', 'ASC')
-      .getMany();
+  getAllAppointmentsByPatientId(ids: string[], paginate: PaginateParams) {
+    /**
+     * to support ui for web as well as mobile
+     * as web using asc and mobile will use desc (who sends paignation params)
+     * wll remove this once web also use pagination
+     */
+    const order: { bookingDate: 'ASC' | 'DESC' } = { bookingDate: 'ASC' };
+
+    if (paginate.skip || paginate.take) {
+      order.bookingDate = 'DESC';
+    }
+    // returns [result , total]
+    return this.findAndCount({
+      where: {
+        patientId: In(ids),
+        discountedAmount: Not(0),
+        status: Not(STATUS.PAYMENT_ABORTED),
+      },
+      relations: ['appointmentPayments', 'appointmentRefunds'],
+      order,
+      //extra params...
+      ...paginate,
+    });
+    /**
+     * keeping below snippet to validate above query
+     * once verified can be removed...
+     */
+    // return this.createQueryBuilder('appointment')
+    //   .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
+    //   .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
+    //   .where('appointment.patientId IN (:...ids)', { ids })
+    //   .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
+    //   .andWhere('appointment.status not in(:status1)', {
+    //     status1: STATUS.PAYMENT_ABORTED,
+    //   })
+    //   .orderBy('appointment.bookingDate', 'ASC')
+    //   .getMany();
   }
   followUpBookedCount(id: string) {
     return this.count({ where: { followUpParentId: id } });
@@ -1431,9 +1491,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1491,9 +1551,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-                .getUTCMinutes()
-                .toString()
-                .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 
@@ -1994,10 +2054,11 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getNotStartedAppointments() {
+    const apptDateTime = new Date(format(addMinutes(new Date(), -5), 'yyyy-MM-dd HH:mm') + ':00');
     return this.createQueryBuilder('appointment')
       .where('appointment.status = :status', { status: STATUS.PENDING })
       .andWhere('appointment.appointmentDateTime = :apptDateTime', {
-        apptDateTime: addMinutes(new Date(), -5),
+        apptDateTime,
       })
       .getMany();
   }

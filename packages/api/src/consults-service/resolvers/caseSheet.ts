@@ -1011,7 +1011,7 @@ const modifyCaseSheet: Resolver<
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(getCaseSheetData.appointment.id);
   if (appointmentData) {
-    let reason = ApiConstants.CASESHEET_COMPLETED_HISTORY.toString();
+    let reason = ApiConstants.CASESHEET_MODIFIED_HISTORY.toString();
     if (caseSheetAttrs.doctorType == DoctorType.JUNIOR) {
       reason = ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString();
     }
@@ -1243,7 +1243,11 @@ const submitJDCaseSheet: Resolver<
     args.appointmentId
   );
 
-  if (juniorDoctorcaseSheet && juniorDoctorcaseSheet.isJdConsultStarted) {
+  if (
+    juniorDoctorcaseSheet &&
+    juniorDoctorcaseSheet.isJdConsultStarted &&
+    juniorDoctorcaseSheet.status != CASESHEET_STATUS.COMPLETED
+  ) {
     return false;
   }
 
@@ -1303,7 +1307,7 @@ const submitJDCaseSheet: Resolver<
     fromState: appointmentData.appointmentState,
     toState: appointmentData.appointmentState,
     userName: virtualJDId,
-    reason: 'Virtaul JD ' + ApiConstants.CASESHEET_COMPLETED_HISTORY.toString(),
+    reason: 'Virtaul ' + ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString(),
   };
   appointmentRepo.saveAppointmentHistory(historyAttrs);
 
@@ -1363,6 +1367,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
 
     const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientData);
     const pdfDocument = generateRxPdfDocument(rxPdfData);
+
     const uploadedPdfData = await uploadRxPdf(client, args.caseSheetId, pdfDocument);
     if (uploadedPdfData == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
 
@@ -1381,12 +1386,18 @@ const updatePatientPrescriptionSentStatus: Resolver<
       doctorData,
       getCaseSheetData
     );
+
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
+      data: {
+        caseSheetId: getCaseSheetData.id
+      }
     };
+
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
+
     caseSheetAttrs = {
       sentToPatient: args.sentToPatient,
       blobName: uploadedPdfData.name,
@@ -1505,10 +1516,14 @@ const generatePrescriptionTemp: Resolver<
       doctorData,
       getCaseSheetData
     );
+
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
+      data: {
+        caseSheetId: getCaseSheetData.id
+      }
     };
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
     caseSheetAttrs = {
