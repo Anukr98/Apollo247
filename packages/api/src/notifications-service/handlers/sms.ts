@@ -9,6 +9,7 @@ import {
 import { log } from 'customWinstonLogger';
 import { Connection } from 'typeorm';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import { isNotificationAllowed } from 'notifications-service/handlers/common';
 
 type MedicineOrderRefundNotificationInput = {
   refundAmount: number;
@@ -20,6 +21,9 @@ type MedicineOrderRefundNotificationInput = {
 };
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
+  if (!isNotificationAllowed(mobileNumber)) {
+    return;
+  }
   //Adding Apollo 247 string at starting of the body
   message = '[Apollo 247] ' + message;
 

@@ -9,11 +9,14 @@ import { format } from 'date-fns';
 import { Appointment } from 'consults-service/entities';
 import { NotificationType } from 'notifications-service/constants';
 import fs from 'fs';
-import { Patient } from 'profiles-service/entities';
+import { Patient, LOGIN_TYPE } from 'profiles-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
+import { hget } from 'notifications-service/database/connectRedis';
 
+const REDIS_HSET_WHITELISTED_KEY = 'WHITELISTED';
+const REDIS_HSET_FIELD = 'mobileNumbers';
 type validCheckInput = {
   consultsDb: any;
   patientsDb: any;
@@ -126,4 +129,24 @@ export function getNotificationLogFileName(notificationType: NotificationType) {
     default:
       return `${process.env.NODE_ENV}_registration_notification_${currentDate}.txt`;
   }
+}
+
+const isWhitelisted = async (mobileNumber: string) => {
+  const whiteListedContacts = (await hget(REDIS_HSET_WHITELISTED_KEY, REDIS_HSET_FIELD)) || '';
+  if (whiteListedContacts && typeof whiteListedContacts == 'string') {
+    const listOfContacts = whiteListedContacts.split(',');
+    if (listOfContacts && listOfContacts.length > 0) {
+      if (listOfContacts.indexOf(mobileNumber) >= 0) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+export function isNotificationAllowed(mobileNumber: string) {
+  if (process.env.NODE_ENV == 'production' || isWhitelisted(mobileNumber)) {
+    return true;
+  }
+  return false;
 }

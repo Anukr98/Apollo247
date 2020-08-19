@@ -1,3 +1,5 @@
+import { isNotificationAllowed } from 'notifications-service/handlers/common';
+
 export const sendNotificationWhatsapp = async (
   mobileNumber: string,
   message: string,
@@ -36,6 +38,9 @@ export const sendDoctorNotificationWhatsapp = async (
   phoneNumber: string,
   templateData: string[]
 ) => {
+  if (!isNotificationAllowed(phoneNumber)) {
+    return;
+  }
   const scenarioUrl = process.env.WHATSAPP_SCENARIO_URL ? process.env.WHATSAPP_SCENARIO_URL : '';
   const scenarioResponse = await fetch(scenarioUrl, {
     method: 'POST',
