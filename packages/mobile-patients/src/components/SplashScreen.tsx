@@ -521,6 +521,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
     fetchData();
   };
+  const handleEncodedURI = (encodedString: string) => {
+    const decodedString = decodeURIComponent(encodedString);
+    const splittedString = decodedString.split('+');
+    if (splittedString.length > 1) {
+      return splittedString;
+    } else {
+      return encodedString.split('%20');
+    }
+  };
   const getAppointmentDataAndNavigate = (appointmentID: string, isCall: boolean) => {
     client
       .query<getAppointmentDataQuery, getAppointmentDataVariables>({
@@ -585,9 +594,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
 
       case 'Speciality':
-        console.log('Speciality id', id);
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
-        const filtersData = id ? id.split('%20') : '';
+        const filtersData = id ? handleEncodedURI(id) : '';
+        console.log('filtersData============', filtersData);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: filtersData[0] ? filtersData[0] : '',
           typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
@@ -598,7 +607,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         // });
         break;
       case 'FindDoctors':
-        const cityBrandFilter = id ? id.split('%20') : '';
+        const cityBrandFilter = id ? handleEncodedURI(id) : '';
+        console.log('cityBrandFilter', cityBrandFilter);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
           city:
