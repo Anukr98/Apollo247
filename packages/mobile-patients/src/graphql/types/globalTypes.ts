@@ -137,6 +137,7 @@ export enum DoctorType {
   STAR_APOLLO = "STAR_APOLLO",
   SUGAR = "SUGAR",
   WHITE_DENTAL = "WHITE_DENTAL",
+  SENIOR = "SENIOR"
 }
 
 export enum FEEDBACKTYPE {
@@ -317,6 +318,17 @@ export enum PAYMENT_METHODS {
   NB = "NB",
   PAYTMCC = "PAYTMCC",
   PPI = "PPI",
+  UPI = "UPI",
+}
+
+export enum PAYMENT_METHODS_REVERSE {
+  COD = "COD",
+  CREDIT_CARD = "CREDIT_CARD",
+  CREDIT_CARD_EMI = "CREDIT_CARD_EMI",
+  DEBIT_CARD = "DEBIT_CARD",
+  NET_BANKING = "NET_BANKING",
+  PAYTM_POSTPAID = "PAYTM_POSTPAID",
+  PAYTM_WALLET = "PAYTM_WALLET",
   UPI = "UPI",
 }
 
@@ -519,6 +531,7 @@ export interface AppointmentPaymentInput {
   bankName?: string | null;
   refundAmount?: number | null;
   paymentMode?: PAYMENT_METHODS | null;
+  partnerInfo?: string | null;
 }
 
 export interface BookAppointmentInput {
@@ -790,6 +803,7 @@ export interface MedicinePaymentMqInput {
   orderId?: string | null;
   paymentMode?: PAYMENT_METHODS | null;
   healthCredits?: number | null;
+  partnerInfo?: string | null;
 }
 
 export interface MessageInput {
@@ -1022,6 +1036,11 @@ export interface prescriptionFileProperties {
   fileName: string;
   mimeType: string;
   content: string;
+}
+
+export interface voipPushTokenInput {
+  patientId?: string | null;
+  voipToken?: string | null;
 }
 
 //==============================================================

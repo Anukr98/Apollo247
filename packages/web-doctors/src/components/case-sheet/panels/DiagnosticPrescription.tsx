@@ -14,6 +14,7 @@ import { GET_DOCTOR_FAVOURITE_TESTS_DOCTOR } from 'graphql/doctors';
 import { GetDoctorFavouriteTestList } from 'graphql/types/GetDoctorFavouriteTestList';
 import { useParams } from 'hooks/routerHooks';
 import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
+import { Compare } from 'helpers/Utils';
 
 interface OptionType {
   itemname: string;
@@ -623,6 +624,7 @@ export const DiagnosticPrescription: React.FC = () => {
     getSuggestionValue,
     renderSuggestion,
   };
+
   return (
     <Typography component="div" className={classes.contentContainer}>
       <Grid container spacing={1}>
@@ -689,45 +691,47 @@ export const DiagnosticPrescription: React.FC = () => {
             )}
           </Typography>
         </Grid>
-        {favTests && favTests.length > 0 && (
+        {!showAddCondition && caseSheetEdit && favTests && favTests.length > 0 && (
           <Grid item lg={6} xs={6}>
             <Typography component="h5" variant="h5">
-              Favorite Tests
+              Favourite Tests
             </Typography>
             <div className={classes.favTestContainer}>
-              {favTests.map((favTest: any, id: any) => {
-                return (
-                  <Typography component="div" className={classes.listContainer} key={id}>
-                    <Chip
-                      className={classes.othersBtnFav}
-                      key={idx}
-                      label={favTest && favTest.itemname}
-                    />
-                    {caseSheetEdit && (
-                      <AphButton
-                        className={classes.btnAddDoctorright}
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                          const favTestValue = {
-                            itemName: favTest.itemname,
-                            id: favTest.id,
-                            __typename: favTest.__typename,
-                          };
-                          selectedValues!.push(favTestValue);
-                          setShowFavMedicine(true);
-                          setState({
-                            single: '',
-                            popper: '',
-                          });
-                        }}
-                      >
-                        <img src={require('images/add_doctor_white.svg')} alt="" />
-                      </AphButton>
-                    )}
-                  </Typography>
-                );
-              })}
+              {favTests
+                .sort((a: any, b: any) => Compare(a, b, 'itemname'))
+                .map((favTest: any, id: any) => {
+                  return (
+                    <Typography component="div" className={classes.listContainer} key={id}>
+                      <Chip
+                        className={classes.othersBtnFav}
+                        key={idx}
+                        label={favTest && favTest.itemname}
+                      />
+                      {caseSheetEdit && (
+                        <AphButton
+                          className={classes.btnAddDoctorright}
+                          variant="contained"
+                          color="primary"
+                          onClick={() => {
+                            const favTestValue = {
+                              itemName: favTest.itemname,
+                              id: favTest.id,
+                              __typename: favTest.__typename,
+                            };
+                            selectedValues!.push(favTestValue);
+                            setShowFavMedicine(true);
+                            setState({
+                              single: '',
+                              popper: '',
+                            });
+                          }}
+                        >
+                          <img src={require('images/add_doctor_white.svg')} alt="" />
+                        </AphButton>
+                      )}
+                    </Typography>
+                  );
+                })}
             </div>
           </Grid>
         )}

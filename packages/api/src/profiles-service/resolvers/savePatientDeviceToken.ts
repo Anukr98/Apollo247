@@ -75,6 +75,20 @@ const saveDeviceToken: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
+  if(SaveDeviceTokenInput.deviceType == DEVICE_TYPE.IOS){
+    const devPushToken = await deviceTokenRepo.getDeviceVoipPushToken(
+      SaveDeviceTokenInput.patientId,
+      DEVICE_TYPE.IOS
+    );
+  
+    for(let len = devPushToken.length; len > 0 ; len--){
+      if(devPushToken[len-1].deviceVoipPushToken){
+        Object.assign(SaveDeviceTokenInput, {deviceVoipPushToken: devPushToken[len-1].deviceVoipPushToken});
+        break;
+      }
+    }
+  }
+
   const savePatientDeviceTokensAttrs: Partial<PatientDeviceTokens> = {
     ...SaveDeviceTokenInput,
     patient: patientDetails,

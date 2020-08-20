@@ -178,7 +178,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '10px 0px 20px 9px',
       [theme.breakpoints.down('xs')]: {
         padding: '10px 0px 20px 28px',
-      }
+      },
     },
     defaultOpen: {
       minHeight: 0,
@@ -190,7 +190,6 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 5,
         opacity: 1,
       },
-
     },
   };
 });
@@ -238,7 +237,6 @@ export const BottomLinks: React.FC = (props) => {
             {footerKeys &&
               footerKeys.map((currentItem: string) => {
                 return (
-
                   <li key={currentItem}>
                     <ExpansionPanel className={classes.panelRoot}>
                       <ExpansionPanelSummary
@@ -247,12 +245,20 @@ export const BottomLinks: React.FC = (props) => {
                           content: classes.summaryContent,
                         }}
                       >
-                        <a className={classes.collapseHeader} href={'#'}><span className={classes.expandedIcon}>+</span>{currentItem}</a>
+                        <a className={classes.collapseHeader} href={'#'}>
+                          <span className={classes.expandedIcon}>+</span>
+                          {currentItem}
+                        </a>
                       </ExpansionPanelSummary>
                       <ExpansionPanelDetails className={classes.panelDetailsBlock}>
                         {footerData[currentItem].map((currentLink: FooterUrlInterface) => {
                           return (
-                            <a className={classes.innerLinks} key={currentLink.title} href={currentLink.url} target="_blank">
+                            <a
+                              className={classes.innerLinks}
+                              key={currentLink.title}
+                              href={currentLink.url}
+                              target="_blank"
+                            >
                               {currentLink.title}
                             </a>
                           );

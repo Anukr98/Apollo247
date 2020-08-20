@@ -6,6 +6,7 @@ import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
 
 declare global {
   interface Window {
@@ -45,6 +46,7 @@ const locationRoutesBlackList: string[] = [
   '/address-book',
   '/aboutUs',
   '/appointments',
+  '/appointmentslist',
   '/faq',
   '/needHelp',
   '/my-payments',
@@ -200,6 +202,7 @@ const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 
 const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
+const OUT_OF_STOCK_MESSAGE = 'Sorry, this item is out of stock in your area';
 const TAT_API_TIMEOUT_IN_MILLI_SEC = 10000; // in milli sec
 
 const findAddrComponents = (
@@ -355,7 +358,7 @@ const getAvailability = (nextAvailability: string, differenceInMinutes: number, 
   const isAvailableAfterTomorrow = diffInHoursForTomorrowAvailabilty >= 1440;
   const isAvailableAfterMonth = nextAvailabilityMoment.diff(moment(), 'days') > 30;
   const message = type === 'doctorInfo' ? 'consult' : 'available';
-  if (differenceInMinutes > 0 && differenceInMinutes < 120) {
+  if (differenceInMinutes > 0 && differenceInMinutes < 60) {
     return `${message} in ${differenceInMinutes} ${differenceInMinutes === 1 ? 'min' : 'mins'}`;
   } else if (isAvailableAfterMonth && type === 'consultType') {
     // only applies for consultType
@@ -368,7 +371,7 @@ const getAvailability = (nextAvailability: string, differenceInMinutes: number, 
     return `${message} in ${
       nextAvailabilityMoment.diff(tomorrowAvailabilityTime, 'days') + 1 // intentionally added + 1 as we need to consider 6 am as next day
     } days`;
-  } else if (!isAvailableTomorrow && differenceInMinutes >= 120) {
+  } else if (!isAvailableTomorrow && differenceInMinutes >= 60) {
     return `${message} at ${nextAvailabilityMoment.format('hh:mm A')}`;
   } else {
     return type === 'doctorInfo' ? 'Book Consult' : 'Available';
@@ -383,7 +386,33 @@ const isActualUser = () => {
   return !re.test(userAgent);
 };
 
+const getStoreName = (storeAddress: string) => {
+  const store = JSON.parse(storeAddress);
+  return store && store.storename ? _upperFirst(_lowerCase(store.storename)) : '';
+};
+
+const getPackOfMedicine = (medicineDetail: MedicineProductDetails) => {
+  return `${medicineDetail.mou} ${
+    medicineDetail.PharmaOverview && medicineDetail.PharmaOverview.length > 0
+      ? medicineDetail.PharmaOverview[0].Doseform
+      : ''
+  }${medicineDetail.mou && parseFloat(medicineDetail.mou) !== 1 ? 'S' : ''}`;
+};
+
+const getImageUrl = (imageUrl: string) => {
+  return (
+    imageUrl &&
+    imageUrl
+      .split(',')
+      .filter((imageUrl) => imageUrl)
+      .map((imageUrl) => `/catalog/product${imageUrl}`)[0]
+  );
+};
+
 export {
+  getPackOfMedicine,
+  getImageUrl,
+  getStoreName,
   getAvailability,
   isRejectedStatus,
   getStatus,
@@ -399,6 +428,7 @@ export {
   getDiffInMinutes,
   getDiffInHours,
   NO_SERVICEABLE_MESSAGE,
+  OUT_OF_STOCK_MESSAGE,
   sortByProperty,
   locationRoutesBlackList,
   getDeviceType,

@@ -5,13 +5,12 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { OneApollo } from 'helpers/oneApollo';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { DEVICE_TYPE, MEDICINE_ORDER_PAYMENT_TYPE } from 'profiles-service/entities';
 
 import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 
 export const oneApolloTypeDefs = gql`
   type UserDetailResponse {
-    name: String!
+    name: String
     earnedHC: Float!
     availableHC: Float!
     tier: String!
@@ -33,7 +32,7 @@ export const oneApolloTypeDefs = gql`
 `;
 
 type UserDetailResponse = {
-  name: string;
+  name: string | null;
   earnedHC: number;
   availableHC: number;
   tier: string;

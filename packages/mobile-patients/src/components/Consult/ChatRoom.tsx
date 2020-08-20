@@ -36,6 +36,7 @@ import {
   CommonLogEvent,
   DeviceHelper,
   setBugFenderLog,
+  isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
@@ -154,6 +155,9 @@ import { Snackbar } from 'react-native-paper';
 import BackgroundTimer from 'react-native-background-timer';
 import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
 import { ChatRoom_NotRecorded_Value } from '@aph/mobile-patients/src/strings/strings.json';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import RNCallKeep from 'react-native-callkeep';
+import VoipPushNotification from 'react-native-voip-push-notification';
 
 interface OpentokStreamObject {
   connection: {
@@ -178,6 +182,11 @@ type OptntokChangeProp = {
   newValue: string;
   oldValue: boolean;
   stream: OpentokStreamObject;
+};
+
+type OpentokError = {
+  code: string | number;
+  message: string;
 };
 
 const { ExportDeviceToken } = NativeModules;
@@ -303,16 +312,72 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
   },
+  chatDisabledContainer: {
+    marginVertical: 20,
+    marginHorizontal: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 16,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f6f6f6',
+  },
+  chatDisabledHeader: {
+    ...theme.viewStyles.text('M', 13, theme.colors.SHERPA_BLUE),
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  callHeaderView: {
+    backgroundColor: theme.colors.HEADER_GREY,
+    height: 60,
+    ...theme.viewStyles.shadowStyle,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+  },
+  joinRoomDescriptionText: {
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(13),
+    width: '65%',
+  },
+  callHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  joinBtn: {
+    width: 73,
+    height: 40,
+  },
+  centerTxt: {
+    position: 'absolute',
+    left: 20,
+    top: '50%',
+    width: width - 40,
+    color: 'white',
+    ...theme.fonts.IBMPlexSansSemiBold(13),
+    textAlign: 'center',
+    zIndex: 1,
+  },
 });
+
+const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
 
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
+  const fromIncomingCall = props.navigation.state.params!.isCall;
   const { isIphoneX } = DeviceHelper();
 
-  let appointmentData: any = props.navigation.state.params!.data;
+  let appointmentData: any = props.navigation.getParam('data');
+  const disableChat =
+    props.navigation.getParam('disableChat') ||
+    moment(new Date(appointmentData.appointmentDateTime))
+      .add(6, 'days')
+      .startOf('day')
+      .isBefore(moment(new Date()).startOf('day'));
+  // console.log('appointmentData >>>>', appointmentData);
 
-  // console.log('appointmentData', appointmentData);
   const callType = props.navigation.state.params!.callType
     ? props.navigation.state.params!.callType
     : '';
@@ -320,6 +385,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const prescription = props.navigation.state.params!.prescription
     ? props.navigation.state.params!.prescription
     : '';
+
+  const isVoipCall = props.navigation.state.params!.isVoipCall;
 
   let dateIsAfter = moment(new Date()).isAfter(moment(appointmentData.appointmentDateTime));
 
@@ -341,13 +408,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [PipView, setPipView] = useState<boolean>(false);
   const [isCall, setIsCall] = useState<boolean>(false);
   const [onSubscribe, setOnSubscribe] = useState<boolean>(false);
-  const [isAudio, setIsAudio] = useState<boolean>(false);
+  const isAudio = useRef<boolean>(false);
   const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
   const [showAudioPipView, setShowAudioPipView] = useState<boolean>(true);
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
-
+  const { setDoctorJoinedChat, doctorJoinedChat } = useAppCommonData(); //setting in context since we are updating this in NotificationListener
   const [name, setname] = useState<string>('');
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
@@ -426,7 +493,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [doctorScheduleId, setDoctorScheduleId] = useState<string>('');
   const [dropDownBottomStyle, setDropDownBottomStyle] = useState<number>(isIphoneX() ? 50 : 15);
-  const [jrDoctorJoined, setjrDoctorJoined] = useState<boolean>(false);
+  const jrDoctorJoined = useRef<boolean>(false); // using ref to get the current updated values on event listeners
   const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
   const [displayUploadHealthRecords, setDisplayUploadHealthRecords] = useState<boolean>(false);
   const [userAnswers, setUserAnswers] = useState<ConsultQueueInput>();
@@ -450,6 +517,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [callerAudio, setCallerAudio] = useState<boolean>(true);
   const [callerVideo, setCallerVideo] = useState<boolean>(true);
   const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
+  const patientJoinedCall = useRef<boolean>(false); // using ref to get the current values on listener events
+  const subscriberConnected = useRef<boolean>(false);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -475,6 +544,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
+  const leaveChatRoom = '^^#leaveChatRoom';
+  const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
+  const patientRejectedCall = '^^#PATIENT_REJECTED_CALL';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -562,6 +634,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (isVoipCall || fromIncomingCall) {
+      joinCallHandler();
+    }
+  }, []);
+
   const backDataFunctionality = () => {
     try {
       console.log(callhandelBack, 'is back called');
@@ -592,6 +670,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     getAppointmentCount();
     // requestToJrDoctor();
     // updateSessionAPI();
+    setTimeout(() => {
+      CheckDoctorPresentInChat();
+    }, 2000);
+    if (isIos()) {
+      handleCallkitEventListeners();
+      handleVoipEventListeners();
+    }
   }, []);
 
   useEffect(() => {
@@ -601,6 +686,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     KeepAwake.activate();
     AppState.addEventListener('change', _handleAppStateChange);
   }, []);
+
+  const handleCallkitEventListeners = () => {
+    RNCallKeep.addEventListener('answerCall', onAnswerCallAction);
+  };
+
+  const handleVoipEventListeners = () => {
+    VoipPushNotification.addEventListener('notification', (notification) => {
+      // on receive voip push
+      const payload = notification && notification.getData();
+      if (payload && payload.appointmentId) {
+        isAudio.current = notification.getData().isVideo ? false : true;
+      }
+    });
+  };
+
+  const onAnswerCallAction = () => {
+    joinCallHandler();
+  };
 
   const playSound = () => {
     try {
@@ -629,16 +732,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     console.log('callType', callType);
     if (callType) {
+      AsyncStorage.setItem('callDisconnected', 'false');
+
       callPermissions(() => {
         if (callType === 'VIDEO') {
-          setOnSubscribe(true);
-          setIsAudio(false);
+          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
+          isAudio.current = false;
         } else if (callType === 'AUDIO') {
-          setOnSubscribe(true);
-          setIsAudio(true);
+          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
+          isAudio.current = true;
           callhandelBack = false;
         }
-        playSound();
+        isVoipCall || fromIncomingCall ? null : playSound();
       });
     }
     if (prescription) {
@@ -1090,7 +1195,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (nextAppState === 'background' || nextAppState === 'inactive') {
       console.log('nextAppState :' + nextAppState, abondmentStarted);
       if (onSubscribe) {
-        props.navigation.setParams({ callType: isAudio ? 'AUDIO' : 'VIDEO' });
+        props.navigation.setParams({ callType: isAudio.current ? 'AUDIO' : 'VIDEO' });
       }
     } else if (nextAppState === 'active') {
       const permissionSettings: string | null = await AsyncStorage.getItem('permissionHandler');
@@ -1099,13 +1204,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           if (callType) {
             if (callType === 'VIDEO') {
               setOnSubscribe(true);
-              setIsAudio(false);
+              isAudio.current = false;
             } else if (callType === 'AUDIO') {
               setOnSubscribe(true);
-              setIsAudio(true);
+              isAudio.current = true;
               callhandelBack = false;
             }
             playSound();
+            !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
           } else {
             if (onSubscribe) {
               setOnSubscribe(false);
@@ -1294,6 +1400,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const CheckDoctorPresentInChat = () => {
+    if (status === STATUS.COMPLETED) return; // no need to show join button if consultation has been completed
+
     pubnub
       .hereNow({
         channels: [channel],
@@ -1301,10 +1409,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       })
       .then((response: HereNowResponse) => {
         console.log('hereNowresponse', response);
-
-        if (response.totalOccupancy >= 2) {
+        const data: any = response.channels && response.channels[appointmentData.id] && response.channels[appointmentData.id].occupants;
+        const occupancyDoctor = data && data.length > 0 && data.filter((obj: any) => {
+          return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
+        });
+        const occupancyJrDoctor = data && data.length > 0 && data.filter((obj: any) => {
+          return obj.uuid === 'JUNIOR' || obj.uuid.indexOf('JUNIOR_') > -1;
+        });
+        if(occupancyJrDoctor && occupancyJrDoctor.length >=1){
+          jrDoctorJoined.current = true;
+        }
+        if (occupancyDoctor && occupancyDoctor.length >= 1 && response.totalOccupancy >= 2) {
+          jrDoctorJoined.current = false;
           setDoctorJoined(true);
-
+          setDoctorJoinedChat && setDoctorJoinedChat(true);
           setTimeout(() => {
             setDoctorJoined(false);
           }, 10000);
@@ -1399,15 +1517,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
       console.log('Publisher stream created!', event);
+      stopSound();
     },
     streamDestroyed: (event: string) => {
       console.log('Publisher stream destroyed!', event);
+      patientJoinedCall.current = false;
+      subscriberConnected.current = false;
+      endVoipCall();
     },
     error: (error: string) => {
+      AsyncStorage.setItem('callDisconnected', 'true');
       setSnackBar();
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
     },
     otrnError: (error: string) => {
+      AsyncStorage.setItem('callDisconnected', 'true');
       setSnackBar();
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
     },
@@ -1421,11 +1545,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     connected: (event: string) => {
       setSnackbarState(false);
       console.log('Subscribe stream connected!', event);
+      subscriberConnected.current = true;
+      stopSound();
     },
     disconnected: (event: string) => {
       // setSnackbarState(true);
       // setHandlerMessage('Falling back to audio due to bad network!!');
       console.log('Subscribe stream disconnected!', event);
+      patientJoinedCall.current = false;
+      subscriberConnected.current = false;
+      endVoipCall();
     },
     otrnError: (error: string) => {
       setSnackBar();
@@ -1456,8 +1585,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const sessionEventHandlers = {
-    error: (error: string) => {
-      setSnackBar();
+    error: (error: OpentokError) => {
+      AsyncStorage.setItem('callDisconnected', 'true');
+      if (
+        [
+          'ConnectionDropped',
+          'ConnectionFailed',
+          'ConnectionRefused',
+          'SessionStateFailed',
+          'SessionConnectionTimeout',
+          1022,
+          1006,
+          1023,
+          1020,
+          1021,
+        ].includes(error.code)
+      ) {
+        eventsAfterConnectionDestroyed();
+        setTimeout(() => {
+          setSnackbarState(true);
+          setHandlerMessage('Check the network connection.');
+        }, 2050);
+      } else {
+        setSnackBar();
+      }
       console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
     },
     connectionCreated: (event: string) => {
@@ -1465,6 +1616,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('session stream connectionCreated!', event);
     },
     connectionDestroyed: (event: string) => {
+      setTimeout(() => {
+        AsyncStorage.getItem('callDisconnected').then((data) => {
+          if (!JSON.parse(data || 'false')) {
+            setSnackbarState(true);
+            setHandlerMessage('Call disconnected due to Network issues at the Doctor side');
+          }
+        });
+      }, 2000);
       console.log('session stream connectionDestroyed!', event);
       eventsAfterConnectionDestroyed();
     },
@@ -1507,7 +1666,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     },
     otrnError: (error: string) => {
-      setSnackBar();
+      AsyncStorage.getItem('callDisconnected').then((data) => {
+        if (!JSON.parse(data || 'false')) {
+          setSnackBar();
+        }
+      });
+      AsyncStorage.setItem('callDisconnected', 'true');
       console.log(
         `There was an error with the otrnError sessionEventHandlers: ${JSON.stringify(error)}`
       );
@@ -1543,15 +1707,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const config: Pubnub.PubnubConfig = {
+    origin: 'apollo.pubnubapi.com',
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
     uuid: `PATIENT_${patientId}`,
     restore: true,
     keepAlive: true,
-    // autoNetworkDetection: true,
-    // listenToBrowserNetworkEvents: true,
-    // presenceTimeout: 20,
     heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
@@ -1972,12 +2134,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           if (messages.length !== newmessage.length) {
             if (newmessage[newmessage.length - 1].message === startConsultMsg) {
-              setjrDoctorJoined(false);
+              jrDoctorJoined.current = false;
               updateSessionAPI();
               checkingAppointmentDates();
             }
             if (newmessage[newmessage.length - 1].message === startConsultjr) {
-              setjrDoctorJoined(true);
+              jrDoctorJoined.current = true;
               updateSessionAPI();
               checkingAppointmentDates();
             }
@@ -2015,11 +2177,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const checkAutomatedPatientText = () => {
     const result = insertText.filter((obj: any) => {
-      // console.log('resultinsertText', obj.message);
       return obj.message === consultPatientStartedMsg;
     });
-    if (result.length === 0) {
-      console.log('result.length ', result);
+    const startConsultResult = insertText.filter((obj: any) => {
+      return obj.message === startConsultMsg;
+    });
+    if (result.length === 0 && startConsultResult.length === 0) {
       automatedTextFromPatient();
     }
   };
@@ -2065,7 +2228,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const thirtySecondCall = () => {
-    if (jrDoctorJoined == false) {
+    if (jrDoctorJoined.current == false) {
       // console.log('Alert Shows After 30000 Seconds of Delay.');
 
       const result = insertText.filter((obj: any) => {
@@ -2137,7 +2300,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const minuteCaller = () => {
-    if (jrDoctorJoined == false) {
+    if (jrDoctorJoined.current == false) {
       // console.log('Alert Shows After 60000 Seconds of Delay.');
 
       const result = insertText.filter((obj: any) => {
@@ -2179,7 +2342,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         languageQueueResult.length === 0 &&
         !appointmentData.isJdQuestionsComplete &&
         jdCount > 0 &&
-        isJdAllowed === true
+        isJdAllowed === true &&
+        !!(textChange && !jrDoctorJoined.current) &&
+        status !== STATUS.COMPLETED
       ) {
         // console.log('result.length ', result);
         pubnub.publish(
@@ -2241,25 +2406,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { showAphAlert, audioTrack, setPrevVolume, maxVolume } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     console.log('pubNubMessages', message.message.sentBy);
-
     if (message.message.isTyping) {
-      if (message.message.message === audioCallMsg) {
-        setIsAudio(true);
+      if (message.message.message === audioCallMsg && !patientJoinedCall.current) {
+        // if patient has not joined meeting room
+        isAudio.current = true;
         setOnSubscribe(true);
         callhandelBack = false;
         // stopCallAbondmentTimer();
         playSound();
-      } else if (message.message.message === videoCallMsg) {
+        !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
+      } else if (message.message.message === videoCallMsg && !patientJoinedCall.current) {
+        // if patient has not joined meeting room
         setOnSubscribe(true);
         callhandelBack = false;
-        setIsAudio(false);
+        isAudio.current = false;
         // stopCallAbondmentTimer();
         playSound();
+        !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === startConsultMsg) {
-        setjrDoctorJoined(false);
+        jrDoctorJoined.current = false;
         stopInterval();
         startInterval(timer);
-        setjrDoctorJoined(false);
         updateSessionAPI();
         checkingAppointmentDates();
         addMessages(message);
@@ -2291,6 +2458,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
       ) {
+        AsyncStorage.setItem('callDisconnected', 'true');
         setOnSubscribe(false);
         callhandelBack = true;
         setIsCall(false);
@@ -2310,7 +2478,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === startConsultjr) {
         console.log('succss1');
-        setjrDoctorJoined(true);
+        jrDoctorJoined.current = true;
         updateSessionAPI();
         checkingAppointmentDates();
         stopJoinTimer();
@@ -2359,6 +2527,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setTextChange(false);
         setStatus(STATUS.COMPLETED);
         APIForUpdateAppointmentData(true);
+        setDoctorJoinedChat && setDoctorJoinedChat(false);
+        setDoctorJoined(false);
+      } else if (message.message.message === leaveChatRoom) {
+        setDoctorJoinedChat && setDoctorJoinedChat(false);
+        setDoctorJoined(false);
+      } else if (message.message.message === endCallMsg) {
+        AsyncStorage.setItem('callDisconnected', 'true');
       }
     } else {
       console.log('succss');
@@ -2619,10 +2794,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     </Text>
                   </TouchableOpacity>
                 </View>
-                {rowData.transferInfo.photoUrl &&
-                rowData.transferInfo.photoUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
-                ) ? (
+                {rowData.transferInfo.photoUrl && rowData.transferInfo.photoUrl.match(urlRegEx) ? (
                   <Image
                     source={{ uri: rowData.transferInfo.photoUrl }}
                     style={{
@@ -3401,12 +3573,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               bottom: 0,
               position: 'absolute',
               left: 0,
+              borderRadius: 16,
+              overflow: 'hidden',
             }}
           >
             {appointmentData.doctorInfo.thumbnailUrl &&
-            appointmentData.doctorInfo.thumbnailUrl.match(
-              /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
-            ) ? (
+            appointmentData.doctorInfo.thumbnailUrl.match(urlRegEx) ? (
               <Image
                 source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
                 resizeMode={'contain'}
@@ -3678,12 +3850,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   bottom: 0,
                   position: 'absolute',
                   left: 0,
+                  borderRadius: 16,
+                  overflow: 'hidden',
                 }}
               >
                 {appointmentData.doctorInfo.thumbnailUrl &&
-                appointmentData.doctorInfo.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
-                ) ? (
+                appointmentData.doctorInfo.thumbnailUrl.match(urlRegEx) ? (
                   <Image
                     source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
                     resizeMode={'contain'}
@@ -3798,12 +3970,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   bottom: 0,
                   position: 'absolute',
                   left: 0,
+                  borderRadius: 16,
+                  overflow: 'hidden',
                 }}
               >
                 {appointmentData.doctorInfo.thumbnailUrl &&
-                appointmentData.doctorInfo.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
-                ) ? (
+                appointmentData.doctorInfo.thumbnailUrl.match(urlRegEx) ? (
                   <Image
                     source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
                     resizeMode={'contain'}
@@ -4044,7 +4216,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === stopConsultMsg ||
       rowData.message === cancelConsultInitiated ||
       rowData.message === callAbandonment ||
-      rowData.message === appointmentComplete
+      rowData.message === appointmentComplete ||
+      rowData.message === patientRejectedCall
     ) {
       return null;
     }
@@ -4542,7 +4715,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
     // console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
 
-    if (textChange && !jrDoctorJoined) {
+    if (textChange && !jrDoctorJoined.current) {
       time = 'Consult is In-progress';
     } else {
       if (status === STATUS.COMPLETED) {
@@ -4561,7 +4734,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
     return (
       <View style={styles.mainView}>
-        <View style={{ maxWidth: '14%' }}>
+        <View style={{ maxWidth: '40%' }}>
           <Text style={styles.displayId} numberOfLines={1}>
             #{appointmentData.displayId}
           </Text>
@@ -4585,9 +4758,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <View style={styles.imageView}>
             <View style={styles.imageContainer}>
               {appointmentData.doctorInfo.thumbnailUrl &&
-              appointmentData.doctorInfo.thumbnailUrl.match(
-                /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
-              ) ? (
+              appointmentData.doctorInfo.thumbnailUrl.match(urlRegEx) ? (
                 <Image
                   source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
                   resizeMode={'contain'}
@@ -4601,6 +4772,46 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         </View>
       </View>
     );
+  };
+
+  const renderJoinCallHeader = () => {
+    return (
+      <View style={styles.callHeaderView}>
+        <View style={styles.callHeaderRow}>
+          <Text style={styles.joinRoomDescriptionText}>
+            {strings.common.joinConsultRoomDescription} {appointmentData.doctorInfo.displayName}
+          </Text>
+          <Button
+            title="JOIN"
+            style={styles.joinBtn}
+            onPress={() => {
+              patientJoinedCall.current = true;
+              joinCallHandler();
+            }}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const joinCallHandler = () => {
+    callPermissions(() => {
+      setLoading(true);
+      stopTimer();
+      startTimer(0);
+      setCallAccepted(true);
+      setHideStatusBar(true);
+      setChatReceived(false);
+      Keyboard.dismiss();
+      changeVideoStyles();
+      setDropdownVisible(false);
+      setCallerVideo(true);
+      if (token) {
+        PublishAudioVideo();
+      } else {
+        APICallAgain();
+      }
+    });
   };
 
   // const renderChatHeader = () => {
@@ -4677,6 +4888,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   //   );
   // };
 
+  const chatDisabled = () => {
+    return (
+      <View style={styles.chatDisabledContainer}>
+        <Text style={styles.chatDisabledHeader}>
+          {strings.consultType.chatDisabledHeader.replace(
+            '{0}',
+            appointmentData.doctorInfo.displayName
+          )}
+        </Text>
+        <TouchableOpacity
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.DoctorDetails, {
+              doctorId: doctorId,
+            });
+          }}
+        >
+          <Text style={theme.viewStyles.text('B', 13, theme.colors.APP_YELLOW)}>
+            {strings.common.book_apointment}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const renderChatView = () => {
     return (
       <View style={{ width: width, height: heightList, marginTop: 0, flex: 1 }}>
@@ -4703,11 +4938,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
           initialNumToRender={messages ? messages.length : 0}
+          ListFooterComponent={() => {
+            if (disableChat) {
+              return chatDisabled();
+            } else {
+              return null;
+            }
+          }}
         />
       </View>
     );
   };
 
+  const doctorName =
+    name == 'JUNIOR'
+      ? appointmentData.doctorInfo.displayName + '`s' + ' team doctor '
+      : appointmentData.doctorInfo.displayName;
   const VideoCall = () => {
     return (
       <View style={[talkStyles, { zIndex: 1001 }]}>
@@ -4748,7 +4994,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               eventHandlers={sessionEventHandlers}
               ref={otSessionRef}
               options={{
-                connectionEventsSuppressed: true, // default is false
                 androidZOrder: 'onTop', // Android only - valid options are 'mediaOverlay' or 'onTop'
                 androidOnTop: 'publisher', // Android only - valid options are 'publisher' or 'subscriber'
                 useTextureViews: true, // Android only - default is false
@@ -4777,6 +5022,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   audioVolume: 100,
                   name: g(currentPatient, 'firstName') || 'patient',
                   resolution: '640x480', // setting this resolution to avoid over heating of device
+                  audioBitrate: 30000,
+                  frameRate: 15,
                 }}
                 eventHandlers={publisherEventHandlers}
               />
@@ -4833,24 +5080,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     zIndex: 1001,
                   }}
                 >
-                  {name == 'JUNIOR'
-                    ? appointmentData.doctorInfo.displayName + '`s' + ' team doctor '
-                    : appointmentData.doctorInfo.displayName}
+                  {doctorName}
                 </Text>
               </>
             )}
 
             <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
-            <Snackbar
-              style={{ marginBottom: 100, zIndex: 1001 }}
-              visible={snackbarState}
-              onDismiss={() => {
-                setSnackbarState(false);
-              }}
-              duration={5000}
-            >
-              {handlerMessage}
-            </Snackbar>
+            {patientJoinedCall.current && !subscriberConnected.current && (
+              <Text style={styles.centerTxt}>
+                {strings.common.waitForDoctirToJoinCall.replace('doctor_name', doctorName)}
+              </Text>
+            )}
+
             {renderBusyMessages(!PipView, isIphoneX() ? 171 : 161)}
 
             {PipView && renderOnCallPipButtons('video')}
@@ -4917,7 +5158,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           eventHandlers={sessionEventHandlers}
           ref={otSessionRef}
           options={{
-            connectionEventsSuppressed: true, // default is false
             androidZOrder: 'onTop', // Android only - valid options are 'mediaOverlay' or 'onTop'
             androidOnTop: 'publisher', // Android only - valid options are 'publisher' or 'subscriber'
             useTextureViews: true, // Android only - default is false
@@ -4989,16 +5229,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         )}
         <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
-        <Snackbar
-          style={{ marginBottom: 80, zIndex: 1001 }}
-          visible={snackbarState}
-          onDismiss={() => {
-            setSnackbarState(false);
-          }}
-          duration={5000}
-        >
-          {handlerMessage}
-        </Snackbar>
         {renderBusyMessages(showAudioPipView, isIphoneX() ? 121 : 101)}
         {showAudioPipView && renderAudioCallButtons()}
         {!showAudioPipView && renderOnCallPipButtons('audio')}
@@ -5245,6 +5475,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
+              AsyncStorage.setItem('callDisconnected', 'true');
               setIsAudioCall(false);
               stopTimer();
               setHideStatusBar(false);
@@ -5289,6 +5520,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const endVoipCall = () => {
+    if (isIos()) {
+      RNCallKeep.endAllCalls();
+    }
+  };
+
   const renderOnCallPipButtons = (pipType: 'audio' | 'video') => {
     return (
       <View
@@ -5314,6 +5551,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
+            AsyncStorage.setItem('callDisconnected', 'true');
             pipType === 'audio' && setIsAudioCall(false);
             pipType === 'video' && setIsCall(false);
             setIsPublishAudio(true);
@@ -5518,51 +5756,51 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <MuteIcon style={{ height: 60, width: 60 }} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              setIsCall(false);
-              setIsPublishAudio(true);
-              setShowVideo(true);
-              setCameraPosition('front');
-              stopTimer();
-              setHideStatusBar(false);
-              setChatReceived(false);
-
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: 'Video call ended',
-                    duration: callTimerStarted,
-                    id: patientId,
-                    messageDate: new Date(),
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
-
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: endCallMsg,
-                    id: patientId,
-                    messageDate: new Date(),
-                  },
-                  channel: channel,
-                  storeInHistory: true,
-                },
-                (status, response) => {}
-              );
-            }}
-          >
+          <TouchableOpacity activeOpacity={1} onPress={() => handleEndCall()}>
             <EndCallIcon style={{ height: 60, width: 60 }} />
           </TouchableOpacity>
         </View>
       </View>
+    );
+  };
+
+  const handleEndCall = () => {
+    AsyncStorage.setItem('callDisconnected', 'true');
+    setIsCall(false);
+    setIsPublishAudio(true);
+    setShowVideo(true);
+    setCameraPosition('front');
+    stopTimer();
+    setHideStatusBar(false);
+    setChatReceived(false);
+
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: 'Video call ended',
+          duration: callTimerStarted,
+          id: patientId,
+          messageDate: new Date(),
+        },
+        channel: channel,
+        storeInHistory: true,
+      },
+      (status, response) => {}
+    );
+
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: endCallMsg,
+          id: patientId,
+          messageDate: new Date(),
+        },
+        channel: channel,
+        storeInHistory: true,
+      },
+      (status, response) => {}
     );
   };
 
@@ -5580,9 +5818,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
       >
         {appointmentData.doctorInfo.photoUrl &&
-        appointmentData.doctorInfo.photoUrl.match(
-          /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif)/
-        ) ? (
+        appointmentData.doctorInfo.photoUrl.match(urlRegEx) ? (
           <Image
             source={{ uri: appointmentData.doctorInfo.photoUrl }}
             resizeMode={'contain'}
@@ -5636,6 +5872,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
           onPress={() => {
             callPermissions(() => {
+              AsyncStorage.setItem('callDisconnected', 'false');
               setOnSubscribe(false);
               stopTimer();
               startTimer(0);
@@ -5708,7 +5945,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {
         message: {
           isTyping: true,
-          message: acceptedCallMsg,
+          message: !patientJoinedCall.current ? acceptedCallMsg : patientJoinedMeetingRoom,
           messageDate: new Date(),
         },
         channel: channel,
@@ -5716,11 +5953,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       (status, response) => {}
     );
-    if (isAudio) {
+    AsyncStorage.setItem('callDisconnected', 'false');
+    if (isAudio.current && !patientJoinedCall.current) {
       setIsAudioCall(true);
     } else {
       setIsCall(true);
     }
+    setLoading(false);
   };
 
   const disconnectCallText = () => {
@@ -5728,7 +5967,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {
         message: {
           isTyping: true,
-          message: isAudio ? 'Audio call ended' : 'Video call ended',
+          message: isAudio.current ? 'Audio call ended' : 'Video call ended',
           duration: callTimerStarted,
           id: patientId,
           messageDate: new Date(),
@@ -5763,11 +6002,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const uploadDocument = (resource: any, base66: any, type: any) => {
-    console.log('upload base66', base66);
-    console.log('upload fileType', type);
-    console.log('chanel', channel);
-    console.log('resource', resource);
-    // console.log('mimeType', mimeType(resource[0].title + '.' + type));
     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
     resource.map((item: any) => {
       if (
@@ -5776,8 +6010,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         item.fileType == 'pdf' ||
         item.fileType == 'png'
       ) {
-        // console.log('item', item.base64, item.fileType);
-        // console.log('resource item', item);
         const formattedDate = moment(new Date()).format('YYYY-MM-DD');
         const prescriptionFile: MediaPrescriptionFileProperties = {
           fileName: item.title + '.' + item.fileType,
@@ -5808,28 +6040,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             console.log('upload data', data);
             setLoading(false);
             const recordId = g(data.data!, 'uploadMediaDocument', 'recordId');
-            // if (fileUrl) {
-            //   console.log('api call data', fileUrl);
-            //   const text = {
-            //     id: patientId,
-            //     message: imageconsult,
-            //     fileType: (item.fileType || '').match(/\.(pdf)$/) ? 'pdf' : 'image',
-            //     url: fileUrl || '',
-            //     messageDate: new Date(),
-            //   };
-            //   pubnub.publish(
-            //     {
-            //       channel: channel,
-            //       message: text,
-            //       storeInHistory: true,
-            //       sendByPost: true,
-            //     },
-            //     (status, response) => {}
-            //   );
-            //   InsertMessageToDoctor('ImageUploaded');
-            //   KeepAwake.activate();
             if (recordId) {
-              // const prismFeildId = data.data!.uploadChatDocumentToPrism.fileId || '';
               getPrismUrls(client, patientId, [recordId])
                 .then((data: any) => {
                   console.log('api call data', data);
@@ -5853,7 +6064,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     (status, response) => {
                       if (status.statusCode == 200) {
                         HereNowPubnub('ImageUploaded');
-                        // InsertMessageToDoctor('ImageUploaded');
                       }
                     }
                   );
@@ -6345,6 +6555,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           onPressLeftIcon={() => {
             if (callhandelBack) {
               // handleCallTheEdSessionAPI();
+              setDoctorJoinedChat && setDoctorJoinedChat(false);
               props.navigation.dispatch(
                 StackActions.reset({
                   index: 0,
@@ -6357,6 +6568,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           // onPressLeftIcon={() => props.navigation.goBack()}
         />
         {renderChatHeader()}
+        {doctorJoinedChat && renderJoinCallHeader()}
         {doctorJoined ? (
           <View
             style={{
@@ -6382,7 +6594,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 marginLeft: 20,
               }}
             >
-              {jrDoctorJoined
+              {jrDoctorJoined.current
                 ? `${appointmentData.doctorInfo.displayName}'s team doctor has joined`
                 : `${appointmentData.doctorInfo.displayName} has joined!`}
             </Text>
@@ -6397,6 +6609,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               backgroundColor: 'white',
               bottom: isIphoneX() ? 36 : 0,
               top: isIphoneX() ? 2 : 0,
+              opacity: disableChat ? 0.5 : 1,
             }}
           >
             <View style={{ flexDirection: 'row', width: width }}>
@@ -6409,11 +6622,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: 'white',
                 }}
                 onPress={async () => {
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
-                  setDropdownVisible(!isDropdownVisible);
+                  if (!disableChat) {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                    setDropdownVisible(!isDropdownVisible);
+                  }
                 }}
               >
                 <UploadHealthRecords
@@ -6452,6 +6666,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   onSubmitEditing={() => {
                     Keyboard.dismiss();
                   }}
+                  editable={!disableChat}
                 />
                 <View
                   style={{
@@ -6472,17 +6687,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 2,
                 }}
                 onPress={async () => {
-                  const textMessage = messageText.trim();
-                  console.log('ChatSend', textMessage);
+                  if (!disableChat) {
+                    const textMessage = messageText.trim();
 
-                  if (textMessage.length == 0) {
-                    Alert.alert('Apollo', 'Please write something to send message.');
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
-                    return;
+                    if (textMessage.length == 0) {
+                      Alert.alert('Apollo', 'Please write something to send message.');
+                      CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
+                      return;
+                    }
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
+
+                    send(textMessage);
                   }
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
-
-                  send(textMessage);
                 }}
               >
                 <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
@@ -6510,6 +6726,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               height: 66,
               backgroundColor: 'white',
               bottom: isIphoneX() ? 36 : 0,
+              opacity: disableChat ? 0.5 : 1,
             }}
           >
             <View style={{ flexDirection: 'row', width: width }}>
@@ -6522,11 +6739,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: 'white',
                 }}
                 onPress={async () => {
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
-                  setDropdownVisible(!isDropdownVisible);
+                  if (!disableChat) {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                    setDropdownVisible(!isDropdownVisible);
+                  }
                 }}
               >
                 <UploadHealthRecords
@@ -6565,6 +6783,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   onSubmitEditing={() => {
                     Keyboard.dismiss();
                   }}
+                  editable={!disableChat}
                 />
                 <View
                   style={{
@@ -6585,17 +6804,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 2,
                 }}
                 onPress={async () => {
-                  const textMessage = messageText.trim();
-                  console.log('ChatSend', textMessage);
+                  if (!disableChat) {
+                    const textMessage = messageText.trim();
 
-                  if (textMessage.length == 0) {
-                    Alert.alert('Apollo', 'Please write something to send message.');
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
-                    return;
+                    if (textMessage.length == 0) {
+                      Alert.alert('Apollo', 'Please write something to send message.');
+                      CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
+                      return;
+                    }
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
+
+                    send(textMessage);
                   }
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
-
-                  send(textMessage);
                 }}
               >
                 <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
@@ -6943,6 +7163,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         />
       )}
+      <Snackbar
+        style={{ marginBottom: 100, zIndex: 1001 }}
+        visible={snackbarState}
+        onDismiss={() => {
+          setSnackbarState(false);
+        }}
+        duration={5000}
+      >
+        {handlerMessage}
+      </Snackbar>
     </View>
   );
 };

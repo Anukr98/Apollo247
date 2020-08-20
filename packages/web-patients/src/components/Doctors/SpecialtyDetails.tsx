@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Theme, Grid, CircularProgress, Typography } from '@material-ui/core';
+import { Theme, Grid, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
-import { AphButton, AphInput } from '@aph/web-ui-components';
+import { AphButton } from '@aph/web-ui-components';
 import { Filters } from 'components/Doctors/Filters';
 import { InfoCard } from 'components/Doctors/InfoCard';
 import { InfoCardPartner } from 'components/Doctors/InfoCardPartner';
@@ -33,15 +33,11 @@ import _filter from 'lodash/filter';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import {
-  SearchDoctorAndSpecialtyByNameVariables,
-  SearchDoctorAndSpecialtyByName,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorsType,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import _lowerCase from 'lodash/lowerCase';
-import { useAuth } from 'hooks/authHooks';
 import axios from 'axios';
 import { gtmTracking } from 'gtmTracking';
 import { SpecialtySearch } from 'components/SpecialtySearch';
@@ -454,33 +450,11 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   /* Gtm code end */
 
   useEffect(() => {
-    if (searchKeyword.length > 2) {
-      setSearchLoading(true);
-      apolloClient
-        .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
-          query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
-          variables: {
-            searchText: searchKeyword,
-            patientId: currentPatient ? currentPatient.id : '',
-            pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
-            city: selectedCity,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((response) => {
-          const specialtiesAndDoctorsList =
-            response && response.data && response.data.SearchDoctorAndSpecialtyByName;
-          if (specialtiesAndDoctorsList) {
-            const doctorsArray = specialtiesAndDoctorsList.doctors || [];
-            const specialtiesArray = specialtiesAndDoctorsList.specialties || [];
-            setSearchSpecialty(specialtiesArray);
-            setSearchDoctors(doctorsArray);
-          }
-        })
-        .catch((e) => console.log(e))
-        .finally(() => {
-          setSearchLoading(false);
-        });
+    if (searchKeyword.length > 1) {
+      const doctorsSearch = doctorData.filter((doctorDetail: DoctorDetails) => {
+        return doctorDetail.fullName.toLowerCase().includes(searchKeyword.toLowerCase());
+      });
+      setSearchDoctors(doctorsSearch);
     }
   }, [searchKeyword]);
 
@@ -523,6 +497,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
         });
     }
   }, [slugName]);
+
   let expRange: Range = [],
     feeRange: Range = [];
 
@@ -688,7 +663,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   useEffect(() => {
     if (doctorData) {
       setLoading(true);
-      let filterDoctorsData = doctorData;
+      let filterDoctorsData = searchKeyword.length > 1 ? searchDoctors : doctorData;
       if (isOnlineSelected || isPhysicalSelected) {
         filterDoctorsData = getConsultModeDoctorList(filterDoctorsData);
       }
@@ -698,7 +673,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       setFilteredDoctorData(filterDoctorsData);
       setLoading(false);
     }
-  }, [isOnlineSelected, isPhysicalSelected, doctorType, doctorData]);
+  }, [isOnlineSelected, isPhysicalSelected, doctorType, doctorData, searchKeyword, searchDoctors]);
 
   const getDoctorsCount = (data: DoctorDetails[], type: DOCTOR_CATEGORY) => {
     return _filter(data, (doctor: DoctorDetails) => {
@@ -723,14 +698,16 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       : [];
 
   const metaTagProps = {
-    title: `${specialtyName} - Book Online Appointments And Consultations - Apollo 247`,
-    description: `Book online appointments with ${specialtyName} in just a few clicks. Consult the best ${specialtyName} in India at the best prices. Apollo 247 is the one-stop solution to all your medical needs.`,
-    canonicalLink: window && window.location && window.location.href,
+    title: (faqData && faqData[0].specialtyMetaTitle) || '',
+    description: (faqData && faqData[0].specialtyMetaDescription) || '',
+    canonicalLink:
+      (faqData && faqData[0].canonicalUrl) || (window && window.location && window.location.href),
   };
 
   return (
     <div className={classes.root}>
       <MetaTagsComp {...metaTagProps} />
+
       {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
       {breadcrumbJSON && <SchemaMarkup structuredJSON={breadcrumbJSON} />}
       <div className={classes.mHide}>
@@ -745,21 +722,20 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
               </div>
             </Link>
-            <div className={classes.breadcrumbLinks}>
-              <Link to={clientRoutes.welcome()}>Home</Link>
-              <img src={require('images/triangle.svg')} alt="" />
-              <Link to={clientRoutes.specialityListing()}>Specialties</Link>
-              <img src={require('images/triangle.svg')} alt="" />
-              <span>{specialtyName}</span>
-            </div>
+            {faqData && faqData[0].breadCrumbTitle && (
+              <div className={classes.breadcrumbLinks}>
+                <Link to={clientRoutes.welcome()}>Home</Link>
+                <img src={require('images/triangle.svg')} alt="" />
+                <Link to={clientRoutes.specialityListing()}>Specialties</Link>
+                <img src={require('images/triangle.svg')} alt="" />
+                <span>{faqData && faqData[0].breadCrumbTitle}</span>
+              </div>
+            )}
           </div>
           <div className={classes.pageContent}>
             <div className={classes.leftGroup}>
               <div className={classes.sectionHeader}>
-                <h1>Book Best Doctors - {specialtyName}</h1>
-                {/* <AphButton>
-                  <img src={require('images/ic-share-green.svg')} alt="" />
-                </AphButton> */}
+                <h1>{faqData && faqData[0].specialtyHeading}</h1>
               </div>
               <SpecialtySearch
                 setSearchKeyword={setSearchKeyword}
@@ -781,7 +757,12 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                     }}
                     className={doctorType === DOCTOR_CATEGORY.APOLLO ? classes.buttonActive : ''}
                   >
-                    Apollo Doctors ({getDoctorsCount(doctorData || [], DOCTOR_CATEGORY.APOLLO)})
+                    Apollo Doctors (
+                    {getDoctorsCount(
+                      searchKeyword.length > 1 ? searchDoctors : doctorData || [],
+                      DOCTOR_CATEGORY.APOLLO
+                    )}
+                    )
                   </AphButton>
                   <AphButton
                     className={doctorType === DOCTOR_CATEGORY.PARTNER ? classes.buttonActive : ''}
@@ -789,7 +770,12 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                       setDoctorType(DOCTOR_CATEGORY.PARTNER);
                     }}
                   >
-                    Doctor Partners ({getDoctorsCount(doctorData || [], DOCTOR_CATEGORY.PARTNER)})
+                    Doctor Partners (
+                    {getDoctorsCount(
+                      searchKeyword.length > 1 ? searchDoctors : doctorData || [],
+                      DOCTOR_CATEGORY.PARTNER
+                    )}
+                    )
                   </AphButton>
                 </div>
               </div>
@@ -837,6 +823,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                                     doctorType={doctorType}
                                     nextAvailability={nextAvailability}
                                     consultMode={doctorAvailableMode}
+                                    specialityType={(faqData && faqData[0].title) || ''}
                                   />
                                 ) : (
                                   <InfoCard
@@ -844,6 +831,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                                     doctorType={doctorType}
                                     nextAvailability={nextAvailability}
                                     consultMode={doctorAvailableMode}
+                                    specialityType={(faqData && faqData[0].title) || ''}
                                   />
                                 )}
                               </Grid>

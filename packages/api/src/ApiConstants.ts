@@ -63,7 +63,7 @@ export enum ApiConstants {
 
   //medicine order out for delivery
   ORDER_PLACED_TITLE = 'Medicine order is placed',
-  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}.\nChecking your blood oxygen level is helpful. Pulse Oximeter is available Now. Click here https://tinyurl.com/y6jwn7pw.\nFor any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 8:30 AM - 8:30 PM) https://bit.ly/apollo247medicines',
+  ORDER_PLACED_BODY = 'Hi {0}, we have received your order {1}.\nChecking your blood oxygen level is helpful. Pulse Oximeter is available Now. Click here https://tinyurl.com/y6jwn7pw.\nFor any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 8 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   // medicine order out for delivery
   UPLOAD_PRESCRIPTION_TITLE = 'Upload Prescription medicine order placed ',
@@ -74,10 +74,12 @@ export enum ApiConstants {
 
   //medicine order items changed
   MEDICINE_ORDER_CHANGED_TITLE = 'Medicine order is changed',
-  MEDICINE_ORDER_CHANGED_BODY = 'Hi {0}, your order {1}  is billed with some modifications, updated details are visible on Apollo 247 in the respective order summary. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
+  MEDICINE_ORDER_CHANGED_BODY = 'Hi {0}, your order {1}  has been billed with some modifications, kindly check',
+  MEDICINE_ORDER_CHANGED_SMS_BODY = 'Hi {0}, your order {1} is billed with some modifications, updated details are visible on the Apollo 247 App here: https://pmt.apollo247.com/deeplink?url=apollopatients://Order?{1}. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 8 AM - 8:30 PM) https://bit.ly/apollo247medicines',
+
   //medicine order ready at store
   ORDER_READY_AT_STORE_TITLE = 'Medicine order is ready',
-  ORDER_READY_AT_STORE_BODY = 'Hi {0}! items for your order {1} are ready for pickup at your selected store {2}. Store Contact Number: {3}. Kindly alert the store 10 minutes before reaching the store. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 6 PM) https://bit.ly/apollo247medicines',
+  ORDER_READY_AT_STORE_BODY = 'Hi {0}! items for your order {1} are ready for pickup at your selected store {2}. Store Contact Number: {3}. Kindly alert the store 10 minutes before reaching the store. For any support, please speak with our customer care executives on the official WhatsApp channel (during business hours 8 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   //medicine order picked up
   ORDER_PICKEDUP_TITLE = 'Medicine order is pickedup',
@@ -89,11 +91,20 @@ export enum ApiConstants {
 
   //medicine order delivered
   ORDER_DELIVERY_TITLE = 'Medicine order is delivered',
-  ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7, Your order {1} is delivered successfully! In case of any issues or feedback related to your delivery, please speak with our customer care executives on the official WhatsApp channel (during business hours 9 AM - 8:30 PM) https://bit.ly/apollo247medicines',
+  ORDER_DELIVERY_BODY = 'Greetings from Apollo 24|7, Your order {1} is delivered successfully! In case of any issues or feedback related to your delivery, please speak with our customer care executives on the official WhatsApp channel (during business hours 8 AM - 8:30 PM) https://bit.ly/apollo247medicines',
 
   //medicine order cancelled
-  ORDER_CANCEL_BODY = 'Dear {name}, for order {orderId}, {reason}',
-  ORDER_CANCEL_PREPAID_BODY = 'For Order {orderId} the refund amount of Rs {refund} will be transferred to the source a/c within 7-10 working days.',
+  ORDER_CANCEL_BODY = 'Dear {name}, referring to your Apollo 247 Order {orderId}, {reason}',
+  ORDER_CANCEL_PREPAID_BODY = 'We have processed for a refund of Rs {refund} for Order {orderId}, the amount should reflect in your A/C in 10-14 working days.',
+  ORDER_CANCEL_HC_REFUND_BODY = 'We have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance for Order {orderId}.',
+  ORDER_CANCEL_PAYMENT_HC_REFUND_BODY = 'We have processed for a refund of Rs {refund} for Order {orderId}, the amount should reflect in your A/C in 10-14 working days. Also, Health Credits worth Rs {healthCreditsRefund} have been added back to your personal health credits balance.',
+
+  // medicine order partial refund
+  ORDER_PAYMENT_PARTIAL_REFUND_BODY = 'We have processed for a refund of Rs {refundAmount} for your order {orderId}, the amount should reflect in your A/C in 10-14 working days.',
+  //medicine order partial refund health credits
+  ORDER_HC_PARTIAL_REFUND_BODY = 'We have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance for Order {orderId}.',
+  //medicine order both Original Payment Method & HCs are to be refunded
+  ORDER_PAYMENT_HC_PARTIAL_REFUND_BODY = 'We have processed for a refund of Rs {refundAmount} for your order {orderId}, the amount should reflect in your A/C in 10-14 working days. Also, we have refunded Health Credits worth Rs {healthCreditsRefund} to your personal health credits balance.',
 
   //appointment cancellation
   CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
@@ -163,6 +174,7 @@ export enum ApiConstants {
   CONSULT_QUEUE_HISTORY2 = 'JD for this doctor is not required, so virtual JD is assigned',
   CONSULT_QUEUE_HISTORY = 'Added to JD consult queue',
   CASESHEET_COMPLETED_HISTORY = 'SD Casesheet completed, prescription sent to patient',
+  CASESHEET_MODIFIED_HISTORY = 'SD Casesheet updated',
   JD_CASESHEET_COMPLETED_HISTORY = 'JD Casesheet completed',
   CASESHEET_CREATED_HISTORY = 'casesheet created',
   APPT_SESSION_HISTORY = 'session created',
@@ -170,6 +182,7 @@ export enum ApiConstants {
   APPT_STATE_CHANGED_1 = 'Appointment state changed to AWAITING_RESCHEDULE',
   APPT_STATE_CHANGED_2 = 'Appointment state changed to RESCHEDULED',
   APPT_STATE_CHANGED_3 = 'Appointment cancelled due to max. reschedules',
+  APPT_UPDATE_SEPERATOR = '-rescheduledBy247-',
 
   /*** push-notification messages end here ***/
 
@@ -181,7 +194,6 @@ export enum ApiConstants {
 
   //medicine COD email configuration starts
   MEDICINE_SUPPORT_EMAILID = 'sushma.voleti@popcornapps.com',
-  MEDICINE_SUPPORT_CC_EMAILID = 'sumeeth.kumar@popcornapps.com,',
   MEDICINE_SUPPORT_EMAILID_PRODUCTION = 'hd.chennai@apollopharmacy.org',
   MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION = '',
   //medicine COD email configuration ends
@@ -238,7 +250,6 @@ export enum ApiConstants {
   FROM_MAIL = 'info@popcornapps.com',
   APPT_MAIL_SUBJECT = 'Your appointment has been booked successfully',
   FROM_NAME = 'Admin',
-  PATIENT_APPT_EMAILID = 'sriram.kanchan@popcornapps.com',
   PATIENT_APPT_CC_EMAILID = 'chanti.reddy@popcornapps.com',
   PATIENT_APPT_CC_EMAILID_TRIGGER = 'chanti.reddy@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
@@ -253,6 +264,7 @@ export enum ApiConstants {
   LOCAL_DOC_ID = 'd7566de3-c967-4a0e-a53d-f4b0f98eb065',
   DEV_DOC_ID = '74c93b2e-8aab-4b6c-8391-5407f4afb833',
   QA_DOC_ID = '',
+  ES_ADD_DAYS = 7,
 
   CACHE_EXPIRATION_120 = 120, // 2 mins
   CACHE_EXPIRATION_300 = 300, // 5 mins
@@ -415,6 +427,30 @@ export enum ApiConstants {
   DOCTOR_IN_CHAT_WINDOW_EVENT_NAME = 'Doctor is in the consult room',
   DOCTOR_LEFT_CHAT_WINDOW_EVENT_NAME = 'Doctor left the consult room',
   DOCTOR_SENT_MESSAGE_EVENT_NAME = 'Doctor sent a message on chat post end Consult',
+  DOCTOR_INITATED_RESCHEDULE_EVENT_NAME = 'Doctor Rescheduled the consult',
+  SD_CANCELLED_CONSULT_EVENT_NAME = 'Senior Doctor cancelled Consult',
+  JD_CANCELLED_CONSULT_EVENT_NAME = 'Junior Doctor cancelled Consult',
+  SD_SUBMITTED_JD_CASE_SHEET_BEFORE_TIME_EVENT_NAME = 'SD Submitted the JD case sheet before time',
+  DOCTOR_STARTED_CONSULTATION_EVENT_NAME = 'Doctor started consultation',
+  DOCTOR_INITIATED_VIDEO_CALL_EVENT_NAME = 'Doctor initiated a video call',
+  DOCTOR_INITIATED_AUDIO_CALL_EVENT_NAME = 'Doctor initiated a audio call',
+  DOCTOR_INITIATED_EXOTEL_CALL_EVENT_NAME = 'Doctor Initiated an Exotel call',
+  DOCTOR_ENDED_CONSULTATION_EVENT_NAME = 'Doctor Ended the consultation',
+  PRESCRIPTION_SENT_EVENT_NAME = 'Prescription Generated and sent',
+  NEW_VERSION_PRESCRIPTION_SENT_EVENT_NAME = 'New version of the prescription was sent',
+  JD_CASE_SHEET_COMPLETED_EVENT_NAME = 'JD case sheet submitted completed',
+  JD_CONSULTATION_STARTED_EVENT_NAME = 'JD consultation Started',
+
+  WHATSAPP_SD_CONSULT_REMINDER_15 = 'inf_sd_consult_reminder_15_min',
+  WHATSAPP_SD_CHAT_NOTIFICATION_ID = 'inf_sd_chat_notification',
+  WHATSAPP_SD_OTP = 'inf_sd_otp_message',
+  WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation',
+  WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
+  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_button_2',
+
+  ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE = 'R000247',
+
+  PARTNER_SBI = 'SBIYONO',
 }
 
 export enum PATIENT_REPO_RELATIONS {

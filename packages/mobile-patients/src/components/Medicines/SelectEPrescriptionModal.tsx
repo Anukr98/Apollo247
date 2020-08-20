@@ -268,13 +268,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
 
   const getCaseSheet = (
     caseSheet: getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet[]
-  ) =>
-    caseSheet!.find(
-      (item) =>
-        item!.doctorType == DoctorType.STAR_APOLLO ||
-        item!.doctorType == DoctorType.APOLLO ||
-        item!.doctorType == DoctorType.PAYROLL
-    )!;
+  ) => caseSheet!.find((item) => item!.doctorType !== DoctorType.JUNIOR)!;
 
   const getBlobUrl = (url: string | null) =>
     url ? `${AppConfig.Configuration.DOCUMENT_BASE_URL}${url}` : '';

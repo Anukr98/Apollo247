@@ -175,8 +175,8 @@ export interface CreateNewUsersResponse {
 }
 
 export interface GetAuthTokenResponse {
-  errorCode: null;
-  errorMsg: null;
-  errorType: null;
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
   response: string;
 }

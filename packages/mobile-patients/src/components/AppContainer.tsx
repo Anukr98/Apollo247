@@ -69,6 +69,14 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
     this.setState({ codePushInfo: { ...this.state.codePushInfo, syncStatus: status } });
   }
 
+  codePushDownloadDidProgress(progress: DownloadProgress) {
+    this.setState({ codePushInfo: { ...this.state.codePushInfo, downloadProgress: progress } });
+  }
+
+  renderCodePushUi = () => {
+    return <CodePushInfoUi codePushInfo={this.state.codePushInfo} />;
+  };
+
   render() {
     return (
       <>
@@ -78,7 +86,7 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
               <ShoppingCartProvider>
                 <DiagnosticsCartProvider>
                   <NavigatorContainer />
-                  <CodePushInfoUi codePushInfo={this.state.codePushInfo} />
+                  {this.renderCodePushUi()}
                 </DiagnosticsCartProvider>
               </ShoppingCartProvider>
             </UIElementsProvider>

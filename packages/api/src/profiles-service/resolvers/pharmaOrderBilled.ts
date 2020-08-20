@@ -1,4 +1,5 @@
 import gql from 'graphql-tag';
+import { Decimal } from 'decimal.js';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import {
@@ -6,6 +7,10 @@ import {
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
   MEDICINE_DELIVERY_TYPE,
+  MedicineOrderShipments,
+  MedicineOrderRefunds,
+  MedicineOrders,
+  MedicineOrderPayments,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -16,6 +21,7 @@ import {
   NotificationType,
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
+import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
 
@@ -148,9 +154,11 @@ const saveOrderShipmentInvoice: Resolver<
   if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
-  const shipmentDetails = orderDetails.medicineOrderShipments.find((shipment) => {
-    return shipment.apOrderNo == saveOrderShipmentInvoiceInput.apOrderNo;
-  });
+  const shipmentDetails = orderDetails.medicineOrderShipments.find(
+    (shipment: MedicineOrderShipments) => {
+      return shipment.apOrderNo == saveOrderShipmentInvoiceInput.apOrderNo;
+    }
+  );
   if (!shipmentDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});
   }
@@ -224,13 +232,29 @@ const saveOrderShipmentInvoice: Resolver<
     shipmentDetails.apOrderNo
   );
 
-  const unBilledShipments = orderDetails.medicineOrderShipments.find((shipment) => {
-    return (
-      shipment.apOrderNo != shipmentDetails.apOrderNo &&
-      shipment.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED
-    );
-  });
+  const unBilledShipments = orderDetails.medicineOrderShipments.find(
+    (shipment: MedicineOrderShipments) => {
+      return (
+        shipment.apOrderNo != shipmentDetails.apOrderNo &&
+        shipment.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED
+      );
+    }
+  );
+
   if (!unBilledShipments) {
+    const invoices = await medicineOrdersRepo.getInvoiceDetailsByOrderId(orderDetails.orderAutoId);
+
+    const totalOrderBilling = invoices.reduce(
+      (acc: number, curValue: Partial<MedicineOrderInvoice>) => {
+        if (curValue.billDetails) {
+          const invoiceValue: number = JSON.parse(curValue.billDetails).invoiceValue;
+          return +new Decimal(acc).plus(invoiceValue);
+        }
+        return acc;
+      },
+      0
+    );
+
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
       orderStatus: currentStatus,
       medicineOrders: orderDetails,
@@ -244,7 +268,8 @@ const saveOrderShipmentInvoice: Resolver<
       currentStatus
     );
     if (
-      billDetails.invoiceValue - orderDetails.estimatedAmount > 1 &&
+      Math.abs(Math.floor(billDetails.invoiceValue) - Math.floor(orderDetails.estimatedAmount)) >
+        1 &&
       orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
     ) {
       sendMedicineOrderStatusNotification(
@@ -253,6 +278,7 @@ const saveOrderShipmentInvoice: Resolver<
         profilesDb
       );
     }
+    calculateRefund(orderDetails, totalOrderBilling, profilesDb, medicineOrdersRepo);
   }
 
   //post order billed and packed event event to webEngage

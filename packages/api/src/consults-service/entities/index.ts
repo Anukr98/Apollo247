@@ -13,17 +13,32 @@ import {
   UpdateDateColumn,
   CreateDateColumn,
   AfterUpdate,
+  AfterInsert,
 } from 'typeorm';
 import { Validate, IsDate } from 'class-validator';
 import { DoctorType, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
-import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
+import { MobileNumberValidator } from 'validators/entityValidators';
 import { delCache } from 'consults-service/database/connectRedis';
 import { log } from 'customWinstonLogger';
+import {
+  trackWebEngageEventForDoctorReschedules,
+  trackWebEngageEventForDoctorCancellation,
+  trackWebEngageEventForDoctorCallInitiation,
+  trackWebEngageEventForCasesheetUpdate,
+  trackWebEngageEventForCasesheetInsert,
+  trackWebEngageEventForExotelCall,
+  trackWebEngageEventForAppointmentComplete,
+} from 'notifications-service/resolvers/webEngageAPI';
 
 export enum APPOINTMENT_UPDATED_BY {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
   ADMIN = 'ADMIN',
+}
+
+export interface PaginateParams {
+  take?: number;
+  skip?: number;
 }
 
 export enum ES_DOCTOR_SLOT_STATUS {
@@ -284,7 +299,7 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true })
   transferParentId: string;
 
-  @Column({ nullable: true })
+  @UpdateDateColumn({ nullable: true })
   updatedDate: Date;
 
   @Column({ nullable: true, type: 'text' })
@@ -304,11 +319,6 @@ export class Appointment extends BaseEntity {
     default: () => "'{}'",
   })
   paymentInfo: Partial<AppointmentPayments>;
-
-  @BeforeUpdate()
-  updateDateUpdate() {
-    this.updatedDate = new Date();
-  }
 
   @BeforeUpdate()
   async appointMentStatusConstraintCheck() {
@@ -377,6 +387,9 @@ export class Appointment extends BaseEntity {
   )
   appointmentDocuments: AppointmentDocuments[];
 
+  @OneToMany((type) => ConsultQueueItem, (consultQueueItem) => consultQueueItem.appointment)
+  consultQueueItem: ConsultQueueItem[];
+
   @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
   auditHistory: AuditHistory[];
 
@@ -393,7 +406,18 @@ export class Appointment extends BaseEntity {
   async dropAppointmentCache() {
     await delCache(`patient:appointment:${this.id}`);
   }
+
+  @AfterUpdate()
+  trackWebEngageEventForAppointmentComplete() {
+    trackWebEngageEventForAppointmentComplete(this);
+  }
+
+  @AfterUpdate()
+  async trackWebEngageEventForCancellation() {
+    trackWebEngageEventForDoctorCancellation(this);
+  }
 }
+
 //Appointment ends
 
 //AppointmentDocuments starts
@@ -464,13 +488,11 @@ export class AppointmentPayments extends BaseEntity {
   @Column({ type: 'text' })
   responseMessage: string;
 
-  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updatedDate: Date;
+  @Column({ nullable: true })
+  partnerInfo: string;
 
-  @BeforeUpdate()
-  updateDateUpdate() {
-    this.updatedDate = new Date();
-  }
+  @UpdateDateColumn({ nullable: true })
+  updatedDate: Date;
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
   appointment: Appointment;
@@ -662,6 +684,11 @@ export class AppointmentCallDetails extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+
+  @AfterInsert()
+  trackWebEngageEventForCallInitiation() {
+    trackWebEngageEventForDoctorCallInitiation(this);
+  }
 }
 
 //Junior AppointmentSessions starts
@@ -807,6 +834,9 @@ export type CaseSheetMedicinePrescription = {
   medicineUnit: MEDICINE_UNIT;
   routeOfAdministration?: ROUTE_OF_ADMINISTRATION;
   medicineCustomDosage?: string;
+  medicineCustomDetails?: string;
+  includeGenericNameInPrescription?: Boolean;
+  genericName?: string;
 };
 export type CaseSheetDiagnosis = { name: string };
 export type CaseSheetDiagnosisPrescription = {
@@ -930,6 +960,21 @@ export class CaseSheet extends BaseEntity {
 
   @Column({ default: AUDIT_STATUS.PENDING })
   auditStatus: AUDIT_STATUS;
+
+  @AfterUpdate()
+  trackWebEngageEventForCasesheetUpdate() {
+    trackWebEngageEventForCasesheetUpdate(this);
+  }
+
+  @AfterInsert()
+  trackWebEngageEventForCasesheetInsert() {
+    trackWebEngageEventForCasesheetInsert(this);
+  }
+
+  @AfterUpdate()
+  async dropAppointmentCache() {
+    await delCache(`patient:appointment:${this.appointment.id}`);
+  }
 }
 //case sheet ends
 
@@ -941,6 +986,9 @@ export class ConsultQueueItem extends BaseEntity {
   @Index('ConsultQueueItem_appointmentId')
   @Column()
   appointmentId: string;
+
+  @ManyToOne((type) => Appointment, (appointment) => appointment.consultQueueItem)
+  appointment: Appointment;
 
   @Column()
   createdDate: Date;
@@ -1082,6 +1130,11 @@ export class RescheduleAppointmentDetails extends BaseEntity {
   @BeforeInsert()
   updateDateCreation() {
     this.createdDate = new Date();
+  }
+
+  @AfterInsert()
+  async trackWebEngageEventForReschedules() {
+    trackWebEngageEventForDoctorReschedules(this);
   }
 
   @BeforeUpdate()
@@ -1856,6 +1909,11 @@ export class ExotelDetails extends BaseEntity {
 
   @Column({ nullable: true })
   totalCallDuration: number;
+
+  @AfterInsert()
+  trackWebEngageEventForExotelCall() {
+    trackWebEngageEventForExotelCall(this);
+  }
 }
 
 //notification related tables end
@@ -1871,6 +1929,7 @@ export interface RxPdfData {
     instructions?: string;
     routeOfAdministration?: string;
     medicineFormTypes?: string;
+    genericName?: string;
   }[];
   generalAdvice: CaseSheetOtherInstruction[];
   diagnoses: CaseSheetDiagnosis[];

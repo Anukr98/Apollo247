@@ -5,16 +5,19 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Popover, CircularProgress, Typography } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
-import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
 import { ShopByBrand } from 'components/Medicine/Cards/ShopByBrand';
 import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
+import { RecommendedProducts } from 'components/Medicine/Cards/RecommendedProducts';
 import { DayDeals } from 'components/Medicine/Cards/DayDeals';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
+import { GET_LATEST_MEDICINE_ORDER } from 'graphql/profiles';
+import { ReOrder } from 'components/Orders/ReOrder';
+import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as medicineOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
+import { useMutation } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
 import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
 import axios from 'axios';
-import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { PaymentStatusModal } from 'components/Cart/PaymentStatusModal';
 import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
@@ -23,7 +26,7 @@ import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescri
 import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
 import {
   uploadPrescriptionTracking,
-  pharmacyUploadPresClickTracking,
+  // pharmacyUploadPresClickTracking,
   uploadPhotoTracking,
 } from '../../webEngageTracking';
 import moment from 'moment';
@@ -31,7 +34,6 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { CarouselBanner } from 'components/Medicine/CarouselBanner';
-import { useLocationDetails } from 'components/LocationProvider';
 import { gtmTracking } from '../../gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { BottomLinks } from 'components/BottomLinks';
@@ -51,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorListingPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        marginTop: 96,
+        marginTop: 70,
       },
     },
     pageTopHeader: {
@@ -66,7 +68,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     medicineTopGroup: {
       display: 'flex',
-      paddingTop: 25,
+      // paddingTop: 25,
       [theme.breakpoints.down('xs')]: {
         display: 'block',
         paddingTop: 0,
@@ -156,7 +158,6 @@ const useStyles = makeStyles((theme: Theme) => {
     serviceType: {
       backgroundColor: '#f7f8f5',
       borderRadius: 5,
-      padding: 10,
       paddingbottom: 8,
       display: 'flex',
       width: '100%',
@@ -165,12 +166,12 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
+        // boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
     },
     preServiceType: {
       backgroundColor: '#f7f8f5',
-      borderRadius: 5,
+      borderRadius: 10,
       padding: 16,
       color: '#02475b',
       fontSize: 14,
@@ -179,11 +180,6 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fff',
         boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
       },
-    },
-    textVCenter: {
-      alignItems: 'center',
-      minHeight: 54,
-      paddingBottom: 10,
     },
     serviceIcon: {
       marginRight: 10,
@@ -194,6 +190,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     rightArrow: {
       width: 24,
+      marginLeft: 'auto',
+    },
+    reOrder: {
+      width: 54,
       marginLeft: 'auto',
     },
     linkText: {
@@ -218,8 +218,8 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       width: '100%',
       '& button': {
-        backgroundColor: '#fff',
-        color: '#fcb716',
+        backgroundColor: '#fcb716',
+        color: '#fff',
         border: '1px solid #fcb716',
         minWidth: 105,
         '&:hover': {
@@ -252,11 +252,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     sliderSection: {
-      paddingBottom: 22,
+      padding: '0 0 20px',
       [theme.breakpoints.down('xs')]: {
-        '&:last-child': {
-          paddingBottom: 70,
-        },
+        padding: '0 20px 20px',
+        overflowX: 'hidden',
       },
     },
     sectionTitle: {
@@ -268,9 +267,6 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 8,
       marginBottom: 10,
       display: 'flex',
-      [theme.breakpoints.down('xs')]: {
-        marginLeft: 20,
-      },
     },
     viewAllLink: {
       marginLeft: 'auto',
@@ -390,9 +386,54 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 13,
       '& a': {
         color: '#fc9916',
+        [theme.breakpoints.down('xs')]: {
+          display: 'block',
+          margin: '5px 0 0',
+        },
       },
       '& p': {
         marginBottom: 0,
+      },
+    },
+    medicineReviewReorder: {
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      marginTop: 5,
+      paddingTop: 15,
+      fontSize: 13,
+      '& a': {
+        color: '#fc9916',
+      },
+      '& p': {
+        marginBottom: 0,
+      },
+    },
+    serviceArea: {
+      fontSize: 11,
+      lineHeight: '15px',
+      color: '#02475b',
+      fontWeight: 'normal',
+      margin: '4px 0 0 30px',
+      '& span': {
+        display: 'inline-block',
+        width: '100%',
+      },
+    },
+    webCarousel: {
+      [theme.breakpoints.down(500)]: {
+        display: 'none',
+      },
+    },
+    mobileCarousel: {
+      display: ' none',
+      [theme.breakpoints.down(500)]: {
+        display: 'block',
+      },
+    },
+    medicineHeader: {
+      [theme.breakpoints.down('xs')]: {
+        '& header': {
+          boxShadow: 'none',
+        },
       },
     },
   };
@@ -437,9 +478,11 @@ export const MedicineLanding: React.FC = (props: any) => {
       localStorage.removeItem('pharmaCoupon');
     }
     sessionStorage.removeItem('cartValues');
+    sessionStorage.removeItem('utm_source');
   }
 
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
+  const [metadata, setMetadata] = useState(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<ApolloError | null>(null);
   const [showPrescriptionPopup, setShowPrescriptionPopup] = useState<boolean>(
@@ -452,6 +495,9 @@ export const MedicineLanding: React.FC = (props: any) => {
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const mascotRef = useRef(null);
+  const [latestMedicineOrder, setLatestMedicineOrder] = useState<medicineOrderDetailsType | null>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const latestOrdereDetails = useMutation(GET_LATEST_MEDICINE_ORDER);
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND,
@@ -469,6 +515,35 @@ export const MedicineLanding: React.FC = (props: any) => {
       setIsPopoverOpen(true);
     }
   }, [props]);
+
+  useEffect(() => {
+    if (currentPatient && currentPatient.uhid) {
+      setIsLoading(true);
+      latestOrdereDetails({
+        variables: {
+          patientUhid: currentPatient.uhid,
+        },
+      })
+        .then((res: any) => {
+          if (
+            res &&
+            res.data &&
+            res.data.getLatestMedicineOrder &&
+            res.data.getLatestMedicineOrder.medicineOrderDetails
+          ) {
+            setLatestMedicineOrder(res.data.getLatestMedicineOrder.medicineOrderDetails);
+          } else {
+            setLatestMedicineOrder(null);
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [currentPatient]);
 
   /* Gtm code Start */
   useEffect(() => {
@@ -497,6 +572,47 @@ export const MedicineLanding: React.FC = (props: any) => {
       )
       .then((res: any) => {
         setData(res.data);
+        if (res.data && res.data.metadata && res.data.metadata.length > 0) {
+          const removableData = [
+            'banners',
+            'orders',
+            'upload_prescription',
+            'recommended_products',
+          ];
+          let position = 0;
+          let updatedMetadata: any[] = [];
+          res.data.metadata.forEach((section: any) => {
+            const sectionData = res.data[`${section.section_key}`];
+            if (!removableData.includes(section.section_key) && section.visible) {
+              position += 1;
+              const renderValue = () => {
+                if (sectionData) {
+                  return sectionData.products ? (
+                    <HotSellers data={sectionData} section={section.section_name} />
+                  ) : sectionData.length > 0 && sectionData[0].title ? (
+                    section.section_key === 'shop_by_brand' ? (
+                      <ShopByBrand data={sectionData} sectionName={section.section_key} />
+                    ) : (
+                      <ShopByCategory data={sectionData} sectionName={section.section_key} />
+                    )
+                  ) : (
+                    <DayDeals data={sectionData} sectionName={section.section_key} />
+                  );
+                }
+              };
+              updatedMetadata.push({
+                section_key: section.section_key,
+                section_name: section.section_name,
+                section_position: position,
+                visible: section.visible,
+                value: renderValue(),
+                viewAll: sectionData && sectionData.products && sectionData.url_key ? true : false,
+                viewAllUrlKey: sectionData && sectionData.url_key ? sectionData.url_key : '',
+              });
+            }
+          });
+          setMetadata(updatedMetadata);
+        }
         /**Gtm code start  */
         gtmTracking({ category: 'Pharmacy', action: 'Landing Page', label: 'Listing Page Viewed' });
         /**Gtm code End  */
@@ -514,26 +630,14 @@ export const MedicineLanding: React.FC = (props: any) => {
     }
   }, [data]);
 
-  const list = data && [
-    {
-      key: 'Shop by Health Areas',
-      value: <ShopByAreas data={data.healthareas} />,
-    },
-    {
-      key: 'Deals of the day',
-      value: <DayDeals data={data.deals_of_the_day} />,
-    },
-    { key: 'Hot Sellers', value: <HotSellers data={data.hot_sellers} section="Hotsellers" /> },
-    {
-      key: 'Shop by Category',
-      value: <ShopByCategory data={data.shop_by_category} />,
-    },
-    {
-      key: 'Trending Today',
-      value: <HotSellers data={data.monsoon_essentials} section="Trending Today" />,
-    },
-    { key: 'Shop by Brand', value: <ShopByBrand data={data.shop_by_brand} /> },
-  ];
+  const productsRecommended = latestMedicineOrder && latestMedicineOrder.medicineOrderLineItems;
+  const latestMedicineOrderDate =
+    latestMedicineOrder && moment(latestMedicineOrder.createdDate).format('MMMM D, YYYY');
+  const storeAddress = latestMedicineOrder && JSON.parse(latestMedicineOrder.shopAddress);
+  const isOfflineOrder =
+    latestMedicineOrder && latestMedicineOrder.currentStatus === 'PURCHASED_IN_STORE';
+  const orderDelivered =
+    isOfflineOrder || (latestMedicineOrder && latestMedicineOrder.currentStatus === 'DELIVERED');
 
   const onePrimaryUser =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
@@ -542,7 +646,7 @@ export const MedicineLanding: React.FC = (props: any) => {
 
   const handleUploadPrescription = () => {
     uploadPrescriptionTracking({ ...patient, age });
-    pharmacyUploadPresClickTracking('Home');
+    // pharmacyUploadPresClickTracking('Home');
     setIsUploadPreDialogOpen(true);
   };
   const metaTagProps = {
@@ -556,7 +660,9 @@ export const MedicineLanding: React.FC = (props: any) => {
   return (
     <div className={classes.root}>
       <MetaTagsComp {...metaTagProps} />
-      <Header />
+      <div className={classes.medicineHeader}>
+        <Header />
+      </div>
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.pageTopHeader}>
@@ -571,9 +677,16 @@ export const MedicineLanding: React.FC = (props: any) => {
                     <CircularProgress size={30} />
                   </div>
                 )}
-                {data && data.mainbanners_desktop && data.mainbanners_desktop.length > 0 && (
-                  <CarouselBanner bannerData={data.mainbanners_desktop} history={props.history} />
-                )}
+                <div className={classes.webCarousel}>
+                  {data && data.mainbanners_desktop && data.mainbanners_desktop.length > 0 && (
+                    <CarouselBanner bannerData={data.mainbanners_desktop} history={props.history} />
+                  )}
+                </div>
+                <div className={classes.mobileCarousel}>
+                  {data && data.mainbanners && data.mainbanners.length > 0 && (
+                    <CarouselBanner bannerData={data.mainbanners} history={props.history} />
+                  )}
+                </div>
               </div>
 
               <div className={classes.rightSection}>
@@ -610,21 +723,72 @@ export const MedicineLanding: React.FC = (props: any) => {
                     {({ protectWithLoginPopup }) => (
                       <div
                         className={`${classes.sectionGroup} ${classes.marginNone}`}
-                        onClick={() => !isSignedIn && protectWithLoginPopup()}
+                        onClick={() => {
+                          if (!isSignedIn) {
+                            protectWithLoginPopup();
+                            const redirectURL = encodeURIComponent(
+                              `${window.location.origin}${clientRoutes.yourOrders()}`
+                            );
+                            redirectURL &&
+                              history.replaceState(null, '', `?continue=${redirectURL}`);
+                          }
+                        }}
                       >
-                        <Link
-                          className={`${classes.serviceType} ${classes.textVCenter}`}
-                          to={isSignedIn && clientRoutes.yourOrders()}
-                          title={'Open your orders'}
-                        >
-                          <span className={classes.serviceIcon}>
-                            <img src={require('images/ic_tablets.svg')} alt="" />
-                          </span>
-                          <span className={classes.linkText}>Your Orders</span>
-                          <span className={classes.rightArrow}>
-                            <img src={require('images/ic_arrow_right.svg')} alt="" />
-                          </span>
-                        </Link>
+                        <div className={classes.preServiceType}>
+                          <div className={classes.prescriptionGroup}>
+                            <Link
+                              className={classes.serviceType}
+                              to={isSignedIn && clientRoutes.yourOrders()}
+                              title={'Open your orders'}
+                            >
+                              <span className={classes.serviceIcon}>
+                                <img src={require('images/ic_tablets.svg')} alt="" />
+                              </span>
+                              <span className={classes.linkText}>Your Orders</span>
+                              <span className={classes.rightArrow}>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </span>
+                            </Link>
+                          </div>
+                          {isSignedIn && latestMedicineOrder && orderDelivered ? (
+                            <div className={classes.medicineReviewReorder}>
+                              <div className={classes.serviceType}>
+                                <span className={classes.serviceIcon}>
+                                  <img src={require('images/ic_basket.svg')} alt="" />
+                                </span>
+                                <span className={classes.linkText}>
+                                  {productsRecommended.length > 1
+                                    ? `${
+                                        productsRecommended[0].medicineName
+                                      } + ${productsRecommended.length - 1} item${
+                                        productsRecommended.length > 2 ? 's ' : ' '
+                                      }`
+                                    : productsRecommended[0].medicineName}
+                                </span>
+                                <span className={classes.reOrder}>
+                                  <ReOrder
+                                    orderDetailsData={latestMedicineOrder}
+                                    type="Latest Order"
+                                    patientName={
+                                      currentPatient && currentPatient.firstName
+                                        ? currentPatient.firstName
+                                        : ''
+                                    }
+                                  />
+                                </span>
+                              </div>
+                              <div className={classes.serviceArea}>
+                                <span>
+                                  {isOfflineOrder
+                                    ? `Ordered at ${storeAddress.storename} on ${latestMedicineOrderDate}`
+                                    : `Ordered online on ${latestMedicineOrderDate}`}
+                                </span>
+                              </div>
+                            </div>
+                          ) : isLoading ? (
+                            <CircularProgress size={22} color="secondary" />
+                          ) : null}
+                        </div>
                       </div>
                     )}
                   </ProtectedWithLoginPopup>
@@ -634,21 +798,26 @@ export const MedicineLanding: React.FC = (props: any) => {
           </div>
           {!loading && (
             <div className={classes.allProductsList}>
-              {list &&
-                list.map((item, index) => (
+              {isSignedIn && (
+                <div className={classes.sliderSection}>
+                  <RecommendedProducts section="Recommended Products" />
+                </div>
+              )}
+              {metadata &&
+                metadata.map((item: any, index: number) => (
                   <div key={index} className={classes.sliderSection}>
                     <div className={classes.sectionTitle}>
-                      {item.key === 'Shop by Brand' || item.key === 'Trending Today' ? (
+                      {item.section_key === 'shop_by_brand' || item.viewAll ? (
                         <>
-                          <span>{item.key}</span>
+                          <span>{item.section_name}</span>
                           <div className={classes.viewAllLink}>
                             <Link
                               to={
-                                item.key === 'Shop by Brand'
+                                item.section_key === 'shop_by_brand'
                                   ? clientRoutes.medicineAllBrands()
                                   : clientRoutes.searchByMedicine(
                                       'shop-by-category',
-                                      'monsoon-essentials'
+                                      item.viewAllUrlKey
                                     )
                               }
                             >
@@ -657,7 +826,7 @@ export const MedicineLanding: React.FC = (props: any) => {
                           </div>
                         </>
                       ) : (
-                        item.key
+                        item.section_name
                       )}
                     </div>
                     {item.value}

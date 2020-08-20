@@ -75,7 +75,7 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
   const [pincode, setPincode] = useState<string>('');
   const [error, setError] = useState<string>('');
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
-  const { setPharmacyLocation } = useAppCommonData();
+  const { setPharmacyLocation, setLocationDetails, locationDetails } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [showCallToPharmacy, setShowCallToPharmacy] = useState<boolean>(false);
   const [pharmacyPhoneNumber, setPharmacyPhoneNumber] = useState<string>('');
@@ -180,6 +180,7 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
           const latLang = data.results[0].geometry.location || {};
           const response = getFormattedLocation(addrComponents, latLang, pincode);
           setPharmacyLocation!(response);
+          !locationDetails && setLocationDetails!(response);
           props.onComplete(true, response);
         } catch (e) {
           handleUpdatePlaceInfoByPincodeError(e);

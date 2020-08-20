@@ -15,7 +15,9 @@ import {
 } from 'profiles-service/repositories/couponRepository';
 import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 import { createPrismUser } from 'helpers/phrV1Services';
+import { getCache, delCache, setCache } from 'profiles-service/database/connectRedis';
 
+const REDIS_PATIENT_LOCK_PREFIX = `patient:lock:`;
 export const updatePatientTypeDefs = gql`
   input UpdatePatientInput {
     id: ID!
@@ -48,8 +50,6 @@ export const updatePatientTypeDefs = gql`
     updatePatientAllergies(patientId: String!, allergies: String!): UpdatePatientResult!
   }
 `;
-
-const REDIS_PATIENT_ID_KEY_PREFIX: string = 'patient:';
 
 type UpdatePatientResult = {
   patient: Patient | null;
@@ -86,19 +86,27 @@ const updatePatient: Resolver<
   if (!patient || patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-
+  const lockKey = `${REDIS_PATIENT_LOCK_PREFIX}${patient.mobileNumber}`;
+  const lockedProfile = await getCache(lockKey);
+  if (lockedProfile && typeof lockedProfile == 'string') {
+    throw new Error(AphErrorMessages.PROFILE_CREATION_IN_PROGRESS);
+  }
   Object.assign(patient, updateAttrs);
   if (patient.uhid == '' || patient.uhid == null) {
+    await setCache(lockKey, 'true', ApiConstants.CACHE_EXPIRATION_120);
     const uhidResp = await patientRepo.getNewUhid(patient);
     if (uhidResp.retcode == '0') {
       patient.uhid = uhidResp.result;
       patient.primaryUhid = uhidResp.result;
       patient.uhidCreatedDate = new Date();
-      createPrismUser(patient, uhidResp.result.toString());
+      await createPrismUser(patient, uhidResp.result.toString()).catch(async (err) => {
+        await delCache(lockKey);
+        throw new Error(AphErrorMessages.PRISM_CREATE_UHID_ERROR);
+      });
     }
   }
   await patient.save();
-
+  await delCache(lockKey);
   //Doubt: Do we need to check getPatientList.length == 1 since it is getting called only on first call
 
   // const getPatientList = await patientRepo.findByMobileNumber(patient.mobileNumber);
@@ -129,7 +137,6 @@ const updatePatient: Resolver<
       }
     }
   }
-
   const patientObjWithRelations = await patientRepo.findByIdWithRelations(patientInput.id, [
     PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
     PATIENT_REPO_RELATIONS.FAMILY_HISTORY,

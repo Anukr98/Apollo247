@@ -26,6 +26,10 @@ const useStyles = makeStyles((theme: Theme) => {
         flexDirection: 'column',
       },
     },
+    covidGuide: {
+      width: '100%',
+      textAlign: 'left',
+    },
     leftIcon: {
       paddingRight: 40,
       [theme.breakpoints.down('xs')]: {
@@ -188,7 +192,7 @@ export const CheckRiskLevel: React.FC = (props: any) => {
           our experts for advice.
         </p>
         <div className={classes.rightActions}>
-          {!location.pathname.includes('medical-condition') && !isWebView && (
+          {!location.pathname.includes('medical-condition') && (
             <ProtectedWithLoginPopup>
               {({ protectWithLoginPopup }) => (
                 <AphButton
@@ -203,7 +207,10 @@ export const CheckRiskLevel: React.FC = (props: any) => {
                     }
                   }}
                 >
-                  <Link to={isSignedIn && clientRoutes.covidProtocol()}>
+                  <Link
+                    to={isSignedIn && clientRoutes.covidProtocol()}
+                    className={classes.covidGuide}
+                  >
                     <span>
                       <img src={require('images/guide.svg')} alt="" />
                     </span>

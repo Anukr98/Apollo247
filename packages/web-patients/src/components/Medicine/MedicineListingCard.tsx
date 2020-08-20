@@ -21,6 +21,10 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 10,
       marginBottom: 10,
       position: 'relative',
+      [theme.breakpoints.down('xs')]: {
+        padding: 20,
+        boxShadow: '0px 5px 20px rgba(128, 128, 128, 0.3)',
+      },
     },
     medicineStripDisabled: {
       backgroundColor: '#f7f8f5',
@@ -36,6 +40,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 10,
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('xs')]: {
+        padding: '0 0 10px',
+      },
     },
     cartRight: {
       marginLeft: 'auto',
@@ -43,10 +50,11 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
         borderTop: 'solid 0.5px rgba(2,71,91,0.2)',
+        padding: '10px 0 0',
       },
     },
     medicineIcon: {
-      paddingRight: 10,
+      paddingRight: 20,
       '& img': {
         maxWidth: 35,
         verticalAlign: 'middle',
@@ -94,15 +102,12 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 90,
       textAlign: 'right',
       [theme.breakpoints.down('xs')]: {
-        paddingLeft: 2,
-        paddingTop: 12,
-        paddingBottom: 5,
-        marginLeft: 'auto',
+        padding: 0,
         borderRight: 'none',
         flexGrow: 1,
         paddingRight: 2,
-        minHeight: 45,
-        minWidth: 75,
+        // minHeight: 45,
+        // minWidth: 75,
       },
       '& span': {
         fontWeight: 500,
@@ -140,16 +145,16 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'center',
       [theme.breakpoints.down('xs')]: {
-        paddingLeft: 5,
-        paddingRight: 0,
+        padding: 0,
         borderLeft: 'none',
         flexGrow: 1,
         textAlign: 'left',
-        justifyContent: 'left',
-        minHeight: 45,
+        width: '50%',
+        justifyContent: 'space-between',
       },
       [theme.breakpoints.up('xs')]: {
         minWidth: 110,
+        padding: '0 10px 0 0',
       },
     },
     selectMenuItem: {
@@ -184,7 +189,8 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 5,
       textAlign: 'center',
       [theme.breakpoints.down('xs')]: {
-        borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
+        padding: '0 10px',
+        textAlign: 'left',
       },
     },
     mrpText: {
@@ -199,7 +205,7 @@ type MedicineListingCardProps = {
 
 export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) => {
   const classes = useStyles({});
-  const { cartItems, removeCartItem, updateCartItemQty } = useShoppingCart();
+  const { cartItems, removeCartItemSku, updateCartItemQty } = useShoppingCart();
   const { validateCouponResult } = props;
 
   return (
@@ -403,7 +409,7 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         },
                       });
                       /**Gtm code End  */
-                      removeCartItem && removeCartItem(item.id);
+                      removeCartItemSku && removeCartItemSku(item.sku);
                     }}
                   >
                     <img

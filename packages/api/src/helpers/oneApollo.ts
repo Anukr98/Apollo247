@@ -1,4 +1,4 @@
-import { BlockOneApolloPointsRequest } from 'types/oneApolloTypes';
+import { BlockOneApolloPointsRequest, UnblockPointsRequest } from 'types/oneApolloTypes';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { OneApollTransaction, ONE_APOLLO_USER_REG } from 'profiles-service/entities';
@@ -77,6 +77,7 @@ export class OneApollo {
         method: 'POST',
         headers: this.headers,
         body: JSON.stringify(input),
+        signal: this.controller.signal,
       });
       return response.json();
     } catch (e) {
@@ -86,7 +87,7 @@ export class OneApollo {
       clearTimeout(timeout);
     }
   }
-  async createOneApolloTransaction(transaction: Partial<OneApollTransaction>) {
+  async createOneApolloTransaction(transaction: Partial<OneApollTransaction>): Promise<JSON> {
     const timeout = this._requestTimeout();
     try {
       const response = await fetch(this.baseUrl + '/transaction/create', {
@@ -119,6 +120,22 @@ export class OneApollo {
       if (e.name === 'AbortError') throw new AphError(AphErrorMessages.ONEAPOLLO_REQUEST_TIMEOUT);
 
       throw new AphError(AphErrorMessages.GET_ONEAPOLLO_USER_TRANSACTIONS_ERROR, undefined, { e });
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+  async unblockHealthCredits(input: UnblockPointsRequest) {
+    const timeout = this._requestTimeout();
+    try {
+      const response = await fetch(`${this.baseUrl}/redemption/UnblockHC`, {
+        method: 'POST',
+        headers: this.headers,
+        body: JSON.stringify(input),
+        signal: this.controller.signal,
+      });
+    } catch (e) {
+      if (e.name === 'AbortError') throw new AphError(AphErrorMessages.ONEAPOLLO_REQUEST_TIMEOUT);
+      throw new AphError(AphErrorMessages.UNBLOCK_CREDITS_ONEAPOLLO_ERROR, undefined, { e });
     } finally {
       clearTimeout(timeout);
     }

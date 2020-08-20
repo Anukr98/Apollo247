@@ -92,7 +92,10 @@ target 'ApolloPatient' do
   pod 'react-native-video', :path => '../node_modules/react-native-video'
   pod 'react-native-background-timer', :path => '../node_modules/react-native-background-timer'
   pod 'CodePush', :path => '../node_modules/react-native-code-push'
-
+  pod 'RNDateTimePicker', :path => '../node_modules/@react-native-community/datetimepicker'
+  pod 'RNCallKeep', :path => '../node_modules/react-native-callkeep'
+  pod 'RNVoipPushNotification', :path => '../node_modules/react-native-voip-push-notification'
+  
   # ServiceExtension Target
 
   target 'NotificationService' do

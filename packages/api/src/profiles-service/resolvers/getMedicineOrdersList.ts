@@ -11,6 +11,7 @@ export const getMedicineOrdersListTypeDefs = gql`
   type MedicineOrdersListResult {
     MedicineOrdersList: [MedicineOrders]
   }
+
   enum DEVICE_TYPE {
     IOS
     ANDROID
@@ -120,15 +121,18 @@ const getMedicineOrdersList: Resolver<
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
 
   const patientDetails = await patientRepo.getPatientDetails(args.patientId);
+
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
   const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
-
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+
   const MedicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
 
-  return { MedicineOrdersList };
+  return {
+    MedicineOrdersList,
+  };
 };
 
 const getMedicineOrderDetails: Resolver<
@@ -156,7 +160,6 @@ const getMedicineOrderDetails: Resolver<
       args.orderAutoId
     );
   }
-  console.log(MedicineOrderDetails, 'medicineOrderDetails');
   if (!MedicineOrderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
@@ -165,13 +168,17 @@ const getMedicineOrderDetails: Resolver<
 
 const getMedicinePaymentOrder: Resolver<
   null,
-  {},
+  {}, //for consistency response though not mandatory
   ProfilesServiceContext,
   MedicineOrdersListResult
 > = async (parent, args, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+
   const MedicineOrdersList = await medicineOrdersRepo.getPaymentMedicineOrders();
-  return { MedicineOrdersList };
+
+  return {
+    MedicineOrdersList,
+  };
 };
 
 export const getMedicineOrdersListResolvers = {

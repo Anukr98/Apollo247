@@ -2,11 +2,20 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS, Gender, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getCaseSheet
 // ====================================================
+
+export interface getCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo {
+  __typename: "Profile";
+  id: string;
+  fullName: string | null;
+  gender: Gender | null;
+  photoUrl: string | null;
+  displayName: string | null;
+}
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   __typename: "Appointment";
@@ -21,6 +30,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   status: STATUS;
   displayId: string;
   isFollowUp: number;
+  doctorInfo: getCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo | null;
 }
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_diagnosis {
@@ -51,6 +61,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
 }
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions {

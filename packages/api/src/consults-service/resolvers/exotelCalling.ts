@@ -159,7 +159,7 @@ const initateConferenceTelephoneCall: Resolver<
   exotelInputArgs,
   ConsultServiceContext,
   ExotelCalling
-> = async (parent, { exotelInput }, { consultsDb, doctorsDb, patientsDb }) => {
+> = async (parent, { exotelInput }, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
   const exotelCallerId: string | undefined = process.env.EXOTEL_CALLER_ID;
   const exotelUrl: string | undefined = process.env.EXOTEL_API_URL;
 
@@ -184,14 +184,7 @@ const initateConferenceTelephoneCall: Resolver<
     throw new AphError(AphErrorMessages.GET_PATIENTS_ERROR, undefined, {});
   }
 
-  const doctor = await doctorRepo.findById(appt.doctorId);
-
-  if (!doctor) {
-    throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
-  }
-
-  fromMobileNumber = doctor.mobileNumber;
-  toMobileNumber = patient.mobileNumber;
+  const doctor = await doctorRepo.findByMobileNumber(mobileNumber, true);
 
   if (!doctor) {
     throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
@@ -204,7 +197,7 @@ const initateConferenceTelephoneCall: Resolver<
   const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_NOTIFICATION_API_KEY}`;
   let message = ApiConstants.NOTIFICATION_MSG_FOR_DR_CALL.replace('{0}', patient.firstName);
   message = message.replace('{1}', doctor.fullName);
-  if(exotelCallerId){
+  if (exotelCallerId) {
     message = message.replace('{2}', exotelCallerId);
   }
   const queryParams = `&method=${ApiConstants.KALEYRA_OTP_SMS_METHOD}&message=${message}&to=${toMobileNumber}&sender=${ApiConstants.KALEYRA_OTP_SENDER}`;
@@ -212,7 +205,13 @@ const initateConferenceTelephoneCall: Resolver<
   await fetch(apiUrl)
     .then((res) => res.json())
     .catch((error) => {
-      log('initateConferenceTelephoneCallAPILogger', `SEND_SMS_ERROR`, 'smsResponse()->CATCH_BLOCK', '', JSON.stringify(error));
+      log(
+        'initateConferenceTelephoneCallAPILogger',
+        `SEND_SMS_ERROR`,
+        'smsResponse()->CATCH_BLOCK',
+        '',
+        JSON.stringify(error)
+      );
       throw new AphError(AphErrorMessages.MESSAGE_SEND_ERROR);
     });
 
@@ -228,8 +227,8 @@ const initateConferenceTelephoneCall: Resolver<
   let createObj = {
     callSid: exotelResponse['Call']['Sid'],
     accountSid: exotelResponse['Call']['AccountSid'],
-    doctorMobileNumber: exotelResponse['Call']['From'],
-    patientMobileNumber: exotelResponse['Call']['To'],
+    doctorMobileNumber: fromMobileNumber,
+    patientMobileNumber: toMobileNumber,
     callerId: exotelResponse['Call']['PhoneNumberSid'],
     status: exotelResponse['Call']['Status'],
     callStartTime: exotelResponse['Call']['StartTime'],
@@ -271,7 +270,7 @@ const updateCallStatusBySid: Resolver<
 > = async (parent, { callStatusInput }, { consultsDb }) => {
   const exotelRepo = consultsDb.getCustomRepository(ExotelDetailsRepository);
 
-    const inProgressCalls = await exotelRepo.getAllCallDetailsByStatus(callStatusInput.status);
+  const inProgressCalls = await exotelRepo.getAllCallDetailsByStatus(callStatusInput.status);
 
   const exotel_url = `https://${process.env.EXOTEL_API_KEY}:${process.env.EXOTEL_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}${process.env.EXOTEL_URI}`;
 

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, MenuItem, Popover } from '@material-ui/core';
+import { Theme, MenuItem, Popover, Typography } from '@material-ui/core';
 import { AphButton, AphTextField, AphCustomDropdown } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 
@@ -25,11 +25,12 @@ import {
   NO_SERVICEABLE_MESSAGE,
   getDiffInDays,
   TAT_API_TIMEOUT_IN_MILLI_SEC,
+  OUT_OF_STOCK_MESSAGE,
+  findAddrComponents,
 } from 'helpers/commonHelpers';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
-import { findAddrComponents } from 'helpers/commonHelpers';
 import { CartTypes } from 'components/MedicinesCartProvider';
 import _lowerCase from 'lodash/lowerCase';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -134,6 +135,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
         boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
+        padding: 10,
       },
     },
     deliveryTimeGroup: {
@@ -172,6 +174,7 @@ const useStyles = makeStyles((theme: Theme) => {
         bottom: 0,
         width: '100%',
         background: '#f7f8f5',
+        boxShadow: '0px -2px 5px rgba(128, 128, 128, 0.2)',
       },
     },
     priceGroup: {
@@ -183,6 +186,10 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '6px 10px',
       display: 'flex',
       alignItems: 'center',
+      justifyContent: 'space-between',
+      [theme.breakpoints.down('xs')]: {
+        padding: 0,
+      },
     },
     medicinePrice: {
       fontSize: 13,
@@ -190,13 +197,19 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 0.3,
       fontWeight: 'bold',
       textAlign: 'right',
-      marginLeft: 'auto',
+
+      [theme.breakpoints.down('xs')]: {
+        width: '50%',
+      },
     },
     leftGroup: {
       borderRight: 'solid 0.5px rgba(2,71,91,0.2)',
       fontSize: 13,
       fontWeight: 500,
       width: 98,
+      [theme.breakpoints.down('xs')]: {
+        width: '50%',
+      },
     },
     medicinePack: {
       color: '#02475b',
@@ -299,12 +312,27 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       padding: 16,
     },
+    webView: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    mobileView: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+      },
+    },
   });
 });
 
 type MedicineInformationProps = {
   data: MedicineProductDetails;
 };
+
+interface AddToCarProps {
+  setClickAddCart: (clickAddCart: boolean) => void;
+}
 
 export const MedicineInformation: React.FC<MedicineInformationProps> = (props) => {
   const { data } = props;
@@ -366,8 +394,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       .then(({ data }) => {
         try {
           if (data) {
-            if (data.products && data.products.length > 0) {
-              setSubstitutes(data.products);
+            if (data.products && data.products.length > 1) {
+              setSubstitutes(
+                data.products.filter((sub: MedicineProductDetails) => sub.url_key !== params.sku)
+              );
             }
           }
         } catch (error) {
@@ -483,7 +513,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 }
               } else {
                 setDeliveryTime('');
-                setErrorMessage(NO_SERVICEABLE_MESSAGE);
+                setErrorMessage(OUT_OF_STOCK_MESSAGE);
               }
             } else if (
               typeof res.data.errorMSG === 'string' ||
@@ -559,21 +589,41 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           <div className={classes.customScroll}>
             {substitutes && (
               <>
-                <div className={classes.sectionTitle}>Substitute Drugs</div>
-                <div
-                  className={classes.substitutes}
-                  onClick={() => {
-                    setIsSubDrugsPopoverOpen(true);
-                  }}
-                  ref={subDrugsRef}
-                >
+                <Typography
+                  component="h2"
+                  className={classes.sectionTitle}
+                >{`${data.name} alternatives`}</Typography>
+
+                <div className={classes.webView}>
+                  <div
+                    className={classes.substitutes}
+                    onClick={() => {
+                      setIsSubDrugsPopoverOpen(true);
+                    }}
+                    ref={subDrugsRef}
+                  >
+                    <span>
+                      Pick from {substitutes.length} available
+                      {substitutes.length === 1 ? ' substitute' : ' substitutes'}
+                    </span>
+                    <div className={classes.dropDownArrow}>
+                      <img
+                        src={require('images/ic_dropdown_green.svg')}
+                        alt="Dropdown"
+                        title="Dropdown"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className={classes.mobileView}>
                   <span>
                     Pick from {substitutes.length} available
                     {substitutes.length === 1 ? ' substitute' : ' substitutes'}
                   </span>
-                  <div className={classes.dropDownArrow}>
-                    <img src={require('images/ic_dropdown_green.svg')} alt="" />
-                  </div>
+                  <SubstituteDrugsList
+                    data={substitutes}
+                    setIsSubDrugsPopoverOpen={setIsSubDrugsPopoverOpen}
+                  />
                 </div>
               </>
             )}
@@ -809,7 +859,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       /**Gtm code End  */
                       applyCartOperations(cartItem);
                       setAddMutationLoading(false);
-                      setShowPopup(true);
                     }}
                   >
                     {' '}
@@ -913,7 +962,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
+              <img src={require('images/ic-mascot.png')} alt="Mascot Icon" title="Mascot Icon" />
             </div>
             <NotifyMeNotification
               medicineName={data.name}
@@ -957,7 +1006,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
+              <img src={require('images/ic-mascot.png')} alt="Mascot Icon" title="Mascot Icon" />
             </div>
             <AddToCartPopover
               setShowPopup={setShowPopup}

@@ -8,6 +8,7 @@ import {
   AppointmentPayments,
   AppointmentSessions,
   CaseSheet,
+  ConsultQueueItem,
   DoctorNextAvaialbleSlots,
   FeedbackDashboardSummary,
   JuniorAppointmentSessions,
@@ -91,7 +92,9 @@ import {
   MedicineOrderCancelReason,
   PharmacologistConsult,
   MedicineOrderAddress,
+  PatientEntitiySubscriber,
 } from 'profiles-service/entities';
+import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
 
 export const connect = async () => {
   return await createConnections([
@@ -105,6 +108,7 @@ export const connect = async () => {
         AppointmentPayments,
         AppointmentSessions,
         AuditHistory,
+        ConsultQueueItem,
         CaseSheet,
         DoctorNextAvaialbleSlots,
         FeedbackDashboardSummary,
@@ -125,6 +129,7 @@ export const connect = async () => {
       username: process.env.CONSULTS_DB_USER,
       password: process.env.CONSULTS_DB_PASSWORD,
       database: `consults_${process.env.DB_NODE_ENV}`,
+      subscribers: [AppointmentEntitySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
@@ -219,6 +224,7 @@ export const connect = async () => {
       username: process.env.PROFILES_DB_USER,
       password: process.env.PROFILES_DB_PASSWORD,
       database: `profiles_${process.env.DB_NODE_ENV}`,
+      subscribers: [PatientEntitiySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,

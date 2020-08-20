@@ -281,12 +281,12 @@ const useStyles = makeStyles((theme: Theme) => {
         '& img': {
           marginRight: 8,
           verticalAlign: 'middle',
-        }
+        },
       },
       '& p': {
         color: 'rgba(0, 0, 0, 0.4)',
         fontSize: 8,
-      }
+      },
     },
   };
 });
@@ -463,7 +463,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
       followUpAfterInDays[0] === '9'
         ? `on ${moment(followUpDate[0]).format('DD/MM/YYYY')}`
         : `after ${followUpAfterInDays[0]} days`
-      }
+    }
     `;
   };
 
@@ -475,11 +475,11 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         prescription: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
         index: number
       ) => (
-          <li key={`removed-${index}`}>
-            <s>{prescription.medicineName}</s>{' '}
-            <span className={classes.removed}>( This medication has been discontinued )</span>
-          </li>
-        )
+        <li key={`removed-${index}`}>
+          <s>{prescription.medicineName}</s>{' '}
+          <span className={classes.removed}>( This medication has been discontinued )</span>
+        </li>
+      )
     );
 
   const medicineHtml =
@@ -494,16 +494,16 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           : ' ';
         const duration = `${forHtml} ${
           prescription.medicineConsumptionDurationUnit &&
-            prescription.medicineConsumptionDurationUnit !==
+          prescription.medicineConsumptionDurationUnit !==
             MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
             ? term(prescription.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
             : prescription.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
-          } `;
+        } `;
         const whenString =
           prescription!.medicineToBeTaken!.length > 0
             ? toBeTaken(prescription!.medicineToBeTaken)
-              .join(', ')
-              .toLowerCase()
+                .join(', ')
+                .toLowerCase()
             : '';
         const unitHtmls =
           prescription && medUnitObject && medUnitObject[prescription!.medicineUnit!]
@@ -511,19 +511,19 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
             : prescription!.medicineUnit!.toLowerCase();
         const isInDuration =
           prescription &&
-            ((prescription!.medicineTimings &&
-              prescription!.medicineTimings!.length === 1 &&
-              prescription!.medicineTimings[0] === 'AS_NEEDED') ||
-              (prescription!.medicineCustomDosage! && prescription!.medicineCustomDosage! !== ''))
+          ((prescription!.medicineTimings &&
+            prescription!.medicineTimings!.length === 1 &&
+            prescription!.medicineTimings[0] === 'AS_NEEDED') ||
+            (prescription!.medicineCustomDosage! && prescription!.medicineCustomDosage! !== ''))
             ? ''
             : 'in the ';
         let timesString =
           prescription!.medicineTimings!.length > 0
             ? isInDuration +
-            prescription!
-              .medicineTimings!.join(' , ')
-              .toLowerCase()
-              .replace('_', ' ')
+              prescription!
+                .medicineTimings!.join(' , ')
+                .toLowerCase()
+                .replace('_', ' ')
             : '';
         if (timesString && timesString !== '') {
           timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
@@ -539,73 +539,101 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         if (prescription!.medicineCustomDosage && prescription!.medicineCustomDosage! !== '') {
           const dosageTimingArray = prescription!.medicineCustomDosage!.split('-');
           const customTimingArray = [];
-          if (dosageTimingArray && dosageTimingArray[0] && dosageTimingArray[0] !== '0')
+          if (dosageTimingArray && dosageTimingArray[0] && dosageTimingArray[0] !== '0') {
             customTimingArray.push(dosageTimingArray[0] + unitHtmls);
-          if (dosageTimingArray && dosageTimingArray[1] && dosageTimingArray[1] !== '0')
+          }
+          if (dosageTimingArray && dosageTimingArray[1] && dosageTimingArray[1] !== '0') {
             customTimingArray.push(dosageTimingArray[1] + unitHtmls);
-          if (dosageTimingArray && dosageTimingArray[2] && dosageTimingArray[2] !== '0')
+          }
+          if (dosageTimingArray && dosageTimingArray[2] && dosageTimingArray[2] !== '0') {
             customTimingArray.push(dosageTimingArray[2] + unitHtmls);
-          if (dosageTimingArray && dosageTimingArray[3] && dosageTimingArray[3] !== '0')
+          }
+          if (dosageTimingArray && dosageTimingArray[3] && dosageTimingArray[3] !== '0') {
             customTimingArray.push(dosageTimingArray[3] + unitHtmls);
+          }
           dosageHtml = customTimingArray.join(' - ');
         } else {
           dosageHtml = prescription!.medicineDosage! + ' ' + unitHtmls;
         }
+        const genericName = prescription.includeGenericNameInPrescription! &&
+          prescription.genericName!.trim().length > 0 && (
+            <div>{`Contains ${prescription.genericName}`}</div>
+          );
         return (
-          <li>
-            {prescription.medicineName}
-            <br />
-            <span>
-              {`${prescription!.medicineFormTypes! === 'OTHERS' ? 'Take' : 'Apply'} ${
-                dosageHtml ? dosageHtml.toLowerCase() : ''
-                }${
-                timesString.length > 0 &&
-                  prescription!.medicineCustomDosage! &&
-                  prescription!.medicineCustomDosage! !== ''
-                  ? ' (' + timesString + ') '
-                  : ' '
-                }${
-                prescription!.medicineCustomDosage! && prescription!.medicineCustomDosage! !== ''
-                  ? ''
-                  : prescription!.medicineFrequency
-                    ? prescription!.medicineFrequency === MEDICINE_FREQUENCY.STAT
-                      ? 'STAT (Immediately)'
+          <div>
+            {prescription.medicineCustomDetails ? (
+              <li>
+                {prescription.medicineName}
+                <br />
+                <span>
+                  {genericName}
+                  {prescription.medicineCustomDetails}
+                </span>
+              </li>
+            ) : (
+              <li>
+                {prescription.medicineName}
+                <br />
+                <span>
+                  {genericName}
+
+                  {`${prescription!.medicineFormTypes! === 'OTHERS' ? 'Take' : 'Apply'} ${
+                    dosageHtml ? dosageHtml.toLowerCase() : ''
+                  }${
+                    timesString.length > 0 &&
+                    prescription!.medicineCustomDosage! &&
+                    prescription!.medicineCustomDosage! !== ''
+                      ? ' (' + timesString + ') '
+                      : ' '
+                  }${
+                    prescription!.medicineCustomDosage! &&
+                    prescription!.medicineCustomDosage! !== ''
+                      ? ''
                       : prescription!.medicineFrequency
-                        .split('_')
-                        .join(' ')
-                        .toLowerCase()
-                    : dosageFrequency[0].id
-                      .split('_')
-                      .join(' ')
-                      .toLowerCase()
-                } ${duration} ${whenString.length > 0 ? whenString : ''} ${
-                timesString.length > 0 &&
-                  prescription!.medicineCustomDosage! &&
-                  prescription!.medicineCustomDosage! !== ''
-                  ? ''
-                  : timesString
-                }`}
-            </span>
-            {prescription.routeOfAdministration &&
-              !isEmpty(trim(prescription.routeOfAdministration)) && (
-                <>
-                  <br />
-                  <span>{`${
-                    prescription.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'
-                    }: ${prescription.routeOfAdministration
-                      .split('_')
-                      .join(' ')
-                      .toLowerCase()}`}</span>
-                </>
-              )}
-            {prescription.medicineInstructions &&
-              !isEmpty(trim(prescription.medicineInstructions)) && (
-                <>
-                  <br />
-                  <span>{prescription.medicineInstructions}</span>
-                </>
-              )}
-          </li>
+                      ? prescription!.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                        ? 'STAT (Immediately)'
+                        : prescription!.medicineFrequency
+                            .split('_')
+                            .join(' ')
+                            .toLowerCase()
+                      : dosageFrequency[0].id
+                          .split('_')
+                          .join(' ')
+                          .toLowerCase()
+                  } ${duration} ${whenString.length > 0 ? whenString : ''} ${
+                    timesString.length > 0 &&
+                    prescription!.medicineCustomDosage! &&
+                    prescription!.medicineCustomDosage! !== ''
+                      ? ''
+                      : timesString
+                  }`}
+                </span>
+                {prescription.routeOfAdministration &&
+                  !isEmpty(trim(prescription.routeOfAdministration)) && (
+                    <>
+                      <br />
+                      <span>
+                        {`${
+                          prescription.medicineFormTypes === 'OTHERS'
+                            ? 'To be taken'
+                            : 'To be Applied'
+                        }: ${prescription.routeOfAdministration
+                          .split('_')
+                          .join(' ')
+                          .toLowerCase()}`}
+                      </span>
+                    </>
+                  )}
+                {prescription.medicineInstructions &&
+                  !isEmpty(trim(prescription.medicineInstructions)) && (
+                    <>
+                      <br />
+                      <span>{prescription.medicineInstructions}</span>
+                    </>
+                  )}
+              </li>
+            )}
+          </div>
         );
       }
     );
@@ -652,11 +680,13 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 </p>
               )}
 
-              <p className={classes.specialty}>{`${
-                createdDoctorProfile.specialty.specialistSingularTerm
-                  ? createdDoctorProfile.specialty.specialistSingularTerm
-                  : ''
-                } | Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</p>
+              <p className={classes.specialty}>
+                {`${
+                  createdDoctorProfile.specialty.specialistSingularTerm
+                    ? createdDoctorProfile.specialty.specialistSingularTerm
+                    : ''
+                } | Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}
+              </p>
               {doctorFacilityDetails ? (
                 <>
                   <p className={classes.address}>
@@ -664,15 +694,15 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                       doctorFacilityDetails.streetLine2
                         ? `| ${doctorFacilityDetails.streetLine2}`
                         : ''
-                      } ${
+                    } ${
                       doctorFacilityDetails.streetLine3
                         ? `| ${doctorFacilityDetails.streetLine3}`
                         : ''
-                      } ${doctorFacilityDetails.city ? ` | ${doctorFacilityDetails.city}` : ''}  ${
+                    } ${doctorFacilityDetails.city ? ` | ${doctorFacilityDetails.city}` : ''}  ${
                       doctorFacilityDetails.zipcode ? ` - ${doctorFacilityDetails.zipcode}` : ''
-                      }  ${doctorFacilityDetails.state ? ` | ${doctorFacilityDetails.state}` : ''} ${
+                    }  ${doctorFacilityDetails.state ? ` | ${doctorFacilityDetails.state}` : ''} ${
                       doctorFacilityDetails.country ? `,${doctorFacilityDetails.country}` : ''
-                      }`}
+                    }`}
                   </p>
                 </>
               ) : null}
@@ -687,7 +717,8 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 <p className={classes.specialty}>E-mail</p>
                 <span>
                   <img src={require('images/ic_email.svg')} />
-                  {helpdeskMail}</span>
+                  {helpdeskMail}
+                </span>
               </div>
             </div>
           ) : null}
@@ -704,7 +735,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                       <div className={classes.patientName}>
                         {`${patientDetails.firstName}  ${patientDetails.lastName} | ${
                           patientDetails.gender
-                          } | ${getAge(patientDetails.dateOfBirth)}yrs`}
+                        } | ${getAge(patientDetails.dateOfBirth)}yrs`}
                       </div>
                     </div>
                   </div>
@@ -713,9 +744,11 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                   <div className={classes.infoRow}>
                     <div className={classes.label}>Contact</div>
                     <div className={classes.labelContent}>
-                      <div className={classes.labelBlue}>{`${
-                        patientDetails.emailAddress ? `${patientDetails.emailAddress} | ` : ''
-                        } ${patientDetails.mobileNumber ? patientDetails.mobileNumber : ''}`}</div>
+                      <div className={classes.labelBlue}>
+                        {`${
+                          patientDetails.emailAddress ? `${patientDetails.emailAddress} | ` : ''
+                        } ${patientDetails.mobileNumber ? patientDetails.mobileNumber : ''}`}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -744,11 +777,11 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                       <div className={classes.labelBlue}>
                         {updatedDate && updatedDate !== ''
                           ? `${moment(updatedDate).format('DD/MM/YYYY')} at ${moment(
-                            updatedDate
-                          ).format('h:mm a')}`
+                              updatedDate
+                            ).format('h:mm a')}`
                           : `${moment(new Date()).format('DD/MM/YYYY')} at ${moment(
-                            new Date()
-                          ).format('h:mm a')}`}
+                              new Date()
+                            ).format('h:mm a')}`}
                       </div>
                     </div>
                   </div>
@@ -773,31 +806,31 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
             </div>
           </div>
           {!loader &&
-            ((symptoms && symptoms.length > 0) || weight || height || bp || temperature) ? (
-              <div className={classes.prescriptionSection}>
-                <div className={classes.sectionHeader}>Chief Complaints</div>
-                <div className={classes.chiefComplaints}>
-                  {symptoms.map((symptom) => (
-                    <div className={classes.complaintsInfoRow}>
-                      <div className={classes.complaintsLabel}>{symptom.symptom}</div>
-                      <div className={classes.labelContent}>{generateSymptomsHtml(symptom)}</div>
+          ((symptoms && symptoms.length > 0) || weight || height || bp || temperature) ? (
+            <div className={classes.prescriptionSection}>
+              <div className={classes.sectionHeader}>Chief Complaints</div>
+              <div className={classes.chiefComplaints}>
+                {symptoms.map((symptom) => (
+                  <div className={classes.complaintsInfoRow}>
+                    <div className={classes.complaintsLabel}>{symptom.symptom}</div>
+                    <div className={classes.labelContent}>{generateSymptomsHtml(symptom)}</div>
+                  </div>
+                ))}
+                {vitalsArr.length > 0 ? (
+                  <div className={classes.complaintsInfoRow}>
+                    <div className={`${classes.complaintsLabel} ${classes.vitalLabel}`}>
+                      VITALS <span className={classes.subInfo}>(as declared by patient)</span>
                     </div>
-                  ))}
-                  {vitalsArr.length > 0 ? (
-                    <div className={classes.complaintsInfoRow}>
-                      <div className={`${classes.complaintsLabel} ${classes.vitalLabel}`}>
-                        VITALS <span className={classes.subInfo}>(as declared by patient)</span>
-                      </div>
-                      <div className={classes.labelContent}>
-                        <div className={classes.labelBlue} style={{ fontWeight: 400 }}>
-                          {vitalsArr.join(' | ')}
-                        </div>
+                    <div className={classes.labelContent}>
+                      <div className={classes.labelBlue} style={{ fontWeight: 400 }}>
+                        {vitalsArr.join(' | ')}
                       </div>
                     </div>
-                  ) : null}
-                </div>
+                  </div>
+                ) : null}
               </div>
-            ) : null}
+            </div>
+          ) : null}
           {!loader && diagnosis && diagnosis.length > 0 ? (
             <div className={classes.prescriptionSection}>
               <div className={classes.sectionHeader}>Diagnosis</div>
@@ -811,24 +844,26 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
             </div>
           ) : null}
           {!loader &&
-            ((removedMedicinePrescription && removedMedicinePrescription.length > 0) ||
-              (medicinePrescription && medicinePrescription.length > 0)) ? (
-              <div className={classes.prescriptionSection}>
-                <div className={classes.sectionHeader}>
-                  <img src={require('images/ic-medicines.svg')} /> Medication Prescribed
+          ((removedMedicinePrescription && removedMedicinePrescription.length > 0) ||
+            (medicinePrescription && medicinePrescription.length > 0)) ? (
+            <div className={classes.prescriptionSection}>
+              <div className={classes.sectionHeader}>
+                <img src={require('images/ic-medicines.svg')} />
+                Medication Prescribed
               </div>
-                <div className={classes.medicationList}>
-                  <ol>
-                    {medicineHtml}
-                    {removedMedicineHtml}
-                  </ol>
-                </div>
+              <div className={classes.medicationList}>
+                <ol>
+                  {medicineHtml}
+                  {removedMedicineHtml}
+                </ol>
               </div>
-            ) : null}
+            </div>
+          ) : null}
           {!loader && diagnosticPrescription && diagnosticPrescription.length > 0 ? (
             <div className={classes.prescriptionSection}>
               <div className={classes.sectionHeader}>
-                <img src={require('images/ic-microscope-solid.svg')} /> Diagnostic Tests
+                <img src={require('images/ic-microscope-solid.svg')} />
+                Diagnostic Tests
               </div>
               <div className={classes.medicationList}>
                 <ol>
@@ -837,7 +872,12 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                       (prescription.itemname || prescription.itemName) && (
                         <li>
                           {prescription.itemname || prescription.itemName}
-                          <span style={{ whiteSpace: 'pre-line', display: 'block' }}>
+                          <span
+                            style={{
+                              whiteSpace: 'pre-line',
+                              display: 'block',
+                            }}
+                          >
                             {prescription.testInstruction}
                           </span>
                         </li>
@@ -850,49 +890,50 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
           {isPageContentFull() ? null : (
             <>
               {!loader &&
-                ((otherInstructions && otherInstructions.length > 0) ||
-                  (followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0) ||
-                  !isEmpty(referralSpecialtyName) ||
-                  !isEmpty(referralDescription)) ? (
-                  <div className={classes.prescriptionSection}>
-                    <div className={classes.sectionHeader}>
-                      <img src={require('images/ic-doctors-2.svg')} /> ADVICE/INSTRUCTIONS
+              ((otherInstructions && otherInstructions.length > 0) ||
+                (followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0) ||
+                !isEmpty(referralSpecialtyName) ||
+                !isEmpty(referralDescription)) ? (
+                <div className={classes.prescriptionSection}>
+                  <div className={classes.sectionHeader}>
+                    <img src={require('images/ic-doctors-2.svg')} />
+                    ADVICE/INSTRUCTIONS
                   </div>
-                    <div className={classes.adviceInstruction}>
-                      {otherInstructions && otherInstructions.length > 0 && (
-                        <div className={classes.advice}>
-                          <span>Doctor’s Advice</span>
-                          <div>
-                            {otherInstructions.map((instruction) => (
-                              <div className={classes.instruction}>{instruction.instruction}</div>
-                            ))}
-                          </div>
+                  <div className={classes.adviceInstruction}>
+                    {otherInstructions && otherInstructions.length > 0 && (
+                      <div className={classes.advice}>
+                        <span>Doctor’s Advice</span>
+                        <div>
+                          {otherInstructions.map((instruction) => (
+                            <div className={classes.instruction}>{instruction.instruction}</div>
+                          ))}
                         </div>
-                      )}
-                      {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
-                        <div className={classes.advice}>
-                          <span>Follow Up</span>
-                          <div className={classes.followContent}>{getFollowUpData()}</div>
+                      </div>
+                    )}
+                    {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
+                      <div className={classes.advice}>
+                        <span>Follow Up</span>
+                        <div className={classes.followContent}>{getFollowUpData()}</div>
+                      </div>
+                    ) : null}
+                    {(!isEmpty(referralSpecialtyName) || !isEmpty(referralDescription)) && (
+                      <div className={classes.advice}>
+                        <span>Referral</span>
+                        <div>
+                          {!isEmpty(referralSpecialtyName) && (
+                            <div className={classes.followContent} style={{ marginBottom: 5 }}>
+                              {`Consult a ${referralSpecialtyName}`}
+                            </div>
+                          )}
+                          {!isEmpty(referralDescription) && (
+                            <div className={classes.instruction}>{referralDescription}</div>
+                          )}
                         </div>
-                      ) : null}
-                      {(!isEmpty(referralSpecialtyName) || !isEmpty(referralDescription)) && (
-                        <div className={classes.advice}>
-                          <span>Referral</span>
-                          <div>
-                            {!isEmpty(referralSpecialtyName) && (
-                              <div className={classes.followContent} style={{ marginBottom: 5 }}>
-                                {referralSpecialtyName}
-                              </div>
-                            )}
-                            {!isEmpty(referralDescription) && (
-                              <div className={classes.instruction}>{referralDescription}</div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
-                ) : null}
+                </div>
+              ) : null}
             </>
           )}
           {isPageContentFull() ? null : (
@@ -901,14 +942,14 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                 <div className={classes.prescriptionHeader}>
                   {((sdConsultationDate && sdConsultationDate !== '') ||
                     (appointmentInfo && appointmentInfo!.appointmentDateTime)) && (
-                      <h6>
-                        Prescribed on{' '}
-                        {updatedDate && updatedDate !== ''
-                          ? moment(updatedDate).format('DD/MM/YYYY')
-                          : moment(new Date()).format('DD/MM/YYYY')}{' '}
+                    <h6>
+                      Prescribed on{' '}
+                      {updatedDate && updatedDate !== ''
+                        ? moment(updatedDate).format('DD/MM/YYYY')
+                        : moment(new Date()).format('DD/MM/YYYY')}{' '}
                       by
-                      </h6>
-                    )}
+                    </h6>
+                  )}
                   {createdDoctorProfile!.signature && (
                     <div className={classes.followUpContent}>
                       <img src={createdDoctorProfile.signature} />
@@ -920,34 +961,34 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                     createdDoctorProfile!.registrationNumber ||
                     (createdDoctorProfile!.specialty &&
                       createdDoctorProfile!.specialty!.specialistSingularTerm)) && (
-                      <div className={classes.signInformation}>
-                        {(createdDoctorProfile.salutation ||
-                          createdDoctorProfile.firstName ||
-                          createdDoctorProfile.lastName) && (
-                            <h3 className={classes.followUpContent}>
-                              {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
-                            </h3>
-                          )}
+                    <div className={classes.signInformation}>
+                      {(createdDoctorProfile.salutation ||
+                        createdDoctorProfile.firstName ||
+                        createdDoctorProfile.lastName) && (
+                        <h3 className={classes.followUpContent}>
+                          {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
+                        </h3>
+                      )}
 
-                        {/* {currentDoctor.qualification && (
+                      {/* {currentDoctor.qualification && (
                       <p className={`${classes.specialty} ${classes.qualification}`}>
                         {currentDoctor.qualification}
                       </p>
                     )} */}
-                        {((createdDoctorProfile.specialty &&
-                          createdDoctorProfile.specialty.specialistSingularTerm) ||
-                          createdDoctorProfile.registrationNumber) && (
-                            <p className={classes.specialty}>
-                              {createdDoctorProfile.specialty.specialistSingularTerm
-                                ? `${createdDoctorProfile.specialty.specialistSingularTerm} | `
-                                : ''}
-                              {createdDoctorProfile.registrationNumber
-                                ? `Reg. No. ${createdDoctorProfile.registrationNumber}`
-                                : ''}
-                            </p>
-                          )}
-                      </div>
-                    )}
+                      {((createdDoctorProfile.specialty &&
+                        createdDoctorProfile.specialty.specialistSingularTerm) ||
+                        createdDoctorProfile.registrationNumber) && (
+                        <p className={classes.specialty}>
+                          {createdDoctorProfile.specialty.specialistSingularTerm
+                            ? `${createdDoctorProfile.specialty.specialistSingularTerm} | `
+                            : ''}
+                          {createdDoctorProfile.registrationNumber
+                            ? `Reg. No. ${createdDoctorProfile.registrationNumber}`
+                            : ''}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </>
@@ -955,10 +996,10 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         </div>
         <div className={classes.gerenalInfo}>
           {isPageContentFull() &&
-            ((followUp.length > 0 && followUp[0]) ||
-              (otherInstructions && otherInstructions.length > 0)) ? (
-              <div className={classes.pageNumbers}>Page 1 of 2</div>
-            ) : null}
+          ((followUp.length > 0 && followUp[0]) ||
+            (otherInstructions && otherInstructions.length > 0)) ? (
+            <div className={classes.pageNumbers}>Page 1 of 2</div>
+          ) : null}
           <div className={classes.disclaimer}>
             <span>Disclaimer:</span>
             <span>
@@ -970,10 +1011,10 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         </div>
       </div>
       {isPageContentFull() &&
-        ((followUp.length > 0 && followUp[0]) ||
-          (otherInstructions && otherInstructions.length > 0)) ? (
-          <CaseSheetLastView getFollowUpData={getFollowUpData} />
-        ) : null}
+      ((followUp.length > 0 && followUp[0]) ||
+        (otherInstructions && otherInstructions.length > 0)) ? (
+        <CaseSheetLastView getFollowUpData={getFollowUpData} />
+      ) : null}
     </div>
   );
 };

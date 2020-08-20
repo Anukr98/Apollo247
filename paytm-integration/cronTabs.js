@@ -210,7 +210,7 @@ exports.updateSdSummary = (req, res) => {
     query: docCountQuery,
   };
   axios
-    .post(process.env.API_URL, seniorDataRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, seniorDataRequestJSON)
     .then((response) => {
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
@@ -276,7 +276,7 @@ exports.updateJdSummary = (req, res) => {
     query: docCountQuery,
   };
   axios
-    .post(process.env.API_URL, juniorDataRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, juniorDataRequestJSON)
     .then((response) => {
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
@@ -343,7 +343,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
     query: docCountQuery,
   };
   axios
-    .post(process.env.API_URL, seniorDataRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, seniorDataRequestJSON)
     .then((response) => {
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
@@ -507,6 +507,24 @@ exports.refreshDoctorDeepLinks = (req, res) => {
 exports.generateDeeplinkForNewDoctors = (req, res) => {
   const requestJSON = {
     query: Constants.DOCTORS_DEEPLINK_GENERATE,
+  };
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
+
+exports.sendCallStartNotification = (req, res) => {
+  const requestJSON = {
+    query: Constants.CALL_START_NOTIFICATION,
   };
   axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios

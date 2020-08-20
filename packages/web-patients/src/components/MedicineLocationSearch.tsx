@@ -15,18 +15,11 @@ const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     userLocation: {
       borderLeft: '0.5px solid rgba(2,71,91,0.3)',
-      paddingLeft: 20,
-      marginLeft: 40,
-      paddingTop: 14,
-      paddingBottom: 14,
-      marginTop: 10,
-      marginBottom: 10,
+      padding: '10px 20px',
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
-        marginLeft: 'auto',
         borderLeft: 'none',
-        paddingTop: 15,
-        paddingBottom: 15,
+        padding: '0px 10px 0px 20px',
       },
     },
     locationWrap: {
@@ -65,6 +58,7 @@ const useStyles = makeStyles((theme: Theme) => {
     userName: {
       fontSize: 12,
       color: '#01475b',
+      lineHeight: 'normal',
     },
     locationPopRoot: {
       overflow: 'initial',
@@ -87,8 +81,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     noService: {
-      position: 'absolute',
-      bottom: -2,
+      // position: 'absolute',
+      // bottom: -2,
       fontSize: 11,
       color: '#890000',
       minWidth: 140,
@@ -395,7 +389,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
             } ${pharmaAddressDetails ? pharmaAddressDetails.pincode : ''}`}
           </span>
           <span>
-            <img src={require('images/ic_dropdown_green.svg')} alt="" />
+            <img src={require('images/ic_dropdown_green.svg')} alt="Dropdown" title="Dropdown" />
           </span>
         </div>
         {headerPincodeError === '1' && (

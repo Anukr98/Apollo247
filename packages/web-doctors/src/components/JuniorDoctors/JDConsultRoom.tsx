@@ -6,6 +6,7 @@ import { Header } from 'components/Header';
 import { JDCallPopover } from 'components/JuniorDoctors/JDCallPopover';
 import Typography from '@material-ui/core/Typography';
 import { useApolloClient } from 'react-apollo-hooks';
+import Pubnub from 'pubnub';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
@@ -407,6 +408,7 @@ interface assignedDoctorType {
 export const JDConsultRoom: React.FC = () => {
   const classes = useStyles({});
   const { patientId, appointmentId, queueId, isActive } = useParams<JDConsultRoomParams>();
+  const [isCall, setIscall] = React.useState(true);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);
   const [isNewMessage, setIsNewMessage] = React.useState(false);
@@ -420,6 +422,22 @@ export const JDConsultRoom: React.FC = () => {
     assignedDoctorSpecialty: '',
     assignedDoctorPhoto: '',
   });
+
+  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
+  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
+
+  const config: Pubnub.PubnubConfig = {
+    subscribeKey: subscribekey,
+    publishKey: publishkey,
+    ssl: true,
+    restore: true,
+    keepAlive: true,
+    //presenceTimeout: 20,
+    heartbeatInterval: 20,
+    uuid: REQUEST_ROLES.JUNIOR,
+    origin: 'apollo.pubnubapi.com',
+  };
+  const pubnub = new Pubnub(config);
 
   const { currentPatient: currentDoctor, isSignedIn, sessionClient } = useAuth();
   const doctorId = currentDoctor!.id;
@@ -512,6 +530,7 @@ export const JDConsultRoom: React.FC = () => {
   const [sessionError, setSessionError] = React.useState<boolean>(null);
   const [publisherError, setPublisherError] = React.useState<boolean>(null);
   const [subscriberError, setSubscriberError] = React.useState<boolean>(null);
+  const [rejectedByPatientBeforeAnswer, setRejectedByPatientBeforeAnswer] = React.useState(null);
 
   /* case sheet data*/
   let customNotes = '',
@@ -899,12 +918,13 @@ export const JDConsultRoom: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet &&
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName
-          )
+          ) {
             setReferralSpecialtyName(
               storageItem && storageItem.referralSpecialtyName
                 ? storageItem.referralSpecialtyName
                 : _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName
             );
+          }
 
           if (
             _data &&
@@ -912,12 +932,13 @@ export const JDConsultRoom: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet &&
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription
-          )
+          ) {
             setReferralDescription(
               storageItem && storageItem.referralDescription
                 ? storageItem.referralDescription
                 : _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription
             );
+          }
 
           // patient medical and family history
           if (
@@ -1060,6 +1081,37 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
+    pubnub
+      .hereNow({
+        channels: [appointmentId],
+        includeUUIDs: true,
+      })
+      .then((response: any) => {
+        const occupants = response.channels[appointmentId].occupants;
+
+        let doctorCount = 0;
+        let paientsCount = 0;
+
+        occupants.forEach((item: any) => {
+          if (item.uuid.indexOf('PATIENT') > -1) {
+            paientsCount = 1;
+          } else if (item.uuid.indexOf('JUNIOR') > -1) {
+            doctorCount = 1;
+          }
+        });
+
+        sendCallNotificationFnWithCheck(callType, isCall, doctorCount + paientsCount);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const sendCallNotificationFnWithCheck = (
+    callType: APPT_CALL_TYPE,
+    isCall: boolean,
+    numberOfParticipants: number
+  ) => {
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
         query: SEND_CALL_NOTIFICATION,
@@ -1070,6 +1122,7 @@ export const JDConsultRoom: React.FC = () => {
           doctorType: DOCTOR_CALL_TYPE.JUNIOR,
           deviceType: DEVICETYPE.DESKTOP,
           callSource: BOOKINGSOURCE.WEB,
+          numberOfParticipants,
         },
       })
       .then((_data) => {
@@ -1264,8 +1317,8 @@ export const JDConsultRoom: React.FC = () => {
     mutationRemoveConsult()
       .then(() => {
         removeLocalStorageItem(appointmentId);
-        if (document.getElementById('homeId')) {
-          document.getElementById('homeId')!.click();
+        if (document.getElementById('activeConsult')) {
+          document.getElementById('activeConsult')!.click();
         }
       })
       .catch((e: ApolloError) => {
@@ -1322,9 +1375,9 @@ export const JDConsultRoom: React.FC = () => {
           setError('');
           setSaving(false);
         } else {
-          if (document.getElementById('homeId')) {
+          if (document.getElementById('activeConsult')) {
             alert('Appointment already fast-tracked by Senior Doctor');
-            document.getElementById('homeId')!.click();
+            document.getElementById('activeConsult')!.click();
           }
         }
       })
@@ -1532,7 +1585,7 @@ export const JDConsultRoom: React.FC = () => {
                 <div className={classes.pageHeader}>
                   <div className={classes.backArrowSection}>
                     <div className={classes.backArrow}>
-                      <a href={clientRoutes.juniorDoctor()}>
+                      <a href={clientRoutes.juniorDoctorActive()}>
                         <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                         <img
                           className={classes.whiteArrow}
@@ -1557,18 +1610,22 @@ export const JDConsultRoom: React.FC = () => {
                     </div>
                     <div className={classes.patientInfo}>
                       <div className={classes.patientName}>
-                        {patientFirstName} {patientLastName}
+                        {patientFirstName}
+                        {patientLastName}
                         <span>({userCardStrip})</span>
                       </div>
                       <div className={classes.patientTextInfo}>
-                        <label>UHID:</label> {patientUhid} | <label>Phone No.:</label>
+                        <label>UHID:</label>
+                        {patientUhid} | <label>Phone No.:</label>
                         {patientMobileNumber}
                       </div>
                       <div className={classes.patientTextInfo}>
-                        <label>Appt ID:</label> {patientAppointmentId}
+                        <label>Appt ID:</label>
+                        {patientAppointmentId}
                       </div>
                       <div className={classes.patientTextInfo}>
-                        <label>Appt Date:</label> {appointmentDateIST}
+                        <label>Appt Date:</label>
+                        {appointmentDateIST}
                       </div>
                     </div>
                   </div>
@@ -1588,11 +1645,11 @@ export const JDConsultRoom: React.FC = () => {
                         </div>
                         <div className={classes.doctorInfo}>
                           <div className={classes.assign}>Assigned to:</div>
-                          <div className={classes.doctorName}>{`${
-                            assignedDoctor.assignedDoctorSalutation
-                          }${'.'} ${assignedDoctor.assignedDoctorFirstName} ${
-                            assignedDoctor.assignedDoctorLastName
-                          }`}</div>
+                          <div className={classes.doctorName}>
+                            {`${assignedDoctor.assignedDoctorSalutation}${'.'} ${
+                              assignedDoctor.assignedDoctorFirstName
+                            } ${assignedDoctor.assignedDoctorLastName}`}
+                          </div>
                           <div className={classes.doctorType}>
                             {assignedDoctor.assignedDoctorSpecialty}
                           </div>
@@ -1639,6 +1696,10 @@ export const JDConsultRoom: React.FC = () => {
                     setSessionError={setSessionError}
                     setPublisherError={setPublisherError}
                     setSubscriberError={setSubscriberError}
+                    isCall={isCall}
+                    setIscall={setIscall}
+                    rejectedByPatientBeforeAnswer={rejectedByPatientBeforeAnswer}
+                    setRejectedByPatientBeforeAnswer={setRejectedByPatientBeforeAnswer}
                   />
                 )}
                 <div className={classes.contentGroup}>
@@ -1671,6 +1732,8 @@ export const JDConsultRoom: React.FC = () => {
                           setSessionError={setSessionError}
                           setPublisherError={setPublisherError}
                           setSubscriberError={setSubscriberError}
+                          isCall={isCall}
+                          setIscall={setIscall}
                         />
                       </div>
                     </div>
@@ -1697,8 +1760,8 @@ export const JDConsultRoom: React.FC = () => {
             color="primary"
             onClick={() => {
               setIsDialogOpen(false);
-              if (document.getElementById('homeId')) {
-                document.getElementById('homeId')!.click();
+              if (document.getElementById('activeConsult')) {
+                document.getElementById('activeConsult')!.click();
               }
             }}
             autoFocus
@@ -1742,6 +1805,21 @@ export const JDConsultRoom: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/** Patient rejected call before answer */}
+      <Alert
+        error={
+          rejectedByPatientBeforeAnswer
+            ? {
+                message: rejectedByPatientBeforeAnswer,
+              }
+            : null
+        }
+        onClose={() => {
+          setRejectedByPatientBeforeAnswer(null);
+        }}
+      />
+
       {/* Ot Errors Start */}
       <Alert
         error={sessionError}

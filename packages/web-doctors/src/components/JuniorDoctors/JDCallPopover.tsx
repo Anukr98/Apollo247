@@ -771,6 +771,10 @@ interface CallPopoverProps {
   setSessionError: (error: any) => void;
   setPublisherError: (error: any) => void;
   setSubscriberError: (error: any) => void;
+  setIscall: (value: boolean) => void;
+  isCall: boolean;
+  setRejectedByPatientBeforeAnswer: (value: string) => void;
+  rejectedByPatientBeforeAnswer: string | null;
 }
 
 let intervalId: any;
@@ -825,8 +829,10 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
+  const patientRejectedCall = '^^#PATIENT_REJECTED_CALL';
 
   const [showToastMessage, setShowToastMessage] = useState<boolean>(false);
+
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [remainingConsultStartTime, setRemainingConsultStartTime] = React.useState<number>(-1);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
@@ -1188,6 +1194,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     subscribeKey: subscribekey,
     publishKey: publishkey,
     ssl: true,
+    origin: 'apollo.pubnubapi.com',
   };
   const { setCaseSheetEdit, autoCloseCaseSheet } = useContext(CaseSheetContextJrd);
 
@@ -1291,6 +1298,17 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         if (message.message && message.message.message === acceptcallMsg) {
           setPlayRingtone(false);
           setIsCallAccepted(true);
+        }
+
+        /** Call rejected by patient before answer */
+        if (message && message.message === patientRejectedCall) {
+          setPlayRingtone(false);
+          props.setRejectedByPatientBeforeAnswer('Call rejected by patient');
+          setTimeout(() => {
+            toggelChatVideo();
+            stopAudioVideoCallpatient();
+            props.setIscall(false);
+          }, 500);
         }
       },
     });
@@ -1440,12 +1458,13 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       )
     );
     const diffInHours = diff.asHours();
-    if (diffInHours > 0 && diffInHours < 12)
+    if (diffInHours > 0 && diffInHours < 12) {
       if (diff.hours() <= 0) {
         return `| Time to consult ${
           diff.minutes().toString().length < 2 ? '0' + diff.minutes() : diff.minutes()
         } : ${diff.seconds().toString().length < 2 ? '0' + diff.seconds() : diff.seconds()}`;
       }
+    }
     return '';
   };
 
@@ -1506,7 +1525,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               </div>
             ) : remainingConsultStartTime <= 10 && remainingConsultStartTime > -1 ? (
               <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
-                {remainingConsultStartTime} minute(s) left for Senior Doctor to start the consult.
+                {remainingConsultStartTime}
+                minute(s) left for Senior Doctor to start the consult.
               </div>
             ) : (
               !props.hasCameraMicPermission && (
@@ -1700,6 +1720,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 setDisableOnCancel(true);
                 autoSend(audioCallMsg);
                 setIsVideoCall(false);
+                props.setIscall(true);
               }}
             >
               <img src={require('images/call_popup.svg')} alt="" />
@@ -1716,6 +1737,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 setDisableOnCancel(true);
                 autoSend(videoCallMsg);
                 setIsVideoCall(true);
+                props.setIscall(true);
               }}
             >
               <img src={require('images/video_popup.svg')} alt="" />
@@ -2019,8 +2041,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                         storeInHistory: true,
                       },
                       (status: any, response: any) => {
-                        if (document.getElementById('homeId')) {
-                          document.getElementById('homeId')!.click();
+                        if (document.getElementById('activeConsult')) {
+                          document.getElementById('activeConsult')!.click();
                         }
                       }
                     );
@@ -2146,10 +2168,17 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               <span className={classes.callSubheader}>
                 {'Please follow the steps to connect to your patient :'}
               </span>
-              <span style={{ display: 'flex', margin: '30px 0px 20px 10px', alignItems: 'center' }}>
+              <span
+                style={{
+                  display: 'flex',
+                  margin: '30px 0px 20px 10px',
+                  alignItems: 'center',
+                }}
+              >
                 <span className={classes.callOption}>1</span>
                 <span className={classes.callOptionFirst}>
-                  Answer the call from {process.env.EXOTEL_CALLER_ID} <br />
+                  Answer the call from {process.env.EXOTEL_CALLER_ID}
+                  <br />
                   to connect.
                 </span>
                 <span className={classes.callOption}>2</span>
@@ -2227,6 +2256,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               timerSeconds={timerSeconds}
               isCallAccepted={isCallAccepted}
               isNewMsg={isNewMsg}
+              isCall={props.isCall}
+              setIscall={props.setIscall}
               convertCall={() => convertCall()}
               JDPhotoUrl={currentPatient && currentPatient.photoUrl ? currentPatient.photoUrl : ''}
               setSessionError={props.setSessionError}

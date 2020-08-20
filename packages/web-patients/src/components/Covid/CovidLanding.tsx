@@ -190,8 +190,14 @@ const useStyles = makeStyles((theme: Theme) => {
       cursor: 'pointer',
     },
     headerCovid: {
+      position: 'relative',
       [theme.breakpoints.down('xs')]: {
-        visibility: 'hidden',
+        '& header': {
+          display: 'none',
+        },
+        '& >div': {
+          position: 'static',
+        },
       },
     },
     modalFooter: {
@@ -264,7 +270,6 @@ export const CovidLanding: React.FC = (props: any) => {
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const scrollToRef = useRef<HTMLDivElement>(null);
   const { currentPatient } = useAllCurrentPatients();
-
   const didMount = useRef(false);
   const covidArticleBaseUrl =
     process.env.NODE_ENV !== 'production'
@@ -286,8 +291,12 @@ export const CovidLanding: React.FC = (props: any) => {
           setIsWebView(isWebView);
         }
       }
+    } else {
+      if (sessionStorage.getItem('webView') && sessionStorage.getItem('webView').length > 0) {
+        setIsWebView(true);
+      }
     }
-  });
+  }, []);
   useEffect(() => {
     fetchUtil(covidArticleBaseUrl!, 'GET', {}, '', true).then((res: any) => {
       const body = res.data;
@@ -333,7 +342,7 @@ export const CovidLanding: React.FC = (props: any) => {
   return (
     <div className={classes.root}>
       <div className={classes.headerCovid}>
-        <Header />
+        <Header backArrowVisible={true} isWebView={isWebView} />
       </div>
       <div className={classes.container}>
         <div className={classes.pageContainer} ref={scrollToRef}>

@@ -3,6 +3,7 @@ import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import ImageGallery from 'react-image-gallery';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
+import { getPackOfMedicine } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -14,7 +15,8 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         width: 80,
         position: 'absolute',
-        marginLeft: 20,
+        top: 20,
+        right: 20,
       },
       '& .image-gallery-slides': {
         border: 'solid 1px rgba(151,151,151,0.24)',
@@ -83,7 +85,15 @@ export const MedicineImageGallery: React.FC<MedicineInformationProps> = (props) 
 
   let images: any = [];
   props.data.image.map((img: any) => {
-    images.push({ original: `${apiDetails.url}${img}`, thumbnail: `${apiDetails.url}${img}` });
+    const altTitle = `${props.data.name}, Pack of ${getPackOfMedicine(props.data)}`;
+    images.push({
+      original: `${apiDetails.url}${img}`,
+      thumbnail: `${apiDetails.url}${img}`,
+      originalAlt: altTitle,
+      originalTitle: altTitle,
+      thumbnailAlt: altTitle,
+      thumbnailTitle: altTitle,
+    });
   });
 
   return (

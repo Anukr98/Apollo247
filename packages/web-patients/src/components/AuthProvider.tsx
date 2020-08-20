@@ -358,6 +358,52 @@ export const AuthProvider: React.FC = (props) => {
   };
 
   useEffect(() => {
+    if (
+      typeof window !== 'undefined' &&
+      window.location &&
+      window.location.search &&
+      window.location.search.length
+    ) {
+      const search = window.location.search;
+      const params = new URLSearchParams(search);
+      const token = params.get('utm_token') || '';
+      // Mobile APP Autologin Case
+      if (params.get('utm_mobile_number') && params.get('utm_mobile_number').length) {
+        const mobileNumber = `+${params.get('utm_mobile_number').trim()}`;
+        localStorage.setItem('userMobileNo', mobileNumber);
+        setAuthToken(token);
+        apolloClient = buildApolloClient(token, () => signOut());
+        apolloClient
+          .query<GetPatientByMobileNumber>({
+            query: GET_PATIENT_BY_MOBILE_NUMBER,
+            variables: {
+              mobileNumber: localStorage.getItem('userMobileNo'),
+            },
+          })
+          .then((res) => {
+            const userId =
+              res.data &&
+              res.data.getPatientByMobileNumber &&
+              res.data.getPatientByMobileNumber.patients &&
+              res.data.getPatientByMobileNumber.patients[0].id;
+            if (localStorage.getItem('currentUser') && localStorage.getItem('currentUser').length) {
+              const patientIds =
+                res.data.getPatientByMobileNumber.patients.map((patient) => patient.id) || [];
+              if (!patientIds.includes(localStorage.getItem('currentUser'))) {
+                localStorage.setItem('currentUser', userId);
+                setCurrentPatientId(userId);
+              } else {
+                setCurrentPatientId(localStorage.getItem('currentUser'));
+              }
+            }
+            setSignInError(false);
+          })
+          .catch((e) => {
+            setSignInError(true);
+          });
+      }
+    }
+
     app.auth().onAuthStateChanged(async (user) => {
       if (user) {
         /**Gtm code start */
@@ -480,140 +526,3 @@ export const AuthProvider: React.FC = (props) => {
     </ApolloProvider>
   );
 };
-
-// const loginApiCall = async (mobileNumber: string) => {
-//   apolloClient
-//     .mutate<Login, LoginVariables>({
-//       variables: {
-//         mobileNumber: mobileNumber,
-//         loginType: LOGIN_TYPE.PATIENT,
-//       },
-//       mutation: CUSTOM_LOGIN,
-//     })
-//     .then((loginResult) => {
-//       setIsSendingOtp(false);
-//       // console.log(
-//       //   'login id is....',
-//       //   loginResult &&
-//       //     loginResult.data &&
-//       //     loginResult.data.login &&
-//       //     loginResult.data.login.loginId
-//       // );
-//       return loginResult &&
-//         loginResult.data &&
-//         loginResult.data.login &&
-//         loginResult.data.login.loginId
-//         ? loginResult.data.login.loginId
-//         : false;
-//     })
-//     .catch();
-
-//   /*
-//   if (
-//     loginResult &&
-//     loginResult.data &&
-//     loginResult.data.login &&
-//     loginResult.data.login.status &&
-//     loginResult.data.login.loginId
-//   ) {
-//
-//     setSendOtpError(false);
-//     return loginResult.data.login.loginId;
-//   } else if (loginError) {
-//     // const logObject = {
-//     //   api: 'Login',
-//     //   inputParam: JSON.stringify({
-//     //     mobileNumber: mobileNumber,
-//     //     loginType: LOGIN_TYPE.PATIENT,
-//     //   }),
-//     //   currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-//     //   error: JSON.stringify(loginError),
-//     // };
-//     // sessionClient.notify(JSON.stringify(logObject));
-//     setSendOtpError(true);
-//     return false;
-//   } else {
-//     // const logObject = {
-//     //   api: 'Login',
-//     //   inputParam: JSON.stringify({
-//     //     mobileNumber: mobileNumber,
-//     //     loginType: LOGIN_TYPE.PATIENT,
-//     //   }),
-//     //   currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-//     //   error: JSON.stringify(loginResult),
-//     // };
-//     // sessionClient.notify(JSON.stringify(logObject));
-//     setSendOtpError(true);
-//     return false;
-//   }*/
-// };
-
-// const verifyOtp = async (otp: string) => {
-//   setVerifyOtpError(false);
-//   if (!otpVerifier) {
-//     setSendOtpError(true);
-//     return;
-//   }
-//   setIsVerifyingOtp(true);
-//   const otpAuthResult = await otpVerifier.confirm(otp).catch((error) => {
-//     setVerifyOtpError(true);
-//   });
-//   if (!otpAuthResult || !otpAuthResult.user) setVerifyOtpError(true);
-//   setTimeout(() => {
-//     setIsVerifyingOtp(false);
-//   }, 700);
-// };
-
-// const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
-//   return new Promise((resolve, reject) => {
-//     setVerifyOtpError(false);
-//     if (!captchaPlacement) {
-//       // TrackJS.track(!captchaPlacement);
-//       setSendOtpError(true);
-//       reject();
-//       return;
-//     }
-//     setIsSendingOtp(true);
-//     // Create a new unique captcha every time because (apparently) captcha.clear() is flaky,
-//     // and can eventually result in a 'recaptcha already assigned to this element' error.
-//     const captchaContainer = document.createElement('div');
-//     captchaContainer.style.display = 'none';
-//     const captchaId = _uniqueId('captcha-container');
-//     captchaContainer.id = captchaId;
-//     captchaPlacement.parentNode!.insertBefore(captchaContainer, captchaPlacement.nextSibling);
-//     const captcha = new firebase.auth.RecaptchaVerifier(captchaId, {
-//       size: 'invisible',
-//       callback: async () => {
-//         const phoneAuthResult = await app
-//           .auth()
-//           .signInWithPhoneNumber(phoneNumber, captcha)
-//           .catch((error) => {
-//             // TrackJS.track(error);
-//             setSendOtpError(true);
-//             reject();
-//             throw error;
-//           });
-//         setIsSendingOtp(false);
-//         // TrackJS.track(phoneAuthResult);
-//         otpVerifier = phoneAuthResult;
-//         setSendOtpError(false);
-//         captcha.clear();
-//         resolve();
-//       },
-//       'expired-callback': () => {
-//         setSendOtpError(true);
-//         captcha.clear();
-//         reject();
-//       },
-//     });
-//     captcha.verify();
-//   }).finally(() => {
-//     setIsSendingOtp(false);
-//   });
-// };
-
-// useEffect(() => {
-//   if (isTest() && !isFirebaseLoginTest()) {
-//     setAuthToken('test');
-//   }
-// }, []);

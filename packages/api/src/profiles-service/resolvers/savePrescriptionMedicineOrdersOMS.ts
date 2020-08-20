@@ -11,6 +11,7 @@ import {
   BOOKING_SOURCE,
   DEVICE_TYPE,
   MedicineOrdersStatus,
+  MedicineOrderAddress,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -137,9 +138,12 @@ const savePrescriptionMedicineOrderOMS: Resolver<
   const errorCode = 0,
     errorMessage = '',
     orderStatus: MEDICINE_ORDER_STATUS = MEDICINE_ORDER_STATUS.QUOTE;
+  const medicineOrderAddressDetails: Partial<MedicineOrderAddress> = {};
 
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.getPatientDetails(prescriptionMedicineOMSInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(
+    prescriptionMedicineOMSInput.patientId
+  );
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -156,6 +160,18 @@ const savePrescriptionMedicineOrderOMS: Resolver<
     );
     if (!patientAddressDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+    } else {
+      medicineOrderAddressDetails.addressLine1 = patientAddressDetails.addressLine1;
+      medicineOrderAddressDetails.addressLine2 = patientAddressDetails.addressLine2;
+      medicineOrderAddressDetails.addressType = patientAddressDetails.addressType;
+      medicineOrderAddressDetails.city = patientAddressDetails.city;
+      medicineOrderAddressDetails.otherAddressType = patientAddressDetails.otherAddressType;
+      medicineOrderAddressDetails.state = patientAddressDetails.state;
+      medicineOrderAddressDetails.zipcode = patientAddressDetails.zipcode;
+      medicineOrderAddressDetails.landmark = patientAddressDetails.landmark;
+      medicineOrderAddressDetails.latitude = patientAddressDetails.latitude;
+      medicineOrderAddressDetails.longitude = patientAddressDetails.longitude;
+      medicineOrderAddressDetails.stateCode = patientAddressDetails.stateCode;
     }
   }
 
@@ -203,6 +219,11 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       statusDate: new Date(),
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, saveOrder.orderAutoId);
+
+    medicineOrderAddressDetails.name = patientDetails.firstName;
+    medicineOrderAddressDetails.mobileNumber = patientDetails.mobileNumber;
+    medicineOrderAddressDetails.medicineOrders = saveOrder;
+    await medicineOrdersRepo.saveMedicineOrderAddress(medicineOrderAddressDetails);
   }
 
   const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;

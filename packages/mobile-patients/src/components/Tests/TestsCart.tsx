@@ -1595,14 +1595,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           }}
         />
       )}
-      {/* {displayAddProfile && (
-        <AddProfile
-          setdisplayoverlay={setDisplayAddProfile}
-          setProfile={(profile) => {
-            setProfile(profile);
-          }}
-        />
-      )} */}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
         <ScrollView bounces={false}>
