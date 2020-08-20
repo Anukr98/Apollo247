@@ -92,6 +92,7 @@ export enum WebEngageEventName {
   NOTIFICATION_ICON = 'Notification Icon clicked',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
   NEED_HELP = 'Need Help?',
+  TICKET_RAISED = 'Ticket raised',
   MY_ACCOUNT = 'My Account',
   FIND_A_DOCTOR = 'Find a Doctor',
   TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
@@ -242,6 +243,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
+  [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
   [WebEngageEventName.FIND_A_DOCTOR]: PatientInfo;
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
