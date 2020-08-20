@@ -3,7 +3,7 @@ import { debugLog } from 'customWinstonLogger';
 import { promisify } from 'util';
 
 const dLogger = debugLog(
-  'profileServiceLogger',
+  'NotificationServiceLogger',
   'RedisConnect',
   Math.floor(Math.random() * 100000000)
 );
@@ -35,15 +35,15 @@ const client = createClient({
   },
 });
 
-const hgetAsync = promisify(client.hget).bind(client);
+const getAsync = promisify(client.get).bind(client);
 
-export async function hget(key: string, field: string): Promise<string> {
+export async function getCache(key: string) {
   try {
-    const cache = await hgetAsync(key, field);
-    dLogger(new Date(), 'Redis Cache read hash', `Cache hit ${key}`);
+    const cache = await getAsync(key);
+    dLogger(new Date(), 'Redis Cache read', `Cache hit ${key}`);
     return cache;
   } catch (e) {
-    dLogger(new Date(), 'Redis read hash error', `Cache hit ${key} ${JSON.stringify(e)}`);
-    return '';
+    dLogger(new Date(), 'Redis read error', `Cache hit ${key} ${JSON.stringify(e)}`);
+    return null;
   }
 }
