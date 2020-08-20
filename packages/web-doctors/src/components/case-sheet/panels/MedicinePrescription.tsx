@@ -1216,6 +1216,10 @@ export const MedicinePrescription: React.FC = () => {
         setCustomDosageNoon('');
         setCustomDosageEvening('');
         setCustomDosageNight('');
+        let overview = result.data.productdp[0].PharmaOverview;
+        let generic = overview.length ? result.data.productdp[0].PharmaOverview[0].generic : '';
+        setGenericName(generic);
+
         if (
           result &&
           result.data &&
@@ -1239,7 +1243,6 @@ export const MedicinePrescription: React.FC = () => {
             medicineMappingObj[result.data.productdp[0].PharmaOverview[0].Doseform.toLowerCase()]
               .defaultRoa
           );
-          setGenericName(result.data.productdp[0].PharmaOverview[0].generic);
           setFreeTextSwitch(false);
         } else {
           setMedicineUnit(medicineMappingObj['others'].defaultUnitDp);
