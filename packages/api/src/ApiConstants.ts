@@ -364,6 +364,7 @@ export enum ApiConstants {
   NOT_APPLICABLE = 'Not Applicable',
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
   FREE_CHAT_DAYS = 7,
+  CHAT_DAYS_LIMIT = 30,
   AUTO_SUBMIT_BY_SD_SMS_TEXT = 'Hi {0}, Dr. {1} has fast-tracked your consultation, if you wish to start the consultation now, please join the consultation room by clicking here  {2}.',
   DOCTOR_CHAT_SMS_TEXT = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply.',
   DOCTOR_CHAT_SMS_LAST_DAY = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',

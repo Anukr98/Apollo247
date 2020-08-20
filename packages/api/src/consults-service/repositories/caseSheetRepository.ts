@@ -3,6 +3,8 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { CaseSheet, CASESHEET_STATUS } from 'consults-service/entities';
 import { DoctorType } from 'doctors-service/entities';
+import { format, addDays } from 'date-fns';
+import { STATUS } from 'consults-service/entities';
 
 @EntityRepository(CaseSheet)
 export class CaseSheetRepository extends Repository<CaseSheet> {
@@ -162,5 +164,21 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .andWhere('case_sheet.sentToPatient = :sentToPatient', { sentToPatient: true })
       .orderBy('case_sheet.version', 'DESC')
       .getOne();
+  }
+
+  getAllAppointmentsToBeArchived(currentDate: Date) {
+    const newStartDate = new Date(format(addDays(currentDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(currentDate, 'yyyy-MM-dd') + 'T18:29');
+
+    return this.createQueryBuilder('case_sheet')
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+      .where('(case_sheet.followUpDate Between :fromDate AND :toDate)', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .andWhere('appointment.status in(:status)', {
+        status: STATUS.COMPLETED
+      })
+      .getMany();
   }
 }
