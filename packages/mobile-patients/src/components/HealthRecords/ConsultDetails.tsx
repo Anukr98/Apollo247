@@ -1137,7 +1137,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                             (fileName + '?' + new Date().getTime() || 'Apollo_Prescription.pdf');
                       setLoading && setLoading(true);
                       RNFetchBlob.config({
-                        fileCache: false,
+                        fileCache: true,
                         path: downloadPath,
                         addAndroidDownloads: {
                           title: fileName,
