@@ -923,7 +923,7 @@ export const MedicineDetails: React.FC = (props) => {
       medicineDetails.similar_products && (
         <div
           className={
-            responseView === 'webView'
+            responseView === 'webDisplay'
               ? `${classes.sliderSection} ${classes.webResponseView}`
               : `${classes.sliderSection} ${classes.mobileResponseView}`
           }
@@ -1104,10 +1104,10 @@ export const MedicineDetails: React.FC = (props) => {
                           </div>
                         </Scrollbars>
                       </div>
-                      {renderSimilarProducts('mobileView')}
+                      {renderSimilarProducts('mobileDisplay')}
                       <MedicineInformation data={medicineDetails} />
                     </div>
-                    {renderSimilarProducts('webView')}
+                    {renderSimilarProducts('webDisplay')}
                   </>
                 ) : (
                   <div className={classes.progressLoader}>
