@@ -1131,7 +1131,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         Platform.OS === 'ios'
                           ? (dirs.DocumentDir || dirs.MainBundleDir) +
                             '/' +
-                            (fileName + '?' + new Date().getTime() || 'Apollo_Prescription.pdf')
+                            (fileName || 'Apollo_Prescription.pdf')
                           : dirs.DownloadDir +
                             '/' +
                             (fileName + '?' + new Date().getTime() || 'Apollo_Prescription.pdf');
