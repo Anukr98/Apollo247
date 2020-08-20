@@ -1123,21 +1123,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       CommonLogEvent('CONSULT_DETAILS', 'No image');
                     } else {
                       postWEGEvent('download prescription');
-                      let dirs = RNFetchBlob.fs.dirs;
+                      const dirs = RNFetchBlob.fs.dirs;
 
-                      let fileName: string = getFileName();
-
-                      // props.navigation.state.params!.BlobName.substring(
-                      //   0,
-                      //   props.navigation.state.params!.BlobName.indexOf('.pdf')
-                      // )
+                      const fileName: string = getFileName();
 
                       const downloadPath =
                         Platform.OS === 'ios'
                           ? (dirs.DocumentDir || dirs.MainBundleDir) +
                             '/' +
-                            (fileName || 'Apollo_Prescription.pdf')
-                          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
+                            (fileName + '?' + new Date().getTime() || 'Apollo_Prescription.pdf')
+                          : dirs.DownloadDir +
+                            '/' +
+                            (fileName + '?' + new Date().getTime() || 'Apollo_Prescription.pdf');
                       setLoading && setLoading(true);
                       RNFetchBlob.config({
                         fileCache: true,
