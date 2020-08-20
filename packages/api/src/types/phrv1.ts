@@ -156,6 +156,8 @@ export interface PrescriptionDownloadResponse {
     notes: string;
     prescriptionSource: string;
     source: string;
+    hospital_name: string;
+    hospitalId: string;
     prescriptionDetail: [];
     prescriptionFiles: {
       id: string;
