@@ -291,7 +291,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
       key: 'followup',
       value: 'Follow Up Chat Days',
       state: followUpPanelState,
-      component: <div />,
+      component: <FollowUp />,
     },
     {
       key: 'refferal',
