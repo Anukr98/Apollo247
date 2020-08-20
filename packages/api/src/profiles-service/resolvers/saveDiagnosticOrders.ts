@@ -727,23 +727,8 @@ const SaveItdoseHomeCollectionDiagnosticOrder: Resolver<
 
   const diagnosticOrderattrs: Partial<DiagnosticOrders> = {
     patient: patientDetails,
-    patientAddressId: diagnosticOrderInput.patientAddressId,
-    totalPrice: diagnosticOrderInput.totalPrice,
-    slotTimings: diagnosticOrderInput.slotTimings,
-    employeeSlotId: diagnosticOrderInput.employeeSlotId,
-    diagnosticBranchCode: diagnosticOrderInput.diagnosticBranchCode,
-    diagnosticEmployeeCode: diagnosticOrderInput.diagnosticEmployeeCode,
-    city: diagnosticOrderInput.city,
-    prescriptionUrl: diagnosticOrderInput.prescriptionUrl,
-    diagnosticDate: diagnosticOrderInput.diagnosticDate,
-    centerCity: diagnosticOrderInput.centerCity,
-    centerCode: diagnosticOrderInput.centerCode,
-    centerName: diagnosticOrderInput.centerName,
-    centerLocality: diagnosticOrderInput.centerLocality,
-    centerState: diagnosticOrderInput.centerState,
-    bookingSource: diagnosticOrderInput.bookingSource,
-    deviceType: diagnosticOrderInput.deviceType,
     orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
+    ...diagnosticOrderInput
   };
 
   if (
