@@ -4,8 +4,9 @@ import { Resolver } from 'api-gateway';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { ApiConstants } from 'ApiConstants';
 
-export const uploadDoctorSignatureTypeDefs = gql`
+export const updateDoctorChatDaysTypeDefs = gql`
   type chatDaysResult {
     isError: Boolean
     response: String
@@ -33,6 +34,13 @@ const updateDoctorChatDays: Resolver<
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     const doctordata = await doctorRepository.findDoctorByIdWithoutRelations(args.doctorId);
     if (!doctordata) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+
+    if(args.chatDays > ApiConstants.CHAT_DAYS_LIMIT){
+      args.chatDays = ApiConstants.CHAT_DAYS_LIMIT;
+    } else if( args.chatDays < ApiConstants.CHAT_DAYS_LOWER_LIMIT){
+      args.chatDays = ApiConstants.CHAT_DAYS_LOWER_LIMIT;
+    }
+
     await doctorRepository.updateDoctorChatDays(args.doctorId, args.chatDays);
     return { isError: false, response: "Updated Successfully" };
   } catch (err){
