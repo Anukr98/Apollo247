@@ -2,7 +2,7 @@ import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { clearUserData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, View, SafeAreaView, Text } from 'react-native';
 import {
   NavigationActions,
@@ -17,6 +17,7 @@ import {
   Dropdown,
   Up,
   ChekGray,
+  InfoGreen,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -48,22 +49,42 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     { key: 'I', value: 'In-person' },
     { key: 'B', value: 'Both' },
   ];
-  const tieOptionArray: OptionsObject[] = [
+  const timeOptionArray: OptionsObject[] = [
     { key: '1', value: '10' },
     { key: '2', value: '20' },
     { key: '3', value: '30' },
   ];
+  const daysOptionArray: OptionsObject[] = Array(31)
+    .fill(0)
+    .map((_, i) => {
+      return { key: i, value: i < 10 ? (i == 0 ? '0' : '0' + i.toString()) : i.toString() };
+    });
 
+  const [isEdited, setIsEdited] = useState<boolean>(false);
   const [showHelpModel, setshowHelpModel] = useState<boolean>(false);
   const [showSavedTime, setShowSavedTime] = useState<boolean>(false);
+  const [expandFollowUp, setExpandFollowUp] = useState<boolean>(false);
   const [ivrSwitch, setIvrSwitch] = useState<boolean>(false);
   const [appointmentType, setAppointmentType] = useState<'O' | 'I' | 'B'>('B');
   const [onlineAppointmentTime, setOnlineAppointmentTime] = useState<OptionsObject>(
-    tieOptionArray[0]
+    timeOptionArray[0]
   );
   const [inpersonAppointmentTime, setInPersonAppointmentTime] = useState<OptionsObject>(
-    tieOptionArray[0]
+    timeOptionArray[0]
   );
+  const [followUpDays, setFollowUpDays] = useState<OptionsObject>(daysOptionArray[0]);
+  const editedData = {
+    ivrEnabled: ivrSwitch,
+    typeOfAppointment: appointmentType,
+    onlineRemainderTime: onlineAppointmentTime.value,
+    inpersonRemainderTime: inpersonAppointmentTime.value,
+    followUpDays: followUpDays.key,
+  };
+  useEffect(() => {
+    AsyncStorage.getItem('settingsData').then((data) => {
+      setIsEdited(data !== JSON.stringify(editedData));
+    });
+  }, [appointmentType, followUpDays, inpersonAppointmentTime, ivrSwitch, onlineAppointmentTime]);
 
   const renderNeedHelpModal = () => {
     return showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null;
@@ -144,7 +165,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             <Text style={styles.ivrSubHeadingStyle}>{string.settings.ivrOnlineHeading}</Text>
             <View style={styles.dropContainer}>
               <MaterialMenu
-                options={tieOptionArray}
+                options={timeOptionArray}
                 selectedText={onlineAppointmentTime.key}
                 onPress={(selectedOption) => {
                   setOnlineAppointmentTime(selectedOption);
@@ -177,7 +198,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             <Text style={styles.ivrSubHeadingStyle}>{string.settings.ivrInPersonHeading}</Text>
             <View style={styles.dropContainer}>
               <MaterialMenu
-                options={tieOptionArray}
+                options={timeOptionArray}
                 selectedText={inpersonAppointmentTime.key}
                 onPress={(selectedOption) => {
                   setInPersonAppointmentTime(selectedOption);
@@ -220,12 +241,84 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
   const renderFollowupSettings = () => {
     return (
-      <View style={styles.cardContainer}>
-        <Text style={styles.cardTextStyle}>{string.settings.followupHeader}</Text>
-        <Up style={styles.cardNextIcon} />
+      <View style={[styles.cardContainer, { flexDirection: 'column', alignItems: 'flex-start' }]}>
+        <TouchableOpacity
+          onPress={() => {
+            setExpandFollowUp(!expandFollowUp);
+          }}
+          activeOpacity={1}
+          style={{ width: '100%' }}
+        >
+          <View style={{ flexDirection: 'row', width: '100%' }}>
+            <View style={{ flex: 1 }}>
+              <Text style={theme.viewStyles.text('M', 12, theme.colors.SHARP_BLUE, 1, 18, 0.02)}>
+                {string.settings.followupHeader}
+              </Text>
+              {!expandFollowUp ? (
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 10, theme.colors.APP_GREEN),
+                    marginTop: 6,
+                  }}
+                >
+                  {'Default value set at  '}
+                  <Text style={theme.viewStyles.text('B', 14, theme.colors.APP_GREEN)}>{`${
+                    followUpDays.key
+                  } day${followUpDays.key === 1 ? '' : 's'}`}</Text>
+                </Text>
+              ) : null}
+            </View>
+            <Up style={expandFollowUp ? styles.cardNextUpIcon : styles.cardNextIcon} />
+          </View>
+        </TouchableOpacity>
+        {expandFollowUp ? (
+          <View style={{ marginTop: 16 }}>
+            <Text style={theme.viewStyles.text('R', 10, '#c9c5c5')}>Select the umber of days</Text>
+            <View style={{ width: '40%', marginTop: 12 }}>
+              <MaterialMenu
+                options={daysOptionArray}
+                selectedText={followUpDays.key}
+                onPress={(selectedOption) => {
+                  setFollowUpDays(selectedOption);
+                }}
+                menuContainerStyle={styles.materialMenuMenuContainerStyle}
+                itemContainer={styles.materialMenuItemContainer}
+                itemTextStyle={styles.materialMenuItemTextStyle}
+                selectedTextStyle={styles.materialMenuSelectedTextStyle}
+                bottomPadding={styles.materialMenuBottomPadding}
+              >
+                <View style={styles.materialMenuViewContainer}>
+                  <View style={styles.materialMenuViewSubContainer}>
+                    <Text style={styles.materialMenuDisplayText}>{followUpDays.value}</Text>
+                    <View style={styles.materialMenuTextContainer2}>
+                      <Text style={styles.materialMenuDisplaySubText2}>
+                        {`day${followUpDays.key == 1 ? '' : 's'}`}
+                      </Text>
+                      <Dropdown />
+                    </View>
+                  </View>
+                </View>
+              </MaterialMenu>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20 }}>
+              <InfoGreen />
+              <Text
+                style={{
+                  ...theme.viewStyles.text('R', 10, '#979797', 1, 12, 1),
+                  marginLeft: 10,
+                  marginRight: 20,
+                }}
+              >
+                This Value will be default for all patients, However you can change the follow-up
+                chat day count on individual patient's Case-sheet.
+              </Text>
+            </View>
+          </View>
+        ) : null}
       </View>
     );
   };
+
   const renderButton = () => {
     return (
       <View style={styles.buttonContainer}>
@@ -239,17 +332,20 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               )}
             </Text>
           </View>
-        ) : (
+        ) : null}
+        {isEdited ? (
           <Button
             title={'SAVE CHANGES'}
             onPress={() => {
+              AsyncStorage.setItem('settingsData', JSON.stringify(editedData));
+              setIsEdited(false);
               setShowSavedTime(true);
               setTimeout(() => {
                 setShowSavedTime(false);
               }, 5000);
             }}
           />
-        )}
+        ) : null}
       </View>
     );
   };
@@ -262,9 +358,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           <View style={styles.viewMainContainer}>
             {renderivr()}
             {ivrSwitch ? renderivrOption() : null}
-            {/* In-Design but not implemented */}
-            {/* {renderNotificationPreference()}
-            {renderFollowupSettings()} */}
+            {renderNotificationPreference()}
+            {renderFollowupSettings()}
           </View>
         </ScrollView>
         {renderButton()}
