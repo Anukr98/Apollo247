@@ -514,12 +514,12 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     mobileResponseView: {
-      ['@media only screen and (min-width: 768px)']: {
+      [theme.breakpoints.up(768)]: {
         display: 'none',
       },
     },
     webResponseView: {
-      ['@media only screen and (max-width: 768px)']: {
+      [theme.breakpoints.down(768)]: {
         display: 'none',
       },
     },
