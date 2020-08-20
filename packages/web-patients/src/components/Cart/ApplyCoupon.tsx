@@ -279,7 +279,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 is_in_stock: e.data.productdp[0].is_in_stock,
                 is_prescription_required: e.data.productdp[0].is_prescription_required,
                 name: e.data.productdp[0].name,
-                price: e.data.productdp[0].price,
+                price: 0,
                 sku: e.data.productdp[0].sku,
                 special_price: e.data.productdp[0].special_price,
                 small_image: e.data.productdp[0].small_image,
@@ -359,17 +359,17 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                           <img src={require('images/ic_tickmark.svg')} alt="" />
                         </div>
                       ) : (
-                        <AphButton
-                          classes={{
-                            disabled: classes.buttonDisabled,
-                          }}
-                          className={classes.searchBtn}
-                          disabled={disableCoupon}
-                          onClick={() => verifyCoupon()}
-                        >
-                          <img src={require('images/ic_send.svg')} alt="" />
-                        </AphButton>
-                      )}
+                          <AphButton
+                            classes={{
+                              disabled: classes.buttonDisabled,
+                            }}
+                            className={classes.searchBtn}
+                            disabled={disableCoupon}
+                            onClick={() => verifyCoupon()}
+                          >
+                            <img src={require('images/ic_send.svg')} alt="" />
+                          </AphButton>
+                        )}
                     </div>
                   </div>
                 )}
@@ -410,8 +410,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                   ) : isLoading ? (
                     <CircularProgress className={classes.loader} />
                   ) : (
-                    <div className={classes.noCoupons}>No available Coupons</div>
-                  )}
+                        <div className={classes.noCoupons}>No available Coupons</div>
+                      )}
                 </ul>
               </div>
             </div>
