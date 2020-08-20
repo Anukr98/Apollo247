@@ -667,6 +667,7 @@ export const MedicineCart: React.FC = (props) => {
     prescriptionDuration,
     clearCartInfo,
     removeCartItemSku,
+    addCartItems,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -707,6 +708,7 @@ export const MedicineCart: React.FC = (props) => {
     bulk_product_info_url: process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL,
     priceUpdateToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
     getInventoryUrl: process.env.PHARMACY_GET_STORE_INVENTORY,
+    url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
   };
   useEffect(() => {
     if (params.orderStatus === 'failed') {
@@ -930,6 +932,7 @@ export const MedicineCart: React.FC = (props) => {
             if (resp.response.valid) {
               setValidateCouponResult(resp.response);
               setErrorMessage('');
+              return resp;
             } else {
               setValidateCouponResult(null);
               setErrorMessage(
@@ -945,9 +948,70 @@ export const MedicineCart: React.FC = (props) => {
             setCouponCode && setCouponCode('');
           }
         })
+        .then((resp: any) => {
+          addDiscountedProducts(resp.response);
+        })
         .catch((e: any) => {
           console.log(e);
         });
+    }
+  };
+
+  const addDiscountedProducts = (response: any) => {
+    const promises: Promise<any>[] = [];
+    if (response.products && Array.isArray(response.products) && response.products.length) {
+      try {
+        const cartSkuSet = new Set(
+          cartItems && cartItems.length ? cartItems.map((cartItem) => cartItem.sku) : []
+        );
+        response.products.forEach((data: any) => {
+          if (!cartSkuSet.has(data.sku))
+            promises.push(
+              axios.post(
+                apiDetails.url || '',
+                { params: data.sku },
+                {
+                  headers: {
+                    Authorization: apiDetails.authToken,
+                  },
+                }
+              )
+            );
+        });
+        const allData: MedicineCartItem[] = [];
+        Promise.all(promises)
+          .then((data: any) => {
+            data.forEach((e: any) => {
+              const cartItem: MedicineCartItem = {
+                MaxOrderQty: e.data.productdp[0].MaxOrderQty,
+                url_key: e.data.productdp[0].url_key,
+                description: e.data.productdp[0].description,
+                id: e.data.productdp[0].id,
+                image: e.data.productdp[0].image,
+                is_in_stock: e.data.productdp[0].is_in_stock,
+                is_prescription_required: e.data.productdp[0].is_prescription_required,
+                name: e.data.productdp[0].name,
+                price: e.data.productdp[0].price,
+                sku: e.data.productdp[0].sku,
+                special_price: e.data.productdp[0].special_price,
+                small_image: e.data.productdp[0].small_image,
+                status: e.data.productdp[0].status,
+                thumbnail: e.data.productdp[0].thumbnail,
+                type_id: e.data.productdp[0].type_id,
+                mou: e.data.productdp[0].mou,
+                quantity: 1,
+                isShippable: true,
+              };
+              allData.push(cartItem);
+            });
+          })
+          .then(() => {
+            addCartItems(allData);
+          });
+      } catch (e) {
+        console.error(e);
+        throw e;
+      }
     }
   };
 
@@ -1174,7 +1238,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
