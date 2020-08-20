@@ -2346,7 +2346,9 @@ export const MedicinePrescription: React.FC = () => {
         const genericName = (
           <span>
             {medicine.includeGenericNameInPrescription! &&
-              medicine.genericName!.trim().length > 0 && (
+              medicine.genericName &&
+              medicine.genericName !== null &&
+              medicine.genericName.trim().length > 0 && (
                 <h6>{`Contains ${medicine.genericName}`}</h6>
               )}
           </span>
@@ -2542,7 +2544,9 @@ export const MedicinePrescription: React.FC = () => {
                   const genericName = (
                     <span>
                       {favMedicine.includeGenericNameInPrescription! &&
-                        favMedicine.genericName!.trim().length > 0 && (
+                        favMedicine.genericName &&
+                        favMedicine.genericName !== null &&
+                        favMedicine.genericName.trim().length > 0 && (
                           <h6>{`Contains ${favMedicine.genericName}`}</h6>
                         )}
                     </span>
