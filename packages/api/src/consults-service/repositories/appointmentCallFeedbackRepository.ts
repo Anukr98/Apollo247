@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { AppointmentCallFeedback } from '../entities/index'
+import { AppointmentCallFeedback } from '../entities/index';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
