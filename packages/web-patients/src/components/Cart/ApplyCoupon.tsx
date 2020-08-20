@@ -218,7 +218,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 label: `Coupon Applied - ${selectCouponCode}`,
                 value: resp.response.discount,
               });
-              return resp
+              return resp;
             } else {
               props.setValidateCouponResult(null);
               setErrorMessage(resp.response.reason);
@@ -229,8 +229,9 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
             setErrorMessage(resp.errorMsg);
             localStorage.removeItem('pharmaCoupon');
           }
-        }).then((resp: any) => {
-          addDiscountedProducts(resp.response)
+        })
+        .then((resp: any) => {
+          addDiscountedProducts(resp.response);
         })
         .catch((e) => {
           console.log(e);
@@ -245,15 +246,16 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   };
 
   const addDiscountedProducts = (response: any) => {
-
-    const promises: Promise<any>[] = []
+    const promises: Promise<any>[] = [];
     if (response.products && Array.isArray(response.products) && response.products.length) {
       try {
-        const cartSkuSet = new Set(cartItems && cartItems.length ? cartItems.map((cartItem) => cartItem.sku) : [])
+        const cartSkuSet = new Set(
+          cartItems && cartItems.length ? cartItems.map((cartItem) => cartItem.sku) : []
+        );
         response.products.forEach((data: any) => {
           if (!cartSkuSet.has(data.sku))
-            promises.push(axios
-              .post(
+            promises.push(
+              axios.post(
                 apiDetails.url || '',
                 { params: data.sku },
                 {
@@ -261,42 +263,45 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                     Authorization: apiDetails.authToken,
                   },
                 }
-              ))
-        })
-        const allData: MedicineCartItem[] = []
-        Promise.all(promises).then((data: any) => {
-          data.forEach((e: any) => {
-            const cartItem: MedicineCartItem = {
-              MaxOrderQty: e.data.productdp[0].MaxOrderQty,
-              url_key: e.data.productdp[0].url_key,
-              description: e.data.productdp[0].description,
-              id: e.data.productdp[0].id,
-              image: e.data.productdp[0].image,
-              is_in_stock: e.data.productdp[0].is_in_stock,
-              is_prescription_required: e.data.productdp[0].is_prescription_required,
-              name: e.data.productdp[0].name,
-              price: e.data.productdp[0].price,
-              sku: e.data.productdp[0].sku,
-              special_price: e.data.productdp[0].special_price,
-              small_image: e.data.productdp[0].small_image,
-              status: e.data.productdp[0].status,
-              thumbnail: e.data.productdp[0].thumbnail,
-              type_id: e.data.productdp[0].type_id,
-              mou: e.data.productdp[0].mou,
-              quantity: 1,
-              isShippable: true,
-            };
-            allData.push(cartItem)
+              )
+            );
+        });
+        const allData: MedicineCartItem[] = [];
+        Promise.all(promises)
+          .then((data: any) => {
+            data.forEach((e: any) => {
+              const cartItem: MedicineCartItem = {
+                MaxOrderQty: e.data.productdp[0].MaxOrderQty,
+                url_key: e.data.productdp[0].url_key,
+                description: e.data.productdp[0].description,
+                id: e.data.productdp[0].id,
+                image: e.data.productdp[0].image,
+                is_in_stock: e.data.productdp[0].is_in_stock,
+                is_prescription_required: e.data.productdp[0].is_prescription_required,
+                name: e.data.productdp[0].name,
+                price: e.data.productdp[0].price,
+                sku: e.data.productdp[0].sku,
+                special_price: e.data.productdp[0].special_price,
+                small_image: e.data.productdp[0].small_image,
+                status: e.data.productdp[0].status,
+                thumbnail: e.data.productdp[0].thumbnail,
+                type_id: e.data.productdp[0].type_id,
+                mou: e.data.productdp[0].mou,
+                quantity: 1,
+                isShippable: true,
+              };
+              allData.push(cartItem);
+            });
           })
-        }).then(() => {
-          addCartItems(allData)
-        })
+          .then(() => {
+            addCartItems(allData);
+          });
       } catch (e) {
-        console.error(e)
-        throw e
+        console.error(e);
+        throw e;
       }
     }
-  }
+  };
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -326,7 +331,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
     errorMessage.length > 0;
 
   return (
-    <div style={{ border: '1px solid red' }} className={classes.shadowHide}>
+    <div className={classes.shadowHide}>
       <div className={classes.dialogContent}>
         <Scrollbars autoHide={true} autoHeight autoHeightMax={'43vh'}>
           <div className={classes.customScrollBar}>
@@ -354,17 +359,17 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                           <img src={require('images/ic_tickmark.svg')} alt="" />
                         </div>
                       ) : (
-                          <AphButton
-                            classes={{
-                              disabled: classes.buttonDisabled,
-                            }}
-                            className={classes.searchBtn}
-                            disabled={disableCoupon}
-                            onClick={() => verifyCoupon()}
-                          >
-                            <img src={require('images/ic_send.svg')} alt="" />
-                          </AphButton>
-                        )}
+                        <AphButton
+                          classes={{
+                            disabled: classes.buttonDisabled,
+                          }}
+                          className={classes.searchBtn}
+                          disabled={disableCoupon}
+                          onClick={() => verifyCoupon()}
+                        >
+                          <img src={require('images/ic_send.svg')} alt="" />
+                        </AphButton>
+                      )}
                     </div>
                   </div>
                 )}
@@ -405,8 +410,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                   ) : isLoading ? (
                     <CircularProgress className={classes.loader} />
                   ) : (
-                        <div className={classes.noCoupons}>No available Coupons</div>
-                      )}
+                    <div className={classes.noCoupons}>No available Coupons</div>
+                  )}
                 </ul>
               </div>
             </div>
