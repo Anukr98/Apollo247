@@ -221,7 +221,7 @@ const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
 
-export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
+const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
@@ -633,3 +633,5 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return <LinearProgress className={classes.loader} />;
   }
 };
+
+export default DoctorDetails;

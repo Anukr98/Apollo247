@@ -1,6 +1,8 @@
 import { setConfig, Config } from 'react-hot-loader';
 import { hot } from 'react-hot-loader/root';
 import React, { useEffect } from 'react';
+import Loadable from 'react-loadable';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Welcome } from 'components/Welcome';
@@ -9,15 +11,26 @@ import { useAuth } from 'hooks/authHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, createMuiTheme } from '@material-ui/core';
 import { AphThemeProvider, aphTheme } from '@aph/web-ui-components';
-import { DoctorDetails } from 'components/DoctorDetails';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
+
+// import { DoctorDetails } from 'components/DoctorDetails';
+const DoctorDetails = Loadable({
+  loader: () => import('components/DoctorDetails'),
+  loading() {
+    return (
+      <div>
+        <CircularProgress />
+      </div>
+    );
+  },
+});
 import { AuthRouted } from 'components/AuthRouted';
-import { PatientsList } from 'components/PatientsList';
+import PatientsList from 'components/PatientsList';
 import { CartPoc } from 'components/CartPoc';
 import { MedicineCartLanding } from 'components/Cart/MedicineCartLanding';
 import { TestsCartLanding } from 'components/Tests/Cart/TestsCartLanding';
-import { MedicineLanding } from 'components/Medicine/MedicineLanding';
+import MedicineLanding from 'components/Medicine/MedicineLanding';
 import { ViewAllBrands } from 'components/Medicine/ViewAllBrands';
 import { SearchByBrand } from 'components/Medicine/SearchByBrand';
 import { Appointments } from 'components/Consult/V2/Appointments';
@@ -35,6 +48,7 @@ import { MedicineDetails } from 'components/Medicine/MedicineDetails';
 import { AddressBook } from 'components/MyAccount/AddressBook';
 import Scrollbars from 'react-custom-scrollbars';
 import { LocationProvider } from 'components/LocationProvider';
+
 // import { SymptomsTracker } from 'components/SymptomsTracker/SymptomsTracker';
 const SymptomsTracker = React.lazy(() =>
   import(
@@ -68,14 +82,24 @@ import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
 import { ClinicCheckout } from './Checkout/ClinicCheckout';
 import { PrescriptionReview } from 'components/PrescriptionReview';
 // import { SpecialityListing } from 'components/SpecialityListing';
-const SpecialityListing = React.lazy(() =>
-  import(
-    /*
-  webpackChunkName: "speciality-listing",
-  webpackPrefetch: true
-*/ 'components/SpecialityListing'
-  )
-);
+// const SpecialityListing = React.lazy(() =>
+//   import(
+//     /*
+//   webpackChunkName: "speciality-listing",
+//   webpackPrefetch: true
+// */ 'components/SpecialityListing'
+//   )
+// );
+const SpecialityListing = Loadable({
+  loader: () => import('components/SpecialityListing'),
+  loading() {
+    return (
+      <div>
+        <CircularProgress />
+      </div>
+    );
+  },
+});
 import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
 import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 import { MedicineSearch } from './Medicine/MedicineSearch';
