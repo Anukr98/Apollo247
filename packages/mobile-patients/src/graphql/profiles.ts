@@ -1149,6 +1149,83 @@ export const GET_CASESHEET_DETAILS = gql`
   }
 `;
 
+export const GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS = gql`
+  query getSDLatestCompletedCaseSheet($appointmentId: String) {
+    getSDLatestCompletedCaseSheet(appointmentId: $appointmentId) {
+      caseSheetDetails {
+        appointment {
+          id
+          appointmentDateTime
+          appointmentState
+          appointmentType
+          doctorId
+          hospitalId
+          patientId
+          parentId
+          status
+          displayId
+          isFollowUp
+          doctorInfo {
+            id
+            fullName
+            gender
+            photoUrl
+            displayName
+          }
+        }
+        consultType
+        diagnosis {
+          name
+        }
+        diagnosticPrescription {
+          itemname
+          testInstruction
+        }
+        blobName
+        doctorId
+        followUp
+        followUpAfterInDays
+        followUpDate
+        doctorType
+        id
+        medicinePrescription {
+          id
+          externalId
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineUnit
+          medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
+          medicineConsumptionDurationUnit
+          routeOfAdministration
+          medicineCustomDosage
+          medicineCustomDetails
+        }
+        notes
+        otherInstructions {
+          instruction
+        }
+        patientId
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+        }
+      }
+      patientDetails {
+        id
+      }
+      juniorDoctorNotes
+    }
+  }
+`;
+
 export const SAVE_DEVICE_TOKEN = gql`
   mutation saveDeviceToken($SaveDeviceTokenInput: SaveDeviceTokenInput!) {
     saveDeviceToken(SaveDeviceTokenInput: $SaveDeviceTokenInput) {
