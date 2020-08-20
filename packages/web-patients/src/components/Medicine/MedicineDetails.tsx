@@ -708,6 +708,14 @@ export const MedicineDetails: React.FC = (props) => {
     medicinePharmacyDetails = medicineDetails.PharmaOverview;
   }
 
+  const renderComposition = () => {
+    const generics = medicinePharmacyDetails[0].generic.split('+ ');
+    const strength = medicinePharmacyDetails[0].Strengh.split('+ ');
+    const units = medicinePharmacyDetails[0].Unit.split('+ ');
+    const compositionArray = generics.map((key, ind) => `${key}-${strength[ind]}${units[ind]}`);
+    return compositionArray.join(' + ');
+  };
+
   const getHeader = (caption: string) => {
     switch (caption) {
       case 'DRUG ALCOHOL INTERACTION':
@@ -990,7 +998,7 @@ export const MedicineDetails: React.FC = (props) => {
                               {medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
                                 <div className={classes.textInfo}>
                                   <Typography component="h2">Composition</Typography>
-                                  <Typography component="h3">{`${medicinePharmacyDetails[0].generic}-${medicinePharmacyDetails[0].Strengh}${medicinePharmacyDetails[0].Unit}`}</Typography>
+                                  <Typography component="h3">{renderComposition()}</Typography>
                                 </div>
                               )}
                               <div className={classes.textInfo}>
