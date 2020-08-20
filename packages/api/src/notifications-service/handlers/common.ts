@@ -3,7 +3,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { Connection } from 'typeorm';
 import { Doctor } from 'doctors-service/entities';
-import * as firebaseAdmin from 'firebase-admin';
 import path from 'path';
 import { format } from 'date-fns';
 import { Appointment } from 'consults-service/entities';
@@ -49,20 +48,6 @@ export const checkForValidAppointmentDoctorAndPatient = async function(
 
   return { appointment, doctorDetails, patientDetails };
 };
-
-//get initialized firebase admin
-export async function getInitializedFirebaseAdmin() {
-  //initialize firebaseadmin
-  const config = {
-    credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-  };
-  const admin = !firebaseAdmin.apps.length
-    ? firebaseAdmin.initializeApp(config)
-    : firebaseAdmin.app();
-
-  return admin;
-}
 
 //utility method to log the notification response
 export function logNotificationResponse(type: NotificationType, logData: Object) {

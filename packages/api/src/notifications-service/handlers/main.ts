@@ -22,13 +22,10 @@ import fs from 'fs';
 import { Appointment } from 'consults-service/entities';
 import * as child_process from 'child_process';
 import { Doctor } from 'doctors-service/entities';
-import {
-  getPatientDeviceTokens,
-  getInitializedFirebaseAdmin,
-  logNotificationResponse,
-} from './common';
+import { getPatientDeviceTokens, logNotificationResponse } from './common';
 import { sendNotificationSMS } from './sms';
 import { sendDoctorNotificationWhatsapp } from './whatsApp';
+import { admin } from 'notifications-service/firebase';
 
 export async function sendPatientRegistrationNotification(
   patient: Patient,
@@ -71,9 +68,6 @@ export async function sendPatientRegistrationNotification(
     priority: NotificationPriority.high,
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
   };
-
-  //initialize firebaseadmin
-  const admin = await getInitializedFirebaseAdmin();
 
   admin
     .messaging()
@@ -193,9 +187,6 @@ export async function sendMedicineOrderStatusNotification(
     return { status: true };
   }
 
-  //initialize firebaseadmin
-  const admin = await getInitializedFirebaseAdmin();
-
   admin
     .messaging()
     .sendToDevice(patientDeviceTokens, payload, options)
@@ -279,8 +270,6 @@ export async function sendDiagnosticOrderStatusNotification(
   };
 
   sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
-  //initialize firebaseadmin
-  const admin = await getInitializedFirebaseAdmin();
 
   admin
     .messaging()
@@ -373,7 +362,7 @@ export async function sendChatMessageNotification(
     //initialize firebaseadmin
 
     let notificationResponse: PushNotificationSuccessMessage;
-    const admin = await getInitializedFirebaseAdmin();
+
     const options = {
       priority: NotificationPriority.high,
       timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline

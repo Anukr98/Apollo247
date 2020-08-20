@@ -1,5 +1,4 @@
 import { Resolver } from 'api-gateway';
-import * as firebaseAdmin from 'firebase-admin';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
@@ -14,7 +13,7 @@ import path from 'path';
 import fs from 'fs';
 import { APPOINTMENT_TYPE, Appointment, STATUS } from 'consults-service/entities';
 import { writeRow, textInRow, uploadPdfFileToBlobStorage } from 'helpers/uploadFileToBlob';
-
+import { admin } from 'notifications-service/firebase';
 import PDFDocument from 'pdfkit';
 import { NotificationType, NotificationPriority } from 'notifications-service/constants';
 import {
@@ -69,14 +68,6 @@ const testPushNotification: Resolver<
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
 > = async (parent, args, {}) => {
-  //initialize firebaseadmin
-  const config = {
-    credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-  };
-  let admin = require('firebase-admin');
-  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
-
   //building payload
   const payload = {
     notification: {
@@ -346,14 +337,7 @@ const sendChatMessageToDoctor: Resolver<
 
   const registrationToken: string[] = [];
   if (deviceTokensList.length > 0) {
-    //initialize firebaseadmin
-    const config = {
-      credential: firebaseAdmin.credential.applicationDefault(),
-      databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-    };
-    let admin = require('firebase-admin');
     let notificationResponse: PushNotificationSuccessMessage;
-    admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
     const options = {
       priority: NotificationPriority.high,
       timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
@@ -443,14 +427,7 @@ const sendDoctorReminderNotifications: Resolver<
   let apptsListCount = 0;
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
-  //initialize firebaseadmin
-  const config = {
-    credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-  };
-  let admin = require('firebase-admin');
   let notificationResponse: PushNotificationSuccessMessage;
-  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
   const options = {
     priority: NotificationPriority.high,
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline

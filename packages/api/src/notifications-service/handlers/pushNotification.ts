@@ -29,13 +29,13 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { sendNotificationWhatsapp, sendDoctorNotificationWhatsapp } from './whatsApp';
-import { checkForValidAppointmentDoctorAndPatient, getInitializedFirebaseAdmin } from './common';
-import * as firebaseAdmin from 'firebase-admin';
+import { checkForValidAppointmentDoctorAndPatient } from './common';
 import { sendBrowserNotitication } from './browserNotification';
 import { sendNotificationSMS } from './sms';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { hitCallKitCurl } from 'notifications-service/handlers';
 import { DoctorDeviceTokenRepository } from 'doctors-service/repositories/doctorDeviceTokenRepository';
+import { admin } from 'notifications-service/firebase';
 
 type PushNotificationInput = {
   notificationType: NotificationType;
@@ -133,14 +133,6 @@ export async function sendCallsNotification(
     '{1}',
     doctorDetails.firstName + ' ' + doctorDetails.lastName
   );
-
-  //initialize firebaseadmin
-  const config = {
-    credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-  };
-  let admin = require('firebase-admin');
-  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
 
   //building payload
   const payload = {
@@ -619,14 +611,6 @@ export async function sendReminderNotification(
     };
   }
 
-  //initialize firebaseadmin
-  const config = {
-    credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-  };
-  let admin = require('firebase-admin');
-  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
-
   if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
   }
 
@@ -738,14 +722,6 @@ export async function sendCallsDisconnectNotification(
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
-
-  //initialize firebaseadmin
-  const config = {
-    credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-  };
-  let admin = require('firebase-admin');
-  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
 
   //building payload
   const payload = {
@@ -859,14 +835,6 @@ export async function sendCartNotification(
   }
   notificationBody = notificationBody.replace('{0}', patientDetails.firstName);
   notificationBody = notificationBody.replace('{1}', pushNotificationInput.orderAutoId.toString());
-
-  //initialize firebaseadmin
-  const config = {
-    credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-  };
-  let admin = require('firebase-admin');
-  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
 
   //building payload
   const payload = {
@@ -1393,14 +1361,6 @@ export async function sendNotification(
     }
   }
 
-  //initialize firebaseadmin
-  const config = {
-    credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-  };
-  let admin = require('firebase-admin');
-  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
-
   //building payload
   let payload = {
     notification: {
@@ -1697,7 +1657,6 @@ export async function sendDoctorAppointmentNotification(
   //initialize firebaseadmin
 
   let notificationResponse: PushNotificationSuccessMessage;
-  const admin = await getInitializedFirebaseAdmin();
   const options = {
     priority: NotificationPriority.high,
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
@@ -1781,7 +1740,6 @@ export async function sendDoctorRescheduleAppointmentNotification(
   //initialize firebaseadmin
 
   let notificationResponse: PushNotificationSuccessMessage;
-  const admin = await getInitializedFirebaseAdmin();
   const options = {
     priority: NotificationPriority.high,
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
