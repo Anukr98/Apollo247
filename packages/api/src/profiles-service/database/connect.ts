@@ -97,6 +97,7 @@ import {
   NotificationBinArchive,
   AppointmentUpdateHistory,
   ExotelDetails,
+  AppointmentCallFeedback
 } from 'consults-service/entities';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
 
@@ -226,6 +227,7 @@ export const connect = async () => {
         AppointmentUpdateHistory,
         ExotelDetails,
         ConsultQueueItem,
+        AppointmentCallFeedback
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,

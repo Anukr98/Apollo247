@@ -22,6 +22,7 @@ import {
   NotificationBinArchive,
   AppointmentUpdateHistory,
   ExotelDetails,
+  AppointmentCallFeedback
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,
@@ -122,6 +123,7 @@ export const connect = async () => {
         TransferAppointmentDetails,
         AppointmentUpdateHistory,
         ExotelDetails,
+        AppointmentCallFeedback
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
