@@ -136,7 +136,7 @@ const useStyles = makeStyles((theme: Theme) => {
       minHeight: '30px !important',
       margin: '0 !important',
       [theme.breakpoints.up('sm')]: {
-       pointerEvents: 'none',
+        pointerEvents: 'none',
       },
     },
     summaryContent: {
@@ -152,7 +152,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'none',
       [theme.breakpoints.up('sm')]: {
         display: 'inline-block',
-       },
+      },
     },
     panelExpanded: {
       minHeight: 'auto !important',
@@ -177,7 +177,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '10px 0px 20px 9px',
       [theme.breakpoints.down('xs')]: {
         padding: '10px 0px 20px 28px',
-      }
+      },
     },
     defaultOpen: {
       minHeight: 0,
@@ -188,8 +188,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingRight: 5,
         opacity: 1,
-       },
-      
+      },
     },
   };
 });
@@ -237,21 +236,28 @@ export const BottomLinks: React.FC = (props) => {
             {footerKeys &&
               footerKeys.map((currentItem: string) => {
                 return (
-                  
-                <li key={currentItem}>
-                    <ExpansionPanel  className={classes.panelRoot}>
+                  <li key={currentItem}>
+                    <ExpansionPanel className={classes.panelRoot}>
                       <ExpansionPanelSummary
-                          classes={{
+                        classes={{
                           root: classes.panelHeader,
-                          content: classes.summaryContent,                        
+                          content: classes.summaryContent,
                         }}
                       >
-                      <a className={classes.collapseHeader} href={'#'}><span className={classes.expandedIcon}>+</span>{currentItem}</a>
+                        <a className={classes.collapseHeader} href={'#'}>
+                          <span className={classes.expandedIcon}>+</span>
+                          {currentItem}
+                        </a>
                       </ExpansionPanelSummary>
                       <ExpansionPanelDetails className={classes.panelDetailsBlock}>
                         {footerData[currentItem].map((currentLink: FooterUrlInterface) => {
                           return (
-                            <a className={classes.innerLinks} key={currentLink.title} href={currentLink.url} target="_blank">
+                            <a
+                              className={classes.innerLinks}
+                              key={currentLink.title}
+                              href={currentLink.url}
+                              target="_blank"
+                            >
                               {currentLink.title}
                             </a>
                           );

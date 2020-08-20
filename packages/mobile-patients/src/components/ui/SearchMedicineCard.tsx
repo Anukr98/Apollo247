@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 0,
     color: theme.colors.SHERPA_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.fonts.IBMPlexSansMedium(12),
     lineHeight: 24,
   },
   personNameTextStyle: {

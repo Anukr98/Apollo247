@@ -12,6 +12,7 @@ import {
 
 import { log } from 'customWinstonLogger';
 import { genchecksumbystring } from 'lib/paytmLib/checksum.js';
+import { ApiConstants } from 'ApiConstants';
 
 type RefundInput = {
   refundAmount: number;
@@ -68,9 +69,12 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
     const saveRefundAttr: Partial<AppointmentRefunds> = refundInput;
     saveRefundAttr.refundStatus = REFUND_STATUS.REFUND_REQUEST_NOT_RAISED;
     const response = await appointmentRefRepo.saveRefundInfo(saveRefundAttr);
+    let mid = process.env.MID_CONSULTS ? process.env.MID_CONSULTS : '';
+    if (refundInput.appointmentPayments.partnerInfo == ApiConstants.PARTNER_SBI)
+      mid = process.env.SBI_MID_CONSULTS ? process.env.SBI_MID_CONSULTS : '';
 
     const paytmBody: PaytmBody = {
-      mid: process.env.MID_CONSULTS ? process.env.MID_CONSULTS : '',
+      mid,
       refId: response.refId,
       txnType: 'REFUND',
       txnId: refundInput.txnId,
@@ -78,10 +82,14 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
       refundAmount: '' + refundInput.refundAmount,
     };
 
-    const checksumHash = await genCheckSumPromiseWrapper(
-      paytmBody,
-      process.env.PAYTM_MERCHANT_KEY_CONSULTS ? process.env.PAYTM_MERCHANT_KEY_CONSULTS : ''
-    );
+    let merchantKey = process.env.PAYTM_MERCHANT_KEY_CONSULTS
+      ? process.env.PAYTM_MERCHANT_KEY_CONSULTS
+      : '';
+    if (refundInput.appointmentPayments.partnerInfo == ApiConstants.PARTNER_SBI)
+      merchantKey = process.env.SBI_PAYTM_MERCHANT_KEY_CONSULTS
+        ? process.env.SBI_PAYTM_MERCHANT_KEY_CONSULTS
+        : '';
+    const checksumHash = await genCheckSumPromiseWrapper(paytmBody, merchantKey);
     const paytmParams: PaytmHeadBody = {
       head: {
         signature: checksumHash,

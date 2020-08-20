@@ -24,7 +24,6 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
   NotificationType,
-  medicineOrderCancelled,
   sendMedicineOrderStatusNotification,
 } from 'notifications-service/resolvers/notifications';
 import { format, addMinutes, parseISO } from 'date-fns';
@@ -34,7 +33,6 @@ import { OneApollo } from 'helpers/oneApollo';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
-
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
     orderId: Int!
@@ -167,8 +165,13 @@ const updateOrderStatus: Resolver<
       statusMessage: updateOrderStatusInput.reasonCode,
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
-    medicineOrderCancelled(orderDetails, updateOrderStatusInput.reasonCode, profilesDb);
-    calculateRefund(orderDetails, 0, profilesDb, medicineOrdersRepo);
+    calculateRefund(
+      orderDetails,
+      0,
+      profilesDb,
+      medicineOrdersRepo,
+      updateOrderStatusInput.reasonCode
+    );
   }
 
   if (
@@ -345,8 +348,6 @@ const updateOrderStatus: Resolver<
         postEvent(postBody);
       }
       if (status == MEDICINE_ORDER_STATUS.CANCELLED) {
-        medicineOrderCancelled(orderDetails, updateOrderStatusInput.reasonCode, profilesDb);
-
         //post order cancelled event to webEngage
         const postBody: Partial<WebEngageInput> = {
           userId: orderDetails.patient.mobileNumber,
@@ -377,7 +378,13 @@ const updateOrderStatus: Resolver<
         },
         0
       );
-      calculateRefund(orderDetails, totalOrderBilling, profilesDb, medicineOrdersRepo);
+      calculateRefund(
+        orderDetails,
+        totalOrderBilling,
+        profilesDb,
+        medicineOrdersRepo,
+        updateOrderStatusInput.reasonCode
+      );
     }
   }
 
@@ -452,7 +459,6 @@ const generateTransactions = async (
 ) => {
   let transactions: OneApollTransaction[] = [];
   let index = 0;
-  const totalInvoices = invoiceDetails.length;
   return processInvoices(invoiceDetails[index]);
   async function processInvoices(val: MedicineOrderInvoice) {
     const itemDetails = JSON.parse(val.itemDetails);
@@ -461,16 +467,15 @@ const generateTransactions = async (
     );
 
     const itemTypemap = await getSkuMap(itemSku);
-    let transactionLineItems = addProductNameAndCat(transactionLineItemsPartial, itemTypemap);
     const healthCreditsRedeemed = +new Decimal(
       order.medicineOrderPayments[0].healthCreditsRedeemed
     ).toDecimalPlaces(2, Decimal.ROUND_DOWN);
-    const transactionLineItemsCom = updateCreditsRedeemedInfo(
-      transactionLineItems,
-      healthCreditsRedeemed,
-      itemTypemap
+    let transactionLineItems = addProductNameAndCat(
+      transactionLineItemsPartial,
+      itemTypemap,
+      healthCreditsRedeemed
     );
-    netAmount = transactionLineItemsCom.reduce((acc, curValue) => {
+    netAmount = transactionLineItems.reduce((acc, curValue) => {
       return acc + curValue.NetAmount;
     }, 0);
     const billDetails: BillDetails = JSON.parse(val.billDetails);
@@ -486,7 +491,7 @@ const generateTransactions = async (
       TransactionDate: billDetails.billDateTime,
       GrossAmount: +new Decimal(netAmount).plus(totalDiscount).plus(healthCreditsRedeemed),
       Discount: totalDiscount,
-      TransactionLineItems: transactionLineItemsCom,
+      TransactionLineItems: transactionLineItems,
       StoreCode: getStoreCodeFromDevice(order.deviceType, order.bookingSource),
     };
     transactions.push(transaction);
@@ -516,30 +521,71 @@ const getStoreCodeFromDevice = (
 
 const addProductNameAndCat = (
   transactionLineItems: TransactionLineItemsPartial[],
-  itemTypemap: ItemsSkuTypeMap
+  itemTypemap: ItemsSkuTypeMap,
+  totalCreditsRedeemed: number
 ): TransactionLineItems[] => {
-  const transactionLineItemsComplete: TransactionLineItems[] = [];
+  const fmcgItems: TransactionLineItems[] = [];
+  const pharmaItems: TransactionLineItems[] = [];
+  const plItems: TransactionLineItems[] = [];
+  let availableCredits = totalCreditsRedeemed;
   transactionLineItems.forEach((val, i, arr) => {
     const productType = itemTypemap[val.ProductCode].toLowerCase();
-    let productName = ProductTypes.PHARMA;
-    let ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PHARMA;
     switch (productType) {
       case 'fmcg':
-        productName = ProductTypes.FMCG;
-        ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.NON_PHARMA;
+        let pointsRedeemed = 0;
+        if (availableCredits) {
+          pointsRedeemed = val.NetAmount > availableCredits ? availableCredits : val.NetAmount;
+          let netAmount = +new Decimal(val.NetAmount).minus(pointsRedeemed);
+          arr[i].NetAmount = netAmount;
+          availableCredits = +new Decimal(availableCredits).minus(pointsRedeemed);
+        }
+        fmcgItems.push({
+          ...arr[i],
+          ProductName: ProductTypes.FMCG,
+          ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY.NON_PHARMA,
+          PointsRedeemed: pointsRedeemed,
+        });
         break;
       case 'pl':
-        productName = ProductTypes.PL;
-        ProductCategory = ONE_APOLLO_PRODUCT_CATEGORY.PRIVATE_LABEL;
+        plItems.push({
+          ...arr[i],
+          ProductName: ProductTypes.PL,
+          ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY.PRIVATE_LABEL,
+        });
+        break;
+      case 'pharma':
+        pharmaItems.push({
+          ...arr[i],
+          ProductName: ProductTypes.PHARMA,
+          ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY.PHARMA,
+        });
         break;
     }
-    transactionLineItemsComplete.push({
-      ...arr[i],
-      ProductName: productName,
-      ProductCategory: ProductCategory,
-    });
   });
+  if (availableCredits && pharmaItems.length) {
+    pharmaItems.forEach(_updatePointsNetAmount);
+  }
 
+  if (availableCredits && plItems.length) {
+    plItems.forEach(_updatePointsNetAmount);
+  }
+
+  function _updatePointsNetAmount(
+    curItem: TransactionLineItems,
+    i: number,
+    arr: TransactionLineItems[]
+  ) {
+    if (availableCredits) {
+      let pointsRedeemed =
+        curItem.NetAmount > availableCredits ? availableCredits : curItem.NetAmount;
+      let netAmount = +new Decimal(curItem.NetAmount).minus(pointsRedeemed);
+      availableCredits = +new Decimal(availableCredits).minus(pointsRedeemed);
+      arr[i].PointsRedeemed = pointsRedeemed;
+      arr[i].NetAmount = netAmount;
+    }
+  }
+
+  const transactionLineItemsComplete = fmcgItems.concat(pharmaItems, plItems);
   return transactionLineItemsComplete;
 };
 
@@ -608,73 +654,6 @@ const createLineItems = (itemDetails: Array<ItemDetails>) => {
     netAmount,
     itemSku,
   };
-};
-
-const updateCreditsRedeemedInfo = (
-  transactionLineItems: TransactionLineItems[],
-  totalCreditsRedeemed: number,
-  itemTypemap: ItemsSkuTypeMap
-): TransactionLineItems[] => {
-  let availableCredits = totalCreditsRedeemed;
-  const arrSize = transactionLineItems.length;
-  for (let i = 0; i < arrSize; i++) {
-    let currentItem = Object.assign({}, transactionLineItems[i]);
-    if (currentItem.ProductCode) {
-      const currentProductCode: ProductTypePharmacy = itemTypemap[
-        currentItem.ProductCode
-      ].toLowerCase() as ProductTypePharmacy;
-      let earningCurrentItem = projectedEarnings(
-        currentProductCode,
-        currentItem.NetAmount,
-        currentItem.DiscountAmount
-      );
-      for (let j = i + 1; j < arrSize; j++) {
-        if (!availableCredits) {
-          break;
-        }
-        const iterationItem = Object.assign({}, transactionLineItems[j]);
-        const iterationProductCode: ProductTypePharmacy = itemTypemap[
-          iterationItem.ProductCode
-        ].toLowerCase() as ProductTypePharmacy;
-        const earningIterationItem = projectedEarnings(
-          iterationProductCode,
-          iterationItem.NetAmount,
-          iterationItem.DiscountAmount
-        );
-
-        if (earningCurrentItem > earningIterationItem) {
-          transactionLineItems[i] = Object.assign({}, iterationItem);
-          transactionLineItems[j] = Object.assign({}, currentItem);
-          currentItem = transactionLineItems[i];
-          earningCurrentItem = earningIterationItem;
-        }
-      }
-
-      const pointsRedeemed =
-        currentItem.NetAmount > availableCredits ? availableCredits : currentItem.NetAmount;
-      availableCredits = +new Decimal(availableCredits).minus(pointsRedeemed);
-      transactionLineItems[i].PointsRedeemed = pointsRedeemed;
-
-      transactionLineItems[i].NetAmount = +new Decimal(currentItem.NetAmount).minus(pointsRedeemed);
-    }
-  }
-  if (availableCredits) {
-    transactionLineItems[arrSize - 1].PointsRedeemed = availableCredits;
-  }
-  return transactionLineItems;
-};
-
-const projectedEarnings = (
-  type: ProductTypePharmacy,
-  netAmount: number,
-  discount: number
-): number => {
-  const earningsPerTypes = {
-    pharma: ApiConstants.PHARMA_DISCOUNT,
-    fmcg: ApiConstants.FMCG_DISCOUNT,
-    pl: ApiConstants.PL_DISCOUNT,
-  };
-  return discount ? 0 : +new Decimal(netAmount).times(earningsPerTypes[type]);
 };
 
 export const updateOrderStatusResolvers = {

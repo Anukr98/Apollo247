@@ -27,12 +27,18 @@ import {
   trackWebEngageEventForCasesheetUpdate,
   trackWebEngageEventForCasesheetInsert,
   trackWebEngageEventForExotelCall,
+  trackWebEngageEventForAppointmentComplete,
 } from 'notifications-service/resolvers/webEngageAPI';
 
 export enum APPOINTMENT_UPDATED_BY {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
   ADMIN = 'ADMIN',
+}
+
+export interface PaginateParams {
+  take?: number;
+  skip?: number;
 }
 
 export enum ES_DOCTOR_SLOT_STATUS {
@@ -381,10 +387,7 @@ export class Appointment extends BaseEntity {
   )
   appointmentDocuments: AppointmentDocuments[];
 
-  @OneToMany(
-    (type) => ConsultQueueItem,
-    (consultQueueItem) => consultQueueItem.appointment
-  )
+  @OneToMany((type) => ConsultQueueItem, (consultQueueItem) => consultQueueItem.appointment)
   consultQueueItem: ConsultQueueItem[];
 
   @OneToMany((type) => AuditHistory, (auditHistory) => auditHistory.appointment)
@@ -397,11 +400,16 @@ export class Appointment extends BaseEntity {
     },
     { onDelete: 'CASCADE', onUpdate: 'CASCADE' }
   )
-  callDetails: ExotelDetails[];
+  callDetails: Array<ExotelDetails>;
 
   @AfterUpdate()
   async dropAppointmentCache() {
     await delCache(`patient:appointment:${this.id}`);
+  }
+
+  @AfterUpdate()
+  trackWebEngageEventForAppointmentComplete() {
+    trackWebEngageEventForAppointmentComplete(this);
   }
 
   @AfterUpdate()
@@ -479,6 +487,9 @@ export class AppointmentPayments extends BaseEntity {
 
   @Column({ type: 'text' })
   responseMessage: string;
+
+  @Column({ nullable: true })
+  partnerInfo: string;
 
   @UpdateDateColumn({ nullable: true })
   updatedDate: Date;
@@ -590,7 +601,6 @@ export class AppointmentSessions extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   consultEndDateTime: Date;
 
-  @Index('AppointmentSessions_sessionId')
   @Column()
   sessionId: string;
 
@@ -853,7 +863,6 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   prismFileId: string;
 
-  @Index('CaseSheet_consultType')
   @Column()
   consultType: APPOINTMENT_TYPE;
 
@@ -874,7 +883,6 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true, type: 'json' })
   diagnosticPrescription: string;
 
-  @Index('CaseSheet_doctorId')
   @Column({ nullable: true })
   doctorId: string;
 
@@ -961,6 +969,11 @@ export class CaseSheet extends BaseEntity {
   @AfterInsert()
   trackWebEngageEventForCasesheetInsert() {
     trackWebEngageEventForCasesheetInsert(this);
+  }
+
+  @AfterUpdate()
+  async dropAppointmentCache() {
+    await delCache(`patient:appointment:${this.appointment.id}`);
   }
 }
 //case sheet ends
@@ -1140,7 +1153,6 @@ export class DoctorNextAvaialbleSlots extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('DoctorNextAvaialbleSlots_doctorId')
   @Column({ nullable: true })
   doctorId: string;
 
@@ -1310,18 +1322,15 @@ export class JdDashboardSummary extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('JdDashboardSummary_doctorId')
   @Column()
   doctorId: string;
 
-  @Index('JdDashboardSummary_isActive')
   @Column({ default: true })
   isActive: boolean;
 
   @Column()
   doctorName: string;
 
-  @Index('JdDashboardSummary_adminIds')
   @Column({ default: '' })
   adminIds: string;
 
@@ -1427,14 +1436,12 @@ export class SdDashboardSummary extends BaseEntity {
   @Column()
   doctorId: string;
 
-  @Index('SdDashboardSummary_isActive')
   @Column({ default: true })
   isActive: boolean;
 
   @Column()
   doctorName: string;
 
-  @Index('SdDashboardSummary_adminIds')
   @Column({ default: '' })
   adminIds: string;
 
@@ -1498,11 +1505,9 @@ export class SdDashboardSummary extends BaseEntity {
   @Column({ default: 0 })
   unPaidFollowUp: number;
 
-  @Index('SdDashboardSummary_noOfAwayDoctors')
   @Column({ default: 0 })
   noOfAwayDoctors: number;
 
-  @Index('SdDashboardSummary_noOfOnlineDoctors')
   @Column({ default: 0 })
   noOfOnlineDoctors: number;
 
@@ -1557,18 +1562,15 @@ export class DoctorFeeSummary extends BaseEntity {
   @Column()
   appointmentDateTime: Date;
 
-  @Index('DoctorFeeSummary_doctorId')
   @Column()
   doctorId: string;
 
-  @Index('DoctorFeeSummary_isActive')
   @Column()
   isActive: boolean;
 
   @Column({ default: '' })
   doctorName: string;
 
-  @Index('DoctorFeeSummary_specialtiyId')
   @Column({ default: '' })
   specialtiyId: string;
 
@@ -1615,7 +1617,6 @@ export class PlannedDoctors extends BaseEntity {
   @Column()
   speciality: string;
 
-  @Index('PlannedDoctors_specialityId')
   @Column()
   specialityId: string;
 
@@ -1670,14 +1671,12 @@ export class AuditHistory extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('AuditHistory_doctorType')
   @Column({ nullable: true })
   doctorType: string;
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.auditHistory)
   appointment: Appointment;
 
-  @Index('AuditHistory_auditorId')
   @Column()
   auditorId: string;
 
@@ -1699,7 +1698,6 @@ export class CurrentAvailabilityStatus extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('CurrentAvailabilityStatus_specialityId')
   @Column({ nullable: true })
   specialityId: string;
 
@@ -1724,7 +1722,6 @@ export class UtilizationCapacity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('UtilizationCapacity_specialityId')
   @Column({ nullable: true })
   specialityId: string;
 
@@ -1764,7 +1761,6 @@ export class NotificationBin extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @Index('NotificationBin_fromId')
   @Column()
   fromId: string;
 
@@ -1785,7 +1781,6 @@ export class NotificationBin extends BaseEntity {
   @Column()
   message: string;
 
-  @Index('NotificationBin_status')
   @Column()
   status: notificationStatus;
 
@@ -1806,15 +1801,12 @@ export class NotificationBinArchive extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @Index('NotificationBinArchive_fromId')
   @Column()
   fromId: string;
 
-  @Index('NotificationBinArchive_toId')
   @Column()
   toId: string;
 
-  @Index('NotificationBinArchive_eventId')
   @Column()
   eventId: string;
 
@@ -1827,7 +1819,6 @@ export class NotificationBinArchive extends BaseEntity {
   @Column()
   message: string;
 
-  @Index('NotificationBinArchive_status')
   @Column()
   status: notificationStatus;
 
@@ -1844,7 +1835,6 @@ export class ExotelDetails extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('ExotelDetails_doctorId')
   @Column()
   doctorId: string;
 
@@ -1861,15 +1851,12 @@ export class ExotelDetails extends BaseEntity {
   @JoinColumn({ name: 'appointmentId' })
   appointment: Appointment;
 
-  @Index('ExotelDetails_doctorType')
   @Column()
   doctorType: string;
 
-  @Index('ExotelDetails_callStatus')
   @Column()
   status: string;
 
-  @Index('ExotelDetails_callSid')
   @Column()
   callSid: string;
 
@@ -1896,13 +1883,11 @@ export class ExotelDetails extends BaseEntity {
   patientPickedUp: Boolean;
 
   // from
-  @Index('Doctor_mobileNumber')
   @Column()
   @Validate(MobileNumberValidator)
   doctorMobileNumber: string;
 
   // to
-  @Index('Patient_mobileNumber')
   @Column()
   @Validate(MobileNumberValidator)
   patientMobileNumber: string;
