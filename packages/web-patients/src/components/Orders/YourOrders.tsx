@@ -245,7 +245,9 @@ export const YourOrders: React.FC = (props) => {
         }`}
       >
         <div className={classes.sectionHeader}>Your Orders</div>
-        {(orderAutoId || billNumber) && orderListData && orderListData.length > 0 ? (
+        {(isSmallScreen || orderAutoId || billNumber) &&
+        orderListData &&
+        orderListData.length > 0 ? (
           orderListData.map((orderInfo) => {
             if (
               orderInfo &&

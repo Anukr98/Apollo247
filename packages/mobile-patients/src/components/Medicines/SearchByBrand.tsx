@@ -154,6 +154,16 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_LIST_GRID_VIEW] = {
+      'Category id': category_id,
+      'Category name': pageTitle,
+      'Source': 'Category',
+      'Type': showListView ? 'List' : 'Grid',
+    };
+    postWebEngageEvent(WebEngageEventName.CATEGORY_LIST_GRID_VIEW, eventAttributes);
+  },[showListView]);
+
+  useEffect(() => {
     if (products) {
       return;
     }

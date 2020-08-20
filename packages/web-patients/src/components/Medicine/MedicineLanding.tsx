@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorListingPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        marginTop: 80,
+        marginTop: 70,
       },
     },
     pageTopHeader: {
@@ -68,7 +68,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     medicineTopGroup: {
       display: 'flex',
-      paddingTop: 25,
+      // paddingTop: 25,
       [theme.breakpoints.down('xs')]: {
         display: 'block',
         paddingTop: 0,
@@ -429,6 +429,13 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    medicineHeader: {
+      [theme.breakpoints.down('xs')]: {
+        '& header': {
+          boxShadow: 'none',
+        },
+      },
+    },
   };
 });
 
@@ -653,7 +660,9 @@ export const MedicineLanding: React.FC = (props: any) => {
   return (
     <div className={classes.root}>
       <MetaTagsComp {...metaTagProps} />
-      <Header />
+      <div className={classes.medicineHeader}>
+        <Header />
+      </div>
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.pageTopHeader}>

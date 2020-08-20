@@ -23,6 +23,7 @@ import {
   NotificationBinArchive,
   AppointmentUpdateHistory,
   ExotelDetails,
+  ConsultQueueItem,
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,

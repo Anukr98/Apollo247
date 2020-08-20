@@ -189,6 +189,14 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   }, [currentPatient]);
 
   useEffect(() => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_LIST_GRID_VIEW] = {
+      'Source': 'Search',
+      'Type': showListView ? 'List' : 'Grid',
+    };
+    postWebEngageEvent(WebEngageEventName.CATEGORY_LIST_GRID_VIEW, eventAttributes);
+  },[showListView]);
+
+  useEffect(() => {
     searchTextFromProp && onSearchProduct(searchTextFromProp);
   }, []);
 

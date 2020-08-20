@@ -27,10 +27,10 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '15px 20px 15px 20px',
         position: 'fixed',
         width: '100%',
-        top: 72,
+        top: 60,
         zIndex: 998,
         background: '#fff',
-        boxShadow: '0 4px 4px 0 rgba(0, 0, 0, 0.2)',
+        // boxShadow: '0 4px 4px 0 rgba(0, 0, 0, 0.2)',
       },
     },
     medicineSearchForm: {
