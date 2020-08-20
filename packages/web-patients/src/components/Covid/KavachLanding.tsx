@@ -396,7 +396,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const KavachLanding: React.FC = (props) => {
+const KavachLanding: React.FC = (props) => {
   const classes = useStyles({});
 
   interface ServicesLocationsInterface {
@@ -1719,3 +1719,5 @@ export const KavachLanding: React.FC = (props) => {
     </div>
   );
 };
+
+export default KavachLanding;

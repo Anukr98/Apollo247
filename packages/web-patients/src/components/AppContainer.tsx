@@ -1,7 +1,8 @@
 import { setConfig, Config } from 'react-hot-loader';
 import { hot } from 'react-hot-loader/root';
 import React, { useEffect } from 'react';
-import Loadable from 'react-loadable';
+// import Loadable from 'react-loadable';
+import loadable from '@loadable/component';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -14,23 +15,14 @@ import { AphThemeProvider, aphTheme } from '@aph/web-ui-components';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
 
-// import { DoctorDetails } from 'components/DoctorDetails';
-const DoctorDetails = Loadable({
-  loader: () => import('components/DoctorDetails'),
-  loading() {
-    return (
-      <div>
-        <CircularProgress />
-      </div>
-    );
-  },
-});
+const DoctorDetails = loadable(() => import('components/DoctorDetails'));
 import { AuthRouted } from 'components/AuthRouted';
 import PatientsList from 'components/PatientsList';
 import { CartPoc } from 'components/CartPoc';
 import { MedicineCartLanding } from 'components/Cart/MedicineCartLanding';
 import { TestsCartLanding } from 'components/Tests/Cart/TestsCartLanding';
-import MedicineLanding from 'components/Medicine/MedicineLanding';
+// import MedicineLanding from 'components/Medicine/MedicineLanding';
+const MedicineLanding = loadable(() => import('components/Medicine/MedicineLanding'));
 import { ViewAllBrands } from 'components/Medicine/ViewAllBrands';
 import { SearchByBrand } from 'components/Medicine/SearchByBrand';
 import { Appointments } from 'components/Consult/V2/Appointments';
@@ -48,16 +40,7 @@ import { MedicineDetails } from 'components/Medicine/MedicineDetails';
 import { AddressBook } from 'components/MyAccount/AddressBook';
 import Scrollbars from 'react-custom-scrollbars';
 import { LocationProvider } from 'components/LocationProvider';
-
-// import { SymptomsTracker } from 'components/SymptomsTracker/SymptomsTracker';
-const SymptomsTracker = React.lazy(() =>
-  import(
-    /*
-  webpackChunkName: "symptoms-tracker",
-  webpackPrefetch: true
-*/ 'components/SymptomsTracker/SymptomsTracker'
-  )
-);
+const SymptomsTracker = loadable(() => import('components/SymptomsTracker/SymptomsTracker'));
 import { SymptomsTrackerSDK } from 'components/SymptomsTracker/SymptomsTrackerSDK';
 import { TestsLanding } from 'components/Tests/TestsLanding';
 import { TestDetails } from 'components/Tests/TestDetails';
@@ -71,9 +54,12 @@ import { Privacy } from 'components/Privacy';
 import { Faq } from 'components/Faq';
 import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
 import { ContactUs } from 'components/ContactUs';
-import { CovidLanding } from 'components/Covid/CovidLanding';
-import { KavachLanding } from 'components/Covid/KavachLanding';
-import { CovidArticleDetails } from 'components/Covid/CovidArticleDetails';
+// import CovidLanding from 'components/Covid/CovidLanding';
+// import KavachLanding from 'components/Covid/KavachLanding';
+// import CovidArticleDetails from 'components/Covid/CovidArticleDetails';
+const CovidLanding = loadable(() => import('components/Covid/CovidLanding'));
+const KavachLanding = loadable(() => import('components/Covid/KavachLanding'));
+const CovidArticleDetails = loadable(() => import('components/Covid/CovidArticleDetails'));
 import { AboutUs } from 'components/AboutUs';
 import { Help } from 'components/Help/Help';
 import { MyPayments } from 'components/MyAccount/MyPayments';
@@ -81,37 +67,11 @@ import { PayMedicine } from 'components/PayMedicine';
 import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
 import { ClinicCheckout } from './Checkout/ClinicCheckout';
 import { PrescriptionReview } from 'components/PrescriptionReview';
-// import { SpecialityListing } from 'components/SpecialityListing';
-// const SpecialityListing = React.lazy(() =>
-//   import(
-//     /*
-//   webpackChunkName: "speciality-listing",
-//   webpackPrefetch: true
-// */ 'components/SpecialityListing'
-//   )
-// );
-const SpecialityListing = Loadable({
-  loader: () => import('components/SpecialityListing'),
-  loading() {
-    return (
-      <div>
-        <CircularProgress />
-      </div>
-    );
-  },
-});
+const SpecialityListing = loadable(() => import('components/SpecialityListing'));
 import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
 import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 import { MedicineSearch } from './Medicine/MedicineSearch';
-// import { DoctorsLanding } from 'components/DoctorsLanding';
-const DoctorsLanding = React.lazy(() =>
-  import(
-    /*
-  webpackChunkName: "doctors-landing",
-  webpackPrefetch: true
-*/ 'components/DoctorsLanding'
-  )
-);
+const DoctorsLanding = loadable(() => import('components/DoctorsLanding'));
 import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
 import { Loader } from 'components/Loader';
 

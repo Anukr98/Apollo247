@@ -224,7 +224,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CovidLanding: React.FC = (props: any) => {
+const CovidLanding: React.FC = (props: any) => {
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
@@ -480,3 +480,5 @@ export const CovidLanding: React.FC = (props: any) => {
     </div>
   );
 };
+
+export default CovidLanding;
