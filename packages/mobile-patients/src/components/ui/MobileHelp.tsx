@@ -16,7 +16,11 @@ import {
   SendHelpEmail,
   SendHelpEmailVariables,
 } from '@aph/mobile-patients/src/graphql/types/SendHelpEmail';
-import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  handleGraphQlError,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { NeedHelp } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -37,7 +41,11 @@ import {
 import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { useUIElements } from '../UIElementsProvider';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   subViewPopup: {
@@ -357,7 +365,11 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
       patientId: g(currentPatient, 'id'),
       email: email,
     };
-    // setBugFenderLog('SEND_HELP_EMAIL', helpEmail);
+    const attributes: WebEngageEvents[WebEngageEventName.TICKET_RAISED] = {
+      Category: helpCategory,
+      Query: selectedQuery,
+    };
+    postWebEngageEvent(WebEngageEventName.TICKET_RAISED, attributes);
     client
       .query<SendHelpEmail, SendHelpEmailVariables>({
         query: SEND_HELP_EMAIL,
