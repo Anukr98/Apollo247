@@ -19,7 +19,7 @@ import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
 import { DoctorCard } from 'components/Consult/V2/ChatRoom/DoctorCard';
 import { WelcomeCard } from 'components/Consult/V2/ChatRoom/WelcomeCard';
 import { BookRescheduleAppointmentInput, STATUS } from 'graphql/types/globalTypes';
-import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+// import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import PubNub, { PubnubStatus, PublishResponse, HistoryResponse } from 'pubnub';
 import _startCase from 'lodash/startCase';
@@ -28,6 +28,8 @@ import {
   JOIN_JDQ_WITH_AUTOMATED_QUESTIONS,
   GET_APPOINTMENT_DATA,
   UPDATE_APPOINTMENT_SESSION,
+  PAST_APPOINTMENTS_COUNT,
+  UPDATE_SAVE_EXTERNAL_CONNECT,
 } from 'graphql/consult';
 import { downloadDocuments } from 'graphql/types/downloadDocuments';
 import { DOWNLOAD_DOCUMENT } from 'graphql/profiles';
@@ -40,6 +42,14 @@ import {
   UpdateAppointmentSessionVariables,
 } from 'graphql/types/UpdateAppointmentSession';
 import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
+import {
+  GetPastAppointmentsCount,
+  GetPastAppointmentsCountVariables,
+} from 'graphql/types/GetPastAppointmentsCount';
+import {
+  UpdateSaveExternalConnect,
+  UpdateSaveExternalConnectVariables,
+} from 'graphql/types/UpdateSaveExternalConnect';
 import { useApolloClient } from 'react-apollo-hooks';
 import { UploadChatPrescription } from 'components/Consult/V2/ChatRoom/UploadChatPrescriptions';
 import { UploadChatEPrescriptionCard } from 'components/Consult/V2/ChatRoom/UploadChatEPrescriptionCard';
@@ -856,7 +866,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [weightError, setWeightError] = useState<boolean>(false);
   const [heightError, setHeightError] = useState<boolean>(false);
   const [messages, setMessages] = useState<any>([]);
-  const [newMessage, setNewMessage] = useState<any>('');
+  // const [newMessage, setNewMessage] = useState<any>('');
   const [drugAllergyError, setDrugAllergyError] = useState<boolean>(false);
   const [dietAllergyError, setDietAllergyError] = useState<boolean>(false);
   const [bpError, setBpError] = useState<boolean>(false);
@@ -866,9 +876,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [appDataLoading, setAppDataLoading] = useState<boolean>(true);
+  const [appHistoryLoading, setAppHistoryLoading] = useState<boolean>(true);
   const [consultQMutationLoading, setConsultQMutationLoading] = useState<boolean>(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
+  // const [appointmentsCount, setAppointmentsCount] = useState<any>(null);
+  const [doctorInteractionModal, setDoctorInteractionModal] = useState(true);
+
+  // console.log(appointmentsCount, '------------------------');
 
   const { currentPatient } = useAllCurrentPatients();
   const doctorDisplayName = props.doctorDetails.getDoctorDetailsById.displayName;
@@ -906,6 +921,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     AddToConsultQueueWithAutomatedQuestions,
     AddToConsultQueueWithAutomatedQuestionsVariables
   >(JOIN_JDQ_WITH_AUTOMATED_QUESTIONS);
+
+  const mutationUpdateSaveExternalConnect = useMutation<
+    UpdateSaveExternalConnect,
+    UpdateSaveExternalConnectVariables
+  >(UPDATE_SAVE_EXTERNAL_CONNECT);
 
   const getPrismUrls = (patientId: string, fileIds: string[]) => {
     return new Promise((res, rej) => {
@@ -1043,6 +1063,51 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       };
     }
   }, [appointmentId]);
+
+  useEffect(() => {
+    const getPastAppointmentsWithTheDoctor = (
+      doctorId: string,
+      patientId: string,
+      appointmentId: string
+    ) => {
+      setAppHistoryLoading(true);
+      apolloClient
+        .query<GetPastAppointmentsCount, GetPastAppointmentsCountVariables>({
+          query: PAST_APPOINTMENTS_COUNT,
+          variables: {
+            doctorId: doctorId,
+            patientId: patientId,
+            appointmentId: appointmentId,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          setAppHistoryLoading(false);
+          if (response && response.data && response.data.getPastAppointmentsCount) {
+            const appointmentsCount = response.data.getPastAppointmentsCount;
+            const yesCount = appointmentsCount.yesCount;
+            if (yesCount > 0) {
+              setDoctorInteractionModal(false);
+            } else {
+              setDoctorInteractionModal(true);
+            }
+          }
+        })
+        .catch((e) => {
+          setAppHistoryLoading(false);
+          console.log(e);
+        });
+    };
+
+    if (appointmentDetails) {
+      getPastAppointmentsWithTheDoctor(
+        appointmentDetails.doctorId,
+        currentPatient.id,
+        appointmentDetails.id
+      );
+      // console.log(appointmentDetails, '===========================');
+    }
+  }, [appointmentDetails]);
 
   // useEffect(() => {
   //   // console.log(newMessage, 'new message in useeffect is.......');
@@ -2240,6 +2305,70 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         </div>
       </Modal>
       {/* model popup for image preview ends */}
+
+      {/* modal popup for doctor interaciton questions */}
+      {!appHistoryLoading && (
+        <Modal open={doctorInteractionModal} onClose={() => setDoctorInteractionModal(false)}>
+          <div className={classes.modalWindowWrap}>
+            <div className={classes.tableContent}>
+              <div className={classes.modalWindow}>
+                <div className={classes.modalHeader}>
+                  <div
+                    className={classes.modalClose}
+                    onClick={() => setDoctorInteractionModal(false)}
+                  >
+                    <img src={require('images/ic_round_clear.svg')} alt="" />
+                  </div>
+                </div>
+                <div className={classes.modalContent}>
+                  <div>Have you interacted with the doctor before?</div>
+                  <div>(This is to know more about your past health records)</div>
+                  <div>
+                    <AphButton
+                      onClick={() => {
+                        mutationUpdateSaveExternalConnect({
+                          variables: {
+                            appointmentId: appointmentId,
+                            doctorId: appointmentDetails.doctorId,
+                            externalConnect: false,
+                            patientId: currentPatient && currentPatient.id,
+                          },
+                        })
+                          .then(() => setDoctorInteractionModal(false))
+                          .catch(() => {
+                            setDoctorInteractionModal(false);
+                          });
+                      }}
+                    >
+                      No
+                    </AphButton>
+                    <AphButton
+                      onClick={() => {
+                        mutationUpdateSaveExternalConnect({
+                          variables: {
+                            appointmentId: appointmentId,
+                            doctorId: appointmentDetails.doctorId,
+                            externalConnect: true,
+                            patientId: currentPatient && currentPatient.id,
+                          },
+                        })
+                          .then(() => setDoctorInteractionModal(false))
+                          .catch(() => {
+                            setDoctorInteractionModal(false);
+                          });
+                      }}
+                    >
+                      Yes
+                    </AphButton>
+                  </div>
+                </div>
+                <div className={classes.modalFooter}></div>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+      {/* modal popup for doctor interaciton questions */}
     </div>
   );
 };
