@@ -28336,6 +28336,33 @@
             "deprecationReason": null
           },
           {
+            "name": "SaveItdoseHomeCollectionDiagnosticOrder",
+            "description": null,
+            "args": [
+              {
+                "name": "diagnosticOrderInput",
+                "description": null,
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "DiagnosticOrderInput",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "SaveDiagnosticOrderResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "saveDiagnosticOrderPayment",
             "description": null,
             "args": [
@@ -37038,6 +37065,20 @@
               "kind": "ENUM",
               "name": "DIAGNOSTIC_ORDER_PAYMENT_TYPE",
               "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "slotId",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
             },
             "defaultValue": null
           },
