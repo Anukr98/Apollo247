@@ -71,7 +71,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     bookingSource: BOOKINGSOURCE
     deviceType: DEVICETYPE
     paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE
-    slotId: String!
+    slotId: String
     items: [DiagnosticLineItem]
   }
 
@@ -697,9 +697,15 @@ const SaveItdoseHomeCollectionDiagnosticOrder: Resolver<
     orderId = '',
     displayId = '';
 
+  console.log(diagnosticOrderInput.slotId)
+  if (!diagnosticOrderInput.slotId) {
+    throw new AphError(AphErrorMessages.NO_SLOT_ID)
+  }
+
   if (!diagnosticOrderInput.items) {
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
   }
+
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(diagnosticOrderInput.patientId);
   let patientAddress = '',
@@ -880,7 +886,7 @@ const SaveItdoseHomeCollectionDiagnosticOrder: Resolver<
     }
     const diagnosticProcessURL = process.env.DIAGNOSTIC_ITDOSE_HOMEBOOKING_URL
     if (!diagnosticProcessURL) {
-      throw new AphError(AphErrorMessages.ITDOSE_GET_SLOTS_ERROR, undefined, { "cause": "add env DIAGNOSTICS_ITDOSE_LOGIN_URL" })
+      throw new AphError(AphErrorMessages.SAVE_ITDOSE_DIAGNOSTIC_ORDER_ERROR, undefined, { "cause": "add env DIAGNOSTICS_ITDOSE_LOGIN_URL" })
     }
     const diagnosticProcess = await fetch(`${diagnosticProcessURL}`, options)
       .then((res) => res.json())
@@ -892,7 +898,7 @@ const SaveItdoseHomeCollectionDiagnosticOrder: Resolver<
           '',
           JSON.stringify(error)
         );
-        throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, { "cause": error.toString() });
+        throw new AphError(AphErrorMessages.SAVE_ITDOSE_DIAGNOSTIC_ORDER_ERROR, undefined, { "cause": error.toString() });
       });
 
     if (diagnosticProcess.status != true || !diagnosticProcess.data) {
