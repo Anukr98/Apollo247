@@ -547,7 +547,7 @@ const getRecommendedProductsList: Resolver<
       //console.log(productsList.response[k], 'redis keys length');
       const key = 'medicine:sku:' + productsList.response.recommendations[k];
       const skuDets = await hgetAllCache(key);
-      if (skuDets && skuDets.status == 'Enabled') {
+      if (skuDets && (skuDets.status == 'Enabled' || skuDets.status == 'enabled')) {
         const recommendedProducts: RecommendedProducts = {
           productImage: decodeURIComponent(skuDets.gallery_images),
           productPrice: skuDets.price,

@@ -7,7 +7,6 @@ import {
   AppointmentRefunds,
   AppointmentPayments,
   AppointmentSessions,
-  ConsultQueueItem,
   CaseSheet,
   DoctorNextAvaialbleSlots,
   FeedbackDashboardSummary,
@@ -24,6 +23,7 @@ import {
   NotificationBinArchive,
   AppointmentUpdateHistory,
   ExotelDetails,
+  ConsultQueueItem,
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,

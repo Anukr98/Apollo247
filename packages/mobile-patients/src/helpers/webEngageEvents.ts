@@ -24,6 +24,7 @@ export enum WebEngageEventName {
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   CATEGORY_FILTER_CLICKED = 'Pharmacy Category Filter Clicked',
   CATEGORY_FILTER_APPLIED = 'Pharmacy Category Filter Applied',
+  CATEGORY_LIST_GRID_VIEW = 'Listing view',
   SHOW_PRESCRIPTION_AT_STORE_SELECTED = 'Show prescription at store selected',
   PHARMACY_STORE_PICKUP_VIEWED = 'Pharmacy store pickup viewed', // Every time a new pincode is entered, the event must be triggered
   PHARMACY_STORE_SELECTED_SUCCESS = 'Pharmacy store selected success',
@@ -318,6 +319,12 @@ export interface WebEngageEvents {
     discount: string;
     'sort by': string;
     price: string;
+  };
+  [WebEngageEventName.CATEGORY_LIST_GRID_VIEW]: {
+    'Category name'?: string;
+    'Category id'?: string;
+    'Type': 'Grid' | 'List';
+    'Source': 'Search' | 'Category';
   };
   [WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED]: {
     value: boolean;

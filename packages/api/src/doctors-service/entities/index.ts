@@ -1268,3 +1268,14 @@ export class DoctorProfileHistory extends BaseEntity {
   @Column({ nullable: true })
   afterUpdate: string;
 }
+
+
+@Entity()
+export class DoctorHelpLine extends BaseEntity {
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
+  @Column({ unique: true })
+  doctorType: DoctorType
+  @Column()
+  mobileNumber: string;
+}

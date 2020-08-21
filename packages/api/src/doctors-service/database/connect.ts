@@ -51,6 +51,7 @@ import {
   DoctorPatientExternalConnect,
   AdminAuditLogs,
   DoctorProfileHistory,
+  DoctorHelpLine,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -98,6 +99,7 @@ import {
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
+import { AdminFilterMapper } from 'doctors-service/entities/AdminFilterMapper';
 
 export const connect = async () => {
   return await createConnections([
@@ -128,6 +130,8 @@ export const connect = async () => {
         DoctorPatientExternalConnect,
         AdminAuditLogs,
         DoctorProfileHistory,
+        DoctorHelpLine,
+        AdminFilterMapper,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,

@@ -824,6 +824,15 @@ export const addTestsToCart = async (
   }
 };
 
+export const getDiscountPercentage = (price: number | string, specialPrice?: number | string) => {
+  const discountPercent = !specialPrice
+    ? 0
+    : Number(price) == Number(specialPrice)
+    ? 0
+    : ((Number(price) - Number(specialPrice)) / Number(price)) * 100;
+  return Math.ceil(discountPercent);
+};
+
 export const getBuildEnvironment = () => {
   switch (apiRoutes.graphql()) {
     case 'https://aph.dev.api.popcornapps.com//graphql':

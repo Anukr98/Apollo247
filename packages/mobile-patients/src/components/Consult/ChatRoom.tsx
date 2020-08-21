@@ -493,7 +493,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [doctorScheduleId, setDoctorScheduleId] = useState<string>('');
   const [dropDownBottomStyle, setDropDownBottomStyle] = useState<number>(isIphoneX() ? 50 : 15);
-  const [jrDoctorJoined, setjrDoctorJoined] = useState<boolean>(false);
+  const jrDoctorJoined = useRef<boolean>(false); // using ref to get the current updated values on event listeners
   const [displayChatQuestions, setDisplayChatQuestions] = useState<boolean>(false);
   const [displayUploadHealthRecords, setDisplayUploadHealthRecords] = useState<boolean>(false);
   const [userAnswers, setUserAnswers] = useState<ConsultQueueInput>();
@@ -688,7 +688,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const handleCallkitEventListeners = () => {
-    RNCallKeep.addEventListener('endCall', onDisconnetCallAction);
     RNCallKeep.addEventListener('answerCall', onAnswerCallAction);
   };
 
@@ -704,10 +703,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const onAnswerCallAction = () => {
     joinCallHandler();
-  };
-
-  const onDisconnetCallAction = () => {
-    handleEndCall();
   };
 
   const playSound = () => {
@@ -741,15 +736,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
       callPermissions(() => {
         if (callType === 'VIDEO') {
-          setOnSubscribe(true);
+          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
           isAudio.current = false;
         } else if (callType === 'AUDIO') {
-          setOnSubscribe(true);
+          isVoipCall || fromIncomingCall ? setOnSubscribe(false) : setOnSubscribe(true);
           isAudio.current = true;
           callhandelBack = false;
         }
-        playSound();
-        setDoctorJoinedChat && setDoctorJoinedChat(true);
+        isVoipCall || fromIncomingCall ? null : playSound();
       });
     }
     if (prescription) {
@@ -1217,7 +1211,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               callhandelBack = false;
             }
             playSound();
-            setDoctorJoinedChat && setDoctorJoinedChat(true);
+            !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
           } else {
             if (onSubscribe) {
               setOnSubscribe(false);
@@ -1407,6 +1401,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const CheckDoctorPresentInChat = () => {
     if (status === STATUS.COMPLETED) return; // no need to show join button if consultation has been completed
+
     pubnub
       .hereNow({
         channels: [channel],
@@ -1414,8 +1409,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       })
       .then((response: HereNowResponse) => {
         console.log('hereNowresponse', response);
-
-        if (response.totalOccupancy >= 2) {
+        const data: any = response.channels && response.channels[appointmentData.id] && response.channels[appointmentData.id].occupants;
+        const occupancyDoctor = data && data.length > 0 && data.filter((obj: any) => {
+          return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
+        });
+        const occupancyJrDoctor = data && data.length > 0 && data.filter((obj: any) => {
+          return obj.uuid === 'JUNIOR' || obj.uuid.indexOf('JUNIOR_') > -1;
+        });
+        if(occupancyJrDoctor && occupancyJrDoctor.length >=1){
+          jrDoctorJoined.current = true;
+        }
+        if (occupancyDoctor && occupancyDoctor.length >= 1 && response.totalOccupancy >= 2) {
+          jrDoctorJoined.current = false;
           setDoctorJoined(true);
           setDoctorJoinedChat && setDoctorJoinedChat(true);
           setTimeout(() => {
@@ -1600,7 +1605,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setTimeout(() => {
           setSnackbarState(true);
           setHandlerMessage('Check the network connection.');
-        }, 50);
+        }, 2050);
       } else {
         setSnackBar();
       }
@@ -1611,12 +1616,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('session stream connectionCreated!', event);
     },
     connectionDestroyed: (event: string) => {
-      AsyncStorage.getItem('callDisconnected').then((data) => {
-        if (!JSON.parse(data || 'false')) {
-          setSnackbarState(true);
-          setHandlerMessage('Call disconnected due to Network issues at the Doctor side');
-        }
-      });
+      setTimeout(() => {
+        AsyncStorage.getItem('callDisconnected').then((data) => {
+          if (!JSON.parse(data || 'false')) {
+            setSnackbarState(true);
+            setHandlerMessage('Call disconnected due to Network issues at the Doctor side');
+          }
+        });
+      }, 2000);
       console.log('session stream connectionDestroyed!', event);
       eventsAfterConnectionDestroyed();
     },
@@ -2127,12 +2134,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           if (messages.length !== newmessage.length) {
             if (newmessage[newmessage.length - 1].message === startConsultMsg) {
-              setjrDoctorJoined(false);
+              jrDoctorJoined.current = false;
               updateSessionAPI();
               checkingAppointmentDates();
             }
             if (newmessage[newmessage.length - 1].message === startConsultjr) {
-              setjrDoctorJoined(true);
+              jrDoctorJoined.current = true;
               updateSessionAPI();
               checkingAppointmentDates();
             }
@@ -2221,7 +2228,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const thirtySecondCall = () => {
-    if (jrDoctorJoined == false) {
+    if (jrDoctorJoined.current == false) {
       // console.log('Alert Shows After 30000 Seconds of Delay.');
 
       const result = insertText.filter((obj: any) => {
@@ -2293,7 +2300,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const minuteCaller = () => {
-    if (jrDoctorJoined == false) {
+    if (jrDoctorJoined.current == false) {
       // console.log('Alert Shows After 60000 Seconds of Delay.');
 
       const result = insertText.filter((obj: any) => {
@@ -2336,7 +2343,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         !appointmentData.isJdQuestionsComplete &&
         jdCount > 0 &&
         isJdAllowed === true &&
-        !!(textChange && !jrDoctorJoined) &&
+        !!(textChange && !jrDoctorJoined.current) &&
         status !== STATUS.COMPLETED
       ) {
         // console.log('result.length ', result);
@@ -2399,7 +2406,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { showAphAlert, audioTrack, setPrevVolume, maxVolume } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     console.log('pubNubMessages', message.message.sentBy);
-
     if (message.message.isTyping) {
       if (message.message.message === audioCallMsg && !patientJoinedCall.current) {
         // if patient has not joined meeting room
@@ -2408,7 +2414,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         callhandelBack = false;
         // stopCallAbondmentTimer();
         playSound();
-        setDoctorJoinedChat && setDoctorJoinedChat(true);
+        !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === videoCallMsg && !patientJoinedCall.current) {
         // if patient has not joined meeting room
         setOnSubscribe(true);
@@ -2416,12 +2422,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         isAudio.current = false;
         // stopCallAbondmentTimer();
         playSound();
-        setDoctorJoinedChat && setDoctorJoinedChat(true);
+        !jrDoctorJoined.current && setDoctorJoinedChat && setDoctorJoinedChat(true);
       } else if (message.message.message === startConsultMsg) {
-        setjrDoctorJoined(false);
+        jrDoctorJoined.current = false;
         stopInterval();
         startInterval(timer);
-        setjrDoctorJoined(false);
         updateSessionAPI();
         checkingAppointmentDates();
         addMessages(message);
@@ -2473,7 +2478,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === startConsultjr) {
         console.log('succss1');
-        setjrDoctorJoined(true);
+        jrDoctorJoined.current = true;
         updateSessionAPI();
         checkingAppointmentDates();
         stopJoinTimer();
@@ -4710,7 +4715,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
     // console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
 
-    if (textChange && !jrDoctorJoined) {
+    if (textChange && !jrDoctorJoined.current) {
       time = 'Consult is In-progress';
     } else {
       if (status === STATUS.COMPLETED) {
@@ -6589,7 +6594,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 marginLeft: 20,
               }}
             >
-              {jrDoctorJoined
+              {jrDoctorJoined.current
                 ? `${appointmentData.doctorInfo.displayName}'s team doctor has joined`
                 : `${appointmentData.doctorInfo.displayName} has joined!`}
             </Text>

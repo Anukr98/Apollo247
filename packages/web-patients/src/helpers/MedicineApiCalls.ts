@@ -30,6 +30,7 @@ export interface MedicineProduct {
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
   category_id: string;
+  sell_online: boolean;
 }
 export interface Brand {
   url_key: string;
@@ -54,6 +55,7 @@ export interface PharmaOverview {
 }
 
 export interface MedicineProductDetails extends MedicineProduct {
+  similar_products: MedicineProduct[];
   PharmaOverview: PharmaOverview[];
 }
 
@@ -365,9 +367,9 @@ export const reOrderItems = async (
         ({
           id: item,
           date: moment().format('DD MMM YYYY'),
-          doctorName: `Meds Rx ${
-            (orderDetails.id && orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) || ''
-          }`,
+          doctorName: `Meds Rx ${(orderDetails.id &&
+            orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) ||
+            ''}`,
           forPatient: patientName,
           medicines: medicineNames,
           uploadedUrl: item,

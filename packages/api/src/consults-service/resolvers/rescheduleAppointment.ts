@@ -7,7 +7,6 @@ import {
   TRANSFER_INITIATED_TYPE,
   STATUS,
   REQUEST_ROLES,
-  ES_DOCTOR_SLOT_STATUS,
   RescheduleAppointmentDetails,
   AppointmentUpdateHistory,
   VALUE_TYPE,
@@ -27,11 +26,11 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import {
   sendReminderNotification,
-  NotificationType,
   sendNotification,
   sendDoctorRescheduleAppointmentNotification,
-} from 'notifications-service/resolvers/notifications';
-import { addMilliseconds, differenceInDays } from 'date-fns';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
+import { differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 import { rescheduleAppointmentEmailTemplate } from 'helpers/emailTemplates/rescheduleAppointmentEmailTemplate';
