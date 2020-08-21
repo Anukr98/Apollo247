@@ -51,6 +51,8 @@
       "point5": "Receive prescriptions instantly",
       "point6": "Chat with the doctor for 7 days after your consult"
     },
+    "follow_up_chat_days_text": "Follow Up chat for minimum of {0} days",
+    "follow_up_chat_message": "is available for a minimum of {0} days for free follow-up chat post Consult. However, doctor can decide to increase the follow-up chat days as per case basis.",
     "chatDisabledHeader": "You can't send message to the doctor. Book appointment for consulting with {0} again."
   },
   "login": {
