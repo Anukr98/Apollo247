@@ -209,9 +209,9 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const getHomeVisitTime = () => {
     return '';
-    if (g(diagnosticSlot, 'date') && g(diagnosticSlot, 'slotStartTime')) {
+    if (g(diagnosticSlot, 'date') && g(diagnosticSlot, 'Timeslot')) {
       const _date = moment(g(diagnosticSlot, 'date')).format('D MMM YYYY');
-      const _time = moment(g(diagnosticSlot, 'slotStartTime')!.trim(), 'hh:mm').format('hh:mm A');
+      const _time = moment(g(diagnosticSlot, 'Timeslot')!.trim(), 'hh:mm').format('hh:mm A');
       return `${_date}, ${_time}`;
     } else {
       return '';
@@ -271,29 +271,16 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const initiateOrder = async () => {
     setShowSpinner(true);
     const { CentreCode, CentreName, City, State, Locality } = diagnosticClinic || {};
-    const {
-      slotStartTime,
-      slotEndTime,
-      employeeSlotId,
-      date,
-      diagnosticEmployeeCode,
-      // city, // ignore city for now from this and take from "locationForDiagnostics" context
-      diagnosticBranchCode,
-    } = diagnosticSlot || {};
-
-    const slotTimings = (slotStartTime && slotEndTime
-      ? `${slotStartTime}-${slotEndTime}`
-      : ''
-    ).replace(' ', '');
-    console.log(physicalPrescriptions, 'physical prescriptions');
+    const { date, Timeslot } = diagnosticSlot || {};
+    const slotTimings = Timeslot || '';
 
     const orderInfo: DiagnosticOrderInput = {
       // <- for home collection order
-      diagnosticBranchCode: CentreCode ? '' : diagnosticBranchCode!,
-      diagnosticEmployeeCode: diagnosticEmployeeCode || '',
-      employeeSlotId: employeeSlotId! || 0,
+      diagnosticBranchCode: '',
+      diagnosticEmployeeCode: '',
+      employeeSlotId: 0,
       slotTimings: slotTimings,
-      patientAddressId: deliveryAddressId!,
+      patientAddressId: deliveryAddressId,
       // for home collection order ->
       // <- for clinic order
       centerName: CentreName || '',
@@ -323,8 +310,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       items: cartItems.map(
         (item) =>
           ({
-            itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
-            price: (item.specialPrice as number) || item.price,
+            itemId: Number(item.id),
+            price: item.specialPrice || item.price,
             quantity: 1,
           } as DiagnosticLineItem)
       ),
