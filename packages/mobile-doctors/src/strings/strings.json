@@ -121,7 +121,8 @@
     "call_me": "CALL ME",
     "skip": "SKIP",
     "update_symptom": "UPDATE SYMPTOM",
-    "ok_got_it": "OK, GOT IT"
+    "ok_got_it": "OK, GOT IT",
+    "submit": "SUBMIT"
   },
   "account": {
     "add_doct_to_your_team": "Add a doctor to your team",
@@ -426,7 +427,36 @@
     "whatsapp_number": "+91 9355031397",
     "email": "E-mail",
     "help_desk_email": "Helpdesk@apollo247.com",
-    "join_heading": "Patient “{0}” is waiting in the consult room. Please click on Proceed to join consultation."
+    "join_heading": "Patient “{0}” is waiting in the consult room. Please click on Proceed to join consultation.",
+    "howWasYourExperience": "How was your experience ?\nPlease rate us !",
+    "thankYou": "Thank you !",
+    "thankyou_subtitle": "we will keep up the service !",
+    "what_went_wrong": "What went wrong ?",
+    "let_us_know": "We are sorry, please let us know",
+    "audio": "Audio",
+    "video": "Video",
+    "audioReviews": [
+      {"value": "Patient Did not pick up the call", "key": "A1"},
+      {"value": "Call Disconnected Abruptly", "key": "A2"},
+      {"value": "Could not hear any sound", "key": "A3"},
+      {"value": "Patient could not hear me", "key": "A4"},
+      {"value": "Audio Echo was heard", "key": "A5"},
+      {"value": "I heard a strange noise (not background noise)", "key": "A6"},
+      {"value": "Volume was low", "key": "A7"},
+      {"value": "Others", "key": "A8"}
+    ],
+    "videoReviews": [
+      {"value": "Patient Did not pick up the call", "key": "V1"},
+      {"value": "Call Disconnected Abruptly", "key": "V2"},
+      {"value": "Could not see anything in the video", "key": "V3"},
+      {"value": "Video was working but video was not clear", "key": "V4"},
+      {"value": "Patient could not see my video", "key": "V5"},
+      {"value": "Video froze during the call", "key": "V6"},
+      {"value": "Video Stopped working during the call", "key": "V7"},
+      {"value": "Video and audio was not in sync", "key": "V8"},
+      {"value": "Others", "key": "V9"}
+    ],
+    "othersReasonPlaceholder": "Others,  Please specify"
   },
   "consult_room": {
     "patient_is_not_acitve_descr": "We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult.",

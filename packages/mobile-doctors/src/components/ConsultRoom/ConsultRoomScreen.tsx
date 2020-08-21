@@ -153,6 +153,7 @@ import {
   sendCallDisconnectNotification,
   sendCallDisconnectNotificationVariables,
 } from '@aph/mobile-doctors/src/graphql/types/sendCallDisconnectNotification';
+import { RateCall } from '@aph/mobile-doctors/src/components/ConsultRoom/RateCall';
 
 const { width } = Dimensions.get('window');
 // let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
@@ -256,6 +257,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [selectedReason, setselectedReason] = useState<string>(reasons[0]);
   const [otherReason, setotherReason] = useState<string>('');
   const [isAutoSaved, setIsAutoSaved] = useState<boolean>(false);
+  const [callEnded, setCallEnded] = useState<boolean>(false);
 
   const [savedTime, setSavedTime] = useState<string>('');
   const mutationCancelSrdConsult = useMutation<cancelAppointment, cancelAppointmentVariables>(
@@ -1786,6 +1788,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               sendEndCallNotificationAPI(
                 callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO
               );
+            } else {
+              setCallEnded(true);
             }
             firebase
               .analytics()
@@ -2164,11 +2168,42 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 />
               </View>
             </ScrollView>
+            {
+              callEnded
+                ?
+                <RateCall
+                  submitRatingCallback={(data) => submitRatingHandler(data)}
+                />
+                : <View />
+            }
           </View>
         ) : null}
       </>
     );
   };
+
+  const submitRatingHandler = (data: {
+    rating: number;
+    selectedCalltype: string;
+    audioProblems: string[];
+    videoProblems: string[];
+    othersAudioProblem: string;
+    othersVideoProblem: string;
+  }) => {
+    const query = {
+      appointmentId: AppId,
+      doctorType: DOCTOR_CALL_TYPE.SENIOR,
+      // callStartTime
+      rating: data.rating,
+      typeOfIssue: data.selectedCalltype,
+      audioProblems: data.audioProblems,
+      videoProblems: data.videoProblems,
+      othersAudioProblem: data.othersAudioProblem,
+      othersVideoProblem: data.othersVideoProblem
+    }
+    setCallEnded(false);
+    console.log("query",query)
+  }
 
   const onStartConsult = (successCallback?: () => void) => {
     getNetStatus().then((connected) => {
