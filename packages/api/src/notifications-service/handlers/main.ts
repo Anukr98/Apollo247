@@ -25,7 +25,7 @@ import { Doctor } from 'doctors-service/entities';
 import { getPatientDeviceTokens, logNotificationResponse } from './common';
 import { sendNotificationSMS } from './sms';
 import { sendDoctorNotificationWhatsapp } from './whatsApp';
-import { admin } from 'notifications-service/firebase';
+import { admin } from 'firebase';
 
 export async function sendPatientRegistrationNotification(
   patient: Patient,

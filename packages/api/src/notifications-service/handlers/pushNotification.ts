@@ -35,7 +35,7 @@ import { sendNotificationSMS } from './sms';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { hitCallKitCurl } from 'notifications-service/handlers';
 import { DoctorDeviceTokenRepository } from 'doctors-service/repositories/doctorDeviceTokenRepository';
-import { admin } from 'notifications-service/firebase';
+import { admin } from 'firebase';
 
 type PushNotificationInput = {
   notificationType: NotificationType;
