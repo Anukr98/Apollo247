@@ -74,12 +74,13 @@ export interface MedicineCartContextProps {
   addCartItems: ((item: Array<MedicineCartItem>) => void) | null;
   removeCartItemSku: ((sku: MedicineCartItem['sku']) => void) | null;
   removeCartItems: ((itemId: MedicineCartItem['arrSku']) => void) | null;
+  removeFreeCartItems: (() => void) | null;
   updateCartItem:
-    | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
-    | null;
+  | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
+  | null;
   updateCartItemPrice:
-    | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
-    | null;
+  | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
+  | null;
   updateCartItemQty: ((item: MedicineCartItem) => void) | null;
   cartTotal: number;
   storePickupPincode: string | null;
@@ -92,8 +93,8 @@ export interface MedicineCartContextProps {
   setStoreAddressId: ((deliveryAddressId: string) => void) | null;
   deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[];
   setDeliveryAddresses:
-    | ((deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[]) => void)
-    | null;
+  | ((deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[]) => void)
+  | null;
   clearCartInfo: (() => void) | null;
   addMultipleCartItems: ((items: MedicineCartItem[]) => void) | null;
   prescriptions: PrescriptionFormat[] | null;
@@ -133,6 +134,7 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   addCartItems: null,
   removeCartItemSku: null,
   removeCartItems: null,
+  removeFreeCartItems: null,
   updateCartItem: null,
   updateCartItemPrice: null,
   updateCartItemQty: null,
@@ -363,6 +365,12 @@ export const MedicinesCartProvider: React.FC = (props) => {
     setIsCartUpdated(true);
   };
 
+  const removeFreeCartItems: any = () => {
+    const items = cartItems.filter((item) => item.price !== 0);
+    setCartItems(items);
+    setIsCartUpdated(true);
+  };
+
   const updateCartItem: MedicineCartContextProps['updateCartItem'] = (itemUpdates) => {
     const foundIndex = cartItems.findIndex((item) => item.sku == itemUpdates.sku);
     if (foundIndex !== -1) {
@@ -491,6 +499,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
         addCartItems,
         removeCartItemSku,
         removeCartItems,
+        removeFreeCartItems,
         updateCartItem,
         updateCartItemPrice,
         updateCartItemQty,
@@ -548,6 +557,7 @@ export const useShoppingCart = () => ({
   addCartItems: useShoppingCartContext().addCartItems,
   removeCartItemSku: useShoppingCartContext().removeCartItemSku,
   removeCartItems: useShoppingCartContext().removeCartItems,
+  removeFreeCartItems: useShoppingCartContext().removeFreeCartItems,
   updateCartItem: useShoppingCartContext().updateCartItem,
 
   updateCartItemPrice: useShoppingCartContext().updateCartItemPrice,

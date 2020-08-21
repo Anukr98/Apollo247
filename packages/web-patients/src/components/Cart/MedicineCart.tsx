@@ -667,6 +667,7 @@ export const MedicineCart: React.FC = (props) => {
     prescriptionDuration,
     clearCartInfo,
     removeCartItemSku,
+    removeFreeCartItems,
     addCartItems,
   } = useShoppingCart();
 
@@ -765,7 +766,7 @@ export const MedicineCart: React.FC = (props) => {
           if (
             itemToBeMatched.mrp !== 0 &&
             Number((itemToBeMatched.mrp * Number(item.mou || 1)).toFixed(2)).toFixed(2) !==
-              Number(item.price).toFixed(2) &&
+            Number(item.price).toFixed(2) &&
             !isDiffLessOrGreaterThan25Percent(item.price, storeItemPrice)
           ) {
             let newItem = { ...item };
@@ -775,10 +776,10 @@ export const MedicineCart: React.FC = (props) => {
             const storeItemSP =
               !isDiff && item.special_price
                 ? getSpecialPriceFromRelativePrices(
-                    item.price,
-                    Number(item.special_price),
-                    itemToBeMatched.mrp * Number(item.mou || 1)
-                  )
+                  item.price,
+                  Number(item.special_price),
+                  itemToBeMatched.mrp * Number(item.mou || 1)
+                )
                 : item.special_price;
             newItem['price'] = isDiff ? item.price : storeItemPrice;
             if (item.special_price) {
@@ -849,8 +850,8 @@ export const MedicineCart: React.FC = (props) => {
       : Number(cartTotal);
   const deliveryCharges =
     modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
-    modifiedAmountForCharges <= 0 ||
-    tabValue === 1
+      modifiedAmountForCharges <= 0 ||
+      tabValue === 1
       ? 0
       : Number(pharmacyDeliveryCharges);
   const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
@@ -863,8 +864,8 @@ export const MedicineCart: React.FC = (props) => {
     deliveryMode === 'HOME'
       ? deliveryAddressId === ''
       : deliveryMode === 'PICKUP'
-      ? storeAddressId === ''
-      : false;
+        ? storeAddressId === ''
+        : false;
 
   const uploadPrescriptionRequired = cartItems.findIndex(
     (v) => Number(v.is_prescription_required) === 1
@@ -880,30 +881,30 @@ export const MedicineCart: React.FC = (props) => {
   const cartItemsForApi =
     cartItems.length > 0
       ? cartItems.map((cartItemDetails) => {
-          return {
-            medicineSKU: cartItemDetails.sku,
-            medicineName: cartItemDetails.name,
-            price:
-              couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
-                : Number(getItemSpecialPrice(cartItemDetails)),
-            quantity: cartItemDetails.quantity,
-            itemValue: cartItemDetails.quantity * cartItemDetails.price,
-            itemDiscount: Number(
-              (
-                cartItemDetails.quantity *
-                (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                  ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.sku))
-                  : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
-              ).toFixed(2)
-            ),
-            mrp: cartItemDetails.price,
-            isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-            mou: parseInt(cartItemDetails.mou),
-            isMedicine: _lowerCase(cartItemDetails.type_id) === 'pharma' ? '1' : '0',
-            specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
-          };
-        })
+        return {
+          medicineSKU: cartItemDetails.sku,
+          medicineName: cartItemDetails.name,
+          price:
+            couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+              ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
+              : Number(getItemSpecialPrice(cartItemDetails)),
+          quantity: cartItemDetails.quantity,
+          itemValue: cartItemDetails.quantity * cartItemDetails.price,
+          itemDiscount: Number(
+            (
+              cartItemDetails.quantity *
+              (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+                ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.sku))
+                : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
+            ).toFixed(2)
+          ),
+          mrp: cartItemDetails.price,
+          isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
+          mou: parseInt(cartItemDetails.mou),
+          isMedicine: _lowerCase(cartItemDetails.type_id) === 'pharma' ? '1' : '0',
+          specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
+        };
+      })
       : [];
 
   // coupon related code
@@ -983,7 +984,7 @@ export const MedicineCart: React.FC = (props) => {
           .then((data: any) => {
             data.forEach((e: any) => {
               const cartItem: MedicineCartItem = {
-                MaxOrderQty: e.data.productdp[0].MaxOrderQty,
+                MaxOrderQty: 1,
                 url_key: e.data.productdp[0].url_key,
                 description: e.data.productdp[0].description,
                 id: e.data.productdp[0].id,
@@ -1092,13 +1093,13 @@ export const MedicineCart: React.FC = (props) => {
     if (isChennaiCOD) {
       chennaiOrderVariables = nonCartFlow
         ? {
-            NonCartOrderOMSCity: NonCartOrderOMSCity.CHENNAI,
-            email: userEmail,
-          }
+          NonCartOrderOMSCity: NonCartOrderOMSCity.CHENNAI,
+          email: userEmail,
+        }
         : {
-            CODCity: CODCity.CHENNAI,
-            email: userEmail,
-          };
+          CODCity: CODCity.CHENNAI,
+          email: userEmail,
+        };
     }
 
     const paymentInfo: SaveMedicineOrderPaymentMqVariables = {
@@ -1200,10 +1201,10 @@ export const MedicineCart: React.FC = (props) => {
                 item.fileType == 'jpg'
                   ? UPLOAD_FILE_TYPES.JPEG
                   : item.fileType == 'png'
-                  ? UPLOAD_FILE_TYPES.PNG
-                  : item.fileType == 'pdf'
-                  ? UPLOAD_FILE_TYPES.PDF
-                  : UPLOAD_FILE_TYPES.JPEG,
+                    ? UPLOAD_FILE_TYPES.PNG
+                    : item.fileType == 'pdf'
+                      ? UPLOAD_FILE_TYPES.PDF
+                      : UPLOAD_FILE_TYPES.JPEG,
               patientId: currentPatient && currentPatient.id,
             },
           },
@@ -1211,6 +1212,12 @@ export const MedicineCart: React.FC = (props) => {
       })
     );
   };
+
+  const removeAllFreeProducts = () => {
+    if (cartItems && Array.isArray(cartItems) && cartItems.length) {
+      removeFreeCartItems()
+    }
+  }
 
   const onPressSubmit = async (userEmail?: string) => {
     let chennaiOrderVariables = {};
@@ -1238,7 +1245,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1433,87 +1440,87 @@ export const MedicineCart: React.FC = (props) => {
                 </div>
               )}
               {cartItems.length > 0 ||
-              (prescriptions && prescriptions.length > 0) ||
-              (ePrescriptionData && ePrescriptionData.length > 0) ? (
-                <>
-                  {!nonCartFlow && (
-                    <MedicineListingCard validateCouponResult={validateCouponResult} />
-                  )}
-                  {uploadPrescriptionRequired >= 0 ||
-                  (prescriptions && prescriptions.length > 0) ||
-                  (ePrescriptionData && ePrescriptionData.length > 0) ? (
-                    <>
-                      <div className={classes.sectionHeader}>Upload Prescription</div>
-                      {(prescriptions && prescriptions.length > 0) ||
+                (prescriptions && prescriptions.length > 0) ||
+                (ePrescriptionData && ePrescriptionData.length > 0) ? (
+                  <>
+                    {!nonCartFlow && (
+                      <MedicineListingCard validateCouponResult={validateCouponResult} />
+                    )}
+                    {uploadPrescriptionRequired >= 0 ||
+                      (prescriptions && prescriptions.length > 0) ||
                       (ePrescriptionData && ePrescriptionData.length > 0) ? (
-                        <div className={classes.uploadedPreList}>
-                          {prescriptions &&
-                            prescriptions.length > 0 &&
-                            prescriptions.map((prescriptionDetails) => {
-                              const fileName = prescriptionDetails.name;
-                              const imageUrl = prescriptionDetails.imageUrl;
-                              return (
-                                <PrescriptionCard
-                                  fileName={fileName || ''}
-                                  imageUrl={imageUrl || ''}
-                                  removePrescription={(fileName: string) =>
-                                    removeImagePrescription(fileName)
-                                  }
-                                  key={prescriptionDetails.name}
-                                  readOnly={nonCartFlow}
-                                />
-                              );
-                            })}
-                          {ePrescriptionData &&
-                            ePrescriptionData.length > 0 &&
-                            ePrescriptionData.map((prescription: EPrescription) => (
-                              <EPrescriptionCard
-                                key={prescription.id}
-                                prescription={prescription}
-                                removePrescription={removePrescription}
-                                readOnly={nonCartFlow}
-                              />
-                            ))}
-                          {!nonCartFlow && (
-                            <div className={classes.uploadMore}>
-                              <AphButton
-                                disabled={uploadingFiles || mutationLoading}
-                                onClick={() => handleUploadPrescription()}
-                              >
-                                Upload More
+                        <>
+                          <div className={classes.sectionHeader}>Upload Prescription</div>
+                          {(prescriptions && prescriptions.length > 0) ||
+                            (ePrescriptionData && ePrescriptionData.length > 0) ? (
+                              <div className={classes.uploadedPreList}>
+                                {prescriptions &&
+                                  prescriptions.length > 0 &&
+                                  prescriptions.map((prescriptionDetails) => {
+                                    const fileName = prescriptionDetails.name;
+                                    const imageUrl = prescriptionDetails.imageUrl;
+                                    return (
+                                      <PrescriptionCard
+                                        fileName={fileName || ''}
+                                        imageUrl={imageUrl || ''}
+                                        removePrescription={(fileName: string) =>
+                                          removeImagePrescription(fileName)
+                                        }
+                                        key={prescriptionDetails.name}
+                                        readOnly={nonCartFlow}
+                                      />
+                                    );
+                                  })}
+                                {ePrescriptionData &&
+                                  ePrescriptionData.length > 0 &&
+                                  ePrescriptionData.map((prescription: EPrescription) => (
+                                    <EPrescriptionCard
+                                      key={prescription.id}
+                                      prescription={prescription}
+                                      removePrescription={removePrescription}
+                                      readOnly={nonCartFlow}
+                                    />
+                                  ))}
+                                {!nonCartFlow && (
+                                  <div className={classes.uploadMore}>
+                                    <AphButton
+                                      disabled={uploadingFiles || mutationLoading}
+                                      onClick={() => handleUploadPrescription()}
+                                    >
+                                      Upload More
                               </AphButton>
-                            </div>
-                          )}
-                        </div>
-                      ) : uploadPrescriptionRequired >= 0 ? (
-                        <div className={classes.uploadPrescription}>
-                          <div className={classes.prescriptionRow}>
-                            <span>
-                              Items in your cart marked with ‘Rx’ need prescriptions to complete
-                              your purchase. Please upload the necessary prescriptions
+                                  </div>
+                                )}
+                              </div>
+                            ) : uploadPrescriptionRequired >= 0 ? (
+                              <div className={classes.uploadPrescription}>
+                                <div className={classes.prescriptionRow}>
+                                  <span>
+                                    Items in your cart marked with ‘Rx’ need prescriptions to complete
+                                    your purchase. Please upload the necessary prescriptions
                             </span>
-                            <AphButton
-                              onClick={() => handleUploadPrescription()}
-                              className={classes.presUploadBtn}
-                            >
-                              Upload Prescription
+                                  <AphButton
+                                    onClick={() => handleUploadPrescription()}
+                                    className={classes.presUploadBtn}
+                                  >
+                                    Upload Prescription
                             </AphButton>
-                          </div>
-                          <div className={classes.consultDoctor}>
-                            <span>Don’t have a prescription? Don’t worry!</span>
-                            <Link
-                              to={clientRoutes.specialityListing()}
-                              className={classes.consultDoctoLink}
-                            >
-                              Consult A Doctor
+                                </div>
+                                <div className={classes.consultDoctor}>
+                                  <span>Don’t have a prescription? Don’t worry!</span>
+                                  <Link
+                                    to={clientRoutes.specialityListing()}
+                                    className={classes.consultDoctoLink}
+                                  >
+                                    Consult A Doctor
                             </Link>
-                          </div>
-                        </div>
+                                </div>
+                              </div>
+                            ) : null}
+                        </>
                       ) : null}
-                    </>
-                  ) : null}
-                </>
-              ) : null}
+                  </>
+                ) : null}
             </div>
           </Scrollbars>
         </div>
@@ -1595,7 +1602,7 @@ export const MedicineCart: React.FC = (props) => {
                           value={'CASH_ON_DELIVERY'}
                           control={<AphRadio color="primary" />}
                           label={'Cash On Delivery'}
-                          onChange={() => {}}
+                          onChange={() => { }}
                         />
                       </div>
                     </>
@@ -1620,11 +1627,12 @@ export const MedicineCart: React.FC = (props) => {
                             label: `Coupon Removed - ${couponCode}`,
                             value:
                               validateCouponResult &&
-                              validateCouponResult.discount &&
-                              validateCouponResult.discount
+                                validateCouponResult.discount &&
+                                validateCouponResult.discount
                                 ? Number(validateCouponResult.discount.toFixed(2))
                                 : null,
                           });
+                          removeAllFreeProducts()
                           setValidateCouponResult(null);
                           setErrorMessage('');
                           setCouponCode && setCouponCode('');
@@ -1645,20 +1653,20 @@ export const MedicineCart: React.FC = (props) => {
                               </span>
                             </div>
                           ) : (
-                            <>
-                              <div className={classes.appliedCoupon}>
-                                <span className={classes.linkText}>
-                                  <span>{couponCode}</span> applied
+                              <>
+                                <div className={classes.appliedCoupon}>
+                                  <span className={classes.linkText}>
+                                    <span>{couponCode}</span> applied
                                 </span>
-                                <span className={classes.rightArrow}>
-                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
-                                </span>
-                              </div>
-                              <div className={classes.couponText}>
-                                {validateCouponResult ? validateCouponResult.reason : ''}
-                              </div>
-                            </>
-                          )}
+                                  <span className={classes.rightArrow}>
+                                    <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                  </span>
+                                </div>
+                                <div className={classes.couponText}>
+                                  {validateCouponResult ? validateCouponResult.reason : ''}
+                                </div>
+                              </>
+                            )}
                         </div>
                       </div>
                       {couponCode.length > 0 &&
@@ -1726,9 +1734,8 @@ export const MedicineCart: React.FC = (props) => {
                           </>
                         )}
                         <div
-                          className={`${classes.priceRow} ${classes.totalPriceRow} ${
-                            validateCouponResult ? classes.totalPriceBorder : ''
-                          }`}
+                          className={`${classes.priceRow} ${classes.totalPriceRow} ${validateCouponResult ? classes.totalPriceBorder : ''
+                            }`}
                         >
                           <span>TO PAY</span>
                           <span className={classes.totalPrice}>
@@ -1816,7 +1823,7 @@ export const MedicineCart: React.FC = (props) => {
                   (!nonCartFlow
                     ? (!cartTat && deliveryTime === '') || (cartItems && cartItems.length === 0)
                     : !deliveryAddressId ||
-                      (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                    (deliveryAddressId && deliveryAddressId.length === 0)) ||
                   !isPaymentButtonEnable ||
                   disableSubmit
                 }
@@ -1824,9 +1831,9 @@ export const MedicineCart: React.FC = (props) => {
                   (!nonCartFlow
                     ? (!cartTat && deliveryTime === '') || (cartItems && cartItems.length === 0)
                     : !deliveryAddressId ||
-                      (deliveryAddressId && deliveryAddressId.length === 0)) ||
-                  !isPaymentButtonEnable ||
-                  disableSubmit
+                    (deliveryAddressId && deliveryAddressId.length === 0)) ||
+                    !isPaymentButtonEnable ||
+                    disableSubmit
                     ? classes.buttonDisable
                     : ''
                 }
@@ -1837,24 +1844,24 @@ export const MedicineCart: React.FC = (props) => {
                 ) : uploadingFiles ? (
                   <CircularProgress size={22} color="secondary" />
                 ) : (
-                  'Place order'
-                )}
+                      'Place order'
+                    )}
               </AphButton>
             )}
           />
         ) : (
-          <AphButton
-            color="primary"
-            fullWidth
-            title={'Login to continue'}
-            onClick={() => {
-              const signInPopup = document.getElementById('loginPopup');
-              signInPopup && document.getElementById('loginPopup')!.click();
-            }}
-          >
-            Login to continue
-          </AphButton>
-        )}
+            <AphButton
+              color="primary"
+              fullWidth
+              title={'Login to continue'}
+              onClick={() => {
+                const signInPopup = document.getElementById('loginPopup');
+                signInPopup && document.getElementById('loginPopup')!.click();
+              }}
+            >
+              Login to continue
+            </AphButton>
+          )}
       </div>
       <Popover
         open={showOrderPopup}
