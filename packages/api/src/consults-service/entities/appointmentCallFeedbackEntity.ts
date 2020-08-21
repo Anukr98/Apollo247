@@ -30,7 +30,7 @@ export enum CALL_FEEDBACK_RESPONSES_TYPES {
 export enum CALL_FEEDBACK_RESPONSES {
 
     AUDIO_CALL_NOT_PICKED = 'Patient did not pickup the call',
-    AUUDIO_CALL_DISCONNECTED_ABRUPTLY = 'Call disconnected abruptly',
+    AUDIO_CALL_DISCONNECTED_ABRUPTLY = 'Call disconnected abruptly',
     AUDIO_NO_SOUND_HEARED = 'Could not hear any sound',
     AUDIO_NO_SOUND_RECEIVED = 'Patient could not hear me',
     AUDIO_ECHO = 'Audio echo was heard',
