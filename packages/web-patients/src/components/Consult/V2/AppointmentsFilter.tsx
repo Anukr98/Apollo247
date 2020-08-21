@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Theme, Modal } from '@material-ui/core';
+import { Theme, Modal, Typography } from '@material-ui/core';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { AphButton } from '@aph/web-ui-components';
 import DateFnsUtils from '@date-io/date-fns';
@@ -13,6 +13,9 @@ import {
 } from 'helpers/commonHelpers';
 import _uniq from 'lodash/uniq';
 import { createMuiTheme } from '@material-ui/core';
+import { Link } from 'react-router-dom';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -78,6 +81,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       width: 680,
       outline: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
     },
     dialogHeader: {
       padding: 20,
@@ -211,8 +217,107 @@ const useStyles = makeStyles((theme: Theme) => {
         width: 0,
       },
     },
+    filterWrapper: {},
+    filterContainer: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: '#fff',
+      },
+    },
+    filterHeader: {
+      padding: 20,
+      boxShadow: '0px 5px 20px rgba(128, 128, 128, 0.3)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      '& h2': {
+        fontSize: 13,
+        fontWeight: 600,
+        lineHeight: '17px',
+        textTransform: 'uppercase',
+      },
+    },
+    filterBody: {
+      height: 'calc(100% - 150px)',
+    },
+    filterFooter: {
+      padding: 20,
+      boxShadow: '0px 5px 20px rgba(128, 128, 128, 0.3), 0px 3px 4px rgba(0, 0, 0, 0.5)',
+      textAlign: 'center',
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      top: 'auto',
+      '& button': {
+        width: '90%',
+        margin: '0 auto',
+        display: 'block',
+      },
+    },
+    tabs: {},
+    tabsContainer: {
+      display: 'flex',
+      alignItems: 'flex-start',
+      height: '100%',
+    },
+    tabsContent: {
+      padding: 10,
+      width: '75%',
+      flex: '1 0 auto',
+    },
+    tabsRoot: {
+      width: '35%',
+      height: '100%',
+      background: '#F7F8F5',
+      flex: '1 0 auto',
+    },
+    tabsIndicator: {
+      display: 'none',
+    },
+    tabRoot: {
+      padding: 20,
+      fontSize: 14,
+      fontWeight: 500,
+      lineHeight: '18px',
+      border: 'none',
+      borderBottom: ' 0.5px solid #CCCCCC',
+      textTransform: 'none',
+    },
+    tabSelected: {
+      color: '#0187BA',
+      background: '#fff',
+    },
   };
 });
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: any;
+  value: any;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`vertical-tabpanel-${index}`}
+      aria-labelledby={`vertical-tab-${index}`}
+      {...other}
+    >
+      {value === index && <div>{children}</div>}
+    </div>
+  );
+}
 
 const defaultMaterialTheme = createMuiTheme({
   palette: {
@@ -256,6 +361,11 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
   const classes = useStyles({});
   const { filter, setFilter, setIsFilterOpen, filterDoctorsList, filterSpecialtyList } = props;
   const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(filter);
+  const [value, setValue] = React.useState(0);
+
+  const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    setValue(newValue);
+  };
 
   const applyClass = (type: Array<string>, value: string) => {
     return type.includes(value) ? classes.filterActive : '';
@@ -295,136 +405,287 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
   };
 
   return (
-    <div className={classes.dialogPaper}>
-      <div className={classes.dialogHeader}>
-        <h3>Filters</h3>
-        <AphButton
-          onClick={() => {
-            setIsFilterOpen(false);
-            setFilter(localFilter);
-          }}
-        >
-          <img src={require('images/ic_cross.svg')} alt="" />
-        </AphButton>
-      </div>
-      <div className={classes.dialogContent}>
-        <div className={classes.filterGroup}>
-          <div className={classes.filterType}>
-            <h4>Appointment Status</h4>
-            <div className={classes.filterBtns}>
-              {appointmentStatus.map((status) => (
-                <AphButton
-                  key={status}
-                  className={applyClass(localFilter.appointmentStatus, status)}
-                  onClick={() => {
-                    setFilterValues('appointmentStatus', status);
-                  }}
-                >
-                  {status}
-                </AphButton>
-              ))}
-            </div>
-          </div>
-          <div className={classes.filterType}>
-            <h4>Date</h4>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <ThemeProvider theme={defaultMaterialTheme}>
-                <KeyboardDatePicker
-                  className={classes.keyboardDatepicker}
-                  disableToolbar
-                  variant="inline"
-                  format="MM/dd/yyyy"
-                  value={selectedDate}
-                  // onChange={handleDateChange}
-                  KeyboardButtonProps={{
-                    'aria-label': 'change date',
-                  }}
-                  onChange={(date) => handleDateChange((date as unknown) as Date)}
-                  onFocus={() => {}}
-                  onBlur={() => {}}
-                />
-              </ThemeProvider>
-            </MuiPickersUtilsProvider>
-            <div className={classes.filterBtns}>
-              {availabilityList.map((availability: string) => (
-                <AphButton
-                  key={availability}
-                  className={applyClass(localFilter.availability, availability)}
-                  onClick={() => {
-                    setFilterValues('availability', availability);
-                  }}
-                >
-                  {availability}
-                </AphButton>
-              ))}
-            </div>
-          </div>
-          <div className={classes.filterType}>
-            <h4>Doctor</h4>
-            <div className={classes.filterBtns}>
-              {filterDoctorsList &&
-                filterDoctorsList.length > 0 &&
-                _uniq(filterDoctorsList).map((doctorName) => (
+    <div className={classes.filterWrapper}>
+      <div className={classes.dialogPaper}>
+        <div className={classes.dialogHeader}>
+          <h3>Filters</h3>
+          <AphButton
+            onClick={() => {
+              setIsFilterOpen(false);
+              setFilter(localFilter);
+            }}
+          >
+            <img src={require('images/ic_cross.svg')} alt="" />
+          </AphButton>
+        </div>
+        <div className={classes.dialogContent}>
+          <div className={classes.filterGroup}>
+            <div className={classes.filterType}>
+              <h4>Appointment Status</h4>
+              <div className={classes.filterBtns}>
+                {appointmentStatus.map((status) => (
                   <AphButton
-                    key={doctorName}
-                    className={applyClass(localFilter.doctorsList, doctorName)}
+                    key={status}
+                    className={applyClass(localFilter.appointmentStatus, status)}
                     onClick={() => {
-                      setFilterValues('doctor', doctorName);
+                      setFilterValues('appointmentStatus', status);
                     }}
                   >
-                    {doctorName}
+                    {status}
                   </AphButton>
                 ))}
+              </div>
             </div>
-          </div>
-          <div className={classes.filterType}>
-            <h4>Specialties</h4>
-            <div className={classes.filterBtns}>
-              {filterSpecialtyList &&
-                filterSpecialtyList.length > 0 &&
-                _uniq(filterSpecialtyList).map((specialtyName) => (
+            <div className={classes.filterType}>
+              <h4>Date</h4>
+              <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                <ThemeProvider theme={defaultMaterialTheme}>
+                  <KeyboardDatePicker
+                    className={classes.keyboardDatepicker}
+                    disableToolbar
+                    variant="inline"
+                    format="MM/dd/yyyy"
+                    value={selectedDate}
+                    // onChange={handleDateChange}
+                    KeyboardButtonProps={{
+                      'aria-label': 'change date',
+                    }}
+                    onChange={(date) => handleDateChange((date as unknown) as Date)}
+                    onFocus={() => {}}
+                    onBlur={() => {}}
+                  />
+                </ThemeProvider>
+              </MuiPickersUtilsProvider>
+              <div className={classes.filterBtns}>
+                {availabilityList.map((availability: string) => (
                   <AphButton
-                    key={specialtyName}
-                    className={applyClass(localFilter.specialtyList, specialtyName)}
+                    key={availability}
+                    className={applyClass(localFilter.availability, availability)}
                     onClick={() => {
-                      setFilterValues('specialty', specialtyName);
+                      setFilterValues('availability', availability);
                     }}
                   >
-                    {specialtyName}
+                    {availability}
                   </AphButton>
                 ))}
+              </div>
+            </div>
+            <div className={classes.filterType}>
+              <h4>Doctor</h4>
+              <div className={classes.filterBtns}>
+                {filterDoctorsList &&
+                  filterDoctorsList.length > 0 &&
+                  _uniq(filterDoctorsList).map((doctorName) => (
+                    <AphButton
+                      key={doctorName}
+                      className={applyClass(localFilter.doctorsList, doctorName)}
+                      onClick={() => {
+                        setFilterValues('doctor', doctorName);
+                      }}
+                    >
+                      {doctorName}
+                    </AphButton>
+                  ))}
+              </div>
+            </div>
+            <div className={classes.filterType}>
+              <h4>Specialties</h4>
+              <div className={classes.filterBtns}>
+                {filterSpecialtyList &&
+                  filterSpecialtyList.length > 0 &&
+                  _uniq(filterSpecialtyList).map((specialtyName) => (
+                    <AphButton
+                      key={specialtyName}
+                      className={applyClass(localFilter.specialtyList, specialtyName)}
+                      onClick={() => {
+                        setFilterValues('specialty', specialtyName);
+                      }}
+                    >
+                      {specialtyName}
+                    </AphButton>
+                  ))}
+              </div>
             </div>
           </div>
         </div>
+        <div className={classes.dialogActions}>
+          <span>
+            <AphButton
+              className={classes.clearBtn}
+              onClick={() => {
+                const initialAppointmentFilterObject: AppointmentFilterObject = {
+                  appointmentStatus: [],
+                  availability: [],
+                  doctorsList: [],
+                  specialtyList: [],
+                };
+                setLocalFilter(initialAppointmentFilterObject);
+                setFilter(initialAppointmentFilterObject);
+                setIsFilterOpen(false);
+              }}
+            >
+              Clear Filters
+            </AphButton>
+            <AphButton
+              onClick={() => {
+                setFilter(localFilter);
+                setIsFilterOpen(false);
+              }}
+              className={classes.applyBtn}
+            >
+              Apply Filters
+            </AphButton>
+          </span>
+        </div>
       </div>
-      <div className={classes.dialogActions}>
-        <span>
-          <AphButton
-            className={classes.clearBtn}
+      <div className={classes.filterContainer}>
+        <div className={classes.filterHeader}>
+          <Link
+            to="#"
             onClick={() => {
-              const initialAppointmentFilterObject: AppointmentFilterObject = {
-                appointmentStatus: [],
-                availability: [],
-                doctorsList: [],
-                specialtyList: [],
-              };
-              setLocalFilter(initialAppointmentFilterObject);
-              setFilter(initialAppointmentFilterObject);
               setIsFilterOpen(false);
-            }}
-          >
-            Clear Filters
-          </AphButton>
-          <AphButton
-            onClick={() => {
               setFilter(localFilter);
-              setIsFilterOpen(false);
             }}
-            className={classes.applyBtn}
           >
-            Apply Filters
+            <img src={require('images/ic_cross.svg')} alt="Close" />
+          </Link>
+          <Typography component="h2">Filters</Typography>
+          <Link to="#">
+            <img src={require('images/ic_refresh.svg')} alt="Refresh" />
+          </Link>
+        </div>
+        <div className={classes.filterBody}>
+          <div className={classes.tabsContainer}>
+            <Tabs
+              orientation="vertical"
+              value={value}
+              onChange={handleChange}
+              aria-label="Vertical tabs example"
+              classes={{
+                root: classes.tabsRoot,
+                indicator: classes.tabsIndicator,
+              }}
+            >
+              <Tab
+                label="Appointment Status"
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
+              />
+              <Tab
+                label="Date"
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
+              />
+              <Tab
+                label="Doctor"
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
+              />
+              <Tab
+                label="Speciality"
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
+              />
+            </Tabs>
+            <div className={classes.tabsContent}>
+              <TabPanel value={value} index={0}>
+                <div className={classes.filterBtns}>
+                  {appointmentStatus.map((status) => (
+                    <AphButton
+                      key={status}
+                      className={applyClass(localFilter.appointmentStatus, status)}
+                      onClick={() => {
+                        setFilterValues('appointmentStatus', status);
+                      }}
+                    >
+                      {status}
+                    </AphButton>
+                  ))}
+                </div>
+              </TabPanel>
+              <TabPanel value={value} index={1}>
+                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                  <ThemeProvider theme={defaultMaterialTheme}>
+                    <KeyboardDatePicker
+                      className={classes.keyboardDatepicker}
+                      disableToolbar
+                      variant="inline"
+                      format="MM/dd/yyyy"
+                      value={selectedDate}
+                      // onChange={handleDateChange}
+                      KeyboardButtonProps={{
+                        'aria-label': 'change date',
+                      }}
+                      onChange={(date) => handleDateChange((date as unknown) as Date)}
+                      onFocus={() => {}}
+                      onBlur={() => {}}
+                    />
+                  </ThemeProvider>
+                </MuiPickersUtilsProvider>
+                <div className={classes.filterBtns}>
+                  {availabilityList.map((availability: string) => (
+                    <AphButton
+                      key={availability}
+                      className={applyClass(localFilter.availability, availability)}
+                      onClick={() => {
+                        setFilterValues('availability', availability);
+                      }}
+                    >
+                      {availability}
+                    </AphButton>
+                  ))}
+                </div>
+              </TabPanel>
+              <TabPanel value={value} index={2}>
+                <div className={classes.filterBtns}>
+                  {filterDoctorsList &&
+                    filterDoctorsList.length > 0 &&
+                    _uniq(filterDoctorsList).map((doctorName) => (
+                      <AphButton
+                        key={doctorName}
+                        className={applyClass(localFilter.doctorsList, doctorName)}
+                        onClick={() => {
+                          setFilterValues('doctor', doctorName);
+                        }}
+                      >
+                        {doctorName}
+                      </AphButton>
+                    ))}
+                </div>
+              </TabPanel>
+              <TabPanel value={value} index={3}>
+                <div className={classes.filterBtns}>
+                  {filterSpecialtyList &&
+                    filterSpecialtyList.length > 0 &&
+                    _uniq(filterSpecialtyList).map((specialtyName) => (
+                      <AphButton
+                        key={specialtyName}
+                        className={applyClass(localFilter.specialtyList, specialtyName)}
+                        onClick={() => {
+                          setFilterValues('specialty', specialtyName);
+                        }}
+                      >
+                        {specialtyName}
+                      </AphButton>
+                    ))}
+                </div>
+              </TabPanel>
+            </div>
+          </div>
+        </div>
+        <div className={classes.filterFooter}>
+          <AphButton color="primary" variant="contained">
+            Apply
           </AphButton>
-        </span>
+        </div>
       </div>
     </div>
   );

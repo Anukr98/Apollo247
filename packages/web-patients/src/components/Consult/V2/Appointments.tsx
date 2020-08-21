@@ -59,6 +59,12 @@ const useStyles = makeStyles((theme: Theme) => {
     block: {
       display: 'block',
     },
+    tabsContent: {
+      padding: '0 25px',
+      [theme.breakpoints.down('xs')]: {
+        padding: '0 16px',
+      },
+    },
     tabsRoot: {
       backgroundColor: theme.palette.common.white,
       borderRadius: '10px 10px 0 0',
@@ -66,7 +72,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
       paddingRight: 20,
       position: 'sticky',
-      margin: '0 15px',
+      // margin: '0 15px',
       top: 88,
       zIndex: 5,
       [theme.breakpoints.down('xs')]: {
@@ -105,6 +111,7 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
         borderRadius: 0,
         marginBottom: 0,
+        padding: '10px 0 0 ',
       },
     },
     consultationsHeader: {
@@ -134,6 +141,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         padding: '10px 16px',
+        '& p': {
+          fontSize: 14,
+        },
       },
     },
     selectMenuRoot: {
@@ -215,6 +225,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 8,
       borderRadius: 10,
       display: 'flex',
+      [theme.breakpoints.down('xs')]: {
+        minWidth: '100%',
+      },
     },
     mascotIcon: {
       position: 'absolute',
@@ -351,7 +364,13 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'center',
     },
-    filterIcon: {},
+    filterIcon: {
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        top: -35,
+        right: 0,
+      },
+    },
     modalDialog: {
       display: 'flex',
       alignItems: 'center',
@@ -359,12 +378,14 @@ const useStyles = makeStyles((theme: Theme) => {
       outline: 'none',
     },
     cardContainer: {
+      // padding: '0 20px',
       '& h1': {
         color: '#0087BA',
         fontSize: 17,
         lineHeight: '22px',
         fontWeight: 'bold',
-        margin: '45px 0 0 20px',
+        padding: '15px 0 0 15px',
+        margin: 0,
       },
     },
     consultationContent: {
@@ -372,8 +393,9 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       padding: '10px 0',
       [theme.breakpoints.down('xs')]: {
-        flexDirection: 'column',
-        alignItems: 'flex-start',
+        // flexDirection: 'column',
+        // alignItems: 'flex-start',
+        position: 'relative',
       },
     },
     appointmentOptions: {
@@ -382,7 +404,8 @@ const useStyles = makeStyles((theme: Theme) => {
       justifyContent: 'space-between',
       padding: '10px 0',
       [theme.breakpoints.down('xs')]: {
-        alignItems: 'flex-start',
+        position: 'relative',
+        padding: 0,
       },
     },
     formControl: {
@@ -395,12 +418,33 @@ const useStyles = makeStyles((theme: Theme) => {
         top: 10,
       },
       [theme.breakpoints.down('xs')]: {
-        width: '100%',
+        width: 'auto',
+        position: 'static',
         margin: 0,
+        '& img': {
+          position: 'static',
+          margin: '0 0 0 10px',
+        },
       },
     },
     searchInput: {
       padding: '0 0 0 30px',
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    searchInputActive: {
+      display: 'block',
+      background: 'white',
+      position: 'absolute',
+      top: 40,
+      left: 0,
+      right: 0,
+      width: '100%',
+      padding: 16,
+      borderRadius: 5,
+      zIndex: 9,
+      boxShadow: '0 0px 5px 0 rgba(0, 0, 0, 0.3)',
     },
     memberOption: {
       display: 'flex',
@@ -411,12 +455,11 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
       },
       [theme.breakpoints.down('xs')]: {
-        flexDirection: 'column',
-        alignItems: 'flex-start',
+        display: 'none',
       },
     },
     afContainer: {
-      padding: '0 16px',
+      // padding: '0 16px',
     },
     appliedFilters: {
       borderRadius: '10px 10px 0 0',
@@ -442,13 +485,12 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyle: 'none',
       display: 'flex',
       alignItems: 'center',
-      flexWrap: 'wrap',
       '& li': {
         padding: 6,
-        [theme.breakpoints.down('xs')]: {
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-        },
+      },
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        overflow: 'auto',
       },
     },
     filterBtn: {
@@ -460,6 +502,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       display: 'flex',
       alignItems: 'center',
+      whiteSpace: 'nowrap',
       '&:hover': {
         background: '#00B38E',
         color: '#fff',
@@ -1025,62 +1068,63 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                 </div>
               </div>
             </div>
-            <div className={classes.afContainer}>
-              <div className={classes.appliedFilters}>
-                <Typography>Filters Applied:</Typography>
-                <ul className={classes.filterList}>
-                  <li>
-                    <AphButton className={classes.filterBtn}>
-                      Active
-                      <a href="javascript:void(0)" className={classes.clearFilter}>
-                        <CloseIcon />
-                      </a>
-                    </AphButton>
-                  </li>
-                  <li>
-                    <AphButton className={classes.filterBtn}>
-                      Now
-                      <a href="javascript:void(0)" className={classes.clearFilter}>
-                        <CloseIcon />
-                      </a>
-                    </AphButton>
-                  </li>
-                  <li>
-                    <AphButton className={classes.filterBtn}>
-                      3 Days
-                      <a href="javascript:void(0)" className={classes.clearFilter}>
-                        <CloseIcon />
-                      </a>
-                    </AphButton>
-                  </li>
-                  <li>
-                    <AphButton className={classes.filterBtn}>
-                      Dr.Simran Rai
-                      <a href="javascript:void(0)" className={classes.clearFilter}>
-                        <CloseIcon />
-                      </a>
-                    </AphButton>
-                  </li>
-                  <li>
-                    <AphButton className={classes.filterBtn}>
-                      Dr. Garima Suri
-                      <a href="javascript:void(0)" className={classes.clearFilter}>
-                        <CloseIcon />
-                      </a>
-                    </AphButton>
-                  </li>
-                  <li>
-                    <AphButton className={classes.filterBtn}>
-                      General Physician
-                      <a href="javascript:void(0)" className={classes.clearFilter}>
-                        <CloseIcon />
-                      </a>
-                    </AphButton>
-                  </li>
-                </ul>
+            <div className={classes.tabsContent}>
+              <div className={classes.afContainer}>
+                <div className={classes.appliedFilters}>
+                  <Typography>Filters Applied:</Typography>
+                  <ul className={classes.filterList}>
+                    <li>
+                      <AphButton className={classes.filterBtn}>
+                        Active
+                        <a href="javascript:void(0)" className={classes.clearFilter}>
+                          <CloseIcon />
+                        </a>
+                      </AphButton>
+                    </li>
+                    <li>
+                      <AphButton className={classes.filterBtn}>
+                        Now
+                        <a href="javascript:void(0)" className={classes.clearFilter}>
+                          <CloseIcon />
+                        </a>
+                      </AphButton>
+                    </li>
+                    <li>
+                      <AphButton className={classes.filterBtn}>
+                        3 Days
+                        <a href="javascript:void(0)" className={classes.clearFilter}>
+                          <CloseIcon />
+                        </a>
+                      </AphButton>
+                    </li>
+                    <li>
+                      <AphButton className={classes.filterBtn}>
+                        Dr.Simran Rai
+                        <a href="javascript:void(0)" className={classes.clearFilter}>
+                          <CloseIcon />
+                        </a>
+                      </AphButton>
+                    </li>
+                    <li>
+                      <AphButton className={classes.filterBtn}>
+                        Dr. Garima Suri
+                        <a href="javascript:void(0)" className={classes.clearFilter}>
+                          <CloseIcon />
+                        </a>
+                      </AphButton>
+                    </li>
+                    <li>
+                      <AphButton className={classes.filterBtn}>
+                        General Physician
+                        <a href="javascript:void(0)" className={classes.clearFilter}>
+                          <CloseIcon />
+                        </a>
+                      </AphButton>
+                    </li>
+                  </ul>
+                </div>
               </div>
-            </div>
-            <div>
+
               <Tabs
                 value={tabValue}
                 variant="fullWidth"
