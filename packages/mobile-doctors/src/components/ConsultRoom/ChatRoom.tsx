@@ -380,7 +380,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <View
         style={{
           backgroundColor: 'transparent',
-          width: rowData.message !== null ? 282 : 0,
+          maxWidth: rowData.message !== null ? '85%' : 0,
           borderRadius: 10,
           marginVertical: -2,
           // alignSelf: 'flex-start',
@@ -419,7 +419,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     textAlign: 'left',
                   }}
                 >
-                  {rowData.message}
+                  {rowData.message === messageCodes.exotelCall
+                    ? `A Telephonic Voice call is initiated from ${rowData.exotelNumber ||
+                        strings.exoTel.exotelNumber}. Request you to answer the call.`
+                    : rowData.message}
                 </Text>
                 <Text
                   style={{
