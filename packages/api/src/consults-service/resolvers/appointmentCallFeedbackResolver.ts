@@ -4,7 +4,7 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 
 import { AppointmentCallFeedbackRepository } from 'consults-service/repositories/appointmentCallFeedbackRepository';
 
-import { CALL_FEEDBACK_RESPONSES_TYPES } from 'consults-service/entities'
+import { CALL_FEEDBACK_RESPONSES_TYPES } from 'consults-service/entities/appointmentCallFeedbackEntity'
 
 export const appointmentCallFeedbackTypeDefs = gql`
 
