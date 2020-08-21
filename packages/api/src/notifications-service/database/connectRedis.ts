@@ -40,10 +40,11 @@ const getAsync = promisify(client.get).bind(client);
 export async function getCache(key: string) {
   try {
     const cache = await getAsync(key);
-    dLogger(new Date(), 'Redis Cache read', `Cache hit ${key}`);
+    if (cache && typeof cache === 'string')
+      dLogger(new Date(), 'Redis Cache read', `Cache hit ${key}`);
     return cache;
   } catch (e) {
-    dLogger(new Date(), 'Redis read error', `Cache hit ${key} ${JSON.stringify(e)}`);
+    dLogger(new Date(), 'Redis read write error', `Cache hit ${key} ${JSON.stringify(e)}`);
     return null;
   }
 }
