@@ -633,7 +633,7 @@ export const MedicineLanding: React.FC = (props: any) => {
   const productsRecommended = latestMedicineOrder && latestMedicineOrder.medicineOrderLineItems;
   const latestMedicineOrderDate =
     latestMedicineOrder && moment(latestMedicineOrder.createdDate).format('MMMM D, YYYY');
-  const storeAddress = latestMedicineOrder && JSON.parse(latestMedicineOrder.shopAddress);
+  const storeAddress = (latestMedicineOrder && JSON.parse(latestMedicineOrder.shopAddress)) || '';
   const isOfflineOrder =
     latestMedicineOrder && latestMedicineOrder.currentStatus === 'PURCHASED_IN_STORE';
   const orderDelivered =
@@ -757,13 +757,16 @@ export const MedicineLanding: React.FC = (props: any) => {
                                   <img src={require('images/ic_basket.svg')} alt="" />
                                 </span>
                                 <span className={classes.linkText}>
-                                  {productsRecommended.length > 1
+                                  {productsRecommended.length > 1 &&
+                                  productsRecommended[0].medicineName
                                     ? `${
                                         productsRecommended[0].medicineName
                                       } + ${productsRecommended.length - 1} item${
                                         productsRecommended.length > 2 ? 's ' : ' '
                                       }`
-                                    : productsRecommended[0].medicineName}
+                                    : productsRecommended[0] && productsRecommended[0].medicineName
+                                    ? productsRecommended[0].medicineName
+                                    : ''}
                                 </span>
                                 <span className={classes.reOrder}>
                                   <ReOrder
