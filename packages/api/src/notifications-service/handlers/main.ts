@@ -55,10 +55,11 @@ export async function sendPatientRegistrationNotification(
     },
   };
   //let smsContent = notificationBody;
-  if (registrationCode != '') {
-    smsContent = ApiConstants.PATIENT_REGISTRATION_CODE_BODY.replace('{0}', patient.firstName);
-    smsContent = smsContent.replace('{1}', registrationCode);
-  }
+  // not sending regCode from any callee
+  // if (registrationCode != '') {
+  //   smsContent = ApiConstants.PATIENT_REGISTRATION_CODE_BODY.replace('{0}', patient.firstName);
+  //   smsContent = smsContent.replace('{1}', registrationCode);
+  // }
   //call sendNotificationSMS function to send sms
   await sendNotificationSMS(patient.mobileNumber, smsContent ? smsContent : '');
   if (patientDeviceTokens.length == 0) return;
