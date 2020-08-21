@@ -48,7 +48,8 @@ import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepos
 import { SymptomsList } from 'types/appointmentTypes';
 import { differenceInSeconds } from 'date-fns';
 import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
-import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import { sendNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
