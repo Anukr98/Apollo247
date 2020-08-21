@@ -723,6 +723,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               (scheduleLater && timeSelected === '')
             }
             onClick={() => {
+              setMutationLoading(true);
               const bookRescheduleInput = {
                 appointmentId: appointmentId,
                 doctorId: doctorId,
