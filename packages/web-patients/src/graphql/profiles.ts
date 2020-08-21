@@ -174,6 +174,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             medicineConsumptionDurationInDays
             medicineDosage
             id
+            medicineCustomDetails
             medicineConsumptionDurationUnit
             medicineFormTypes
             medicineFrequency

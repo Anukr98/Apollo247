@@ -11,14 +11,13 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { addMilliseconds, format, addDays, addMinutes } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
-import { APPOINTMENT_TYPE, Appointment, STATUS } from 'consults-service/entities';
+import { APPOINTMENT_TYPE, Appointment } from 'consults-service/entities';
 import { writeRow, textInRow, uploadPdfFileToBlobStorage } from 'helpers/uploadFileToBlob';
 import { admin } from 'notifications-service/firebase';
 import PDFDocument from 'pdfkit';
 import { NotificationType, NotificationPriority } from 'notifications-service/constants';
 import {
   sendNotification,
-  sendBrowserNotitication,
   sendDoctorNotificationWhatsapp,
   sendNotificationSMS,
 } from 'notifications-service/handlers';
@@ -35,6 +34,17 @@ type SendDoctorApptReminderResult = {
   status: boolean;
   apptsListCount: number;
 };
+
+export enum APPT_CALL_TYPE {
+  AUDIO = 'AUDIO',
+  VIDEO = 'VIDEO',
+  CHAT = 'CHAT',
+}
+
+export enum DOCTOR_CALL_TYPE {
+  SENIOR = 'SENIOR',
+  JUNIOR = 'JUNIOR',
+}
 
 export type PushNotificationSuccessMessage = {
   results: PushNotificationMessage[];
@@ -123,6 +133,7 @@ const sendDailyAppointmentSummary: Resolver<
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
   let blobNames = '';
+  const allPdfs: string[] = [];
   const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
     let doctorsCount = 0;
     if (allAppts.length == 0) {
@@ -142,19 +153,20 @@ const sendDailyAppointmentSummary: Resolver<
     const allDoctorDetails = await doctorRepo.getAllDocsById(docIds);
 
     allAppts.forEach(async (appointment, index, array) => {
-      if (appointment.status != STATUS.COMPLETED) {
-        if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
-          physicalAppointments++;
-        } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
-          onlineAppointments++;
-        }
+      //if (appointment.status != STATUS.COMPLETED) {
+      if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+        physicalAppointments++;
+      } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
+        onlineAppointments++;
       }
+      //}
 
       if (flag == 0) {
-        fileName = format(new Date(), 'dd-MM-yyyy') + '_' + appointment.doctorId + '.pdf';
+        fileName =
+          format(new Date(), 'dd-MM-yyyy') + '_' + appointment.doctorId + '_' + index + '.pdf';
         uploadPath = assetsDir + '/' + fileName;
         pdfDoc = new PDFDocument();
-        console.log('came here', onlineAppointments, fileName);
+        //console.log('came here', onlineAppointments, fileName);
         pdfDoc.pipe(fs.createWriteStream(uploadPath));
         rowHeadx = 90;
         rowx = 100;
@@ -193,41 +205,44 @@ const sendDailyAppointmentSummary: Resolver<
           .lineTo(420, totalAppointments * 30)
           .stroke();
         pdfDoc.end();
-        await delay(350);
+
+        //await delay(350);
         console.log('pdf end');
-        const blobName = await uploadPdfFileToBlobStorage(fileName, uploadPath);
-        blobNames += blobName + ', ';
-        console.log(blobName, 'blob names');
+        //const blobName = await uploadPdfFileToBlobStorage(fileName, uploadPath);
+        //blobNames += fileName + ', ';
+        const pdfurl = fileName + '/' + totalAppointments + '/' + doctorDetails[0].mobileNumber;
+        allPdfs.push(pdfurl);
+        //console.log(blobName, 'blob names');
         if (doctorDetails) {
           doctorsCount++;
-          let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
-            '{0}',
-            doctorDetails[0].firstName
-          ).replace('{1}', totalAppointments.toString());
-          const onlineAppointmentsText =
-            onlineAppointments > 0
-              ? ApiConstants.ONLINE_APPOINTMENTS.replace('{0}', onlineAppointments.toString())
-              : '';
-          const physicalAppointmentsText =
-            physicalAppointments > 0
-              ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
-              : '';
-          messageBody += onlineAppointmentsText + physicalAppointmentsText;
-          sendBrowserNotitication(doctorDetails[0].id, messageBody);
+          // let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
+          //   '{0}',
+          //   doctorDetails[0].firstName
+          // ).replace('{1}', totalAppointments.toString());
+          // const onlineAppointmentsText =
+          //   onlineAppointments > 0
+          //     ? ApiConstants.ONLINE_APPOINTMENTS.replace('{0}', onlineAppointments.toString())
+          //     : '';
+          // const physicalAppointmentsText =
+          //   physicalAppointments > 0
+          //     ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
+          //     : '';
+          // messageBody += onlineAppointmentsText + physicalAppointmentsText;
+          // sendBrowserNotitication(doctorDetails[0].id, messageBody);
 
-          sendNotificationSMS('+918019677178', messageBody);
-          const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
-          const templateData: string[] = [
-            'https://apolloaphstorage.blob.core.windows.net/doctors/2020-08-12-2b3572d7-9623-44ea-89be-ece581d2e522.pdf',
-            todaysDate + ' Appointments List',
-            todaysDate,
-            totalAppointments.toString(),
-          ];
-          sendDoctorNotificationWhatsapp(
-            ApiConstants.WHATSAPP_DOC_SUMMARY,
-            '+918019677178',
-            templateData
-          );
+          // sendNotificationSMS('+918019677178', messageBody);
+          // const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
+          // const templateData: string[] = [
+          //   'https://apolloaphstorage.blob.core.windows.net/doctors/2020-08-12-2b3572d7-9623-44ea-89be-ece581d2e522.pdf',
+          //   todaysDate + ' Appointments List',
+          //   todaysDate,
+          //   totalAppointments.toString(),
+          // ];
+          // sendDoctorNotificationWhatsapp(
+          //   ApiConstants.WHATSAPP_DOC_SUMMARY,
+          //   '+918019677178',
+          //   templateData
+          // );
           onlineAppointments = 0;
           physicalAppointments = 0;
           prevDoc = appointment.doctorId;
@@ -240,11 +255,17 @@ const sendDailyAppointmentSummary: Resolver<
       }
     });
   });
+  allPdfs.map(async (pdf) => {
+    const data = pdf.split('/');
+    uploadPath = assetsDir + '/' + data[0];
+    const blobName = await uploadPdfFileToBlobStorage(data[0], uploadPath);
+    blobNames += blobName + ',';
+  });
   const final = countOfNotifications + ' - ' + blobNames;
   //const fn = await uploadFileToBlob(uploadPath);
-  function delay(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
+  // async function delay(ms: number) {
+  //   return new Promise((resolve) => setTimeout(resolve, ms));
+  // }
   return ApiConstants.DAILY_APPOINTMENT_SUMMARY_RESPONSE.replace('{0}', final.toString());
 };
 

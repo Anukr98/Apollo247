@@ -29,6 +29,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       textAlign: 'center',
       height: '100%',
+      [theme.breakpoints.down('xs')]: {
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: ' space-between',
+      },
     },
     pdHeader: {
       [theme.breakpoints.down(500)]: {
@@ -48,8 +53,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down(500)]: {
         margin: '0 10px 0  0',
-        width: 60,
+        width: 40,
         height: 'auto',
+        flex: '1 0 auto',
       },
     },
     priceGroup: {
@@ -58,10 +64,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       textAlign: 'center',
       paddingTop: 5,
-
       [theme.breakpoints.down(500)]: {
         display: 'flex',
         flexDirection: 'column-reverse',
+        padding: 0,
       },
     },
     regularPrice: {
@@ -84,6 +90,11 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: 'transparent',
         color: '#fc9916',
+      },
+      [theme.breakpoints.down('xs')]: {
+        margin: 0,
+        lineHeight: 'normal',
+        fontSize: 12,
       },
     },
     noStock: {
@@ -172,7 +183,7 @@ const useStyles = makeStyles((theme: Theme) => {
     productDetails: {
       [theme.breakpoints.down(500)]: {
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-end',
         justifyContent: 'space-between',
       },
     },

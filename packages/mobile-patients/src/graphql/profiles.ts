@@ -855,6 +855,7 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         brands {
           name
           image
+          brandName
         }
         language {
           name

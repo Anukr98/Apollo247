@@ -20,6 +20,8 @@ import { format } from 'date-fns';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { DEVICE_TYPE } from 'profiles-service/entities';
+import path from 'path';
+import fs from 'fs';
 
 export const doctorCallNotificationTypeDefs = gql`
   type AppointmentCallDetails {
@@ -340,14 +342,28 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
   args,
   { consultsDb, doctorsDb }
 ) => {
+  let content = '\n-----------------\n' + format(new Date(), 'yyyy-MM-dd HH:mm');
+  const fileName =
+    process.env.NODE_ENV + '_docsecretarytnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.getNotStartedAppointments();
   const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
+  content += '\nappts length: ' + apptDetails.length.toString();
+  fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
   if (apptDetails.length > 0) {
     const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
     apptDetails.forEach(async (appt) => {
-      const doctorDetails = await docRepo.findById(appt.doctorId);
+      content += '\n apptId: ' + appt.id + ' - ' + appt.doctorId;
+      const doctorDetails = await docRepo.getDoctorSecretary(appt.doctorId);
       if (doctorDetails) {
+        //console.log(doctorDetails.id, doctorDetails.doctorSecretary, 'doc details');
+        content =
+          doctorDetails.id + '-' + doctorDetails.doctorSecretary.secretary.mobileNumber + '\n';
+        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
         const templateData: string[] = [appt.appointmentType, appt.patientName, devLink];
         sendDoctorNotificationWhatsapp(
           ApiConstants.WHATSAPP_SD_CONSULT_DELAY,
@@ -357,7 +373,6 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
       }
     });
   }
-  console.log(apptDetails.length, 'apptDetails.length');
   return { status: true };
 };
 

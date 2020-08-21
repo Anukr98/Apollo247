@@ -2054,10 +2054,11 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getNotStartedAppointments() {
+    const apptDateTime = new Date(format(addMinutes(new Date(), -5), 'yyyy-MM-dd HH:mm') + ':00');
     return this.createQueryBuilder('appointment')
       .where('appointment.status = :status', { status: STATUS.PENDING })
       .andWhere('appointment.appointmentDateTime = :apptDateTime', {
-        apptDateTime: addMinutes(new Date(), -5),
+        apptDateTime,
       })
       .getMany();
   }

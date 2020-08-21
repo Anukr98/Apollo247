@@ -12,17 +12,21 @@ import {
   DiagnosticOrdersStatus,
   BOOKING_SOURCE,
   DEVICE_TYPE,
+  Diagnostics,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
-import { AphError } from 'AphError';
+import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
+import { getToken } from 'profiles-service/helpers/itdoseHelper'
 import {
   DiagnosticPreBookingResult,
   DiagnosticOrderTest,
   ItdosTestDetails,
   AddProcessResult,
 } from 'types/diagnosticOrderTypes';
+import FormData from 'form-data'
+import fetch from 'node-fetch';
 import { format, differenceInYears } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { sendDiagnosticOrderStatusNotification } from 'notifications-service/handlers';
@@ -65,6 +69,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     bookingSource: BOOKINGSOURCE
     deviceType: DEVICETYPE
     paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE
+    slotId: String!
     items: [DiagnosticLineItem]
   }
 
@@ -143,6 +148,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
 
   extend type Mutation {
     SaveDiagnosticOrder(diagnosticOrderInput: DiagnosticOrderInput): SaveDiagnosticOrderResult!
+    SaveItdoseHomeCollectionDiagnosticOrder(diagnosticOrderInput: DiagnosticOrderInput): SaveDiagnosticOrderResult!
   }
   extend type Query {
     getDiagnosticOrdersList(patientId: String): DiagnosticOrdersResult!
@@ -172,6 +178,7 @@ type DiagnosticOrderInput = {
   bookingSource: BOOKING_SOURCE;
   deviceType: DEVICE_TYPE;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE;
+  slotId: string;
   items: [DiagnosticLineItem];
 };
 
@@ -179,6 +186,7 @@ type DiagnosticLineItem = {
   itemId: number;
   price: number;
   quantity: number;
+  itemName: string;
 };
 
 type SaveDiagnosticOrderResult = {
@@ -676,6 +684,257 @@ const SaveDiagnosticOrder: Resolver<
   };
 };
 
+const SaveItdoseHomeCollectionDiagnosticOrder: Resolver<
+  null,
+  DiagnosticOrderInputInputArgs,
+  ProfilesServiceContext,
+  SaveDiagnosticOrderResult
+> = async (parent, { diagnosticOrderInput }, { profilesDb }) => {
+  let errorCode = 0,
+    errorMessage = '',
+    orderId = '',
+    displayId = '';
+
+  if (!diagnosticOrderInput.items) {
+    throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
+  }
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(diagnosticOrderInput.patientId);
+  let patientAddress = '',
+    addressZipcode = '',
+    landmark = '';
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+
+  if (
+    diagnosticOrderInput.patientAddressId != '' &&
+    diagnosticOrderInput.patientAddressId != null
+  ) {
+    const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+    const patientAddressDetails = await patientAddressRepo.findById(
+      diagnosticOrderInput.patientAddressId
+    );
+    if (!patientAddressDetails) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+    }
+    patientAddress = patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
+    addressZipcode = patientAddressDetails.zipcode;
+    landmark = patientAddressDetails.landmark;
+  }
+
+  const diagnosticOrderattrs: Partial<DiagnosticOrders> = {
+    patient: patientDetails,
+    orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
+    ...diagnosticOrderInput
+  };
+
+  if (
+    diagnosticOrderInput.paymentType &&
+    diagnosticOrderInput.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
+  ) {
+    diagnosticOrderattrs.orderStatus =
+      diagnosticOrderInput.centerCode != ''
+        ? DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED
+        : DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED;
+  } else {
+    diagnosticOrderattrs.orderStatus = DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING;
+  }
+
+  const diagnosticOrdersRepo = profilesDb.getCustomRepository(DiagnosticOrdersRepository);
+  const diagnosticRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
+  const saveOrder = await diagnosticOrdersRepo.saveDiagnosticOrder(diagnosticOrderattrs);
+  const orderLineItems: DiagnosticOrderTest[] = [];
+  const orderItemDetails: Diagnostics[] = []
+  const promises: object[] = [];
+  function getItemDetails(itemId: number, quantity: number) {
+    return new Promise(async (resolve, reject) => {
+      const details = await diagnosticRepo.findDiagnosticById(itemId);
+      if (details == null)
+        throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID);
+      orderItemDetails.push(details)
+      const lineItem = {
+        TestCode: details.itemCode,
+        ItemId: details.itemId.toString(),
+        ItemName: details.itemName,
+        Rate: details.rate.toString(),
+        ItemType: details.itemType,
+      };
+      orderLineItems.push(lineItem);
+      resolve(orderLineItems);
+    });
+  }
+  if (saveOrder) {
+    orderId = saveOrder.id;
+    displayId = saveOrder.displayId.toString();
+    await diagnosticOrderInput.items.map(async (item) => {
+      promises.push(getItemDetails(item.itemId, item.quantity));
+      const details = await diagnosticRepo.findDiagnosticById(item.itemId);
+      const orderItemAttrs: Partial<DiagnosticOrderLineItems> = {
+        diagnosticOrders: saveOrder,
+        diagnostics: details,
+        ...item,
+      };
+      await diagnosticOrdersRepo.saveDiagnosticOrderLineItem(orderItemAttrs);
+      //console.log(lineItemOrder);
+    });
+    await Promise.all(promises);
+
+    if (
+      diagnosticOrderInput.paymentType &&
+      diagnosticOrderInput.paymentType != DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
+    ) {
+      return {
+        errorCode,
+        errorMessage,
+        orderId,
+        displayId,
+      };
+    }
+
+    let patientDob = '10-Jan-1989';
+    if (patientDetails.dateOfBirth != null) {
+      patientDob = format(patientDetails.dateOfBirth, 'dd-MMM-yyyy');
+    }
+
+    let patientGender = Gender.MALE;
+    if (patientDetails.gender != null) {
+      patientGender = patientDetails.gender;
+    }
+
+    let patientId = '0';
+    if (patientDetails.uhid != '' && patientDetails.uhid != null) {
+      patientId = patientDetails.uhid;
+    } else {
+      patientId = await patientRepo.createNewUhid(patientDetails);
+      if (patientId == '') {
+        patientId = '0';
+      }
+    }
+
+    const patientTitle = patientGender == Gender.FEMALE ? 'Ms.' : 'Mr.';
+
+    patientDob = '1 Jan 2000';
+    if (patientDetails.dateOfBirth) {
+      patientDob = format(patientDetails.dateOfBirth, 'dd MMM yyyy');
+    }
+
+    const area = await diagnosticRepo.findAreabyZipCode(addressZipcode.toString());
+    if (!area || !area?.area_id) {
+      throw new AphUserInputError(AphErrorMessages.INVALID_ZIPCODE)
+    }
+
+    let homeCollectionData = {
+      'Patient_ID': patientDetails.id,
+      'Title': patientTitle,
+      'PName': `${patientDetails.firstName} ${patientDetails.lastName}`,
+      'Gender': patientGender,
+      'DOB': patientDob,
+      'Mobile': patientDetails.mobileNumber,
+      'Alternatemobileno': patientDetails.mobileNumber,
+      'Email': patientDetails.emailAddress,
+      'LocalityID': area?.area_id,
+      'Pincode': addressZipcode,
+      'House_No': patientAddress,
+      'Landmark': landmark,
+      'Appdatetime': format(diagnosticOrderInput.diagnosticDate, 'dd-MMM-yyyy hh:mm'),
+      'Client': '24*7',
+      'Paymentmode': diagnosticOrderInput.paymentType,
+      'Latitude': '0',
+      'Longitude': '0',
+      'SlotID': diagnosticOrderInput.slotId,
+      'TestDetail': new Array()
+    }
+
+    diagnosticOrderInput.items.forEach((element) => {
+      orderItemDetails.forEach((item) => {
+        console.log(item)
+        if (item.itemId === element.itemId) {
+          const itemHomeCollection = {
+            'DiscAmt': '0',
+            'itemid': element.itemId,
+            'ItemName': item.itemName,
+            'Itemtype': item.itemType,
+            'NetAmt': element.price * element.quantity,
+            'Rate': element.price,
+            'SubCategoryID': item.labID,
+            'TestCode': item.labCode
+          }
+          homeCollectionData.TestDetail.push(itemHomeCollection)
+        }
+      })
+    })
+
+    console.log(homeCollectionData)
+
+    const form = new FormData();
+    form.append('HomeCollectionData', JSON.stringify(homeCollectionData))
+
+    const token = await getToken()
+    let options = {
+      method: 'POST',
+      body: form,
+      headers: { authorization: `Bearer ${token}`, ...form.getHeaders() }
+    }
+    const diagnosticProcessURL = process.env.DIAGNOSTIC_ITDOSE_HOMEBOOKING_URL
+    if (!diagnosticProcessURL) {
+      throw new AphError(AphErrorMessages.ITDOSE_GET_SLOTS_ERROR, undefined, { "cause": "add env DIAGNOSTICS_ITDOSE_LOGIN_URL" })
+    }
+    const diagnosticProcess = await fetch(`${diagnosticProcessURL}`, options)
+      .then((res) => res.json())
+      .catch((error) => {
+        log(
+          'profileServiceLogger',
+          'API_CALL_ERROR',
+          'getDiagnosticSlots()->CATCH_BLOCK',
+          '',
+          JSON.stringify(error)
+        );
+        throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, { "cause": error.toString() });
+      });
+
+    if (diagnosticProcess.status != true || !diagnosticProcess.data) {
+      errorCode = -1;
+      errorMessage = diagnosticProcess.message;
+      orderId = saveOrder.id;
+      await diagnosticOrdersRepo.updateDiagnosticOrder(
+        saveOrder.id,
+        '',
+        '',
+        DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED
+      );
+    } else {
+      const preBookingID = diagnosticProcess.data.replace('PrebookingID:', '')
+      await diagnosticOrdersRepo.updateDiagnosticOrder(
+        saveOrder.id,
+        preBookingID,
+        '',
+        DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
+      );
+      const diagnosticOrderStatusAttrs: Partial<DiagnosticOrdersStatus> = {
+        diagnosticOrders: saveOrder,
+        orderStatus: diagnosticOrderattrs.orderStatus,
+        statusDate: new Date(),
+        hideStatus: false,
+      };
+      await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
+
+      //send order out for delivery notification
+      sendDiagnosticOrderStatusNotification(
+        NotificationType.DIAGNOSTIC_ORDER_SUCCESS,
+        saveOrder,
+        profilesDb
+      );
+    }
+  }
+  return {
+    errorCode,
+    errorMessage,
+    orderId,
+    displayId,
+  };
+}
+
 const getDiagnosticOrdersList: Resolver<
   null,
   { patientId: string },
@@ -707,6 +966,7 @@ const getDiagnosticOrderDetails: Resolver<
 export const saveDiagnosticOrderResolvers = {
   Mutation: {
     SaveDiagnosticOrder,
+    SaveItdoseHomeCollectionDiagnosticOrder,
   },
   Query: {
     getDiagnosticOrdersList,

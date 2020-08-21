@@ -17,7 +17,7 @@ export const getToken = async (
     if (token) {
         return token
     }
-    const diagnosticLoginURL = process.env.DIAGNOSTICS_ITDOSE_LOGIN_URL
+    const diagnosticLoginURL = process.env.DIAGNOSTIC_ITDOSE_LOGIN_URL
     if (!diagnosticLoginURL) {
         throw new AphError(AphErrorMessages.ITDOSE_GET_TOKEN_ERROR, undefined, { "cause": "add env DIAGNOSTICS_ITDOSE_LOGIN_URL" })
     }

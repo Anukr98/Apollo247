@@ -206,6 +206,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '6px 10px',
       display: 'flex',
       alignItems: 'center',
+      justifyContent: 'space-between',
       [theme.breakpoints.down('xs')]: {
         padding: 0,
       },
@@ -216,6 +217,7 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 0.3,
       fontWeight: 'bold',
       textAlign: 'right',
+
       [theme.breakpoints.down('xs')]: {
         width: '50%',
       },

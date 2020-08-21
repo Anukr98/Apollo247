@@ -302,32 +302,31 @@ export async function trackWebEngageEventForAppointmentComplete(appointmentDetai
 }
 
 export async function trackWebEngageEventForExotelCall(exotelCallDetails: ExotelDetails) {
-  const appointmentDetails = exotelCallDetails.appointment;
+  const consultsDb = getConnection();
+  const appointmentRepo = consultsDb.getRepository(Appointment);
+  const appointmentDetails = await appointmentRepo.findOne({
+    select: ['displayId', 'appointmentType'],
+    where: { id: exotelCallDetails.appointmentId },
+  });
 
   //get doctor details
   const doctorsDb = getConnection('doctors-db');
   const doctorRepo = doctorsDb.getRepository(Doctor);
   const doctorDetails = await doctorRepo.findOne({
     select: ['fullName'],
-    where: { id: appointmentDetails.doctorId },
+    where: { id: exotelCallDetails.doctorId },
   });
 
-  //get patient details
-  const patientsDb = getConnection('patients-db');
-  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findByIdWithRelations(appointmentDetails.patientId, []);
-
   const postBody: Partial<WebEngageInput> = {
-    userId: patientDetails ? patientDetails.mobileNumber : '',
+    userId: exotelCallDetails.patientMobileNumber,
     eventName: ApiConstants.DOCTOR_INITIATED_EXOTEL_CALL_EVENT_NAME.toString(),
     eventData: {
-      consultID: appointmentDetails.id,
-      displayID: appointmentDetails.displayId.toString(),
-      consultMode: appointmentDetails.appointmentType.toString(),
+      consultID: exotelCallDetails.appointmentId,
+      displayID: appointmentDetails!.displayId.toString(),
+      consultMode: appointmentDetails!.appointmentType.toString(),
       doctorName: doctorDetails ? doctorDetails.fullName : '',
     },
   };
-
   return await postEvent(postBody);
 }
 

@@ -137,7 +137,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
     DeviceEventEmitter.addListener('reject', (params) => {
       console.log('Reject Params', params);
-      voipCallType.current = params.call_type;
       getAppointmentDataAndNavigate(params.appointment_id, false);
     });
     setBugfenderPhoneNumber();
@@ -207,27 +206,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const onDisconnetCallAction = () => {
     pubnub.publish(
       {
-        message: {
-          isTyping: true,
-          message: `${voipCallType.current} call ended`,
-          duration: '00: 00',
-          id: voipPatientId.current,
-          messageDate: new Date(),
-        },
-        channel: voipAppointmentId.current,
-        storeInHistory: true,
-      },
-      (status, response) => {}
-    );
-
-    pubnub.publish(
-      {
-        message: {
-          isTyping: true,
-          message: '^^callme`stop^^',
-          id: voipPatientId.current,
-          messageDate: new Date(),
-        },
+        message: '^^#PATIENT_REJECTED_CALL',
         channel: voipAppointmentId.current,
         storeInHistory: true,
       },
@@ -522,6 +501,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
     fetchData();
   };
+  const handleEncodedURI = (encodedString: string) => {
+    const decodedString = decodeURIComponent(encodedString);
+    const splittedString = decodedString.split('+');
+    if (splittedString.length > 1) {
+      return splittedString;
+    } else {
+      return encodedString.split('%20');
+    }
+  };
   const getAppointmentDataAndNavigate = (appointmentID: string, isCall: boolean) => {
     client
       .query<getAppointmentDataQuery, getAppointmentDataVariables>({
@@ -586,9 +574,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
 
       case 'Speciality':
-        console.log('Speciality id', id);
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
-        const filtersData = id ? id.split('%20') : '';
+        const filtersData = id ? handleEncodedURI(id) : '';
+        console.log('filtersData============', filtersData);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: filtersData[0] ? filtersData[0] : '',
           typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
@@ -599,7 +587,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         // });
         break;
       case 'FindDoctors':
-        const cityBrandFilter = id ? id.split('%20') : '';
+        const cityBrandFilter = id ? handleEncodedURI(id) : '';
+        console.log('cityBrandFilter', cityBrandFilter);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
           city:

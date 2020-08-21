@@ -458,6 +458,7 @@ export const ConsultTabs: React.FC = () => {
   const config: Pubnub.PubnubConfig = {
     subscribeKey: subscribekey,
     publishKey: publishkey,
+    origin : 'apollo.pubnubapi.com',
     ssl: true,
     restore: true,
     keepAlive: true,
@@ -472,7 +473,20 @@ export const ConsultTabs: React.FC = () => {
       //setFollowUp(followUp);
     }
   }, [startAppointment]);
-
+  function getCookieValue( cookieName: string) {
+    const name = cookieName+'=';
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) === 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return '';
+  }
   useEffect(() => {
     pubnub.subscribe({
       channels: [appointmentId],
@@ -523,26 +537,21 @@ export const ConsultTabs: React.FC = () => {
     });
 
     return () => {
+      postDoctorConsultEventAction(WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW, getCookieValue('displayId'));
       pubnub.unsubscribe({ channels: [appointmentId] });
     };
   }, []);
 
-  const postDoctorConsultEventAction = (eventType: WebEngageEvent) => {
+  const postDoctorConsultEventAction = (eventType: WebEngageEvent, displayId: string) => {
+    console.log(eventType, displayId);
     let consultTypeMode: ConsultMode = ConsultMode.BOTH;
     if (consultType.includes(ConsultMode.ONLINE)) {
       consultTypeMode = ConsultMode.ONLINE;
     } else if (consultType.includes(ConsultMode.PHYSICAL)) {
       consultTypeMode = ConsultMode.PHYSICAL;
     }
-    const displayId = isSecretary
-      ? casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!
-        .displayId
-      : casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment!.displayId;
-
     const inputParam: DoctorConsultEventInput = {
-      mobileNumber: currentPatient && currentPatient.mobileNumber
-        ? currentPatient.mobileNumber
-        : "",
+      mobileNumber: getCookieValue('patientMobile'),
       eventName: eventType,
       consultID: appointmentId,
       displayId: displayId,
@@ -1056,7 +1065,13 @@ export const ConsultTabs: React.FC = () => {
                 console.log("GUM failed with error", err);
               });
             // -------------------------------------------------------------- //
+            const displayIdStr = `displayId=${_data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.displayId}`;
+            document.cookie = displayIdStr + ";path=/;";
+            const patientMobileStr = `patientMobile=${_data!.data!.getCaseSheet!.patientDetails!.mobileNumber}`;
+            document.cookie = patientMobileStr + ";path=/;";     
+            postDoctorConsultEventAction(WebEngageEvent.DOCTOR_IN_CHAT_WINDOW, _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.displayId);
           }
+          console.log(_data!.data!.getCaseSheet, '9999');
         })
         .catch((error: ApolloError) => {
           const networkErrorMessage = error.networkError
@@ -1470,8 +1485,6 @@ export const ConsultTabs: React.FC = () => {
         document.cookie = cookieStr + ";path=/;";
       };
     }
-    console.log("CURRENT  PATIENT", currentPatient);
-    console.log("DOC ID", doctorId);
   }, []);
 
   const sendCallNotificationFnWithCheck = (
@@ -1619,7 +1632,6 @@ export const ConsultTabs: React.FC = () => {
         setUrlToPatient(true);
       })
       .catch((e) => {
-        console.log(casesheetInfo.getCaseSheet.patientDetails.firstName);
         const patientName =
           casesheetInfo.getCaseSheet.patientDetails.firstName +
           " " +
@@ -1714,7 +1726,6 @@ export const ConsultTabs: React.FC = () => {
           ? new Date(followUpDate[0]).toISOString()
           : "",
       };
-      console.log(ModifyCaseSheetsdSaveStart);
       sessionClient.notify(JSON.stringify(ModifyCaseSheetsdSaveStart));
       const followupISODate = new Date(followUpDate[0]).toISOString();
       const followupDateArray = followupISODate.split("T");
@@ -1795,7 +1806,6 @@ export const ConsultTabs: React.FC = () => {
             const errorMessage = e ? error.message : error;
 
             console.error("Error occured while update casesheet", e);
-            console.log(errorMessage);
             alert(errorMessage);
             const logObject = {
               api: "ModifyCaseSheet",
@@ -1818,7 +1828,6 @@ export const ConsultTabs: React.FC = () => {
         });
     } catch (error) {
       setSaving(false);
-      console.log(error);
       alert("Something went wrong, please try again.");
       const ModifyCaseSheetsdUncaughtErr = {
         api: "ModifyCaseSheetsdUncaughtErr",
@@ -2203,13 +2212,13 @@ export const ConsultTabs: React.FC = () => {
                         indicator: classes.tabsIndicator,
                       }}
                       onChange={(e, newValue) => {
-                        if (tabValue !== newValue) {
-                          postDoctorConsultEventAction(
-                            newValue === 0
-                              ? WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW
-                              : WebEngageEvent.DOCTOR_IN_CHAT_WINDOW,
-                          );
-                        }
+                        // if (tabValue !== newValue) {
+                        //   postDoctorConsultEventAction(
+                        //     newValue === 0
+                        //       ? WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW
+                        //       : WebEngageEvent.DOCTOR_IN_CHAT_WINDOW,
+                        //   );
+                        // }
                         setTabValue(newValue);
                       }}
                     >
@@ -2258,7 +2267,8 @@ export const ConsultTabs: React.FC = () => {
                           appointmentStatus={appointmentStatus}
                           postDoctorConsultEventAction={(
                             eventType: WebEngageEvent,
-                          ) => postDoctorConsultEventAction(eventType)}
+                            displayId: string
+                          ) => postDoctorConsultEventAction(eventType, displayId)}
                         />
                       </div>
                     </div>
