@@ -1134,7 +1134,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                             (fileName || 'Apollo_Prescription.pdf')
                           : dirs.DownloadDir +
                             '/' +
-                            (fileName + '?' + new Date().getTime() || 'Apollo_Prescription.pdf');
+                            (fileName + new Date().getTime() || 'Apollo_Prescription.pdf');
                       setLoading && setLoading(true);
                       RNFetchBlob.config({
                         fileCache: true,
