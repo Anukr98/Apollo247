@@ -32,7 +32,7 @@ import {
 import path from 'path';
 import fs from 'fs';
 import { log } from 'customWinstonLogger';
-import { APPOINTMENT_TYPE, Appointment, STATUS } from 'consults-service/entities';
+import { APPOINTMENT_TYPE, Appointment, STATUS, BOOKINGSOURCE } from 'consults-service/entities';
 import Pubnub from 'pubnub';
 import fetch from 'node-fetch';
 import { Doctor, DoctorType } from 'doctors-service/entities';
@@ -139,7 +139,6 @@ export enum NotificationType {
   INITIATE_JUNIOR_APPT_SESSION = 'INITIATE_JUNIOR_APPT_SESSION',
   INITIATE_SENIOR_APPT_SESSION = 'INITIATE_SENIOR_APPT_SESSION',
   BOOK_APPOINTMENT = 'BOOK_APPOINTMENT',
-  BOOK_APPOINTMENT_WEB = 'BOOK_APPOINTMENT_WEB',
   CALL_APPOINTMENT = 'CALL_APPOINTMENT',
   MEDICINE_CART_READY = 'MEDICINE_CART_READY',
   MEDICINE_ORDER_PLACED = 'MEDICINE_ORDER_PLACED',
@@ -836,7 +835,7 @@ export async function sendNotification(
   }
 
   //book appointment
-  else if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT || pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT_WEB) {
+  else if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
     let content = ApiConstants.BOOK_APPOINTMENT_BODY_WITH_CLICK.replace(
       '{0}',
       patientDetails.firstName
@@ -874,7 +873,7 @@ export async function sendNotification(
     smsLink = smsLink.replace('{3}', apptDate.toString());
 
     //Create chatroom link and send for new booked appointment
-    if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
+    if (appointment.bookingSource === BOOKINGSOURCE.MOBILE) {
       if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
         const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace(
           '{0}',
@@ -886,7 +885,7 @@ export async function sendNotification(
       }
     }
 
-    if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT_WEB) {
+    if (appointment.bookingSource === BOOKINGSOURCE.WEB) {
       if (process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM) {
         const chatroom_sms_link = process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM.replace(
           '{0}',
