@@ -14,12 +14,12 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { getCache } from 'notifications-service/database/connectRedis';
 
-const REDIS_HSET_WHITELISTED_KEY = 'whitelisted:mobilenumber:';
+const REDIS_PREFIX_WHITELISTED_KEY = 'whitelisted:mobilenumber:';
 type validCheckInput = {
-  consultsDb: any;
-  patientsDb: any;
+  consultsDb: Connection;
+  patientsDb: Connection;
   appointmentId: string;
-  doctorsDb: any;
+  doctorsDb: Connection;
 };
 
 type validCheckOutput = {
@@ -116,16 +116,10 @@ export function getNotificationLogFileName(notificationType: NotificationType) {
 }
 
 const isWhitelisted = async (mobileNumber: string) => {
-  const whiteListedContacts = await getCache(`${REDIS_HSET_WHITELISTED_KEY}${mobileNumber}`);
-  if (whiteListedContacts && typeof whiteListedContacts == 'string') {
-    return true;
-  }
-  return false;
+  const whiteListedContacts = await getCache(`${REDIS_PREFIX_WHITELISTED_KEY}${mobileNumber}`);
+  return whiteListedContacts && typeof whiteListedContacts == 'string';
 };
 
 export function isNotificationAllowed(mobileNumber: string) {
-  if (process.env.NODE_ENV == 'production' || isWhitelisted(mobileNumber)) {
-    return true;
-  }
-  return false;
+  return process.env.NODE_ENV == 'production' || isWhitelisted(mobileNumber);
 }
