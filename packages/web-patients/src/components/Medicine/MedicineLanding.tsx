@@ -593,11 +593,11 @@ export const MedicineLanding: React.FC = (props: any) => {
                     section.section_key === 'shop_by_brand' ? (
                       <ShopByBrand data={sectionData} sectionName={section.section_key} />
                     ) : (
-                      <ShopByCategory data={sectionData} sectionName={section.section_key} />
-                    )
+                        <ShopByCategory data={sectionData} sectionName={section.section_key} />
+                      )
                   ) : (
-                    <DayDeals data={sectionData} sectionName={section.section_key} />
-                  );
+                        <DayDeals data={sectionData} sectionName={section.section_key} />
+                      );
                 }
               };
               updatedMetadata.push({
@@ -633,7 +633,7 @@ export const MedicineLanding: React.FC = (props: any) => {
   const productsRecommended = latestMedicineOrder && latestMedicineOrder.medicineOrderLineItems;
   const latestMedicineOrderDate =
     latestMedicineOrder && moment(latestMedicineOrder.createdDate).format('MMMM D, YYYY');
-  const storeAddress = latestMedicineOrder && JSON.parse(latestMedicineOrder.shopAddress);
+  const storeAddress = (latestMedicineOrder && JSON.parse(latestMedicineOrder.shopAddress)) || '';
   const isOfflineOrder =
     latestMedicineOrder && latestMedicineOrder.currentStatus === 'PURCHASED_IN_STORE';
   const orderDelivered =
@@ -757,13 +757,16 @@ export const MedicineLanding: React.FC = (props: any) => {
                                   <img src={require('images/ic_basket.svg')} alt="" />
                                 </span>
                                 <span className={classes.linkText}>
-                                  {productsRecommended.length > 1
+                                  {productsRecommended.length > 1 &&
+                                    productsRecommended[0].medicineName
                                     ? `${
-                                        productsRecommended[0].medicineName
-                                      } + ${productsRecommended.length - 1} item${
-                                        productsRecommended.length > 2 ? 's ' : ' '
-                                      }`
-                                    : productsRecommended[0].medicineName}
+                                    productsRecommended[0].medicineName
+                                    } + ${productsRecommended.length - 1} item${
+                                    productsRecommended.length > 2 ? 's ' : ' '
+                                    }`
+                                    : productsRecommended[0] && productsRecommended[0].medicineName
+                                      ? productsRecommended[0].medicineName
+                                      : ''}
                                 </span>
                                 <span className={classes.reOrder}>
                                   <ReOrder
@@ -816,9 +819,9 @@ export const MedicineLanding: React.FC = (props: any) => {
                                 item.section_key === 'shop_by_brand'
                                   ? clientRoutes.medicineAllBrands()
                                   : clientRoutes.searchByMedicine(
-                                      'shop-by-category',
-                                      item.viewAllUrlKey
-                                    )
+                                    'shop-by-category',
+                                    item.viewAllUrlKey
+                                  )
                               }
                             >
                               View All
@@ -826,8 +829,8 @@ export const MedicineLanding: React.FC = (props: any) => {
                           </div>
                         </>
                       ) : (
-                        item.section_name
-                      )}
+                          item.section_name
+                        )}
                     </div>
                     {item.value}
                   </div>
