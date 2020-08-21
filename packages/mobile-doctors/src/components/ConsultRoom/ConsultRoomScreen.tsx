@@ -2184,22 +2184,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const submitRatingHandler = (data: {
     rating: number;
-    selectedCalltype: string;
-    audioProblems: string[];
-    videoProblems: string[];
-    othersAudioProblem: string;
-    othersVideoProblem: string;
+    feedbackResponseType: string;
+    audioFeedbacks: string[];
+    videoFeedbacks: string[];
   }) => {
     const query = {
-      appointmentId: AppId,
-      doctorType: DOCTOR_CALL_TYPE.SENIOR,
-      // callStartTime
-      rating: data.rating,
-      typeOfIssue: data.selectedCalltype,
-      audioProblems: data.audioProblems,
-      videoProblems: data.videoProblems,
-      othersAudioProblem: data.othersAudioProblem,
-      othersVideoProblem: data.othersVideoProblem
+      appointmentCallDetailsId: AppId,
+      ratingValue: data.rating,
+      feedbackResponseType: data.feedbackResponseType,
+      feedbackResponses: {
+        "audio": data.audioFeedbacks,
+        "video": data.videoFeedbacks
+      }
     }
     setCallEnded(false);
     console.log("query",query)

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Modal, StyleSheet, Text, TextInput, Keyboard } from 'react-native';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { colors } from '@aph/mobile-doctors/src/theme/colors';
 import { AirbnbRating } from 'react-native-elements';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import {AudioActive, AudioInactive, VideoActive, VideoInactive} from '@aph/mobile-doctors/src/components/ui/Icons';
+import { AudioActive, AudioInactive, VideoActive, VideoInactive } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
 import { MultiSelectComponent } from '@aph/mobile-doctors/src/components/ui/MultiSelectComponent';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -14,11 +14,9 @@ import { ScrollView } from 'react-navigation';
 export interface RateCallProps {
     submitRatingCallback: (data: {
         rating: number;
-        selectedCalltype: string;
-        audioProblems: string[];
-        videoProblems: string[];
-        othersAudioProblem: string;
-        othersVideoProblem: string;
+        feedbackResponseType: string;
+        audioFeedbacks: {}[];
+        videoFeedbacks: {}[];
     }) => void;
 }
 
@@ -38,18 +36,32 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
     ];
 
     const [rating, setRating] = useState<number>(0);
-    const [selectedCalltype, setSelectedCalltype] = useState<string>(callType[0].title);
-    const [othersAudioProblem, setOthersAudioProblem] = useState<string>('');
-    const [othersVideoProblem, setOthersVideoProblem] = useState<string>('');
-    const [audioProblems, setAudioProblems] = useState<string[]>([]);
-    const [videoProblems, setVideoProblems] = useState<string[]>([]);
+    const [feedbackResponseType, setFeedbackResponseType] = useState<string>(callType[0].title);
+    const [othersAudioFeedback, setOthersAudioFeedback] = useState<string>('');
+    const [othersVideoFeedback, setOthersVideoFeedback] = useState<string>('');
+    const [audioFeedbacks, setAudioFeedbacks] = useState<{}[]>([]);
+    const [videoFeedbacks, setVideoFeedbacks] = useState<{}[]>([]);
+    const [refreshState, setRefreshState] = useState<boolean>(false);
+    const [isOtherAudioFeedback, setIsOtherAudioFeedback] = useState<boolean>(false);
+    const [isOtherVideoFeedback, setIsOtherVideoFeedback] = useState<boolean>(false);
+    const hasFeedbackIssue = rating !== 0 && rating < 3;
+    const isBtnDisabled = rating < 3 && audioFeedbacks.length === 0 && videoFeedbacks.length === 0;
 
-    const hasProblem = rating !== 0 && rating < 3;
-    const hasOthersAudioProblem = audioProblems.includes(string.case_sheet.audioReviews[string.case_sheet.audioReviews.length - 1].value);
-    const hasOthersVideoProblem = videoProblems.includes(string.case_sheet.videoReviews[string.case_sheet.videoReviews.length - 1].value);
-    const filteredAudioResults = audioProblems.filter(item => item !== string.case_sheet.audioReviews[string.case_sheet.audioReviews.length - 1].value);
-    const filteredVideoResults = videoProblems.filter(item => item !== string.case_sheet.videoReviews[string.case_sheet.videoReviews.length - 1].value);
-    const disableBtn = rating < 3 && filteredAudioResults.length === 0 && filteredVideoResults.length === 0 && !othersAudioProblem && !othersVideoProblem;
+    useEffect(() => {
+        const otherAudioFeedback = audioFeedbacks.filter((item: any) => item.key === "AUDIO_OTHER");
+        if (otherAudioFeedback && otherAudioFeedback.length > 0) {
+            setIsOtherAudioFeedback(true);
+        } else {
+            setIsOtherAudioFeedback(false);
+        }
+
+        const otherVideoFeedback = videoFeedbacks.filter((item: any) => item.key === "VIDEO_OTHER");
+        if (otherVideoFeedback && otherVideoFeedback.length > 0) {
+            setIsOtherVideoFeedback(true);
+        } else {
+            setIsOtherVideoFeedback(false);
+        }
+    }, [refreshState])
 
     const handleRating = (rating: number) => {
         setRating(rating);
@@ -71,9 +83,9 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
 
     const renderMultiSelectQuestions = () => {
         return (
-            <View style={{ display: hasProblem ? "flex" : "none" }}>
+            <View style={{ display: hasFeedbackIssue ? "flex" : "none" }}>
                 {renderCalltypeTab()}
-                {selectedCalltype === string.case_sheet.audio ? renderAudioQuestions() : renderVideoQuestions()}
+                {feedbackResponseType === string.case_sheet.audio ? renderAudioQuestions() : renderVideoQuestions()}
             </View>
         )
     }
@@ -83,10 +95,10 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
             <TabsComponent
                 style={styles.tab}
                 data={callType}
-                onChange={(selectedCalltype: string) => {
-                    setSelectedCalltype(selectedCalltype);
+                onChange={(feedbackResponseType: string) => {
+                    setFeedbackResponseType(feedbackResponseType);
                 }}
-                selectedTab={selectedCalltype}
+                selectedTab={feedbackResponseType}
                 showTextIcons={true}
                 isVerticalTextIcons={true}
                 height={90}
@@ -95,26 +107,20 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
         )
     }
 
-    const audioProblemsCallback = (data: {
-        value: string;
+    const audioFeedbackCallback = (data: {
+        responseName: string;
         key: string
     }[]) => {
-        const filteredAudioResults = data.filter(item => item.key.includes('A'));
-        const convertedResult = filteredAudioResults.map(function (obj) {
-            return obj.value;
-        });
-        setAudioProblems(convertedResult);
+        setAudioFeedbacks(data);
+        setRefreshState(!refreshState)
     }
 
-    const videoProblemsCallback = (data: {
-        value: string;
+    const videoFeedbackCallback = (data: {
+        responseName: string;
         key: string
     }[]) => {
-        const filteredVideoResults = data.filter(item => item.key.includes('V'));
-        const convertedResult = filteredVideoResults.map(function (obj) {
-            return obj.value;
-        });
-        setVideoProblems(convertedResult);
+        setVideoFeedbacks(data);
+        setRefreshState(!refreshState)
     }
 
     const renderAudioQuestions = () => {
@@ -122,17 +128,17 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
             <View>
                 <MultiSelectComponent
                     data={string.case_sheet.audioReviews}
-                    itemSelectionCallback={(data) => audioProblemsCallback(data)}
+                    itemSelectionCallback={(data) => audioFeedbackCallback(data)}
                 />
-                {hasOthersAudioProblem // If includes others as reason
+                {isOtherAudioFeedback
                     ?
                     <TextInput
                         placeholder={string.case_sheet.othersReasonPlaceholder}
                         underlineColorAndroid={'transparent'}
                         placeholderTextColor={colors.LIGHT_BLUE}
                         style={styles.othersInputStyle}
-                        value={othersAudioProblem}
-                        onChangeText={(value) => setOthersAudioProblem(value)}
+                        value={othersAudioFeedback}
+                        onChangeText={(value) => setOthersAudioFeedback(value)}
                         selectionColor={colors.LIGHT_BLUE}
                     />
                     : <View />
@@ -146,17 +152,17 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
             <View>
                 <MultiSelectComponent
                     data={string.case_sheet.videoReviews}
-                    itemSelectionCallback={(data) => videoProblemsCallback(data)}
+                    itemSelectionCallback={(data) => videoFeedbackCallback(data)}
                 />
-                {hasOthersVideoProblem // If includes others as reason
+                {isOtherVideoFeedback
                     ?
                     <TextInput
                         placeholder={string.case_sheet.othersReasonPlaceholder}
                         underlineColorAndroid={'transparent'}
                         placeholderTextColor={colors.LIGHT_BLUE}
                         style={styles.othersInputStyle}
-                        value={othersVideoProblem}
-                        onChangeText={(value) => setOthersVideoProblem(value)}
+                        value={othersVideoFeedback}
+                        onChangeText={(value) => setOthersVideoFeedback(value)}
                         selectionColor={colors.LIGHT_BLUE}
                     />
                     : <View />
@@ -170,16 +176,33 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
             <Button
                 title={string.buttons.submit}
                 style={styles.submitBtn}
-                disabled={disableBtn}
+                disabled={isBtnDisabled}
                 onPress={() => {
                     Keyboard.dismiss();
+                    const newAudioFeedbacks = audioFeedbacks.filter((item: any) => item.key.includes("AUDIO"));
+                    const filteredAudioFeedbacks = newAudioFeedbacks.map((item: any) => {
+                        var obj = Object.assign({}, item);
+                        if (obj.key === "AUDIO_OTHER") {
+                            obj.comment = othersAudioFeedback;
+                        }
+                        delete obj.key;
+                        return obj
+                    });
+
+                    const newVideoFeedbacks = videoFeedbacks.filter((item: any) => item.key.includes("VIDEO"));
+                    const filteredVideoFeedbacks = newVideoFeedbacks.map((item: any) => {
+                        var obj = Object.assign({}, item);
+                        if (obj.key === "VIDEO_OTHER") {
+                            obj.comment = othersVideoFeedback;
+                        }
+                        delete obj.key;
+                        return obj
+                    });
                     props.submitRatingCallback({
                         rating: rating,
-                        selectedCalltype: hasProblem ? audioProblems.length > 0 && videoProblems.length > 0 ? "Video+Audio" : audioProblems.length > 0 ? "Audio" : "Video" : "",
-                        audioProblems: hasProblem ? filteredAudioResults : [],
-                        videoProblems: hasProblem ? filteredVideoResults : [],
-                        othersAudioProblem: hasProblem && hasOthersAudioProblem ? othersAudioProblem : "",
-                        othersVideoProblem: hasProblem && hasOthersVideoProblem ? othersVideoProblem : ""
+                        feedbackResponseType: hasFeedbackIssue ? filteredAudioFeedbacks.length > 0 && filteredVideoFeedbacks.length > 0 ? string.case_sheet.feedbackResponseType.audioVideo : filteredAudioFeedbacks.length > 0 ? string.case_sheet.feedbackResponseType.audio : string.case_sheet.feedbackResponseType.video : "",
+                        audioFeedbacks: hasFeedbackIssue ? filteredAudioFeedbacks : [],
+                        videoFeedbacks: hasFeedbackIssue ? filteredVideoFeedbacks : []
                     });
                 }}
             />
@@ -198,8 +221,8 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
                         <ScrollView bounces={false} keyboardShouldPersistTaps="handled">
                             <Text style={styles.title}>{string.case_sheet.howWasYourExperience}</Text>
                             {renderRating()}
-                            {rating !== 0 && <Text style={styles.thankyouTxt}>{hasProblem ? string.case_sheet.what_went_wrong : string.case_sheet.thankYou}</Text>}
-                            {rating !== 0 && <Text style={styles.thankyouSubtitle}>{hasProblem ? string.case_sheet.let_us_know : string.case_sheet.thankyou_subtitle}</Text>}
+                            {rating !== 0 && <Text style={styles.thankyouTxt}>{hasFeedbackIssue ? string.case_sheet.what_went_wrong : string.case_sheet.thankYou}</Text>}
+                            {rating !== 0 && <Text style={styles.thankyouSubtitle}>{hasFeedbackIssue ? string.case_sheet.let_us_know : string.case_sheet.thankyou_subtitle}</Text>}
                             {renderMultiSelectQuestions()}
                             {rating !== 0 && renderSubmitBtn()}
                         </ScrollView>

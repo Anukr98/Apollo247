@@ -1726,3 +1726,20 @@ export const CALL_DISCONNECT_NOTIFICATION = gql`
     }
   }
 `;
+
+export const SEND_CALL_FEEDBACK = gql`
+mutation saveAppointmentCallFeedback{
+  saveAppointmentCallFeedback(saveAppointmentCallFeedbackInput:{
+    appointmentCallDetailsId:"9d989132-a6c7-433e-949c-9a5b0ff931dc",
+    ratingValue : 2,
+    feedbackResponseType: AUDIOVIDEO,
+    feedbackResponses : "{"audio":[{"responseName":"AUDIO_ECHO"},{"responseName":"OTHER","comment":"Patient voice was muffled"}],"video":[{"responseName":"VIDEO_NOT_CLEAR"},{"responseName":"VIDEO_NOT_RECEIVED"}]}"
+  }){
+    id
+    appointmentCallDetailsId
+    ratingValue,
+    feedbackResponseType,
+    feedbackResponses
+  }
+}
+`;

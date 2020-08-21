@@ -7,13 +7,13 @@ import { CheckboxGrey, CheckboxOrangeSelected } from '@aph/mobile-doctors/src/co
 const styles = MultiSelectStyles;
 
 interface MultiSelectItems {
-    value: string;
-    key: string
+    responseName: string;
+    key: string;
 }
 
 interface MultiSelectProps {
     data: {
-        value: string;
+        responseName: string;
         key: string
     }[];
     scrollEnabled?: boolean;
@@ -43,7 +43,7 @@ export const MultiSelectComponent: React.FC<MultiSelectProps> = (props) => {
                 {selectedKeys.includes(item.key) ? <CheckboxOrangeSelected /> : <CheckboxGrey />}
                 <Text style={[styles.itemText, {
                     color: selectedKeys.includes(item.key) ? colors.APP_YELLOW : colors.LIGHT_BLUE
-                }]}>{item.value}</Text>
+                }]}>{item.responseName}</Text>
             </TouchableOpacity>
         )
     }
@@ -55,7 +55,7 @@ export const MultiSelectComponent: React.FC<MultiSelectProps> = (props) => {
             callbackPropArr.splice(removeIndex, 1);
         } else {
             keysArr = keysArr.concat(item.key);
-            callbackPropArr.push({ key: item.key, value: item.value })
+            callbackPropArr.push({key: item.key, responseName: item.responseName})
         }
         setSelectedKeys(keysArr);
         setRefreshFlatList(!refreshFlatList);
