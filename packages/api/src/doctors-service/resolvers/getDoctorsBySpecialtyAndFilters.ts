@@ -562,7 +562,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     const words = input.split('_');
     const CapitalizedWords: string[] = [];
     words.forEach((element: string) => {
-      CapitalizedWords.push(element[0].toUpperCase() + element.slice(1, element.length).toLowerCase());
+      if(element.length >=1){
+        CapitalizedWords.push(element[0].toUpperCase() + element.slice(1, element.length).toLowerCase());
+      }
     });
     return CapitalizedWords.join(' ');
   }
@@ -574,18 +576,22 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   for (const doctor of doctors) {
     for (const hospital of doctor.doctorHospital) {
       cityObj = { state: '', data: [] };
-      if (filters.city.length) {
-        cityObj = ifKeyExist(filters.city, 'state', hospital.facility.state);
-      }
-      if (cityObj && cityObj.state) {
-        if (!cityObj.data.includes(hospital.facility.city)) {
-          cityObj.data.push(hospital.facility.city);
+      if(hospital.facility.state){
+        if (filters.city.length) {
+          cityObj = ifKeyExist(filters.city, 'state', capitalize(hospital.facility.state));
         }
-      } else {
-        cityObj.state = hospital.facility.state;
-        cityObj.data = [];
-        cityObj.data.push(hospital.facility.city);
-        filters.city.push(cityObj);
+        if (cityObj && cityObj.state) {
+          if (hospital.facility.city && !cityObj.data.includes(capitalize(hospital.facility.city))) {
+            cityObj.data.push(capitalize(hospital.facility.city));
+          }
+        } else {
+          cityObj.state = capitalize(hospital.facility.state);
+          cityObj.data = [];
+          if(hospital.facility.city) {
+            cityObj.data.push(capitalize(hospital.facility.city));
+          }
+          filters.city.push(cityObj);
+        }
       }
     }
 
@@ -596,8 +602,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
     if (doctor.languages instanceof Array) {
       for (const language of doctor.languages) {
-        if (!("name" in ifKeyExist(filters.language, 'name', language))) {
-          filters.language.push({ 'name': language });
+        if (language && !("name" in ifKeyExist(filters.language, 'name', capitalize(language)))) {
+          filters.language.push({ 'name': capitalize(language) });
         }
       }
       doctor.languages = doctor.languages.join(', ');
@@ -611,8 +617,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       filters.fee.push({ 'name': doctor.fee_range });
     }
 
-    if (doctor.gender && !("name" in ifKeyExist(filters.gender, 'name', doctor.gender))) {
-      filters.gender.push({ 'name': doctor.gender });
+    if (doctor.gender && !("name" in ifKeyExist(filters.gender, 'name', capitalize(doctor.gender)))) {
+      filters.gender.push({ 'name': capitalize(doctor.gender) });
     }
 
   }
@@ -638,6 +644,61 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         filters.availability.push({ 'name': 'Next 3 Days' });
       }
     }
+  }
+
+  function fieldCompare(field: string, order: string = 'asc') {
+    return function sort(objectA: any, objectB: any) {
+      if (!objectA.hasOwnProperty(field) || !objectB.hasOwnProperty(field)) {
+        return 0;
+      }
+      const fieldA = objectA[field];
+      const fieldB = objectB[field];
+      let comparison = 0;
+      if (fieldA > fieldB) {
+        comparison = 1;
+      } else if (fieldA < fieldB) {
+        comparison = -1;
+      }
+      return (
+        (order === 'desc') ? (comparison * -1) : comparison
+      );
+    };
+  }
+
+
+  function rangeCompare(field: string, order: string = 'asc') {
+    return function sort(objectA: any, objectB: any) {
+      if (!objectA.hasOwnProperty(field) || !objectB.hasOwnProperty(field)) {
+        return 0;
+      }
+      const fieldA = parseInt(objectA[field].split("-")[0], 10);
+      const fieldB = parseInt(objectB[field].split("-")[0], 10);
+      let comparison = 0;
+      if (fieldA > fieldB) {
+        comparison = 1;
+      } else if (fieldA < fieldB) {
+        comparison = -1;
+      }
+      return (
+        (order === 'desc') ? (comparison * -1) : comparison
+      );
+    };
+  }
+  
+  filters.city.sort(fieldCompare('state'));
+  for(const stateObject of filters.city){
+    stateObject.data.sort();
+  }
+  filters.brands.sort(fieldCompare('brandName'));
+  filters.language.sort(fieldCompare('name'));
+  filters.gender.sort(fieldCompare('name'));
+  filters.experience.sort(rangeCompare('name'));
+  filters.fee.sort(rangeCompare('name'));
+  filters.availability.sort(fieldCompare('name'));
+
+  if(filters.availability && filters.availability[0] && filters.availability[0]['name'] === 'Next 3 Days'){
+    const tail = filters.availability.shift();
+    filters.availability.push(tail);
   }
 
   searchLogger(`API_CALL___END`);
