@@ -826,7 +826,6 @@ interface AutoMessageStrings {
 interface ChatWindowProps {
   appointmentId: string;
   doctorId: string;
-  hasDoctorJoined: (hasDoctorJoined: boolean) => void;
   doctorDetails: DoctorDetails;
   isModalOpen: boolean;
   setIsModalOpen: (isModalOpen: boolean) => void;
@@ -1190,7 +1189,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       automatedText: '',
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
+      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
       url: '',
       transferInfo: '',
       messageDate: new Date(),
@@ -1223,7 +1222,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         automatedText: '',
         duration: `${
           timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-          } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
+        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
         url: '',
         transferInfo: '',
         messageDate: new Date(),
@@ -1242,7 +1241,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       automatedText: '',
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
+      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds} `,
       url: '',
       transferInfo: '',
       messageDate: new Date(),
@@ -1848,7 +1847,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '<30ml' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setDrinkPerWeek('<30ml')}
             >
               &lt; 30ml
@@ -1856,7 +1855,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '30ml-60ml' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setDrinkPerWeek('30ml-60ml')}
             >
               30ml-60ml
@@ -1864,7 +1863,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 drinkPerWeek === '>60ml' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setDrinkPerWeek('>60ml')}
             >
               &gt; 60ml
@@ -1895,7 +1894,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '99-100' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setTemperature('99-100')}
             >
               99-100
@@ -1903,7 +1902,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '100-101' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setTemperature('100-101')}
             >
               100-101
@@ -1911,7 +1910,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === '102+' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setTemperature('102+')}
             >
               102+
@@ -1919,7 +1918,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <AphButton
               className={`${classes.quesButton}  ${
                 temperature === 'No Idea' ? classes.btnActive : ''
-                }`}
+              }`}
               onClick={() => setTemperature('No Idea')}
             >
               No Idea
@@ -2007,9 +2006,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   // add to consult q with automated questions.
                   const lifeStyle = `Smoke: ${_startCase(smokeHabit)}${
                     smokeHabit === 'yes' ? ` ${smokes}` : ''
-                    }, Drink: ${_startCase(drinkHabit)}${
+                  }, Drink: ${_startCase(drinkHabit)}${
                     drinkHabit === 'yes' ? ` ${drinkPerWeek}` : ''
-                    }`;
+                  }`;
                   setConsultQMutationLoading(true);
                   // console.log(lifeStyle, 'life style is...........');
                   mutationAddToConsultQ({
@@ -2084,13 +2083,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         {playRingtone && (
           <audio controls autoPlay loop className={classes.ringtone}>
             <source src={ringtoneUrl} type="audio/mpeg" />
-          Your browser does not support the audio tag.
+            Your browser does not support the audio tag.
           </audio>
         )}
         <div
           className={`${classes.chatSection} ${
             !showVideo ? classes.chatWindowContainer : classes.audioVideoContainer
-            } `}
+          } `}
         >
           {showVideo && sessionId !== '' && token !== '' && (
             <ChatVideo
@@ -2123,8 +2122,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                       <img
                         src={
                           props.doctorDetails &&
-                            props.doctorDetails.getDoctorDetailsById &&
-                            props.doctorDetails.getDoctorDetailsById.photoUrl !== null
+                          props.doctorDetails.getDoctorDetailsById &&
+                          props.doctorDetails.getDoctorDetailsById.photoUrl !== null
                             ? props.doctorDetails.getDoctorDetailsById.photoUrl
                             : require('images/doctor_profile_image.png')
                         }
@@ -2264,33 +2263,32 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 </AphButton>
               </div>
             ) : !appDataLoading ? (
-              consultQMutationLoading || appHistoryLoading
-                ? (
-                  <div className={classes.circlularProgress}>
-                    <CircularProgress />
-                  </div>
-                ) : (
-                  <div className={classes.quesContainer}>
-                    <Slider
-                      {...sliderSettings}
-                      className={classes.slider}
-                      ref={(slider) => (sliderRef.current = slider)}
-                    >
-                      {heightQuestionContent()}
-                      {weightQuestionContent()}
-                      {drugAlergyQuestionChoice()}
-                      {drugsInput() /*slide 4 */}
-                      {foodAlergyQuestionChoice()}
-                      {foodAlergyInput() /*slide 6 */}
-                      {smokeQuestionChoice()}
-                      {smokeInput() /*slide 8 */}
-                      {drinkQuestionChoice()}
-                      {drinkInput() /*slide 10 */}
-                      {temperatureInput()}
-                      {bpInput()}
-                    </Slider>
-                  </div>
-                )
+              consultQMutationLoading || appHistoryLoading ? (
+                <div className={classes.circlularProgress}>
+                  <CircularProgress />
+                </div>
+              ) : (
+                <div className={classes.quesContainer}>
+                  <Slider
+                    {...sliderSettings}
+                    className={classes.slider}
+                    ref={(slider) => (sliderRef.current = slider)}
+                  >
+                    {heightQuestionContent()}
+                    {weightQuestionContent()}
+                    {drugAlergyQuestionChoice()}
+                    {drugsInput() /*slide 4 */}
+                    {foodAlergyQuestionChoice()}
+                    {foodAlergyInput() /*slide 6 */}
+                    {smokeQuestionChoice()}
+                    {smokeInput() /*slide 8 */}
+                    {drinkQuestionChoice()}
+                    {drinkInput() /*slide 10 */}
+                    {temperatureInput()}
+                    {bpInput()}
+                  </Slider>
+                </div>
+              )
             ) : null}
 
             <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
@@ -2340,15 +2338,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           </div>
         </Modal>
         {/* model popup for image preview ends */}
-
-
       </div>
       {/* modal popup for doctor interaciton questions */}
-      {!appHistoryLoading ?
-        <Modal
-          open={doctorInteractionModal}
-          onClose={() => setDoctorInteractionModal(false)}>
-          <div className={doctorInteractionModal && !appHistoryLoading ? classes.modalWindowWrap : classes.modalNone}>
+      {!appHistoryLoading ? (
+        <Modal open={doctorInteractionModal} onClose={() => setDoctorInteractionModal(false)}>
+          <div
+            className={
+              doctorInteractionModal && !appHistoryLoading
+                ? classes.modalWindowWrap
+                : classes.modalNone
+            }
+          >
             <div className={classes.tableContent}>
               <div className={classes.modalWindow}>
                 <div className={classes.modalHeader}>
@@ -2360,8 +2360,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   </div>
                 </div>
                 <div className={`${classes.modalContent} ${classes.modalPopupContent}`}>
-                  <div className={classes.modalHeading}>Have you interacted with the doctor before?</div>
-                  <div className={classes.modalsubHeading}>(This is to know more about your past health records)</div>
+                  <div className={classes.modalHeading}>
+                    Have you interacted with the doctor before?
+                  </div>
+                  <div className={classes.modalsubHeading}>
+                    (This is to know more about your past health records)
+                  </div>
                   <div>
                     <AphButton
                       className={classes.modalButton}
@@ -2407,14 +2411,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             </div>
           </div>
         </Modal>
-        :
-        <Modal
-          open={doctorInteractionModal}
-          onClose={() => setDoctorInteractionModal(false)}>
-          <div className={classes.modalNone}>
-          </div>
+      ) : (
+        <Modal open={doctorInteractionModal} onClose={() => setDoctorInteractionModal(false)}>
+          <div className={classes.modalNone}></div>
         </Modal>
-      }
+      )}
       {/* modal popup for doctor interaciton questions */}
     </>
   );

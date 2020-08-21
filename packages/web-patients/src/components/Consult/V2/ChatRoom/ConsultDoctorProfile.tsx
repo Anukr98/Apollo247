@@ -406,7 +406,6 @@ const useStyles = makeStyles((theme: Theme) => {
 interface ConsultDoctorProfileProps {
   doctorDetails: DoctorDetails;
   appointmentId: string;
-  hasDoctorJoined: boolean;
   jrDoctorJoined: boolean;
   setDisplayId: (displayId: number | null) => void;
   setRescheduleCount: (rescheduleCount: number | null) => void;
@@ -422,7 +421,6 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const {
     doctorDetails,
     appointmentId,
-    hasDoctorJoined,
     jrDoctorJoined,
     setDisplayId,
     setRescheduleCount,
@@ -522,7 +520,10 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       const shouldRefreshComponent = (differenceInMinutes: number) => {
         const id = setInterval(() => {
           id && clearInterval(id);
-          if (differenceInMinutes >= 0 && differenceInMinutes <= 15) {
+          if (
+            differenceInMinutes >= -15 &&
+            (differenceInMinutes <= 30 || appointmentDetails.isConsultStarted)
+          ) {
             setRefreshTimer(!refreshTimer);
           }
         }, 60000);
@@ -581,6 +582,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             setAlertMessage(`Error occured while cancelling the appointment, ${e}`);
           });
       };
+
+      console.log(appointmentDetails);
 
       return (
         <div className={classes.root}>
@@ -690,8 +693,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                         </span>
                       </div>
                     ) : (
-                      differenceInMinutes > 0 && // enables only for upcoming and active  appointments
-                      (hasDoctorJoined ? (
+                      differenceInMinutes > -16 && // enables only for upcoming and active  appointments
+                      (appointmentDetails.isConsultStarted ? (
                         <div className={`${classes.joinInSection} ${classes.doctorjoinSection}`}>
                           <span>Doctor has joined!</span>
                         </div>
@@ -708,7 +711,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                     ))}
                 </div>
                 {appointmentDetails &&
-                !hasDoctorJoined &&
+                !appointmentDetails.isConsultStarted &&
                 appointmentDetails.status !== STATUS.COMPLETED ? (
                   <div className={classes.appointmentDetails}>
                     <div className={classes.sectionHead}>
@@ -748,19 +751,6 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                 ) : null}
               </Scrollbars>
             </div>
-            {hasDoctorJoined ? (
-              <div className={classes.bottomActions}>
-                <AphButton className={classes.joinBtn} fullWidth>
-                  Senior Doctor has joined!
-                </AphButton>
-              </div>
-            ) : jrDoctorJoined ? (
-              <div className={classes.bottomActions}>
-                <AphButton className={classes.joinBtn} fullWidth>
-                  Junior Doctor has joined!
-                </AphButton>
-              </div>
-            ) : null}
           </div>
           <Popover
             open={showCancelPopup}
@@ -839,3 +829,19 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     }
   }
 };
+
+{
+  /* {appointmentDetails.isConsultStarted ? (
+              <div className={classes.bottomActions}>
+                <AphButton className={classes.joinBtn} fullWidth>
+                  Senior Doctor has joined!
+                </AphButton>
+              </div>
+            ) : jrDoctorJoined ? (
+              <div className={classes.bottomActions}>
+                <AphButton className={classes.joinBtn} fullWidth>
+                  Junior Doctor has joined!
+                </AphButton>
+              </div>
+            ) : null} */
+}
