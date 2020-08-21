@@ -583,8 +583,6 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           });
       };
 
-      console.log(appointmentDetails);
-
       return (
         <div className={classes.root}>
           <div className={classes.doctorProfile}>
