@@ -2526,6 +2526,17 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
   }
 `;
 
+export const SAVE_ITDOSE_HOME_COLLECTION_DIAGNOSTIC_ORDER = gql`
+  mutation SaveItdoseHomeCollectionDiagnosticOrder($diagnosticOrderInput: DiagnosticOrderInput) {
+    SaveItdoseHomeCollectionDiagnosticOrder(diagnosticOrderInput: $diagnosticOrderInput) {
+      errorCode
+      errorMessage
+      orderId
+      displayId
+    }
+  }
+`;
+
 export const UPLOAD_DOCUMENT = gql`
   mutation uploadDocument($UploadDocumentInput: UploadDocumentInput) {
     uploadDocument(uploadDocumentInput: $UploadDocumentInput) {

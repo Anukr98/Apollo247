@@ -196,7 +196,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
       style={{ margin: 16, marginTop: 32, width: 'auto' }}
       onPress={() => {
         if (!isDoneBtnDisabled) {
-          onSchedule(date!, slotInfo!);
+          onSchedule(date, slotInfo!);
         }
       }}
       disabled={isDoneBtnDisabled}
