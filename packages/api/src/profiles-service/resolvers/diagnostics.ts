@@ -301,12 +301,11 @@ const getDiagnosticItDoseSlots: Resolver<
   if (!area || !area?.area_id) {
     throw new AphUserInputError(AphErrorMessages.INVALID_ZIPCODE)
   }
-  const diagnosticSlotURL = process.env.DIAGNOSTICS_ITDOSE_SLOTS_URL
+  const diagnosticSlotURL = process.env.DIAGNOSTIC_ITDOSE_SLOTS_URL
   if (!diagnosticSlotURL) {
     throw new AphError(AphErrorMessages.ITDOSE_GET_SLOTS_ERROR, undefined, { "cause": "add env DIAGNOSTICS_ITDOSE_LOGIN_URL" })
   }
-  const formatDate = format(args.selectedDate, 'yyyy-MM-dd');
-  const apiUrl = `${diagnosticSlotURL}`
+  const formatDate = format(args.selectedDate, 'dd-MMM-yyyy');
   const form = new FormData();
   form.append('AreaID', area?.area_id);
   form.append('Pincode', args.zipCode.toString())
@@ -316,7 +315,7 @@ const getDiagnosticItDoseSlots: Resolver<
     body: form,
     headers: { authorization: `Bearer ${token}`, ...form.getHeaders() }
   }
-  const diagnosticSlot = await fetch(apiUrl, options)
+  const diagnosticSlot = await fetch(`${diagnosticSlotURL}`, options)
     .then((res) => res.json())
     .catch((error) => {
       log(
