@@ -935,3 +935,7 @@ export const CheckboxGrey: React.FC<IconProps> = (props) => (
 export const CheckboxOrangeSelected: React.FC<IconProps> = (props) => (
   <IconBase size="xs" {...props} source={require('../../images/icons/box_select_orange.png')} />
 );
+
+export const RefreshIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/refresh.png')} />
+);
