@@ -8,6 +8,7 @@ import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
+  ArrowRight,
   CartIcon,
   DropdownGreen,
   LocationOff,
@@ -18,7 +19,6 @@ import {
   HomeIcon,
   LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -56,7 +56,6 @@ import {
   getPlaceInfoByLatLng,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
-  aphConsole,
   doRequestAndAccessLocation,
   g,
   getNetStatus,
@@ -85,7 +84,7 @@ import {
   NativeScrollEvent,
   Platform,
 } from 'react-native';
-import { Image, Input } from 'react-native-elements';
+import { Image, Input, ListItem } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -707,18 +706,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderYourOrders = () => {
     return (
-      <ListCard
-        onPress={() => {
-          postMyOrdersClicked('Diagnostics', currentPatient);
-          props.navigation.navigate(AppRoutes.YourOrdersTest);
-        }}
-        container={{
-          marginBottom: 24,
-          marginTop: 20,
-        }}
-        title={'My Orders'}
-        leftIcon={<TestsIcon />}
-      />
+      <View style={{ ...theme.viewStyles.card(), paddingVertical: 0 }}>
+        <ListItem
+          title={'My Orders'}
+          leftAvatar={<TestsIcon />}
+          rightAvatar={<ArrowRight />}
+          pad={16}
+          Component={TouchableOpacity}
+          onPress={() => {
+            postMyOrdersClicked('Diagnostics', currentPatient);
+            props.navigation.navigate(AppRoutes.YourOrdersTest);
+          }}
+          containerStyle={{ paddingHorizontal: 0 }}
+          titleStyle={theme.viewStyles.text('M', 16, '#01475b', 1, 24)}
+        />
+      </View>
     );
   };
 
