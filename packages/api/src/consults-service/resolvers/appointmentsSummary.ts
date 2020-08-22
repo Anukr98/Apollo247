@@ -14,7 +14,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { STATUS } from 'consults-service/entities';
-import { DOCTOR_CALL_TYPE, APPT_CALL_TYPE } from 'notifications-service/resolvers/notifications';
+import { DOCTOR_CALL_TYPE, APPT_CALL_TYPE } from 'notifications-service/constants';
 import _isEmpty from 'lodash/isEmpty';
 
 export const appointmentsSummaryTypeDefs = gql`

@@ -17,7 +17,7 @@ import {
   MedicineOrderPayments,
   MedicineOrders,
 } from 'profiles-service/entities/index';
-import { medicineOrderRefundNotification } from 'notifications-service/resolvers/notifications';
+import { medicineOrderRefundNotification } from 'notifications-service/handlers';
 
 import { log } from 'customWinstonLogger';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
