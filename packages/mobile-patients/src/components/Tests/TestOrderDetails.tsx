@@ -7,13 +7,11 @@ import {
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { More } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 // import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import {
   CANCEL_DIAGNOSTIC_ORDER,
-  GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   UPDATE_DIAGNOSTIC_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -27,23 +25,14 @@ import {
   getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import {
-  getDiagnosticOrdersList,
-  getDiagnosticOrdersListVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import {
   updateDiagnosticOrder,
   updateDiagnosticOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/updateDiagnosticOrder';
-import {
-  g,
-  handleGraphQlError,
-  postWEGNeedHelpEvent,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -86,21 +75,18 @@ const rescheduleOptions: [string, string][] = [
   'Others',
 ].map((val, idx) => [(idx + 1).toString(), val]);
 
-export interface TestOrderDetailsProps extends NavigationScreenProps {
-  orderId: string;
-  showOrderSummaryTab: boolean;
-  goToHomeOnBack: boolean;
-}
-{
-}
+export interface TestOrderDetailsProps
+  extends NavigationScreenProps<{
+    orderId: string;
+    showOrderSummaryTab?: boolean;
+    goToHomeOnBack?: boolean;
+  }> {}
 
 export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const orderId = props.navigation.getParam('orderId');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
-  const setOrders = props.navigation.getParam('setOrders');
   const client = useApolloClient();
-  const { currentPatient } = useAllCurrentPatients();
   const [selectedTab, setSelectedTab] = useState<string>(
     // showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
     string.orders.viewBill
@@ -108,22 +94,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [apiLoading, setApiLoading] = useState(false);
   const [isCancelVisible, setCancelVisible] = useState(false);
   const [isRescheduleVisible, setRescheduleVisible] = useState(false);
-  const { getPatientApiCall } = useAuth();
-
-  const refetchOrders =
-    props.navigation.getParam('refetch') ||
-    useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(GET_DIAGNOSTIC_ORDER_LIST, {
-      variables: {
-        patientId: currentPatient && currentPatient.id,
-      },
-      fetchPolicy: 'cache-first',
-    }).refetch;
-
-  useEffect(() => {
-    if (!currentPatient) {
-      getPatientApiCall();
-    }
-  }, [currentPatient]);
 
   const { data, loading, refetch } = useQuery<
     getDiagnosticOrderDetails,
@@ -142,16 +112,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   // }, []);
 
   const handleBack = () => {
-    if (!goToHomeOnBack) {
-      refetchOrders()
-        .then((data: any) => {
-          const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
-          setOrders(_orders);
-        })
-        .catch((e: Error) => {
-          CommonBugFender('TestOrderDetails_refetchOrders', e);
-        });
-    }
     props.navigation.goBack();
     return false;
   };
@@ -346,13 +306,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         /> */}
         <ScrollView bounces={false}>
           {selectedTab == string.orders.trackOrder ? renderOrderHistory() : renderOrderSummary()}
-          {/* <NeedHelpAssistant
-            containerStyle={{ marginTop: 20, marginBottom: 30 }}
-            navigation={props.navigation}
-            onNeedHelpPress={() => {
-              postWEGNeedHelpEvent(currentPatient, 'Tests');
-            }}
-          /> */}
         </ScrollView>
       </SafeAreaView>
       {loading && <Spinner style={{ zIndex: 200 }} />}
