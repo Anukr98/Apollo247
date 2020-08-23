@@ -1,9 +1,8 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import {
-  sendReminderNotification,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
+import { sendReminderNotification } from 'notifications-service/handlers';
+
+import { NotificationType } from 'notifications-service/constants';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
