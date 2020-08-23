@@ -29,7 +29,7 @@ export type SaveMedicineInfoInput = {
   special_price: string;
   special_price_from: string;
   special_price_to: string;
-  qty: string;
+  qty: number;
   description: string;
   url_key: string;
   base_image: string;

@@ -16,7 +16,7 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { getUnixTime, format } from 'date-fns';
-import { hgetAllCache, hmsetCache } from 'profiles-service/database/connectRedis';
+import { hgetAllCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger';
 
@@ -228,7 +228,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     special_price: String
     special_price_from: String
     special_price_to: String
-    qty: String
+    qty: Int
     description: String
     url_key: String
     base_image: String
