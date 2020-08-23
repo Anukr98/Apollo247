@@ -1,9 +1,15 @@
 JS_APP_CONFIG_FILE_PATH = "../src/strings/AppConfig.ts"
 APP_CONFIG_CODEPUSH_MAPPING = {
-	"Production" => 'PROD',
-	"Staging" => 'QA',
-	"Dev" => 'DEV',
-	"QA2" => 'QA2',
+	"Production" => "PROD",
+	"Staging" => "QA",
+	"Dev" => "DEV",
+	"QA2" => "QA2",
+}
+WEBENGAGE_KEY_ANDROID_PATH = "../android/app/src/main/java/com/apollopatient/MainApplication.java"
+WEBENGAGE_KEY_IOS_PATH = "../ios/ApolloPatient/Info.plist"
+WEBENGAGE_KEY = {
+	"PROD" => "in~~c2ab3533",
+	"OTHER" => "in~~c2ab3529"
 }
 # JS bundle for Android debug build
 ANDROID_JS_BUNDLE_COMMAND = "cd .. && react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res"
@@ -15,7 +21,13 @@ APPCENTER_OWNER_NAME = "sankeerth.obulam-popcornapps.com"
 APPCENTER_APP_NAME_IOS = "Apollo"
 APPCENTER_APP_NAME_ANDROID = "Apollo-1"
 APPCENTER_DISTRIBUTE_DESTINATIONS = "Internal Testers,Bibhas"
-APPCENTER_DISTRIBUTE_RELEASE_NOTES = "Env: , ReleaseTag: "
+# Edit Release Notes Here
+APPCENTER_DISTRIBUTE_RELEASE_NOTES = "
+| Key | | Value |
+| :--- | :----: | :--- |
+| Environment | | $environment |
+| Release | | $release_version |
+"
 # Set to false if you don't want to notify testers of your new release
 APPCENTER_DISTRIBUTE_NOTIFY_TESTERS = true 
 
@@ -47,6 +59,25 @@ private_lane :do_codepush do |options|
 	sh(deploy_command)
 end
 
+private_lane :validate_webengage_key do |options|
+	platform = options[:'platform']
+	is_android = platform === "android"
+	matches = File.read(JS_APP_CONFIG_FILE_PATH).scan("AppEnv.PROD as AppEnv")
+	is_prod_env = matches.length > 0
+	weg_key = is_prod_env ? "PROD" : "OTHER"
+	replace_weg_key = is_prod_env ? "OTHER" : "PROD"
+	path_to_check = is_android ? WEBENGAGE_KEY_ANDROID_PATH : WEBENGAGE_KEY_IOS_PATH
+	found_weg_Key = File.read(path_to_check).scan(WEBENGAGE_KEY[weg_key])
+	puts("Found Webengage Key: #{found_weg_Key}")
+	if found_weg_Key.length === 0
+		should_update = UI.confirm "\nError! Webengage key does not match with appconfig environment. Expected key is #{WEBENGAGE_KEY[weg_key]}. Do you want to update? [If this is intentional select `No` to proceed.]"
+		if should_update
+			file_text = File.read(path_to_check)
+			new_contents = file_text.gsub(WEBENGAGE_KEY[replace_weg_key], WEBENGAGE_KEY[weg_key])
+			File.open(path_to_check, "w") {|file| file.puts new_contents }
+		end
+	end
+end
 
 platform :android do
 	desc 'CodePush to Android Environments'
@@ -57,14 +88,13 @@ platform :android do
 	desc 'Build the Android apk'
 	lane :build do
 		# gradle(task: 'clean', project_dir: './android/')
-		# gradle(task: 'assemble', build_type: 'debug', project_dir: './android')
 		gradle(task: 'assemble', build_type: 'Release', project_dir: './android')
 	end
 
 	desc 'Build the Android Debug apk'
 	lane :build_debug do
-		sh(ANDROID_JS_BUNDLE_COMMAND)
 		# gradle(task: 'clean', project_dir: './android/')
+		sh(ANDROID_JS_BUNDLE_COMMAND)
 		gradle(task: 'assemble', build_type: 'Debug', project_dir: './android')
 	end
 
@@ -88,13 +118,13 @@ platform :android do
 		gradle(task: 'clean', project_dir: './android/')
 		gradle(task: 'assemble', build_type: 'Release', project_dir: './android')
 		appcenter_upload(
-			api_token: APPCENTER_API_TOKEN_ANDROID, # Token Name: Fastlane - Upload to Appcenter
+			api_token: APPCENTER_API_TOKEN_ANDROID,
 			owner_name: APPCENTER_OWNER_NAME,
 			owner_type: "user", # Default is user - set to organization for appcenter organizations
 			app_name: APPCENTER_APP_NAME_ANDROID,
 			file: "./android/app/build/outputs/apk/release/app-release.apk",
 			upload_build_only: true,
-			notify_testers: APPCENTER_DISTRIBUTE_NOTIFY_TESTERS, # Set to false if you don't want to notify testers of your new release
+			notify_testers: APPCENTER_DISTRIBUTE_NOTIFY_TESTERS,
 			destinations: APPCENTER_DISTRIBUTE_DESTINATIONS,
 			release_notes: APPCENTER_DISTRIBUTE_RELEASE_NOTES
 		)
@@ -143,13 +173,13 @@ platform :ios do
 			},
 		)
 		appcenter_upload(
-			api_token: APPCENTER_API_TOKEN_IOS, # Token Name: Fastlane - Upload to Appcenter
+			api_token: APPCENTER_API_TOKEN_IOS,
 			owner_name: APPCENTER_OWNER_NAME,
 			owner_type: "user", # Default is user - set to organization for appcenter organizations
 			app_name: APPCENTER_APP_NAME_IOS,
 			file: "./builds/Apollo 247.ipa",
 			upload_build_only: true,
-			notify_testers: APPCENTER_DISTRIBUTE_NOTIFY_TESTERS, # Set to false if you don't want to notify testers of your new release
+			notify_testers: APPCENTER_DISTRIBUTE_NOTIFY_TESTERS,
 			destinations: APPCENTER_DISTRIBUTE_DESTINATIONS,
 			release_notes: APPCENTER_DISTRIBUTE_RELEASE_NOTES
 		)
