@@ -13,7 +13,7 @@ import path from 'path';
 import fs from 'fs';
 import { APPOINTMENT_TYPE, Appointment } from 'consults-service/entities';
 import { writeRow, textInRow, uploadPdfFileToBlobStorage } from 'helpers/uploadFileToBlob';
-import { admin } from 'notifications-service/firebase';
+import { admin } from 'firebase';
 import PDFDocument from 'pdfkit';
 import { NotificationType, NotificationPriority } from 'notifications-service/constants';
 import {
