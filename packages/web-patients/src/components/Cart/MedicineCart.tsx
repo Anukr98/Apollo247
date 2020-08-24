@@ -751,6 +751,7 @@ export const MedicineCart: React.FC = (props) => {
     const productSKUs = cartItems.map((item: MedicineCartItem) => {
       return { ItemId: item.sku };
     });
+    if (sessionStorage.getItem('tatFail') === 'true' || shopId === '') return Promise.resolve(true);
     return await axios
       .post(
         apiDetails.getInventoryUrl || '',
@@ -1728,9 +1729,11 @@ export const MedicineCart: React.FC = (props) => {
                                         Number(productDiscount.toFixed(2))
                                       : 0,
                                   totalWithCouponDiscount:
-                                    Number(totalAmount) -
-                                    (Number(validateCouponResult.discount.toFixed(2)) -
-                                      Number(productDiscount.toFixed(2))),
+                                    validateCouponResult && validateCouponResult.discount
+                                      ? Number(totalAmount) -
+                                        (Number(validateCouponResult.discount.toFixed(2)) -
+                                          Number(productDiscount.toFixed(2)))
+                                      : Number(totalAmount) - Number(productDiscount.toFixed(2)),
                                   deliveryTime: deliveryTime,
                                   validateCouponResult: validateCouponResult,
                                   shopId: shopId,
