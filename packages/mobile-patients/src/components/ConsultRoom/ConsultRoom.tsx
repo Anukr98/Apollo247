@@ -837,7 +837,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       patientId: currentPatient ? currentPatient.id : '',
       voipToken: voipDeviceToken
     }
-    console.log("voip input", input)
+
     client.mutate<addVoipPushToken, addVoipPushTokenVariables>({
       mutation: SAVE_VOIP_DEVICE_TOKEN,
       variables: {
