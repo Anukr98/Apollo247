@@ -552,6 +552,7 @@ export interface DiagnosticOrderInput {
   bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICETYPE | null;
   paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  slotId?: string | null;
   items?: (DiagnosticLineItem | null)[] | null;
 }
 
