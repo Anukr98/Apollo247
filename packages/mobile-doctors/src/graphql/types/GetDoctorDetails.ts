@@ -10,7 +10,11 @@ import { DoctorType, ConsultMode, ConsultType, WeekDay, AccountType } from "./gl
 
 export interface GetDoctorDetails_getDoctorDetails_specialty {
   __typename: "DoctorSpecialties";
+  id: string;
   name: string;
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_consultHours {
