@@ -2,8 +2,8 @@ module.exports = [
   {
     name: 'consults-db',
     type: 'postgres',
-    host: 'localhost',
-    port: 5437,
+    host: process.env.CONSULTS_DB_HOST || 'localhost',
+    port: process.env.CONSULTS_DB_PORT || 5437,
     username: 'postgres',
     password: 'postgres',
     database: 'consults_local',
@@ -15,8 +15,8 @@ module.exports = [
   {
     name: 'doctors-db',
     type: 'postgres',
-    host: 'localhost',
-    port: 5432,
+    host: process.env.DOCTORS_DB_HOST,
+    port: process.env.DOCTORS_DB_PORT,
     username: 'postgres',
     password: 'postgres',
     database: 'doctors_local',
@@ -28,8 +28,8 @@ module.exports = [
   {
     name: 'profiles-db',
     type: 'postgres',
-    host: 'profiles-db',
-    port: 5432,
+    host: process.env.PROFILES_DB_HOST,
+    port: process.env.PROFILES_DB_PORT,
     username: 'postgres',
     password: 'postgres',
     database: 'profiles_local',

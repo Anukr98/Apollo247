@@ -88,6 +88,7 @@
     "elasticsearch": "^16.7.1",
     "faker": "^4.1.0",
     "firebase-admin": "^8.2.0",
+    "glob": "^7.1.6",
     "graphql": "^14.4.2",
     "graphql-iso-date": "^3.6.1",
     "graphql-tag": "^2.10.1",
