@@ -158,6 +158,8 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
   let item = (g(props, 'PastData', 'caseSheet') || []).find((obj: any) => {
     return obj!.doctorType !== 'JUNIOR';
   });
+  let doctorHospital = g(props, 'PastData', 'doctorInfo', 'doctorHospital');
+  let hospitalName = doctorHospital && g(doctorHospital[0], 'facility', 'name');
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
@@ -378,6 +380,19 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                           </TouchableOpacity>
                         ) : null}
                       </View>
+                    </View>
+                    <View>
+                    { hospitalName &&
+                      <Text style={[
+                        styles.descriptionTextStyles,
+                        {
+                          ...theme.fonts.IBMPlexSansMedium(13),
+                          marginTop: 10,
+                        }
+                      ]}>
+                        {hospitalName}
+                      </Text>
+                    }
                     </View>
                   </View>
                 </View>
@@ -762,7 +777,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                       </View>
                       {props.PastData && !!props.PastData.source && (
                         <Text style={styles.descriptionTextStyles}>
-                          {props.PastData && props.PastData.source}
+                          {props.PastData && (props.PastData.hospital_name || props.PastData.source)}
                         </Text>
                       )}
                     </View>

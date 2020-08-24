@@ -2083,6 +2083,8 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           prescriptionSource
           source
           fileUrl
+          hospital_name
+          hospitalId
         }
         errorCode
         errorMsg
@@ -2196,6 +2198,12 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             name
             userFriendlyNomenclature
             image
+          }
+          doctorHospital {
+            facility {
+              id
+              name
+            }
           }
         }
       }
