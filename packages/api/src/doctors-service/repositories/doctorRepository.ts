@@ -369,6 +369,10 @@ export class DoctorRepository extends Repository<Doctor> {
     return this.update(id, { signature });
   }
 
+  updateDoctorChatDays(id: string, chatDays: number) {
+    return this.update(id, { chatDays });
+  }
+
   findById(id: string) {
     return this.findOne({
       where: [{ id, isActive: true }],
