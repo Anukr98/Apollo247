@@ -95,6 +95,11 @@ target 'ApolloPatient' do
   pod 'RNDateTimePicker', :path => '../node_modules/@react-native-community/datetimepicker'
   pod 'RNCallKeep', :path => '../node_modules/react-native-callkeep'
   pod 'RNVoipPushNotification', :path => '../node_modules/react-native-voip-push-notification'
+
+  # React Native Maps dependencies
+  rn_maps_path = '../node_modules/react-native-maps'
+  pod 'react-native-maps', path: rn_maps_path
+  pod 'GoogleMaps', '~> 3.9.0' 
   
   # ServiceExtension Target
 
@@ -108,5 +113,9 @@ target 'ApolloPatient' do
     platform :ios, '10.0'
     pod 'WebEngageAppEx/ContentExtension'
   end
+end
 
+#added for static dependencies
+pre_install do |installer|
+  Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_no_static_framework_transitive_dependencies) {}
 end
