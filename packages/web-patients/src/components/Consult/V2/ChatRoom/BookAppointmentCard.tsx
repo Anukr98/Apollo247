@@ -2,6 +2,9 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Avatar } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import React from 'react';
+import { readableParam } from 'helpers/commonHelpers';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -47,20 +50,23 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 interface bookappointmentCardProps {
   doctorName: string;
+  doctorId: string;
 }
 
-export const BookAppointmentCard: React.FC = (props) => {
+export const BookAppointmentCard: React.FC<bookappointmentCardProps> = (props) => {
   const classes = useStyles({});
+  const { doctorName, doctorId } = props;
   return (
     <div className={classes.BookAppointentCard}>
       <div className={classes.BookAppointentCardSection}>
         <span>
-          You can no longer send a message to the doctor. Book a new appointment for consulting with Dr. Simran again.
-         </span>
-        <AphButton className={classes.bookAppointmentBtn}>
-          BOOK APPOINTMENT
-        </AphButton>
+          You can no longer send a message to the doctor. Book a new appointment for consulting with
+          Dr. {doctorName} again.
+        </span>
+        <Link to={clientRoutes.doctorDetails(readableParam(doctorName || ''), doctorId)}>
+          <AphButton className={classes.bookAppointmentBtn}>BOOK APPOINTMENT</AphButton>
+        </Link>
       </div>
-    </div >
+    </div>
   );
 };

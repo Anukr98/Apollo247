@@ -54,13 +54,8 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { UploadChatPrescription } from 'components/Consult/V2/ChatRoom/UploadChatPrescriptions';
 import { UploadChatEPrescriptionCard } from 'components/Consult/V2/ChatRoom/UploadChatEPrescriptionCard';
 import CircularProgress from '@material-ui/core/CircularProgress';
-
-// type Params = { appointmentId: string; doctorId: string };
-
-// const client = new AphStorageClient(
-//   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_PATIENTS,
-//   process.env.AZURE_STORAGE_CONTAINER_NAME
-// );
+import { BookAppointmentCard } from 'components/Consult/V2/ChatRoom/BookAppointmentCard';
+import { isPastAppointment } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -2055,6 +2050,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     sliderRef.current.slickNext();
   };
 
+  const pastAppointment =
+    appointmentDetails && isPastAppointment(appointmentDetails.appointmentDateTime);
+
   // console.log(messages, 'messages from pubnub.....');
 
   return (
@@ -2201,21 +2199,51 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               </Scrollbars>
             </div>
             {autoQuestionsCompleted ? (
-              <div className={`${classes.chatWindowFooter} ${classes.chatWindowFooterInput}`}>
-                <AphTextField
-                  autoFocus
-                  className={classes.searchInput}
-                  inputProps={{ type: 'text' }}
-                  placeholder="Type here..."
-                  value={userMessage}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setUserMessage(e.target.value)
-                  }
-                  onKeyPress={(e: any) => {
-                    if ((e.which == 13 || e.keyCode == 13) && userMessage.trim() !== '') {
+              <>
+                {pastAppointment && appointmentDetails && (
+                  <BookAppointmentCard
+                    doctorName={
+                      (appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.fullName) ||
+                      ''
+                    }
+                    doctorId={appointmentDetails.doctorId}
+                  />
+                )}
+                <div className={`${classes.chatWindowFooter} ${classes.chatWindowFooterInput}`}>
+                  <AphTextField
+                    disabled={pastAppointment}
+                    autoFocus
+                    className={classes.searchInput}
+                    inputProps={{ type: 'text' }}
+                    placeholder="Type here..."
+                    value={userMessage}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setUserMessage(e.target.value)
+                    }
+                    onKeyPress={(e: any) => {
+                      if ((e.which == 13 || e.keyCode == 13) && userMessage.trim() !== '') {
+                        const composeMessage = {
+                          id: currentPatient && currentPatient.id,
+                          message: e.target.value,
+                          automatedText: '',
+                          duration: '',
+                          url: '',
+                          transferInfo: '',
+                          messageDate: new Date(),
+                          cardType: 'patient',
+                        };
+                        publishMessage(appointmentId, composeMessage);
+                        setUserMessage('');
+                      }
+                    }}
+                  />
+                  <AphButton
+                    className={classes.chatSend}
+                    disabled={pastAppointment || userMessage.length === 0}
+                    onClick={() => {
                       const composeMessage = {
                         id: currentPatient && currentPatient.id,
-                        message: e.target.value,
+                        message: userMessage,
                         automatedText: '',
                         duration: '',
                         url: '',
@@ -2225,43 +2253,26 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                       };
                       publishMessage(appointmentId, composeMessage);
                       setUserMessage('');
-                    }
-                  }}
-                />
-                <AphButton
-                  className={classes.chatSend}
-                  disabled={userMessage.length === 0}
-                  onClick={() => {
-                    const composeMessage = {
-                      id: currentPatient && currentPatient.id,
-                      message: userMessage,
-                      automatedText: '',
-                      duration: '',
-                      url: '',
-                      transferInfo: '',
-                      messageDate: new Date(),
-                      cardType: 'patient',
-                    };
-                    publishMessage(appointmentId, composeMessage);
-                    setUserMessage('');
-                  }}
-                >
-                  <img src={require('images/ic_send.svg')} alt="" />
-                </AphButton>
-                <AphButton
-                  className={classes.chatSubmitBtn}
-                  onClick={() => {
-                    setIsUploadPreDialogOpen(true);
-                  }}
-                >
-                  <img
-                    src={require('images/ic_paperclip.svg')}
-                    alt="Upload Records"
-                    title="Upload Records"
-                  />
-                  <span>Upload Records</span>
-                </AphButton>
-              </div>
+                    }}
+                  >
+                    <img src={require('images/ic_send.svg')} alt="" />
+                  </AphButton>
+                  <AphButton
+                    disabled={pastAppointment}
+                    className={classes.chatSubmitBtn}
+                    onClick={() => {
+                      setIsUploadPreDialogOpen(true);
+                    }}
+                  >
+                    <img
+                      src={require('images/ic_paperclip.svg')}
+                      alt="Upload Records"
+                      title="Upload Records"
+                    />
+                    <span>Upload Records</span>
+                  </AphButton>
+                </div>
+              </>
             ) : !appDataLoading ? (
               consultQMutationLoading || appHistoryLoading ? (
                 <div className={classes.circlularProgress}>
