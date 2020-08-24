@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Modal, StyleSheet, Text, TextInput, Keyboard } from 'react-native';
+import { View, Modal, StyleSheet, Text, TextInput, Keyboard, Platform } from 'react-native';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { colors } from '@aph/mobile-doctors/src/theme/colors';
@@ -275,10 +275,10 @@ const styles = StyleSheet.create({
         marginTop: 0
     },
     othersInputStyle: {
-        marginTop: 20,
+        marginTop: Platform.OS === 'ios' ? 20 : 10,
         borderBottomWidth: 1,
         borderBottomColor: colors.LIGHT_BLUE,
-        paddingBottom: 8,
+        paddingBottom: Platform.OS === 'ios' ? 8 : 0,
         ...theme.fonts.IBMPlexSansLight(11),
         color: colors.LIGHT_BLUE
     }
