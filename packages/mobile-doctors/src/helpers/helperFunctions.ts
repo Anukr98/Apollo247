@@ -170,9 +170,7 @@ export const medicineDescription = (
   const unit: string =
     (medUnitFormatArray.find((i) => i.key === item.medicineUnit) || {}).value || 'others';
   if (item.medicineCustomDetails) {
-    return `${item.medicineCustomDetails}${
-      item.includeGenericNameInPrescription ? `\nGeneric Name: ${item.genericName}` : ''
-    }`;
+    return `${item.medicineCustomDetails}`;
   }
   return `${type + ' '}${
     customDosage.length > 0
@@ -258,8 +256,6 @@ export const medicineDescription = (
     item.routeOfAdministration
       ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
       : ''
-  }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}${
-    item.includeGenericNameInPrescription ? `\nGeneric Name: ${item.genericName}` : ''
   }`;
 };
 
@@ -294,6 +290,7 @@ export const messageCodes = {
   autoResponse: '^^#doctorAutoResponse',
   leaveChatRoom: '^^#leaveChatRoom',
   patientJoined: '^^#patientJoinedMeetingRoom',
+  patientRejected: '^^#PATIENT_REJECTED_CALL',
 };
 
 export const formatFloating = (value: string) => {

@@ -7,6 +7,7 @@ import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
+import fetchUtil from 'helpers/fetch';
 
 declare global {
   interface Window {
@@ -204,6 +205,10 @@ const INVALID_FILE_TYPE_ERROR =
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
 const OUT_OF_STOCK_MESSAGE = 'Sorry, this item is out of stock in your area';
 const TAT_API_TIMEOUT_IN_MILLI_SEC = 10000; // in milli sec
+const NO_ONLINE_SERVICE = 'NOT AVAILABLE FOR ONLINE SALE';
+const OUT_OF_STOCK = 'Out Of Stock';
+const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
+const PINCODE_MAXLENGTH = 6;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -391,7 +396,7 @@ const getStoreName = (storeAddress: string) => {
   return store && store.storename ? _upperFirst(_lowerCase(store.storename)) : '';
 };
 
-export const getPackOfMedicine = (medicineDetail: MedicineProductDetails) => {
+const getPackOfMedicine = (medicineDetail: MedicineProductDetails) => {
   return `${medicineDetail.mou} ${
     medicineDetail.PharmaOverview && medicineDetail.PharmaOverview.length > 0
       ? medicineDetail.PharmaOverview[0].Doseform
@@ -399,7 +404,30 @@ export const getPackOfMedicine = (medicineDetail: MedicineProductDetails) => {
   }${medicineDetail.mou && parseFloat(medicineDetail.mou) !== 1 ? 'S' : ''}`;
 };
 
+const getImageUrl = (imageUrl: string) => {
+  return (
+    imageUrl &&
+    imageUrl
+      .split(',')
+      .filter((imageUrl) => imageUrl)
+      .map((imageUrl) => `/catalog/product${imageUrl}`)[0]
+  );
+};
+
+const getCouponByUserMobileNumber = () => {
+  return fetchUtil(
+    `${process.env.GET_PHARMA_AVAILABLE_COUPONS}?mobile=${localStorage.getItem('userMobileNo')}`,
+    'GET',
+    {},
+    '',
+    false
+  );
+};
+
 export {
+  getCouponByUserMobileNumber,
+  getPackOfMedicine,
+  getImageUrl,
   getStoreName,
   getAvailability,
   isRejectedStatus,
@@ -437,4 +465,8 @@ export {
   getTypeOfProduct,
   kavachHelpline,
   isActualUser,
+  NO_ONLINE_SERVICE,
+  OUT_OF_STOCK,
+  NOTIFY_WHEN_IN_STOCK,
+  PINCODE_MAXLENGTH,
 };

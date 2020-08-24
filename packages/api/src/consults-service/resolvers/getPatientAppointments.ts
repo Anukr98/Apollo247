@@ -239,9 +239,9 @@ const getPatientPersonalizedAppointments: Resolver<
   const MAX_DAYS_PAST_CONSULT: number = 30;
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const doctorFacilityRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
-  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository); 
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const uhid = args.patientUhid;
- 
+
   if (uhid == '' || uhid == null) {
     throw new AphError(AphErrorMessages.INVALID_UHID, undefined, {});
   }
@@ -320,7 +320,7 @@ const getPatientPersonalizedAppointments: Resolver<
       const apolloDoctorId = mapMedMantraApolloDoctor.get(appt.doctorid) || '';
       const patientId = patientDetails ? patientDetails.id : '';
       if (mapMedMantraApolloDoctor.has(appt.doctorid)) {
-        let apptBooked = await validateAppointmentBooked(
+        const apptBooked = await validateAppointmentBooked(
           apptRepo,
           apolloDoctorId,
           patientId,

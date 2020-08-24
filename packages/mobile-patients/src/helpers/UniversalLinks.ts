@@ -2,6 +2,16 @@ import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '../components/NavigatorContainer';
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 
+const handleEncodedURI = (encodedString: string) => {
+  const decodedString = decodeURIComponent(encodedString);
+  const splittedString = decodedString.split('+');
+  if (splittedString.length > 1) {
+    return splittedString;
+  } else {
+    return encodedString.split('%20');
+  }
+};
+
 export const handleUniversalLinks = (
   universalLinkData: any,
   navigation: NavigationScreenProp<NavigationRoute<object>, object>
@@ -153,7 +163,7 @@ const pushTheView = (
       break;
 
     case 'Speciality':
-      const filtersData = id ? id.split('%20') : '';
+      const filtersData = id ? handleEncodedURI(id) : '';
       navigation.navigate(AppRoutes.DoctorSearchListing, {
         specialityId: filtersData[0] ? filtersData[0] : '',
         typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
@@ -162,7 +172,7 @@ const pushTheView = (
       break;
 
     case 'FindDoctors':
-      const cityBrandFilter = id ? id.split('%20') : '';
+      const cityBrandFilter = id ? handleEncodedURI(id) : '';
       navigation.navigate(AppRoutes.DoctorSearchListing, {
         specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
         city:

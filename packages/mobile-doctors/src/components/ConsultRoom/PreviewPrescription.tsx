@@ -283,6 +283,9 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
                     }
                   >
                     {renderSubHeading(`${index + 1}. ${item.medicineName}`)}
+                    {item.includeGenericNameInPrescription && item.genericName
+                      ? renderDescription(`Contains ${item.genericName}`)
+                      : null}
                     {renderDescription(medicineDescription(item))}
                   </View>
                 );

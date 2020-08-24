@@ -855,6 +855,7 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         brands {
           name
           image
+          brandName
         }
         language {
           name
@@ -1280,29 +1281,16 @@ export const GET_LATEST_MEDICINE_ORDER = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_SLOTS = gql`
-  query getDiagnosticSlots(
-    $patientId: String
-    $hubCode: String
-    $selectedDate: Date
-    $zipCode: Int
-  ) {
-    getDiagnosticSlots(
+export const GET_DIAGNOSTIC_IT_DOSE_SLOTS = gql`
+  query GetDiagnosticItDoseSlots($patientId: String, $selectedDate: Date, $zipCode: Int) {
+    getDiagnosticItDoseSlots(
       patientId: $patientId
-      hubCode: $hubCode
       selectedDate: $selectedDate
       zipCode: $zipCode
     ) {
-      diagnosticBranchCode
-      diagnosticSlot {
-        employeeCode
-        employeeName
-        slotInfo {
-          endTime
-          status
-          startTime
-          slot
-        }
+      slotInfo {
+        TimeslotID
+        Timeslot
       }
     }
   }
@@ -1458,9 +1446,12 @@ export const UPDATE_DIAGNOSTIC_ORDER = gql`
   }
 `;
 
-
 export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
-  query getMedicineOrderOMSDetailsWithAddress($patientId: String, $orderAutoId: Int, $billNumber: String) {
+  query getMedicineOrderOMSDetailsWithAddress(
+    $patientId: String
+    $orderAutoId: Int
+    $billNumber: String
+  ) {
     getMedicineOrderOMSDetailsWithAddress(
       patientId: $patientId
       orderAutoId: $orderAutoId
@@ -2535,6 +2526,17 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
   }
 `;
 
+export const SAVE_ITDOSE_HOME_COLLECTION_DIAGNOSTIC_ORDER = gql`
+  mutation SaveItdoseHomeCollectionDiagnosticOrder($diagnosticOrderInput: DiagnosticOrderInput) {
+    SaveItdoseHomeCollectionDiagnosticOrder(diagnosticOrderInput: $diagnosticOrderInput) {
+      errorCode
+      errorMessage
+      orderId
+      displayId
+    }
+  }
+`;
+
 export const UPLOAD_DOCUMENT = gql`
   mutation uploadDocument($UploadDocumentInput: UploadDocumentInput) {
     uploadDocument(uploadDocumentInput: $UploadDocumentInput) {
@@ -2823,6 +2825,8 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
             refundAmount
             createdDate
             refundStatus
+            refundId
+            txnId
           }
         }
       }

@@ -129,16 +129,13 @@ export const UIElementsProvider: React.FC = (props) => {
   useEffect(() => {
     console.log('useeffectaudiotrack');
 
-    audioTrack =
-      Platform.OS === 'ios'
-        ? new RNSound(
-            'incallmanager_ringtone.mp3',
-            encodeURIComponent(RNSound.MAIN_BUNDLE),
-            (error) => {
-              console.log('erroraudiotrack', error);
-            }
-          )
-        : null;
+    audioTrack = new RNSound(
+      'incallmanager_ringtone.mp3',
+      Platform.OS === 'ios' ? encodeURIComponent(RNSound.MAIN_BUNDLE) : RNSound.MAIN_BUNDLE,
+      (error) => {
+        console.log('erroraudiotrack', error);
+      }
+    );
   }, []);
 
   const setPrevVolume = async () => {

@@ -46,9 +46,9 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
       if (status === 'CANCELLED' && appointmentRefunds.length) {
         return <PaymentCardHeader status={status} />;
       }
-    } else if (paymentFor === 'pharmacy'){
+    } else if (paymentFor === 'pharmacy') {
       const { currentStatus, medicineOrderPayments } = item;
-      const { medicineOrderRefunds } = medicineOrderPayments[0]
+      const { medicineOrderRefunds } = medicineOrderPayments[0];
       if (currentStatus === 'CANCELLED' && medicineOrderRefunds.length) {
         return <PaymentCardHeader status={currentStatus} />;
       }
@@ -57,28 +57,53 @@ const PaymentHistoryCard: FC<PaymentHistoryCardProps> = (props) => {
     }
   };
   const { id, item, lastIndex, index, paymentFor, patientId } = props;
-  return (
-    <View
-      style={{
-        ...styles.mainContainer,
-        marginBottom: lastIndex ? 35 : 10,
-        marginTop: index === 0 ? 25 : 10,
-      }}
-    >
-      {renderHeader()}
-      <PaymentCardBody
-        item={item}
-        paymentFor={paymentFor}
-        navigationProps={props.navigationProps}
-        patientId={patientId}
-      />
-      <PaymentCardFooter
-        item={item}
-        paymentFor={paymentFor}
-        navigationProps={props.navigationProps}
-      />
-    </View>
-  );
+
+  const getAmountPaid = () => {
+    if (paymentFor === 'consult') {
+      const { appointmentPayments } = item;
+      if (!appointmentPayments || !appointmentPayments.length) {
+        return 0;
+      } else {
+        const { amountPaid } = appointmentPayments[0];
+        return amountPaid;
+      }
+    } else if (paymentFor === 'pharmacy') {
+      const { medicineOrderPayments } = item;
+      if (!medicineOrderPayments || !medicineOrderPayments.length) {
+        return 0;
+      } else {
+        const { amountPaid } = medicineOrderPayments[0];
+        return amountPaid;
+      }
+    }
+  };
+
+  if (getAmountPaid() != 0) {
+    return (
+      <View
+        style={{
+          ...styles.mainContainer,
+          marginBottom: lastIndex ? 35 : 10,
+          marginTop: index === 0 ? 25 : 10,
+        }}
+      >
+        {renderHeader()}
+        <PaymentCardBody
+          item={item}
+          paymentFor={paymentFor}
+          navigationProps={props.navigationProps}
+          patientId={patientId}
+        />
+        <PaymentCardFooter
+          item={item}
+          paymentFor={paymentFor}
+          navigationProps={props.navigationProps}
+        />
+      </View>
+    );
+  } else {
+    return null;
+  }
 };
 const styles = StyleSheet.create({
   mainContainer: {

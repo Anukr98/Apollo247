@@ -128,7 +128,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   let PerfectdocSearchParams: RequestParams.Search = {
     index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
-      size: 1000,
+      size: 100,
       query: {
         bool: {
           must: [
@@ -157,7 +157,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     PerfectdocSearchParams = {
       index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
-        size: 1000,
+        size: 100,
         query: {
           bool: {
             must: [
@@ -188,7 +188,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     const PerfectdocCitySearchParams: RequestParams.Search = {
       index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
-        size: 1000,
+        size: 100,
         query: {
           bool: {
             must: [

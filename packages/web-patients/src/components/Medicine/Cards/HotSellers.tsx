@@ -5,7 +5,7 @@ import { AphButton } from '@aph/web-ui-components';
 import Slider from 'react-slick';
 import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Link } from 'react-router-dom';
+import { Link, Route } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
 import { gtmTracking } from '../../../gtmTracking';
 import {
@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     productTitle: {
-      fontSize: 14,
+      fontSize: 12,
       color: '#01475b',
       fontWeight: 500,
       textAlign: 'center',
@@ -179,7 +179,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
     url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
-  const { cartItems, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const { cartItems, addCartItem, updateCartItem, removeCartItemSku } = useShoppingCart();
 
   const itemIndexInCart = (item: MedicineProduct) => {
     const index = cartItems.findIndex((cartItem) => cartItem.id == item.id);
@@ -209,27 +209,32 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         </span>
                       </div>
                     )}
-                  <Link
-                    to={clientRoutes.medicineDetails(hotSeller.url_key)}
-                    onClick={() => {
-                      pharmacyConfigSectionTracking({
-                        sectionName: props.section,
-                        productId: hotSeller.sku,
-                        productName: hotSeller.name,
-                      });
-                      pharmacyProductClickedTracking({
-                        productName: hotSeller.name,
-                        source: 'Home',
-                        productId: hotSeller.sku,
-                        sectionName: props.section,
-                      });
-                    }}
-                  >
-                    <div className={classes.productIcon}>
-                      <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
-                    </div>
-                    <div className={classes.productTitle}>{hotSeller.name}</div>
-                  </Link>
+                  <Route
+                    render={({ history }) => (
+                      <a
+                        href=""
+                        onClick={() => {
+                          history.push(clientRoutes.medicineDetails(hotSeller.url_key));
+                          pharmacyConfigSectionTracking({
+                            sectionName: props.section,
+                            productId: hotSeller.sku,
+                            productName: hotSeller.name,
+                          });
+                          pharmacyProductClickedTracking({
+                            productName: hotSeller.name,
+                            source: 'Home',
+                            productId: hotSeller.sku,
+                            sectionName: props.section,
+                          });
+                        }}
+                      >
+                        <div className={classes.productIcon}>
+                          <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
+                        </div>
+                        <div className={classes.productTitle}>{hotSeller.name}</div>
+                      </a>
+                    )}
+                  />
                   <div className={classes.bottomSection}>
                     <div className={classes.priceGroup}>
                       {hotSeller &&
@@ -356,7 +361,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                               },
                             });
                             /**Gtm code End  */
-                            removeCartItem && removeCartItem(hotSeller.id);
+                            removeCartItemSku && removeCartItemSku(hotSeller.sku);
                           }}
                         >
                           Remove

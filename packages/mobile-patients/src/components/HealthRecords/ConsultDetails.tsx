@@ -605,6 +605,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             thumbnail: medicineDetails.thumbnail || medicineDetails.image,
             isInStock: !!medicineDetails.is_in_stock,
             maxOrderQty: medicineDetails.MaxOrderQty,
+            productType: medicineDetails.type_id,
           } as ShoppingCartItem;
         });
         const medicines = medicinesAll.filter((item) => !!item);
@@ -692,11 +693,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     const unit: string =
       (medUnitFormatArray.find((i) => i.key === item.medicineUnit) || {}).value || 'others';
     if (medicineCustomDetails !== null) {
-      return `${medicineCustomDetails}${
-        item.routeOfAdministration
-          ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
-          : ''
-      }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
+      return `${medicineCustomDetails}`;
     } else {
       return `${type + ' '}${
         customDosage.length > 0
@@ -1039,7 +1036,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       caseSheetDetails!.medicinePrescription &&
       caseSheetDetails!.medicinePrescription.length !== 0 &&
       caseSheetDetails!.doctorType !== 'JUNIOR' &&
-      g(caseSheetDetails, 'blobName') 
+      g(caseSheetDetails, 'blobName')
     ) {
       return (
         <View

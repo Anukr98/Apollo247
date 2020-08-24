@@ -36,6 +36,7 @@ import { Link } from 'react-router-dom';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getPackOfMedicine } from 'helpers/commonHelpers';
+import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -204,6 +205,9 @@ const useStyles = makeStyles((theme: Theme) => {
         justifyContent: 'center',
         background: '#fff',
         boxShadow: '0px 0px 5px rgba(128, 128, 128, 0.2)',
+        position: 'absolute',
+        top: 20,
+        right: 20,
       },
       '& img': {
         width: '100%',
@@ -219,8 +223,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 0,
         paddingLeft: 0,
-        width: '70%',
-        paddingRight: 10,
       },
       '& h1': {
         fontSize: 20,
@@ -231,12 +233,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     productBasicInfo: {
       [theme.breakpoints.down('xs')]: {
-        padding: '0 10px 0 0',
+        width: '70%',
+        minHeight: 150,
       },
     },
     productDetailed: {
       [theme.breakpoints.down('xs')]: {
-        padding: '20px 0',
+        padding: '20px 0 0',
       },
     },
     productInfo: {
@@ -286,6 +289,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 0,
       minHeight: 'auto',
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+      borderTop: '0.5px solid rgba(2,71,91,0.3)',
       // margin: '5px 0 0 0',
       '& svg': {
         color: '#02475b',
@@ -293,13 +297,13 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#f7f8f5',
       },
-      '&:before': {
-        content: '""',
-        borderTop: '0.5px solid rgba(2,71,91,0.3)',
-        position: 'absolute',
-        left: 0,
-        right: 0,
-      },
+      // '&:before': {
+      //   content: '""',
+      //   borderTop: '0.5px solid rgba(2,71,91,0.3)',
+      //   position: 'absolute',
+      //   left: 0,
+      //   right: 0,
+      // },
     },
     tabRoot: {
       fontSize: 14,
@@ -352,7 +356,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         backgroundColor: '#fff',
-        padding: '0 20px',
+        padding: '10px 20px',
+        borderRadius: 5,
       },
     },
     prescriptionBox: {
@@ -414,7 +419,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       padding: '20px 40px',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      marginTop: -48,
+      marginTop: -57,
       position: 'relative',
       display: 'flex',
       alignItems: 'center',
@@ -491,6 +496,31 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       [theme.breakpoints.down('xs')]: {
         padding: 0,
+      },
+    },
+    similarProducts: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      textTransform: 'uppercase',
+      borderBottom: 'solid 0.5px rgba(2, 71, 91, 0.3)',
+      paddingBottom: 8,
+      marginBottom: 10,
+    },
+    sliderSection: {
+      padding: 20,
+      [theme.breakpoints.down('xs')]: {
+        padding: '0 20px 20px',
+        overflowX: 'hidden',
+      },
+    },
+    mobileResponseView: {
+      [theme.breakpoints.up(768)]: {
+        display: 'none',
+      },
+    },
+    webResponseView: {
+      [theme.breakpoints.down(768)]: {
+        display: 'none',
       },
     },
   };
@@ -665,7 +695,7 @@ export const MedicineDetails: React.FC = (props) => {
                 title: `${name} Price, Uses, Side Effects - Apollo 247`,
                 description: `Buy ${name}, Pack of ${getPackOfMedicine(
                   data.productdp[0]
-                )} at Rs. ${special_price ||
+                )} at &#8377;${special_price ||
                   price} in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
                 canonicalLink:
                   typeof window !== 'undefined' &&
@@ -703,6 +733,14 @@ export const MedicineDetails: React.FC = (props) => {
   if (medicineDetails && medicineDetails.PharmaOverview) {
     medicinePharmacyDetails = medicineDetails.PharmaOverview;
   }
+
+  const renderComposition = () => {
+    const generics = medicinePharmacyDetails[0].generic.split('+ ');
+    const strength = medicinePharmacyDetails[0].Strengh.split('+ ');
+    const units = medicinePharmacyDetails[0].Unit.split('+ ');
+    const compositionArray = generics.map((key, ind) => `${key}-${strength[ind]}${units[ind]}`);
+    return compositionArray.join(' + ');
+  };
 
   const getHeader = (caption: string) => {
     switch (caption) {
@@ -826,20 +864,21 @@ export const MedicineDetails: React.FC = (props) => {
   const renderOverviewTabDesc = (overView: MedicineOverView) => {
     const data = getData(overView);
     if (typeof overView !== 'string') {
-      return data.map(
-        (item, index) =>
-          tabValue === index && (
-            <div key={index} className={classes.tabContainer}>
-              {item.value.split(';').map((description, idx) => {
-                if (item.key === 'Usage') {
-                  return <div key={index}>{getUsageDesc(description)}</div>;
-                } else {
-                  return <p key={idx}>{description}</p>;
-                }
-              })}
-            </div>
-          )
-      );
+      return data.map((item, index) => (
+        <div
+          style={{ display: tabValue === index ? 'block' : 'none' }}
+          key={index}
+          className={classes.tabContainer}
+        >
+          {item.value.split(';').map((description, idx) => {
+            if (item.key === 'Usage') {
+              return <div key={index}>{getUsageDesc(description)}</div>;
+            } else {
+              return <p key={idx}>{description}</p>;
+            }
+          })}
+        </div>
+      ));
     }
     return [];
   };
@@ -873,6 +912,26 @@ export const MedicineDetails: React.FC = (props) => {
         .replace(/&gt;r/g, '>')
         .replace(/&gt;/g, '>')
         .replace(/\.t/, '.')
+    );
+  };
+
+  const similarProducts = { products: medicineDetails && medicineDetails.similar_products };
+
+  const renderSimilarProducts = (responseView: any) => {
+    return (
+      medicineDetails &&
+      medicineDetails.similar_products && (
+        <div
+          className={
+            responseView === 'webDisplay'
+              ? `${classes.sliderSection} ${classes.webResponseView}`
+              : `${classes.sliderSection} ${classes.mobileResponseView}`
+          }
+        >
+          <div className={classes.similarProducts}>{`SIMILAR TO ${medicineDetails.name}`}</div>
+          <HotSellers data={similarProducts} />
+        </div>
+      )
     );
   };
 
@@ -949,52 +1008,53 @@ export const MedicineDetails: React.FC = (props) => {
                     </div>
                   </div>
                 </div>
-
                 {medicineDetails ? (
-                  <div className={classes.medicineDetailsGroup}>
-                    <div className={classes.searchSection}>
-                      <Scrollbars
-                        className={classes.scrollResponsive}
-                        autoHide={true}
-                        autoHeight
-                        autoHeightMax={'calc(100vh - 215px'}
-                      >
-                        <div className={classes.productInformation}>
-                          {medicineDetails.image && medicineDetails.image.includes('.') ? (
-                            <MedicineImageGallery data={medicineDetails} />
-                          ) : (
-                            <div className={classes.noImageWrapper}>
-                              <img
-                                src={require('images/medicine.svg')}
-                                alt={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
-                                  medicineDetails
-                                )}`}
-                                title={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
-                                  medicineDetails
-                                )}`}
-                              />
-                            </div>
-                          )}
-                          <div className={classes.productDetails}>
-                            <div className={classes.productBasicInfo}>
-                              <h1>{medicineDetails.name}</h1>
-                              <div className={classes.textInfo}>
-                                <label>Manufacturer</label>
-                                {medicineDetails.manufacturer}
+                  <>
+                    <div className={classes.medicineDetailsGroup}>
+                      <div className={classes.searchSection}>
+                        <Scrollbars
+                          className={classes.scrollResponsive}
+                          autoHide={true}
+                          autoHeight
+                          autoHeightMax={'calc(100vh - 215px'}
+                        >
+                          <div className={classes.productInformation}>
+                            {medicineDetails.image && medicineDetails.image.length > 0 ? (
+                              <MedicineImageGallery data={medicineDetails} />
+                            ) : (
+                              <div className={classes.noImageWrapper}>
+                                <img
+                                  src={require('images/medicine.svg')}
+                                  alt={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
+                                    medicineDetails
+                                  )}`}
+                                  title={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
+                                    medicineDetails
+                                  )}`}
+                                />
                               </div>
-                              {medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
+                            )}
+                            <div className={classes.productDetails}>
+                              <div className={classes.productBasicInfo}>
+                                <h1>{medicineDetails.name}</h1>
                                 <div className={classes.textInfo}>
-                                  <Typography component="h2">Composition</Typography>
-                                  <Typography component="h3">{`${medicinePharmacyDetails[0].generic}-${medicinePharmacyDetails[0].Strengh}${medicinePharmacyDetails[0].Unit}`}</Typography>
+                                  <label>Manufacturer</label>
+                                  {medicineDetails.manufacturer}
                                 </div>
-                              )}
-                              <div className={classes.textInfo}>
-                                <Typography component="h3" className={classes.packOfText}>
-                                  Pack Of
-                                </Typography>
-                                <Typography component="h3">
-                                  {getPackOfMedicine(medicineDetails)}
-                                </Typography>
+                                {medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
+                                  <div className={classes.textInfo}>
+                                    <Typography component="h2">Composition</Typography>
+                                    <Typography component="h3">{renderComposition()}</Typography>
+                                  </div>
+                                )}
+                                <div className={classes.textInfo}>
+                                  <Typography component="h3" className={classes.packOfText}>
+                                    Pack Of
+                                  </Typography>
+                                  <Typography component="h3">
+                                    {getPackOfMedicine(medicineDetails)}
+                                  </Typography>
+                                </div>
                               </div>
                               {Number(medicineDetails.is_prescription_required) !== 0 && (
                                 <div className={classes.prescriptionBox}>
@@ -1004,47 +1064,51 @@ export const MedicineDetails: React.FC = (props) => {
                                   </span>
                                 </div>
                               )}
+                              {medicinePharmacyDetails &&
+                              medicinePharmacyDetails.length > 0 &&
+                              medicinePharmacyDetails[0].Overview &&
+                              medicinePharmacyDetails[0].Overview.length > 0 ? (
+                                <div className={classes.tabWrapper}>
+                                  <Tabs
+                                    value={tabValue}
+                                    variant="scrollable"
+                                    scrollButtons="on"
+                                    classes={{
+                                      root: classes.tabsRoot,
+                                      indicator: classes.tabsIndicator,
+                                    }}
+                                    onChange={(e, newValue) => {
+                                      setTabValue(newValue);
+                                      const overviewData = getData(
+                                        medicinePharmacyDetails[0].Overview
+                                      );
+                                      const tabName = overviewData[newValue].key;
+                                      pharmacyPdpOverviewTracking(tabName);
+                                    }}
+                                  >
+                                    {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
+                                  </Tabs>
+                                  {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
+                                </div>
+                              ) : medicineDetails.description ? (
+                                <div className={classes.productDetailed}>
+                                  <div className={classes.productInfo}>Product Information</div>
+                                  <div className={classes.productDescription}>
+                                    {medicineDetails.description && (
+                                      <div dangerouslySetInnerHTML={{ __html: renderInfo() }}></div>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : null}
                             </div>
                           </div>
-                        </div>
-                        {medicinePharmacyDetails &&
-                        medicinePharmacyDetails.length > 0 &&
-                        medicinePharmacyDetails[0].Overview &&
-                        medicinePharmacyDetails[0].Overview.length > 0 ? (
-                          <div className={classes.tabWrapper}>
-                            <Tabs
-                              value={tabValue}
-                              variant="scrollable"
-                              scrollButtons="on"
-                              classes={{
-                                root: classes.tabsRoot,
-                                indicator: classes.tabsIndicator,
-                              }}
-                              onChange={(e, newValue) => {
-                                setTabValue(newValue);
-                                const overviewData = getData(medicinePharmacyDetails[0].Overview);
-                                const tabName = overviewData[newValue].key;
-                                pharmacyPdpOverviewTracking(tabName);
-                              }}
-                            >
-                              {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
-                            </Tabs>
-                            {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
-                          </div>
-                        ) : medicineDetails.description ? (
-                          <div className={classes.productDetailed}>
-                            <div className={classes.productInfo}>Product Information</div>
-                            <div className={classes.productDescription}>
-                              {medicineDetails.description && (
-                                <div dangerouslySetInnerHTML={{ __html: renderInfo() }}></div>
-                              )}
-                            </div>
-                          </div>
-                        ) : null}
-                      </Scrollbars>
+                        </Scrollbars>
+                      </div>
+                      {renderSimilarProducts('mobileDisplay')}
+                      <MedicineInformation data={medicineDetails} />
                     </div>
-                    <MedicineInformation data={medicineDetails} />
-                  </div>
+                    {renderSimilarProducts('webDisplay')}
+                  </>
                 ) : (
                   <div className={classes.progressLoader}>
                     <CircularProgress size={30} />

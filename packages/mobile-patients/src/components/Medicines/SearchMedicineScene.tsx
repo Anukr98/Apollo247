@@ -189,6 +189,14 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   }, [currentPatient]);
 
   useEffect(() => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_LIST_GRID_VIEW] = {
+      'Source': 'Search',
+      'Type': showListView ? 'List' : 'Grid',
+    };
+    postWebEngageEvent(WebEngageEventName.CATEGORY_LIST_GRID_VIEW, eventAttributes);
+  },[showListView]);
+
+  useEffect(() => {
     searchTextFromProp && onSearchProduct(searchTextFromProp);
   }, []);
 
@@ -258,11 +266,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       }
       setShowMatchingMedicines(true);
       setProductsIsLoading(true);
-      searchMedicineApi(_searchText, pageCount)
+      searchMedicineApi(_searchText)
         .then(async ({ data }) => {
           const products = data.products || [];
           setSearchHeading(data.search_heading!);
           setProductsList(products);
+          setEndReached(false);
           if (products.length < 10) {
             setEndReached(true);
           }
@@ -356,6 +365,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         thumbnail,
         isInStock: true,
         maxOrderQty: MaxOrderQty,
+        productType: type_id,
       },
       pharmacyPincode!,
       addCartItem,

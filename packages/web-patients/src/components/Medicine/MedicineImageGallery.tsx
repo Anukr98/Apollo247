@@ -15,7 +15,8 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         width: 80,
         position: 'absolute',
-        marginLeft: 20,
+        top: 20,
+        right: 20,
       },
       '& .image-gallery-slides': {
         border: 'solid 1px rgba(151,151,151,0.24)',
@@ -82,14 +83,18 @@ export const MedicineImageGallery: React.FC<MedicineInformationProps> = (props) 
     url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
-  const images = [
-    {
-      original: `${apiDetails.url}${props.data.image}`,
-      thumbnail: `${apiDetails.url}${props.data.thumbnail}`,
-      originalAlt: `${props.data.name}, Pack of ${getPackOfMedicine(props.data)}`,
-      originalTitle: `${props.data.name}, Pack of ${getPackOfMedicine(props.data)}`,
-    },
-  ];
+  let images: any = [];
+  props.data.image.map((img: any) => {
+    const altTitle = `${props.data.name}, Pack of ${getPackOfMedicine(props.data)}`;
+    images.push({
+      original: `${apiDetails.url}${img}`,
+      thumbnail: `${apiDetails.url}${img}`,
+      originalAlt: altTitle,
+      originalTitle: altTitle,
+      thumbnailAlt: altTitle,
+      thumbnailTitle: altTitle,
+    });
+  });
 
   return (
     images && (

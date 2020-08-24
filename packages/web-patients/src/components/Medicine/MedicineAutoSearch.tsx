@@ -27,10 +27,10 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '15px 20px 15px 20px',
         position: 'fixed',
         width: '100%',
-        top: 72,
+        top: 60,
         zIndex: 998,
         background: '#fff',
-        boxShadow: '0 4px 4px 0 rgba(0, 0, 0, 0.2)',
+        // boxShadow: '0 4px 4px 0 rgba(0, 0, 0, 0.2)',
       },
     },
     medicineSearchForm: {
@@ -246,7 +246,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
   const { currentPatient } = useAllCurrentPatients();
-  const { cartItems, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const { cartItems, addCartItem, updateCartItem, removeCartItemSku } = useShoppingCart();
 
   const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
   const [searchText, setSearchText] = useState('');
@@ -507,7 +507,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                   value: medicine.special_price || medicine.price,
                                 });
                                 /* Gtm code end  */
-                                removeCartItem && removeCartItem(medicine.id);
+                                removeCartItemSku && removeCartItemSku(medicine.sku);
                               } else {
                                 const cartItem: MedicineCartItem = {
                                   MaxOrderQty: medicine.MaxOrderQty,

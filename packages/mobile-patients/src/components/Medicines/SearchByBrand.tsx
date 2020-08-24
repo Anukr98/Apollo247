@@ -154,6 +154,16 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_LIST_GRID_VIEW] = {
+      'Category id': category_id,
+      'Category name': pageTitle,
+      'Source': 'Category',
+      'Type': showListView ? 'List' : 'Grid',
+    };
+    postWebEngageEvent(WebEngageEventName.CATEGORY_LIST_GRID_VIEW, eventAttributes);
+  },[showListView]);
+
+  useEffect(() => {
     if (products) {
       return;
     }
@@ -231,6 +241,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         thumbnail,
         isInStock: true,
         maxOrderQty: MaxOrderQty,
+        productType: type_id,
       },
       pharmacyPincode!,
       addCartItem,
@@ -777,7 +788,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
                       marginHorizontal: showListView ? 20 : 5,
                     },
                   ]}
-                >{`Matching results — ${filteredProductsList.length}`}</Text>
+                >{` `}</Text>
                 {renderFilterAndListView(true)}
               </View>
             ) : null

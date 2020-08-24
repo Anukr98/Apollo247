@@ -18,6 +18,8 @@ import {
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { gtmTracking } from '../../gtmTracking';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
+import fetchUtil from 'helpers/fetch';
+import { PharmaCoupon } from './MedicineCart';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -159,10 +161,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+export interface consult_coupon {
+  coupon: string;
+  message: string;
+}
+
 interface ApplyCouponProps {
-  setValidateCouponResult: (
-    validateCouponResult: validatePharmaCoupon_validatePharmaCoupon | null
-  ) => void;
+  setValidateCouponResult: (validateCouponResult: PharmaCoupon | null) => void;
   couponCode: string;
   close: (isApplyCouponDialogOpen: boolean) => void;
   cartValue: number;
@@ -173,37 +178,62 @@ interface ApplyCouponProps {
 export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { cartItems, setCouponCode } = useShoppingCart();
+  const { cartItems, setCouponCode, cartTotal } = useShoppingCart();
   const [selectCouponCode, setSelectCouponCode] = useState<string>(props.couponCode);
-  const [availableCoupons, setAvailableCoupons] = useState<
-    (getPharmaCouponList_getPharmaCouponList_coupons | null)[]
-  >(null);
+  const [availableCoupons, setAvailableCoupons] = useState<(consult_coupon | null)[]>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [muationLoading, setMuationLoading] = useState<boolean>(false);
 
-  const getCouponMutation = useMutation<getPharmaCouponList>(PHRAMA_COUPONS_LIST, {
-    fetchPolicy: 'no-cache',
-  });
-
-  const validateCoupon = useMutation<validatePharmaCoupon>(VALIDATE_PHARMA_COUPONS, {
-    variables: {
-      pharmaCouponInput: {
-        code: selectCouponCode,
-        patientId: currentPatient.id,
-        orderLineItems: cartItems.map((item) => {
-          return {
-            mrp: item.price,
-            productName: item.name,
-            productType: getTypeOfProduct(item.type_id || ''),
-            quantity: item.quantity,
-            specialPrice: item.special_price ? item.special_price : item.price,
-            itemId: item.sku,
-          };
-        }),
-      },
-    },
-    fetchPolicy: 'no-cache',
-  });
+  const verifyCoupon = () => {
+    const data = {
+      mobile: localStorage.getItem('userMobileNo'),
+      billAmount: cartTotal.toFixed(2),
+      coupon: selectCouponCode,
+      pinCode: localStorage.getItem('pharmaPincode'),
+      products: cartItems.map((item) => {
+        const { sku, quantity, special_price, price, type_id } = item;
+        return {
+          sku,
+          mrp: item.price,
+          quantity,
+          categoryId: type_id || '',
+          specialPrice: special_price || price,
+        };
+      }),
+    };
+    if (currentPatient && currentPatient.id) {
+      setMuationLoading(true);
+      fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', data, '', false)
+        .then((resp: any) => {
+          if (resp.errorCode == 0) {
+            if (resp.response.valid) {
+              props.setValidateCouponResult(resp.response);
+              setCouponCode && setCouponCode(selectCouponCode);
+              props.close(false);
+              /*GTM TRACKING START */
+              gtmTracking({
+                category: 'Pharmacy',
+                action: 'Order',
+                label: `Coupon Applied - ${selectCouponCode}`,
+                value: resp.response.discount,
+              });
+            } else {
+              props.setValidateCouponResult(null);
+              setErrorMessage(resp.response.reason);
+              setCouponCode && setCouponCode('');
+              localStorage.removeItem('pharmaCoupon');
+            }
+          } else if (resp && resp.errorMsg && resp.errorMsg.length > 0) {
+            setErrorMessage(resp.errorMsg);
+            localStorage.removeItem('pharmaCoupon');
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => setMuationLoading(false));
+    }
+  };
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -212,72 +242,20 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (!availableCoupons) {
-      setIsLoading(true);
-      getCouponMutation()
-        .then(({ data }) => {
-          if (
-            data &&
-            data.getPharmaCouponList &&
-            data.getPharmaCouponList.coupons &&
-            data.getPharmaCouponList.coupons.length > 0
-          ) {
-            const visibleCoupons = data.getPharmaCouponList.coupons.filter(
-              (coupon) => coupon.displayStatus
-            );
-            setAvailableCoupons(visibleCoupons);
-          }
-        })
-        .catch((e) => {
-          console.log(e);
-        })
-        .finally(() => setIsLoading(false));
-    }
-  }, [availableCoupons]);
+    setIsLoading(true);
+    // Since endpoint is the same for all coupons, this will be changed if searchlight gives a new endpoint
+    fetchUtil(process.env.GET_CONSULT_COUPONS, 'GET', {}, '', false)
+      .then((res: any) => {
+        if (res && res.response && res.response.length > 0) {
+          setAvailableCoupons(res.response);
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
 
-  const verifyCoupon = () => {
-    if (currentPatient && currentPatient.id) {
-      setMuationLoading(true);
-      validateCoupon()
-        .then((res) => {
-          if (res && res.data && res.data.validatePharmaCoupon) {
-            const couponValidateResult = res.data.validatePharmaCoupon;
-            props.setValidityStatus(couponValidateResult.validityStatus);
-            if (couponValidateResult.validityStatus) {
-              if (couponValidateResult.discountedTotals.couponDiscount > 0) {
-                props.setValidateCouponResult(couponValidateResult);
-                setCouponCode && setCouponCode(selectCouponCode);
-                props.close(false);
-                /*GTM TRACKING START */
-                gtmTracking({
-                  category: 'Pharmacy',
-                  action: 'Order',
-                  label: `Coupon Applied - ${selectCouponCode}`,
-                  value: couponValidateResult.discountedTotals.couponDiscount,
-                });
-                /*GTM TRACKING START */
-              } else {
-                // setSelectCouponCode('');
-                props.setValidateCouponResult(null);
-                setErrorMessage(
-                  'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
-                );
-                setCouponCode && setCouponCode('');
-                localStorage.removeItem('pharmaCoupon');
-              }
-              setMuationLoading(false);
-            } else {
-              setMuationLoading(false);
-              setErrorMessage(couponValidateResult.reasonForInvalidStatus);
-              localStorage.removeItem('pharmaCoupon');
-            }
-          }
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    }
-  };
   const disableCoupon =
     !selectCouponCode ||
     selectCouponCode.length < 5 ||
@@ -339,30 +317,25 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                           <li key={index}>
                             <FormControlLabel
                               className={classes.radioLabel}
-                              checked={couponDetails.code === selectCouponCode}
-                              value={couponDetails.code}
+                              checked={couponDetails.coupon === selectCouponCode}
+                              value={couponDetails.coupon}
                               control={<AphRadio color="primary" />}
                               label={
                                 <span className={classes.couponCode}>
-                                  {couponDetails.code}
-                                  {couponDetails.description && (
-                                    <span>{couponDetails.description}</span>
-                                  )}
+                                  {couponDetails.coupon}
+                                  {couponDetails.message && <span>{couponDetails.message}</span>}
                                 </span>
                               }
                               onChange={() => {
                                 setErrorMessage('');
                                 props.setValidityStatus(false);
-                                setSelectCouponCode(couponDetails.code);
+                                setSelectCouponCode(couponDetails.coupon);
                               }}
                             />
 
-                            {couponDetails.couponPharmaRule &&
-                              couponDetails.couponPharmaRule.messageOnCouponScreen && (
-                                <div className={classes.couponText}>
-                                  {couponDetails.couponPharmaRule.messageOnCouponScreen}
-                                </div>
-                              )}
+                            {/* {couponDetails && couponDetails.message && (
+                              <div className={classes.couponText}>{couponDetails.message}</div>
+                            )} */}
                           </li>
                         )
                     )

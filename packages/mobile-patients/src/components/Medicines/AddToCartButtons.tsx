@@ -8,11 +8,7 @@ import {
   ViewStyle,
   ImageStyle,
 } from 'react-native';
-import {
-  DeleteIconWhite, 
-  MinusIconWhite, 
-  PlusIconWhite 
-} from '../ui/Icons';
+import { DeleteIconWhite, MinusIconWhite, PlusIconWhite } from '../ui/Icons';
 import { theme } from '../../theme/theme';
 
 const localStyles = StyleSheet.create({
@@ -60,80 +56,79 @@ const localStyles = StyleSheet.create({
   plusIconStyle: {
     width: 10,
     height: 10,
-  }
-})
+  },
+});
 
 export interface AddToCartButtonsProps {
-    numberOfItemsInCart: number;
-    maxOrderQty: number;
-    addToCart: (action?: string) => void;
-    removeItemFromCart: () => void;
-    removeFromCart: () => void;
-    containerStyle?: StyleProp<ViewStyle>;
-    deleteIconStyle?: StyleProp<ImageStyle>;
-    plusIconStyle?: StyleProp<ImageStyle>;
-    minusIconStyle?: StyleProp<ImageStyle>;
-    isSolidContainer?: boolean;
-};
+  numberOfItemsInCart: number;
+  maxOrderQty: number;
+  addToCart: (action?: string) => void;
+  removeItemFromCart: () => void;
+  removeFromCart: () => void;
+  containerStyle?: StyleProp<ViewStyle>;
+  deleteIconStyle?: StyleProp<ImageStyle>;
+  plusIconStyle?: StyleProp<ImageStyle>;
+  minusIconStyle?: StyleProp<ImageStyle>;
+  isSolidContainer?: boolean;
+}
 
 export const AddToCartButtons: React.FC<AddToCartButtonsProps> = (props) => {
-
   const getDeleteIcon = () => {
-    return (
-      <DeleteIconWhite style={[localStyles.deleteIconStyle, props.deleteIconStyle]} />
-    );
+    return <DeleteIconWhite style={[localStyles.deleteIconStyle, props.deleteIconStyle]} />;
   };
 
   const getMinusIcon = () => {
-    return (
-      <MinusIconWhite style={[localStyles.minusIconStyle, props.minusIconStyle]} />
-    );
+    return <MinusIconWhite style={[localStyles.minusIconStyle, props.minusIconStyle]} />;
   };
 
   const getAddIcon = () => {
     return (
-      <PlusIconWhite style={[
-        localStyles.plusIconStyle, 
-        props.plusIconStyle, 
-        { opacity: props.numberOfItemsInCart !== props.maxOrderQty ? 1 : 0.3 }
-      ]} />
+      <PlusIconWhite
+        style={[
+          localStyles.plusIconStyle,
+          props.plusIconStyle,
+          { opacity: props.numberOfItemsInCart !== props.maxOrderQty ? 1 : 0.3 },
+        ]}
+      />
     );
   };
-  
+
+  const isSingleQty = props.numberOfItemsInCart === 1;
 
   return (
     <View style={[localStyles.addRemoveItemContainer, props.containerStyle]}>
       {/* minus or delete button */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={localStyles.addRemoveButtonContainer}
-        onPress={() => {
-          (props.numberOfItemsInCart === 1) ? props.removeFromCart() : props.removeItemFromCart();
-        }}
+        onPress={isSingleQty ? props.removeFromCart : props.removeItemFromCart}
       >
-        {
-          props.numberOfItemsInCart === 1 ? 
-          getDeleteIcon() : 
-          getMinusIcon()
-        }
+        {isSingleQty ? getDeleteIcon() : getMinusIcon()}
       </TouchableOpacity>
 
       {/* quantity */}
-      <View style={localStyles.quantityContainer}>
+      <View
+        style={[
+          localStyles.quantityContainer,
+          props.numberOfItemsInCart >= 10 && { paddingRight: 1.8, paddingLeft: 1.8 },
+        ]}
+      >
         <Text
           style={
-            props.isSolidContainer ? 
-            {
-              ...theme.viewStyles.text('M', 19, 'white', 1, 24),
-              paddingLeft: 16,
-              paddingRight: 16,
-            } :
-            {...theme.viewStyles.text('M', 14, 'white', 1, 24),}
+            props.isSolidContainer
+              ? {
+                  ...theme.viewStyles.text('M', 19, 'white', 1, 24),
+                  paddingLeft: 16,
+                  paddingRight: 16,
+                }
+              : { ...theme.viewStyles.text('M', 14, 'white', 1, 24) }
           }
-        >{props.numberOfItemsInCart}</Text>
+        >
+          {props.numberOfItemsInCart}
+        </Text>
       </View>
 
       {/* add button */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={localStyles.addRemoveButtonContainer}
         onPress={() => {
           if (props.numberOfItemsInCart !== props.maxOrderQty) props.addToCart('add');
