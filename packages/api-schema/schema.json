@@ -37105,7 +37105,7 @@
               "name": null,
               "ofType": {
                 "kind": "SCALAR",
-                "name": "Int",
+                "name": "String",
                 "ofType": null
               }
             },
@@ -37277,16 +37277,6 @@
             "type": {
               "kind": "ENUM",
               "name": "DIAGNOSTIC_ORDER_PAYMENT_TYPE",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "slotId",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
               "ofType": null
             },
             "defaultValue": null
