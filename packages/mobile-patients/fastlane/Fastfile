@@ -87,12 +87,14 @@ platform :android do
 
 	desc 'Build the Android apk'
 	lane :build do
+		validate_webengage_key({platform: "android"})
 		# gradle(task: 'clean', project_dir: './android/')
 		gradle(task: 'assemble', build_type: 'Release', project_dir: './android')
 	end
 
 	desc 'Build the Android Debug apk'
 	lane :build_debug do
+		validate_webengage_key({platform: "android"})
 		# gradle(task: 'clean', project_dir: './android/')
 		sh(ANDROID_JS_BUNDLE_COMMAND)
 		gradle(task: 'assemble', build_type: 'Debug', project_dir: './android')
@@ -100,21 +102,25 @@ platform :android do
 
 	desc 'Build the Android bundle'
 	lane :bundle do
+		validate_webengage_key({platform: "android"})
 		gradle(task: 'bundle', build_type: 'Release', project_dir: './android')
 	end
 
 	desc 'Build the Android Debug bundle'
 	lane :bundle_debug do
+		validate_webengage_key({platform: "android"})
 		gradle(task: 'assemble', build_type: 'Debug', project_dir: './android')
 	end
 
 	desc 'Build the Android apk and bundle'
 	lane :build_bundle do
+		validate_webengage_key({platform: "android"})
 		gradle(task: ['assemble', 'bundle'], build_type: 'Release', project_dir: './android')
 	end
 
 	desc 'Upload Android apk to appcenter'
 	lane :appcenter_apk do
+		validate_webengage_key({platform: "android"})
 		gradle(task: 'clean', project_dir: './android/')
 		gradle(task: 'assemble', build_type: 'Release', project_dir: './android')
 		appcenter_upload(
@@ -140,6 +146,7 @@ platform :ios do
 
 	desc 'Build the ipa'
 	lane :build do
+		validate_webengage_key({platform: "ios"})
 		build_app(
 			scheme: "ApolloPatient", 
 			workspace: "./ios/ApolloPatient.xcworkspace", 
@@ -158,6 +165,7 @@ platform :ios do
 
 	desc 'Upload iOS ipa to appcenter'
 	lane :appcenter_ipa do
+		validate_webengage_key({platform: "ios"})
 		build_app(
 			scheme: "ApolloPatient", 
 			workspace: "./ios/ApolloPatient.xcworkspace", 
