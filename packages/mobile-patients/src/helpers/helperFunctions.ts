@@ -652,6 +652,15 @@ export const isValidName = (value: string) =>
     : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
     ? true
     : false;
+  
+export const isValidPhoneNumber = (value: string) =>{
+    const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
+      ? !/^(234){1}\d{0,9}$/.test(value)
+        ? false
+        : true
+      : true;
+    return isValidNumber;
+}
 
 export const extractUrlFromString = (text: string): string | undefined => {
   const urlRegex = /(https?:\/\/[^ ]*)/;

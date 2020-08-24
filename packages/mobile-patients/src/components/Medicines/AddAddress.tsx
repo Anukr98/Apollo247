@@ -9,7 +9,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DropDown, DropDownProps } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { More, EditIconNew} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -17,6 +17,7 @@ import {
   CommonLogEvent,
   DeviceHelper,
   CommonBugFender,
+  CommonSetUserBugsnag,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   DELETE_PATIENT_ADDRESS,
@@ -51,6 +52,7 @@ import {
   formatAddress,
   getFormattedLocation,
   postWebEngageEvent,
+  isValidPhoneNumber
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -126,7 +128,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [userName, setuserName] = useState<string>('');
   const [userId, setuserId] = useState<string>('');
   const [phoneNumber, setphoneNumber] = useState<string>('');
+  const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(true);
   const [addressLine1, setaddressLine1] = useState<string>('');
+  const [areaDetails, setareaDetails ] = useState<string>('');
   const [pincode, setpincode] = useState<string>('');
   const [city, setcity] = useState<string>('');
   const [landMark, setlandMark] = useState<string>('');
@@ -138,6 +142,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [addressType, setAddressType] = useState<PATIENT_ADDRESS_TYPE>();
   const [optionalAddress, setOptionalAddress] = useState<string>('');
+  const [editProfile, setEditProfile] = useState<boolean>(false);
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
@@ -172,7 +177,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         .filter((v, i, a) => a.findIndex((t) => t === v) === i)
         .toString()
         .replace(',', ', ');
-      setcity(cityState);
+      // setcity(cityState); //when need to show [city,state] format
+      setcity(addressData.city!);
       setstate(addressData.state!);
       setpincode(addressData.zipcode!);
       setaddressLine1(addressData.addressLine1!);
@@ -187,7 +193,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           .then((response) => {
             if (response) {
               setstate(response.state || '');
-              setcity(`${response.city}, ${response.state}` || '');
+              // setcity(`${response.city}, ${response.state}` || ''); //[city,state] format
+              setcity(response.city || '');
               setpincode(response.pincode || '');
               setLatitude(response.latitude || 0);
               setLongitude(response.longitude || 0);
@@ -201,7 +208,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         const _locationDetails =
           pharmacyLocation && source == 'Cart' ? pharmacyLocation : locationDetails;
         setstate(_locationDetails.state || '');
-        setcity(formatCityStateDisplay(_locationDetails.city, _locationDetails.state));
+        // setcity(formatCityStateDisplay(_locationDetails.city, _locationDetails.state)); //[city,state] format
+        setcity(_locationDetails.city || '');
         setpincode(_locationDetails.pincode || '');
         setLatitude(_locationDetails.latitude || 0);
         setLongitude(_locationDetails.longitude || 0);
@@ -216,6 +224,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     phoneNumber &&
     phoneNumber.length == 10 &&
     addressLine1 &&
+    areaDetails && 
     // addressLine1.length > 1 &&
     pincode &&
     pincode.length === 6 &&
@@ -240,13 +249,16 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
             state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
           ] || stateCode;
-        const cityState = city.split(',').map((item) => (item || '').trim());
+        // const cityState = city.split(',').map((item) => (item || '').trim()); //[city,state]
         const updateaddressInput: UpdatePatientAddressInput = {
           id: addressData.id,
           addressLine1: addressLine1,
-          addressLine2: '',
-          city: cityState[0] || '',
-          state: cityState[1] || '',
+          addressLine2: '', 
+          /** look for the area details, attribute & name and phone number  ~ mobileNumber*/
+          // city: cityState[0] || '',
+          // state: cityState[1] || '',
+          city: city || '',
+          state: state || '',
           zipcode: pincode,
           landmark: landMark,
           mobileNumber: phoneNumber,
@@ -287,13 +299,16 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
           state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
         ] || stateCode;
-      const cityState = city.split(',').map((item) => (item || '').trim());
+      // const cityState = city.split(',').map((item) => (item || '').trim()); //[city,state]
       const addressInput: PatientAddressInput = {
         patientId: userId,
         addressLine1: addressLine1,
         addressLine2: '',
-        city: cityState[0] || '',
-        state: cityState[1] || '',
+        city : city || '',
+        state: state || '',
+        /** look for the area details, attribute & name and phone number  ~ mobileNumber*/
+        // city: cityState[0] || '',
+        // state: cityState[1] || '',
         zipcode: pincode,
         landmark: landMark,
         mobileNumber: phoneNumber,
@@ -418,7 +433,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
             ] || stateCode;
 
-          setcity(formatCityStateDisplay(city, state));
+          // setcity(formatCityStateDisplay(city, state)); //[city,state] format
+          setcity(city || '');
           setstate(state || '');
           setStateCode(finalStateCode);
           setLatitude(response.latitude!);
@@ -458,6 +474,117 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       </View>
     );
   };
+ 
+  const _validateAndSetUserName = (value: string) => {
+    if(value == ' '){
+      return false;
+    }
+    if (/^[a-zA-Z'’ ]*$/.test(value)) {
+      setuserName(value);
+    } else {
+      return false;
+    }
+  };
+
+  const _validateAndSetPhoneNumber = (value : string) =>{
+    if (/^\d+$/.test(value) || value == '') {
+      setphoneNumber(value)
+      setPhoneNumberIsValid(isValidPhoneNumber(value));
+    }
+    else{
+      return false
+    }
+  }
+
+  const validateUserDetails = () =>{
+    //need to show any pop up if validations fails?
+    userName &&  userName.length > 1 && 
+    phoneNumberIsValid 
+    ? setEditProfile(false) : setEditProfile(true);
+  }
+
+  /**view added for the patient's details */
+  /**
+   * 1. add the functional part
+   * 2. change the colors (Done)
+   * 3. see the spacing b/w the name and phone  number (Done)
+   * 4. add validations for the name and phone number (Done)
+   * 5. Need to show the pop up?
+   */
+const renderUserDetails = () => {
+    return (
+      <View style={{
+        ...theme.viewStyles.cardViewStyle,
+        margin: 20,
+        padding: 16,
+      }}>
+        <View style={{flexDirection: 'row'}}>
+          <View style={{flex: editProfile ? 0.9 : 1,height:60}}>
+            <View style={{flexDirection:'row'}}>
+              <Text style={{color: editProfile ? theme.colors.placeholderTextColor :'#02475b', ...fonts.IBMPlexSansMedium(16)}}>Name : </Text>
+              <TextInputComponent 
+                conatinerstyles={{flex:1,top: editProfile ?-9 :-6}}
+                onChangeText={(userName) => _validateAndSetUserName(userName)}
+                value={userName} 
+                editable={editProfile} 
+                placeholder={''} 
+                inputStyle={{
+                  borderBottomWidth: editProfile ? 1 : 2,
+                  paddingBottom: editProfile ?1 :3, 
+                  color: editProfile ? theme.colors.placeholderTextColor : theme.colors.SHERPA_BLUE , 
+                  ...theme.fonts.IBMPlexSansMedium(16),
+                  borderColor: editProfile ? theme.colors.INPUT_BORDER_SUCCESS : 'transparent'
+                }}/>
+            </View>
+
+            <View style={{flexDirection:'row',marginTop:editProfile ? -11 : -16}}>
+              <Text style={{color: editProfile ? theme.colors.placeholderTextColor :'#02475b', ...fonts.IBMPlexSansMedium(15)}}>Phone number : </Text>
+              <TextInputComponent 
+                conatinerstyles={{flex:1,top: editProfile ?-9 :-6}}
+                maxLength={10}
+                keyboardType="numeric"
+                //add validations
+                  onChangeText={(phoneNumber) => {
+                    _validateAndSetPhoneNumber(phoneNumber)
+                }}
+                value={phoneNumber} 
+                editable={editProfile} 
+                placeholder={'phone number'} 
+                inputStyle={{borderBottomWidth: editProfile ? 1 : 2,
+                  paddingBottom: editProfile ?1 :3, color: editProfile ? theme.colors.placeholderTextColor : theme.colors.SHERPA_BLUE,...theme.fonts.IBMPlexSansMedium(16),borderColor: editProfile ? theme.colors.INPUT_BORDER_SUCCESS : 'transparent'}}/>
+            </View>
+            
+          </View>
+         {!editProfile ?  
+            <TouchableOpacity
+              onPress={() => {
+                setEditProfile(true)
+                // props.navigation.navigate(AppRoutes.Maps)
+              }}>
+                <EditIconNew/>
+            </TouchableOpacity> :
+            <View style={{flex: 0.2,justifyContent:'flex-end',alignItems:'center'}}>
+              <TouchableOpacity style={{width:"100%"}}
+                onPress={() => {
+                  validateUserDetails()
+                }}>
+                <Text style={{...theme.viewStyles.yellowTextStyle, ...fonts.IBMPlexSansBold(15),textAlign:'right'}}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          }
+        </View> 
+      </View>
+    )
+}
+
+const renderAddressText = () =>{
+  return (
+    <View style={{marginLeft:16}}>
+      <Text style={{ ...theme.fonts.IBMPlexSansMedium(18),color: theme.colors.SHERPA_BLUE,}}>ADDRESS DETAILS</Text>
+    </View>
+  )
+}
+
   const renderAddress = () => {
     return (
       <View
@@ -551,69 +678,118 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             maxLength={10}
           />
         </View> */}
-        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14), marginTop: 20 }}>
+       {/**
+        * 1. code commented for APP-3922 from here
+        */}
+        {/* <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14), marginTop: 20 }}>
           Address
-        </Text>
-        <TextInputComponent
-          value={addressLine1}
-          onChangeText={(addressLine1) => {
-            if (addressLine1 == '') {
-              setaddressLine1(addressLine1);
-            }
-            if (
-              addressLine1.startsWith(' ') ||
-              addressLine1.startsWith('.') ||
-              addressLine1.startsWith(',') ||
-              addressLine1.startsWith('/') ||
-              addressLine1.startsWith('-')
-            ) {
-              return;
-            }
-            if (/^([a-zA-Z0-9/,.-\s])+$/.test(addressLine1)) {
-              setaddressLine1(addressLine1);
-            }
-          }}
-          placeholder={'Flat / Door / Plot Number, Building'}
-          inputStyle={{ marginTop: 5, marginBottom: 10 }}
+        </Text> */}
+        {/** 1. House # */}
+          <TextInputComponent
+            value={addressLine1}
+            onChangeText={(addressLine1) => {
+              if (addressLine1 == '') {
+                setaddressLine1(addressLine1);
+              }
+              if (
+                addressLine1.startsWith(' ') ||
+                addressLine1.startsWith('.') ||
+                addressLine1.startsWith(',') ||
+                addressLine1.startsWith('/') ||
+                addressLine1.startsWith('-')
+              ) {
+                return;
+              }
+              if (/^([a-zA-Z0-9/,.-\s])+$/.test(addressLine1)) {
+                setaddressLine1(addressLine1);
+              }
+            }}
+            placeholder={'*House no | Apartment name'}
+            inputStyle={{ marginTop: 5, marginBottom: 10 }}
         />
-        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Pin Code</Text>
-        <TextInputComponent
-          value={pincode}
-          onChangeText={
-            (pincode) => validateAndSetPincode(pincode)
-            // (pincode == '' || /^[1-9]{1}\d{0,9}$/.test(pincode)) && setpincode(pincode)
-          }
-          placeholder={'Enter pin code'}
-          maxLength={6}
-          // textInputprops={{
-          //   onSubmitEditing: () => {
-          //     if (isAddressValid) {
-          //       onSavePress();
-          //     }
-          //   },
-          //   returnKeyType: 'done',
-          // }}
+          <TextInputComponent
+            value={areaDetails}
+            onChangeText={(areaDetails) => {
+              if (areaDetails == '') {
+                setareaDetails(areaDetails);
+              }
+              if (
+                areaDetails.startsWith(' ') ||
+                areaDetails.startsWith('.') ||
+                areaDetails.startsWith(',') ||
+                areaDetails.startsWith('/') ||
+                areaDetails.startsWith('-')
+              ) {
+                return;
+              }
+              if (/^([a-zA-Z0-9/,.-\s])+$/.test(areaDetails)) {
+                setareaDetails(areaDetails);
+              }
+            }}
+            placeholder={'*Area Details'}
+            inputStyle={{ marginTop: 5, marginBottom: 10 }}
         />
-        {/* <TextInputComponent
+
+        <TextInputComponent
           value={landMark}
           onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
-          placeholder={'Land Mark (optional)'}
-        /> */}
-        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Area / Locality</Text>
-        <TextInputComponent
-          value={(city || '').startsWith(',') ? city.replace(', ', '') : city}
-          textInputprops={{ editable: false }}
-          onChangeText={(city) =>
-            city.startsWith(' ') || city.startsWith('.') || city.startsWith(',')
-              ? null
-              : (city == '' || /^([a-zA-Z0-9.,\s])+$/.test(city)) && setcity(city)
-          }
-          maxLength={100}
-          placeholder={'Enter area / locality name'}
-          multiline={false}
+          placeholder={'Landmark (Optional)'}
+          inputStyle={{ marginTop: 5, marginBottom: 10 }}
         />
-        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14), marginBottom: 8 }}>
-          Address Type{' '}
+        <View style={{flexDirection:'row',marginTop:12}}>
+          <View style={{justifyContent:'space-between',flex:0.45,marginRight:'12%'}}>
+          <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>*Pincode</Text>
+
+          <TextInputComponent
+            value={pincode}
+            onChangeText={
+              (pincode) => validateAndSetPincode(pincode)
+              // (pincode == '' || /^[1-9]{1}\d{0,9}$/.test(pincode)) && setpincode(pincode)
+            }
+            placeholder={'Enter pin code'}
+            maxLength={6}
+            // textInputprops={{
+            //   onSubmitEditing: () => {
+            //     if (isAddressValid) {
+            //       onSavePress();
+            //     }
+            //   },
+            //   returnKeyType: 'done',
+            // }}
+          />
+        </View>
+          <View style={{flex:0.55}}>
+          <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>City</Text>
+          <TextInputComponent
+            value={city}
+            textInputprops={{ editable: false }}
+            onChangeText={(city) =>
+              city.startsWith(' ') || city.startsWith('.') || city.startsWith(',')
+                ? null
+                : (city == '' || /^([a-zA-Z0-9.,\s])+$/.test(city)) && setcity(city)
+            }
+            maxLength={100}
+            placeholder={'City'}
+            multiline={false}
+          />
+          </View>
+        </View>
+        {/* state*/}
+        <Text style={{ marginTop: 12,color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>State</Text>
+        <TextInputComponent
+            value={(state || '').startsWith(',') ? state.replace(', ', '') : state}
+            textInputprops={{ editable: false }}
+            onChangeText={(state) =>
+              state.startsWith(' ') || state.startsWith('.')
+                ? null
+                : (state == '' || /^([a-zA-Z0-9.\s])+$/.test(state)) && setstate(state)
+            }
+            maxLength={100}
+            placeholder={'State'}
+            multiline={false}
+        />
+        <Text style={{ marginTop:12,color: '#02475b', ...fonts.IBMPlexSansMedium(14), marginBottom: 8 }}>
+          Choose nick name for the address
         </Text>
         {renderAddressOption()}
         {addressType === PATIENT_ADDRESS_TYPE.OTHER && (
@@ -752,6 +928,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         {renderHeader()}
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} {...keyboardVerticalOffset}>
           <ScrollView bounces={false}>
+            {renderUserDetails()}
+            {renderAddressText()}
             {renderAddress()}
             <View style={{ height: Platform.OS == 'ios' ? 60 : 0 }} />
           </ScrollView>
