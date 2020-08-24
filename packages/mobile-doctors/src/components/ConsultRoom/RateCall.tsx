@@ -10,14 +10,16 @@ import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsCompone
 import { MultiSelectComponent } from '@aph/mobile-doctors/src/components/ui/MultiSelectComponent';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { ScrollView } from 'react-navigation';
+import { CALL_FEEDBACK_RESPONSES_TYPES } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 
 export interface RateCallProps {
     submitRatingCallback: (data: {
         rating: number;
-        feedbackResponseType: string;
+        feedbackResponseType: CALL_FEEDBACK_RESPONSES_TYPES | null;
         audioFeedbacks: {}[];
         videoFeedbacks: {}[];
     }) => void;
+    visible: boolean
 }
 
 export const RateCall: React.FC<RateCallProps> = (props) => {
@@ -48,14 +50,14 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
     const isBtnDisabled = rating < 3 && audioFeedbacks.length === 0 && videoFeedbacks.length === 0;
 
     useEffect(() => {
-        const otherAudioFeedback = audioFeedbacks.filter((item: any) => item.key === "AUDIO_OTHER");
+        const otherAudioFeedback = audioFeedbacks.filter((item: any) => item.responseName === "AUDIO_OTHER");
         if (otherAudioFeedback && otherAudioFeedback.length > 0) {
             setIsOtherAudioFeedback(true);
         } else {
             setIsOtherAudioFeedback(false);
         }
 
-        const otherVideoFeedback = videoFeedbacks.filter((item: any) => item.key === "VIDEO_OTHER");
+        const otherVideoFeedback = videoFeedbacks.filter((item: any) => item.responseName === "VIDEO_OTHER");
         if (otherVideoFeedback && otherVideoFeedback.length > 0) {
             setIsOtherVideoFeedback(true);
         } else {
@@ -108,16 +110,16 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
     }
 
     const audioFeedbackCallback = (data: {
-        responseName: string;
-        key: string
+        value: string;
+        responseName: string
     }[]) => {
         setAudioFeedbacks(data);
         setRefreshState(!refreshState)
     }
 
     const videoFeedbackCallback = (data: {
-        responseName: string;
-        key: string
+        value: string;
+        responseName: string
     }[]) => {
         setVideoFeedbacks(data);
         setRefreshState(!refreshState)
@@ -179,41 +181,55 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
                 disabled={isBtnDisabled}
                 onPress={() => {
                     Keyboard.dismiss();
-                    const newAudioFeedbacks = audioFeedbacks.filter((item: any) => item.key.includes("AUDIO"));
+                    const newAudioFeedbacks = audioFeedbacks.filter((item: any) => item.responseName.includes("AUDIO"));
                     const filteredAudioFeedbacks = newAudioFeedbacks.map((item: any) => {
                         var obj = Object.assign({}, item);
-                        if (obj.key === "AUDIO_OTHER") {
+                        if (obj.responseName === "AUDIO_OTHER") {
                             obj.comment = othersAudioFeedback;
+                            obj.responseName = "OTHER"
                         }
-                        delete obj.key;
+                        delete obj.value;
                         return obj
                     });
 
-                    const newVideoFeedbacks = videoFeedbacks.filter((item: any) => item.key.includes("VIDEO"));
+                    const newVideoFeedbacks = videoFeedbacks.filter((item: any) => item.responseName.includes("VIDEO"));
                     const filteredVideoFeedbacks = newVideoFeedbacks.map((item: any) => {
                         var obj = Object.assign({}, item);
-                        if (obj.key === "VIDEO_OTHER") {
+                        if (obj.responseName === "VIDEO_OTHER") {
                             obj.comment = othersVideoFeedback;
+                            obj.responseName = "OTHER"
                         }
-                        delete obj.key;
+                        delete obj.value;
                         return obj
                     });
                     props.submitRatingCallback({
                         rating: rating,
-                        feedbackResponseType: hasFeedbackIssue ? filteredAudioFeedbacks.length > 0 && filteredVideoFeedbacks.length > 0 ? string.case_sheet.feedbackResponseType.audioVideo : filteredAudioFeedbacks.length > 0 ? string.case_sheet.feedbackResponseType.audio : string.case_sheet.feedbackResponseType.video : "",
+                        feedbackResponseType: hasFeedbackIssue ? filteredAudioFeedbacks.length > 0 && filteredVideoFeedbacks.length > 0 ? CALL_FEEDBACK_RESPONSES_TYPES.AUDIOVIDEO : filteredAudioFeedbacks.length > 0 ? CALL_FEEDBACK_RESPONSES_TYPES.AUDIO : CALL_FEEDBACK_RESPONSES_TYPES.VIDEO : null,
                         audioFeedbacks: hasFeedbackIssue ? filteredAudioFeedbacks : [],
                         videoFeedbacks: hasFeedbackIssue ? filteredVideoFeedbacks : []
                     });
+                    cleanupState();
                 }}
             />
         )
+    }
+
+    const cleanupState = () => {
+        setRating(0);
+        setFeedbackResponseType(callType[0].title);
+        setAudioFeedbacks([]);
+        setVideoFeedbacks([]);
+        setOthersAudioFeedback('');
+        setOthersVideoFeedback('');
+        setIsOtherAudioFeedback(false);
+        setIsOtherVideoFeedback(false);
     }
 
     return (
         <Modal
             animationType="slide"
             transparent={true}
-            visible={true}
+            visible={props.visible}
         >
             <View style={styles.mainView}>
                 <View style={styles.cardView}>
