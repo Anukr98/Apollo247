@@ -7,22 +7,36 @@ const logger = require('../../winston-logger')('Consults-logs');
  * @param {*} amount
  * @param {*} bookingSource
  */
-const initPayment = function (patientId, orderAutoId, amount, merc_unq_ref, addParams) {
+const initPayment = function(
+  patientId,
+  orderAutoId,
+  amount,
+  merc_unq_ref,
+  addParams,
+  paymentTypeID
+) {
   return new Promise((resolve, reject) => {
+    let merchantId = process.env.MID_CONSULTS;
+    if (paymentTypeID == process.env.PARTNER_SBI) {
+      merchantId = process.env.SBI_MID_CONSULTS;
+      merc_unq_ref += ':' + process.env.PARTNER_SBI;
+    }
     let paymentObj = {
       ORDER_ID: orderAutoId,
       CUST_ID: patientId,
       INDUSTRY_TYPE_ID: process.env.INDUSTRY_TYPE_ID_CONSULTS,
       CHANNEL_ID: process.env.CHANNEL_ID_CONSULTS,
       TXN_AMOUNT: amount.toString(),
-      MID: process.env.MID_CONSULTS,
+      MID: merchantId,
       WEBSITE: process.env.WEBSITE_CONSULTS,
       CALLBACK_URL: process.env.CALLBACK_URL_CONSULTS,
       MERC_UNQ_REF: merc_unq_ref,
     };
     Object.assign(paymentObj, addParams);
-
-    genchecksum(paymentObj, process.env.PAYTM_MERCHANT_KEY_CONSULTS, (err, result) => {
+    let merchantKey = process.env.PAYTM_MERCHANT_KEY_CONSULTS;
+    if (paymentTypeID == process.env.PARTNER_SBI)
+      merchantKey = process.env.SBI_PAYTM_MERCHANT_KEY_CONSULTS;
+    genchecksum(paymentObj, merchantKey, (err, result) => {
       if (err) {
         reject('Error while generating checksum');
       } else {
@@ -46,7 +60,9 @@ const generatePaymentOrderId = () => {
   let seconds =
     dateObj.getSeconds() < 10 ? '0' + dateObj.getSeconds() : dateObj.getSeconds().toString();
   let date = dateObj.getDate() < 10 ? '0' + dateObj.getDate() : dateObj.getDate().toString();
-  let random4Digits = Math.random().toString().slice(-4);
+  let random4Digits = Math.random()
+    .toString()
+    .slice(-4);
 
   return (
     dateObj.getFullYear().toString() + month + date + hours + minutes + seconds + random4Digits
@@ -55,6 +71,7 @@ const generatePaymentOrderId = () => {
 
 const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
   const paymentTypeParams = {};
+  if (paymentTypeID == process.env.PARTNER_SBI) paymentTypeID = 'DC';
   const possiblePaymentTypes = ['CC', 'DC', 'NB', 'PPI', 'EMI', 'UPI', 'PAYTM_DIGITAL_CREDIT'];
   logger.info(`${paymentTypeID} - paymentTypeID`);
   if (!possiblePaymentTypes.includes(paymentTypeID)) {

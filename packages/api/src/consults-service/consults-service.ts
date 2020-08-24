@@ -126,6 +126,8 @@ import { winstonLogger } from 'customWinstonLogger';
 
 import { exotelCallingResolvers, exotelTypeDefs } from 'consults-service/resolvers/exotelCalling';
 
+import { appointmentCallFeedbackTypeDefs, appointmentCallFeedbackResolvers } from 'consults-service/resolvers/appointmentCallFeedbackResolver';
+
 (async () => {
   await connect();
 
@@ -278,6 +280,10 @@ import { exotelCallingResolvers, exotelTypeDefs } from 'consults-service/resolve
       {
         typeDefs: consultOrdersTypeDefs,
         resolvers: consultOrdersResolvers,
+      },
+      {
+        typeDefs: appointmentCallFeedbackTypeDefs,
+        resolvers: appointmentCallFeedbackResolvers,
       },
     ]),
     plugins: [

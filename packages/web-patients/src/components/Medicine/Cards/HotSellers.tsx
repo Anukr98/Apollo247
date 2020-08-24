@@ -5,24 +5,32 @@ import { AphButton } from '@aph/web-ui-components';
 import Slider from 'react-slick';
 import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Link } from 'react-router-dom';
+import { Link, Route } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
 import { gtmTracking } from '../../../gtmTracking';
 import {
   pharmacyConfigSectionTracking,
   addToCartTracking,
   removeFromCartTracking,
+  pharmacyProductClickedTracking,
 } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: '100%',
-      '& >div >img': {
-        width: 24,
-        height: 24,
-        [theme.breakpoints.down('xs')]: {
-          display: 'none !important',
+      '& >div': {
+        '& >img': {
+          width: 24,
+          height: 24,
+          [theme.breakpoints.down('xs')]: {
+            display: 'none !important',
+          },
+        },
+        '& >div': {
+          [theme.breakpoints.down('xs')]: {
+            margin: '0 -20px 0 -10px',
+          },
         },
       },
     },
@@ -36,9 +44,6 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
-      [theme.breakpoints.down('xs')]: {
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      },
     },
     productIcon: {
       textAlign: 'center',
@@ -48,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     productTitle: {
-      fontSize: 14,
+      fontSize: 12,
       color: '#01475b',
       fontWeight: 500,
       textAlign: 'center',
@@ -160,9 +165,9 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
       {
         breakpoint: 480,
         settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          centerMode: true,
+          slidesToShow: 2,
+          slidesToScroll: 2,
+          // centerMode: true,
           nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
           prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },
@@ -174,7 +179,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
     url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
-  const { cartItems, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const { cartItems, addCartItem, updateCartItem, removeCartItemSku } = useShoppingCart();
 
   const itemIndexInCart = (item: MedicineProduct) => {
     const index = cartItems.findIndex((cartItem) => cartItem.id == item.id);
@@ -204,21 +209,32 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         </span>
                       </div>
                     )}
-                  <Link
-                    to={clientRoutes.medicineDetails(hotSeller.url_key)}
-                    onClick={() =>
-                      pharmacyConfigSectionTracking({
-                        sectionName: props.section,
-                        productId: hotSeller.sku,
-                        productName: hotSeller.name,
-                      })
-                    }
-                  >
-                    <div className={classes.productIcon}>
-                      <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
-                    </div>
-                    <div className={classes.productTitle}>{hotSeller.name}</div>
-                  </Link>
+                  <Route
+                    render={({ history }) => (
+                      <a
+                        href=""
+                        onClick={() => {
+                          history.push(clientRoutes.medicineDetails(hotSeller.url_key));
+                          pharmacyConfigSectionTracking({
+                            sectionName: props.section,
+                            productId: hotSeller.sku,
+                            productName: hotSeller.name,
+                          });
+                          pharmacyProductClickedTracking({
+                            productName: hotSeller.name,
+                            source: 'Home',
+                            productId: hotSeller.sku,
+                            sectionName: props.section,
+                          });
+                        }}
+                      >
+                        <div className={classes.productIcon}>
+                          <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
+                        </div>
+                        <div className={classes.productTitle}>{hotSeller.name}</div>
+                      </a>
+                    )}
+                  />
                   <div className={classes.bottomSection}>
                     <div className={classes.priceGroup}>
                       {hotSeller &&
@@ -345,7 +361,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                               },
                             });
                             /**Gtm code End  */
-                            removeCartItem && removeCartItem(hotSeller.id);
+                            removeCartItemSku && removeCartItemSku(hotSeller.sku);
                           }}
                         >
                           Remove

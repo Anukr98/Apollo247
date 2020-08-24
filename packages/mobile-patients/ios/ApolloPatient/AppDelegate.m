@@ -27,6 +27,9 @@
 #else
 #import "AppsFlyerTracker.h"
 #endif
+#import <PushKit/PushKit.h>
+#import "RNCallKeep.h"
+#import "RNVoipPushNotificationManager.h"
 
 @implementation AppDelegate
 
@@ -74,6 +77,49 @@
                            didFinishLaunchingWithOptions:launchOptions];
   
   return YES;
+}
+
+/* Add PushKit delegate method */
+
+// --- Handle updated push credentials
+- (void)pushRegistry:(PKPushRegistry *)registry didUpdatePushCredentials:(PKPushCredentials *)credentials forType:(PKPushType)type {
+  [RNVoipPushNotificationManager didUpdatePushCredentials:credentials forType:(NSString *)type];
+}
+
+// --- Handle incoming pushes (for ios <= 10)
+- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type { 
+  [self handleVoipIncomingCall:payload forType:type];
+}
+
+// --- Handle incoming pushes (for ios >= 11)
+- (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
+  [self handleVoipIncomingCall:payload forType:type];
+  completion();
+}
+
+- (void) handleVoipIncomingCall:(PKPushPayload *)payload forType:(PKPushType)type {
+  
+  if(payload && payload.dictionaryPayload && payload.dictionaryPayload[@"name"] != nil && payload.dictionaryPayload[@"isVideo"] != nil && payload.dictionaryPayload[@"appointmentId"] != nil &&
+     payload.dictionaryPayload[@"disconnectCall"] == nil){
+    
+    // show incoming call
+    
+    NSString *appointmentId = payload.dictionaryPayload[@"appointmentId"];
+    NSString *name = payload.dictionaryPayload[@"name"];
+    BOOL isVideo = [payload.dictionaryPayload[@"isVideo"] boolValue];
+    
+    [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:payload forType:(NSString *)type]; //sending payload to JS
+    
+    [RNCallKeep reportNewIncomingCall:appointmentId handle:name handleType:@"generic" hasVideo:isVideo localizedCallerName:name fromPushKit: YES payload:nil];
+           
+  } else if(payload && payload.dictionaryPayload[@"appointmentId"] != nil && payload.dictionaryPayload[@"disconnectCall"] != nil) {
+    
+    // disconnect ongoing call
+    
+    NSString *appointmentId = payload.dictionaryPayload[@"appointmentId"];
+    
+    [RNCallKeep endCallWithUUID:appointmentId reason:2]; // CXCallEndedReasonRemoteEnded
+  }
 }
 
 - (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
@@ -200,13 +246,22 @@ API_AVAILABLE(ios(10.0)){
   return YES;
 }
 
+// Reports app open from deep link from apps which do not support Universal Links (Twitter) and for iOS8 and below
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString*)sourceApplication annotation:(id)annotation
+{
+     [[AppsFlyerTracker sharedTracker] handleOpenURL:url sourceApplication:sourceApplication withAnnotation:annotation];
+     return YES;
+}
+
+#pragma mark - Universal link
+
 - (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler
 {
   [RCTLinkingManager application:application
             continueUserActivity:userActivity
               restorationHandler:restorationHandler];
   [[AppsFlyerTracker sharedTracker] continueUserActivity:userActivity restorationHandler:restorationHandler];
-  
+  [RNCallKeep application:application continueUserActivity:userActivity restorationHandler:restorationHandler];
   return true;
 }
 

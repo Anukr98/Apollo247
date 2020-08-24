@@ -8,7 +8,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   GET_APPOINTMENT_DATA,
   GET_CALL_DETAILS,
-  GET_MEDICINE_ORDER_OMS_DETAILS,
+  GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAppointmentData as getAppointmentDataQuery,
@@ -39,13 +39,13 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import AsyncStorage from '@react-native-community/async-storage';
 import { RemoteMessage } from 'react-native-firebase/messaging';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
-import {
-  getMedicineOrderOMSDetails,
-  getMedicineOrderOMSDetailsVariables,
-} from '../graphql/types/getMedicineOrderOMSDetails';
 import { NotificationIconWhite } from './ui/Icons';
 import { WebEngageEvents, WebEngageEventName } from '../helpers/webEngageEvents';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  getMedicineOrderOMSDetailsWithAddress,
+  getMedicineOrderOMSDetailsWithAddressVariables,
+} from '../graphql/types/getMedicineOrderOMSDetailsWithAddress';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -106,7 +106,7 @@ export interface NotificationListenerProps extends NavigationScreenProps {}
 
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
-
+  const isAndroid = Platform.OS === 'android';
   const {
     showAphAlert,
     hideAphAlert,
@@ -356,8 +356,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       notificationType === 'doctor_Noshow_Reschedule_Appointment'
       // notificationType === 'Reschedule_Appointment'
     ) {
-      if(notificationType === 'chat_room' || notificationType === 'call_started') {
-        setDoctorJoinedChat && setDoctorJoinedChat(true); // enabling join button in chat room if in case pubnub events not fired
+      if (notificationType === 'chat_room' || notificationType === 'call_started') {
+        if(data.doctorType === DoctorType.SENIOR){
+          setDoctorJoinedChat && setDoctorJoinedChat(true); // enabling join button in chat room if in case pubnub events not fired
+        }
       }
       if (currentScreenName === AppRoutes.ChatRoom) return;
     }
@@ -667,8 +669,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           const orderId: number = parseInt(data.orderId || '0');
           console.log('Cart_Ready called');
           client
-            .query<getMedicineOrderOMSDetails, getMedicineOrderOMSDetailsVariables>({
-              query: GET_MEDICINE_ORDER_OMS_DETAILS,
+            .query<
+              getMedicineOrderOMSDetailsWithAddress,
+              getMedicineOrderOMSDetailsWithAddressVariables
+            >({
+              query: GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
               variables: {
                 orderAutoId: orderId,
                 patientId: currentPatient && currentPatient.id,
@@ -676,7 +681,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               fetchPolicy: 'no-cache',
             })
             .then((data) => {
-              const orderDetails = data.data.getMedicineOrderOMSDetails.medicineOrderDetails;
+              const orderDetails =
+                data.data.getMedicineOrderOMSDetailsWithAddress.medicineOrderDetails;
               const items = (orderDetails!.medicineOrderLineItems || [])
                 .map((item) => ({
                   sku: item!.medicineSKU!,
@@ -705,6 +711,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                         isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
                         thumbnail: medicineDetails.thumbnail || medicineDetails.image,
                         maxOrderQty: medicineDetails.MaxOrderQty,
+                        productType: medicineDetails.type_id,
                       } as ShoppingCartItem;
                     })
                     .filter((item) => item) as ShoppingCartItem[];
@@ -940,7 +947,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         firebase.notifications.Android.Importance.Max
       )
         .setDescription('Apollo Consultation')
-        .setSound('incallmanager_ringtone.mp3')
         .enableLights(true)
         .enableVibration(true)
         .setVibrationPattern([1000])
@@ -1014,7 +1020,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           if (endTime) {
             try {
               setPrevVolume();
-              if (audioTrack) {
+              if (audioTrack && !isAndroid) {
                 audioTrack.stop();
               }
 
@@ -1055,7 +1061,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               setLoading && setLoading(false);
               try {
                 maxVolume();
-                if (audioTrack) {
+                if (audioTrack && !isAndroid) {
                   audioTrack.play();
                   audioTrack.setNumberOfLoops(15);
                   console.log('call audioTrack');
@@ -1066,7 +1072,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
               setTimeout(() => {
                 setPrevVolume();
-                if (audioTrack) {
+                if (audioTrack && !isAndroid) {
                   audioTrack.stop();
                 }
               }, 15000);
@@ -1084,7 +1090,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                     onPress: () => {
                       hideAphAlert && hideAphAlert();
                       setPrevVolume();
-                      if (audioTrack) {
+                      if (audioTrack && !isAndroid) {
                         audioTrack.stop();
                       }
                     },

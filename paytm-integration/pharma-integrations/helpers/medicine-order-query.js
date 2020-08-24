@@ -18,12 +18,26 @@ const getMedicineOrderQuery = (method, patientId, orderId) => {
             quoteDateTime
             coupon
             customerComment
-            patient{
+            medicineOrderAddress {
               mobileNumber
+              name
+              latitude
+              longitude
+              landmark
+              addressLine1
+              addressLine2
+              city
+              state
+              zipcode
+              stateCode
+            }
+            patient{
+              id
               firstName
               lastName
               emailAddress
               dateOfBirth
+              
             }
             medicineOrderLineItems{
               medicineSKU

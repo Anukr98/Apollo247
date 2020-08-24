@@ -855,6 +855,7 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         brands {
           name
           image
+          brandName
         }
         language {
           name
@@ -1126,6 +1127,7 @@ export const GET_CASESHEET_DETAILS = gql`
           medicineConsumptionDurationUnit
           routeOfAdministration
           medicineCustomDosage
+          medicineCustomDetails
         }
         notes
         otherInstructions {
@@ -1279,29 +1281,16 @@ export const GET_LATEST_MEDICINE_ORDER = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_SLOTS = gql`
-  query getDiagnosticSlots(
-    $patientId: String
-    $hubCode: String
-    $selectedDate: Date
-    $zipCode: Int
-  ) {
-    getDiagnosticSlots(
+export const GET_DIAGNOSTIC_IT_DOSE_SLOTS = gql`
+  query GetDiagnosticItDoseSlots($patientId: String, $selectedDate: Date, $zipCode: Int) {
+    getDiagnosticItDoseSlots(
       patientId: $patientId
-      hubCode: $hubCode
       selectedDate: $selectedDate
       zipCode: $zipCode
     ) {
-      diagnosticBranchCode
-      diagnosticSlot {
-        employeeCode
-        employeeName
-        slotInfo {
-          endTime
-          status
-          startTime
-          slot
-        }
+      slotInfo {
+        TimeslotID
+        Timeslot
       }
     }
   }
@@ -1457,6 +1446,136 @@ export const UPDATE_DIAGNOSTIC_ORDER = gql`
   }
 `;
 
+export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
+  query getMedicineOrderOMSDetailsWithAddress(
+    $patientId: String
+    $orderAutoId: Int
+    $billNumber: String
+  ) {
+    getMedicineOrderOMSDetailsWithAddress(
+      patientId: $patientId
+      orderAutoId: $orderAutoId
+      billNumber: $billNumber
+    ) {
+      medicineOrderDetails {
+        id
+        createdDate
+        orderAutoId
+        billNumber
+        coupon
+        devliveryCharges
+        prismPrescriptionFileId
+        couponDiscount
+        productDiscount
+        redeemedAmount
+        estimatedAmount
+        prescriptionImageUrl
+        orderTat
+        orderType
+        shopAddress
+        packagingCharges
+        deliveryType
+        currentStatus
+        patientAddressId
+        alertStore
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          mrp
+          quantity
+          isMedicine
+          mou
+          isPrescriptionNeeded
+        }
+        medicineOrderPayments {
+          id
+          paymentType
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+          healthCreditsRedeemed
+          healthCreditsRedemptionRequest {
+            Success
+            Message
+            RequestNumber
+            AvailablePoints
+            BalancePoints
+            RedeemedPoints
+            PointsValue
+          }
+          paymentMode
+          refundAmount
+        }
+        medicineOrderRefunds {
+          refundAmount
+          refundStatus
+          refundId
+          orderId
+          createdDate
+        }
+        medicineOrdersStatus {
+          id
+          orderStatus
+          statusDate
+          hideStatus
+          statusMessage
+          customReason
+        }
+        medicineOrderShipments {
+          id
+          siteId
+          siteName
+          apOrderNo
+          updatedDate
+          currentStatus
+          itemDetails
+          medicineOrdersStatus {
+            id
+            orderStatus
+            statusDate
+            hideStatus
+          }
+          medicineOrderInvoice {
+            id
+            siteId
+            remarks
+            requestType
+            vendorName
+            billDetails
+            itemDetails
+          }
+        }
+        patient {
+          mobileNumber
+          id
+          firstName
+          lastName
+          addressList {
+            id
+            addressLine1
+            addressLine2
+            city
+            state
+            zipcode
+          }
+        }
+        medicineOrderAddress {
+          addressLine1
+          addressLine2
+          city
+          state
+          zipcode
+        }
+      }
+    }
+  }
+`;
+
 export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
   query getMedicineOrderOMSDetails($patientId: String, $orderAutoId: Int, $billNumber: String) {
     getMedicineOrderOMSDetails(
@@ -1512,6 +1631,13 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
           bankTxnId
           healthCreditsRedeemed
           paymentMode
+        }
+        medicineOrderRefunds {
+          refundAmount
+          refundStatus
+          refundId
+          orderId
+          createdDate
         }
         medicineOrderShipments {
           id
@@ -2400,6 +2526,17 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
   }
 `;
 
+export const SAVE_ITDOSE_HOME_COLLECTION_DIAGNOSTIC_ORDER = gql`
+  mutation SaveItdoseHomeCollectionDiagnosticOrder($diagnosticOrderInput: DiagnosticOrderInput) {
+    SaveItdoseHomeCollectionDiagnosticOrder(diagnosticOrderInput: $diagnosticOrderInput) {
+      errorCode
+      errorMessage
+      orderId
+      displayId
+    }
+  }
+`;
+
 export const UPLOAD_DOCUMENT = gql`
   mutation uploadDocument($UploadDocumentInput: UploadDocumentInput) {
     uploadDocument(uploadDocumentInput: $UploadDocumentInput) {
@@ -2622,8 +2759,13 @@ export const GET_PHARMA_TRANSACTION_STATUS = gql`
 `;
 
 export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
-  query consultOrders($patientId: String!) {
-    consultOrders(patientId: $patientId) {
+  query consultOrders($patientId: String!, $pageNo: Int!, $pageSize: Int!) {
+    consultOrders(patientId: $patientId, pageNo: $pageNo, pageSize: $pageSize) {
+      meta {
+        pageNo
+        pageSize
+        total
+      }
       appointments {
         id
         doctorId
@@ -2652,8 +2794,13 @@ export const CONSULT_ORDER_PAYMENT_DETAILS = gql`
 `;
 
 export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
-  query pharmacyOrders($patientId: String!) {
-    pharmacyOrders(patientId: $patientId) {
+  query pharmacyOrders($patientId: String!, $pageNo: Int!, $pageSize: Int!) {
+    pharmacyOrders(patientId: $patientId, pageNo: $pageNo, pageSize: $pageSize) {
+      meta {
+        pageNo
+        pageSize
+        total
+      }
       pharmaOrders {
         id
         estimatedAmount
@@ -2673,6 +2820,14 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
           paymentMode
           amountPaid
           healthCreditsRedeemed
+          refundAmount
+          medicineOrderRefunds {
+            refundAmount
+            createdDate
+            refundStatus
+            refundId
+            txnId
+          }
         }
       }
     }
@@ -2791,6 +2946,17 @@ export const GET_APPOINTMENT_RESCHEDULE_DETAILS = gql`
       rescheduleInitiatedBy
       rescheduleInitiatedId
       rescheduleStatus
+    }
+  }
+`;
+
+export const SAVE_VOIP_DEVICE_TOKEN = gql`
+  mutation addVoipPushToken($voipPushTokenInput: voipPushTokenInput!) {
+    addVoipPushToken(voipPushTokenInput: $voipPushTokenInput) {
+      isError
+      response
+      patientId
+      voipToken
     }
   }
 `;

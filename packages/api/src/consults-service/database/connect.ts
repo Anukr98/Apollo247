@@ -25,7 +25,7 @@ import {
   UtilizationCapacity,
   NotificationBin,
   NotificationBinArchive,
-  AppointmentUpdateHistory,
+  AppointmentUpdateHistory
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,
@@ -99,6 +99,8 @@ import {
   MedicineOrderAddress,
   PatientEntitiySubscriber,
 } from 'profiles-service/entities';
+import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
+import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity'
 
 export const connect = async () => {
   return await createConnections([
@@ -130,6 +132,7 @@ export const connect = async () => {
         TransferAppointmentDetails,
         UtilizationCapacity,
         AppointmentUpdateHistory,
+        AppointmentCallFeedback
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -137,6 +140,7 @@ export const connect = async () => {
       username: process.env.CONSULTS_DB_USER,
       password: process.env.CONSULTS_DB_PASSWORD,
       database: `consults_${process.env.DB_NODE_ENV}`,
+      subscribers: [AppointmentEntitySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       synchronize: true,
       extra: {

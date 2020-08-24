@@ -9,7 +9,7 @@ import { RadioSelectionItem } from './RadioSelectionItem';
 import { AppRoutes } from '../NavigatorContainer';
 import { savePatientAddress_savePatientAddress_patientAddress } from '../../graphql/types/savePatientAddress';
 import { useUIElements } from '../UIElementsProvider';
-import { aphConsole, handleGraphQlError, formatAddress, g } from '../../helpers/helperFunctions';
+import { aphConsole, handleGraphQlError, formatAddress, g, postWebEngageEvent } from '../../helpers/helperFunctions';
 import React, { useState, useEffect } from 'react';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
@@ -23,6 +23,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { GET_PATIENT_ADDRESS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -173,6 +174,10 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
             description: string.medicine_cart.pharmaAddressUnServiceableAlert,
           });
         }
+        const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED] = {
+          Serviceable: Availability ? 'Yes' : 'No',
+        };
+        postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED, eventAttributes);
       })
       .catch((e) => {
         CommonBugFender('StorePickupOrAddressSelectionView_pinCodeServiceabilityApi', e);

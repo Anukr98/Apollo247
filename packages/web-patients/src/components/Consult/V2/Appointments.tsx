@@ -499,14 +499,16 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
           fetchPolicy: 'cache-first',
         })
         .then(({ data }) => {
-          setIsLoading(false);
           if (data && data.getOrderInvoice && data.getOrderInvoice.length) {
             window.open(data.getOrderInvoice, '_blank');
           }
         })
         .catch((e) => {
-          setIsLoading(false);
           console.log(e);
+        })
+        .finally(() => {
+          setIsLoading(false);
+          setTriggerInvoice(false);
         });
     }
   }, [triggerInvoice]);
@@ -1109,10 +1111,6 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       {successApptId && (
         <Modal
           open={isConfirmedPopoverOpen}
-          onClose={() => {
-            setIsConfirmedPopoverOpen(false);
-            // history.push(clientRoutes.appointments());
-          }}
           className={classes.modal}
           disableBackdropClick
           disableEscapeKeyDown

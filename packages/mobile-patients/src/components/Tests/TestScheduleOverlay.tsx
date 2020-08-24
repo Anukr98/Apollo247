@@ -6,14 +6,19 @@ import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import {
-  GET_DIAGNOSTIC_SLOTS,
+  GET_DIAGNOSTIC_IT_DOSE_SLOTS,
   GET_PATIENT_ADDRESS_BY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  getDiagnosticSlots,
-  getDiagnosticSlotsVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
-import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+  GetDiagnosticItDoseSlots,
+  GetDiagnosticItDoseSlotsVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetDiagnosticItDoseSlots';
+import {
+  g,
+  handleGraphQlError,
+  formatTestSlot,
+  isValidTestSlot,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -26,6 +31,7 @@ import {
   getPatientAddressByIdVariables,
 } from '../../graphql/types/getPatientAddressById';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { TestSlot } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -69,14 +75,6 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface SlotInfo {
-  diagnosticBranchCode: string;
-  employeeCode: string;
-  employeeName: string;
-  startTime: string;
-  endTime: string;
-  slot: number;
-}
 export type TestScheduleType = 'home-visit' | 'clinic-visit';
 
 export interface TestScheduleOverlayProps extends AphOverlayProps {
@@ -87,7 +85,7 @@ export interface TestScheduleOverlayProps extends AphOverlayProps {
     date: Date,
     reason: string,
     comment?: string,
-    slotInfo?: SlotInfo
+    slotInfo?: TestSlot
   ) => void;
   addressId?: string;
   // for clinic-visit orders slotInfo wil be undefined
@@ -101,8 +99,8 @@ export interface TestScheduleOverlayProps extends AphOverlayProps {
 export const TestScheduleOverlay: React.FC<TestScheduleOverlayProps> = (props) => {
   const [selectedReason, setSelectedReason] = useState('');
   const [comment, setComment] = useState('');
-  const [slotInfo, setSlotInfo] = useState<SlotInfo>();
-  const [slots, setSlots] = useState<SlotInfo[]>([]);
+  const [slotInfo, setSlotInfo] = useState<TestSlot>();
+  const [slots, setSlots] = useState<TestSlot[]>([]);
   const [date, setDate] = useState<Date>(new Date());
   const [calendarType, setCalendarType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.WEEK);
   const [overlayDropdown, setOverlayDropdown] = useState(false);
@@ -117,53 +115,31 @@ export const TestScheduleOverlay: React.FC<TestScheduleOverlayProps> = (props) =
     query: GET_PATIENT_ADDRESS_BY_ID,
     variables: { id: addressId },
   });
-  const getSlots = client.query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
-    query: GET_DIAGNOSTIC_SLOTS,
+  const getSlots = client.query<GetDiagnosticItDoseSlots, GetDiagnosticItDoseSlotsVariables>({
+    query: GET_DIAGNOSTIC_IT_DOSE_SLOTS,
     fetchPolicy: 'no-cache',
     variables: {
       patientId: g(currentPatient, 'id'),
-      hubCode: 'HYD_HUB1',
       selectedDate: moment(date).format('YYYY-MM-DD'),
-      zipCode: parseInt(zipCode, 10),
+      zipCode: Number(zipCode),
     },
   });
 
   const fetchSlots = () =>
     getSlots
       .then(({ data }) => {
-        const slotsArray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
-        const formattedSlotsArray = slotsArray!
-          .slotInfo!.filter((item) => item!.status != 'booked')
-          .filter((item) =>
-            moment(date)
-              .format('DMY')
-              .toString() ===
-            moment()
-              .format('DMY')
-              .toString()
-              ? parseInt(item!.startTime!.split(':')[0], 10) >= parseInt(moment().format('k'), 10)
-                ? parseInt(item!.startTime!.split(':')[1], 10) > moment().minute()
-                : false
-              : true
-          )
-          .map((item) => {
-            return {
-              diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode'),
-              employeeCode: g(slotsArray, 'employeeCode'),
-              employeeName: g(slotsArray, 'employeeName'),
-              startTime: item!.startTime,
-              endTime: item!.endTime,
-              slot: item!.slot,
-            } as SlotInfo;
-          });
-        console.log('ARRAY OF SLOTS', { formattedSlotsArray });
-        setSlots(formattedSlotsArray);
-        setSlotInfo(formattedSlotsArray[0]);
+        const diagnosticSlots =
+          (g(data, 'getDiagnosticItDoseSlots', 'slotInfo') as TestSlot[]) || [];
+        console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
+        const slotsArray = diagnosticSlots.filter((slot) => isValidTestSlot(slot, date));
+        console.log('ARRAY OF SLOTS', { slotsArray });
+        setSlots(slotsArray);
+        setSlotInfo(slotsArray[0]);
       })
       .catch((e) => {
         CommonBugFender('TestScheduleOverlay_fetchSlots', e);
-        console.log('getDiagnosticSlots Error', { e });
-        if (!(g(e, 'graphQLErrors', '0', 'message') == 'NO_HUB_SLOTS')) {
+        console.log('GetDiagnosticItDoseSlots Error', { e });
+        if (g(e, 'graphQLErrors', '0', 'message') !== 'NO_HUB_SLOTS') {
           handleGraphQlError(e);
         }
       })
@@ -197,8 +173,9 @@ export const TestScheduleOverlay: React.FC<TestScheduleOverlayProps> = (props) =
   const renderSlotSelectionView = () => {
     if (type == 'clinic-visit') return null;
     const dropDownOptions = slots.map((val) => ({
-      key: val.slot.toString(),
-      value: `${val.startTime} - ${val.endTime}`,
+      key: val.TimeslotID!,
+      value: `${formatTestSlot(val.Timeslot!)}`,
+      data: val,
     }));
     const { width } = Dimensions.get('window');
 
@@ -208,7 +185,7 @@ export const TestScheduleOverlay: React.FC<TestScheduleOverlayProps> = (props) =
         <View style={styles.optionsView}>
           <MaterialMenu
             options={dropDownOptions}
-            selectedText={slotInfo && `${slotInfo.startTime} - ${slotInfo.endTime}`}
+            selectedText={slotInfo && `${formatTestSlot(slotInfo.Timeslot!)}`}
             menuContainerStyle={{
               alignItems: 'flex-end',
               marginTop: 24,
@@ -216,21 +193,21 @@ export const TestScheduleOverlay: React.FC<TestScheduleOverlayProps> = (props) =
             }}
             itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
             selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
-            onPress={({ key }) => {
-              const selectedSlot = slots.find((item) => item.slot.toString() == key)!;
-              setSlotInfo(selectedSlot);
+            onPress={({ data }) => {
+              console.log('selectedSlot', { data });
+              setSlotInfo(data);
             }}
           >
             <View style={{ flexDirection: 'row', marginBottom: 8 }}>
               <View style={[styles.placeholderViewStyle]}>
                 <Text
-                  style={[styles.placeholderTextStyle, , slotInfo ? null : styles.placeholderStyle]}
+                  style={[styles.placeholderTextStyle, slotInfo ? null : styles.placeholderStyle]}
                 >
                   {loading
                     ? 'Loading...'
                     : dropDownOptions.length
                     ? slotInfo
-                      ? `${slotInfo.startTime} - ${slotInfo.endTime}`
+                      ? `${formatTestSlot(slotInfo.Timeslot!)}`
                       : 'Please select a slot'
                     : 'No slots available'}
                 </Text>
@@ -349,9 +326,9 @@ export const TestScheduleOverlay: React.FC<TestScheduleOverlayProps> = (props) =
       style={{ margin: 16, marginTop: 32, width: 'auto' }}
       onPress={() => {
         if (!isDoneBtnDisabled) {
-          onReschedule(type, date!, selectedReason, comment, slotInfo);
+          onReschedule(type, date, selectedReason, comment, slotInfo);
         }
-        onReschedule(type, date!, selectedReason, comment, slotInfo);
+        onReschedule(type, date, selectedReason, comment, slotInfo);
       }}
       disabled={isDoneBtnDisabled}
       title={'DONE'}

@@ -226,23 +226,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   // console.log(clinics);
 
-  const specialityName =
-    doctorDetails &&
-    doctorDetails.specialty &&
-    doctorDetails.specialty.name &&
-    doctorDetails.specialty.name.toLowerCase();
-
   const navigateToDoctorDetails = () => {
     const readableDoctorName = readableParam(doctorName);
-    if (specialityName) {
-      props.history.push(
-        clientRoutes.specialtyDoctorDetails(
-          readableParam(specialityName),
-          readableDoctorName,
-          doctorId
-        )
-      );
-    }
+    props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
   };
 
   return (

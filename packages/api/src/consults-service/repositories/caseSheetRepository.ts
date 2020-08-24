@@ -106,14 +106,16 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     });
   }
 
-  updateJDCaseSheet(appointmentId: string) {
-    return this.createQueryBuilder()
-      .update('case_sheet')
-      .set({ status: CASESHEET_STATUS.COMPLETED })
-      .where('"appointmentId" = :id', { id: appointmentId })
-      .andWhere('doctorType = :type', { type: DoctorType.JUNIOR })
-      .andWhere('status = :status', { status: CASESHEET_STATUS.PENDING })
-      .execute();
+  async updateJDCaseSheet(appointmentId: string) {
+    const JDCaseSheetDetails = await this.getJuniorDoctorCaseSheet(appointmentId);
+    Object.assign(JDCaseSheetDetails, {
+      status: CASESHEET_STATUS.COMPLETED,
+    });
+    if (!JDCaseSheetDetails) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined);
+
+    return JDCaseSheetDetails.save().catch((appointmentError) => {
+      throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { appointmentError });
+    });
   }
 
   getSeniorDoctorMultipleCaseSheet(appointmentId: string) {
@@ -148,5 +150,17 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .andWhere('case_sheet.sentToPatient = :sentToPatient', { sentToPatient: true })
       .orderBy('case_sheet.version', 'DESC')
       .getMany();
+  }
+
+  getSDLatestCompletedCaseSheet(appointmentId: string) {
+    const juniorDoctorType = DoctorType.JUNIOR;
+    return this.createQueryBuilder('case_sheet')
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+      .leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')
+      .where('case_sheet.appointment = :appointmentId', { appointmentId })
+      .andWhere('case_sheet.doctorType != :juniorDoctorType', { juniorDoctorType })
+      .andWhere('case_sheet.sentToPatient = :sentToPatient', { sentToPatient: true })
+      .orderBy('case_sheet.version', 'DESC')
+      .getOne();
   }
 }

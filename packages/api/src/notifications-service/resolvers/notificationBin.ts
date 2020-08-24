@@ -1,4 +1,3 @@
-import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
 import {
@@ -18,81 +17,10 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { subDays, format, differenceInDays, addMinutes } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
-import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
+import { sendNotificationSMS, sendChatMessageNotification } from 'notifications-service/handlers';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { sendChatMessageNotification } from 'notifications-service/resolvers/notifications';
-
-export const notificationBinTypeDefs = gql`
-  enum notificationStatus {
-    READ
-    UNREAD
-  }
-
-  enum notificationEventName {
-    APPOINTMENT
-  }
-
-  enum notificationType {
-    CHAT
-  }
-
-  input MessageInput {
-    fromId: String!
-    toId: String!
-    eventName: notificationEventName!
-    eventId: String!
-    message: String!
-    status: notificationStatus!
-    type: notificationType!
-  }
-
-  type NotificationBinData {
-    fromId: String!
-    toId: String!
-    eventName: notificationEventName!
-    eventId: String!
-    message: String!
-    status: notificationStatus!
-    type: notificationType!
-    id: String
-  }
-
-  type NotificationData {
-    notificationData: NotificationBinData
-  }
-
-  type NotificationDataSet {
-    notificationData: [GetNotificationsResponse]
-  }
-
-  type NotificationBinDataSet {
-    notificationData: [NotificationBinData]
-  }
-
-  type GetNotificationsResponse {
-    appointmentId: String
-    doctorId: String
-    lastUnreadMessageDate: DateTime
-    patientId: String
-    patientFirstName: String
-    patientLastName: String
-    patientPhotoUrl: String
-    unreadNotificationsCount: Int
-  }
-
-  extend type Query {
-    getNotifications(toId: String!, startDate: Date, endDate: Date): NotificationDataSet
-    sendUnreadMessagesNotification: String
-    archiveMessages: String
-  }
-
-  extend type Mutation {
-    insertMessage(messageInput: MessageInput): NotificationData
-    markMessageToUnread(eventId: String): NotificationBinDataSet
-  }
-`;
 
 type MessageInput = {
   fromId: string;
@@ -145,8 +73,11 @@ const insertMessage: Resolver<
     if (appointmentData.status != STATUS.COMPLETED)
       throw new AphError(AphErrorMessages.APPOINTMENT_NOT_COMPLETED);
 
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const consultDate = format(appointmentData.sdConsultationDate, 'yyyy-MM-dd');
+    const today = format(addMinutes(new Date(), +0), 'yyyy-MM-dd');
+    const consultDate = format(
+      addMinutes(new Date(appointmentData.sdConsultationDate), +0),
+      'yyyy-MM-dd'
+    );
     const difference = differenceInDays(new Date(today), new Date(consultDate));
 
     if (difference > parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10))
@@ -250,8 +181,8 @@ const sendUnreadMessagesNotification: Resolver<
     //Filtering the last date appointments
     const lastDayAppointments = appointmentsData.filter((appointment) => {
       if (!appointment.sdConsultationDate) return false;
-      const today = format(new Date(), 'yyyy-MM-dd');
-      const consultDate = format(appointment.sdConsultationDate, 'yyyy-MM-dd');
+      const today = format(addMinutes(new Date(), +0), 'yyyy-MM-dd');
+      const consultDate = format(addMinutes(appointment.sdConsultationDate, +0), 'yyyy-MM-dd');
       const difference = differenceInDays(new Date(today), new Date(consultDate));
       return difference == parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10) - 1;
     });

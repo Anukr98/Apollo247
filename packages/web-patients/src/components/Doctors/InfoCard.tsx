@@ -175,6 +175,7 @@ interface InfoCardProps {
   nextAvailability: NextAvailabilityType;
   doctorType: string;
   consultMode: ConsultMode;
+  specialityType?: string;
 }
 
 export const InfoCard: React.FC<InfoCardProps> = (props) => {
@@ -235,31 +236,25 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
   return (
     <div className={classes.root}>
-      <Link
-        to={clientRoutes.specialtyDoctorDetails(
-          readableParam(specialityName),
-          readableParam(doctorValue),
-          doctorInfo.id
-        )}
-      >
+      <Link to={clientRoutes.doctorDetails(readableParam(doctorValue), doctorInfo.id)}>
         <div className={classes.topContent}>
           <div className={classes.iconGroup}>
             <Avatar
-              alt=""
+              alt={`Consult ${doctorInfo.fullName} (${props.specialityType}) Online`}
               src={doctorInfo.photoUrl || require('images/no_photo_icon_round.svg')}
               className={classes.doctorAvatar}
             />
             <div className={classes.consultType}>
               {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
                 <span>
-                  <img src={require('images/ic-video.svg')} alt="" />
+                  <img src={require('images/ic-video.svg')} alt="Online Consult" />
                   <br />
                   Online
                 </span>
               )}
               {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
                 <span>
-                  <img src={require('images/fa-solid-hospital.svg')} alt="" />
+                  <img src={require('images/fa-solid-hospital.svg')} alt="Clinic Visit" />
                   <br />
                   In-Person
                 </span>
@@ -276,13 +271,13 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
                     ? require('images/ic_apollo.png')
                     : require('images/partner_doc.png')
                 }
-                alt=""
+                alt="Apollo 24|7"
               />
             </div>
             <div className={classes.doctorName}>{`${doctorInfo.fullName}`}</div>
             <div className={classes.doctorType}>
               <span title={'Specialty'}>{doctorInfo.specialty.userFriendlyNomenclature}</span>
-              <span className={classes.doctorExp} title={'Experiance'}>
+              <span className={classes.doctorExp} title={'Experience'}>
                 {doctorInfo.experience} {doctorInfo.experience === '1' ? 'YR' : 'YRS'} Exp.
               </span>
             </div>

@@ -18,7 +18,7 @@ import {
 } from 'helpers/prismCall';
 import { GetCurrentPatientsResult } from 'profiles-service/resolvers/getCurrentPatients';
 import { PrismGetAuthTokenResponse } from 'types/prism';
-import { sendPatientRegistrationNotification } from 'notifications-service/resolvers/notifications';
+import { sendPatientRegistrationNotification } from 'notifications-service/handlers';
 
 export const registerPatientsTypeDefs = gql`
   extend type Mutation {

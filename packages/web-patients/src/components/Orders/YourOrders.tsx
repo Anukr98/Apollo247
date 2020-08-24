@@ -72,12 +72,12 @@ const useStyles = makeStyles((theme: Theme) => {
     mobileOverlay: {
       [theme.breakpoints.down('xs')]: {
         display: 'block',
-        position: 'absolute',
+        position: 'fixed',
         top: 0,
         left: 0,
         width: '100%',
         backgroundColor: '#f7f8f5',
-        zIndex: 991,
+        zIndex: 999,
         height: '100%',
       },
     },
@@ -180,7 +180,8 @@ export const YourOrders: React.FC = (props) => {
           if (
             data &&
             data.getMedicineOrdersOMSList &&
-            data.getMedicineOrdersOMSList.medicineOrdersList
+            data.getMedicineOrdersOMSList.medicineOrdersList &&
+            data.getMedicineOrdersOMSList.medicineOrdersList.length > 0
           ) {
             setOrderListData(data.getMedicineOrdersOMSList.medicineOrdersList || []);
             if (!isSmallScreen) {
@@ -244,7 +245,9 @@ export const YourOrders: React.FC = (props) => {
         }`}
       >
         <div className={classes.sectionHeader}>Your Orders</div>
-        {(orderAutoId || billNumber) && orderListData && orderListData.length > 0 ? (
+        {(isSmallScreen || orderAutoId || billNumber) &&
+        orderListData &&
+        orderListData.length > 0 ? (
           orderListData.map((orderInfo) => {
             if (
               orderInfo &&
@@ -281,7 +284,7 @@ export const YourOrders: React.FC = (props) => {
           </div>
         ) : (
           orderListData &&
-          orderListData.length > 0 && (
+          orderListData.length === 0 && (
             <div className={classes.noOrdersWrapper}>
               <div>Uh oh! :)</div>
               <div className={classes.noOrdersText}>No Orders Found!</div>

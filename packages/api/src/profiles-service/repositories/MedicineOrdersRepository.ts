@@ -12,18 +12,36 @@ import {
   MedicineOrderAddress,
   MEDICINE_ORDER_PAYMENT_TYPE,
   MEDICINE_DELIVERY_TYPE,
+  PaginateParams,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addDays, differenceInMinutes, getUnixTime } from 'date-fns';
-import { getCache, setCache } from 'profiles-service/database/connectRedis';
+import { getCache, setCache, hmsetCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger';
 
-interface PaginateParams {
-  take?: number,
-  skip?: number
-}
+export type SaveMedicineInfoInput = {
+  sku: string;
+  name: string;
+  status: string;
+  price: string;
+  special_price: string;
+  special_price_from: string;
+  special_price_to: string;
+  qty: number;
+  description: string;
+  url_key: string;
+  base_image: string;
+  is_prescription_required: string;
+  category_name: string;
+  product_discount_category: string;
+  sell_online: string;
+  molecules: string;
+  mou: number;
+  gallery_images: string;
+  manufacturer: string;
+};
 
 const REDIS_ORDER_AUTO_ID_KEY_PREFIX: string = 'orderAutoId:';
 @EntityRepository(MedicineOrders)
@@ -89,9 +107,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getRefundsAndPaymentsByOrderId(id: MedicineOrders['id']) {
     const paymentType = MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS;
     return MedicineOrderPayments.createQueryBuilder('medicineOrderPayments')
+      .innerJoinAndSelect('medicineOrderPayments.medicineOrders', 'medicineOrders')
       .leftJoinAndSelect('medicineOrderPayments.medicineOrderRefunds', 'medicineOrderRefunds')
       .where('medicineOrderPayments.medicineOrders = :id', { id })
-      .andWhere('medicineOrderPayments.paymentType = :paymentType', { paymentType })
       .getOne();
   }
 
@@ -186,7 +204,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrderDetailsByAp(apOrderNo: string) {
     return this.findOne({
       where: { apOrderNo },
-      relations: ['patient', 'medicineOrderLineItems'],
+      relations: ['patient', 'medicineOrderLineItems', 'medicineOrderPayments'],
     });
   }
 
@@ -258,9 +276,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
-  getMedicineOrdersList(patientIds: String[], paginate: PaginateParams) {
-    // returns [result , total]
-    return this.findAndCount({
+  getMedicineOrdersList(patientIds: String[]) {
+    return this.find({
       where: { patient: In(patientIds) },
       order: { createdDate: 'DESC' },
       relations: [
@@ -273,62 +290,60 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderInvoice',
         'patient',
       ],
-      //extra params...
-      ...paginate
     });
   }
 
-  getMedicineOrdersListWithoutAbortedStatus(patientIds: String[], paginate: PaginateParams): [Promise<MedicineOrders[]>, Promise<number | null>] {
-    // getMedicineOrdersListWithoutAbortedStatus(patientIds: String[], paginate: PaginateParams) {
-    // returns [result , total]
-    // return this.findAndCount({
-    //   where: { patient: In(patientIds), currentStatus: Not(MEDICINE_ORDER_STATUS.PAYMENT_ABORTED) },
-    //   order: { createdDate: 'DESC' },
-    //   relations: [
-    //     'medicineOrderLineItems',
-    //     'medicineOrdersStatus',
-    //     'medicineOrderShipments',
-    //     'medicineOrderShipments.medicineOrderInvoice',
-    //   ],
-    //   //extra params...
-    //   skip: paginate.skip,
-    //   take: paginate.take
-    // })
+  getMedicineOrdersListWithoutAbortedStatus(patientIds: String[]) {
+    return this.find({
+      where: { patient: In(patientIds), currentStatus: Not(MEDICINE_ORDER_STATUS.PAYMENT_ABORTED) },
+      order: { createdDate: 'DESC' },
+      relations: [
+        'medicineOrderLineItems',
+        'medicineOrdersStatus',
+        'medicineOrderShipments',
+        'medicineOrderShipments.medicineOrderInvoice',
+      ],
+    });
+  }
 
-    // used querybuilder bcoz above pagination query doesn't work in dev or qa
-    const [patientId] = patientIds;
+  getMedicineOrdersListWithPayments(
+    patientIds: String[],
+    paginate: PaginateParams
+  ): [Promise<MedicineOrders[]>, Promise<number | null>] {
     // return [data, counts]<promises>;
     return [
       this.createQueryBuilder('medicineOrders')
         .where('medicineOrders.patient IN (:...patientIds)', { patientIds })
-        .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_ABORTED })
-        .leftJoinAndSelect('medicineOrders.medicineOrderLineItems', 'medicineOrderLineItems')
-        .leftJoinAndSelect('medicineOrders.medicineOrdersStatus', 'medicineOrdersStatus')
-        .leftJoinAndSelect('medicineOrders.medicineOrderShipments', 'medicineOrderShipments')
-        .leftJoinAndSelect('medicineOrderShipments.medicineOrderInvoice', 'medicineOrderInvoice')
+        .innerJoinAndSelect('medicineOrders.medicineOrderPayments', 'medicineOrderPayments')
+        .leftJoinAndSelect('medicineOrderPayments.medicineOrderRefunds', 'medicineOrderRefunds')
+        // apply filters....
+        .andWhere('medicineOrders.currentStatus != :currentStatus', {
+          currentStatus: MEDICINE_ORDER_STATUS.QUOTE,
+        })
+        .andWhere('medicineOrders.currentStatus != :currentStatus', {
+          currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_ABORTED,
+        })
+        .andWhere('medicineOrderPayments.paymentType != :paymentType', {
+          paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+        })
         .orderBy('medicineOrders.createdDate', 'DESC')
-        // .leftJoin('medicineOrderShipments.medicineOrderInvoice', 'medicineOrderShipments.medicineOrderInvoice')
         //send undefined to skip & take fns to skip pagination to support optional pagination
         .skip(paginate.skip)
         .take(paginate.take)
-        .getMany()
-      ,
+        .getMany(),
       //do pagiantion if needed...
-      Number.isInteger(paginate.take || paginate.skip) ?
-        this.createQueryBuilder('medicineOrders')
-          .where('medicineOrders.patient IN (:...patientIds)', { patientIds })
-          .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_ABORTED })
-          .getCount()
-        : Promise.resolve(null)
-    ]
-  }
-
-  getMedicineOrdersListWithPayments(patientIds: String[]) {
-    return this.find({
-      where: { patient: In(patientIds) },
-      order: { createdDate: 'DESC' },
-      relations: ['medicineOrderPayments'],
-    });
+      Number.isInteger(paginate.take || paginate.skip)
+        ? this.createQueryBuilder('medicineOrders')
+            .where('medicineOrders.patient IN (:...patientIds)', { patientIds })
+            .innerJoinAndSelect('medicineOrders.medicineOrderPayments', 'medicineOrderPayments')
+            .andWhere('medicineOrders.currentStatus != :currentStatus', { currentStatus: 'QUOTE' })
+            .andWhere('medicineOrders.currentStatus != :currentStatus', {
+              currentStatus: 'PAYMENT_ABORTED',
+            })
+            .andWhere('medicineOrderPayments.paymentType != :paymentType', { paymentType: 'COD' })
+            .getCount()
+        : Promise.resolve(null),
+    ];
   }
 
   getMedicineOrderDetailsByOderId(orderAutoId: number) {
@@ -372,6 +387,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderLineItems',
         'medicineOrderPayments',
         'medicineOrdersStatus',
+        'medicineOrderRefunds',
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrdersStatus',
         'medicineOrderShipments.medicineOrderInvoice',
@@ -381,9 +397,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
-  getPaymentMedicineOrders(paginate: PaginateParams) {
-    // returns [result , total]
-    return this.findAndCount({
+  getPaymentMedicineOrders() {
+    return this.find({
       where: { currentStatus: MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS },
       relations: [
         'medicineOrderLineItems',
@@ -395,8 +410,6 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderInvoice',
         'patient',
       ],
-      //extra params...
-      ...paginate
     });
   }
 
@@ -763,5 +776,44 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
     }
     return medicineOrderDetails;
-  };
+  }
+
+  async saveMedicneInfoRedis(saveMedicineInfoInput: SaveMedicineInfoInput) {
+    const skuKey = 'medicine:sku:' + saveMedicineInfoInput.sku;
+    return await hmsetCache(skuKey, {
+      sku: encodeURIComponent(saveMedicineInfoInput.sku),
+      name: encodeURIComponent(saveMedicineInfoInput.name),
+      status: encodeURIComponent(saveMedicineInfoInput.status),
+      price: encodeURIComponent(saveMedicineInfoInput.price),
+      special_price:
+        saveMedicineInfoInput.special_price != undefined
+          ? encodeURIComponent(saveMedicineInfoInput.special_price)
+          : '',
+      special_price_from:
+        saveMedicineInfoInput.special_price_from != undefined
+          ? encodeURIComponent(saveMedicineInfoInput.special_price_from)
+          : '',
+      special_price_to:
+        saveMedicineInfoInput.special_price_to != undefined
+          ? encodeURIComponent(saveMedicineInfoInput.special_price_to)
+          : '',
+      qty: encodeURIComponent(saveMedicineInfoInput.qty),
+      description: encodeURIComponent(saveMedicineInfoInput.description),
+      url_key: encodeURIComponent(saveMedicineInfoInput.url_key),
+      base_image: encodeURIComponent(saveMedicineInfoInput.base_image),
+      is_prescription_required: encodeURIComponent(saveMedicineInfoInput.is_prescription_required),
+      category_name: encodeURIComponent(saveMedicineInfoInput.category_name),
+      product_discount_category: encodeURIComponent(
+        saveMedicineInfoInput.product_discount_category
+      ),
+      sell_online: encodeURIComponent(saveMedicineInfoInput.sell_online),
+      molecules:
+        saveMedicineInfoInput.molecules != undefined
+          ? encodeURIComponent(saveMedicineInfoInput.molecules)
+          : '',
+      mou: encodeURIComponent(saveMedicineInfoInput.mou),
+      gallery_images: encodeURIComponent(saveMedicineInfoInput.gallery_images),
+      manufacturer: encodeURIComponent(saveMedicineInfoInput.manufacturer),
+    });
+  }
 }
