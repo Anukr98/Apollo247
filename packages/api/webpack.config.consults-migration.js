@@ -10,12 +10,18 @@ console.log(process.env.NODE_ENV);
 Object.values(dotEnvConfig).forEach((val, KEY) => (process.env[KEY] = val));
 const isStaging = process.env.NODE_ENV === 'staging';
 const isProduction = process.env.NODE_ENV === 'production';
+const isLocal = process.env.NODE_ENV === 'local';
+
 const tsLoader = {
   loader: 'ts-loader',
-  options: {
-    transpileOnly: true,
-    configFile: 'migration.tsconfig.json',
-  },
+  options: isLocal
+    ? {
+        transpileOnly: true,
+        configFile: 'migration.tsconfig.json',
+      }
+    : {
+        configFile: 'migration.tsconfig.json',
+      },
 };
 module.exports = {
   entry: glob

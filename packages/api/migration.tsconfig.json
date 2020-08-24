@@ -9,6 +9,6 @@
     "strictPropertyInitialization": false,
     "lib": ["es5", "es6", "dom"]
   },
-  "exclude": ["node_modules", "dist", "data"],
+
   "include": ["src/**/**/migration/*.ts"]
 }
