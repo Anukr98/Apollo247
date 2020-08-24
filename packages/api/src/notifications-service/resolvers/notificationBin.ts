@@ -260,19 +260,11 @@ const archiveMessages: Resolver<null, {}, NotificationsServiceContext, String> =
   args,
   { consultsDb }
 ) => {
-  //Getting all the appointments past 1 day of free chat days
-  // const appointmentDateToBeArchived = subDays(currentIstDate, ApiConstants.FREE_CHAT_DAYS);
-  // const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  // const appointments = await appointmentRepo.getAllCompletedAppointmentsByConsultTime(
-  //   appointmentDateToBeArchived
-  // );
 
   const currentIstDate = addMinutes(new Date(), 330); //Taking IST time
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const caseSheets = await caseSheetRepo.getAllAppointmentsToBeArchived(currentIstDate);
   const appointmentIdsToBeArchived = caseSheets.map((caseSheet) => caseSheet.appointment_id);
-
-  console.log("appointmentIdsToBeArchived > ", appointmentIdsToBeArchived);
 
   if (appointmentIdsToBeArchived.length) {
     //Getting the Notifications which needs to be archived
