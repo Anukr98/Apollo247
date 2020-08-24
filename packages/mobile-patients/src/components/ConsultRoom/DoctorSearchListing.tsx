@@ -539,12 +539,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const feesArray: Range[] = [];
     if (SearchData[4].selectedOptions && SearchData[4].selectedOptions.length > 0)
       SearchData[4].selectedOptions.forEach((element: string) => {
-        const splitArray = element.split(' - ');
+        const splitArray = element.split('-');
         let object: Range | null = {};
         if (splitArray.length > 0)
           object = {
             minimum: Number(splitArray[0].replace('+', '')),
-            maximum: splitArray.length > 1 ? Number(element.split(' - ')[1]) : -1,
+            maximum: splitArray.length > 1 ? Number(element.split('-')[1]) : null,
           };
 
         if (object) {
