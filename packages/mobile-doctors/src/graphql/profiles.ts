@@ -1726,3 +1726,12 @@ export const CALL_DISCONNECT_NOTIFICATION = gql`
     }
   }
 `;
+
+export const GET_DOCTOR_HELPLINE = gql`
+  query getDoctorHelpline {
+    getDoctorHelpline {
+      doctorType
+      mobileNumber
+    }
+  }
+`;
