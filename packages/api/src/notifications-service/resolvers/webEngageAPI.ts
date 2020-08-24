@@ -22,40 +22,6 @@ import {
 import { getConnection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
-export const webEngageTypeDefs = gql`
-  enum WebEngageEvent {
-    DOCTOR_IN_CHAT_WINDOW
-    DOCTOR_LEFT_CHAT_WINDOW
-    DOCTOR_SENT_MESSAGE
-  }
-  enum ConsultMode {
-    ONLINE
-    PHYSICAL
-    BOTH
-  }
-
-  input DoctorConsultEventInput {
-    mobileNumber: String!
-    eventName: WebEngageEvent!
-    consultID: ID!
-    displayId: String!
-    consultMode: ConsultMode!
-    doctorFullName: String!
-  }
-
-  type WebEngageResponseData {
-    status: String!
-  }
-
-  type WebEngageResponse {
-    response: WebEngageResponseData!
-  }
-
-  extend type Mutation {
-    postDoctorConsultEvent(doctorConsultEventInput: DoctorConsultEventInput): WebEngageResponse
-  }
-`;
-
 type DoctorConsultEventInput = {
   mobileNumber: string;
   eventName: WebEngageEvent;
