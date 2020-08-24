@@ -715,7 +715,6 @@ export const ChatRoom: React.FC = () => {
                 <OnlineConsult
                   setIsPopoverOpen={setIsModalOpen}
                   doctorDetails={data.getDoctorDetailsById}
-                  onBookConsult={(popover: boolean) => setIsModalOpen(popover)}
                   isRescheduleConsult={rescheduleCount < 3}
                   appointmentId={params.appointmentId}
                   rescheduleAPI={rescheduleAPI}

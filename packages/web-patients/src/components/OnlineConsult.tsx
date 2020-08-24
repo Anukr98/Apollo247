@@ -198,7 +198,6 @@ const getYyMmDd = (ddmmyyyy: string) => {
 interface OnlineConsultProps {
   setIsPopoverOpen: (openPopup: boolean) => void;
   doctorDetails: DoctorDetails;
-  onBookConsult: (popover: boolean) => void;
   tabValue?: (tabValue: number) => void;
   setIsShownOnce?: (shownOnce: boolean) => void;
   isShownOnce?: boolean;
