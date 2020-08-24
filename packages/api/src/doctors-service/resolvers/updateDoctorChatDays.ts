@@ -35,11 +35,11 @@ const updateDoctorChatDays: Resolver<
     const doctordata = await doctorRepository.findDoctorByIdWithoutRelations(args.doctorId);
     if (!doctordata) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
 
-    let chatDays = parseInt(args.chatDays, 10);
+    const chatDays = parseInt(args.chatDays, 10);
     if(chatDays > ApiConstants.CHAT_DAYS_LIMIT){
-      chatDays = ApiConstants.CHAT_DAYS_LIMIT;
-    } else if( chatDays < ApiConstants.CHAT_DAYS_LOWER_LIMIT){
-      chatDays = ApiConstants.CHAT_DAYS_LOWER_LIMIT;
+      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
+    } else if( chatDays < 0){
+      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
     }
 
     await doctorRepository.updateDoctorChatDays(args.doctorId, chatDays);

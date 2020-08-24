@@ -674,7 +674,7 @@ const getCaseSheet: Resolver<
 
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  let doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (
     doctorData == null &&
     mobileNumber != patientDetails.mobileNumber &&
@@ -689,18 +689,6 @@ const getCaseSheet: Resolver<
   //check whether there is a senior doctor case-sheet
   const caseSheetDetails = await caseSheetRepo.getSeniorDoctorLatestCaseSheet(appointmentData.id);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
-
-  if(!doctorData){
-    doctorData = await doctorRepository.findById(appointmentData.doctorId);
-  }
-
-  if(!doctorData){
-    throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR);
-  }
-  
-  if(!caseSheetDetails.followUpAfterInDays || caseSheetDetails.followUpAfterInDays < doctorData.chatDays){
-      caseSheetDetails.followUpAfterInDays = doctorData.chatDays;
-  }
 
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);
   if (juniorDoctorCaseSheet == null)
@@ -872,21 +860,28 @@ const modifyCaseSheet: Resolver<
   }
 
   if (!(inputArguments.followUpAfterInDays === undefined)) {
-    getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
+    getCaseSheetData.followUpDate = inputArguments.followUpDate;
+  }
+
+  if (!(inputArguments.followUpConsultType === undefined)) {
+    getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
+  }
+
+  if (!(inputArguments.followUpAfterInDays === undefined)) {
     
-    if(inputArguments.followUpAfterInDays > ApiConstants.CHAT_DAYS_LIMIT){
-      getCaseSheetData.followUpAfterInDays = ApiConstants.CHAT_DAYS_LIMIT;
+    if(inputArguments.followUpAfterInDays > ApiConstants.CHAT_DAYS_LIMIT) {
+      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
+    } else if(inputArguments.followUpAfterInDays < 0){
+      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
     }
 
+    getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
+    
     getCaseSheetData.followUp = true;
 
     if(getCaseSheetData.appointment.sdConsultationDate){
       getCaseSheetData.followUpDate = addDays(getCaseSheetData.appointment.sdConsultationDate, getCaseSheetData.followUpAfterInDays);
     }
-  }
-
-  if (!(inputArguments.followUpConsultType === undefined)) {
-    getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
   }
 
   if (!(inputArguments.status === undefined)) {

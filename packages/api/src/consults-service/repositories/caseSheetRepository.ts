@@ -167,18 +167,15 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
   }
 
   getAllAppointmentsToBeArchived(currentDate: Date) {
-    const newStartDate = new Date(format(addDays(currentDate, -1), 'yyyy-MM-dd') + 'T18:30');
-    const newEndDate = new Date(format(currentDate, 'yyyy-MM-dd') + 'T18:29');
-
+    const startDate = new Date(format(addDays(currentDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const endDate = new Date(format(currentDate, 'yyyy-MM-dd') + 'T18:29');
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
-      .where('(case_sheet.followUpDate Between :fromDate AND :toDate)', {
-        fromDate: newStartDate,
-        toDate: newEndDate,
-      })
-      .andWhere('appointment.status in(:status)', {
-        status: STATUS.COMPLETED
-      })
-      .getMany();
+      .where(` appointment.sdConsultationDate + (case_sheet.followUpAfterInDays * ${ "'1 day'::INTERVAL"}) >= :startDate `, { startDate })
+      .andWhere(` appointment.sdConsultationDate + (case_sheet.followUpAfterInDays * ${ "'1 day'::INTERVAL"}) < :endDate `, { endDate })
+      .andWhere(` appointment.status = :status`, { status: STATUS.COMPLETED })
+      .select("appointment.id")
+      .groupBy('appointment.id')
+      .getRawMany();
   }
 }

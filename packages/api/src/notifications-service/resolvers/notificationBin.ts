@@ -154,7 +154,7 @@ const insertMessage: Resolver<
     const difference = differenceInDays(new Date(today), new Date(consultDate));
 
     const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);  
-    const caseSheetDetails = await caseSheetRepo.getSeniorDoctorLatestCaseSheet(appointmentData.id);
+    const caseSheetDetails = await caseSheetRepo.getSDLatestCompletedCaseSheet(appointmentData.id);
     if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
     if (difference > parseInt(caseSheetDetails.followUpAfterInDays.toString(), 10))
@@ -258,7 +258,7 @@ const sendUnreadMessagesNotification: Resolver<
     //Filtering the last date appointments
     const lastDayAppointments = appointmentsData.filter(async (appointment) => {
       const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);  
-      const caseSheetDetails = await caseSheetRepo.getSeniorDoctorLatestCaseSheet(appointment.id);
+      const caseSheetDetails = await caseSheetRepo.getSDLatestCompletedCaseSheet(appointment.id);
       if (!caseSheetDetails) return false;
   
       if (!appointment.sdConsultationDate) return false;
@@ -341,8 +341,10 @@ const archiveMessages: Resolver<null, {}, NotificationsServiceContext, String> =
 
   const currentIstDate = addMinutes(new Date(), 330); //Taking IST time
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const caseSheets = await caseSheetRepo.getAllAppointmentsToBeArchived(currentIstDate)
-  const appointmentIdsToBeArchived = caseSheets.map((caseSheet) => caseSheet.appointment.id);
+  const caseSheets = await caseSheetRepo.getAllAppointmentsToBeArchived(currentIstDate);
+  const appointmentIdsToBeArchived = caseSheets.map((caseSheet) => caseSheet.appointment_id);
+
+  console.log("appointmentIdsToBeArchived > ", appointmentIdsToBeArchived);
 
   if (appointmentIdsToBeArchived.length) {
     //Getting the Notifications which needs to be archived
