@@ -1,5 +1,14 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import {
+  Theme,
+  Typography,
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+  Divider,
+  Box,
+} from '@material-ui/core';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import React from 'react';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -48,9 +57,29 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const MyAccountSettings: React.FC = () => {
   const classes = useStyles({});
+  const items = [
+    {
+      key: 'followUp',
+      value: <div>{'Set your patient follow Up days'}</div>,
+      //state: symptomsState,
+      component: <div></div>,
+    },
+  ];
   return (
-    <div className={classes.ProfileContainer}>
-      <div className={classes.helpTxt}>Will be available soon...</div>
+    <div>
+      {items.map((item) => (
+        <ExpansionPanel
+          key={item.key}
+          // expanded={item.state}
+          //onChange={handlePanelExpansion(item.key)}
+          //className={`${classes.expandIcon}`}
+        >
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h3">{item.value}</Typography>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>{item.component}</ExpansionPanelDetails>
+        </ExpansionPanel>
+      ))}
     </div>
   );
 };
