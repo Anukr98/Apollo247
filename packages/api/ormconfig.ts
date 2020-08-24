@@ -2,8 +2,8 @@ module.exports = [
   {
     name: 'consults-db',
     type: 'postgres',
-    host: process.env.CONSULTS_DB_HOST || 'localhost',
-    port: process.env.CONSULTS_DB_PORT || 5437,
+    host: process.env.CONSULTS_DB_HOST,
+    port: process.env.CONSULTS_DB_PORT,
     username: 'postgres',
     password: 'postgres',
     database: 'consults_local',
