@@ -1,5 +1,4 @@
 import {
-  aphConsole,
   formatAddress,
   g,
   isValidTestSlot,
@@ -21,7 +20,7 @@ import {
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CalendarShow, TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CalendarShow } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -73,7 +72,7 @@ import {
   View,
   Keyboard,
 } from 'react-native';
-import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import Geolocation from '@react-native-community/geolocation';
 import {
   searchDiagnosticsById_searchDiagnosticsById_diagnostics,
@@ -296,8 +295,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                     obj.data.results.length > 0 &&
                     obj.data.results[0].address_components.length > 0
                   ) {
-                    const address = obj.data.results[0].address_components[0].short_name;
-                    console.log(address, 'address obj');
                     const addrComponents = obj.data.results[0].address_components || [];
                     const _pincode = (
                       addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) ||
@@ -311,15 +308,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               })
               .catch((error) => {
                 CommonBugFender('TestsCart_getPlaceInfoByLatLng', error);
-                console.log(error, 'geocode error');
               });
           },
           (error) => {
-            console.log(error.code, error.message, 'getCurrentPosition error');
           },
           { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
         );
-        console.log('pincode');
       } else {
         filterClinics(locationDetails.pincode || '');
       }
@@ -427,7 +421,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          console.log('searchDiagnostics\n', { data });
           const product = g(data, 'searchDiagnosticsById', 'diagnostics', '0' as any);
           if (product) {
             func && func(product);
@@ -437,7 +430,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('TestsCart_fetchPackageDetails', e);
-          console.log({ e });
           errorAlert();
         })
         .finally(() => {
@@ -550,9 +542,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         .then(({ data }) => {
           const diagnosticSlots =
             (g(data, 'getDiagnosticItDoseSlots', 'slotInfo') as TestSlot[]) || [];
-          console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
           const slotsArray = diagnosticSlots.filter((slot) => isValidTestSlot(slot, date));
-          console.log('ARRAY OF SLOTS', { slotsArray });
           setSlots(slotsArray);
           setselectedTimeSlot(slotsArray[0]);
           setDeliveryAddressId!(selectedAddress.id);
@@ -561,7 +551,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('TestsCart_checkServicability', e);
-          console.log('Error occured', { e });
           setDiagnosticSlot && setDiagnosticSlot(null);
           setselectedTimeSlot(undefined);
           const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
@@ -707,7 +696,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     searchClinicApi()
       .then((data) => {
         setStorePickUpLoading(false);
-        aphConsole.log('clinic response', data.data.data, data);
         setClinics && setClinics(data.data.data || []);
         setTimeout(() => {
           setTestCentresLoaded(true);
@@ -723,7 +711,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const filterClinics = (key: string, isId?: boolean, hideLoader?: boolean) => {
     if (isId) {
       const data = clinics.filter((item) => item.CentreCode === key);
-      aphConsole.log('iid filer=', data);
       filterClinics(pinCode, false, true);
       setClinicDetails(data);
     } else {
@@ -739,7 +726,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   (item: any) => item.types.indexOf('locality') > -1
                 ) || {}
               ).long_name;
-              aphConsole.log('cityName', city);
               let filterArray;
               city &&
                 (filterArray = clinics.filter((item) =>
@@ -1023,7 +1009,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const prescriptions = physicalPrescriptions;
     setLoading!(true);
     const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
-    console.log('unUploadedPres', unUploadedPres);
     if (unUploadedPres.length > 0) {
       multiplePhysicalPrescriptionUpload(unUploadedPres)
         .then((data) => {
@@ -1044,14 +1029,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 prismPrescriptionFileId: uploadUrls![index]!.fileId,
               } as PhysicalPrescription)
           );
-          console.log('precp:di', newuploadedPrescriptions);
 
           setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
           setisPhysicalUploadComplete(true);
         })
         .catch((e) => {
           CommonBugFender('TestsCart_physicalPrescriptionUpload', e);
-          aphConsole.log({ e });
           setLoading!(false);
           showAphAlert!({
             title: 'Uh oh.. :(',
@@ -1227,7 +1210,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           zipCode={parseInt(zipCode, 10)}
           slotInfo={selectedTimeSlot}
           onSchedule={(date: Date, slotInfo: TestSlot) => {
-            console.log({ slotInfo });
 
             setDate(date);
             setselectedTimeSlot(slotInfo);
