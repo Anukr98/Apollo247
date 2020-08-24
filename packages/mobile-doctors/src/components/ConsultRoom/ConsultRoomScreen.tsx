@@ -1377,7 +1377,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const sendCallNotificationAPI = (callType: APPT_CALL_TYPE, isCall: boolean, count: number) => {
-    console.log("isCall",isCall)
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
         query: SEND_CALL_NOTIFICATION,
