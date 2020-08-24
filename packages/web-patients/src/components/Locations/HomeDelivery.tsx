@@ -418,6 +418,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         }
       )
       .then(async ({ data }: any) => {
+        sessionStorage.removeItem('tatFail');
         if (data && data.tat && data.tat[0]) {
           setDeliveryTime(data.tat[0].deliverydate);
           props.checkForPriceUpdate(data.tat[0].siteId);
@@ -425,6 +426,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         }
       })
       .catch((e) => {
+        sessionStorage.setItem('tatFail', 'true');
         console.log(e);
         setDefaultDeliveryTime();
       });
@@ -519,6 +521,11 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         } catch (error) {
           console.log(error);
           setDefaultDeliveryTime();
+          fetchUserDisplayDeliveryTime({
+            postalcode: zipCode || '',
+            ordertype: medicineCartType,
+            lookup: lookUp,
+          });
         }
       })
       .catch((error: any) => {

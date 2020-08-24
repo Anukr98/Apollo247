@@ -751,6 +751,7 @@ export const MedicineCart: React.FC = (props) => {
     const productSKUs = cartItems.map((item: MedicineCartItem) => {
       return { ItemId: item.sku };
     });
+    if (sessionStorage.getItem('tatFail') === 'true' || shopId === '') return Promise.resolve(true);
     return await axios
       .post(
         apiDetails.getInventoryUrl || '',
@@ -855,7 +856,9 @@ export const MedicineCart: React.FC = (props) => {
   const productDiscount = mrpTotal - cartTotal;
   // below variable is for calculating delivery charges after applying coupon discount
   const modifiedAmountForCharges =
-    validateCouponResult && validateCouponResult.discount
+    validateCouponResult &&
+    validateCouponResult.discount &&
+    validateCouponResult.discount >= productDiscount
       ? Number(cartTotal) - Number(validateCouponResult.discount)
       : Number(cartTotal);
   const deliveryCharges =
@@ -866,8 +869,11 @@ export const MedicineCart: React.FC = (props) => {
       : Number(pharmacyDeliveryCharges);
   const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
   const totalWithCouponDiscount =
-    validateCouponResult && validateCouponResult.discount
-      ? Number(totalAmount) - Number(validateCouponResult.discount)
+    validateCouponResult &&
+    validateCouponResult.discount &&
+    Number(validateCouponResult.discount.toFixed(2)) > Number(productDiscount.toFixed(2))
+      ? Number(totalAmount) -
+        (Number(validateCouponResult.discount.toFixed(2)) - Number(productDiscount.toFixed(2)))
       : Number(totalAmount);
 
   const disableSubmit =
@@ -943,15 +949,16 @@ export const MedicineCart: React.FC = (props) => {
         .then((resp: any) => {
           if (resp.errorCode == 0) {
             if (resp.response.valid) {
+              if (Number(resp.response.discount.toFixed(2)) <= Number(productDiscount.toFixed(2))) {
+                setErrorMessage(
+                  'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
+                );
+                localStorage.removeItem('pharmaCoupon');
+                setCouponCode && setCouponCode('');
+                return;
+              }
               setValidateCouponResult(resp.response);
               setErrorMessage('');
-            } else {
-              setValidateCouponResult(null);
-              setErrorMessage(
-                'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
-              );
-              localStorage.removeItem('pharmaCoupon');
-              setCouponCode && setCouponCode('');
             }
           } else if (resp && resp.errorMsg && resp.errorMsg.length > 0) {
             setValidateCouponResult(null);
@@ -988,7 +995,9 @@ export const MedicineCart: React.FC = (props) => {
           bookingSource: BOOKINGSOURCE.WEB,
           estimatedAmount: totalWithCouponDiscount ? Number(totalWithCouponDiscount.toFixed(2)) : 0,
           couponDiscount:
-            validateCouponResult && validateCouponResult.discount
+            validateCouponResult &&
+            validateCouponResult.discount &&
+            validateCouponResult.discount >= productDiscount
               ? Number(validateCouponResult.discount.toFixed(2))
               : 0,
           productDiscount: productDiscount ? Number(productDiscount.toFixed(2)) : 0,
@@ -1258,8 +1267,11 @@ export const MedicineCart: React.FC = (props) => {
           itemCount: cartItems ? cartItems.length : 0,
           couponCode: couponCode ? couponCode : null,
           couponValue:
-            validateCouponResult && validateCouponResult.discount
-              ? validateCouponResult.discount.toFixed(2)
+            validateCouponResult &&
+            validateCouponResult.discount &&
+            Number(validateCouponResult.discount.toFixed(2)) > Number(productDiscount.toFixed(2))
+              ? Number(validateCouponResult.discount.toFixed(2)) -
+                Number(productDiscount.toFixed(2))
               : 0,
           finalBookingValue: totalWithCouponDiscount,
           ecommObj: {
@@ -1550,7 +1562,8 @@ export const MedicineCart: React.FC = (props) => {
                             value:
                               validateCouponResult &&
                               validateCouponResult.discount &&
-                              validateCouponResult.discount
+                              validateCouponResult.discount &&
+                              validateCouponResult.discount >= productDiscount
                                 ? Number(validateCouponResult.discount.toFixed(2))
                                 : null,
                           });
@@ -1576,9 +1589,12 @@ export const MedicineCart: React.FC = (props) => {
                           ) : (
                             <>
                               <div className={classes.appliedCoupon}>
-                                <span className={classes.linkText}>
-                                  <span>{couponCode}</span> applied
-                                </span>
+                                {Number(validateCouponResult.discount.toFixed(2)) >
+                                  Number(productDiscount.toFixed(2)) && (
+                                  <span className={classes.linkText}>
+                                    <span>{couponCode}</span> applied
+                                  </span>
+                                )}
                                 <span className={classes.rightArrow}>
                                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                                 </span>
@@ -1593,10 +1609,13 @@ export const MedicineCart: React.FC = (props) => {
                       {couponCode.length > 0 &&
                         validateCouponResult &&
                         validateCouponResult.discount &&
-                        validateCouponResult.discount > 0 && (
+                        validateCouponResult.discount > 0 &&
+                        Number(validateCouponResult.discount.toFixed(2)) >
+                          Number(productDiscount.toFixed(2)) && (
                           <div className={classes.discountTotal}>
                             {`Savings of Rs.
-                          ${validateCouponResult.discount.toFixed(2)}
+                          ${Number(validateCouponResult.discount.toFixed(2)) -
+                            Number(productDiscount.toFixed(2))}
                            on the bill`}
                           </div>
                         )}
@@ -1646,12 +1665,17 @@ export const MedicineCart: React.FC = (props) => {
                               <span>Total</span>
                               <span className={classes.priceCol}>Rs. {totalAmount}</span>
                             </div>
-                            <div className={classes.priceRow}>
-                              <span>Discount({couponCode})</span>
-                              <span className={classes.priceCol}>
-                                -Rs. {validateCouponResult.discount.toFixed(2)}
-                              </span>
-                            </div>{' '}
+                            {Number(validateCouponResult.discount.toFixed(2)) >
+                              Number(productDiscount.toFixed(2)) && (
+                              <div className={classes.priceRow}>
+                                <span>Discount({couponCode})</span>
+                                <span className={classes.priceCol}>
+                                  -Rs.{' '}
+                                  {Number(validateCouponResult.discount.toFixed(2)) -
+                                    Number(productDiscount.toFixed(2))}
+                                </span>
+                              </div>
+                            )}
                           </>
                         )}
                         <div
@@ -1697,10 +1721,19 @@ export const MedicineCart: React.FC = (props) => {
                                 JSON.stringify({
                                   couponCode: couponCode == '' ? null : couponCode,
                                   couponValue:
-                                    validateCouponResult && validateCouponResult.discount
-                                      ? Number(validateCouponResult.discount).toFixed(2)
+                                    validateCouponResult &&
+                                    validateCouponResult.discount &&
+                                    Number(validateCouponResult.discount.toFixed(2)) >
+                                      Number(productDiscount.toFixed(2))
+                                      ? Number(validateCouponResult.discount.toFixed(2)) -
+                                        Number(productDiscount.toFixed(2))
                                       : 0,
-                                  totalWithCouponDiscount: totalWithCouponDiscount,
+                                  totalWithCouponDiscount:
+                                    validateCouponResult && validateCouponResult.discount
+                                      ? Number(totalAmount) -
+                                        (Number(validateCouponResult.discount.toFixed(2)) -
+                                          Number(productDiscount.toFixed(2)))
+                                      : Number(totalAmount) - Number(productDiscount.toFixed(2)),
                                   deliveryTime: deliveryTime,
                                   validateCouponResult: validateCouponResult,
                                   shopId: shopId,
@@ -1811,10 +1844,17 @@ export const MedicineCart: React.FC = (props) => {
                             JSON.stringify({
                               couponCode: couponCode == '' ? null : couponCode,
                               couponValue:
-                                validateCouponResult && validateCouponResult.discount
-                                  ? Number(validateCouponResult.discount).toFixed(2)
+                                validateCouponResult &&
+                                validateCouponResult.discount &&
+                                Number(validateCouponResult.discount.toFixed(2)) >=
+                                  Number(productDiscount.toFixed(2))
+                                  ? Number(validateCouponResult.discount.toFixed(2)) -
+                                    Number(productDiscount.toFixed(2))
                                   : 0,
-                              totalWithCouponDiscount: totalWithCouponDiscount,
+                              totalWithCouponDiscount:
+                                Number(totalAmount) -
+                                (Number(validateCouponResult.discount.toFixed(2)) -
+                                  Number(productDiscount.toFixed(2))),
                               deliveryTime: deliveryTime,
                               validateCouponResult: validateCouponResult,
                               shopId: shopId,
