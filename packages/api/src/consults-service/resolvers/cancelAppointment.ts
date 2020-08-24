@@ -263,14 +263,12 @@ const cancelAppointment: Resolver<
   if (cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT) {
     const adminRepo = doctorsDb.getCustomRepository(AdminDoctorMap);
     const adminDetails = await adminRepo.findByadminId(appointment.doctorId);
-    console.log(adminDetails, 'adminDetails');
     if (adminDetails == null) throw new AphError(AphErrorMessages.GET_ADMIN_USER_ERROR);
 
     const listOfEmails: string[] = [];
 
     adminDetails.length > 0 &&
       adminDetails.map((value) => listOfEmails.push(value.adminuser.email));
-    console.log('listOfEmails', listOfEmails);
     listOfEmails.forEach(async (adminemail) => {
       const adminEmailContent: EmailMessage = {
         //ccEmail: ccTriggerEmailIds.toString(),
