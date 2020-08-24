@@ -93,6 +93,8 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     pincode: String
     doctorType: [String]
     sort: String
+    pageNo: Int
+    pageSize: Int
   }
   extend type Query {
     getDoctorsBySpecialtyAndFilters(filterInput: FilterDoctorInput): FilterDoctorsResult
@@ -164,6 +166,8 @@ export type FilterDoctorInput = {
   pincode: string;
   doctorType: String[];
   sort: string;
+  pageNo: number;
+  pageSize: number;
 };
 
 export type ConsultModeAvailability = {
@@ -230,6 +234,10 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   const facilityLatLongs: number[][] = [];
   args.filterInput.sort = args.filterInput.sort || 'availablity';
   const minsForSort = args.filterInput.sort == 'distance' ? 2881 : 241;
+  const pageNo = args.filterInput.pageNo ? args.filterInput.pageNo : 1;
+  const pageSize = args.filterInput.pageSize ? args.filterInput.pageSize : 1000;
+  const offset = (pageNo - 1) * pageSize;
+
   elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
 
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
@@ -294,7 +302,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   const searchParams: RequestParams.Search = {
     index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
-      size: 1000,
+      from: offset,
+      size: pageSize,
       query: {
         bool: {
           must: elasticMatch,
