@@ -30,6 +30,8 @@ import {
   trackWebEngageEventForAppointmentComplete,
 } from 'notifications-service/resolvers/webEngageAPI';
 
+import { AppointmentCallFeedback } from './appointmentCallFeedbackEntity';
+
 export enum APPOINTMENT_UPDATED_BY {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
@@ -674,6 +676,9 @@ export class AppointmentCallDetails extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
+
+  @OneToOne(() => AppointmentCallFeedback, (appointmentCallFeedbackk) => appointmentCallFeedbackk.appointmentCallDetails)
+  appointmentCallFeedback: AppointmentCallFeedback[];
 
   @BeforeInsert()
   updateDateCreation() {

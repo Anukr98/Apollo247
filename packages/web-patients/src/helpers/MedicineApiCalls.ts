@@ -55,6 +55,7 @@ export interface PharmaOverview {
 }
 
 export interface MedicineProductDetails extends MedicineProduct {
+  similar_products: MedicineProduct[];
   PharmaOverview: PharmaOverview[];
 }
 

@@ -15,6 +15,7 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
+import { GetDiagnosticItDoseSlots_getDiagnosticItDoseSlots_slotInfo } from '@aph/mobile-patients/src/graphql/types/GetDiagnosticItDoseSlots';
 
 export interface DiagnosticsCartItem {
   id: string;
@@ -30,12 +31,8 @@ export interface DiagnosticClinic extends Clinic {
   date: number; // timestamp
 }
 
-export interface DiagnosticSlot {
-  employeeSlotId: number;
-  diagnosticBranchCode: string;
-  diagnosticEmployeeCode: string;
-  slotStartTime: string;
-  slotEndTime: string;
+export interface DiagnosticSlot
+  extends Omit<GetDiagnosticItDoseSlots_getDiagnosticItDoseSlots_slotInfo, '__typename'> {
   city: string;
   date: number; // timestamp
 }

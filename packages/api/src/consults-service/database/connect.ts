@@ -97,10 +97,12 @@ import {
   MedicineOrderCancelReason,
   PharmacologistConsult,
   PatientEntitiySubscriber,
-  MedicineOrderAddress
+  MedicineOrderAddress,
 } from 'profiles-service/entities';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
 import { migrationDir } from 'ApiConstants';
+import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity';
+
 export const connect = async () => {
   return await createConnections([
     {
@@ -131,6 +133,7 @@ export const connect = async () => {
         TransferAppointmentDetails,
         UtilizationCapacity,
         AppointmentUpdateHistory,
+        AppointmentCallFeedback,
       ],
       type: 'postgres',
       migrationsRun: true,
@@ -251,5 +254,5 @@ export const connect = async () => {
     },
   ]).catch((error) => {
     throw new Error(error);
-  })
+  });
 };

@@ -100,6 +100,7 @@ import {
 } from 'consults-service/entities';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
 import { migrationDir } from 'ApiConstants';
+import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity';
 
 export const connect = async () => {
   return await createConnections([
@@ -232,6 +233,7 @@ export const connect = async () => {
         AppointmentUpdateHistory,
         ExotelDetails,
         ConsultQueueItem,
+        AppointmentCallFeedback,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,

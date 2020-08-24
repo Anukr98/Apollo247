@@ -126,9 +126,14 @@ import { winstonLogger } from 'customWinstonLogger';
 
 import { exotelCallingResolvers, exotelTypeDefs } from 'consults-service/resolvers/exotelCalling';
 
+import {
+  appointmentCallFeedbackTypeDefs,
+  appointmentCallFeedbackResolvers,
+} from 'consults-service/resolvers/appointmentCallFeedbackResolver';
+
 (async () => {
   connect()
-    .then(res => {
+    .then((res) => {
       const consultsLogger = winstonLogger.loggers.get('consultServiceLogger');
 
       const server = new ApolloServer({
@@ -149,10 +154,10 @@ import { exotelCallingResolvers, exotelTypeDefs } from 'consults-service/resolve
         schema: buildFederatedSchema([
           {
             typeDefs: gql`
-            scalar Date
-            scalar Time
-            scalar DateTime
-          `,
+              scalar Date
+              scalar Time
+              scalar DateTime
+            `,
             resolvers: {
               Date: GraphQLDate,
               Time: GraphQLTime,
@@ -279,6 +284,10 @@ import { exotelCallingResolvers, exotelTypeDefs } from 'consults-service/resolve
             typeDefs: consultOrdersTypeDefs,
             resolvers: consultOrdersResolvers,
           },
+          {
+            typeDefs: appointmentCallFeedbackTypeDefs,
+            resolvers: appointmentCallFeedbackResolvers,
+          },
         ]),
         plugins: [
           /* This plugin is defined in-line. */
@@ -333,9 +342,7 @@ import { exotelCallingResolvers, exotelTypeDefs } from 'consults-service/resolve
         console.log(`🚀 consults-service ready`);
       });
     })
-    .catch(error => {
-      console.log('Connection failed', error)
-    })
-
-
+    .catch((error) => {
+      console.log('Connection failed', error);
+    });
 })();

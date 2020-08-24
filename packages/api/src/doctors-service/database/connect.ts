@@ -23,7 +23,7 @@ import {
   NotificationBin,
   NotificationBinArchive,
   AppointmentUpdateHistory,
-  ExotelDetails,
+  ExotelDetails
 } from 'consults-service/entities/';
 import {
   AdminDoctorMapper,
@@ -101,6 +101,7 @@ import { createConnections } from 'typeorm';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
 import { migrationDir } from 'ApiConstants';
 import { AdminFilterMapper } from 'doctors-service/entities/AdminFilterMapper';
+import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity'
 
 export const connect = async () => {
   return await createConnections([
@@ -175,6 +176,7 @@ export const connect = async () => {
         UtilizationCapacity,
         AppointmentUpdateHistory,
         ExotelDetails,
+        AppointmentCallFeedback
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
