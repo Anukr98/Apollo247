@@ -485,7 +485,7 @@ const generateTransactions = async (
       healthCreditsRedeemed
     );
     netAmount = transactionLineItems.reduce((acc, curValue) => {
-      return acc + curValue.NetAmount;
+      return +new Decimal(acc).plus(curValue.NetAmount);
     }, 0);
     const billDetails: BillDetails = JSON.parse(val.billDetails);
     const transaction: OneApollTransaction = {
