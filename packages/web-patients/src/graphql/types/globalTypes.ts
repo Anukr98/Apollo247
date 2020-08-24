@@ -483,6 +483,15 @@ export interface BookAppointmentInput {
   discountedAmount?: number | null;
 }
 
+export interface BookFollowUpAppointmentInput {
+  patientId: string;
+  doctorId: string;
+  appointmentDateTime: any;
+  appointmentType: APPOINTMENT_TYPE;
+  hospitalId?: string | null;
+  followUpParentId: string;
+}
+
 export interface BookRescheduleAppointmentInput {
   appointmentId: string;
   doctorId: string;
