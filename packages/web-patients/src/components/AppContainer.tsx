@@ -66,6 +66,11 @@ import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 import { MedicineSearch } from './Medicine/MedicineSearch';
 import { CovidDiabetesLanding } from 'components/Covid/CovidDiabetesLanding';
 import { DoctorsLanding } from 'components/DoctorsLanding';
+import { HdfcLanding } from 'components/Partners/Hdfc/HdfcLanding';
+import { HdfcMemberShip } from 'components/Partners/Hdfc/HdfcMembership';
+import { MyMembership } from 'components/Partners/Hdfc/MyMembership';
+import { MembershipPlanLocked } from 'components/Partners/Hdfc/MembershipPlanLocked';
+import { MembershipPlanDetail } from 'components/Partners/Hdfc/MembershipPlanDetail';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -226,6 +231,19 @@ const App: React.FC = () => {
             component={MedicinePrescriptions}
           />
           <Route exact path={clientRoutes.covidDiabetes()} component={CovidDiabetesLanding} />
+          <Route exact path={clientRoutes.partnersHdfc()} component={HdfcLanding} />
+          <Route exact path={clientRoutes.membershipHdfc()} component={HdfcMemberShip} />
+          <Route exact path={clientRoutes.myMembership()} component={MyMembership} />
+          <Route
+            exact
+            path={clientRoutes.membershipPlanLocked()}
+            component={MembershipPlanLocked}
+          />
+          <Route
+            exact
+            path={clientRoutes.membershipPlanDetail()}
+            component={MembershipPlanDetail}
+          />
         </Switch>
       </div>
     </Scrollbars>
