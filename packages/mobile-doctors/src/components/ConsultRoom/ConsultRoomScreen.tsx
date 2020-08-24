@@ -2214,10 +2214,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 />
               </View>
             </ScrollView>
-              <RateCall
-                  visible={giveRating}
-                  submitRatingCallback={(data) => submitRatingHandler(data)}
-                />
           </View>
         ) : null}
       </>
@@ -2230,7 +2226,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     audioFeedbacks: {}[];
     videoFeedbacks: {}[];
   }) => {
-    setLoading!(true);
+    setShowLoading!(true);
+    setGiveRating(false);
     const query = {
       appointmentCallDetailsId: `${callId}`,
       ratingValue: data.rating,
@@ -2240,6 +2237,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         "video": data.videoFeedbacks
       })
     }
+
     client
       .mutate<saveAppointmentCallFeedback, saveAppointmentCallFeedbackVariables>({
         mutation: SAVE_APPOINTMENT_CALL_FEEDBACK,
@@ -2248,9 +2246,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         },
       })
       .then((_data: any) => {
-        setLoading!(false);
-        setGiveRating(false);
-
+        setShowLoading!(false);
         showAphAlert &&
           showAphAlert({
             title: string.common.alert,
@@ -2259,8 +2255,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
       })
       .catch((e: any) => {
-        setGiveRating(false);
-        setLoading!(false);
+        setShowLoading!(false);
         showAphAlert &&
           showAphAlert({
             title: string.common.alert,
@@ -3021,6 +3016,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     }
   }, [patientImageshow, url]);
 
+  const showRateCallModal = () => {
+    return (
+      <RateCall
+          visible={giveRating}
+          submitRatingCallback={(data) => submitRatingHandler(data)}
+        />
+    )
+  }
+
   return (
     <View
       style={{
@@ -3033,6 +3037,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           flex: 1,
         }}
       >
+        {showRateCallModal()}
         {showHeaderView()}
         {overlayDisplay}
         {showExoPopup && exoTelPopup()}
