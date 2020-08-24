@@ -203,7 +203,7 @@ const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
 const OUT_OF_STOCK_MESSAGE = 'Sorry, this item is out of stock in your area';
-const TAT_API_TIMEOUT_IN_MILLI_SEC = 10000; // in milli sec
+const TAT_API_TIMEOUT_IN_MILLI_SEC = 20000; // in milli sec
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
