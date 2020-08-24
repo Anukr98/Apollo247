@@ -562,18 +562,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     )}
 
                     <View style={styles.imageView}>
-                      {item.doctorInfo &&
-                      item.doctorInfo.thumbnailUrl &&
-                      item.doctorInfo.thumbnailUrl.match(
-                        /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
-                      ) ? (
+                      {!!g(item, 'doctorInfo', 'thumbnailUrl') ? (
                         <Image
                           style={{
                             width: 60,
                             height: 60,
                             borderRadius: 30,
+                            resizeMode: 'contain',
                           }}
-                          source={{ uri: item.doctorInfo.thumbnailUrl }}
+                          source={{ uri: item.doctorInfo!.thumbnailUrl! }}
                           resizeMode={'contain'}
                         />
                       ) : (

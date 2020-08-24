@@ -7,7 +7,9 @@ import {
   TRANSFER_INITIATED_TYPE,
   Appointment,
 } from 'consults-service/entities';
-import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import { sendNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
+
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 @EntityRepository(RescheduleAppointmentDetails)

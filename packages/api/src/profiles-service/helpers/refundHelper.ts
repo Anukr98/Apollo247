@@ -17,11 +17,13 @@ import {
   MedicineOrderPayments,
   MedicineOrders,
 } from 'profiles-service/entities/index';
-import { medicineOrderRefundNotification } from 'notifications-service/resolvers/notifications';
+import { medicineOrderRefundNotification } from 'notifications-service/handlers';
 
 import { log } from 'customWinstonLogger';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+import { ApiConstants } from 'ApiConstants';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
 
 type RefundInput = {
   refundAmount: number;
@@ -78,20 +80,25 @@ export const initiateRefund: refundMethod<RefundInput, Connection, Partial<Paytm
     const saveRefundAttr: Partial<MedicineOrderRefunds> = refundInput;
     saveRefundAttr.refundStatus = REFUND_STATUS.REFUND_REQUEST_NOT_RAISED;
     const response = await medicineOrderRefundRepo.saveRefundInfo(saveRefundAttr);
-
+    let mid = process.env.MID_PHARMACY ? process.env.MID_PHARMACY : '';
+    if (refundInput.medicineOrderPayments.partnerInfo == ApiConstants.PARTNER_SBI)
+      mid = process.env.SBI_MID_PHARMACY ? process.env.SBI_MID_PHARMACY : '';
     const paytmBody: PaytmBody = {
-      mid: process.env.MID_PHARMACY ? process.env.MID_PHARMACY : '',
+      mid,
       refId: response.refId,
       txnType: 'REFUND',
       txnId: refundInput.txnId,
       orderId: refundInput.orderId,
       refundAmount: '' + refundInput.refundAmount,
     };
-
-    const checksumHash: string = await genCheckSumPromiseWrapper(
-      paytmBody,
-      process.env.PAYTM_MERCHANT_KEY_PHARMACY ? process.env.PAYTM_MERCHANT_KEY_PHARMACY : ''
-    );
+    let merchantKey = process.env.PAYTM_MERCHANT_KEY_PHARMACY
+      ? process.env.PAYTM_MERCHANT_KEY_PHARMACY
+      : '';
+    if (refundInput.medicineOrderPayments.partnerInfo == ApiConstants.PARTNER_SBI)
+      merchantKey = process.env.SBI_PAYTM_MERCHANT_KEY_PHARMACY
+        ? process.env.SBI_PAYTM_MERCHANT_KEY_PHARMACY
+        : '';
+    const checksumHash: string = await genCheckSumPromiseWrapper(paytmBody, merchantKey);
     const paytmParams: PaytmHeadBody = {
       head: {
         signature: checksumHash,
@@ -252,11 +259,22 @@ export const calculateRefund = async (
     );
   } else if (paymentInfo.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS) {
     const updatePaymentRequest: Partial<MedicineOrderPayments> = {};
-
     /**
      * We cannot refund less than 1 rs as per Paytm refunds policy
      */
     if (refundAmount >= 1) {
+      const postBody: Partial<WebEngageInput> = {
+        userId: orderDetails.patient.mobileNumber,
+        eventName: ApiConstants.MEDICINE_ORDER_REFUND_PROCESSED_EVENT_NAME.toString(),
+        eventData: {
+          orderId: orderDetails.orderAutoId,
+          orderStatus:paymentInfo.medicineOrders.currentStatus,
+          refundAmount: refundAmount,
+          healthCreditsToRefund: healthCreditsToRefund > 0 ? healthCreditsToRefund : 0,
+        },
+      };
+      postEvent(postBody);
+
       let refundResp = await initiateRefund(
         {
           refundAmount,
@@ -272,6 +290,17 @@ export const calculateRefund = async (
         isRefundSuccessful = true;
         const totalAmountRefunded = +new Decimal(refundAmount).plus(totalRefundAmount);
         updatePaymentRequest.refundAmount = totalAmountRefunded;
+
+        const postBody: Partial<WebEngageInput> = {
+          userId: orderDetails.patient.mobileNumber,
+          eventName: ApiConstants.MEDICINE_ORDER_REFUND_SUCCESSFUL_EVENT_NAME.toString(),
+          eventData: {
+            orderId: orderDetails.orderAutoId,
+            paymentRefundId: refundResp.refundId.toString()
+          },
+        };
+        postEvent(postBody);
+
       } else {
         log(
           'profileServiceLogger',
@@ -284,6 +313,9 @@ export const calculateRefund = async (
     }
 
     if (healthCreditsToRefund > 0) {
+      const blockedHealthCredits = +new Decimal(healthCreditsRedeemed).minus(healthCreditsToRefund);
+      updatePaymentRequest.healthCreditsRedeemed = blockedHealthCredits;
+
       // check if healthCredits were blocked for the order
       if (healthCreditsRedemptionRequest && healthCreditsRedemptionRequest.RequestNumber) {
         /**
@@ -308,12 +340,6 @@ export const calculateRefund = async (
           BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
           RedemptionRequestNumber: healthCreditsRedemptionRequest.RequestNumber.toString(),
         });
-
-        const blockedHealthCredits = +new Decimal(healthCreditsRedeemed).minus(
-          healthCreditsToRefund
-        );
-
-        updatePaymentRequest.healthCreditsRedeemed = blockedHealthCredits;
       } else {
         log(
           'profileServiceLogger',
@@ -322,15 +348,19 @@ export const calculateRefund = async (
           JSON.stringify(paymentInfo),
           'true'
         );
-        throw new AphError(AphErrorMessages.HEALTH_CREDITS_REQUEST_NOT_FOUND, undefined, {});
       }
-      if (Object.keys(updatePaymentRequest).length) {
-        medOrderRepo.updateMedicineOrderPayment(
-          orderDetails.id,
-          orderDetails.orderAutoId,
-          updatePaymentRequest
-        );
-      }
+    }
+
+    /**
+     * Update information about updated healthCredits redeemed
+     * and refundAmount in medicineOrderPayments
+     */
+    if (Object.keys(updatePaymentRequest).length) {
+      medOrderRepo.updateMedicineOrderPayment(
+        orderDetails.id,
+        orderDetails.orderAutoId,
+        updatePaymentRequest
+      );
     }
 
     //send refund SMS notification for partial refund

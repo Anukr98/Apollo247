@@ -371,6 +371,12 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingRight: 20,
       paddingBottom: 10,
     },
+    errorText: {
+      color: 'red',
+      paddingLeft: 0,
+      paddingRight: 20,
+      paddingBottom: 10,
+    },
     medicineDilog: {
       '& .dialogBoxClose': {
         display: 'none !important',
@@ -1168,14 +1174,7 @@ export const MedicinePrescription: React.FC = () => {
   const [includeGenericNameInPrescription, setIncludeGenericNameInPrescription] = useState<boolean>(
     false
   );
-
-  function str2bool(value: string) {
-    if (value && typeof value === 'string') {
-      if (value.toLowerCase() === 'true') return true;
-      if (value.toLowerCase() === 'false') return false;
-    }
-    return value;
-  }
+  const [freeTextErr, setFreeTextErr] = useState<boolean>(false);
 
   useEffect(() => {
     if (isCustomform) {
@@ -1511,6 +1510,7 @@ export const MedicinePrescription: React.FC = () => {
     setIdx(idx);
   };
   const updateFavMedicine = (idx: any) => {
+    setSelectedId(idx.externalId);
     setGenericName(idx.genericName);
     setIncludeGenericNameInPrescription(idx.includeGenericNameInPrescription);
     setMedicineCustomDetails(idx.medicineCustomDetails);
@@ -1885,7 +1885,6 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: String(consumptionDuration),
         medicineDosage: String(tabletsCount),
@@ -2080,9 +2079,39 @@ export const MedicinePrescription: React.FC = () => {
     setConsumptionDuration('');
     setTabletsCount('1');
     setMedicineUnit('OTHERS');
+    setMedicineCustomDetails(null);
     setSelectedValue('');
     setSelectedId('');
   };
+
+  const clearForm = () => {
+    resetFrequencyFor();
+    setMedicineInstruction('');
+    setConsumptionDuration('');
+    setMedicineCustomDetails(null);
+    setTabletsCount('1');
+    setMedicineUnit('OTHERS');
+  };
+
+  const handleSaveFreeText = () => {
+    if (!medicineCustomDetails) {
+      setFreeTextErr(true);
+    } else if (medicineCustomDetails && medicineCustomDetails.trim().length == 0) {
+      setFreeTextErr(true);
+    } else {
+      setFreeTextErr(false);
+      addUpdateMedicines();
+    }
+  };
+
+  function handleFreeTextSwitch(value: string) {
+    clearForm();
+    if (value && typeof value === 'string') {
+      if (value.toLowerCase() === 'true') return true;
+      if (value.toLowerCase() === 'false') return false;
+    }
+    return value;
+  }
   const generateMedicineTypes =
     dosageList.length > 0
       ? dosageList.map((value: string, index: number) => {
@@ -2311,7 +2340,14 @@ export const MedicinePrescription: React.FC = () => {
                 />
               </AphButton>,
             ];
-
+        const genericName = (
+          <span>
+            {medicine.includeGenericNameInPrescription! &&
+              medicine.genericName!.trim().length > 0 && (
+                <h6>{`Contains ${medicine.genericName}`}</h6>
+              )}
+          </span>
+        );
         return (
           <div style={{ position: 'relative' }} key={index}>
             {medicine.medicineCustomDetails ? (
@@ -2323,6 +2359,8 @@ export const MedicinePrescription: React.FC = () => {
                     <s>{medicine.medicineName}</s>
                   </h5>
                 )}
+                {genericName}
+
                 {!isPresent && (
                   <p className={classes.removed}>This medicine has been discontinued </p>
                 )}
@@ -2338,6 +2376,7 @@ export const MedicinePrescription: React.FC = () => {
                     <s>{medicine.medicineName}</s>
                   </h5>
                 )}
+                {genericName}
                 {!isPresent && (
                   <p className={classes.removed}>This medicine has been discontinued </p>
                 )}
@@ -2497,6 +2536,14 @@ export const MedicinePrescription: React.FC = () => {
                   } else {
                     favDosageHtml = favDosageCount + ' ' + favUnitHtmls;
                   }
+                  const genericName = (
+                    <span>
+                      {favMedicine.includeGenericNameInPrescription! &&
+                        favMedicine.genericName!.trim().length > 0 && (
+                          <h6>{`Contains ${favMedicine.genericName}`}</h6>
+                        )}
+                    </span>
+                  );
                   return (
                     <div className={classes.paper} key={id}>
                       {favMedicine.medicineCustomDetails ? (
@@ -2506,10 +2553,12 @@ export const MedicinePrescription: React.FC = () => {
                           {favMedicine.medicineCustomDetails && (
                             <h6>{favMedicine.medicineCustomDetails}</h6>
                           )}
+                          {genericName}
                         </Paper>
                       ) : (
                         <Paper className={classes.favMedBg}>
                           <h5>{favMedicine.medicineName}</h5>
+                          {genericName}
                           <h6>
                             {`${
                               favMedicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
@@ -2611,8 +2660,9 @@ export const MedicinePrescription: React.FC = () => {
                         className={classes.radioGroup}
                         value={medicineForm}
                         onChange={(e) => {
-                          setMedicineForm((e.target as HTMLInputElement)
-                            .value as MEDICINE_FORM_TYPES);
+                          setMedicineForm(
+                            (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                          );
                         }}
                         row
                       >
@@ -2638,7 +2688,7 @@ export const MedicinePrescription: React.FC = () => {
                               value={freeTextSwitch}
                               checked={freeTextSwitch}
                               onChange={(e: any) => {
-                                setFreeTextSwitch(!str2bool(e.target.value));
+                                setFreeTextSwitch(!handleFreeTextSwitch(e.target.value));
                               }}
                             />
                           }
@@ -3092,12 +3142,23 @@ export const MedicinePrescription: React.FC = () => {
                             multiline
                             rows={6}
                             placeholder="Type here..."
-                            value={medicineCustomDetails ? medicineCustomDetails : ''}
+                            value={medicineCustomDetails}
                             onChange={(event: any) => {
                               setMedicineCustomDetails(event.target.value);
                             }}
                           />
                         </div>
+                        <Grid item lg={12} md={12} xs={12}>
+                          {freeTextErr && (
+                            <FormHelperText
+                              className={classes.errorText}
+                              component="div"
+                              error={freeTextErr}
+                            >
+                              Please enter valid Directions.
+                            </FormHelperText>
+                          )}
+                        </Grid>
 
                         <span className="a2">
                           <GenericMedicineName
@@ -3252,8 +3313,9 @@ export const MedicinePrescription: React.FC = () => {
                           className={classes.radioGroup}
                           value={medicineForm}
                           onChange={(e) => {
-                            setMedicineForm((e.target as HTMLInputElement)
-                              .value as MEDICINE_FORM_TYPES);
+                            setMedicineForm(
+                              (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                            );
                           }}
                           row
                         >
@@ -3279,7 +3341,7 @@ export const MedicinePrescription: React.FC = () => {
                                 value={freeTextSwitch}
                                 checked={freeTextSwitch}
                                 onChange={(e: any) => {
-                                  setFreeTextSwitch(!str2bool(e.target.value));
+                                  setFreeTextSwitch(!handleFreeTextSwitch(e.target.value));
                                 }}
                               />
                             }
@@ -3739,6 +3801,17 @@ export const MedicinePrescription: React.FC = () => {
                               }}
                             />
                           </div>
+                          <Grid item lg={12} md={12} xs={12}>
+                            {freeTextErr && (
+                              <FormHelperText
+                                className={classes.errorText}
+                                component="div"
+                                error={freeTextErr}
+                              >
+                                Please enter valid Directions.
+                              </FormHelperText>
+                            )}
+                          </Grid>
 
                           <span className="a1">
                             <GenericMedicineName
@@ -3794,7 +3867,7 @@ export const MedicinePrescription: React.FC = () => {
                       color="primary"
                       className={classes.updateBtn}
                       onClick={() => {
-                        addUpdateMedicines();
+                        handleSaveFreeText();
                       }}
                     >
                       Submit Rx

@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorListingPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
-        marginTop: 80,
+        marginTop: 70,
       },
     },
     pageTopHeader: {
@@ -68,7 +68,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     medicineTopGroup: {
       display: 'flex',
-      paddingTop: 25,
+      // paddingTop: 25,
       [theme.breakpoints.down('xs')]: {
         display: 'block',
         paddingTop: 0,
@@ -429,6 +429,13 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    medicineHeader: {
+      [theme.breakpoints.down('xs')]: {
+        '& header': {
+          boxShadow: 'none',
+        },
+      },
+    },
   };
 });
 
@@ -624,9 +631,6 @@ export const MedicineLanding: React.FC = (props: any) => {
   }, [data]);
 
   const productsRecommended = latestMedicineOrder && latestMedicineOrder.medicineOrderLineItems;
-  const latestMedicineOrderDate =
-    latestMedicineOrder && moment(latestMedicineOrder.createdDate).format('MMMM D, YYYY');
-  const storeAddress = latestMedicineOrder && JSON.parse(latestMedicineOrder.shopAddress);
   const isOfflineOrder =
     latestMedicineOrder && latestMedicineOrder.currentStatus === 'PURCHASED_IN_STORE';
   const orderDelivered =
@@ -650,10 +654,59 @@ export const MedicineLanding: React.FC = (props: any) => {
       window && window.location && window.location.origin && `${window.location.origin}/medicines`,
   };
 
+  const getOrderSubtitle = (order: medicineOrderDetailsType) => {
+    if (order) {
+      const isOfflineOrder = order.billNumber;
+      const shopAddress = (isOfflineOrder && order.shopAddress) || '';
+      const parsedShopAddress = !shopAddress.length ? JSON.parse(shopAddress || '{}') : '';
+      const address = !parsedShopAddress.length
+        ? [parsedShopAddress.storeName, parsedShopAddress.city, parsedShopAddress.zipcode]
+            .filter((a) => a)
+            .join(', ')
+        : '';
+      const date = order.createdDate ? moment(order.createdDate).format('MMMM DD, YYYY') : '';
+      return isOfflineOrder ? `Ordered at ${address} on ${date}` : `Ordered online on ${date}`;
+    }
+  };
+
+  const getOrderTitle = (order: medicineOrderDetailsType) => {
+    // use billedItems for delivered orders
+
+    const billedItems =
+      order.medicineOrderShipments &&
+      order.medicineOrderShipments[0] &&
+      order.medicineOrderShipments[0].medicineOrderInvoice &&
+      order.medicineOrderShipments[0].medicineOrderInvoice[0] &&
+      order.medicineOrderShipments[0].medicineOrderInvoice[0].itemDetails
+        ? order.medicineOrderShipments[0].medicineOrderInvoice[0].itemDetails
+        : null;
+    const billedLineItems = billedItems
+      ? (JSON.parse(billedItems) as { itemName: string }[])
+      : null;
+    const lineItems = (billedLineItems || order.medicineOrderLineItems || []) as {
+      itemName?: string;
+      medicineName?: string;
+    }[];
+    let title = 'Medicines';
+    if (lineItems.length) {
+      const firstItem = billedLineItems ? lineItems[0].itemName : lineItems[0].medicineName;
+      const lineItemsLength = lineItems.length;
+      title =
+        lineItemsLength > 1
+          ? `${firstItem} + ${lineItemsLength - 1} item${lineItemsLength > 2 ? 's ' : ' '}`
+          : firstItem;
+    }
+    return title;
+  };
+
+  const orderTitle = latestMedicineOrder ? getOrderTitle(latestMedicineOrder) : '';
+
   return (
     <div className={classes.root}>
       <MetaTagsComp {...metaTagProps} />
-      <Header />
+      <div className={classes.medicineHeader}>
+        <Header />
+      </div>
       <div className={classes.container}>
         <div className={classes.doctorListingPage}>
           <div className={classes.pageTopHeader}>
@@ -741,21 +794,13 @@ export const MedicineLanding: React.FC = (props: any) => {
                               </span>
                             </Link>
                           </div>
-                          {isSignedIn && latestMedicineOrder && orderDelivered ? (
+                          {isSignedIn && latestMedicineOrder && orderDelivered && orderTitle ? (
                             <div className={classes.medicineReviewReorder}>
                               <div className={classes.serviceType}>
                                 <span className={classes.serviceIcon}>
                                   <img src={require('images/ic_basket.svg')} alt="" />
                                 </span>
-                                <span className={classes.linkText}>
-                                  {productsRecommended.length > 1
-                                    ? `${
-                                        productsRecommended[0].medicineName
-                                      } + ${productsRecommended.length - 1} item${
-                                        productsRecommended.length > 2 ? 's ' : ' '
-                                      }`
-                                    : productsRecommended[0].medicineName}
-                                </span>
+                                <span className={classes.linkText}>{orderTitle}</span>
                                 <span className={classes.reOrder}>
                                   <ReOrder
                                     orderDetailsData={latestMedicineOrder}
@@ -769,11 +814,7 @@ export const MedicineLanding: React.FC = (props: any) => {
                                 </span>
                               </div>
                               <div className={classes.serviceArea}>
-                                <span>
-                                  {isOfflineOrder
-                                    ? `Ordered at ${storeAddress.storename} on ${latestMedicineOrderDate}`
-                                    : `Ordered online on ${latestMedicineOrderDate}`}
-                                </span>
+                                <span>{getOrderSubtitle(latestMedicineOrder) || ''}</span>
                               </div>
                             </div>
                           ) : isLoading ? (

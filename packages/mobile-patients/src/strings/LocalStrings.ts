@@ -70,7 +70,7 @@ const MyPayments = {
   paymentSuccessful: 'PAYMENT SUCCESSFUL',
   paymentFailed: 'PAYMENT FAILED',
   paymentPending: 'PAYMENT PENDING',
-  paymentRefund: 'REFUND INITIATED',
+  paymentRefund: 'REFUND PROCESSED',
   noPayments: 'You have no payment history!',
   failureNote:
     'Note : In case your account has been debited, you should get the refund in 1-7 working days.',
@@ -80,12 +80,12 @@ const MyPayments = {
 };
 
 const voip = {
-  appName: 'Apollo 24/7'
-}
+  appName: 'Apollo 24/7',
+};
 
 const asyncKeys = {
-  voipDeviceToken: 'voipDeviceToken'
-}
+  voipDeviceToken: 'voipDeviceToken',
+};
 
 export const LocalStrings = {
   ...common,
@@ -95,5 +95,5 @@ export const LocalStrings = {
   ...AddFile,
   ...MyPayments,
   ...voip,
-  ...asyncKeys
+  ...asyncKeys,
 };

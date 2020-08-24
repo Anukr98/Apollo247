@@ -42,7 +42,10 @@ import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
 import { NotificationIconWhite } from './ui/Icons';
 import { WebEngageEvents, WebEngageEventName } from '../helpers/webEngageEvents';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { getMedicineOrderOMSDetailsWithAddress, getMedicineOrderOMSDetailsWithAddressVariables } from '../graphql/types/getMedicineOrderOMSDetailsWithAddress';
+import {
+  getMedicineOrderOMSDetailsWithAddress,
+  getMedicineOrderOMSDetailsWithAddressVariables,
+} from '../graphql/types/getMedicineOrderOMSDetailsWithAddress';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -103,7 +106,7 @@ export interface NotificationListenerProps extends NavigationScreenProps {}
 
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
-
+  const isAndroid = Platform.OS === 'android';
   const {
     showAphAlert,
     hideAphAlert,
@@ -354,7 +357,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       // notificationType === 'Reschedule_Appointment'
     ) {
       if (notificationType === 'chat_room' || notificationType === 'call_started') {
-        setDoctorJoinedChat && setDoctorJoinedChat(true); // enabling join button in chat room if in case pubnub events not fired
+        if(data.doctorType === DoctorType.SENIOR){
+          setDoctorJoinedChat && setDoctorJoinedChat(true); // enabling join button in chat room if in case pubnub events not fired
+        }
       }
       if (currentScreenName === AppRoutes.ChatRoom) return;
     }
@@ -664,7 +669,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           const orderId: number = parseInt(data.orderId || '0');
           console.log('Cart_Ready called');
           client
-            .query<getMedicineOrderOMSDetailsWithAddress, getMedicineOrderOMSDetailsWithAddressVariables>({
+            .query<
+              getMedicineOrderOMSDetailsWithAddress,
+              getMedicineOrderOMSDetailsWithAddressVariables
+            >({
               query: GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS,
               variables: {
                 orderAutoId: orderId,
@@ -673,7 +681,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               fetchPolicy: 'no-cache',
             })
             .then((data) => {
-              const orderDetails = data.data.getMedicineOrderOMSDetailsWithAddress.medicineOrderDetails;
+              const orderDetails =
+                data.data.getMedicineOrderOMSDetailsWithAddress.medicineOrderDetails;
               const items = (orderDetails!.medicineOrderLineItems || [])
                 .map((item) => ({
                   sku: item!.medicineSKU!,
@@ -702,6 +711,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                         isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
                         thumbnail: medicineDetails.thumbnail || medicineDetails.image,
                         maxOrderQty: medicineDetails.MaxOrderQty,
+                        productType: medicineDetails.type_id,
                       } as ShoppingCartItem;
                     })
                     .filter((item) => item) as ShoppingCartItem[];
@@ -1010,7 +1020,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           if (endTime) {
             try {
               setPrevVolume();
-              if (audioTrack) {
+              if (audioTrack && !isAndroid) {
                 audioTrack.stop();
               }
 
@@ -1051,7 +1061,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
               setLoading && setLoading(false);
               try {
                 maxVolume();
-                if (audioTrack) {
+                if (audioTrack && !isAndroid) {
                   audioTrack.play();
                   audioTrack.setNumberOfLoops(15);
                   console.log('call audioTrack');
@@ -1062,7 +1072,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
               setTimeout(() => {
                 setPrevVolume();
-                if (audioTrack) {
+                if (audioTrack && !isAndroid) {
                   audioTrack.stop();
                 }
               }, 15000);
@@ -1080,7 +1090,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                     onPress: () => {
                       hideAphAlert && hideAphAlert();
                       setPrevVolume();
-                      if (audioTrack) {
+                      if (audioTrack && !isAndroid) {
                         audioTrack.stop();
                       }
                     },

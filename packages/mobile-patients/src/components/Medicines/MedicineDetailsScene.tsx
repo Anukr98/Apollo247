@@ -11,7 +11,6 @@ import {
   MedicineIcon,
   MedicineRxIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -38,7 +37,8 @@ import {
   postAppsFlyerAddToCartEvent,
   g,
   isDeliveryDateWithInXDays,
-  getMaxQtyForMedicineItem,
+  productsThumbnailUrl,
+  getDiscountPercentage,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -53,25 +53,23 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ListRenderItemInfo,
+  FlatList,
+  ScrollView,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import {
-  FlatList,
-  NavigationScreenProps,
-  ScrollView,
-  StackActions,
-  NavigationActions,
-} from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import HTML from 'react-native-render-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { AddToCartButtons } from './AddToCartButtons';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
 
 const { width, height } = Dimensions.get('window');
 
@@ -85,7 +83,6 @@ const styles = StyleSheet.create({
   mainView: {
     backgroundColor: theme.colors.CARD_BG,
     paddingTop: 20,
-    ...theme.viewStyles.shadowStyle,
   },
   doctorNameStyle: {
     paddingTop: 8,
@@ -100,7 +97,6 @@ const styles = StyleSheet.create({
   },
   labelViewStyle: {
     marginHorizontal: 20,
-    paddingTop: 24,
     flexDirection: 'row',
     justifyContent: 'space-between',
     ...theme.viewStyles.lightSeparatorStyle,
@@ -211,7 +207,7 @@ export interface MedicineDetailsSceneProps
   extends NavigationScreenProps<{
     sku: string;
     title: string;
-    movedFrom: string;
+    movedFrom: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED]['source'];
     deliveryError: string;
     sectionName?: string;
   }> {}
@@ -325,9 +321,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const foundItem = cartItems.find((item) => item.id == id);
     return foundItem ? foundItem.quantity : 0;
   };
-  const [selectedQuantity, setselectedQuantity] = useState<string | number>(getItemQuantity(sku));
   const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == sku) != -1;
-  const itemInCart = cartItems.find((item) => item.id == sku);
   const isOutOfStock = !medicineDetails!.is_in_stock;
   const medicineName = medicineDetails.name;
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
@@ -408,7 +402,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     }
   };
 
-  const onAddCartItem = (item: MedicineProduct) => {
+  const onAddCartItem = (item: MedicineProductDetails | MedicineProduct) => {
     const {
       sku,
       mou,
@@ -436,13 +430,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       thumbnail: thumbnail,
       isInStock: true,
       maxOrderQty: MaxOrderQty,
+      productType: type_id,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy PDP', sectionName);
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
     postAppsFlyerAddToCartEvent(item, id);
   };
 
-  const updateQuantityCartItem = ({ sku }: MedicineProduct, quantity: number) => {
+  const updateQuantityCartItem = (
+    { sku }: Pick<MedicineProductDetails, 'sku'>,
+    quantity: number
+  ) => {
     updateCartItem!({
       id: sku,
       quantity,
@@ -494,7 +492,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               'product name': medicineDetails.name,
               pincode: Number(pincode),
               'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
-              'TAT Displayed': moment(deliveryDate).diff(currentDate, 'd'),
+              'Delivery TAT': moment(deliveryDate).diff(currentDate, 'd'),
               Serviceable: pinCodeNotServiceable ? 'No' : 'Yes',
             };
             postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
@@ -544,32 +542,33 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       });
   };
 
-  const postwebEngageNotifyMeEvent = ({ name, sku, category_id }: MedicineProduct) => {
+  const postwebEngageNotifyMeEvent = ({
+    name,
+    sku,
+    category_id,
+  }: Pick<MedicineProduct, 'name' | 'sku' | 'category_id'>) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.NOTIFY_ME] = {
       'product name': name,
       'product id': sku,
       Brand: '',
       'Brand ID': '',
       'category name': '',
-      'category ID': category_id,
+      'category ID': category_id!,
     };
     postWebEngageEvent(WebEngageEventName.NOTIFY_ME, eventAttributes);
   };
 
   const renderBottomButtons = () => {
-    const opitons = Array.from({
-      length: getMaxQtyForMedicineItem(medicineDetails.MaxOrderQty),
-    }).map((_, i) => {
-      return { key: (i + 1).toString(), value: i + 1 };
-    });
     const itemQty = getItemQuantity(sku);
     const addToCart = () => updateQuantityCartItem(medicineDetails, itemQty + 1);
     const removeItemFromCart = () => updateQuantityCartItem(medicineDetails, itemQty - 1);
     const removeFromCart = () => removeCartItem!(sku);
+    const { special_price, price } = medicineDetails;
+    const discountPercent = getDiscountPercentage(price, special_price);
 
     return (
       <StickyBottomComponent style={{ height: 'auto' }}>
-        {!showDeliverySpinner && !deliveryTime || deliveryError || isOutOfStock ? (
+        {(!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock ? (
           <View
             style={{
               paddingTop: 8,
@@ -606,55 +605,46 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           </View>
         ) : (
           <View style={styles.bottomView}>
-            <View style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-start',
-              marginBottom: 10,
-              marginLeft: 15,
-            }}>
-              <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22, 0.35)}>
-                MRP.
-              </Text>
-              <Text style={theme.viewStyles.text('SB', 17, '#01475b', 1, 20, 0.35)}>
-                ₹{medicineDetails.special_price || medicineDetails.price}
-              </Text>
-            </View>
             <View style={styles.bottonButtonContainer}>
-              <Button
-                onPress={() => {
-                  CommonLogEvent(AppRoutes.MedicineDetailsScene, 'Update quantity cart item');
-                  updateQuantityCartItem(medicineDetails, 1);
-                  !isMedicineAddedToCart && onAddCartItem(medicineDetails);
-
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.BUY_NOW] = {
-                    'product name': medicineDetails.name,
-                    'product id': medicineDetails.sku,
-                    Brand: '',
-                    'Brand ID': '',
-                    'category name': '',
-                    'category ID': medicineDetails.category_id,
-                    Price: medicineDetails.price,
-                    'Discounted Price':
-                      typeof medicineDetails.special_price == 'string'
-                        ? Number(medicineDetails.special_price)
-                        : medicineDetails.special_price,
-                    Quantity:
-                      typeof selectedQuantity == 'string'
-                        ? Number(selectedQuantity)
-                        : selectedQuantity,
-                    'Service Area': 'Pharmacy',
-                  };
-                  postWebEngageEvent(WebEngageEventName.BUY_NOW, eventAttributes);
-                  props.navigation.navigate(AppRoutes.YourCart);
+              <View
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'flex-start',
+                  marginLeft: 15,
                 }}
-                title="BUY NOW"
-                style={{ width: '45%', backgroundColor: theme.colors.WHITE }}
-                titleTextStyle={{ color: '#fc9916' }}
-              />
-              {
-                isMedicineAddedToCart ?
+              >
+                <Text style={theme.viewStyles.text('SB', 17, '#02475b', 1, 20, 0.35)}>
+                  ₹{medicineDetails.special_price || medicineDetails.price}
+                </Text>
+                {!!medicineDetails.special_price && (
+                  <View
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                    }}
+                  >
+                    <Text
+                      style={[
+                        theme.viewStyles.text('M', 13, '#01475b', 1, 20, 0.35),
+                        {
+                          textDecorationLine: 'line-through',
+                          color: '#01475b',
+                          opacity: 0.6,
+                          paddingRight: 5,
+                        },
+                      ]}
+                    >
+                      (₹{medicineDetails.price})
+                    </Text>
+                    <Text style={theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35)}>
+                      {discountPercent}% off
+                    </Text>
+                  </View>
+                )}
+              </View>
+              {isMedicineAddedToCart ? (
                 <AddToCartButtons
                   numberOfItemsInCart={itemQty}
                   maxOrderQty={medicineDetails.MaxOrderQty}
@@ -664,10 +654,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   isSolidContainer={true}
                   containerStyle={{
                     height: 40,
+                    width: '45%',
                     borderColor: '#fcb716',
                     borderRadius: 10,
                     backgroundColor: '#fcb716',
-                    justifyContent: 'space-between'
+                    justifyContent: 'space-between',
                   }}
                   deleteIconStyle={{
                     resizeMode: 'contain',
@@ -690,7 +681,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     paddingLeft: 15,
                     paddingRight: 15,
                   }}
-                /> :
+                />
+              ) : (
                 <Button
                   onPress={() => {
                     onAddCartItem(medicineDetails);
@@ -700,7 +692,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   disabledStyle={styles.bottomButtonStyle}
                   style={styles.bottomButtonStyle}
                 />
-              }
+              )}
             </View>
           </View>
         )}
@@ -817,6 +809,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             flex: 1,
             padding: 20,
             ...theme.viewStyles.shadowStyle,
+            marginBottom: 30,
           },
         ]}
       >
@@ -869,7 +862,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
     if (!!description)
       return (
-        <View>
+        <View style={{ marginBottom: 30 }}>
           <Text
             style={{
               ...theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1),
@@ -934,7 +927,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     });
 
     return (
-      <View>
+      <View style={{ marginBottom: 10 }}>
         <View style={styles.labelViewStyle}>
           <Text style={styles.labelStyle}>SUBSTITUTE DRUGS</Text>
         </View>
@@ -962,15 +955,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         <View style={styles.labelViewStyle}>
           <Text style={styles.labelStyle}>CHECK DELIVERY TIME</Text>
         </View>
-        <View
-          style={[
-            styles.cardStyle,
-            {
-              margin: 20,
-              padding: 0,
-            },
-          ]}
-        >
+        <View style={[styles.cardStyle, { padding: 0 }]}>
           <View
             style={{
               padding: 16,
@@ -1024,10 +1009,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                 <Text
                   style={[
                     theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0),
-                    { fontWeight: 'bold' },
+                    { fontWeight: 'bold', flex: 1, marginLeft: 10, textAlign: 'right' },
                   ]}
                 >
-                  By {moment(deliveryTime.split(' ')[0]).format('Do MMM YYYY')}
+                  By{' '}
+                  {moment(
+                    deliveryTime,
+                    AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
+                  ).format(AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT)}
                 </Text>
               </View>
             ) : !!deliveryError ? (
@@ -1120,14 +1109,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           borderRadius: 10,
           backgroundColor: 'white',
           marginRight: 20,
-          shadowColor: '#808080',
-          shadowOffset: { width: 0, height: 5 },
-          shadowOpacity: 0.8,
-          shadowRadius: 10,
-          elevation: 5,
           marginLeft: 72,
           maxHeight: height - 200,
-          // overflow: 'scroll',
           height: popupHeight + 24,
           ...theme.viewStyles.shadowStyle,
         }}
@@ -1229,6 +1212,62 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     } catch (error) {}
   };
 
+  const renderSimilarProducts = (products: MedicineProduct[]) => {
+    const renderItem = ({ item, index }: ListRenderItemInfo<MedicineProduct>) => {
+      const { sku, name, image, price, special_price } = item;
+      const itemQty = getItemQuantity(sku);
+      const addToCart = () => updateQuantityCartItem({ sku }, itemQty + 1);
+      const removeItemFromCart = () => updateQuantityCartItem({ sku }, itemQty - 1);
+      const removeFromCart = () => removeCartItem!(sku);
+      const onPress = () =>
+        props.navigation.push(AppRoutes.MedicineDetailsScene, {
+          sku: sku,
+          title: name,
+        });
+
+      return (
+        <ProductUpSellingCard
+          key={sku}
+          title={name}
+          price={price}
+          specialPrice={special_price}
+          imageUrl={productsThumbnailUrl(image)}
+          onAddToCart={() => onAddCartItem(item)}
+          onPress={onPress}
+          numberOfItemsInCart={itemQty}
+          maxOrderQty={medicineDetails.MaxOrderQty}
+          addToCart={addToCart}
+          removeItemFromCart={removeItemFromCart}
+          removeFromCart={removeFromCart}
+          containerStyle={[
+            { marginRight: 10, marginBottom: 30 },
+            index === 0 && { marginLeft: 20 },
+          ]}
+        />
+      );
+    };
+
+    const sectionName = medicineDetails.name
+      ? `SIMILAR TO ${medicineDetails.name}`.toUpperCase()
+      : 'SIMILAR PRODUCTS';
+
+    return (
+      <>
+        <View style={styles.labelViewStyle}>
+          <Text style={styles.labelStyle}>{sectionName}</Text>
+        </View>
+        <FlatList
+          bounces={false}
+          keyExtractor={({ sku }) => sku}
+          showsHorizontalScrollIndicator={false}
+          horizontal
+          data={products}
+          renderItem={renderItem}
+        />
+      </>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -1274,6 +1313,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             {renderTopView()}
             {medicineOverview.length > 0 && renderTabs()}
             {Substitutes.length ? renderSubstitutes() : null}
+            {!!g(medicineDetails, 'similar_products', 'length') &&
+              renderSimilarProducts(medicineDetails.similar_products)}
             {!isOutOfStock && renderDeliveryView()}
             <View style={{ height: 130 }} />
           </KeyboardAwareScrollView>

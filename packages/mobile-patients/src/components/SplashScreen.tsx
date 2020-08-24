@@ -50,6 +50,7 @@ import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { string } from '../strings/string';
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
+import Pubnub from 'pubnub';
 
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
@@ -107,6 +108,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const [appState, setAppState] = useState(AppState.currentState);
   const client = useApolloClient();
   const voipAppointmentId = useRef<string>('');
+  const voipPatientId = useRef<string>('');
+  const voipCallType = useRef<string>('');
+
+  const config: Pubnub.PubnubConfig = {
+    subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+    publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+    ssl: true,
+    uuid: `PATIENT_${voipPatientId.current}`,
+    restore: true,
+    keepAlive: true,
+    // autoNetworkDetection: true,
+    // listenToBrowserNetworkEvents: true,
+    // presenceTimeout: 20,
+    heartbeatInterval: 20,
+  };
+  const pubnub = new Pubnub(config);
 
   // const { setVirtualConsultationFee } = useAppCommonData();
 
@@ -115,7 +132,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
       console.log('Accept Params', params);
+      voipCallType.current = params.call_type;
       getAppointmentDataAndNavigate(params.appointment_id, true);
+    });
+    DeviceEventEmitter.addListener('reject', (params) => {
+      console.log('Reject Params', params);
+      getAppointmentDataAndNavigate(params.appointment_id, false);
     });
     setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
@@ -171,16 +193,29 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const payload = notification && notification.getData();
       if (payload && payload.appointmentId) {
         voipAppointmentId.current = notification.getData().appointmentId;
+        voipPatientId.current = notification.getData().patientId;
+        voipCallType.current = notification.getData().isVideo ? 'Video' : 'Audio';
       }
     });
   };
 
   const onAnswerCallAction = () => {
-    voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current);
+    voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current, false);
   };
 
   const onDisconnetCallAction = () => {
-    voipAppointmentId.current = '';
+    pubnub.publish(
+      {
+        message: '^^#PATIENT_REJECTED_CALL',
+        channel: voipAppointmentId.current,
+        storeInHistory: true,
+      },
+      (status, response) => {
+        voipAppointmentId.current = '';
+        voipPatientId.current = '';
+        voipCallType.current = '';
+      }
+    );
   };
 
   const handleDeepLink = () => {
@@ -213,7 +248,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
   const handleOpenURL = (event: any) => {
     try {
-      console.log('event', event);
+      if (Platform.OS === 'ios') {
+        // for ios universal links
+        InitiateAppsFlyer(props.navigation);
+      }
       let route;
 
       route = event.replace('apollopatients://', '');
@@ -463,6 +501,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
     fetchData();
   };
+  const handleEncodedURI = (encodedString: string) => {
+    const decodedString = decodeURIComponent(encodedString);
+    const splittedString = decodedString.split('+');
+    if (splittedString.length > 1) {
+      return splittedString;
+    } else {
+      return encodedString.split('%20');
+    }
+  };
   const getAppointmentDataAndNavigate = (appointmentID: string, isCall: boolean) => {
     client
       .query<getAppointmentDataQuery, getAppointmentDataVariables>({
@@ -527,9 +574,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         break;
 
       case 'Speciality':
-        console.log('Speciality id', id);
         setBugFenderLog('APPS_FLYER_DEEP_LINK_COMPLETE', id);
-        const filtersData = id ? id.split('%20') : '';
+        const filtersData = id ? handleEncodedURI(id) : '';
+        console.log('filtersData============', filtersData);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: filtersData[0] ? filtersData[0] : '',
           typeOfConsult: filtersData.length > 1 ? filtersData[1] : '',
@@ -540,7 +587,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         // });
         break;
       case 'FindDoctors':
-        const cityBrandFilter = id ? id.split('%20') : '';
+        const cityBrandFilter = id ? handleEncodedURI(id) : '';
+        console.log('cityBrandFilter', cityBrandFilter);
         props.navigation.navigate(AppRoutes.DoctorSearchListing, {
           specialityId: cityBrandFilter[0] ? cityBrandFilter[0] : '',
           city:
@@ -587,7 +635,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'ChatRoom':
         props.navigation.navigate(AppRoutes.ChatRoom, {
           data: id,
-          callType: '',
+          callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
           prescription: '',
           isCall: isCall,
           isVoipCall: voipAppointmentId.current ? true : false,
@@ -754,12 +802,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     Pharmacy_Delivery_Charges: {
       PROD: 'Pharmacy_Delivery_Charges',
     },
-    home_screen_emergency_banner: {
-      PROD: 'home_screen_emergency_banner',
-    },
-    home_screen_emergency_number: {
-      PROD: 'home_screen_emergency_number',
-    },
     top6_specailties: {
       QA: 'QA_top6_specailties',
       DEV: 'DEV_top6_specailties',
@@ -853,18 +895,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           );
 
           setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', snapshot);
-
-          setAppConfig(
-            'home_screen_emergency_banner',
-            'HOME_SCREEN_EMERGENCY_BANNER_TEXT',
-            snapshot
-          );
-
-          setAppConfig(
-            'home_screen_emergency_number',
-            'HOME_SCREEN_EMERGENCY_BANNER_NUMBER',
-            snapshot
-          );
 
           setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', snapshot);
 

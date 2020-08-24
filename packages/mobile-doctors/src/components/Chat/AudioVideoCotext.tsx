@@ -133,6 +133,7 @@ export interface AudioVideoContextPorps {
   setOpenTokKeys: (value: OpenTokKeys) => void;
   callBacks: CallBackOptions;
   setCallBacks: (value: CallBackOptions) => void;
+  errorPopup: (message: string, color: string, time?: number) => void;
 }
 
 export const AudioVideoContext = createContext<AudioVideoContextPorps>({
@@ -171,6 +172,7 @@ export const AudioVideoContext = createContext<AudioVideoContextPorps>({
     onCallMinimize: () => {},
   },
   setCallBacks: () => {},
+  errorPopup: (message: string, color: string, time?: number) => {},
 });
 let timerId: NodeJS.Timeout;
 let missedCallTimer: NodeJS.Timeout;
@@ -529,7 +531,7 @@ export const AudioVideoProvider: React.FC = (props) => {
       </View>
     );
   };
-  const errorPopup = (message: string, color: string) => {
+  const errorPopup = (message: string, color: string, time?: number) => {
     showPopup({
       description: message,
       style: [styles.exoToastContainer, { backgroundColor: color }],
@@ -542,7 +544,7 @@ export const AudioVideoProvider: React.FC = (props) => {
           <CloseWhite style={{ width: 16, height: 16 }} />
         </View>
       ),
-      timer: 8,
+      timer: time || 8,
     });
   };
 
@@ -851,6 +853,7 @@ export const AudioVideoProvider: React.FC = (props) => {
         setOpenTokKeys,
         callBacks,
         setCallBacks,
+        errorPopup,
       }}
     >
       <View style={{ flex: 1 }}>

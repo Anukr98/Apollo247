@@ -15,7 +15,10 @@ module.exports = async (req, res, next) => {
 
     const checksum = payload.CHECKSUMHASH;
     delete payload.CHECKSUMHASH;
-    if (!verifychecksum(payload, process.env.PAYTM_MERCHANT_KEY_PHARMACY, checksum)) {
+    let merchantKey = process.env.PAYTM_MERCHANT_KEY_PHARMACY;
+    if (payload.MID == process.env.SBI_MID_CONSULTS)
+      merchantKey = process.env.SBI_PAYTM_MERCHANT_KEY_PHARMACY;
+    if (!verifychecksum(payload, merchantKey, checksum)) {
       logger.error(
         `${orderId} - paymed-response: checksum did not match - ${JSON.stringify(payload)}`
       );

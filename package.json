@@ -10,8 +10,7 @@
     "delete:package-lock": "lerna exec -- rm -rf package-lock.json",
     "format": "lerna run format",
     "lint": "lerna run lint",
-    "typecheck": "lerna run typecheck",
-    "doctor": "cd packages/web-doctors && npm run start"
+    "typecheck": "lerna run typecheck"
   },
   "devDependencies": {
     "typescript": "3.5.2",
@@ -19,6 +18,11 @@
   },
   "dependencies": {
     "@sendgrid/mail": "^7.1.1",
+    "async": "^3.2.0",
+    "dotenv": "^8.2.0",
+    "form-data": "^3.0.0",
+    "node-fetch": "^2.6.0",
+    "pg": "^8.3.2",
     "sendgrid": "^5.2.3",
     "uuid": "^8.2.0"
   }

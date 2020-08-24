@@ -29,4 +29,5 @@ export interface SendCallNotificationVariables {
   doctorType?: DOCTOR_CALL_TYPE | null;
   deviceType?: DEVICETYPE | null;
   callSource?: BOOKINGSOURCE | null;
+  numberOfParticipants?: number | null;
 }

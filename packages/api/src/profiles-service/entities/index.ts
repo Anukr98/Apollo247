@@ -790,6 +790,9 @@ export class MedicineOrderPayments extends BaseEntity {
   @Column({ nullable: true })
   responseMessage: string;
 
+  @Column({ nullable: true })
+  partnerInfo: string;
+
   @Column({
     nullable: true,
     type: 'jsonb',
@@ -965,7 +968,7 @@ export class PatientDeviceTokens extends BaseEntity {
   deviceToken: string;
 
   @Index('device_voip_push_token')
-  @Column({nullable:true, type: 'text'})
+  @Column({ nullable: true, type: 'text' })
   deviceVoipPushToken: string;
 
   @Column()
@@ -2154,6 +2157,9 @@ export class DiagnosticOrders extends BaseEntity {
 
   @Column({ nullable: true })
   centerState: string;
+
+  @Column({ nullable: true })
+  slotId: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;

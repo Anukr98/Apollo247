@@ -52,7 +52,37 @@ export class AppointmentRepository extends Repository<Appointment> {
   async findById(id: string) {
     const cache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
     if (cache && typeof cache === 'string') {
-      const cacheAppointment: Appointment = JSON.parse(cache);
+      let cacheAppointment: Appointment = JSON.parse(cache);
+      if (cacheAppointment.sdConsultationDate) {
+        cacheAppointment.sdConsultationDate = new Date(cacheAppointment.sdConsultationDate);
+      }
+      if (cacheAppointment.bookingDate) {
+        cacheAppointment.bookingDate = new Date(cacheAppointment.bookingDate);
+      }
+      if (cacheAppointment.appointmentDateTime) {
+        cacheAppointment.appointmentDateTime = new Date(cacheAppointment.appointmentDateTime);
+      }
+      if (cacheAppointment.updatedDate) {
+        cacheAppointment.updatedDate = new Date(cacheAppointment.updatedDate);
+      }
+      if (cacheAppointment.cancelledDate) {
+        cacheAppointment.cancelledDate = new Date(cacheAppointment.cancelledDate);
+      }
+      if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.createdDate) {
+        cacheAppointment.paymentInfo.createdDate = new Date(
+          cacheAppointment.paymentInfo.createdDate
+        );
+      }
+      if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.paymentDateTime) {
+        cacheAppointment.paymentInfo.paymentDateTime = new Date(
+          cacheAppointment.paymentInfo.paymentDateTime
+        );
+      }
+      if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.updatedDate) {
+        cacheAppointment.paymentInfo.updatedDate = new Date(
+          cacheAppointment.paymentInfo.updatedDate
+        );
+      }
       return this.create(cacheAppointment);
     }
     const appointment = await this.findOne({ id }).catch((getApptError) => {
@@ -166,7 +196,6 @@ export class AppointmentRepository extends Repository<Appointment> {
   ): Promise<Appointment> {
     const appointment = this.create(appt);
     Object.assign(appointment, { ...updateDetails });
-    console.log('objectassign:::::::::', appointment);
     return appointment.save().catch((appointmentError) => {
       throw new AphError(errorType, undefined, { appointmentError });
     });
@@ -553,8 +582,10 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getTodaysAppointments(startDate: Date) {
     //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + '18:30');
-    const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
-    const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+    //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    //const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+    const newStartDate = new Date('2020-08-01T18:30');
+    const newEndDate = new Date('2020-08-30T18:30');
 
     return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
@@ -1176,7 +1207,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         id,
         status,
         isSeniorConsultStarted,
-        sdConsultationDate: new Date(),
+        sdConsultationDate,
       },
       AphErrorMessages.UPDATE_APPOINTMENT_ERROR
     );
@@ -2023,10 +2054,11 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getNotStartedAppointments() {
+    const apptDateTime = new Date(format(addMinutes(new Date(), -5), 'yyyy-MM-dd HH:mm') + ':00');
     return this.createQueryBuilder('appointment')
       .where('appointment.status = :status', { status: STATUS.PENDING })
       .andWhere('appointment.appointmentDateTime = :apptDateTime', {
-        apptDateTime: addMinutes(new Date(), -5),
+        apptDateTime,
       })
       .getMany();
   }

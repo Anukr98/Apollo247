@@ -130,6 +130,7 @@ export const SEND_CALL_NOTIFICATION = gql`
     $doctorType: DOCTOR_CALL_TYPE
     $deviceType: DEVICETYPE
     $callSource: BOOKINGSOURCE
+    $numberOfParticipants: Int
   ) {
     sendCallNotification(
       appointmentId: $appointmentId
@@ -137,6 +138,7 @@ export const SEND_CALL_NOTIFICATION = gql`
       doctorType: $doctorType
       deviceType: $deviceType
       callSource: $callSource
+      numberOfParticipants: $numberOfParticipants
     ) {
       status
       callDetails {
