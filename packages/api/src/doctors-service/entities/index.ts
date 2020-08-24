@@ -463,6 +463,9 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   zip: string;
 
+  @Column({ type: 'float8', default: 7 })
+  chatDays: number;
+
   @Column({ default: false })
   skipAutoQuestions: Boolean;
 

@@ -3,6 +3,8 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { CaseSheet, CASESHEET_STATUS } from 'consults-service/entities';
 import { DoctorType } from 'doctors-service/entities';
+import { format, addDays } from 'date-fns';
+import { STATUS } from 'consults-service/entities';
 
 @EntityRepository(CaseSheet)
 export class CaseSheetRepository extends Repository<CaseSheet> {
@@ -162,5 +164,18 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .andWhere('case_sheet.sentToPatient = :sentToPatient', { sentToPatient: true })
       .orderBy('case_sheet.version', 'DESC')
       .getOne();
+  }
+
+  getAllAppointmentsToBeArchived(currentDate: Date) {
+    const startDate = new Date(format(addDays(currentDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const endDate = new Date(format(currentDate, 'yyyy-MM-dd') + 'T18:29');
+    return this.createQueryBuilder('case_sheet')
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+      .where(` appointment.sdConsultationDate + (case_sheet.followUpAfterInDays * ${ "'1 day'::INTERVAL"}) >= :startDate `, { startDate })
+      .andWhere(` appointment.sdConsultationDate + (case_sheet.followUpAfterInDays * ${ "'1 day'::INTERVAL"}) < :endDate `, { endDate })
+      .andWhere(` appointment.status = :status`, { status: STATUS.COMPLETED })
+      .select("appointment.id")
+      .groupBy('appointment.id')
+      .getRawMany();
   }
 }
