@@ -2544,6 +2544,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setDoctorJoined(false);
       } else if (message.message.message === endCallMsg) {
         AsyncStorage.setItem('callDisconnected', 'true');
+      } else if (message.message.message === exotelCall) {
+        addMessages(message);
       }
     } else {
       console.log('succss');
