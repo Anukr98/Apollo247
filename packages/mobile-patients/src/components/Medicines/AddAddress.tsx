@@ -9,7 +9,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DropDown, DropDownProps } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { More, EditIconNew} from '@aph/mobile-patients/src/components/ui/Icons';
+import { More, EditIconNewOrange} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -241,7 +241,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     });
 
   const onSavePress = async () => {
-    setshowSpinner(true);
+    // setshowSpinner(true);
     CommonLogEvent(AppRoutes.AddAddress, 'On Save Press clicked');
     if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
       if (!isChanged) {
@@ -253,7 +253,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         const updateaddressInput: UpdatePatientAddressInput = {
           id: addressData.id,
           addressLine1: addressLine1,
-          addressLine2: '', 
+          addressLine2: areaDetails, 
           /** look for the area details, attribute & name and phone number  ~ mobileNumber*/
           // city: cityState[0] || '',
           // state: cityState[1] || '',
@@ -269,28 +269,32 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           stateCode: finalStateCode,
         };
         console.log(updateaddressInput, 'updateaddressInput');
-        setshowSpinner(true);
-        client
-          .mutate<updatePatientAddress, updatePatientAddressVariables>({
-            mutation: UPDATE_PATIENT_ADDRESS,
-            variables: { UpdatePatientAddressInput: updateaddressInput },
-          })
-          .then((_data: any) => {
-            try {
-              setshowSpinner(false);
-              console.log('updateapicalled', _data);
-              props.navigation.pop(2, { immediate: true });
-              props.navigation.push(AppRoutes.AddressBook);
-            } catch (error) {
-              CommonBugFender('AddAddress_onSavePress_try', error);
-            }
-          })
-          .catch((e) => {
-            CommonBugFender('AddAddress_onSavePress', e);
-            setshowSpinner(false);
-            handleGraphQlError(e);
-          });
-        //props.navigation.goBack();
+        // setshowSpinner(true);
+        // client
+        //   .mutate<updatePatientAddress, updatePatientAddressVariables>({
+        //     mutation: UPDATE_PATIENT_ADDRESS,
+        //     variables: { UpdatePatientAddressInput: updateaddressInput },
+        //   })
+        //   .then((_data: any) => {
+        //     try {
+        //       setshowSpinner(false);
+        //       console.log('updateapicalled', _data);
+        //       props.navigation.pop(2, { immediate: true });
+        //       props.navigation.push(AppRoutes.AddressBook);
+        //     } catch (error) {
+        //       CommonBugFender('AddAddress_onSavePress_try', error);
+        //     }
+        //   })
+        //   .catch((e) => {
+        //     CommonBugFender('AddAddress_onSavePress', e);
+        //     setshowSpinner(false);
+        //     handleGraphQlError(e);
+        //   });
+        //props.navigation.goBack(); //this line already commented
+        props.navigation.navigate(AppRoutes.Maps,{
+          addressDetails: updateaddressInput
+        })
+
       } else {
         props.navigation.goBack();
       }
@@ -561,7 +565,7 @@ const renderUserDetails = () => {
                 setEditProfile(true)
                 // props.navigation.navigate(AppRoutes.Maps)
               }}>
-                <EditIconNew/>
+                <EditIconNewOrange/>
             </TouchableOpacity> :
             <View style={{flex: 0.2,justifyContent:'flex-end',alignItems:'center'}}>
               <TouchableOpacity style={{width:"100%"}}

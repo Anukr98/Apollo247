@@ -535,6 +535,11 @@ export const getPlaceInfoByPlaceId = (
   return Axios.get(url);
 };
 
+export const getLatLongFromAddress = (address: string) : Promise<AxiosResponse<PlacesApiResponse>> =>{
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}`
+  return Axios.get(url);
+}
+  
 // let cancelAutoCompletePlaceSearchApi: Canceler | undefined;
 
 export const autoCompletePlaceSearch = (

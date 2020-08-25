@@ -90,7 +90,7 @@ import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/
 import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
-import Maps from '@aph/mobile-patients/src/components/ui/Maps'
+import {Maps} from '@aph/mobile-patients/src/components/ui/Maps'
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',

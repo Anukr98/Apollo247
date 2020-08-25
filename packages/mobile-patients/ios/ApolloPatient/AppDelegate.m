@@ -30,11 +30,14 @@
 #import <PushKit/PushKit.h>
 #import "RNCallKeep.h"
 #import "RNVoipPushNotificationManager.h"
+@import GoogleMaps;
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  
+  [GMSServices provideAPIKey:@"AIzaSyDMH-A1TD0bfhHjuzhe4_SrWluwAp2ELy4"];
   RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
   RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
                                                    moduleName:@"ApolloPatient"

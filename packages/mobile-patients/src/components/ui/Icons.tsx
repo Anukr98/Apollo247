@@ -836,6 +836,10 @@ export const EditIconNew: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_edit_new.png')} />
 );
 
+export const EditIconNewOrange: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_edit_orange.png')} />
+);
+
 export const HomeIcon: React.FC<IconProps> = (props) => (
   <IconBase style={{ height: 32, width: 32 }} {...props} source={require('./icons/ic_home.png')} />
 );
