@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE } from 'consults-service/entities';
+import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE, CaseSheet } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -34,6 +34,7 @@ export const getPatinetAppointmentsTypeDefs = gql`
     actualAmount: Float
     discountedAmount: Float
     appointmentPayments: [AppointmentPayment]
+    caseSheet: [CaseSheet]
     doctorInfo: DoctorDetailsWithStatusExclude @provides(fields: "id")
   }
 
@@ -92,7 +93,7 @@ export const getPatinetAppointmentsTypeDefs = gql`
 const REDIS_PATIENT_PASTCONSULT_BY_UHID_PREFIX: string = 'patient:pastconsult:';
 
 type PatientAppointmentsResult = {
-  patinetAppointments: PatinetAppointments[] | null;
+  patinetAppointments: Omit<PatinetAppointments, 'caseSheet'>[] | null;
 };
 
 type PatientAllAppointmentsResult = {
@@ -126,6 +127,7 @@ type PatinetAppointments = {
   actualAmount: number;
   discountedAmount: number;
   appointmentPayments: AppointmentPayment[];
+  caseSheet: CaseSheet[];
 };
 
 type AppointmentPayment = {
