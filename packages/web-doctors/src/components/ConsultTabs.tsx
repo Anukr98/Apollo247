@@ -29,7 +29,9 @@ import {
   WebEngageEvent,
   ConsultMode,
   DoctorConsultEventInput,
-} from "graphql/types/globalTypes";
+  CALL_FEEDBACK_RESPONSES_TYPES,
+} from 'graphql/types/globalTypes';
+
 import {
   GetJuniorDoctorCaseSheet,
   GetJuniorDoctorCaseSheetVariables,
@@ -68,11 +70,10 @@ import {
   MODIFY_CASESHEET,
   UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
   POST_WEB_ENGAGE,
-} from "graphql/profiles";
-import {
-  ModifyCaseSheet,
-  ModifyCaseSheetVariables,
-} from "graphql/types/ModifyCaseSheet";
+  SAVE_APPOINTMENT_CALL_FEEDBACK,
+} from 'graphql/profiles';
+import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
+
 import {
   PostDoctorConsultEvent,
   PostDoctorConsultEventVariables,
@@ -105,8 +106,14 @@ import {
 import {
   SendCallNotification,
   SendCallNotificationVariables,
-} from "graphql/types/SendCallNotification";
-import moment from "moment";
+} from 'graphql/types/SendCallNotification';
+import { RateCall } from 'components/ConsultRoom/RateCall';
+import {
+  saveAppointmentCallFeedback,
+  saveAppointmentCallFeedbackVariables,
+} from 'graphql/types/saveAppointmentCallFeedback';
+import Alert from 'components/Alert';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -448,12 +455,10 @@ export const ConsultTabs: React.FC = () => {
     boolean
   >(false);
 
-  const subscribekey: string = process.env.SUBSCRIBE_KEY
-    ? process.env.SUBSCRIBE_KEY
-    : "";
-  const publishkey: string = process.env.PUBLISH_KEY
-    ? process.env.PUBLISH_KEY
-    : "";
+  const [giveRating, setGiveRating] = useState<boolean>(false);
+
+  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
+  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
 
   const config: Pubnub.PubnubConfig = {
     subscribeKey: subscribekey,
@@ -1150,7 +1155,6 @@ export const ConsultTabs: React.FC = () => {
               ? patientLifeStyle!.occupationHistory
               : "",
           );
-
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !==
               null
             ? setDiagnosis(
@@ -2009,6 +2013,48 @@ export const ConsultTabs: React.FC = () => {
         sessionClient.notify(JSON.stringify(logObject));
         console.log("Error in Call Notification", error.message);
       });
+    setGiveRating(true);
+  };
+
+  const submitRatingHandler = (data: {
+    rating: number;
+    feedbackResponseType: CALL_FEEDBACK_RESPONSES_TYPES | null;
+    audioFeedbacks: {}[];
+    videoFeedbacks: {}[];
+  }) => {
+    setGiveRating(false);
+    const query = {
+      appointmentCallDetailsId: callId,
+      ratingValue: data.rating,
+      feedbackResponseType: data.feedbackResponseType,
+      feedbackResponses:
+        data.audioFeedbacks.length === 0 && data.videoFeedbacks.length === 0
+          ? null
+          : JSON.stringify({
+              audio: data.audioFeedbacks,
+              video: data.videoFeedbacks,
+            }),
+    };
+
+    client
+      .mutate<saveAppointmentCallFeedback, saveAppointmentCallFeedbackVariables>({
+        mutation: SAVE_APPOINTMENT_CALL_FEEDBACK,
+        variables: {
+          saveAppointmentCallFeedback: query,
+        },
+      })
+      .then((_data: any) => {
+        alert('Thank you for sharing your reviews.');
+      })
+      .catch((e: any) => {
+        alert('Error in giving feedback. Please try again!');
+      });
+  };
+
+  const showRateCallModal = () => {
+    return (
+      <RateCall visible={giveRating} submitRatingCallback={(data) => submitRatingHandler(data)} />
+    );
   };
 
   const inEditMode = !isPdfPageOpen ||
@@ -2150,6 +2196,7 @@ export const ConsultTabs: React.FC = () => {
             autoHide={true}
             style={{ height: "calc(100vh - 65px)" }}
           >
+            {showRateCallModal()}
             <div className={classes.container}>
               <CallPopover
                 setStartConsultAction={(flag: boolean) =>
