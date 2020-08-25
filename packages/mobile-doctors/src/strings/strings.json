@@ -436,25 +436,28 @@
     "audio": "Audio",
     "video": "Video",
     "audioReviews": [
-      {"value": "Patient Did not pick up the call", "responseName": "AUDIO_CALL_NOT_PICKED"},
-      {"value": "Call Disconnected Abruptly", "responseName": "AUDIO_CALL_DISCONNECTED_ABRUPTLY"},
-      {"value": "Could not hear any sound", "responseName": "AUDIO_NO_SOUND_HEARED"},
-      {"value": "Patient could not hear me", "responseName": "AUDIO_NO_SOUND_RECEIVED"},
-      {"value": "Audio Echo was heard", "responseName": "AUDIO_ECHO"},
-      {"value": "I heard a strange noise (not background noise)", "responseName": "AUDIO_STRANGE_NOISE"},
-      {"value": "Volume was low", "responseName": "AUDIO_VOLUME_LOW"},
-      {"value": "Other", "responseName": "AUDIO_OTHER"}
+      { "value": "Patient Did not pick up the call", "responseName": "AUDIO_CALL_NOT_PICKED" },
+      { "value": "Call Disconnected Abruptly", "responseName": "AUDIO_CALL_DISCONNECTED_ABRUPTLY" },
+      { "value": "Could not hear any sound", "responseName": "AUDIO_NO_SOUND_HEARED" },
+      { "value": "Patient could not hear me", "responseName": "AUDIO_NO_SOUND_RECEIVED" },
+      { "value": "Audio Echo was heard", "responseName": "AUDIO_ECHO" },
+      {
+        "value": "I heard a strange noise (not background noise)",
+        "responseName": "AUDIO_STRANGE_NOISE"
+      },
+      { "value": "Volume was low", "responseName": "AUDIO_VOLUME_LOW" },
+      { "value": "Other", "responseName": "AUDIO_OTHER" }
     ],
     "videoReviews": [
-      {"value": "Patient Did not pick up the call", "responseName": "VIDEO_CALL_NOT_PICKED"},
-      {"value": "Call Disconnected Abruptly", "responseName": "VIDEO_CALL_DISCONNECTED_ABRUPTLY"},
-      {"value": "Could not see anything in the video", "responseName": "VIDEO_NOT_VISIBLE"},
-      {"value": "Video was working but video was not clear", "responseName": "VIDEO_NOT_CLEAR"},
-      {"value": "Patient could not see my video", "responseName": "VIDEO_NOT_RECEIVED"},
-      {"value": "Video froze during the call", "responseName": "VIDEO_FREEZE"},
-      {"value": "Video Stopped working during the call", "responseName": "VIDEO_STOPPED"},
-      {"value": "Video and audio was not in sync", "responseName": "VIDEO_AUDIO_NOT_SYNC"},
-      {"value": "Other", "responseName": "VIDEO_OTHER"}
+      { "value": "Patient Did not pick up the call", "responseName": "VIDEO_CALL_NOT_PICKED" },
+      { "value": "Call Disconnected Abruptly", "responseName": "VIDEO_CALL_DISCONNECTED_ABRUPTLY" },
+      { "value": "Could not see anything in the video", "responseName": "VIDEO_NOT_VISIBLE" },
+      { "value": "Video was working but video was not clear", "responseName": "VIDEO_NOT_CLEAR" },
+      { "value": "Patient could not see my video", "responseName": "VIDEO_NOT_RECEIVED" },
+      { "value": "Video froze during the call", "responseName": "VIDEO_FREEZE" },
+      { "value": "Video Stopped working during the call", "responseName": "VIDEO_STOPPED" },
+      { "value": "Video and audio was not in sync", "responseName": "VIDEO_AUDIO_NOT_SYNC" },
+      { "value": "Other", "responseName": "VIDEO_OTHER" }
     ],
     "othersReasonPlaceholder": "Others,  Please specify",
     "feedbackResponseType": {
@@ -533,6 +536,7 @@
     "inMins": "in mins",
     "notificationHeader": "Set up Notification prefrences",
     "followupHeader": "Set up your patient follow up days",
-    "saveText": "The last changes saved on {0}."
+    "saveText": "The last changes saved on {0}.",
+    "followupInfo": "This Value will be default for all patients, However you can change the follow-up chat day count on individual patient's Case-sheet."
   }
 }

@@ -1,49 +1,43 @@
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { MyAccountStyles } from '@aph/mobile-doctors/src/components/MyAccount.styles';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import { clearUserData } from '@aph/mobile-doctors/src/helpers/localStorage';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import React, { useState, useEffect } from 'react';
-import { Alert, View, SafeAreaView, Text } from 'react-native';
-import {
-  NavigationActions,
-  NavigationScreenProps,
-  StackActions,
-  ScrollView,
-} from 'react-navigation';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
   BackArrow,
-  RoundIcon,
-  Dropdown,
-  Up,
   ChekGray,
+  Dropdown,
   InfoGreen,
+  RoundIcon,
+  Up,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { useApolloClient } from 'react-apollo-hooks';
-import AsyncStorage from '@react-native-community/async-storage';
-import { DELETE_DOCTOR_DEVICE_TOKEN } from '@aph/mobile-doctors/src/graphql/profiles';
-import {
-  deleteDoctorDeviceToken,
-  deleteDoctorDeviceTokenVariables,
-} from '@aph/mobile-doctors/src/graphql/types/deleteDoctorDeviceToken';
-import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { MaterialMenu, OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { Switch } from '@aph/mobile-doctors/src/components/ui/Switch';
-import { TouchableOpacity } from 'react-native-gesture-handler';
-import { MaterialMenu, OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
-import { MyAccountStyles } from '@aph/mobile-doctors/src/components/MyAccount.styles';
+import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { UPDATE_CHAT_DAYS } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  updateDoctorChatDays,
+  updateDoctorChatDaysVariables,
+} from '@aph/mobile-doctors/src/graphql/types/updateDoctorChatDays';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { string } from '@aph/mobile-doctors/src/strings/string';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { SafeAreaView, Text, View } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = MyAccountStyles;
 
 export interface MyAccountProps extends NavigationScreenProps {}
 
 export const MyAccount: React.FC<MyAccountProps> = (props) => {
-  const { clearFirebaseUser, doctorDetails } = useAuth();
+  const { doctorDetails, getDoctorDetailsApi } = useAuth();
   const client = useApolloClient();
-  const { setLoading } = useUIElements();
+  const { setLoading, showAphAlert } = useUIElements();
   const appointmentTypeArray = [
     { key: 'O', value: 'Online' },
     { key: 'I', value: 'In-person' },
@@ -60,7 +54,9 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       return { key: i, value: i < 10 ? (i == 0 ? '0' : '0' + i.toString()) : i.toString() };
     });
 
-  const [isEdited, setIsEdited] = useState<boolean>(false);
+  const [ivrChanged, setIVRChanged] = useState<boolean>(false);
+  const [notificationChanged, setNotificationChanged] = useState<boolean>(false);
+  const [followupChanged, setFollowupChanged] = useState<boolean>(false);
   const [showHelpModel, setshowHelpModel] = useState<boolean>(false);
   const [showSavedTime, setShowSavedTime] = useState<boolean>(false);
   const [expandFollowUp, setExpandFollowUp] = useState<boolean>(false);
@@ -72,7 +68,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const [inpersonAppointmentTime, setInPersonAppointmentTime] = useState<OptionsObject>(
     timeOptionArray[0]
   );
-  const [followUpDays, setFollowUpDays] = useState<OptionsObject>(daysOptionArray[0]);
+  const [followUpDays, setFollowUpDays] = useState<OptionsObject>(daysOptionArray[7]);
+
   const editedData = {
     ivrEnabled: ivrSwitch,
     typeOfAppointment: appointmentType,
@@ -80,11 +77,32 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     inpersonRemainderTime: inpersonAppointmentTime.value,
     followUpDays: followUpDays.key,
   };
+
   useEffect(() => {
     AsyncStorage.getItem('settingsData').then((data) => {
-      setIsEdited(data !== JSON.stringify(editedData));
+      if (data) {
+        const savedData = JSON.parse(data);
+        setIVRChanged(
+          savedData.ivrEnabled !== editedData.ivrEnabled ||
+            savedData.typeOfAppointment !== editedData.typeOfAppointment ||
+            savedData.onlineRemainderTime !== editedData.onlineRemainderTime ||
+            savedData.inpersonRemainderTime !== editedData.inpersonRemainderTime
+        );
+        setFollowupChanged(savedData.followUpDays !== editedData.followUpDays);
+      } else {
+        AsyncStorage.setItem('settingsData', JSON.stringify(editedData));
+      }
     });
   }, [appointmentType, followUpDays, inpersonAppointmentTime, ivrSwitch, onlineAppointmentTime]);
+
+  useEffect(() => {
+    if (doctorDetails) {
+      const chatDays = g(doctorDetails, 'chatDays');
+      if (chatDays !== null && chatDays !== undefined) {
+        setFollowUpDays(daysOptionArray[chatDays]);
+      }
+    }
+  }, [doctorDetails]);
 
   const renderNeedHelpModal = () => {
     return showHelpModel ? <NeedHelpCard onPress={() => setshowHelpModel(false)} /> : null;
@@ -262,9 +280,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                   }}
                 >
                   {'Default value set at  '}
-                  <Text style={theme.viewStyles.text('B', 14, theme.colors.APP_GREEN)}>{`${
-                    followUpDays.key
-                  } day${followUpDays.key === 1 ? '' : 's'}`}</Text>
+                  <Text style={theme.viewStyles.text('B', 14, theme.colors.APP_GREEN)}>
+                    {followUpDays.key > 0
+                      ? `${followUpDays.key} day${followUpDays.key === 1 ? '' : 's'}`
+                      : `No Chat Follow-up`}
+                  </Text>
                 </Text>
               ) : null}
             </View>
@@ -273,7 +293,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         </TouchableOpacity>
         {expandFollowUp ? (
           <View style={{ marginTop: 16 }}>
-            <Text style={theme.viewStyles.text('R', 10, '#c9c5c5')}>Select the umber of days</Text>
+            <Text style={theme.viewStyles.text('R', 10, '#c9c5c5')}>Select the number of days</Text>
             <View style={{ width: '40%', marginTop: 12 }}>
               <MaterialMenu
                 options={daysOptionArray}
@@ -302,16 +322,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20 }}>
               <InfoGreen />
-              <Text
-                style={{
-                  ...theme.viewStyles.text('R', 10, '#979797', 1, 12, 1),
-                  marginLeft: 10,
-                  marginRight: 20,
-                }}
-              >
-                This Value will be default for all patients, However you can change the follow-up
-                chat day count on individual patient's Case-sheet.
-              </Text>
+              <Text style={styles.followupInfoText}>{string.settings.followupInfo}</Text>
             </View>
           </View>
         ) : null}
@@ -333,21 +344,63 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             </Text>
           </View>
         ) : null}
-        {isEdited ? (
+        {followupChanged || ivrChanged ? (
           <Button
             title={'SAVE CHANGES'}
             onPress={() => {
-              AsyncStorage.setItem('settingsData', JSON.stringify(editedData));
-              setIsEdited(false);
-              setShowSavedTime(true);
-              setTimeout(() => {
-                setShowSavedTime(false);
-              }, 5000);
+              saveSettings();
             }}
           />
         ) : null}
       </View>
     );
+  };
+
+  const saveSettings = () => {
+    if (followupChanged) {
+      setLoading && setLoading(true);
+      client
+        .mutate<updateDoctorChatDays, updateDoctorChatDaysVariables>({
+          mutation: UPDATE_CHAT_DAYS,
+          variables: {
+            doctorId: g(doctorDetails, 'id') || '',
+            chatDays: followUpDays.key.toString(),
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          setLoading && setLoading(false);
+          if (!g(data, 'updateDoctorChatDays', 'isError')) {
+            getDoctorDetailsApi && getDoctorDetailsApi();
+            AsyncStorage.setItem('settingsData', JSON.stringify(editedData));
+            setFollowupChanged(false);
+            setShowSavedTime(true);
+            setTimeout(() => {
+              setShowSavedTime(false);
+            }, 5000);
+          } else {
+            showAphAlert &&
+              showAphAlert({
+                title: string.common.alert,
+                description: string.alerts.something_went_wrong,
+              });
+          }
+        })
+        .catch((error) => {
+          setLoading && setLoading(false);
+          showAphAlert &&
+            showAphAlert({
+              title: string.common.alert,
+              description: string.alerts.something_went_wrong,
+            });
+        });
+    }
+    if (ivrChanged) {
+      //Do IVR call
+    }
+    if (notificationChanged) {
+      //Do Notificaion change
+    }
   };
 
   return (
@@ -356,9 +409,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         {renderHeader()}
         <ScrollView bounces={false}>
           <View style={styles.viewMainContainer}>
-            {renderivr()}
+            {/* APP:2876: design */}
+            {/* {renderivr()}
             {ivrSwitch ? renderivrOption() : null}
-            {renderNotificationPreference()}
+            {renderNotificationPreference()} */}
             {renderFollowupSettings()}
           </View>
         </ScrollView>

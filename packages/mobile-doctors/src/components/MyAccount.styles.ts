@@ -164,4 +164,9 @@ export const MyAccountStyles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
+  followupInfoText: {
+    ...theme.viewStyles.text('R', 10, '#979797', 1, 12, 1),
+    marginLeft: 10,
+    marginRight: 20,
+  },
 });

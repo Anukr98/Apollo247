@@ -17,6 +17,7 @@ export const GET_DOCTOR_DETAILS = gql`
       firstName
       isActive
       id
+      chatDays
       languages
       lastName
       mobileNumber
@@ -1728,15 +1729,24 @@ export const CALL_DISCONNECT_NOTIFICATION = gql`
 `;
 
 export const SAVE_APPOINTMENT_CALL_FEEDBACK = gql`
- mutation saveAppointmentCallFeedback(
- $saveAppointmentCallFeedback: SaveAppointmentCallFeedbackInput
- ) {
- saveAppointmentCallFeedback(saveAppointmentCallFeedbackInput: $saveAppointmentCallFeedback) {
- id
- appointmentCallDetailsId
- ratingValue
- feedbackResponseType
- feedbackResponses
- }
- }
+  mutation saveAppointmentCallFeedback(
+    $saveAppointmentCallFeedback: SaveAppointmentCallFeedbackInput
+  ) {
+    saveAppointmentCallFeedback(saveAppointmentCallFeedbackInput: $saveAppointmentCallFeedback) {
+      id
+      appointmentCallDetailsId
+      ratingValue
+      feedbackResponseType
+      feedbackResponses
+    }
+  }
+`;
+
+export const UPDATE_CHAT_DAYS = gql`
+  mutation updateDoctorChatDays($doctorId: String!, $chatDays: String!) {
+    updateDoctorChatDays(doctorId: $doctorId, chatDays: $chatDays) {
+      isError
+      response
+    }
+  }
 `;
