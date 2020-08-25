@@ -1409,14 +1409,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       })
       .then((response: HereNowResponse) => {
         console.log('hereNowresponse', response);
-        const data: any = response.channels && response.channels[appointmentData.id] && response.channels[appointmentData.id].occupants;
-        const occupancyDoctor = data && data.length > 0 && data.filter((obj: any) => {
-          return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
-        });
-        const occupancyJrDoctor = data && data.length > 0 && data.filter((obj: any) => {
-          return obj.uuid === 'JUNIOR' || obj.uuid.indexOf('JUNIOR_') > -1;
-        });
-        if(occupancyJrDoctor && occupancyJrDoctor.length >=1){
+        const data: any =
+          response.channels &&
+          response.channels[appointmentData.id] &&
+          response.channels[appointmentData.id].occupants;
+        const occupancyDoctor =
+          data &&
+          data.length > 0 &&
+          data.filter((obj: any) => {
+            return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
+          });
+        const occupancyJrDoctor =
+          data &&
+          data.length > 0 &&
+          data.filter((obj: any) => {
+            return obj.uuid === 'JUNIOR' || obj.uuid.indexOf('JUNIOR_') > -1;
+          });
+        if (occupancyJrDoctor && occupancyJrDoctor.length >= 1) {
           jrDoctorJoined.current = true;
         }
         if (occupancyDoctor && occupancyDoctor.length >= 1 && response.totalOccupancy >= 2) {
@@ -5086,6 +5095,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             )}
 
             <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+            {waitAndEndCall()}
             {patientJoinedCall.current && !subscriberConnected.current && (
               <Text style={styles.centerTxt}>
                 {strings.common.waitForDoctirToJoinCall.replace('doctor_name', doctorName)}
@@ -5762,6 +5772,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         </View>
       </View>
     );
+  };
+
+  const waitAndEndCall = () => {
+    if (patientJoinedCall.current && !subscriberConnected.current && callMinutes === 5) {
+      handleEndCall();
+    }
   };
 
   const handleEndCall = () => {
