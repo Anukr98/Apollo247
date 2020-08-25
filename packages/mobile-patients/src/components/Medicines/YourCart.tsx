@@ -59,6 +59,7 @@ import {
   TatApiInput,
   getDeliveryTimeHeaderTat,
   validateConsultCoupon,
+  userSpecificCoupon,
   getMedicineDetailsApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
@@ -255,6 +256,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   useEffect(() => {
     fetchAddresses();
+    fetchUserSpecificCoupon();
   }, []);
 
   useEffect(() => {
@@ -329,7 +331,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     if (couponProducts && couponProducts.length) {
       getMedicineDetailsOfCouponProducts();
     }
-  },[couponProducts]);
+  }, [couponProducts]);
 
   useEffect(() => {
     // update cart item prices if any after store selected
@@ -399,35 +401,35 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const getMedicineDetailsOfCouponProducts = () => {
     setLoading && setLoading(true);
     Promise.all(couponProducts.map((item) => getMedicineDetailsApi(item!.sku!)))
-    .then((result) => {
-      setLoading && setLoading(false);
-      const medicinesAll = result.map(({ data: { productdp } }, index) => {
-        const medicineDetails = (productdp && productdp[0]) || {};
-        if (medicineDetails.id == 0) {
-          return null;
-        }
+      .then((result) => {
+        setLoading && setLoading(false);
+        const medicinesAll = result.map(({ data: { productdp } }, index) => {
+          const medicineDetails = (productdp && productdp[0]) || {};
+          if (medicineDetails.id == 0) {
+            return null;
+          }
 
-        return {
-          id: medicineDetails!.sku!,
-          mou: medicineDetails.mou,
-          name: medicineDetails!.name,
-          price: couponProducts[index]!.mrp,
-          specialPrice: Number(medicineDetails.special_price) || undefined,
-          quantity: couponProducts[index]!.quantity ,
-          prescriptionRequired: medicineDetails.is_prescription_required == '1',
-          isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
-          thumbnail: medicineDetails.thumbnail || medicineDetails.image,
-          isInStock: !!medicineDetails.is_in_stock,
-          maxOrderQty: medicineDetails.MaxOrderQty,
-          productType: medicineDetails.type_id,
-        } as ShoppingCartItem;
+          return {
+            id: medicineDetails!.sku!,
+            mou: medicineDetails.mou,
+            name: medicineDetails!.name,
+            price: couponProducts[index]!.mrp,
+            specialPrice: Number(medicineDetails.special_price) || undefined,
+            quantity: couponProducts[index]!.quantity,
+            prescriptionRequired: medicineDetails.is_prescription_required == '1',
+            isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
+            thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+            isInStock: !!medicineDetails.is_in_stock,
+            maxOrderQty: medicineDetails.MaxOrderQty,
+            productType: medicineDetails.type_id,
+          } as ShoppingCartItem;
+        });
+        addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
+      })
+      .catch((e) => {
+        setLoading && setLoading(false);
+        console.log({ e });
       });
-      addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
-    })
-    .catch((e) => {
-      setLoading && setLoading(false);
-      console.log({ e });
-    });
   };
 
   const updateTatInfo = async () => {
@@ -654,7 +656,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       'Magento MRP': cartItemMrp,
       'Magento Pack Size': cartItemPackSize,
       'Store API MRP': storeMrp,
-      'Price Change In Cart': isDifference ? 'No' : 'Yes'
+      'Price Change In Cart': isDifference ? 'No' : 'Yes',
     };
     postWebEngageEvent(WebEngageEventName.SKU_PRICE_MISMATCH, eventAttributes);
   };
@@ -674,7 +676,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     const isDiff = storeItemPrice
       ? isDiffLessOrGreaterThan25Percent(cartItem.price, storeItemPrice)
       : true;
-    postSkuPriceMismatchEvent(cartItem.price, Number(cartItem.mou), storeItemPrice, cartItem.id, isDiff);
+    postSkuPriceMismatchEvent(
+      cartItem.price,
+      Number(cartItem.mou),
+      storeItemPrice,
+      cartItem.id,
+      isDiff
+    );
     const storeItemSP =
       !isDiff && cartItem.specialPrice
         ? getSpecialPriceFromRelativePrices(
@@ -748,7 +756,24 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     renderAlert(message);
   };
 
-  const applyCoupon = (coupon: string, cartItems: ShoppingCartItem[]) => {
+  const fetchUserSpecificCoupon = () => {
+    userSpecificCoupon(g(currentPatient, 'mobileNumber'))
+      .then((resp: any) => {
+        console.log(resp.data);
+        if (resp.data.errorCode == 0) {
+          let couponList = resp.data.response;
+          if (typeof couponList != null && couponList.length) {
+            const coupon = couponList[0].coupon;
+            applyCoupon(coupon, cartItems, true);
+          }
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('fetchingUserSpecificCoupon', error);
+      });
+  };
+
+  const applyCoupon = (coupon: string, cartItems: ShoppingCartItem[], autoApply?: boolean) => {
     CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
     setLoading!(true);
     const data = {
@@ -770,16 +795,16 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           if (resp.data.response.valid) {
             setCoupon!(g(resp.data, 'response')!);
           } else {
-            removeCouponWithAlert(g(resp.data, 'response', 'reason'));
+            !autoApply && removeCouponWithAlert(g(resp.data, 'response', 'reason'));
           }
         } else {
           CommonBugFender('validatingPharmaCoupon', resp.data.errorMsg);
-          removeCouponWithAlert(g(resp.data, 'errorMsg'));
+          !autoApply && removeCouponWithAlert(g(resp.data, 'errorMsg'));
         }
       })
       .catch((error) => {
         CommonBugFender('validatingPharmaCoupon', error);
-        removeCouponWithAlert('Sorry, unable to validate coupon right now.');
+        !autoApply && removeCouponWithAlert('Sorry, unable to validate coupon right now.');
       })
       .finally(() => setLoading!(false));
   };
