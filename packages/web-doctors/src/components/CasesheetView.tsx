@@ -555,8 +555,10 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
         } else {
           dosageHtml = prescription!.medicineDosage! + ' ' + unitHtmls;
         }
-        const genericName = prescription.includeGenericNameInPrescription! &&
-          prescription.genericName!.trim().length > 0 && (
+        const genericName = prescription.includeGenericNameInPrescription &&
+          prescription.genericName &&
+          prescription.genericName !== null &&
+          prescription.genericName.trim().length > 0 && (
             <div>{`Contains ${prescription.genericName}`}</div>
           );
         return (
