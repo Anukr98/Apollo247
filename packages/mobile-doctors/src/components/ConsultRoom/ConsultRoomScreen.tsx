@@ -44,7 +44,7 @@ import {
   UPLOAD_CHAT_FILE,
   POST_WEB_ENGAGE,
   CALL_DISCONNECT_NOTIFICATION,
-  SAVE_APPOINTMENT_CALL_FEEDBACK
+  SAVE_APPOINTMENT_CALL_FEEDBACK,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   cancelAppointment,
@@ -91,7 +91,7 @@ import {
   exotelInput,
   ConsultMode,
   WebEngageEvent,
-  CALL_FEEDBACK_RESPONSES_TYPES
+  CALL_FEEDBACK_RESPONSES_TYPES,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   initateConferenceTelephoneCall,
@@ -156,7 +156,10 @@ import {
   sendCallDisconnectNotificationVariables,
 } from '@aph/mobile-doctors/src/graphql/types/sendCallDisconnectNotification';
 import { RateCall } from '@aph/mobile-doctors/src/components/ConsultRoom/RateCall';
-import { saveAppointmentCallFeedback, saveAppointmentCallFeedbackVariables } from '@aph/mobile-doctors/src/graphql/types/saveAppointmentCallFeedback';
+import {
+  saveAppointmentCallFeedback,
+  saveAppointmentCallFeedbackVariables,
+} from '@aph/mobile-doctors/src/graphql/types/saveAppointmentCallFeedback';
 
 const { width } = Dimensions.get('window');
 // let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
@@ -562,6 +565,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [caseSheetVersion, setCaseSheetVersion] = useState<number>(1);
 
   const [switchValue, setSwitchValue] = useState<boolean | null>(true);
+  const [followupChatDays, setFollowupChatDays] = useState<OptionsObject>({
+    key: g(doctorDetails, 'chatDays') || '',
+    value: g(doctorDetails, 'chatDays') || '',
+  });
   const [followupDays, setFollowupDays] = useState<number | string>();
   const [followUpConsultationType, setFollowUpConsultationType] = useState<APPOINTMENT_TYPE>();
   const [doctorNotes, setDoctorNotes] = useState<string>('');
@@ -799,6 +806,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           return i;
         })
     );
+    setFollowupChatDays({
+      key:
+        g(caseSheet, 'caseSheetDetails', 'followUpChatDays') || g(doctorDetails, 'chatDays') || '',
+      value:
+        g(caseSheet, 'caseSheetDetails', 'followUpChatDays') || g(doctorDetails, 'chatDays') || '',
+    });
     setSwitchValue(g(caseSheet, 'caseSheetDetails', 'followUp') || null);
     setFollowupDays(g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays') || '');
     setFollowUpConsultationType(
@@ -969,6 +982,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               })
           : null,
       status: g(caseSheet, 'caseSheetDetails', 'status'),
+      followUpChatDays: followupChatDays.key,
       followUp: switchValue,
       followUpDate: moment(
         g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || new Date()
@@ -2175,6 +2189,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   setRemovedMedicinePrescriptionData={setRemovedMedicinePrescriptionData}
                   switchValue={switchValue}
                   setSwitchValue={setSwitchValue}
+                  followupChatDays={followupChatDays}
+                  setFollowupChatDays={setFollowupChatDays}
                   followupDays={followupDays}
                   setFollowupDays={setFollowupDays}
                   followUpConsultationType={followUpConsultationType}
@@ -2232,17 +2248,20 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       appointmentCallDetailsId: `${callId}`,
       ratingValue: data.rating,
       feedbackResponseType: data.feedbackResponseType,
-      feedbackResponses: data.audioFeedbacks.length === 0 && data.videoFeedbacks.length === 0 ? null : JSON.stringify({
-        "audio": data.audioFeedbacks,
-        "video": data.videoFeedbacks
-      })
-    }
+      feedbackResponses:
+        data.audioFeedbacks.length === 0 && data.videoFeedbacks.length === 0
+          ? null
+          : JSON.stringify({
+              audio: data.audioFeedbacks,
+              video: data.videoFeedbacks,
+            }),
+    };
 
     client
       .mutate<saveAppointmentCallFeedback, saveAppointmentCallFeedbackVariables>({
         mutation: SAVE_APPOINTMENT_CALL_FEEDBACK,
         variables: {
-          saveAppointmentCallFeedback: query
+          saveAppointmentCallFeedback: query,
         },
       })
       .then((_data: any) => {
@@ -2252,7 +2271,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             title: string.common.alert,
             description: 'Thank you for sharing your reviews.',
           });
-
       })
       .catch((e: any) => {
         setShowLoading!(false);
@@ -2262,7 +2280,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             description: 'Error in giving feedback. Please try again!',
           });
       });
-  }
+  };
 
   const onStartConsult = (successCallback?: () => void) => {
     getNetStatus().then((connected) => {
@@ -2378,6 +2396,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           // stopNoShow();
         }
       );
+      if (followupChatDays.key > 0) {
+        send(
+          `Congratulations! ${g(doctorDetails, 'displayName')} has provided you with ${
+            followupChatDays.key
+          } days of complimentary follow-up chat.`
+        );
+      }
     }
   };
 
@@ -3018,12 +3043,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const showRateCallModal = () => {
     return (
-      <RateCall
-          visible={giveRating}
-          submitRatingCallback={(data) => submitRatingHandler(data)}
-        />
-    )
-  }
+      <RateCall visible={giveRating} submitRatingCallback={(data) => submitRatingHandler(data)} />
+    );
+  };
 
   return (
     <View
