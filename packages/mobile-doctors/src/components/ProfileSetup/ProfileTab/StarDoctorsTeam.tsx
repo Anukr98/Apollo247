@@ -27,6 +27,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const styles = StarDoctorsTeamStyles;
 
@@ -199,7 +200,11 @@ export const StarDoctorsTeam: React.FC<StarDoctorsTeamProps> = ({
           doctorName={`${starDoctor!.associatedDoctor!.firstName || ''} ${starDoctor!
             .associatedDoctor!.lastName || ''}`}
           experience={starDoctor!.associatedDoctor!.experience || ''}
-          specialization={profileData.specialty!.name.toLocaleUpperCase()}
+          specialization={(
+            g(profileData, 'specialty', 'specialistSingularTerm') ||
+            g(profileData, 'specialty', 'name') ||
+            ''
+          ).toLocaleUpperCase()}
           education={starDoctor!.associatedDoctor!.qualification!}
           location={getFormattedLocation(starDoctor)}
         />

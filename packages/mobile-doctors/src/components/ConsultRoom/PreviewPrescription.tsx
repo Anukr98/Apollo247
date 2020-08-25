@@ -452,7 +452,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
           {doctorDetails.specialty && (
             <Text
               style={theme.viewStyles.text('S', 9, theme.colors.SHARP_BLUE, 1, 13)}
-            >{`${doctorDetails.specialty.name} | Reg. No. ${doctorDetails.registrationNumber}`}</Text>
+            >{`${doctorDetails.specialty.specialistSingularTerm} | Reg. No. ${doctorDetails.registrationNumber}`}</Text>
           )}
         </>
       )

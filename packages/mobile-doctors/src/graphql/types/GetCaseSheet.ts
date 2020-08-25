@@ -154,6 +154,9 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorIn
   __typename: "DoctorSpecialties";
   id: string;
   name: string;
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo {

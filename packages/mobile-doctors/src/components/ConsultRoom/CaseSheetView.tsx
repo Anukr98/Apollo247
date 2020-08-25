@@ -2509,7 +2509,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     if (specialties) {
       setSpecialtiesData([
         ...specialties.map((i) => {
-          return { key: i.id, value: i.name };
+          return { key: i.id, value: i.specialistSingularTerm || i.name };
         }),
       ]);
     }

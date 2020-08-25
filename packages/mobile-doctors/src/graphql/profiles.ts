@@ -35,7 +35,11 @@ export const GET_DOCTOR_DETAILS = gql`
       zip
       signature
       specialty {
+        id
         name
+        specialistSingularTerm
+        specialistPluralTerm
+        userFriendlyNomenclature
       }
       consultHours {
         consultMode
@@ -766,6 +770,9 @@ export const GET_CASESHEET = gql`
             specialty {
               id
               name
+              specialistSingularTerm
+              specialistPluralTerm
+              userFriendlyNomenclature
             }
           }
           hospitalId
@@ -1673,10 +1680,10 @@ export const GET_ALL_SPECIALTIES = gql`
       id
       name
       image
-      # specialistSingularTerm
-      # specialistPluralTerm
+      specialistSingularTerm
+      specialistPluralTerm
       userFriendlyNomenclature
-      # displayOrder
+      displayOrder
     }
   }
 `;
@@ -1724,6 +1731,15 @@ export const CALL_DISCONNECT_NOTIFICATION = gql`
   query sendCallDisconnectNotification($appointmentId: String, $callType: APPT_CALL_TYPE) {
     sendCallDisconnectNotification(appointmentId: $appointmentId, callType: $callType) {
       status
+    }
+  }
+`;
+
+export const GET_DOCTOR_HELPLINE = gql`
+  query getDoctorHelpline {
+    getDoctorHelpline {
+      doctorType
+      mobileNumber
     }
   }
 `;
