@@ -13,6 +13,7 @@ import {
   LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -50,6 +51,7 @@ import { FlatList, NavigationEvents, NavigationScreenProps } from 'react-navigat
 import {
   getPatientAllAppointments,
   getPatientAllAppointments_getPatientAllAppointments_appointments,
+  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet,
 } from '../../graphql/types/getPatientAllAppointments';
 import {
   APPOINTMENT_STATE,
@@ -181,7 +183,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [consultations, setconsultations] = useState<
     getPatientAllAppointments_getPatientAllAppointments_appointments[]
   >([]);
-
+  const [activeConsultations, setActiveConsultations] = useState<
+    getPatientAllAppointments_getPatientAllAppointments_appointments[]
+  >([]);
+  const [pastConsultations, setPastConsultations] = useState<
+    getPatientAllAppointments_getPatientAllAppointments_appointments[]
+  >([]);
   const { loading, setLoading } = useUIElements();
 
   const [showSchdulesView, setShowSchdulesView] = useState<boolean>(false);
@@ -328,10 +335,40 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 data.getPatientAllAppointments.appointments &&
                 consultations !== data.getPatientAllAppointments.appointments
               ) {
-                setconsultations(
-                  data.getPatientAllAppointments.appointments
-                  // data.getPatientAllAppointments.appointments.filter((item) => item.doctorInfo !== null)
-                );
+                let pastAppointments:
+                  | getPatientAllAppointments_getPatientAllAppointments_appointments
+                  | any = [];
+                let activeAppointments:
+                  | getPatientAllAppointments_getPatientAllAppointments_appointments
+                  | any = [];
+                data.getPatientAllAppointments.appointments.forEach((item) => {
+                  const caseSheet:
+                    | getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet
+                    | any =
+                    item.caseSheet &&
+                    item.caseSheet
+                      .filter((j) => j && j.doctorType !== DoctorType.JUNIOR)
+                      .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
+                  const followUpAfterInDays =
+                    caseSheet && caseSheet.length && caseSheet[0].followUpAfterInDays
+                      ? Number(caseSheet[0].followUpAfterInDays) === 0
+                        ? 6
+                        : Number(caseSheet[0].followUpAfterInDays) - 1
+                      : 6;
+                  if (
+                    moment(new Date(item.appointmentDateTime))
+                      .add(followUpAfterInDays, 'days')
+                      .startOf('day')
+                      .isSameOrAfter(moment(new Date()).startOf('day'))
+                  ) {
+                    activeAppointments.push(item);
+                  } else {
+                    pastAppointments.push(item);
+                  }
+                });
+                setconsultations(data.getPatientAllAppointments.appointments);
+                setActiveConsultations(activeAppointments);
+                setPastConsultations(pastAppointments);
               } else {
                 setconsultations([]);
               }
@@ -471,21 +508,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         keyExtractor={(_, index) => index.toString()}
         contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
         // horizontal={true}
-        data={
-          selectedTab === tabs[0].title
-            ? consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime))
-                  .add(6, 'days')
-                  .startOf('day')
-                  .isSameOrAfter(moment(new Date()).startOf('day'))
-              )
-            : consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime))
-                  .add(6, 'days')
-                  .startOf('day')
-                  .isBefore(moment(new Date()).startOf('day'))
-              )
-        }
+        data={selectedTab === tabs[0].title ? activeConsultations : pastConsultations}
         bounces={false}
         removeClippedSubviews={true}
         showsHorizontalScrollIndicator={false}
@@ -497,7 +520,19 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           // console.log(tomorrow, 'tomorrow');
           let appointmentDateTomarrow = moment(item.appointmentDateTime).format('DD MMM');
           // console.log(appointmentDateTomarrow, 'apptomorrow', tomorrowDate);
-
+          const caseSheet:
+            | getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet
+            | any =
+            item.caseSheet &&
+            item.caseSheet
+              .filter((j) => j && j.doctorType !== DoctorType.JUNIOR)
+              .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
+          const followUpAfterInDays =
+            caseSheet && caseSheet.length > 0 && caseSheet[0].followUpAfterInDays
+              ? Number(caseSheet[0].followUpAfterInDays) === 0
+                ? 8
+                : Number(caseSheet[0].followUpAfterInDays) + 1
+              : 8;
           const appointmentDateTime = moment
             .utc(item.appointmentDateTime)
             .local()
@@ -520,7 +555,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             // .set('hour', 0)
             // .set('minute', 0)
             .startOf('day')
-            .add(8, 'days'); // since we're calculating as EOD
+            .add(followUpAfterInDays, 'days'); // since we're calculating as EOD
           const day2 = moment(new Date());
           day1.diff(day2, 'days'); // 1
 
@@ -955,25 +990,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           unsetloaderDisplay={true}
         ></ProfileList>
         <Text style={styles.descriptionTextStyle}>
-          {consultations.filter((item) =>
-            moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY').add(6, 'days')
-          ).length > -1 && selectedTab === tabs[0].title
-            ? 'You have ' +
-              (consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime))
-                  .add(6, 'days')
-                  .startOf('day')
-                  .isSameOrAfter(moment(new Date()).startOf('day'))
-              ).length || 'no') +
-              ' active appointment(s)!'
-            : 'You have ' +
-              (consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime))
-                  .add(6, 'days')
-                  .startOf('day')
-                  .isBefore(moment(new Date()).startOf('day'))
-              ).length || 'no') +
-              ' past appointment(s)!'}
+          {selectedTab === tabs[0].title
+            ? 'You have ' + (activeConsultations.length || 'no') + ' active appointment(s)!'
+            : 'You have ' + (pastConsultations.length || 'no') + ' past appointment(s)!'}
         </Text>
       </View>
     );

@@ -511,6 +511,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           openConsultPopup(ConsultMode.ONLINE);
         }}
         DoctorId={doctorId}
+        chatDays={g(doctorDetails, 'chatDays') ? g(doctorDetails, 'chatDays')!.toString() : '7'}
         DoctorName={doctorDetails ? doctorDetails.fullName : ''}
         nextAppointemntOnlineTime={availableTime}
         nextAppointemntInPresonTime={physicalAvailableTime}
@@ -552,7 +553,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         ' ' +
         doctorDetails.firstName +
         ' ' +
-        string.consultType.follow_up_chat_message.replace('{0}', '3');
+        string.consultType.follow_up_chat_message.replace(
+          '{0}',
+          g(doctorDetails, 'chatDays') ? g(doctorDetails, 'chatDays')!.toString() : '7'
+        );
 
       return (
         <View style={styles.topView}>

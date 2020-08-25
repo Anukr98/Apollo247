@@ -47,6 +47,8 @@ import {
   ADD_CHAT_DOCUMENTS,
   UPLOAD_MEDIA_DOCUMENT_PRISM,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet } from '../../graphql/types/getPatientAllAppointments';
+import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   bookRescheduleAppointment,
   bookRescheduleAppointmentVariables,
@@ -370,10 +372,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
 
   let appointmentData: any = props.navigation.getParam('data');
+  const caseSheet:
+    | getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet
+    | any =
+    appointmentData.caseSheet &&
+    appointmentData.caseSheet
+      .filter((j) => j && j.doctorType !== DoctorType.JUNIOR)
+      .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
+  const followUpAfterInDays =
+    caseSheet && caseSheet.length && caseSheet[0].followUpAfterInDays
+      ? Number(caseSheet[0].followUpAfterInDays) === 0
+        ? 6
+        : Number(caseSheet[0].followUpAfterInDays) - 1
+      : 6;
   const disableChat =
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
-      .add(6, 'days')
+      .add(followUpAfterInDays, 'days')
       .startOf('day')
       .isBefore(moment(new Date()).startOf('day'));
   // console.log('appointmentData >>>>', appointmentData);
@@ -4268,7 +4283,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === cancelConsultInitiated ||
       rowData.message === callAbandonment ||
       rowData.message === appointmentComplete ||
-      rowData.message === patientRejectedCall || 
+      rowData.message === patientRejectedCall ||
       rowData === patientRejectedCall
     ) {
       return null;

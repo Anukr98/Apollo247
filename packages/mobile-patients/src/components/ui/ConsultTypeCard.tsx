@@ -105,6 +105,7 @@ export interface ConsultTypeCardProps {
   onPhysicalPress: () => void;
   isOnlineSelected: boolean;
   DoctorId: string;
+  chatDays: string;
   DoctorName: string | null;
   nextAppointemntOnlineTime: string;
   nextAppointemntInPresonTime: string;
@@ -122,6 +123,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
     onPhysicalPress,
     isOnlineSelected,
     DoctorId,
+    chatDays,
     DoctorName,
     nextAppointemntOnlineTime,
     nextAppointemntInPresonTime,
@@ -223,7 +225,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
         { image: <CTPrescription />, description: string.consultType.online.point5 },
         {
           image: <CTLightGrayChat />,
-          description: string.consultType.follow_up_chat_days_text.replace('{0}', '3'),
+          description: string.consultType.follow_up_chat_days_text.replace('{0}', chatDays),
         },
       ],
       () => {
@@ -258,7 +260,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
         { image: <CTPrescription />, description: string.consultType.inperson.point5 },
         {
           image: <CTChat />,
-          description: string.consultType.follow_up_chat_days_text.replace('{0}', '3'),
+          description: string.consultType.follow_up_chat_days_text.replace('{0}', chatDays),
           textColor: theme.colors.SKY_BLUE,
         },
       ],
