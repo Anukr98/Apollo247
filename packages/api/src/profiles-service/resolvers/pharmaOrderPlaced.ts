@@ -6,9 +6,9 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
-  NotificationType,
   sendMedicineOrderStatusNotification,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { ApiConstants } from 'ApiConstants';
 import { postEvent, WebEngageInput } from 'helpers/webEngage';
 import { format, addMinutes } from 'date-fns';

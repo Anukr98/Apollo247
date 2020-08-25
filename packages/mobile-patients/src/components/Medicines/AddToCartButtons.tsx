@@ -93,16 +93,16 @@ export const AddToCartButtons: React.FC<AddToCartButtonsProps> = (props) => {
     );
   };
 
+  const isSingleQty = props.numberOfItemsInCart === 1;
+
   return (
     <View style={[localStyles.addRemoveItemContainer, props.containerStyle]}>
       {/* minus or delete button */}
       <TouchableOpacity
         style={localStyles.addRemoveButtonContainer}
-        onPress={() => {
-          props.numberOfItemsInCart === 1 ? props.removeFromCart() : props.removeItemFromCart();
-        }}
+        onPress={isSingleQty ? props.removeFromCart : props.removeItemFromCart}
       >
-        {props.numberOfItemsInCart === 1 ? getDeleteIcon() : getMinusIcon()}
+        {isSingleQty ? getDeleteIcon() : getMinusIcon()}
       </TouchableOpacity>
 
       {/* quantity */}

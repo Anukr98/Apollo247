@@ -214,6 +214,7 @@ const addPatientMedicalRecord: Resolver<
         prescriptionFiles: prescriptionFiles,
         speciality: '',
         hospital_name: '',
+        hospitalId: '',
         address: '',
         city: '',
         pincode: '',

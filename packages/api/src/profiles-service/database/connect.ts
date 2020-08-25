@@ -69,6 +69,7 @@ import {
   MedicineOrderAddress,
   PatientEntitiySubscriber,
 } from 'profiles-service/entities';
+import { DiagnosticItdosePincodeHubs } from 'profiles-service/entities/diagnostic_itdose_pincode_hub';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
 import {
@@ -95,9 +96,10 @@ import {
   NotificationBin,
   NotificationBinArchive,
   AppointmentUpdateHistory,
-  ExotelDetails,
+  ExotelDetails
 } from 'consults-service/entities';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
+import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity'
 
 export const connect = async () => {
   return await createConnections([
@@ -114,6 +116,7 @@ export const connect = async () => {
         DiagnosticOrdersStatus,
         DiagnosticOrgans,
         DiagnosticPincodeHubs,
+        DiagnosticItdosePincodeHubs,
         Diagnostics,
         LoginOtp,
         LoginOtpArchive,
@@ -224,6 +227,7 @@ export const connect = async () => {
         AppointmentUpdateHistory,
         ExotelDetails,
         ConsultQueueItem,
+        AppointmentCallFeedback
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,

@@ -19,13 +19,10 @@ import {
   pharmacyPaymentInitiateTracking,
 } from 'webEngageTracking';
 import { useMutation } from 'react-apollo-hooks';
-import { getDeviceType } from 'helpers/commonHelpers';
+import { getDeviceType, getCouponByUserMobileNumber } from 'helpers/commonHelpers';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
 import _lowerCase from 'lodash/lowerCase';
 
-import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
-
-// import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
 import {
   saveMedicineOrderOMS,
   saveMedicineOrderOMSVariables,
@@ -494,6 +491,28 @@ export const PayMedicine: React.FC = (props) => {
       }
     }
   });
+
+  const getCouponByMobileNumber = () => {
+    getCouponByUserMobileNumber()
+      .then((resp: any) => {
+        if (resp.errorCode == 0 && resp.response && resp.response.length > 0) {
+          const couponCode = resp.response[0].coupon;
+          setConsultCouponCode(couponCode || '');
+        } else {
+          setConsultCouponCode('');
+        }
+      })
+      .catch((e: any) => {
+        console.log(e);
+        setConsultCouponCode('');
+      });
+  };
+
+  useEffect(() => {
+    if (params.payType === 'consults' && !consultCouponCode) {
+      getCouponByMobileNumber();
+    }
+  }, []);
 
   useEffect(() => {
     if (validateConsultCouponResult && validateConsultCouponResult.valid) {
@@ -989,8 +1008,9 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${totalWithCouponDiscount &&
-                          totalWithCouponDiscount.toFixed(2)} on delivery`
+                        `Pay Rs.${
+                          totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)
+                        } on delivery`
                       )}
                     </AphButton>
                   )}

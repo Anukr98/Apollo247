@@ -137,6 +137,7 @@ export enum DoctorType {
   STAR_APOLLO = "STAR_APOLLO",
   SUGAR = "SUGAR",
   WHITE_DENTAL = "WHITE_DENTAL",
+  SENIOR = "SENIOR"
 }
 
 export enum FEEDBACKTYPE {
@@ -630,6 +631,7 @@ export interface DiagnosticOrderInput {
   bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICETYPE | null;
   paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  slotId: string;
   items?: (DiagnosticLineItem | null)[] | null;
 }
 
