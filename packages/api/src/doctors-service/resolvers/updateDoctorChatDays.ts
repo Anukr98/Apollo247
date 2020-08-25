@@ -15,7 +15,7 @@ export const updateDoctorChatDaysTypeDefs = gql`
   extend type Mutation {
     updateDoctorChatDays(
       doctorId: String!
-      chatDays: String!
+      chatDays: Int
     ): chatDaysResult!
   }
 `;
@@ -26,7 +26,7 @@ type chatDaysResult = {
 
 const updateDoctorChatDays: Resolver<
   null,
-  { doctorId: string; chatDays: string; },
+  { doctorId: string; chatDays: number; },
   DoctorsServiceContext,
   chatDaysResult
 > = async (parent, args, { doctorsDb }) => {
@@ -35,14 +35,13 @@ const updateDoctorChatDays: Resolver<
     const doctordata = await doctorRepository.findDoctorByIdWithoutRelations(args.doctorId);
     if (!doctordata) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
 
-    const chatDays = parseInt(args.chatDays, 10);
-    if(chatDays > ApiConstants.CHAT_DAYS_LIMIT){
+    if(args.chatDays > ApiConstants.CHAT_DAYS_LIMIT){
       throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
-    } else if( chatDays < 0){
+    } else if( args.chatDays < 0){
       throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
     }
 
-    await doctorRepository.updateDoctorChatDays(args.doctorId, chatDays);
+    await doctorRepository.updateDoctorChatDays(args.doctorId, args.chatDays);
     return { isError: false, response: "Updated Successfully" };
   } catch (err){
     console.error("error in updating chat days > ", err);
