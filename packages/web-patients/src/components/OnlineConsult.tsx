@@ -708,7 +708,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 patientId: currentPatient ? currentPatient.id : '',
                 rescheduledId: '',
               };
-              rescheduleAPI(bookRescheduleInput);
+              rescheduleAPI(bookRescheduleInput, TRANSFER_INITIATED_TYPE.PATIENT);
             }}
             className={
               disableSubmit ||
