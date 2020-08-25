@@ -236,7 +236,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         setAPICalled(true);
       })
       .catch((error) => {
-        CommonBugFender('ConsultDetails_GET_CASESHEET_DETAILS', error);
+        CommonBugFender('ConsultDetails_GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS', error);
         setLoading && setLoading(false);
         const errorMessage = error && error.message.split(':')[1].trim();
         console.log(errorMessage, 'err');
