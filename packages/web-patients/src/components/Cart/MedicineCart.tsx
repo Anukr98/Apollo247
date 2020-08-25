@@ -1680,7 +1680,7 @@ export const MedicineCart: React.FC = (props) => {
                       </div>
                       {couponCode.length > 0 &&
                         validateCouponResult &&
-                        validateCouponResult.discount &&
+                        !!validateCouponResult.discount &&
                         validateCouponResult.discount > 0 && (
                           <div className={classes.discountTotal}>
                             {`Savings of Rs.
