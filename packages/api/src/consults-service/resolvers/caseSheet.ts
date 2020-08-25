@@ -259,6 +259,7 @@ export const caseSheetTypeDefs = gql`
     doctorType: DoctorType
     followUp: Boolean
     followUpAfterInDays: String
+    followUpChatDays: Int
     followUpConsultType: APPOINTMENT_TYPE
     followUpDate: DateTime
     id: String
@@ -496,6 +497,7 @@ export const caseSheetTypeDefs = gql`
     followUp: Boolean
     followUpDate: Date
     followUpAfterInDays: Int
+    followUpChatDays: Int
     followUpConsultType: APPOINTMENT_TYPE
     otherInstructions: [OtherInstructionsInput!]
     medicinePrescription: [MedicinePrescriptionInput!]
@@ -758,6 +760,7 @@ type ModifyCaseSheetInput = {
   followUp: boolean;
   followUpDate: Date;
   followUpAfterInDays: number;
+  followUpChatDays: number;
   followUpConsultType: APPOINTMENT_TYPE;
   otherInstructions: CaseSheetOtherInstruction[];
   medicinePrescription: CaseSheetMedicinePrescription[];
@@ -869,20 +872,16 @@ const modifyCaseSheet: Resolver<
   }
 
   if (!(inputArguments.followUpAfterInDays === undefined)) {
-    
-    if(inputArguments.followUpAfterInDays > ApiConstants.CHAT_DAYS_LIMIT) {
-      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
-    } else if(inputArguments.followUpAfterInDays < 0){
-      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
-    }
-
     getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
-    
-    getCaseSheetData.followUp = true;
+  }
 
-    if(getCaseSheetData.appointment.sdConsultationDate){
-      getCaseSheetData.followUpDate = addDays(getCaseSheetData.appointment.sdConsultationDate, getCaseSheetData.followUpAfterInDays);
+  if(!(inputArguments.followUpChatDays === undefined)) {
+    if(inputArguments.followUpChatDays > ApiConstants.CHAT_DAYS_LIMIT) {
+      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
+    } else if(inputArguments.followUpChatDays < 0){
+      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
     }
+    getCaseSheetData.followUpChatDays = inputArguments.followUpChatDays;
   }
 
   if (!(inputArguments.status === undefined)) {
