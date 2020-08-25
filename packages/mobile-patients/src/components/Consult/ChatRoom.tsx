@@ -547,6 +547,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const leaveChatRoom = '^^#leaveChatRoom';
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
   const patientRejectedCall = '^^#PATIENT_REJECTED_CALL';
+  const exotelCall = '^^#exotelCall';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -1409,14 +1410,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       })
       .then((response: HereNowResponse) => {
         console.log('hereNowresponse', response);
-        const data: any = response.channels && response.channels[appointmentData.id] && response.channels[appointmentData.id].occupants;
-        const occupancyDoctor = data && data.length > 0 && data.filter((obj: any) => {
-          return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
-        });
-        const occupancyJrDoctor = data && data.length > 0 && data.filter((obj: any) => {
-          return obj.uuid === 'JUNIOR' || obj.uuid.indexOf('JUNIOR_') > -1;
-        });
-        if(occupancyJrDoctor && occupancyJrDoctor.length >=1){
+        const data: any =
+          response.channels &&
+          response.channels[appointmentData.id] &&
+          response.channels[appointmentData.id].occupants;
+        const occupancyDoctor =
+          data &&
+          data.length > 0 &&
+          data.filter((obj: any) => {
+            return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
+          });
+        const occupancyJrDoctor =
+          data &&
+          data.length > 0 &&
+          data.filter((obj: any) => {
+            return obj.uuid === 'JUNIOR' || obj.uuid.indexOf('JUNIOR_') > -1;
+          });
+        if (occupancyJrDoctor && occupancyJrDoctor.length >= 1) {
           jrDoctorJoined.current = true;
         }
         if (occupancyDoctor && occupancyDoctor.length >= 1 && response.totalOccupancy >= 2) {
@@ -2534,6 +2544,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setDoctorJoined(false);
       } else if (message.message.message === endCallMsg) {
         AsyncStorage.setItem('callDisconnected', 'true');
+      } else if (message.message.message === exotelCall) {
+        addMessages(message);
       }
     } else {
       console.log('succss');
@@ -3787,6 +3799,45 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </>
               ) : null}
             </View>
+          ) : rowData.message === exotelCall ? (
+            <View
+              style={{
+                backgroundColor: '#0087ba',
+                marginLeft: 38,
+                borderRadius: 10,
+              }}
+            >
+              <>
+                <Text
+                  style={{
+                    color: '#ffffff',
+                    paddingTop: 8,
+                    paddingBottom: 4,
+                    paddingHorizontal: 16,
+                    ...theme.fonts.IBMPlexSansMedium(15),
+                    textAlign: 'left',
+                  }}
+                  selectable={true}
+                >
+                  {doctorName +
+                    strings.common.exotelMessage +
+                    rowData.exotelNumber +
+                    strings.common.requestMessage}
+                </Text>
+                <Text
+                  style={{
+                    color: '#ffffff',
+                    paddingHorizontal: 16,
+                    paddingVertical: 4,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  {convertChatTime(rowData)}
+                </Text>
+                <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+              </>
+            </View>
           ) : (
             <>
               <View
@@ -4217,7 +4268,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === cancelConsultInitiated ||
       rowData.message === callAbandonment ||
       rowData.message === appointmentComplete ||
-      rowData.message === patientRejectedCall
+      rowData.message === patientRejectedCall || 
+      rowData === patientRejectedCall
     ) {
       return null;
     }
@@ -6663,9 +6715,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     setDropdownVisible(false);
                   }}
                   onFocus={() => setDropdownVisible(false)}
-                  onSubmitEditing={() => {
-                    Keyboard.dismiss();
-                  }}
                   editable={!disableChat}
                 />
                 <View

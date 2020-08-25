@@ -53,6 +53,7 @@ import { NotificationType } from 'notifications-service/constants';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { addDays } from 'date-fns';
 
 export type DiagnosisJson = {
   name: string;
@@ -859,16 +860,29 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.followUp = inputArguments.followUp;
   }
 
-  if (!(inputArguments.followUpDate === undefined)) {
-    getCaseSheetData.followUpDate = inputArguments.followUpDate;
-  }
-
   if (!(inputArguments.followUpAfterInDays === undefined)) {
-    getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
+    getCaseSheetData.followUpDate = inputArguments.followUpDate;
   }
 
   if (!(inputArguments.followUpConsultType === undefined)) {
     getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
+  }
+
+  if (!(inputArguments.followUpAfterInDays === undefined)) {
+    
+    if(inputArguments.followUpAfterInDays > ApiConstants.CHAT_DAYS_LIMIT) {
+      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
+    } else if(inputArguments.followUpAfterInDays < 0){
+      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
+    }
+
+    getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
+    
+    getCaseSheetData.followUp = true;
+
+    if(getCaseSheetData.appointment.sdConsultationDate){
+      getCaseSheetData.followUpDate = addDays(getCaseSheetData.appointment.sdConsultationDate, getCaseSheetData.followUpAfterInDays);
+    }
   }
 
   if (!(inputArguments.status === undefined)) {

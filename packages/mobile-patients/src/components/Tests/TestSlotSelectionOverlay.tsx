@@ -94,9 +94,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
       .then(({ data }) => {
         const diagnosticSlots =
           (g(data, 'getDiagnosticItDoseSlots', 'slotInfo') as TestSlot[]) || [];
-        console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
         const slotsArray = diagnosticSlots.filter((slot) => isValidTestSlot(slot, date));
-        console.log('ARRAY OF SLOTS', { slotsArray });
         setSlots(slotsArray);
         setSlotInfo(slotsArray[0]);
       })
