@@ -289,7 +289,10 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
   };
 
   const doctorAddressDetail =
-    (doctorDetail && doctorDetail.doctorHospital[0] && doctorDetail.doctorHospital[0].facility) ||
+    (doctorDetail &&
+      doctorDetail.doctorHospital &&
+      doctorDetail.doctorHospital[0] &&
+      doctorDetail.doctorHospital[0].facility) ||
     '';
   return (
     <div className={classes.modalContent}>

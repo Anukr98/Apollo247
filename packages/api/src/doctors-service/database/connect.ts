@@ -99,6 +99,7 @@ import {
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
+import { migrationDir } from 'ApiConstants';
 import { AdminFilterMapper } from 'doctors-service/entities/AdminFilterMapper';
 import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity'
 
@@ -141,10 +142,12 @@ export const connect = async () => {
       password: process.env.DOCTORS_DB_PASSWORD,
       database: `doctors_${process.env.DB_NODE_ENV}`,
       logging: process.env.NODE_ENV === 'production' ? false : true,
-      synchronize: true,
+      synchronize: false,
+      migrationsRun: true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
+      migrations: [migrationDir.doctors_db],
     },
     {
       name: 'consults-db',
@@ -186,6 +189,9 @@ export const connect = async () => {
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
+      migrationsRun: true,
+      synchronize: false,
+      migrations: [migrationDir.consults_db],
     },
     {
       name: 'patients-db',
@@ -238,10 +244,13 @@ export const connect = async () => {
       password: process.env.PROFILES_DB_PASSWORD,
       database: `profiles_${process.env.DB_NODE_ENV}`,
       subscribers: [PatientEntitiySubscriber],
+      migrationsRun: true,
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
+      synchronize: false,
+      migrations: [migrationDir.profiles_db],
     },
   ]).catch((error) => {
     throw new Error(error);

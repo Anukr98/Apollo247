@@ -402,7 +402,7 @@ export class Appointment extends BaseEntity {
     },
     { onDelete: 'CASCADE', onUpdate: 'CASCADE' }
   )
-  callDetails: Array<ExotelDetails>;
+  callDetails: ExotelDetails[];
 
   @AfterUpdate()
   async dropAppointmentCache() {
@@ -894,7 +894,7 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true, default: false })
   followUp: Boolean;
 
-  @Column({ nullable: true })
+  @Column({ default: 7, type: 'float8' })
   followUpAfterInDays: number;
 
   @Column({ nullable: true })
