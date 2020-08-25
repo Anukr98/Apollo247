@@ -34,7 +34,11 @@ export const GET_DOCTOR_DETAILS = gql`
       zip
       signature
       specialty {
+        id
         name
+        specialistSingularTerm
+        specialistPluralTerm
+        userFriendlyNomenclature
       }
       consultHours {
         consultMode
@@ -765,6 +769,9 @@ export const GET_CASESHEET = gql`
             specialty {
               id
               name
+              specialistSingularTerm
+              specialistPluralTerm
+              userFriendlyNomenclature
             }
           }
           hospitalId
@@ -1672,10 +1679,10 @@ export const GET_ALL_SPECIALTIES = gql`
       id
       name
       image
-      # specialistSingularTerm
-      # specialistPluralTerm
+      specialistSingularTerm
+      specialistPluralTerm
       userFriendlyNomenclature
-      # displayOrder
+      displayOrder
     }
   }
 `;

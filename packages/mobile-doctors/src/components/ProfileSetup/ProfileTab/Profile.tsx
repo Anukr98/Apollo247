@@ -221,7 +221,9 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
             </Text>
             <Text style={styles.drnametext}>
               {formatSpecialityAndExperience(
-                profileData!.specialty!.name,
+                g(profileData, 'specialty', 'specialistSingularTerm') ||
+                  g(profileData, 'specialty', 'name') ||
+                  '',
                 profileData!.experience || ''
               )}
             </Text>
