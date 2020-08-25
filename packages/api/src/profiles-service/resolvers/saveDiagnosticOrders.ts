@@ -1,4 +1,5 @@
 import gql from 'graphql-tag';
+import { GraphQLScalarType, Kind } from 'graphql'
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { DiagnosticOrdersRepository } from 'profiles-service/repositories/diagnosticOrdersRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -32,7 +33,21 @@ import { log } from 'customWinstonLogger';
 import { sendDiagnosticOrderStatusNotification } from 'notifications-service/handlers';
 import { NotificationType } from 'notifications-service/constants';
 
+const slotIDScalarType = new GraphQLScalarType({
+  name: 'slotIDScalar',
+  description: 'String custom scalar type',
+  serialize(value) {
+    // Implement custom behavior by setting the 'result' variable
+    return "" + value;
+  },
+  parseValue(value) {
+    // Implement custom behavior here by setting the 'result' variable
+    return "" + value;
+  },
+});
+
 export const saveDiagnosticOrderTypeDefs = gql`
+  scalar slotIDScalar
   enum DIAGNOSTIC_ORDER_STATUS {
     PICKUP_REQUESTED
     PICKUP_CONFIRMED
@@ -55,7 +70,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     state: String!
     stateId: String!
     slotTimings: String!
-    employeeSlotId: String!
+    employeeSlotId: slotIDScalar
     diagnosticEmployeeCode: String!
     diagnosticBranchCode: String!
     totalPrice: Float!
@@ -109,7 +124,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     patientAddressId: ID!
     city: String!
     slotTimings: String!
-    employeeSlotId: Int!
+    employeeSlotId: String!
     diagnosticEmployeeCode: String!
     diagnosticBranchCode: String!
     totalPrice: Float!
@@ -216,7 +231,6 @@ const SaveDiagnosticOrder: Resolver<
     errorMessage = '',
     orderId = '',
     displayId = '';
-
   if (!diagnosticOrderInput.items) {
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
   }
@@ -660,6 +674,7 @@ const getDiagnosticOrderDetails: Resolver<
 };
 
 export const saveDiagnosticOrderResolvers = {
+  slotIDScalar: slotIDScalarType,
   Mutation: {
     SaveDiagnosticOrder,
   },
