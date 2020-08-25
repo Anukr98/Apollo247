@@ -232,83 +232,95 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
             prescriptions.map((prescription: PrescriptionType, idx: number) => (
               <Grid key={idx} item xs={12} sm={6}>
                 <div className={classes.cardTitle}>{prescription.medicineName}</div>
-                {prescription && (
-                  <div className={classes.cardSection}>
-                    {prescription.medicineUnit && prescription.medicineFormTypes == 'OTHERS'
-                      ? 'Take ' +
-                        prescription.medicineDosage +
-                        ' ' +
-                        prescription.medicineUnit.toLowerCase() +
-                        ' (s)' +
-                        ' '
-                      : `Apply ${
-                          prescription && prescription.medicineUnit
-                            ? prescription.medicineUnit.toLowerCase()
-                            : ''
-                        } `}
+                {prescription.medicineCustomDetails &&
+                prescription.medicineCustomDetails.length > 1 ? (
+                  <div className={classes.cardSection}>{prescription.medicineCustomDetails}</div>
+                ) : (
+                  <div>
+                    {prescription && (
+                      <div className={classes.cardSection}>
+                        {prescription.medicineUnit && prescription.medicineFormTypes == 'OTHERS'
+                          ? 'Take ' +
+                            prescription.medicineDosage +
+                            ' ' +
+                            prescription.medicineUnit.toLowerCase() +
+                            ' (s)' +
+                            ' '
+                          : `Apply ${
+                              prescription && prescription.medicineUnit
+                                ? prescription.medicineUnit.toLowerCase()
+                                : ''
+                            } `}
 
-                    {prescription.medicineFrequency! &&
-                      prescription.medicineFrequency!.replace(/[^a-zA-Z ]/g, ' ').toLowerCase() +
-                        ' '}
-                    {prescription.medicineToBeTaken
-                      ? prescription.medicineToBeTaken
-                          .map(
-                            (item: MEDICINE_TO_BE_TAKEN | null) =>
-                              item &&
-                              item
-                                .split('_')
-                                .join(' ')
-                                .toLowerCase()
-                          )
-                          .join(', ')
-                      : ''}
-                    {prescription.medicineTimings && prescription.medicineTimings.length > 0
-                      ? ' in the '
-                      : ''}
-                    {prescription.medicineTimings
-                      ? prescription.medicineTimings
-                          .map(
-                            (item: MEDICINE_TIMINGS | null) =>
-                              item &&
-                              item
-                                .split('_')
-                                .join(' ')
-                                .toLowerCase()
-                          )
-                          .map(
-                            (val: string | null, idx: number, array: (string | null)[]) =>
-                              val &&
-                              array &&
-                              `${val}${
-                                idx == array.length - 2
-                                  ? ' and '
-                                  : idx > array.length - 2
-                                  ? ''
-                                  : ', '
-                              }`
-                          )
-                      : ''}
-                    {prescription.medicineConsumptionDurationInDays == '' ||
-                    prescription.medicineConsumptionDurationInDays == '0'
-                      ? ''
-                      : prescription.medicineConsumptionDurationInDays &&
-                        prescription.medicineConsumptionDurationInDays === '1'
-                      ? ` for ${prescription.medicineConsumptionDurationInDays} ${getFormattedUnit(
-                          prescription.medicineConsumptionDurationUnit,
-                          prescription.medicineConsumptionDurationInDays
-                        )} `
-                      : ` for ${prescription.medicineConsumptionDurationInDays} ${getFormattedUnit(
-                          prescription.medicineConsumptionDurationUnit,
-                          prescription.medicineConsumptionDurationInDays
-                        )} `}
+                        {prescription.medicineFrequency! &&
+                          prescription
+                            .medicineFrequency!.replace(/[^a-zA-Z ]/g, ' ')
+                            .toLowerCase() + ' '}
+                        {prescription.medicineToBeTaken
+                          ? prescription.medicineToBeTaken
+                              .map(
+                                (item: MEDICINE_TO_BE_TAKEN | null) =>
+                                  item &&
+                                  item
+                                    .split('_')
+                                    .join(' ')
+                                    .toLowerCase()
+                              )
+                              .join(', ')
+                          : ''}
+                        {prescription.medicineTimings && prescription.medicineTimings.length > 0
+                          ? ' in the '
+                          : ''}
+                        {prescription.medicineTimings
+                          ? prescription.medicineTimings
+                              .map(
+                                (item: MEDICINE_TIMINGS | null) =>
+                                  item &&
+                                  item
+                                    .split('_')
+                                    .join(' ')
+                                    .toLowerCase()
+                              )
+                              .map(
+                                (val: string | null, idx: number, array: (string | null)[]) =>
+                                  val &&
+                                  array &&
+                                  `${val}${
+                                    idx == array.length - 2
+                                      ? ' and '
+                                      : idx > array.length - 2
+                                      ? ''
+                                      : ', '
+                                  }`
+                              )
+                          : ''}
+                        {prescription.medicineConsumptionDurationInDays == '' ||
+                        prescription.medicineConsumptionDurationInDays == '0'
+                          ? ''
+                          : prescription.medicineConsumptionDurationInDays &&
+                            prescription.medicineConsumptionDurationInDays === '1'
+                          ? ` for ${
+                              prescription.medicineConsumptionDurationInDays
+                            } ${getFormattedUnit(
+                              prescription.medicineConsumptionDurationUnit,
+                              prescription.medicineConsumptionDurationInDays
+                            )} `
+                          : ` for ${
+                              prescription.medicineConsumptionDurationInDays
+                            } ${getFormattedUnit(
+                              prescription.medicineConsumptionDurationUnit,
+                              prescription.medicineConsumptionDurationInDays
+                            )} `}
 
-                    {prescription.medicineInstructions ? (
-                      <>
-                        <br />
-                        {prescription.medicineInstructions}
-                      </>
-                    ) : (
-                      ''
+                        {prescription.medicineInstructions ? (
+                          <>
+                            <br />
+                            {prescription.medicineInstructions}
+                          </>
+                        ) : (
+                          ''
+                        )}
+                      </div>
                     )}
                   </div>
                 )}

@@ -693,11 +693,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     const unit: string =
       (medUnitFormatArray.find((i) => i.key === item.medicineUnit) || {}).value || 'others';
     if (medicineCustomDetails !== null) {
-      return `${medicineCustomDetails}${
-        item.routeOfAdministration
-          ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
-          : ''
-      }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
+      return `${medicineCustomDetails}`;
     } else {
       return `${type + ' '}${
         customDosage.length > 0
@@ -1040,7 +1036,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       caseSheetDetails!.medicinePrescription &&
       caseSheetDetails!.medicinePrescription.length !== 0 &&
       caseSheetDetails!.doctorType !== 'JUNIOR' &&
-      g(caseSheetDetails, 'blobName') 
+      g(caseSheetDetails, 'blobName')
     ) {
       return (
         <View
@@ -1127,21 +1123,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       CommonLogEvent('CONSULT_DETAILS', 'No image');
                     } else {
                       postWEGEvent('download prescription');
-                      let dirs = RNFetchBlob.fs.dirs;
+                      const dirs = RNFetchBlob.fs.dirs;
 
-                      let fileName: string = getFileName();
-
-                      // props.navigation.state.params!.BlobName.substring(
-                      //   0,
-                      //   props.navigation.state.params!.BlobName.indexOf('.pdf')
-                      // )
+                      const fileName: string = getFileName();
 
                       const downloadPath =
                         Platform.OS === 'ios'
                           ? (dirs.DocumentDir || dirs.MainBundleDir) +
                             '/' +
                             (fileName || 'Apollo_Prescription.pdf')
-                          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
+                          : dirs.DownloadDir +
+                            '/' +
+                            (fileName + new Date().getTime() || 'Apollo_Prescription.pdf');
                       setLoading && setLoading(true);
                       RNFetchBlob.config({
                         fileCache: true,

@@ -37,6 +37,12 @@ export enum BOOKINGSOURCE {
   WEB = "WEB",
 }
 
+export enum CALL_FEEDBACK_RESPONSES_TYPES {
+  AUDIO = "AUDIO",
+  AUDIOVIDEO = "AUDIOVIDEO",
+  VIDEO = "VIDEO",
+}
+
 export enum CASESHEET_STATUS {
   COMPLETED = "COMPLETED",
   PENDING = "PENDING",
@@ -461,6 +467,13 @@ export interface RescheduleAppointmentInput {
   rescheduleInitiatedId: string;
   rescheduledDateTime?: any | null;
   autoSelectSlot?: number | null;
+}
+
+export interface SaveAppointmentCallFeedbackInput {
+  appointmentCallDetailsId: string;
+  ratingValue: number;
+  feedbackResponseType?: CALL_FEEDBACK_RESPONSES_TYPES | null;
+  feedbackResponses?: string | null;
 }
 
 export interface SaveDoctorDeviceTokenInput {

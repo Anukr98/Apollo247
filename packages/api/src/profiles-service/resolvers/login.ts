@@ -8,7 +8,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 import { debugLog } from 'customWinstonLogger';
-import { sendDoctorNotificationWhatsapp } from 'notifications-service/resolvers/notifications';
+import { sendDoctorNotificationWhatsapp } from 'notifications-service/handlers';
 
 export const loginTypeDefs = gql`
   enum LOGIN_TYPE {
