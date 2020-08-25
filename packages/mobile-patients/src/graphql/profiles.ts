@@ -1072,9 +1072,9 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
   }
 `;
 
-export const GET_CASESHEET_DETAILS = gql`
-  query getCaseSheet($appointmentId: String) {
-    getCaseSheet(appointmentId: $appointmentId) {
+export const GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS = gql`
+  query getSDLatestCompletedCaseSheet($appointmentId: String) {
+    getSDLatestCompletedCaseSheet(appointmentId: $appointmentId) {
       caseSheetDetails {
         appointment {
           id
