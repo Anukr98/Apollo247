@@ -193,7 +193,8 @@
     "subHeading": "Please follow the steps to connect to your patient :",
     "point1": "Answer the call from ‘040-48214566’ to connect.",
     "point2": "Wait for the patient to connect.",
-    "toastMessage": "You will get a call from 040-48214566.\nPlease pick up the call !"
+    "toastMessage": "You will get a call from 040-48214566.\nPlease pick up the call !",
+    "exotelNumber": "040-48214566"
   },
   "smartPrescr": {
     "smart_prescr_header": "SMART PRESCRIPTION",

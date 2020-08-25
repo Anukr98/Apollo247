@@ -1554,6 +1554,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               callOptions.setCallAccepted(false);
               errorPopup('Patient has rejected the call.', theme.colors.APP_YELLOW, 10);
               break;
+            case messageCodes.exotelCall:
+              addMessages(message);
+              break;
             default:
           }
         } else if (
@@ -2570,6 +2573,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   'Try again',
               });
           } else {
+            pubnub.publish(
+              {
+                message: {
+                  id: doctorId,
+                  message: messageCodes.exotelCall,
+                  exotelNumber: string.exoTel.exotelNumber,
+                  isTyping: true,
+                  sentBy: REQUEST_ROLES.DOCTOR,
+                  messageDate: new Date(),
+                },
+                channel: AppId,
+                storeInHistory: true,
+              },
+              (status, response) => {}
+            );
             showPopup({
               description: string.exoTel.toastMessage,
               style: styles.exoToastContainer,

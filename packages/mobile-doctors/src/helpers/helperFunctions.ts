@@ -291,6 +291,7 @@ export const messageCodes = {
   leaveChatRoom: '^^#leaveChatRoom',
   patientJoined: '^^#patientJoinedMeetingRoom',
   patientRejected: '^^#PATIENT_REJECTED_CALL',
+  exotelCall: '^^#exotelCall',
 };
 
 export const formatFloating = (value: string) => {
