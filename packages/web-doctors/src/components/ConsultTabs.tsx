@@ -29,6 +29,7 @@ import {
   WebEngageEvent,
   ConsultMode,
   DoctorConsultEventInput,
+  CALL_FEEDBACK_RESPONSES_TYPES,
 } from 'graphql/types/globalTypes';
 import {
   GetJuniorDoctorCaseSheet,
@@ -68,6 +69,7 @@ import {
   MODIFY_CASESHEET,
   UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
   POST_WEB_ENGAGE,
+  SAVE_APPOINTMENT_CALL_FEEDBACK,
 } from 'graphql/profiles';
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
 import {
@@ -100,6 +102,12 @@ import {
   SendCallNotification,
   SendCallNotificationVariables,
 } from 'graphql/types/SendCallNotification';
+import { RateCall } from 'components/ConsultRoom/RateCall';
+import {
+  saveAppointmentCallFeedback,
+  saveAppointmentCallFeedbackVariables,
+} from 'graphql/types/saveAppointmentCallFeedback';
+import Alert from 'components/Alert';
 import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -422,6 +430,8 @@ export const ConsultTabs: React.FC = () => {
   const [isNewPrescription, setIsNewPrescription] = useState<boolean>(false);
   const [showConfirmPrescription, setShowConfirmPrescription] = React.useState<boolean>(false);
 
+  const [giveRating, setGiveRating] = useState<boolean>(false);
+
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
 
@@ -647,50 +657,36 @@ export const ConsultTabs: React.FC = () => {
               ? setCaseSheetId(_data!.data!.getCaseSheet!.caseSheetDetails.id)
               : '';
             _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
-              ? setDiagnosis(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!
-                    .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[]
-                )
+              ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
               : setDiagnosis([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.symptoms
-              ? setSymptoms(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!
-                    .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[]
-                )
+              ? setSymptoms((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[])
               : setSymptoms([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.otherInstructions
-              ? setOtherInstructions(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!
-                    .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[]
-                )
+              ? setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[])
               : setOtherInstructions([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
-              ? setDiagnosticPrescription(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!
-                    .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
-                )
+              ? setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[])
               : setDiagnosticPrescription([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.medicinePrescription
-              ? setMedicinePrescription(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!
-                    .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
-                )
+              ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
               : setMedicinePrescription([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.removedMedicinePrescription
-              ? setRemovedMedicinePrescription(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!
-                    .removedMedicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
-                )
+              ? setRemovedMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .removedMedicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
               : setRemovedMedicinePrescription([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.notes
-              ? setSRDNotes(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string
-                )
+              ? setSRDNotes((_data!.data!.getCaseSheet!.caseSheetDetails!
+                  .notes as unknown) as string)
               : setSRDNotes('');
             _data!.data!.getCaseSheet!.juniorDoctorNotes
-              ? setJuniorDoctorNotes(
-                  (_data!.data!.getCaseSheet!.juniorDoctorNotes as unknown) as string
-                )
+              ? setJuniorDoctorNotes((_data!.data!.getCaseSheet!
+                  .juniorDoctorNotes as unknown) as string)
               : setJuniorDoctorNotes('');
             _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
               ? setConsultType(([
@@ -1013,40 +1009,29 @@ export const ConsultTabs: React.FC = () => {
           );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
-            ? setDiagnosis(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
-              )
+            ? setDiagnosis((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[])
             : setDiagnosis([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms
-            ? setSymptoms(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
-              )
+            ? setSymptoms((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[])
             : setSymptoms([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
-            ? setOtherInstructions(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[]
-              )
+            ? setOtherInstructions((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[])
             : setOtherInstructions([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
-            ? setDiagnosticPrescription(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .diagnosticPrescription as unknown) as any[]
-              )
+            ? setDiagnosticPrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .diagnosticPrescription as unknown) as any[])
             : setDiagnosticPrescription([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
-            ? setMedicinePrescription(
-                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                  .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
-              )
+            ? setMedicinePrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[])
             : setMedicinePrescription([]);
 
           _data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes
-            ? setJuniorDoctorNotes(
-                (_data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes as unknown) as string
-              )
+            ? setJuniorDoctorNotes((_data!.data!.getJuniorDoctorCaseSheet!
+                .juniorDoctorNotes as unknown) as string)
             : setJuniorDoctorNotes('');
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
@@ -1746,6 +1731,48 @@ export const ConsultTabs: React.FC = () => {
         sessionClient.notify(JSON.stringify(logObject));
         console.log('Error in Call Notification', error.message);
       });
+    setGiveRating(true);
+  };
+
+  const submitRatingHandler = (data: {
+    rating: number;
+    feedbackResponseType: CALL_FEEDBACK_RESPONSES_TYPES | null;
+    audioFeedbacks: {}[];
+    videoFeedbacks: {}[];
+  }) => {
+    setGiveRating(false);
+    const query = {
+      appointmentCallDetailsId: callId,
+      ratingValue: data.rating,
+      feedbackResponseType: data.feedbackResponseType,
+      feedbackResponses:
+        data.audioFeedbacks.length === 0 && data.videoFeedbacks.length === 0
+          ? null
+          : JSON.stringify({
+              audio: data.audioFeedbacks,
+              video: data.videoFeedbacks,
+            }),
+    };
+
+    client
+      .mutate<saveAppointmentCallFeedback, saveAppointmentCallFeedbackVariables>({
+        mutation: SAVE_APPOINTMENT_CALL_FEEDBACK,
+        variables: {
+          saveAppointmentCallFeedback: query,
+        },
+      })
+      .then((_data: any) => {
+        alert('Thank you for sharing your reviews.');
+      })
+      .catch((e: any) => {
+        alert('Error in giving feedback. Please try again!');
+      });
+  };
+
+  const showRateCallModal = () => {
+    return (
+      <RateCall visible={giveRating} submitRatingCallback={(data) => submitRatingHandler(data)} />
+    );
   };
 
   const inEditMode =
@@ -1880,6 +1907,7 @@ export const ConsultTabs: React.FC = () => {
             autoHide={true}
             style={{ height: 'calc(100vh - 65px)' }}
           >
+            {showRateCallModal()}
             <div className={classes.container}>
               <CallPopover
                 setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}

@@ -1568,3 +1568,17 @@ export const ADD_CHAT_DOCUMENT = gql`
     }
   }
 `;
+
+export const SAVE_APPOINTMENT_CALL_FEEDBACK = gql`
+  mutation saveAppointmentCallFeedback(
+    $saveAppointmentCallFeedback: SaveAppointmentCallFeedbackInput
+  ) {
+    saveAppointmentCallFeedback(saveAppointmentCallFeedbackInput: $saveAppointmentCallFeedback) {
+      id
+      appointmentCallDetailsId
+      ratingValue
+      feedbackResponseType
+      feedbackResponses
+    }
+  }
+`;
