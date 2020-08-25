@@ -5,6 +5,7 @@ import { MEDICINE_ORDER_STATUS, MedicineOrdersStatus } from 'profiles-service/en
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { SYNC_TYPE } from 'types/inventorySync';
 import {
   NotificationType,
   sendMedicineOrderStatusNotification,
@@ -12,6 +13,7 @@ import {
 import { ApiConstants } from 'ApiConstants';
 import { postEvent, WebEngageInput } from 'helpers/webEngage';
 import { format, addMinutes } from 'date-fns';
+import { syncInventory } from 'helpers/inventorySync';
 
 export const pharmaOrderPlacedTypeDefs = gql`
   input OrderPlacedInput {
@@ -99,6 +101,12 @@ const saveOrderPlacedStatus: Resolver<
     },
   };
   postEvent(postBody);
+
+  orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
+    orderDetails.id
+  );
+
+  syncInventory(orderDetails, SYNC_TYPE.BLOCK);
 
   return { message: 'Order placed successfully' };
 };
