@@ -26,8 +26,11 @@ import {
   getSubstitutes,
   MedicineProduct,
   MedicineProductDetails,
-  pinCodeServiceabilityApi,
   trackTagalysEvent,
+  availabilityApi247,
+  getDeliveryTAT247,
+  TatApiInput247,
+  getPlaceInfoByPincode,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -42,7 +45,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import moment from 'moment';
+import moment, { lang } from 'moment';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -461,9 +464,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
     // To handle deeplink scenario and
     // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
+    const params = {
+      pincode: pincode,
+      sku: sku,
+    };
+    console.log("check availability 247", (await availabilityApi247(params)).data.response)
     const pinCodeNotServiceable =
       isPharmacyLocationServiceable == undefined
-        ? !(await pinCodeServiceabilityApi(pincode)).data.Availability
+        ? !(await availabilityApi247(params)).data.response
         : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
     if (pinCodeNotServiceable) {
       setdeliveryTime('');
@@ -472,18 +480,16 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       return;
     }
 
-    getDeliveryTime({
-      postalcode: pincode,
-      ordertype: (medicineDetails.type_id || '').toLowerCase() == 'pharma' ? 'pharma' : 'fmcg',
-      lookup: [
-        {
-          sku: sku,
-          qty: getItemQuantity(sku),
-        },
-      ],
-    })
-      .then((res) => {
-        const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
+    try {
+      const data = await getPlaceInfoByPincode(pincode);
+      const { lat, lng } = data.data.results[0].geometry.location;
+      getDeliveryTAT247({
+        sku: sku,
+        pincode: pincode,
+        lat: lat,
+        lng: lng
+      } as TatApiInput247).then((res) => {
+        const deliveryDate = g(res, 'data', 'response', 'tat')
         const currentDate = moment();
         if (deliveryDate) {
           if (checkButtonClicked) {
@@ -498,7 +504,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
           }
           if (isDeliveryDateWithInXDays(deliveryDate)) {
-            setdeliveryTime(deliveryDate);
+            setdeliveryTime(moment(deliveryDate, "DD-MM-YYYY hh:mm:ss a").format(AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT));
             setdeliveryError('');
           } else {
             setdeliveryError(pincodeServiceableItemOutOfStockMsg);
@@ -509,13 +515,20 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           setdeliveryError('');
         }
       })
-      .catch(() => {
-        // Intentionally show T+2 days as Delivery Date
-        setdeliveryTime(genericServiceableDate);
-        setdeliveryError('');
-      })
-      .finally(() => setshowDeliverySpinner(false));
+        .catch(() => {
+          // Intentionally show T+2 days as Delivery Date
+          setdeliveryTime(genericServiceableDate);
+          setdeliveryError('');
+        })
+        .finally(() => setshowDeliverySpinner(false));
+    } catch (error) {
+      // in case user entered wrong pincode, not able to get lat lng. showing out of stock to user
+      setdeliveryError(pincodeServiceableItemOutOfStockMsg);
+      setdeliveryTime('');
+      setshowDeliverySpinner(false)
+    }
   };
+
 
   const fetchSubstitutes = () => {
     getSubstitutes(sku)

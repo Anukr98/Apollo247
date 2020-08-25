@@ -42,7 +42,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
 import {
   getPlaceInfoByPincode,
-  pinCodeServiceabilityApi,
+  pinCodeServiceabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   g,
@@ -306,14 +306,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       try {
         const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
           saveAddress(addressInput),
-          addOnly ? null : pinCodeServiceabilityApi(pincode),
+          addOnly ? null : pinCodeServiceabilityApi247(pincode),
         ]);
 
         setshowSpinner(false);
         // const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
         const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
         const isAddressServiceable =
-          pinAvailabilityResult && pinAvailabilityResult.data.Availability;
+          pinAvailabilityResult && pinAvailabilityResult.data.response;
         addAddress!(address);
         addDiagnosticAddress!(address);
 

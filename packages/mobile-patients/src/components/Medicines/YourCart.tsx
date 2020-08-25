@@ -7,6 +7,7 @@ import {
   postWebEngageEvent,
   postWEGWhatsAppEvent,
   getMaxQtyForMedicineItem,
+  isDeliveryDateWithInXDays,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -51,7 +52,7 @@ import {
   getPlaceInfoByPincode,
   getStoreInventoryApi,
   GetStoreInventoryResponse,
-  pinCodeServiceabilityApi,
+  pinCodeServiceabilityApi247,
   searchPickupStoresApi,
   Store,
   MedicineProduct,
@@ -61,6 +62,8 @@ import {
   validateConsultCoupon,
   userSpecificCoupon,
   getMedicineDetailsApi,
+  TatApiInput247,
+  getDeliveryTAT247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -446,56 +449,107 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       setshowDeliverySpinner(true);
       setLoading!(true);
       const lookUp = cartItems.map((item) => ({ sku: item.id, qty: item.quantity }));
+      const skus = cartItems.map((item) => (item.id));
+
       try {
         const tatApiInput: TatApiInput = {
           postalcode: selectedAddress.zipcode || '',
           ordertype: getTatOrderType(cartItems),
           lookup: lookUp,
         };
-        const res = await getDeliveryTime(tatApiInput);
-        // setdeliveryTime('');
-        const tatItemsCount = g(res, 'data', 'tat', 'length');
-        if (tatItemsCount) {
-          const tatItems = g(res, 'data', 'tat') || [];
-          // filter out the sku's which has deliverydate > X days from the current date
-          const unserviceableSkus = tatItems
-            .filter(
-              ({ deliverydate }) =>
-                moment(deliverydate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') >
-                AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
-            )
-            .map(({ artCode }) => artCode);
 
-          // update cart items to unserviceable/serviceable
-          const updatedCartItems = cartItems.map((item) => ({
-            ...item,
-            unserviceable: !!unserviceableSkus.find((sku) => item.id == sku),
-          }));
-          setCartItems!(updatedCartItems);
+        const tatApiInput247 : TatApiInput247 = {
+          pincode: selectedAddress.zipcode || '',
+          lng: selectedAddress?.latitude!,
+          lat: selectedAddress?.longitude!,
+          sku: skus.join(",")
+        }
+        const tatRes = await getDeliveryTAT247(tatApiInput247)
+        console.log("cart tatitem", tatRes)
 
-          if (unserviceableSkus.length) {
-            showUnServiceableItemsAlert(updatedCartItems);
-          }
+        const tatTimeStamp = g(tatRes, 'data', 'response', 'tatU')
+        if (tatTimeStamp && tatTimeStamp !== -1) {
+          const deliveryDate = g(tatRes, 'data', 'response', 'tat')
+          if (deliveryDate) {
+            if (isDeliveryDateWithInXDays(deliveryDate)) {
+              setCartItems!(cartItems)
 
-          const serviceableItems = tatItems.filter(
-            ({ artCode }) => !unserviceableSkus.find((sku) => artCode == sku)
-          );
-          const serviceableTats = serviceableItems.map(({ deliverydate }) => deliverydate);
+              const serviceableSkus = cartItems.map((item) => {
+                const serviceItem: any = {};
+                serviceItem.artCode = item.id;
+                serviceItem.deliverydate = deliveryDate;
+                serviceItem.siteId = g(tatRes, 'data', 'response', 'storeCode') 
+                return serviceItem;
+              })
+              if (serviceableSkus.length) {
+                fetchInventoryAndUpdateCartPricesAfterTat(serviceableSkus, cartItems);
+                updateserviceableItemsTat(tatApiInput);
+              } else {
+                setdeliveryTime('...');
+                setshowDeliverySpinner(false);
+                setLoading!(false);
+              }
 
-          // If all the SKUs are serviceable, call getStoreInventoryApi to check cart item prices
-          // if discrepancy, update cart items and show alert
-          // Call getHeaderTAT API to display tatDate
-          if (serviceableTats.length && !unserviceableSkus.length) {
-            fetchInventoryAndUpdateCartPricesAfterTat(serviceableItems, updatedCartItems);
-            updateserviceableItemsTat(tatApiInput);
+            } else {
+              showUnServiceableItemsAlert(cartItems)
+              setdeliveryTime('...');
+              setshowDeliverySpinner(false);
+              setLoading!(false);
+            }
           } else {
-            setdeliveryTime('...');
-            setshowDeliverySpinner(false);
-            setLoading!(false);
+            showGenericTatDate(lookUp)
           }
         } else {
-          showGenericTatDate(lookUp);
+          showUnServiceableItemsAlert(cartItems)
         }
+
+        // const res = await getDeliveryTime(tatApiInput);
+        // // setdeliveryTime('');
+        // const tatItemsCount = g(res, 'data', 'tat', 'length');
+        // if (tatItemsCount) {
+        //   const tatItems = g(res, 'data', 'tat') || [];
+        //   // filter out the sku's which has deliverydate > X days from the current date
+        //   const unserviceableSkus = tatItems
+        //     .filter(
+        //       ({ deliverydate }) =>
+        //         moment(deliverydate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') >
+        //         AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
+        //     )
+        //     .map(({ artCode }) => artCode);
+
+        //   // update cart items to unserviceable/serviceable
+        //   const updatedCartItems = cartItems.map((item) => ({
+        //     ...item,
+        //     unserviceable: !!unserviceableSkus.find((sku) => item.id == sku),
+        //   }));
+        //   console.log("cart items", cartItems, updatedCartItems)
+        //   setCartItems!(updatedCartItems);
+
+        //   if (unserviceableSkus.length) {
+        //     showUnServiceableItemsAlert(updatedCartItems);
+        //   }
+
+        //   const serviceableItems = tatItems.filter(
+        //     ({ artCode }) => !unserviceableSkus.find((sku) => artCode == sku)
+        //   );
+        //   const serviceableTats = serviceableItems.map(({ deliverydate }) => deliverydate);
+
+        //   //console.log("serviceableItems", serviceableItems)
+
+        //   // If all the SKUs are serviceable, call getStoreInventoryApi to check cart item prices
+        //   // if discrepancy, update cart items and show alert
+        //   // Call getHeaderTAT API to display tatDate
+        //   if (serviceableTats.length && !unserviceableSkus.length) {
+        //     fetchInventoryAndUpdateCartPricesAfterTat(serviceableItems, updatedCartItems);
+        //     updateserviceableItemsTat(tatApiInput);
+        //   } else {
+        //     setdeliveryTime('...');
+        //     setshowDeliverySpinner(false);
+        //     setLoading!(false);
+        //   }
+        // } else {
+        //   showGenericTatDate(lookUp);
+        // }
       } catch (err) {
         CommonBugFender('YourCart_getDeliveryTime', err);
         if (!Axios.isCancel(err) || g(err, 'code') === 'ECONNABORTED') {
@@ -1083,9 +1137,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setshowDeliverySpinner(false);
     // setCheckingServicability(true);
     setLoading!(true);
-    pinCodeServiceabilityApi(address.zipcode!)
+    pinCodeServiceabilityApi247(address.zipcode!)
       .then(({ data }) => {
-        if (g(data, 'Availability')) {
+        if (g(data, 'response')) {
           // Not stopping checkingServicability spinner here, it'll be stopped in useEffect that triggers when change in DeliveryAddressId
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {

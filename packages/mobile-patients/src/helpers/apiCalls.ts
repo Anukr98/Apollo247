@@ -125,12 +125,33 @@ export interface TatApiInput {
   lookup: { sku: string; qty: number }[];
 }
 
+export interface TatApiInput247 {
+  pincode: string;
+  lat: number;
+  lng: number;
+  sku: string;
+}
+
+export interface ServiceAbilityApiInput {
+  pincode: string;
+  sku: string;
+}
+
 export interface GetDeliveryTimeResponse {
   tat: {
     artCode: string;
     deliverydate: string;
     siteId: string;
   }[];
+  errorMSG?: string;
+}
+
+export interface GetTatResponse247 {
+  response: {
+    storeCode: string;
+    tat: string;
+    tatU: number;
+  };
   errorMSG?: string;
 }
 
@@ -405,26 +426,17 @@ export const getStoreInventoryApi = (
   );
 };
 
-export const pinCodeServiceabilityApi = (
-  pinCode: string
-): Promise<AxiosResponse<{ Availability: boolean }>> => {
-  return Axios.post(
-    // `${config.PHARMA_UAT_BASE_URL}/pincode_api.php`,
-    `${config.PIN_SERVICEABILITY[0]}/servicability_api.php`, //Production
-    {
-      postalcode: pinCode,
-      skucategory: [
-        {
-          SKU: 'PHARMA',
-        },
-      ],
-    },
-    {
-      headers: {
-        Authorization: config.PIN_SERVICEABILITY[1],
-      },
-    }
-  );
+export const pinCodeServiceabilityApi247 = (pincode: string): Promise<AxiosResponse<{ response: boolean }>> => {
+  const url = `${config.TAT_SERVICEABILITY_BASE_URL}/serviceable?pincode=${pincode}`
+  return Axios.post(url);
+};
+
+export const availabilityApi247 = (params: {
+  pincode: string,
+  sku: string
+}): Promise<AxiosResponse<{ response: boolean }>> => {
+  const url = `${config.TAT_SERVICEABILITY_BASE_URL}/availability?sku=${params.sku}&pincode=${params.pincode}`
+  return Axios.post(url);
 };
 
 export const medCartItemsDetailsApi = (
@@ -549,6 +561,24 @@ export const autoCompletePlaceSearch = (
     //   // An executor function receives a cancel function as a parameter
     //   cancelSearchSuggestionsApi = c;
     // }),
+  });
+};
+
+let cancelGetDeliveryTAT247 : Canceler | undefined;
+
+export const getDeliveryTAT247 = (
+  params : TatApiInput247
+) : Promise<AxiosResponse<GetTatResponse247>> => {
+  const CancelToken = Axios.CancelToken;
+  cancelGetDeliveryTAT247 && cancelGetDeliveryTAT247();
+  const url = `${config.TAT_SERVICEABILITY_BASE_URL}/tat?sku=${params.sku}&pincode=${params.pincode}&lat=${params.lat}&lng=${params.lng}`
+  return Axios.post(url, {
+    headers: {
+    },
+    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
+    cancelToken: new CancelToken((c) => {
+      cancelGetDeliveryTAT247 = c;
+    }),
   });
 };
 

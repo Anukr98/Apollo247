@@ -9,6 +9,9 @@ import {
   getDeliveryTime,
   medCartItemsDetailsApi,
   MedicineOrderBilledItem,
+  TatApiInput247,
+  getDeliveryTAT247,
+  availabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -1280,8 +1283,9 @@ export const parseNumber = (number: string | number, decimalPoints?: number) =>
   Number(Number(number).toFixed(decimalPoints || 2));
 
 export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
+  console.log("difference in days", deliveryDate,  moment(deliveryDate, "DD-MM-YYYY hh:mm:ss a").diff(moment(), 'days'))
   return (
-    moment(deliveryDate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') <=
+    moment(deliveryDate, 'DD-MM-YYYY hh:mm:ss a').diff(moment(), 'days') <=
     AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
   );
 };
@@ -1303,7 +1307,7 @@ export const addPharmaItemToCart = (
     section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'];
     categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
   },
-  onComplete?: () => void
+  onComplete?: () => void,
 ) => {
   const unServiceableMsg = 'Sorry, not serviceable in your area.';
 
@@ -1353,26 +1357,18 @@ export const addPharmaItemToCart = (
   }
 
   setLoading && setLoading(true);
-  getDeliveryTime({
-    postalcode: pincode,
-    ordertype: cartItem.isMedicine ? 'pharma' : 'fmcg',
-    lookup: [
-      {
-        sku: cartItem.id,
-        qty: cartItem.quantity,
-      },
-    ],
-  })
+  const params = {
+    pincode: pincode,
+    sku: cartItem.id,
+  };
+  availabilityApi247(params)
     .then((res) => {
-      const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
-      if (deliveryDate) {
-        if (isDeliveryDateWithInXDays(deliveryDate)) {
-          addToCart();
-        } else {
-          navigate();
-        }
-      } else {
+      console.log("add to cart availability", res.data, " response ", res)
+      const availability = g(res, 'data', 'response')
+      if (availability) {
         addToCart();
+      } else {
+        navigate();
       }
     })
     .catch(() => {
@@ -1382,6 +1378,36 @@ export const addPharmaItemToCart = (
       setLoading && setLoading(false);
       onComplete && onComplete();
     });
+
+  // getDeliveryTime({
+  //   postalcode: pincode,
+  //   ordertype: cartItem.isMedicine ? 'pharma' : 'fmcg',
+  //   lookup: [
+  //     {
+  //       sku: cartItem.id,
+  //       qty: cartItem.quantity,
+  //     },
+  //   ],
+  // })
+  //   .then((res) => {
+  //     const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
+  //     if (deliveryDate) {
+  //       if (isDeliveryDateWithInXDays(deliveryDate)) {
+  //         addToCart();
+  //       } else {
+  //         navigate();
+  //       }
+  //     } else {
+  //       addToCart();
+  //     }
+  //   })
+  //   .catch(() => {
+  //     addToCart();
+  //   })
+  //   .finally(() => {
+  //     setLoading && setLoading(false);
+  //     onComplete && onComplete();
+  //   });
 };
 
 export const dataSavedUserID = async (key: string) => {
