@@ -44,6 +44,7 @@ import {
   UPLOAD_CHAT_FILE,
   POST_WEB_ENGAGE,
   CALL_DISCONNECT_NOTIFICATION,
+  SAVE_APPOINTMENT_CALL_FEEDBACK
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   cancelAppointment,
@@ -90,6 +91,7 @@ import {
   exotelInput,
   ConsultMode,
   WebEngageEvent,
+  CALL_FEEDBACK_RESPONSES_TYPES
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   initateConferenceTelephoneCall,
@@ -153,6 +155,8 @@ import {
   sendCallDisconnectNotification,
   sendCallDisconnectNotificationVariables,
 } from '@aph/mobile-doctors/src/graphql/types/sendCallDisconnectNotification';
+import { RateCall } from '@aph/mobile-doctors/src/components/ConsultRoom/RateCall';
+import { saveAppointmentCallFeedback, saveAppointmentCallFeedbackVariables } from '@aph/mobile-doctors/src/graphql/types/saveAppointmentCallFeedback';
 
 const { width } = Dimensions.get('window');
 // let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
@@ -256,6 +260,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [selectedReason, setselectedReason] = useState<string>(reasons[0]);
   const [otherReason, setotherReason] = useState<string>('');
   const [isAutoSaved, setIsAutoSaved] = useState<boolean>(false);
+  const [giveRating, setGiveRating] = useState<boolean>(false);
 
   const [savedTime, setSavedTime] = useState<string>('');
   const mutationCancelSrdConsult = useMutation<cancelAppointment, cancelAppointmentVariables>(
@@ -1829,6 +1834,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               sendEndCallNotificationAPI(
                 callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO
               );
+            } else {
+              setGiveRating(true);
             }
             firebase
               .analytics()
@@ -2212,6 +2219,50 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       </>
     );
   };
+
+  const submitRatingHandler = (data: {
+    rating: number;
+    feedbackResponseType: CALL_FEEDBACK_RESPONSES_TYPES | null;
+    audioFeedbacks: {}[];
+    videoFeedbacks: {}[];
+  }) => {
+    setShowLoading!(true);
+    setGiveRating(false);
+    const query = {
+      appointmentCallDetailsId: `${callId}`,
+      ratingValue: data.rating,
+      feedbackResponseType: data.feedbackResponseType,
+      feedbackResponses: data.audioFeedbacks.length === 0 && data.videoFeedbacks.length === 0 ? null : JSON.stringify({
+        "audio": data.audioFeedbacks,
+        "video": data.videoFeedbacks
+      })
+    }
+
+    client
+      .mutate<saveAppointmentCallFeedback, saveAppointmentCallFeedbackVariables>({
+        mutation: SAVE_APPOINTMENT_CALL_FEEDBACK,
+        variables: {
+          saveAppointmentCallFeedback: query
+        },
+      })
+      .then((_data: any) => {
+        setShowLoading!(false);
+        showAphAlert &&
+          showAphAlert({
+            title: string.common.alert,
+            description: 'Thank you for sharing your reviews.',
+          });
+
+      })
+      .catch((e: any) => {
+        setShowLoading!(false);
+        showAphAlert &&
+          showAphAlert({
+            title: string.common.alert,
+            description: 'Error in giving feedback. Please try again!',
+          });
+      });
+  }
 
   const onStartConsult = (successCallback?: () => void) => {
     getNetStatus().then((connected) => {
@@ -2965,6 +3016,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     }
   }, [patientImageshow, url]);
 
+  const showRateCallModal = () => {
+    return (
+      <RateCall
+          visible={giveRating}
+          submitRatingCallback={(data) => submitRatingHandler(data)}
+        />
+    )
+  }
+
   return (
     <View
       style={{
@@ -2977,6 +3037,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           flex: 1,
         }}
       >
+        {showRateCallModal()}
         {showHeaderView()}
         {overlayDisplay}
         {showExoPopup && exoTelPopup()}
