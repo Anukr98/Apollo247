@@ -14,12 +14,6 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <permission
-        android:name="android.permission.INTERACT_ACROSS_USERS_FULL"
-        android:protectionLevel="signature" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -46,10 +40,10 @@
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
+          android:launchMode="singleTask"
           android:screenOrientation="portrait"
         android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
         android:windowSoftInputMode="stateAlwaysHidden|adjustPan"
-        android:launchMode="singleTask"
           >
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
@@ -61,6 +55,13 @@
               <category android:name="android.intent.category.BROWSABLE" />
               <!-- Accepts URIs that begin with "link://patienturl -->
               <data android:scheme="apollopatients" />
+          </intent-filter>
+                     <intent-filter android:label="@string/app_name">
+              <action android:name="android.intent.action.VIEW" />
+              <category android:name="android.intent.category.DEFAULT" />
+              <category android:name="android.intent.category.BROWSABLE" />
+              <!-- Accepts URIs that begin with "https:www.apollo247.com -->
+              <data android:scheme="https" android:host="www.apollo247.com"/>
           </intent-filter>
       </activity>
       <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
@@ -93,7 +94,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
-        <receiver android:enabled="true" android:name=".PusherReceiver"
+                <receiver android:enabled="true" android:name=".PusherReceiver"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

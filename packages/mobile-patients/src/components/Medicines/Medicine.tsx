@@ -95,9 +95,10 @@ import {
   View,
   ViewStyle,
   Platform,
+  FlatList,
 } from 'react-native';
 import { Image, ListItem } from 'react-native-elements';
-import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import Carousel from 'react-native-snap-carousel';
 import {
@@ -1924,7 +1925,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
 
     return (
-      <ScrollView bounces={false}>
+      <ScrollView removeClippedSubviews={true} bounces={false}>
         <View style={{ height: 10 }} />
         {sectionsView}
         {!error && <View style={{ height: 20 }} />}

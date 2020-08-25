@@ -30,7 +30,7 @@ import {
   CommonBugFender,
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
+import { TestSlot } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
@@ -79,14 +79,6 @@ interface AphConsole {
   trace(message?: any, ...optionalParams: any[]): void;
   debug(message?: any, ...optionalParams: any[]): void;
   table(...data: any[]): void;
-}
-
-export interface TestSlot {
-  employeeCode: string;
-  employeeName: string;
-  diagnosticBranchCode: string;
-  date: Date;
-  slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
 }
 
 const isDebugOn = __DEV__;
@@ -881,58 +873,25 @@ export const getRelations = (self?: string) => {
 
 export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
 
-export const isValidTestSlot = (
-  slot: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo,
-  date: Date
-) => {
+export const isValidTestSlot = (slot: TestSlot, date: Date) => {
   return (
-    slot.status != 'booked' &&
     (moment(date)
       .format('DMY')
       .toString() ===
     moment()
       .format('DMY')
       .toString()
-      ? moment(slot.startTime!.trim(), 'HH:mm').isSameOrAfter(
+      ? moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrAfter(
           moment(new Date()).add(
             AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
             'minutes'
           )
         )
       : true) &&
-    moment(slot.endTime!.trim(), 'HH:mm').isSameOrBefore(
+    moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
       moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
     )
   );
-};
-
-export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, endTime: string) => {
-  return slots.find(
-    (item) => item.slotInfo.startTime == startTime && item.slotInfo.endTime == endTime
-  )!;
-};
-
-export const getUniqueTestSlots = (slots: TestSlot[]) => {
-  return slots
-    .filter(
-      (item, idx, array) =>
-        array.findIndex(
-          (_item) =>
-            _item.slotInfo.startTime == item.slotInfo.startTime &&
-            _item.slotInfo.endTime == item.slotInfo.endTime
-        ) == idx
-    )
-    .map((val) => ({
-      startTime: val.slotInfo.startTime!,
-      endTime: val.slotInfo.endTime!,
-    }))
-    .sort((a, b) => {
-      if (moment(a.startTime.trim(), 'HH:mm').isAfter(moment(b.startTime.trim(), 'HH:mm')))
-        return 1;
-      else if (moment(b.startTime.trim(), 'HH:mm').isAfter(moment(a.startTime.trim(), 'HH:mm')))
-        return -1;
-      return 0;
-    });
 };
 
 const webengage = new WebEngage();
@@ -1110,20 +1069,26 @@ export const InitiateAppsFlyer = (
   );
 
   onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution(async (res) => {
-    try {
-      AsyncStorage.setItem('deeplink', res.data.af_dp);
-      AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+    // for iOS universal links
+    if (Platform.OS === 'ios') {
+      try {
+        AsyncStorage.setItem('deeplink', res.data.af_dp);
+        AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
 
-      console.log('res.data.af_dp_onAppOpenAttribution', decodeURIComponent(res.data.af_dp));
-      setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
-      setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code', res.data.af_sub1);
+        console.log('res.data.af_dp_onAppOpenAttribution', decodeURIComponent(res.data.af_dp));
+        setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
+        setBugFenderLog(
+          'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
+          res.data.af_sub1
+        );
 
-      setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
-    } catch (error) {}
+        setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
+      } catch (error) {}
 
-    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
-    if (userLoggedIn == 'true') {
-      handleUniversalLinks(res.data, navigation);
+      const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+      if (userLoggedIn == 'true') {
+        handleUniversalLinks(res.data, navigation);
+      }
     }
   });
 };

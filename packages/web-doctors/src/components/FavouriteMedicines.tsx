@@ -1034,6 +1034,10 @@ export const FavouriteMedicines: React.FC = () => {
         setCustomDosageNoon('');
         setCustomDosageEvening('');
         setCustomDosageNight('');
+        let overview = result.data.productdp[0].PharmaOverview;
+        let generic = overview.length ? result.data.productdp[0].PharmaOverview[0].generic : '';
+        setGenericName(generic);
+
         if (
           result &&
           result.data &&
@@ -1058,7 +1062,6 @@ export const FavouriteMedicines: React.FC = () => {
             medicineMappingObj[result.data.productdp[0].PharmaOverview[0].Doseform.toLowerCase()]
               .defaultRoa
           );
-          setGenericName(result.data.productdp[0].PharmaOverview[0].generic);
         } else {
           setMedicineUnit(medicineMappingObj['others'].defaultUnitDp);
           setMedicineForm(medicineMappingObj['others'].defaultSetting);
@@ -2126,19 +2129,10 @@ export const FavouriteMedicines: React.FC = () => {
     setTabletsCount('1');
   };
 
-  const handleFreeTextInputErr = (value: string) => {
-    if (value.trim().length == 0) {
-      setFreeTextErr(true);
-    } else {
-      setFreeTextErr(false);
-      setMedicineCustomDetails(value);
-    }
-  };
-
   const handleSaveFreeText = () => {
     if (!medicineCustomDetails) {
       setFreeTextErr(true);
-    } else if (medicineCustomDetails && medicineCustomDetails.length == 0) {
+    } else if (medicineCustomDetails && medicineCustomDetails.trim().length == 0) {
       setFreeTextErr(true);
     } else {
       setFreeTextErr(false);
@@ -2450,8 +2444,9 @@ export const FavouriteMedicines: React.FC = () => {
                             className={classes.radioGroup}
                             value={medicineForm}
                             onChange={(e) => {
-                              setMedicineForm((e.target as HTMLInputElement)
-                                .value as MEDICINE_FORM_TYPES);
+                              setMedicineForm(
+                                (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                              );
                             }}
                             row
                           >
@@ -2931,7 +2926,7 @@ export const FavouriteMedicines: React.FC = () => {
                                 placeholder="Type here..."
                                 value={medicineCustomDetails}
                                 onChange={(event: any) => {
-                                  handleFreeTextInputErr(event.target.value);
+                                  setMedicineCustomDetails(event.target.value);
                                 }}
                               />
                             </div>

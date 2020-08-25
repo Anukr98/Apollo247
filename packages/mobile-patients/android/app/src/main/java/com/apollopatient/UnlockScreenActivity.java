@@ -122,12 +122,11 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
 
                 if(isAppRuning){
                     Intent intent = new Intent(UnlockScreenActivity.this, MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                     intent.putExtra("APPOINTMENT_ID",appointment_id);
                     intent.putExtra("CALL_TYPE",incoming_call_type);
-                    startActivity(intent);
                     finish();
-
+                    startActivity(intent);
                 }
             else{
                     sendEvent(reactContext, "accept", params);
@@ -147,11 +146,11 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 onDisconnected(appointment_id);
                 if(isAppRuning){
                     Intent intent = new Intent(UnlockScreenActivity.this, MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY );
                     intent.putExtra("APPOINTMENT_ID",appointment_id);
                     intent.putExtra("CALL_TYPE",incoming_call_type);
-                    startActivity(intent);
                     finish();
+                    startActivity(intent);
                 }
                 else{
                     sendEvent(reactContext, "reject", params);

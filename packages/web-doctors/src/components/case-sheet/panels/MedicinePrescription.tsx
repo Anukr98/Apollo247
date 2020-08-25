@@ -1216,6 +1216,10 @@ export const MedicinePrescription: React.FC = () => {
         setCustomDosageNoon('');
         setCustomDosageEvening('');
         setCustomDosageNight('');
+        let overview = result.data.productdp[0].PharmaOverview;
+        let generic = overview.length ? result.data.productdp[0].PharmaOverview[0].generic : '';
+        setGenericName(generic);
+
         if (
           result &&
           result.data &&
@@ -1239,7 +1243,6 @@ export const MedicinePrescription: React.FC = () => {
             medicineMappingObj[result.data.productdp[0].PharmaOverview[0].Doseform.toLowerCase()]
               .defaultRoa
           );
-          setGenericName(result.data.productdp[0].PharmaOverview[0].generic);
           setFreeTextSwitch(false);
         } else {
           setMedicineUnit(medicineMappingObj['others'].defaultUnitDp);
@@ -2093,19 +2096,10 @@ export const MedicinePrescription: React.FC = () => {
     setMedicineUnit('OTHERS');
   };
 
-  const handleFreeTextInputErr = (value: string) => {
-    if (value.trim().length == 0) {
-      setFreeTextErr(true);
-    } else {
-      setFreeTextErr(false);
-      setMedicineCustomDetails(value);
-    }
-  };
-
   const handleSaveFreeText = () => {
     if (!medicineCustomDetails) {
       setFreeTextErr(true);
-    } else if (medicineCustomDetails && medicineCustomDetails.length == 0) {
+    } else if (medicineCustomDetails && medicineCustomDetails.trim().length == 0) {
       setFreeTextErr(true);
     } else {
       setFreeTextErr(false);
@@ -2349,7 +2343,16 @@ export const MedicinePrescription: React.FC = () => {
                 />
               </AphButton>,
             ];
-
+        const genericName = (
+          <span>
+            {medicine.includeGenericNameInPrescription! &&
+              medicine.genericName &&
+              medicine.genericName !== null &&
+              medicine.genericName.trim().length > 0 && (
+                <h6>{`Contains ${medicine.genericName}`}</h6>
+              )}
+          </span>
+        );
         return (
           <div style={{ position: 'relative' }} key={index}>
             {medicine.medicineCustomDetails ? (
@@ -2361,6 +2364,8 @@ export const MedicinePrescription: React.FC = () => {
                     <s>{medicine.medicineName}</s>
                   </h5>
                 )}
+                {genericName}
+
                 {!isPresent && (
                   <p className={classes.removed}>This medicine has been discontinued </p>
                 )}
@@ -2376,6 +2381,7 @@ export const MedicinePrescription: React.FC = () => {
                     <s>{medicine.medicineName}</s>
                   </h5>
                 )}
+                {genericName}
                 {!isPresent && (
                   <p className={classes.removed}>This medicine has been discontinued </p>
                 )}
@@ -2535,6 +2541,16 @@ export const MedicinePrescription: React.FC = () => {
                   } else {
                     favDosageHtml = favDosageCount + ' ' + favUnitHtmls;
                   }
+                  const genericName = (
+                    <span>
+                      {favMedicine.includeGenericNameInPrescription! &&
+                        favMedicine.genericName &&
+                        favMedicine.genericName !== null &&
+                        favMedicine.genericName.trim().length > 0 && (
+                          <h6>{`Contains ${favMedicine.genericName}`}</h6>
+                        )}
+                    </span>
+                  );
                   return (
                     <div className={classes.paper} key={id}>
                       {favMedicine.medicineCustomDetails ? (
@@ -2544,10 +2560,12 @@ export const MedicinePrescription: React.FC = () => {
                           {favMedicine.medicineCustomDetails && (
                             <h6>{favMedicine.medicineCustomDetails}</h6>
                           )}
+                          {genericName}
                         </Paper>
                       ) : (
                         <Paper className={classes.favMedBg}>
                           <h5>{favMedicine.medicineName}</h5>
+                          {genericName}
                           <h6>
                             {`${
                               favMedicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
@@ -2649,8 +2667,9 @@ export const MedicinePrescription: React.FC = () => {
                         className={classes.radioGroup}
                         value={medicineForm}
                         onChange={(e) => {
-                          setMedicineForm((e.target as HTMLInputElement)
-                            .value as MEDICINE_FORM_TYPES);
+                          setMedicineForm(
+                            (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                          );
                         }}
                         row
                       >
@@ -3132,7 +3151,7 @@ export const MedicinePrescription: React.FC = () => {
                             placeholder="Type here..."
                             value={medicineCustomDetails}
                             onChange={(event: any) => {
-                              handleFreeTextInputErr(event.target.value);
+                              setMedicineCustomDetails(event.target.value);
                             }}
                           />
                         </div>
@@ -3301,8 +3320,9 @@ export const MedicinePrescription: React.FC = () => {
                           className={classes.radioGroup}
                           value={medicineForm}
                           onChange={(e) => {
-                            setMedicineForm((e.target as HTMLInputElement)
-                              .value as MEDICINE_FORM_TYPES);
+                            setMedicineForm(
+                              (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
+                            );
                           }}
                           row
                         >
@@ -3784,7 +3804,7 @@ export const MedicinePrescription: React.FC = () => {
                               placeholder="Type here..."
                               value={medicineCustomDetails ? medicineCustomDetails : ''}
                               onChange={(event: any) => {
-                                handleFreeTextInputErr(event.target.value);
+                                setMedicineCustomDetails(event.target.value);
                               }}
                             />
                           </div>

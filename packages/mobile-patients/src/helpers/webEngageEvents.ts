@@ -24,6 +24,7 @@ export enum WebEngageEventName {
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   CATEGORY_FILTER_CLICKED = 'Pharmacy Category Filter Clicked',
   CATEGORY_FILTER_APPLIED = 'Pharmacy Category Filter Applied',
+  CATEGORY_LIST_GRID_VIEW = 'Listing view',
   SHOW_PRESCRIPTION_AT_STORE_SELECTED = 'Show prescription at store selected',
   PHARMACY_STORE_PICKUP_VIEWED = 'Pharmacy store pickup viewed', // Every time a new pincode is entered, the event must be triggered
   PHARMACY_STORE_SELECTED_SUCCESS = 'Pharmacy store selected success',
@@ -92,6 +93,7 @@ export enum WebEngageEventName {
   NOTIFICATION_ICON = 'Notification Icon clicked',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
   NEED_HELP = 'Need Help?',
+  TICKET_RAISED = 'Ticket raised',
   MY_ACCOUNT = 'My Account',
   FIND_A_DOCTOR = 'Find a Doctor',
   TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
@@ -135,6 +137,10 @@ export enum WebEngageEventName {
   DOCTOR_RESCHEDULE_CLAIM_REFUND = 'Doctor reschedule and Claim Refund button click',
   DOCTOR_CONNECT_TAB_CLICKED = 'Doctor Connect Tab Clicked',
   APOLLO_DOCTOR_TAB_CLICKED = 'Apollo Doctor Tab Clicked',
+  UPLOAD_RECORDS_CLICK_CHATROOM = 'Upload Records in chatroom clicked',
+  TAKE_PHOTO_CLICK_CHATROOM = 'Take a photo in consult room clicked',
+  GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM = 'choose from gallery in consult room clicked',
+  UPLOAD_PHR_CLICK_CHATROOM = 'Upload from PHR in consult room clicked',
   // Medicine Events
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
@@ -168,6 +174,19 @@ export interface UserInfo {
   'Patient UHID': string;
   'Mobile Number': string;
   'Customer ID': string;
+}
+
+export interface ConsultRoomDoctorPatientInfo {
+  'Patient name': string;
+  'Patient UHID': string;
+  'Doctor Name': string;
+  'Speciality name': string;
+  'Doctor ID': string;
+  'Speciality ID': string;
+  'Patient Age': number;
+  'Patient Gender': string;
+  'Hospital Name': string;
+  'Hospital City': string;
 }
 
 export interface AutoSelectLocation extends UserInfo {
@@ -242,6 +261,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
+  [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
   [WebEngageEventName.FIND_A_DOCTOR]: PatientInfo;
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
@@ -318,6 +338,12 @@ export interface WebEngageEvents {
     discount: string;
     'sort by': string;
     price: string;
+  };
+  [WebEngageEventName.CATEGORY_LIST_GRID_VIEW]: {
+    'Category name'?: string;
+    'Category id'?: string;
+    'Type': 'Grid' | 'List';
+    'Source': 'Search' | 'Category';
   };
   [WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED]: {
     value: boolean;
@@ -583,6 +609,10 @@ export interface WebEngageEvents {
   };
 
   // ********** ConsultEvents ********** \\
+  [WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
+  [WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
+  [WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
+  [WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
   [WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED]: UserInfo;
   [WebEngageEventName.DOCTOR_CONNECT_TAB_CLICKED]: UserInfo;
   [WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED]: {

@@ -8,6 +8,7 @@ const apiDetails = {
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   service_url: process.env.PHARMACY_SERVICE_AVAILABILITY,
   cartItemDetails: process.env.PHARMACY_MED_CART_ITEM_DETAILS,
+  medicineDetails: process.env.PHARMACY_MED_PROD_DETAIL_URL,
 };
 
 export interface MedicineProduct {
@@ -55,6 +56,7 @@ export interface PharmaOverview {
 }
 
 export interface MedicineProductDetails extends MedicineProduct {
+  similar_products: MedicineProduct[];
   PharmaOverview: PharmaOverview[];
 }
 
@@ -366,9 +368,9 @@ export const reOrderItems = async (
         ({
           id: item,
           date: moment().format('DD MMM YYYY'),
-          doctorName: `Meds Rx ${(orderDetails.id &&
-            orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) ||
-            ''}`,
+          doctorName: `Meds Rx ${
+            (orderDetails.id && orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) || ''
+          }`,
           forPatient: patientName,
           medicines: medicineNames,
           uploadedUrl: item,
@@ -383,4 +385,18 @@ export const reOrderItems = async (
       unavailableItemsCount: unAvailableItems.length,
     };
   }
+};
+
+export const getMedicineDetailsApi = (
+  productSku: string
+): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
+  return axios.post(
+    apiDetails.medicineDetails,
+    { params: productSku },
+    {
+      headers: {
+        Authorization: apiDetails.authToken,
+      },
+    }
+  );
 };

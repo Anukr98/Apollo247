@@ -106,7 +106,9 @@ export interface NotificationListenerProps extends NavigationScreenProps {}
 
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
-  const isAndroid = Platform.OS === 'android';
+  //TODO:uncomment this if auto permissions are granted
+  // const isAndroid = Platform.OS === 'android';
+  const isAndroid = false;
   const {
     showAphAlert,
     hideAphAlert,
@@ -357,7 +359,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       // notificationType === 'Reschedule_Appointment'
     ) {
       if (notificationType === 'chat_room' || notificationType === 'call_started') {
-        setDoctorJoinedChat && setDoctorJoinedChat(true); // enabling join button in chat room if in case pubnub events not fired
+        if (data.doctorType === DoctorType.SENIOR) {
+          setDoctorJoinedChat && setDoctorJoinedChat(true); // enabling join button in chat room if in case pubnub events not fired
+        }
       }
       if (currentScreenName === AppRoutes.ChatRoom) return;
     }
@@ -945,6 +949,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         firebase.notifications.Android.Importance.Max
       )
         .setDescription('Apollo Consultation')
+        .setSound('incallmanager_ringtone.mp3')
         .enableLights(true)
         .enableVibration(true)
         .setVibrationPattern([1000])
