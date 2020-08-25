@@ -267,5 +267,5 @@ export enum AphErrorMessages {
   CHAT_DAYS_NOT_IN_RANGE_ERROR = 'CHAT_DAYS_NOT_IN_RANGE_ERROR',
   NO_SLOT_ID = 'NO_SLOT_ID',
   SAVE_ITDOSE_DIAGNOSTIC_ORDER_ERROR = 'SAVE_ITDOSE_DIAGNOSTIC_ORDER_ERROR',
-  NOT_A_DOCTOR = 'Seems like the mobile no. you entered is either not registered with us or your account has been disabled. If you are a doctor and wish to enroll with us, please contact admin@apollo247.com. If you are a patient, please click here to download application for patients - <insert link>',
+  NOT_A_DOCTOR = 'NOT_A_DOCTOR',
 }
