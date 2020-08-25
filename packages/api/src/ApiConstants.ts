@@ -165,7 +165,6 @@ export enum ApiConstants {
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
   PRESCRIPTION_READY_BODY = 'Hi {0}! Your prescription from consultation with Doctor {1} for appointment {2} on {3} is ready :)',
 
-
   REFERRAL_CODE_TEXT = 'Hi {0}, Use code "CARE247" to avail discount up to Rs. 149  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
   REFERRAL_CODE_TEXT_WITH_COUPON = 'Hi {0}, Use code "{1}" to avail discount up to Rs. 299  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/XF7MWPebtkw',
 
@@ -286,6 +285,7 @@ export enum ApiConstants {
   KALEYRA_OTP_SENDER = 'APOLLO',
   KALEYRA_OTP_SMS_METHOD = 'sms',
   OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
+  OTP_NON_WHITELISTED_NUMBER = 'OTP cannot be sent to non-whitelisted mobile number for lower environment',
   OTP_FAIL_MESSAGE = 'OTP sending failed',
   INVALID_RESEND_MESSAGE = 'Invalid resend details',
   NOTIFICATION_MSG_FOR_DR_CALL = 'Hi {0}, {1} will call you from the number {2}. Please pick up the call to connect with the doctor.',
@@ -442,8 +442,8 @@ export enum ApiConstants {
   NEW_VERSION_PRESCRIPTION_SENT_EVENT_NAME = 'New version of the prescription was sent',
   JD_CASE_SHEET_COMPLETED_EVENT_NAME = 'JD case sheet submitted completed',
   JD_CONSULTATION_STARTED_EVENT_NAME = 'JD consultation Started',
-  MEDICINE_ORDER_REFUND_PROCESSED_EVENT_NAME ='Refund Processed',
-  MEDICINE_ORDER_REFUND_SUCCESSFUL_EVENT_NAME ='Refund Successful',
+  MEDICINE_ORDER_REFUND_PROCESSED_EVENT_NAME = 'Refund Processed',
+  MEDICINE_ORDER_REFUND_SUCCESSFUL_EVENT_NAME = 'Refund Successful',
 
   WHATSAPP_SD_CONSULT_REMINDER_15 = 'inf_sd_consult_reminder_15_min',
   WHATSAPP_SD_CHAT_NOTIFICATION_ID = 'inf_sd_chat_notification',
@@ -457,7 +457,7 @@ export enum ApiConstants {
   PARTNER_SBI = 'SBIYONO',
 
   PRESCRIPTION_DEEPLINK_PLACEHOLDER = '<caseSheetId>',
-  PRESCRIPTION_CLICK_HERE = 'Click here to access the Prescription:'
+  PRESCRIPTION_CLICK_HERE = 'Click here to access the Prescription:',
 }
 
 export enum PATIENT_REPO_RELATIONS {
@@ -479,7 +479,7 @@ export enum PATIENT_REPO_RELATIONS {
 }
 
 export const migrationDir = {
-  consults_db: "dist/migration/consults/**/*.js",
-  doctors_db: "dist/migration/doctors/**/*.js",
-  profiles_db: "dist/migration/profiles/**/*.js"
-}
+  consults_db: 'dist/migration/consults/**/*.js',
+  doctors_db: 'dist/migration/doctors/**/*.js',
+  profiles_db: 'dist/migration/profiles/**/*.js',
+};

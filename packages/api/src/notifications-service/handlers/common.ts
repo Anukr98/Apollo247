@@ -120,6 +120,7 @@ const isWhitelisted = async (mobileNumber: string) => {
   return whiteListedContacts && typeof whiteListedContacts == 'string';
 };
 
-export function isNotificationAllowed(mobileNumber: string) {
-  return process.env.NODE_ENV == 'production' || isWhitelisted(mobileNumber);
+export async function isNotificationAllowed(mobileNumber: string) {
+  const result = process.env.NODE_ENV == 'production' || (await isWhitelisted(mobileNumber));
+  return result;
 }
