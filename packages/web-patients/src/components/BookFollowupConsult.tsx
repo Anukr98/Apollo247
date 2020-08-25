@@ -76,7 +76,7 @@ interface DoctorCardProps {
 export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles({});
 
-  const { doctorDetails, setIsPopoverOpen, setSelectedSlot } = props;
+  const { doctorDetails, setIsPopoverOpen, setSelectedSlot, setFollwupAppoitnmentType } = props;
   const [tabValue, setTabValue] = useState<number>(0);
 
   if (doctorDetails) {

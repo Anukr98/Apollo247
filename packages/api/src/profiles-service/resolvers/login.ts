@@ -3,6 +3,7 @@ import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { LoginOtp, LOGIN_TYPE, OTP_STATUS } from 'profiles-service/entities';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { ApiConstants } from 'ApiConstants';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -49,7 +50,7 @@ const login: Resolver<
   { mobileNumber: string; loginType: LOGIN_TYPE; hashCode: string },
   ProfilesServiceContext,
   LoginResult
-> = async (parent, args, { profilesDb }) => {
+> = async (parent, args, { profilesDb, doctorsDb }) => {
   const callStartTime = new Date();
   const apiCallId = Math.floor(Math.random() * 1000000);
   //create first order curried method with first 4 static parameters being passed.
@@ -79,21 +80,23 @@ const login: Resolver<
     otp,
     status: OTP_STATUS.NOT_VERIFIED,
   };
-  const otpSaveResponse = await otpRepo.insertOtp(optAttrs);
+
+  const { id } = await otpRepo.insertOtp(optAttrs);
   loginLogger('OTP_INSERT_END');
 
   // bypass otp env specific
-  const bypassRes = OTPBypass({ otpSaveResponse, logger: loginLogger });
+  const bypassRes = OTPBypass({ id, logger: loginLogger });
   if (bypassRes) return bypassRes;
 
   //call sms gateway service to send the OTP here
   return sendMessage({
+    doctorsDb,
     loginType,
     mobileNumber,
     otp,
     hashCode,
     logger: loginLogger,
-    otpSaveResponse,
+    id,
   });
 };
 
@@ -102,7 +105,7 @@ const resendOtp: Resolver<
   { mobileNumber: string; id: string; loginType: LOGIN_TYPE; hashCode: string },
   ProfilesServiceContext,
   LoginResult
-> = async (parent, args, { profilesDb }) => {
+> = async (parent, args, { profilesDb, doctorsDb }) => {
   const apiCallId = Math.floor(Math.random() * 1000000);
   const callStartTime = new Date();
   //create first order curried method with first 4 static parameters being passed.
@@ -168,6 +171,7 @@ const resendOtp: Resolver<
 
   //call sms gateway service to send the OTP here
   return sendMessage({
+    doctorsDb,
     loginType,
     mobileNumber,
     otp,
@@ -302,12 +306,17 @@ export const loginResolvers = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sendMessage = async (args: any) => {
-  const { loginType, mobileNumber, otp, hashCode, logger, otpSaveResponse } = args;
+  const { loginType, mobileNumber, otp, hashCode, logger, id, doctorsDb } = args;
   logger('SEND_SMS___START');
   let textMessage;
   //let smsResult;
   if (loginType == LOGIN_TYPE.DOCTOR) {
     //const whatsAppMessage = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctor = await doctorRepo.searchDoctorByMobileNumber(mobileNumber, true);
+    if (doctor == null) {
+      throw new AphError(AphErrorMessages.NOT_A_DOCTOR);
+    }
     const templateData: string[] = [otp];
     const promiseSendNotification = sendDoctorNotificationWhatsapp(
       ApiConstants.WHATSAPP_SD_OTP,
@@ -347,14 +356,14 @@ const sendMessage = async (args: any) => {
   logger('API_CALL___END');
   return {
     status: true,
-    loginId: otpSaveResponse.id,
+    loginId: id,
     message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
   };
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const OTPBypass = (args: any) => {
-  const { mobileNumber, otpSaveResponse, logger } = args;
+  const { mobileNumber, id, logger } = args;
   //if production environment, and specific mobileNumber, return the response without sending SMS
   if (
     process.env.NODE_ENV === 'production' &&
@@ -365,7 +374,7 @@ const OTPBypass = (args: any) => {
     logger('STATIC_OTP_API_CALL___END');
     return {
       status: true,
-      loginId: otpSaveResponse.id,
+      loginId: id,
       message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
     };
   }
@@ -374,7 +383,7 @@ const OTPBypass = (args: any) => {
     logger('STATIC_OTP_API_CALL___END');
     return {
       status: true,
-      loginId: otpSaveResponse.id,
+      loginId: id,
       message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
     };
   }
