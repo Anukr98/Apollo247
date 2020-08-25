@@ -63,6 +63,14 @@ export const diagnosticsTypeDefs = gql`
     diagnosticBranchCode: String
   }
 
+  type DiagnosticItdoseSlotsResult{	
+    slotInfo: [ItdoseSlotInfo]	
+  }	
+  type ItdoseSlotInfo {	
+    TimeslotID: String	
+    Timeslot: String	
+  }
+
   type EmployeeSlots {
     employeeCode: String
     employeeName: String
@@ -110,6 +118,11 @@ export const diagnosticsTypeDefs = gql`
       selectedDate: Date
       zipCode: Int
     ): DiagnosticSlotsResult!
+    getDiagnosticItDoseSlots(	
+      patientId: String	
+      selectedDate: Date	
+      zipCode: Int	
+    ): DiagnosticItdoseSlotsResult!
     getDiagnosticsData: DiagnosticsData!
   }
 `;
@@ -147,6 +160,10 @@ type DiagnosticSlotsResult = {
   diagnosticSlot: EmployeeSlots[];
   diagnosticBranchCode: string;
 };
+
+type DiagnosticItdoseSlotsResult = {
+  slotInfo: ItdoseSlotInfo[];
+}
 
 type ItdoseSlotInfo = {
   TimeslotID: string;
@@ -290,6 +307,52 @@ const getDiagnosticSlots: Resolver<
   };
 };
 
+const getDiagnosticItDoseSlots: Resolver<
+  null,
+  { patientId: String; selectedDate: Date; zipCode: number },
+  ProfilesServiceContext,
+  DiagnosticItdoseSlotsResult
+> = async (patient, args, { profilesDb }) => {
+  const diagnosticRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
+  const hubDetails = await diagnosticRepo.findHubByZipCode(args.zipCode.toString());
+  if (hubDetails == null) throw new AphError(AphErrorMessages.INVALID_ZIPCODE, undefined, {});
+  const selDate = format(args.selectedDate, 'yyyy-MM-dd');
+  const diagnosticSlotsUrl = process.env.DIAGNOSTIC_SLOTS_URL;
+  const apiUrl = `${diagnosticSlotsUrl}&jobType=home_collection&hubCode=${hubDetails.pincodeAreaname}&transactionDate=${selDate}`;
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_DIAGNOSTICS: ${apiUrl}`,
+    'getDiagnosticSlots()->API_CALL_STARTING',
+    '',
+    ''
+  );
+  const diagnosticSlot = await fetch(apiUrl)
+    .then((res) => res.json())
+    .catch((error) => {
+      log(
+        'profileServiceLogger',
+        'API_CALL_ERROR',
+        'getDiagnosticSlots()->CATCH_BLOCK',
+        '',
+        JSON.stringify(error)
+      );
+      throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, {});
+    });
+  log(
+    'profileServiceLogger',
+    'API_CALL_RESPONSE',
+    'getDiagnosticSlots()->API_CALL_RESPONSE',
+    JSON.stringify(diagnosticSlot),
+    ''
+  );
+
+  if (diagnosticSlot.status != true || !diagnosticSlot.data) {
+    throw new AphError(AphErrorMessages.ITDOSE_GET_SLOTS_ERROR, undefined, { "response": diagnosticSlot });
+  }
+
+  return { slotInfo: diagnosticSlot.data };
+}
+
 const getDiagnosticsData: Resolver<null, {}, ProfilesServiceContext, DiagnosticsData> = async (
   patent,
   args,
@@ -306,6 +369,7 @@ export const diagnosticsResolvers = {
     searchDiagnostics,
     getDiagnosticsCites,
     getDiagnosticSlots,
+    getDiagnosticItDoseSlots,
     getDiagnosticsData,
     searchDiagnosticsById,
   },
