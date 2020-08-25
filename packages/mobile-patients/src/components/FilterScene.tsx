@@ -291,7 +291,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
           options.length > 0 &&
           options.map((option: any, index: any) => (
             <Button
-              title={option.brandName.replace(
+              title={option.brandName!.replace(
                 /\w+/g,
                 (w) => w[0].toUpperCase() + w.slice(1).toLowerCase()
               )}

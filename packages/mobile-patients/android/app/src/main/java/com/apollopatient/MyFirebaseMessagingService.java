@@ -61,8 +61,9 @@ public class MyFirebaseMessagingService
             Log.e("RemoteMessage", remoteMessage.getData().toString());
 
             String notifDataType = remoteMessage.getData().get("type");
-            String startCallType="call_start";
-            String disconnectCallType="call_disconnect";
+            //TODO: change to single 't' after the auto permissions are granted
+            String startCallType="call_startt";
+            String disconnectCallType="call_disconnectt";
             if(startCallType.equals(notifDataType)|| disconnectCallType.equals(notifDataType)) {
                     showUnlockScreen(remoteMessage,!isAppRunning());
                     return;

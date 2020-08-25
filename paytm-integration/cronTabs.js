@@ -210,7 +210,7 @@ exports.updateSdSummary = (req, res) => {
     query: docCountQuery,
   };
   axios
-    .post(process.env.API_URL, seniorDataRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, seniorDataRequestJSON)
     .then((response) => {
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
@@ -276,7 +276,7 @@ exports.updateJdSummary = (req, res) => {
     query: docCountQuery,
   };
   axios
-    .post(process.env.API_URL, juniorDataRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, juniorDataRequestJSON)
     .then((response) => {
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
@@ -343,7 +343,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
     query: docCountQuery,
   };
   axios
-    .post(process.env.API_URL, seniorDataRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, seniorDataRequestJSON)
     .then((response) => {
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
