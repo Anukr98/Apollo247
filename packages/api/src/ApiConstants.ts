@@ -477,3 +477,9 @@ export enum PATIENT_REPO_RELATIONS {
   PHARMACOLOGIST_CONSULT = 'pharmacologistConsult',
   PATIENT_FEEDBACK = 'patientfeedback',
 }
+
+export const migrationDir = {
+  consults_db: "dist/migration/consults/**/*.js",
+  doctors_db: "dist/migration/doctors/**/*.js",
+  profiles_db: "dist/migration/profiles/**/*.js"
+}

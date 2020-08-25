@@ -4268,7 +4268,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === cancelConsultInitiated ||
       rowData.message === callAbandonment ||
       rowData.message === appointmentComplete ||
-      rowData.message === patientRejectedCall
+      rowData.message === patientRejectedCall || 
+      rowData === patientRejectedCall
     ) {
       return null;
     }
