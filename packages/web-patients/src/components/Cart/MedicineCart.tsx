@@ -655,7 +655,7 @@ export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon 
   discount: number;
   valid: boolean;
   reason: String;
-  products: [];
+  products: CartProduct[];
 }
 export interface CartProduct {
   sku: string;
@@ -748,12 +748,6 @@ export const MedicineCart: React.FC = (props) => {
         ).toFixed(2)
       );
       setCouponDiscount(couponDiscount);
-      // setCartItems(
-      //   cartItems.map((item) => ({
-      //     ...item,
-      //     couponPrice: getDiscountPrice(item, validateCouponResult.products),
-      //   }))
-      // );
     }
   }, [validateCouponResult]);
 
@@ -950,15 +944,6 @@ export const MedicineCart: React.FC = (props) => {
       const item: any = validateCouponResult.products.find((item: any) => item.sku === sku);
       return item.specialPrice.toFixed(2);
     }
-  };
-
-  const getDiscountPrice = (cartItem: MedicineCartItem, lineItems: CartProduct[]) => {
-    const foundItem = lineItems.find((item: any) => item.sku == cartItem.id);
-    return foundItem
-      ? foundItem.onMrp
-        ? foundItem.mrp - foundItem.discountAmt
-        : foundItem.specialPrice - foundItem.discountAmt
-      : undefined;
   };
 
   const cartItemsForApi =
