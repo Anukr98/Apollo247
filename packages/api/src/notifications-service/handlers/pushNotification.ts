@@ -35,7 +35,7 @@ import { sendNotificationSMS } from './sms';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { hitCallKitCurl } from 'notifications-service/handlers';
 import { DoctorDeviceTokenRepository } from 'doctors-service/repositories/doctorDeviceTokenRepository';
-import { admin } from 'notifications-service/firebase';
+import { admin } from 'firebase';
 
 type PushNotificationInput = {
   notificationType: NotificationType;
@@ -1588,7 +1588,7 @@ export async function sendNotification(
   };
   let notificationResponse;
   const registrationToken: string[] = [];
-  const patientRepo = doctorsDb.getCustomRepository(PatientRepository);
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const allpatients = await patientRepo.getIdsByMobileNumber(patientDetails.mobileNumber);
   const listOfIds: string[] = [];
   allpatients.map((value) => listOfIds.push(value.id));

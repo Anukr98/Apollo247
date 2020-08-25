@@ -1281,29 +1281,16 @@ export const GET_LATEST_MEDICINE_ORDER = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_SLOTS = gql`
-  query getDiagnosticSlots(
-    $patientId: String
-    $hubCode: String
-    $selectedDate: Date
-    $zipCode: Int
-  ) {
-    getDiagnosticSlots(
+export const GET_DIAGNOSTIC_IT_DOSE_SLOTS = gql`
+  query GetDiagnosticItDoseSlots($patientId: String, $selectedDate: Date, $zipCode: Int) {
+    getDiagnosticItDoseSlots(
       patientId: $patientId
-      hubCode: $hubCode
       selectedDate: $selectedDate
       zipCode: $zipCode
     ) {
-      diagnosticBranchCode
-      diagnosticSlot {
-        employeeCode
-        employeeName
-        slotInfo {
-          endTime
-          status
-          startTime
-          slot
-        }
+      slotInfo {
+        TimeslotID
+        Timeslot
       }
     }
   }
@@ -2531,6 +2518,17 @@ export const GET_DIAGNOSTICS_CITES = gql`
 export const SAVE_DIAGNOSTIC_ORDER = gql`
   mutation SaveDiagnosticOrder($diagnosticOrderInput: DiagnosticOrderInput) {
     SaveDiagnosticOrder(diagnosticOrderInput: $diagnosticOrderInput) {
+      errorCode
+      errorMessage
+      orderId
+      displayId
+    }
+  }
+`;
+
+export const SAVE_ITDOSE_HOME_COLLECTION_DIAGNOSTIC_ORDER = gql`
+  mutation SaveItdoseHomeCollectionDiagnosticOrder($diagnosticOrderInput: DiagnosticOrderInput) {
+    SaveItdoseHomeCollectionDiagnosticOrder(diagnosticOrderInput: $diagnosticOrderInput) {
       errorCode
       errorMessage
       orderId
