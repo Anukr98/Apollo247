@@ -1270,8 +1270,7 @@ export const MedicineCart: React.FC = (props) => {
             validateCouponResult &&
             validateCouponResult.discount &&
             Number(validateCouponResult.discount.toFixed(2)) > Number(productDiscount.toFixed(2))
-              ? Number(validateCouponResult.discount.toFixed(2)) -
-                Number(productDiscount.toFixed(2))
+              ? Number(validateCouponResult.discount.toFixed(2))
               : 0,
           finalBookingValue: totalWithCouponDiscount,
           ecommObj: {
@@ -1614,8 +1613,7 @@ export const MedicineCart: React.FC = (props) => {
                           Number(productDiscount.toFixed(2)) && (
                           <div className={classes.discountTotal}>
                             {`Savings of Rs.
-                          ${Number(validateCouponResult.discount.toFixed(2)) -
-                            Number(productDiscount.toFixed(2))}
+                          ${Number(validateCouponResult.discount.toFixed(2))}
                            on the bill`}
                           </div>
                         )}
@@ -1670,9 +1668,7 @@ export const MedicineCart: React.FC = (props) => {
                               <div className={classes.priceRow}>
                                 <span>Discount({couponCode})</span>
                                 <span className={classes.priceCol}>
-                                  -Rs.{' '}
-                                  {Number(validateCouponResult.discount.toFixed(2)) -
-                                    Number(productDiscount.toFixed(2))}
+                                  -Rs. {Number(validateCouponResult.discount.toFixed(2))}
                                 </span>
                               </div>
                             )}
@@ -1725,8 +1721,7 @@ export const MedicineCart: React.FC = (props) => {
                                     validateCouponResult.discount &&
                                     Number(validateCouponResult.discount.toFixed(2)) >
                                       Number(productDiscount.toFixed(2))
-                                      ? Number(validateCouponResult.discount.toFixed(2)) -
-                                        Number(productDiscount.toFixed(2))
+                                      ? Number(validateCouponResult.discount.toFixed(2))
                                       : 0,
                                   totalWithCouponDiscount:
                                     validateCouponResult && validateCouponResult.discount
@@ -1848,8 +1843,7 @@ export const MedicineCart: React.FC = (props) => {
                                 validateCouponResult.discount &&
                                 Number(validateCouponResult.discount.toFixed(2)) >=
                                   Number(productDiscount.toFixed(2))
-                                  ? Number(validateCouponResult.discount.toFixed(2)) -
-                                    Number(productDiscount.toFixed(2))
+                                  ? Number(validateCouponResult.discount.toFixed(2))
                                   : 0,
                               totalWithCouponDiscount:
                                 Number(totalAmount) -
