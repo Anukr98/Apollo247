@@ -67,6 +67,11 @@ export const clientRoutes = {
   specialityListing: () => '/specialties',
   medicinePrescription: () => '/medicine-prescription',
   covidDiabetes: () => '/medical-condition/covid-and-diabetes',
+  partnersHdfc: () => '/partners/hdfc',
+  membershipHdfc: () => '/partners/hdfc-membership',
+  myMembership: () => '/partners/hdfc-mymembership',
+  membershipPlanLocked: () => '/partners/hdfc-membership-locked',
+  membershipPlanDetail: () => '/partners/hdfc-membership-plan-detail',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

@@ -12,6 +12,7 @@ import { WeAreHelpYou } from 'components/WeAreHelpYou';
 import { BottomLinks } from 'components/BottomLinks';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { HdfcCallDoctor } from 'components/HdfcCallDoctor';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -67,6 +68,7 @@ export const Welcome: React.FC = (props) => {
           <HeroBanner />
           <div className={classes.pageContent}>
             {isSignedIn && <PatientsOverview />}
+            <HdfcCallDoctor />
             <WeAreHelpYou />
           </div>
         </div>
