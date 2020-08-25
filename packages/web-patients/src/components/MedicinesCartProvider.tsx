@@ -5,8 +5,8 @@ import _isEmpty from 'lodash/isEmpty';
 import _uniq from 'lodash/uniq';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
+import fetchUtil from 'helpers/fetch';
 
 export interface MedicineCartItem {
   url_key: string;
@@ -54,6 +54,8 @@ export interface PharmaAddressDetails {
   pincode: string;
   state: string;
   country: string;
+  lat: string;
+  lng: string;
 }
 
 export interface EPrescription {
@@ -197,6 +199,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
     pincode: localStorage.getItem('pharmaPincode') || '',
     state: '',
     country: '',
+    lat: '',
+    lng: '',
   };
   const { currentPatient } = useAllCurrentPatients();
 
@@ -325,9 +329,15 @@ export const MedicinesCartProvider: React.FC = (props) => {
 
   const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
     if (pharmaAddressDetails && pharmaAddressDetails.pincode) {
-      checkServiceAvailability(pharmaAddressDetails.pincode)
-        .then(({ data }: any) => {
-          if (data && data.Availability) {
+      fetchUtil(
+        `http://tat.phrdemo.com/availability?sku=${itemToAdd.sku}&pincode=${pharmaAddressDetails.pincode}`,
+        'GET',
+        {},
+        '',
+        false
+      )
+        .then((data: any) => {
+          if (data && data.response) {
             setCartItems([...cartItems, itemToAdd]);
             setIsCartUpdated(true);
           } else {

@@ -3,6 +3,7 @@ import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAdd
 import { MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
 import moment from 'moment';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as LatestOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
+import fetchUtil from 'helpers/fetch';
 
 const apiDetails = {
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -250,23 +251,27 @@ export interface GetPackageDataResponse {
   data: PackageInclusion[];
 }
 
+// export const checkServiceAvailability = (zipCode: string) => {
+//   return axios.post(
+//     apiDetails.service_url || '',
+//     {
+//       postalcode: zipCode || '',
+//       skucategory: [
+//         {
+//           SKU: 'PHARMA',
+//         },
+//       ],
+//     },
+//     {
+//       headers: {
+//         Authorization: apiDetails.authToken,
+//       },
+//     }
+//   );
+// };
+
 export const checkServiceAvailability = (zipCode: string) => {
-  return axios.post(
-    apiDetails.service_url || '',
-    {
-      postalcode: zipCode || '',
-      skucategory: [
-        {
-          SKU: 'PHARMA',
-        },
-      ],
-    },
-    {
-      headers: {
-        Authorization: apiDetails.authToken,
-      },
-    }
-  );
+  return fetchUtil(`http://tat.phrdemo.com/serviceable?pincode=${zipCode}`, 'GET', {}, '', false);
 };
 
 export interface MedicineOrderBilledItem {
@@ -368,9 +373,9 @@ export const reOrderItems = async (
         ({
           id: item,
           date: moment().format('DD MMM YYYY'),
-          doctorName: `Meds Rx ${
-            (orderDetails.id && orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) || ''
-          }`,
+          doctorName: `Meds Rx ${(orderDetails.id &&
+            orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) ||
+            ''}`,
           forPatient: patientName,
           medicines: medicineNames,
           uploadedUrl: item,

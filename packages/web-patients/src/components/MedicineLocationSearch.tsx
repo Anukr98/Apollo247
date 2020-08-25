@@ -10,6 +10,8 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import { findAddrComponents, isActualUser } from 'helpers/commonHelpers';
 import { pincodeAutoSelectTracking, pincodeManualSelectTracking } from 'webEngageTracking';
+import fetchUtil from 'helpers/fetch';
+import _get from 'lodash/get';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -257,7 +259,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
     return 'No location';
   };
 
-  const setAddressDetails = (addrComponents: any) => {
+  const setAddressDetails = (addrComponents: any, lat: string, lng: string) => {
     const pincode = findAddrComponents('postal_code', addrComponents);
     const city =
       findAddrComponents('administrative_area_level_2', addrComponents) ||
@@ -270,6 +272,8 @@ export const MedicineLocationSearch: React.FC = (props) => {
       state,
       pincode,
       country,
+      lat,
+      lng,
     });
     setIsPincodeDialogOpen(false);
     setIsLocationPopover(false);
@@ -287,7 +291,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
         try {
           if (data && data.results[0] && data.results[0].address_components) {
             const addrComponents = data.results[0].address_components || [];
-            setAddressDetails(addrComponents);
+            setAddressDetails(addrComponents, currentLat, currentLong);
           }
         } catch {
           (e: AxiosError) => {
@@ -315,7 +319,11 @@ export const MedicineLocationSearch: React.FC = (props) => {
         try {
           if (data && data.results[0] && data.results[0].address_components) {
             const addrComponents = data.results[0].address_components || [];
-            setAddressDetails(addrComponents);
+            setAddressDetails(
+              addrComponents,
+              _get(data.results[0], 'geometry.location.lat', ''),
+              _get(data.results[0], 'geometry.location.lng', '')
+            );
           }
         } catch {
           (e: AxiosError) => {
@@ -344,18 +352,18 @@ export const MedicineLocationSearch: React.FC = (props) => {
 
   const isServiceable = (pincode: string) => {
     checkServiceAvailability(pincode)
-      .then(({ data }: any) => {
+      .then((data: any) => {
         modeChoose === 'auto'
           ? pincodeAutoSelectTracking({
               pincode,
-              serviceability: data.Availability,
+              serviceability: data.response,
             })
           : pincodeManualSelectTracking({
               pincode,
-              serviceability: data.Availability,
+              serviceability: data.response,
               source: 'Pharmacy Home',
             });
-        if (data && data.Availability) {
+        if (data && data.response) {
           checkSelectedPincodeServiceability(pincode, '0');
           getPlaceDetails(pincode);
         } else {

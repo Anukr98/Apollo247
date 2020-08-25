@@ -33,6 +33,7 @@ import {
   TAT_API_TIMEOUT_IN_MILLI_SEC,
 } from 'helpers/commonHelpers';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
+import fetchUtil from 'helpers/fetch';
 
 export const formatAddress = (address: Address) => {
   const addressFormat = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
@@ -253,6 +254,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     removeCartItems,
     updateItemShippingStatus,
     changeCartTatStatus,
+    pharmaAddressDetails,
   } = useShoppingCart();
   const { setDeliveryTime, deliveryTime } = props;
   const { isSigningIn } = useAuth();
@@ -434,28 +436,37 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     const CancelToken = axios.CancelToken;
     let cancelGetDeliveryTimeApi: Canceler | undefined;
     const lookUp = cartItems.map((item: MedicineCartItem) => {
-      return { sku: item.sku, qty: item.quantity };
+      return item.sku;
     });
     setDeliveryLoading(true);
-    await axios
-      .post(
-        apiDetails.deliveryUrl || '',
-        {
-          postalcode: zipCode || '',
-          ordertype: medicineCartType,
-          lookup: lookUp,
-        },
-        {
-          headers: {
-            Authentication: apiDetails.deliveryAuthToken,
-          },
-          timeout: TAT_API_TIMEOUT_IN_MILLI_SEC,
-          cancelToken: new CancelToken((c) => {
-            // An executor function receives a cancel function as a parameter
-            cancelGetDeliveryTimeApi = c;
-          }),
-        }
-      )
+    // await axios
+    //   .post(
+    //     apiDetails.deliveryUrl || '',
+    //     {
+    //       postalcode: zipCode || '',
+    //       ordertype: medicineCartType,
+    //       lookup: lookUp,
+    //     },
+    //     {
+    //       headers: {
+    //         Authentication: apiDetails.deliveryAuthToken,
+    //       },
+    //       timeout: TAT_API_TIMEOUT_IN_MILLI_SEC,
+    //       cancelToken: new CancelToken((c) => {
+    //         // An executor function receives a cancel function as a parameter
+    //         cancelGetDeliveryTimeApi = c;
+    //       }),
+    //     }
+    //   )
+    fetchUtil(
+      `http://tat.phrdemo.com/tat?sku=${lookUp.join(',')}&pincode=${zipCode}&lat=${
+        pharmaAddressDetails.lat
+      }&lng=${pharmaAddressDetails.lng}`,
+      'GET',
+      {},
+      '',
+      false
+    )
       .then((res: AxiosResponse) => {
         try {
           if (res && res.data) {
@@ -500,11 +511,11 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                 setShowNonDeliverablePopup(true);
                 setNonServicableSKU(nonDeliverySKUArr);
               } else {
-                fetchUserDisplayDeliveryTime({
-                  postalcode: zipCode || '',
-                  ordertype: medicineCartType,
-                  lookup: lookUp,
-                });
+                // fetchUserDisplayDeliveryTime({
+                //   postalcode: zipCode || '',
+                //   ordertype: medicineCartType,
+                //   lookup: lookUp,
+                // });
               }
 
               setErrorDeliveryTimeMsg('');
@@ -643,8 +654,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                         label={formatAddress(address)}
                         onChange={() => {
                           checkServiceAvailabilityCheck(address.zipcode)
-                            .then((res: AxiosResponse) => {
-                              if (res && res.data && res.data.Availability) {
+                            .then((data: any) => {
+                              if (data && data.response) {
                                 /**Gtm code start  */
                                 gtmTracking({
                                   category: 'Pharmacy',
