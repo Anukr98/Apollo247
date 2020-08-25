@@ -93,7 +93,6 @@
     "date-fns": "^2.0.0-beta.2",
     "firebase": "^6.2.2",
     "firebaseui": "^4.0.0",
-    "flatlist-react": "^1.4.2",
     "graphql-tag": "^2.10.1",
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
