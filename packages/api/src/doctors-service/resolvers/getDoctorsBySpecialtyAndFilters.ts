@@ -58,6 +58,8 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     doctorType: DoctorType
     sort: String
     filters: filters
+    apolloDoctorCount: Int
+    partnerDoctorCount: Int
   }
   type DoctorSlotAvailability {
     doctorId: String
@@ -133,6 +135,8 @@ type FilterDoctorsResult = {
   doctorType?: DoctorType[];
   sort: string;
   filters: filters;
+  apolloDoctorCount: number;
+  partnerDoctorCount: number;
 };
 
 export type DoctorConsultModeAvailability = {
@@ -229,6 +233,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     earlyAvailableNonStarApolloDoctors = [],
     starDoctor = [],
     nonStarDoctor = [];
+  let apolloDoctorCount:number = 0,
+    partnerDoctorCount:number = 0;
 
   const facilityIds: string[] = [];
   const facilityLatLongs: number[][] = [];
@@ -240,6 +246,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
 
+  elasticMatch.push({ range: { 'doctorSlots.slots.slot': { gt :'now+15m'} } });
+ 
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
     elasticMatch.push({ match: { 'specialty.name': args.filterInput.specialtyName.join(',') } });
   }
@@ -309,11 +317,26 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
           must: elasticMatch,
         },
       },
+      aggs:{
+        doctorTypeCount: {
+          terms: {
+            field: 'doctorType.keyword',
+          }
+        },
+      }
     },
   };
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
 
   const getDetails = await client.search(searchParams);
+  const doctorTypeCount = getDetails.body.aggregations.doctorTypeCount.buckets;
+  for(const doctorCount of doctorTypeCount) {
+    if(doctorCount.key === 'DOCTOR_CONNECT'){
+      partnerDoctorCount = doctorCount.doc_count;
+    } else {
+      apolloDoctorCount += doctorCount.doc_count;
+    }
+  }
 
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
@@ -647,6 +670,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     specialty: finalSpecialtyDetails,
     sort: args.filterInput.sort,
     filters: filters,
+    apolloDoctorCount,
+    partnerDoctorCount
   };
 };
 
