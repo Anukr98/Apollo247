@@ -318,3 +318,33 @@ export const UPDATE_SAVE_EXTERNAL_CONNECT = gql`
     }
   }
 `;
+
+export const BOOK_FOLLOWUP_APPOINTMENT = gql`
+  mutation BookFollowUpAppointment($followUpAppointmentInput: BookFollowUpAppointmentInput!) {
+    bookFollowUpAppointment(followUpAppointmentInput: $followUpAppointmentInput) {
+      appointment {
+        id
+        isFollowUp
+        doctorId
+        appointmentType
+        appointmentState
+        appointmentDateTime
+        patientId
+        status
+      }
+    }
+  }
+`;
+
+export const GET_APPOINTMENT_DOCTOR_RESCHEDULED_DETAILS = gql`
+  query getAppointmentRescheduleDetails($appointmentId: String!) {
+    getAppointmentRescheduleDetails(appointmentId: $appointmentId) {
+      id
+      rescheduleReason
+      rescheduledDateTime
+      rescheduleInitiatedBy
+      rescheduleInitiatedId
+      rescheduleStatus
+    }
+  }
+`;

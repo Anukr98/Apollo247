@@ -8,19 +8,14 @@ import {
   MedicineOrdersStatus,
   MEDICINE_DELIVERY_TYPE,
   MedicineOrderShipments,
-  MedicineOrderRefunds,
-  MedicineOrders,
-  MedicineOrderPayments,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
-import {
-  NotificationType,
-  sendMedicineOrderStatusNotification,
-} from 'notifications-service/resolvers/notifications';
+import { NotificationType } from 'notifications-service/constants';
+import { sendMedicineOrderStatusNotification } from 'notifications-service/handlers';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
@@ -268,7 +263,8 @@ const saveOrderShipmentInvoice: Resolver<
       currentStatus
     );
     if (
-      billDetails.invoiceValue - orderDetails.estimatedAmount > 1 &&
+      Math.abs(Math.floor(billDetails.invoiceValue) - Math.floor(orderDetails.estimatedAmount)) >
+        1 &&
       orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
     ) {
       sendMedicineOrderStatusNotification(

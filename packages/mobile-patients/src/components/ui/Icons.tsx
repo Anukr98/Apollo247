@@ -61,9 +61,6 @@ export const CovidHealthScan: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/covid_ic_psychologist.png')} />
 );
 
-export const CovidExpert: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/covid_ic_family_doctor.png')} />
-);
 export const CloseCal: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/closeCal.png')} />
 );
@@ -80,22 +77,6 @@ export const Copy: React.FC<IconProps> = (props) => (
 
 export const DropdownGreen: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_dropdown_green.png')} />
-);
-
-export const ArrowFull: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/ic_arrowFull.png')} />
-);
-
-export const ArrowStep1: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/ic_arrowStep1.png')} />
-);
-
-export const ArrowStep2: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/ic_arrowStep2.png')} />
-);
-
-export const ArrowStep3: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/ic_arrowStep3.png')} />
 );
 
 export const Remove: React.FC<IconProps> = (props) => (
@@ -1098,4 +1079,28 @@ export const KavachIcon: React.FC<IconProps> = (props) => (
 
 export const RetryButtonIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/retryButton.png')} resizeMode="contain" />
+);
+
+export const DeleteIconOrange: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/remove-icon-orange.png')} />
+);
+
+export const DeleteIconWhite: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/remove-icon-white.png')} />
+);
+
+export const PlusIconOrange: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/plus-icon-orange.png')} />
+);
+
+export const PlusIconWhite: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/plus-icon-white.png')} />
+);
+
+export const MinusIconWhite: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/minus-icon-white.png')} />
+);
+
+export const MinusIconOrange: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/minus-icon-orange.png')} />
 );

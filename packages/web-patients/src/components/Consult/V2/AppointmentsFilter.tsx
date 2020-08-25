@@ -144,7 +144,6 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '4px 0',
         marginRight: 8,
         minWidth: 'auto',
-        wordBreak: 'break-all',
         [theme.breakpoints.down('sm')]: {
           marginRight: 6,
         },
@@ -190,6 +189,12 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('sm')]: {
         backgroundColor: '#fc9916',
         color: '#fff',
+      },
+    },
+    doctornameFilter: {
+      width: '25%',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
       },
     },
   };
@@ -302,7 +307,7 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
               ))}
             </div>
           </div>
-          <div className={classes.filterType}>
+          <div className={`${classes.filterType} ${classes.doctornameFilter}`}>
             <h4>Doctor</h4>
             <div className={classes.filterBtns}>
               {filterDoctorsList &&

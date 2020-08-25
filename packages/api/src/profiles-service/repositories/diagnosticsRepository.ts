@@ -1,5 +1,6 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { Diagnostics, DiagnosticPincodeHubs } from 'profiles-service/entities';
+import { DiagnosticItdosePincodeHubs } from 'profiles-service/entities/diagnostic_itdose_pincode_hub'
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
@@ -43,6 +44,10 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
 
   findHubByZipCode(pincode: string) {
     return DiagnosticPincodeHubs.findOne({ where: { pincode } });
+  }
+
+  findAreabyZipCode(pincode: string) {
+    return DiagnosticItdosePincodeHubs.findOne({ where: { pincode } })
   }
 
   findDiagnosticById(itemId: number) {

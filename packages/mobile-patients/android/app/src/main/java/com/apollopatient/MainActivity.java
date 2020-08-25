@@ -2,7 +2,11 @@ package com.apollopatient;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+
+import androidx.annotation.RequiresApi;
 
 import com.facebook.react.ReactActivity;
 
@@ -17,10 +21,15 @@ public class MainActivity extends ReactActivity {
         return "ApolloPatient";
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        //TODO: remove after the auto permission is provided
+        // if (!Settings.canDrawOverlays(this)) {
+        //     Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+        //     startActivityForResult(intent, 0);
+        // }
         Intent intent = getIntent();
         String action = intent.getAction();
         Uri data = intent.getData();

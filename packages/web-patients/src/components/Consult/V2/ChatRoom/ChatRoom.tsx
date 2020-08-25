@@ -495,7 +495,6 @@ type Params = { appointmentId: string; doctorId: string };
 export const ChatRoom: React.FC = () => {
   const classes = useStyles({});
   const params = useParams<Params>();
-  const [hasDoctorJoined, setHasDoctorJoined] = useState<boolean>(false);
   const appointmentId = params.appointmentId;
   const doctorId = params.doctorId;
   const { isSignedIn } = useAuth();
@@ -648,7 +647,6 @@ export const ChatRoom: React.FC = () => {
                   handleRescheduleOpen={handleRescheduleOpen}
                   doctorDetails={data}
                   appointmentId={appointmentId}
-                  hasDoctorJoined={hasDoctorJoined}
                   jrDoctorJoined={jrDoctorJoined}
                 />
               )}
@@ -679,9 +677,6 @@ export const ChatRoom: React.FC = () => {
                   doctorDetails={data}
                   appointmentId={appointmentId}
                   doctorId={doctorId}
-                  hasDoctorJoined={(hasDoctorJoined: boolean) =>
-                    setHasDoctorJoined(hasDoctorJoined)
-                  }
                   jrDoctorJoined={jrDoctorJoined}
                   setJrDoctorJoined={setJrDoctorJoined}
                   isModalOpen={isModalOpen}
@@ -720,7 +715,6 @@ export const ChatRoom: React.FC = () => {
                 <OnlineConsult
                   setIsPopoverOpen={setIsModalOpen}
                   doctorDetails={data.getDoctorDetailsById}
-                  onBookConsult={(popover: boolean) => setIsModalOpen(popover)}
                   isRescheduleConsult={rescheduleCount < 3}
                   appointmentId={params.appointmentId}
                   rescheduleAPI={rescheduleAPI}

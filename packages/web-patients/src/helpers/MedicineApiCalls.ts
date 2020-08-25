@@ -16,7 +16,7 @@ export interface MedicineProduct {
   url_key: string;
   description: string;
   id: number;
-  image: string | null;
+  image: string[] | null;
   is_in_stock: boolean;
   is_prescription_required: '0' | '1'; //1 for required
   name: string;
@@ -31,6 +31,7 @@ export interface MedicineProduct {
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
   category_id: string;
+  sell_online: boolean;
 }
 export interface Brand {
   url_key: string;
@@ -55,6 +56,7 @@ export interface PharmaOverview {
 }
 
 export interface MedicineProductDetails extends MedicineProduct {
+  similar_products: MedicineProduct[];
   PharmaOverview: PharmaOverview[];
 }
 
@@ -333,7 +335,7 @@ export const reOrderItems = async (
         ({
           ...item,
           description: '',
-          image: '',
+          image: [],
           mou: isOfflineOrder
             ? Math.ceil(lineItems[index].price / lineItems[index].mrp / lineItems[index].quantity)
             : item.mou,

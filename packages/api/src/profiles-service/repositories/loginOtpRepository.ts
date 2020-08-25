@@ -52,7 +52,7 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
     await setCache(
       this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id),
       JSON.stringify(updateAttrs),
-      ApiConstants.CACHE_EXPIRATION_900
+      ApiConstants.CACHE_EXPIRATION_3600
     );
   }
 

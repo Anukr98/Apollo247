@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Brackets, Connection, Not } from 'typeorm';
+import { EntityRepository, Repository, Brackets, Connection, Not, In } from 'typeorm';
 import {
   Doctor,
   ConsultMode,
@@ -6,6 +6,7 @@ import {
   DOCTOR_ONLINE_STATUS,
   CityPincodeMapper,
   ConsultHours,
+  Secretary,
 } from 'doctors-service/entities';
 import { ES_DOCTOR_SLOT_STATUS } from 'consults-service/entities';
 import {
@@ -36,6 +37,9 @@ type DoctorSlot = {
   slotType: string;
 };
 
+//define generalise  anonymous cb fn
+// type responseCB = (data: any) => any
+
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
   async updateDoctorSlots(doctorId: string, consultsDb: Connection, doctorsDb: Connection) {
@@ -43,8 +47,13 @@ export class DoctorRepository extends Repository<Doctor> {
     let stDate = new Date();
     let slotsAdded = '';
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+
+    if (!process.env.ELASTIC_INDEX_DOCTORS) {
+      throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+    }
+
     const updateDoc: RequestParams.Update = {
-      index: 'doctors',
+      index: process.env.ELASTIC_INDEX_DOCTORS,
       id: doctorId,
       body: {
         script: {
@@ -60,9 +69,13 @@ export class DoctorRepository extends Repository<Doctor> {
         consultsDb,
         doctorsDb
       );
-      //console.log(doctorSlots, 'doctor slots');
+
+      if (!process.env.ELASTIC_INDEX_DOCTORS) {
+        throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+      }
+
       const doc1: RequestParams.Update = {
-        index: 'doctors',
+        index: process.env.ELASTIC_INDEX_DOCTORS,
         id: doctorId,
         body: {
           script: {
@@ -250,8 +263,12 @@ export class DoctorRepository extends Repository<Doctor> {
 
   async getDoctorProfileData(id: string) {
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+    if (!process.env.ELASTIC_INDEX_DOCTORS) {
+      throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+    }
+
     const searchParams: RequestParams.Search = {
-      index: 'doctors',
+      index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
         query: {
           bool: {
@@ -352,6 +369,10 @@ export class DoctorRepository extends Repository<Doctor> {
     return this.update(id, { signature });
   }
 
+  updateDoctorChatDays(id: string, chatDays: number) {
+    return this.update(id, { chatDays });
+  }
+
   findById(id: string) {
     return this.findOne({
       where: [{ id, isActive: true }],
@@ -368,6 +389,13 @@ export class DoctorRepository extends Repository<Doctor> {
         'starTeam.associatedDoctor.doctorHospital',
         'starTeam.associatedDoctor.doctorHospital.facility',
       ],
+    });
+  }
+
+  getDoctorSecretary(id: string) {
+    return this.findOne({
+      where: [{ id, isActive: true }],
+      relations: ['doctorSecretary', 'doctorSecretary.secretary'],
     });
   }
 
@@ -446,6 +474,18 @@ export class DoctorRepository extends Repository<Doctor> {
       .where('doctor.id IN (:...doctorIds)', { doctorIds })
       .getRawMany();
   }
+
+  // async getDoctorById(doctorId: string, cb?: responseCB) {
+  //   const data = await this.findOne({
+  //     where: [{ id: doctorId }]
+  //   })
+
+  //   if (cb) {
+  //     cb(data)
+  //     return;
+  //   }
+  //   return data
+  // }
 
   searchByName(searchString: string, cityName: string) {
     const cities: string[] = [
@@ -1061,6 +1101,10 @@ export class DoctorRepository extends Repository<Doctor> {
 
   updateNextAvailSlot(id: string, nextAvailableSlot: Date) {
     return this.update(id, { nextAvailableSlot });
+  }
+
+  getAllDocsById(ids: string[]) {
+    return this.find({ where: { id: In(ids) } });
   }
 
   getAllDoctors(doctorId: string, limit: number, offset: number) {

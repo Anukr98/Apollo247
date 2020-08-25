@@ -584,7 +584,7 @@ export const pharmacySearchTracking = (data: any) => {
   }
 };
 
-export const pharmacyProductClickTracking = (data: any) => {
+export const pharmacyProductViewTracking = (data: any) => {
   if (typeof window !== 'undefined') {
     const {
       productName,
@@ -597,7 +597,7 @@ export const pharmacyProductClickTracking = (data: any) => {
       sectionName,
     } = data;
     try {
-      window.webengage.track('Pharmacy Product Clicked - web', {
+      window.webengage.track('Pharmacy product viewed - web', {
         'product name': productName,
         Source: source,
         'product id (SKUID)': productId,
@@ -605,6 +605,22 @@ export const pharmacyProductClickTracking = (data: any) => {
         'Brand ID': brandId,
         'category name': categoryName,
         'category ID': categoryId,
+        'Section Name': sectionName,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmacyProductClickedTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const { productName, source, productId, sectionName } = data;
+    try {
+      window.webengage.track('Pharmacy product clicked - web', {
+        'product name': productName,
+        Source: source,
+        'product id (SKUID)': productId,
         'Section Name': sectionName,
       });
     } catch (err) {
@@ -823,6 +839,18 @@ export const pageViewTracking = (eventName: string) => {
   if (typeof window !== 'undefined') {
     try {
       window.webengage.track(eventName);
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const buyMedicineClickTracking = (result: string) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('Buy Medicine clicked - web', {
+        'Customer ID': result,
+      });
     } catch (err) {
       console.log('WebEngage Err: ', err);
     }

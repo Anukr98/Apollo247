@@ -6,6 +6,8 @@ import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
+import fetchUtil from 'helpers/fetch';
 import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentDetails } from 'graphql/types/GetPatientAllAppointments';
 
 declare global {
@@ -167,7 +169,7 @@ const toBase64 = (file: any) =>
 
 const getDiffInDays = (nextAvailability: string) => {
   if (nextAvailability && nextAvailability.length > 0) {
-    const nextAvailabilityTime = moment(new Date(nextAvailability));
+    const nextAvailabilityTime = moment(new Date(nextAvailability.replace(/-/g, ' ')));
     const currentTime = moment(new Date());
     const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
     return differenceInDays;
@@ -204,6 +206,10 @@ const INVALID_FILE_TYPE_ERROR =
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
 const OUT_OF_STOCK_MESSAGE = 'Sorry, this item is out of stock in your area';
 const TAT_API_TIMEOUT_IN_MILLI_SEC = 10000; // in milli sec
+const NO_ONLINE_SERVICE = 'NOT AVAILABLE FOR ONLINE SALE';
+const OUT_OF_STOCK = 'Out Of Stock';
+const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
+const PINCODE_MAXLENGTH = 6;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -368,7 +374,7 @@ const getAvailability = (nextAvailability: string, differenceInMinutes: number, 
   const isAvailableAfterTomorrow = diffInHoursForTomorrowAvailabilty >= 1440;
   const isAvailableAfterMonth = nextAvailabilityMoment.diff(moment(), 'days') > 30;
   const message = type === 'doctorInfo' ? 'consult' : 'available';
-  if (differenceInMinutes > 0 && differenceInMinutes < 120) {
+  if (differenceInMinutes > 0 && differenceInMinutes < 60) {
     return `${message} in ${differenceInMinutes} ${differenceInMinutes === 1 ? 'min' : 'mins'}`;
   } else if (isAvailableAfterMonth && type === 'consultType') {
     // only applies for consultType
@@ -381,7 +387,7 @@ const getAvailability = (nextAvailability: string, differenceInMinutes: number, 
     return `${message} in ${
       nextAvailabilityMoment.diff(tomorrowAvailabilityTime, 'days') + 1 // intentionally added + 1 as we need to consider 6 am as next day
     } days`;
-  } else if (!isAvailableTomorrow && differenceInMinutes >= 120) {
+  } else if (!isAvailableTomorrow && differenceInMinutes >= 60) {
     return `${message} at ${nextAvailabilityMoment.format('hh:mm A')}`;
   } else {
     return type === 'doctorInfo' ? 'Book Consult' : 'Available';
@@ -401,10 +407,36 @@ const getStoreName = (storeAddress: string) => {
   return store && store.storename ? _upperFirst(_lowerCase(store.storename)) : '';
 };
 
+const getPackOfMedicine = (medicineDetail: MedicineProductDetails) => {
+  return `${medicineDetail.mou} ${
+    medicineDetail.PharmaOverview && medicineDetail.PharmaOverview.length > 0
+      ? medicineDetail.PharmaOverview[0].Doseform
+      : ''
+  }${medicineDetail.mou && parseFloat(medicineDetail.mou) !== 1 ? 'S' : ''}`;
+};
+
+const getImageUrl = (imageUrl: string) => {
+  return (
+    imageUrl &&
+    imageUrl
+      .split(',')
+      .filter((imageUrl) => imageUrl)
+      .map((imageUrl) => `/catalog/product${imageUrl}`)[0]
+  );
+};
+
+const getCouponByUserMobileNumber = () => {
+  return fetchUtil(
+    `${process.env.GET_PHARMA_AVAILABLE_COUPONS}?mobile=${localStorage.getItem('userMobileNo')}`,
+    'GET',
+    {},
+    '',
+    false
+  );
+};
+
 const isPastAppointment = (appointmentDateTime: string) =>
-  moment(appointmentDateTime)
-    .add(7, 'days')
-    .isBefore(moment());
+  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const followUpDayMoment = moment(appointmentTime).add(7, 'days');
@@ -423,6 +455,9 @@ const getAvailableFreeChatDays = (appointmentTime: string) => {
 };
 
 export {
+  getCouponByUserMobileNumber,
+  getPackOfMedicine,
+  getImageUrl,
   getAvailableFreeChatDays,
   isPastAppointment,
   AppointmentFilterObject,
@@ -465,4 +500,8 @@ export {
   getTypeOfProduct,
   kavachHelpline,
   isActualUser,
+  NO_ONLINE_SERVICE,
+  OUT_OF_STOCK,
+  NOTIFY_WHEN_IN_STOCK,
+  PINCODE_MAXLENGTH,
 };

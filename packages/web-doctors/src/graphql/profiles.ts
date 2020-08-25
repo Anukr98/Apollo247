@@ -857,6 +857,9 @@ export const GET_CASESHEET = gql`
           medicineConsumptionDurationUnit
           routeOfAdministration
           medicineCustomDosage
+          medicineCustomDetails
+          genericName
+          includeGenericNameInPrescription
         }
         removedMedicinePrescription {
           id
@@ -981,6 +984,9 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
         externalId
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        genericName
+        includeGenericNameInPrescription
       }
       allowedDosages
     }
@@ -1191,6 +1197,9 @@ export const MODIFY_CASESHEET = gql`
         medicineConsumptionDurationUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        genericName
+        includeGenericNameInPrescription
       }
       removedMedicinePrescription {
         medicineConsumptionDurationInDays

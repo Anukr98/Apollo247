@@ -216,6 +216,10 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
       })
     );
+    const deliveryTimeMomentFormat = moment(
+      deliveryTime,
+      AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
+    );
     showAphAlert!({
       // unDismissable: true,
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
@@ -261,7 +265,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
               {`#${orderAutoId}`}
             </Text>
           </View>
-          {moment(deliveryTime).isValid() && (
+          {deliveryTimeMomentFormat.isValid() && (
             <>
               <View
                 style={{
@@ -279,7 +283,9 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
                   }}
                 >
                   {deliveryTime &&
-                    `Delivery By: ${moment(deliveryTime).format('D MMM YYYY  | hh:mm A')}`}
+                    `Delivery By: ${deliveryTimeMomentFormat.format(
+                      AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
+                    )}`}
                 </Text>
               </View>
             </>
