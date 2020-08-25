@@ -26,17 +26,17 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   CHECK_IF_FOLLOWUP_BOOKED,
-  GET_CASESHEET_DETAILS,
+  GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
 import { getAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import {
-  getCaseSheet,
-  getCaseSheetVariables,
-  getCaseSheet_getCaseSheet_caseSheetDetails,
-  getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
-  getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-} from '@aph/mobile-patients/src/graphql/types/getCaseSheet';
+  getSDLatestCompletedCaseSheet,
+  getSDLatestCompletedCaseSheetVariables,
+  getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails,
+  getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription,
+  getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_medicinePrescription,
+} from '@aph/mobile-patients/src/graphql/types/getSDLatestCompletedCaseSheet';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
   AppointmentType,
@@ -196,7 +196,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const [showgeneral, setShowGeneral] = useState<boolean>(true);
   const [showFollowUp, setshowFollowUpl] = useState<boolean>(true);
   const [caseSheetDetails, setcaseSheetDetails] = useState<
-    getCaseSheet_getCaseSheet_caseSheetDetails
+    getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails
   >();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(
     props.navigation.getParam('Displayoverlay')
@@ -222,8 +222,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   useEffect(() => {
     setLoading && setLoading(true);
     client
-      .query<getCaseSheet, getCaseSheetVariables>({
-        query: GET_CASESHEET_DETAILS,
+      .query<getSDLatestCompletedCaseSheet, getSDLatestCompletedCaseSheetVariables>({
+        query: GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS,
         fetchPolicy: 'no-cache',
         variables: {
           appointmentId: props.navigation.getParam('CaseSheet'),
@@ -231,19 +231,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       })
       .then((_data) => {
         setLoading && setLoading(false);
-        props.navigation.state.params!.DisplayId = _data.data.getCaseSheet!.caseSheetDetails!.appointment!.displayId;
-        setcaseSheetDetails(_data.data.getCaseSheet!.caseSheetDetails!);
+        props.navigation.state.params!.DisplayId = _data.data.getSDLatestCompletedCaseSheet!.caseSheetDetails!.appointment!.displayId;
+        setcaseSheetDetails(_data.data.getSDLatestCompletedCaseSheet!.caseSheetDetails!);
         setAPICalled(true);
       })
       .catch((error) => {
-        CommonBugFender('ConsultDetails_GET_CASESHEET_DETAILS', error);
+        CommonBugFender('ConsultDetails_GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS', error);
         setLoading && setLoading(false);
         const errorMessage = error && error.message.split(':')[1].trim();
         console.log(errorMessage, 'err');
         if (errorMessage === 'NO_CASESHEET_EXIST') {
           setshowNotExistAlert(true);
         }
-        // Alert.alert('Error');
       });
   }, []);
 
@@ -437,7 +436,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     }
 
     const testPrescription = (caseSheetDetails!.diagnosticPrescription ||
-      []) as getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[];
+      []) as getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription[];
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
 
     if (!testPrescription.length) {
@@ -664,7 +663,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const medicineDescription = (
-    item: getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
+    item: getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_medicinePrescription
   ) => {
     const { medicineCustomDetails } = item;
     const type =
@@ -1123,21 +1122,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       CommonLogEvent('CONSULT_DETAILS', 'No image');
                     } else {
                       postWEGEvent('download prescription');
-                      let dirs = RNFetchBlob.fs.dirs;
+                      const dirs = RNFetchBlob.fs.dirs;
 
-                      let fileName: string = getFileName();
-
-                      // props.navigation.state.params!.BlobName.substring(
-                      //   0,
-                      //   props.navigation.state.params!.BlobName.indexOf('.pdf')
-                      // )
+                      const fileName: string = getFileName();
 
                       const downloadPath =
                         Platform.OS === 'ios'
                           ? (dirs.DocumentDir || dirs.MainBundleDir) +
                             '/' +
                             (fileName || 'Apollo_Prescription.pdf')
-                          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
+                          : dirs.DownloadDir +
+                            '/' +
+                            (fileName + new Date().getTime() || 'Apollo_Prescription.pdf');
                       setLoading && setLoading(true);
                       RNFetchBlob.config({
                         fileCache: true,

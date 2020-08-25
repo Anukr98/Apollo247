@@ -1588,7 +1588,7 @@ export async function sendNotification(
   };
   let notificationResponse;
   const registrationToken: string[] = [];
-  const patientRepo = doctorsDb.getCustomRepository(PatientRepository);
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const allpatients = await patientRepo.getIdsByMobileNumber(patientDetails.mobileNumber);
   const listOfIds: string[] = [];
   allpatients.map((value) => listOfIds.push(value.id));

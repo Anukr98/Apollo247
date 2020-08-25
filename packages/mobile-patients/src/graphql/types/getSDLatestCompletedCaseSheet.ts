@@ -5,10 +5,10 @@
 import { APPOINTMENT_TYPE, STATUS, Gender, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
 
 // ====================================================
-// GraphQL query operation: getCaseSheet
+// GraphQL query operation: getSDLatestCompletedCaseSheet
 // ====================================================
 
-export interface getCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo {
+export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_appointment_doctorInfo {
   __typename: "Profile";
   id: string;
   fullName: string | null;
@@ -17,7 +17,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorIn
   displayName: string | null;
 }
 
-export interface getCaseSheet_getCaseSheet_caseSheetDetails_appointment {
+export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_appointment {
   __typename: "Appointment";
   id: string;
   appointmentDateTime: any;
@@ -30,21 +30,21 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   status: STATUS;
   displayId: string;
   isFollowUp: number;
-  doctorInfo: getCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo | null;
+  doctorInfo: getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_appointment_doctorInfo | null;
 }
 
-export interface getCaseSheet_getCaseSheet_caseSheetDetails_diagnosis {
+export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosis {
   __typename: "Diagnosis";
   name: string | null;
 }
 
-export interface getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription {
+export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
   itemname: string | null;
   testInstruction: string | null;
 }
 
-export interface getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {
+export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_medicinePrescription {
   __typename: "MedicinePrescription";
   id: string | null;
   externalId: string | null;
@@ -64,12 +64,12 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
   medicineCustomDetails: string | null;
 }
 
-export interface getCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions {
+export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_otherInstructions {
   __typename: "OtherInstructions";
   instruction: string | null;
 }
 
-export interface getCaseSheet_getCaseSheet_caseSheetDetails_symptoms {
+export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_symptoms {
   __typename: "SymptomList";
   symptom: string | null;
   since: string | null;
@@ -77,12 +77,12 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_symptoms {
   severity: string | null;
 }
 
-export interface getCaseSheet_getCaseSheet_caseSheetDetails {
+export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails {
   __typename: "CaseSheet";
-  appointment: getCaseSheet_getCaseSheet_caseSheetDetails_appointment | null;
+  appointment: getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_appointment | null;
   consultType: string | null;
-  diagnosis: (getCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null)[] | null;
-  diagnosticPrescription: (getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription | null)[] | null;
+  diagnosis: (getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosis | null)[] | null;
+  diagnosticPrescription: (getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription | null)[] | null;
   blobName: string | null;
   doctorId: string | null;
   followUp: boolean | null;
@@ -90,29 +90,29 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails {
   followUpDate: any | null;
   doctorType: DoctorType | null;
   id: string | null;
-  medicinePrescription: (getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null;
+  medicinePrescription: (getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null;
   notes: string | null;
-  otherInstructions: (getCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions | null)[] | null;
+  otherInstructions: (getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_otherInstructions | null)[] | null;
   patientId: string | null;
-  symptoms: (getCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null;
+  symptoms: (getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_symptoms | null)[] | null;
 }
 
-export interface getCaseSheet_getCaseSheet_patientDetails {
+export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_patientDetails {
   __typename: "PatientDetails";
   id: string;
 }
 
-export interface getCaseSheet_getCaseSheet {
+export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet {
   __typename: "CaseSheetFullDetails";
-  caseSheetDetails: getCaseSheet_getCaseSheet_caseSheetDetails | null;
-  patientDetails: getCaseSheet_getCaseSheet_patientDetails | null;
+  caseSheetDetails: getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails | null;
+  patientDetails: getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_patientDetails | null;
   juniorDoctorNotes: string | null;
 }
 
-export interface getCaseSheet {
-  getCaseSheet: getCaseSheet_getCaseSheet | null;
+export interface getSDLatestCompletedCaseSheet {
+  getSDLatestCompletedCaseSheet: getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet | null;
 }
 
-export interface getCaseSheetVariables {
+export interface getSDLatestCompletedCaseSheetVariables {
   appointmentId?: string | null;
 }
