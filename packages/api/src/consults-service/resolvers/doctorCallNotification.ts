@@ -3,14 +3,13 @@ import { Resolver } from 'api-gateway';
 import { ApiConstants } from 'ApiConstants';
 import {
   sendNotification,
-  NotificationType,
   sendCallsNotification,
-  DOCTOR_CALL_TYPE,
-  APPT_CALL_TYPE,
   sendDoctorNotificationWhatsapp,
   hitCallKitCurl,
   sendCallsDisconnectNotification,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
+import { DOCTOR_CALL_TYPE, APPT_CALL_TYPE } from 'notifications-service/constants';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -19,7 +18,6 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { format } from 'date-fns';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { DEVICE_TYPE } from 'profiles-service/entities';
 import path from 'path';

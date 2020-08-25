@@ -175,7 +175,6 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
             <OnlineConsult
               setIsPopoverOpen={setIsPopoverOpen}
               doctorDetails={doctorDetails.getDoctorDetailsById}
-              onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
               doctorAvailableIn={props.doctorAvailableIn}
             />
           </TabContainer>

@@ -22,10 +22,8 @@ import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import {
-  NotificationType,
-  sendMedicineOrderStatusNotification,
-} from 'notifications-service/resolvers/notifications';
+import { sendMedicineOrderStatusNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { PharmaItemsResponse } from 'types/medicineOrderTypes';

@@ -3,7 +3,6 @@ const { Client, Pool } = require('pg');
 const FormData = require('form-data')
 const fetch = require('node-fetch')
 const async = require('async')
-const pincodemaster = require('./itdose_pincodes.json');
 
 const client = new Client({
     user: process.env.PROFILES_DB_USER,
