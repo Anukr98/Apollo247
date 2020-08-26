@@ -442,7 +442,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const openWebView = () => {
     Keyboard.dismiss();
-    Linking.openURL('https://www.apollo247.com/TnC.html');
+    Linking.openURL('https://www.apollo247.com/terms');
     // return (
     //   <View style={styles.viewWebStyles}>
     //     <Header
@@ -503,7 +503,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             letterSpacing: 0,
           }}
           linkText={(url) =>
-            url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
+            url === 'https://www.apollo247.com/terms' ? 'Terms and Conditions' : url
           }
           onPress={(url, text) => openWebView()}
         >
