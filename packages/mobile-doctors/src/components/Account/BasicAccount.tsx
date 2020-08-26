@@ -116,13 +116,13 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       navigationParams: { ProfileData: doctorDetails },
       isDataDependent: true,
     },
-    // {
-    //   label: strings.account.settings,
-    //   navigation: AppRoutes.MyAccount,
-    //   icon: <Settings />,
-    //   navigationParams: { ProfileData: doctorDetails },
-    //   isDataDependent: false,
-    // },
+    {
+      label: strings.account.settings,
+      navigation: AppRoutes.MyAccount,
+      icon: <Settings />,
+      navigationParams: { ProfileData: doctorDetails },
+      isDataDependent: false,
+    },
     {
       label: strings.account.logout,
       onPress: () => {

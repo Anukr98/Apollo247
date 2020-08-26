@@ -368,13 +368,14 @@
     "test_prescription": "Test Prescription",
     "medicine_prescription": "Medicine Prescription",
     "patient_health_vault": "Patient Health Vault",
-    "follow_up": "Follow Up",
+    "follow_up": "Follow Up Chat Days",
     "first_follow_up_descr": " (The first follow up for the patient will be free for upto 7 days)",
     "do_you_recommend_followup": "Do you recommend a follow up?",
     "follow_up_after": "Follow Up After",
     "recommend_consult_type": "Recommended Consult Type",
     "in_person": "In-person",
     "diagnosis": "Diagnosis",
+    "followup_instruction": "The follow up chat days count will be changed for this individual patient. Your default follow up chat day count is set at {0}.",
     "instructions_to_patient": "Instructions to the patient",
     "how_do_you_talk": "How do you want to talk to the patient?",
     "advice_instructions": "Advice/Instructions",
@@ -437,25 +438,28 @@
     "audio": "Audio",
     "video": "Video",
     "audioReviews": [
-      {"value": "Patient Did not pick up the call", "responseName": "AUDIO_CALL_NOT_PICKED"},
-      {"value": "Call Disconnected Abruptly", "responseName": "AUDIO_CALL_DISCONNECTED_ABRUPTLY"},
-      {"value": "Could not hear any sound", "responseName": "AUDIO_NO_SOUND_HEARED"},
-      {"value": "Patient could not hear me", "responseName": "AUDIO_NO_SOUND_RECEIVED"},
-      {"value": "Audio Echo was heard", "responseName": "AUDIO_ECHO"},
-      {"value": "I heard a strange noise (not background noise)", "responseName": "AUDIO_STRANGE_NOISE"},
-      {"value": "Volume was low", "responseName": "AUDIO_VOLUME_LOW"},
-      {"value": "Other", "responseName": "AUDIO_OTHER"}
+      { "value": "Patient Did not pick up the call", "responseName": "AUDIO_CALL_NOT_PICKED" },
+      { "value": "Call Disconnected Abruptly", "responseName": "AUDIO_CALL_DISCONNECTED_ABRUPTLY" },
+      { "value": "Could not hear any sound", "responseName": "AUDIO_NO_SOUND_HEARED" },
+      { "value": "Patient could not hear me", "responseName": "AUDIO_NO_SOUND_RECEIVED" },
+      { "value": "Audio Echo was heard", "responseName": "AUDIO_ECHO" },
+      {
+        "value": "I heard a strange noise (not background noise)",
+        "responseName": "AUDIO_STRANGE_NOISE"
+      },
+      { "value": "Volume was low", "responseName": "AUDIO_VOLUME_LOW" },
+      { "value": "Other", "responseName": "AUDIO_OTHER" }
     ],
     "videoReviews": [
-      {"value": "Patient Did not pick up the call", "responseName": "VIDEO_CALL_NOT_PICKED"},
-      {"value": "Call Disconnected Abruptly", "responseName": "VIDEO_CALL_DISCONNECTED_ABRUPTLY"},
-      {"value": "Could not see anything in the video", "responseName": "VIDEO_NOT_VISIBLE"},
-      {"value": "Video was working but video was not clear", "responseName": "VIDEO_NOT_CLEAR"},
-      {"value": "Patient could not see my video", "responseName": "VIDEO_NOT_RECEIVED"},
-      {"value": "Video froze during the call", "responseName": "VIDEO_FREEZE"},
-      {"value": "Video Stopped working during the call", "responseName": "VIDEO_STOPPED"},
-      {"value": "Video and audio was not in sync", "responseName": "VIDEO_AUDIO_NOT_SYNC"},
-      {"value": "Other", "responseName": "VIDEO_OTHER"}
+      { "value": "Patient Did not pick up the call", "responseName": "VIDEO_CALL_NOT_PICKED" },
+      { "value": "Call Disconnected Abruptly", "responseName": "VIDEO_CALL_DISCONNECTED_ABRUPTLY" },
+      { "value": "Could not see anything in the video", "responseName": "VIDEO_NOT_VISIBLE" },
+      { "value": "Video was working but video was not clear", "responseName": "VIDEO_NOT_CLEAR" },
+      { "value": "Patient could not see my video", "responseName": "VIDEO_NOT_RECEIVED" },
+      { "value": "Video froze during the call", "responseName": "VIDEO_FREEZE" },
+      { "value": "Video Stopped working during the call", "responseName": "VIDEO_STOPPED" },
+      { "value": "Video and audio was not in sync", "responseName": "VIDEO_AUDIO_NOT_SYNC" },
+      { "value": "Other", "responseName": "VIDEO_OTHER" }
     ],
     "othersReasonPlaceholder": "Others,  Please specify",
     "feedbackResponseType": {
@@ -534,6 +538,7 @@
     "inMins": "in mins",
     "notificationHeader": "Set up Notification prefrences",
     "followupHeader": "Set up your patient follow up days",
-    "saveText": "The last changes saved on {0}."
+    "saveText": "The last changes saved on {0}.",
+    "followupInfo": "This Value will be default for all patients, However you can change the follow-up chat day count on individual patient's Case-sheet."
   }
 }

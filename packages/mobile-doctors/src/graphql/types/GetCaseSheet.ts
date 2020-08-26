@@ -327,6 +327,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   followUp: boolean | null;
   followUpDate: any | null;
   followUpAfterInDays: string | null;
+  followUpChatDays: number | null;
   followUpConsultType: APPOINTMENT_TYPE | null;
   consultType: string | null;
   notes: string | null;
