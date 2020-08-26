@@ -677,7 +677,7 @@ export class AppointmentCallDetails extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
-  @OneToOne(() => AppointmentCallFeedback, (appointmentCallFeedbackk) => appointmentCallFeedbackk.appointmentCallDetails)
+  @OneToOne(() => AppointmentCallFeedback, (appointmentCallFeedback) => appointmentCallFeedback.appointmentCallDetails)
   appointmentCallFeedback: AppointmentCallFeedback
 
   @BeforeInsert()
@@ -989,7 +989,7 @@ export class CaseSheet extends BaseEntity {
 @Entity()
 export class ConsultQueueItem extends BaseEntity {
   @Index('ConsultQueueItem_appointmentId')
-  @Column()
+  @Column({ nullable: true })
   appointmentId: string;
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.consultQueueItem)
