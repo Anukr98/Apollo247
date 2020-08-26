@@ -357,6 +357,7 @@ interface MessagesObjectProps {
   sentBy: string;
   type: string;
   fileType: string;
+  exotelNumber: string;
 }
 
 interface ConsultRoomProps {
@@ -370,7 +371,7 @@ interface ConsultRoomProps {
   sessionClient: any;
   lastMsg: any;
   messages: MessagesObjectProps[];
-  postDoctorConsultEventAction: (eventType: WebEngageEvent) => void;
+  postDoctorConsultEventAction: (eventType: WebEngageEvent, displayId: string) => void;
   appointmentStatus: string;
 }
 
@@ -420,9 +421,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const languageQue = '^^#languageQue';
   const jdThankyou = '^^#jdThankyou';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
+  const exotelCall = '^^#exotelCall';
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
+  const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
+  const leaveChatRoom = '^^#leaveChatRoom';
 
   const { doctorId, patientId } = props;
   const channel = props.appointmentId;
@@ -489,9 +493,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         lastMsg.message.message !== covertVideoMsg &&
         lastMsg.message.message !== covertAudioMsg &&
         lastMsg.message.message !== cancelConsultInitiated &&
+        lastMsg.message.message !== exotelCall &&
         lastMsg.message.message !== callAbandonment &&
         lastMsg.message.message !== appointmentComplete &&
-        lastMsg.message.message !== doctorAutoResponse
+        lastMsg.message.message !== doctorAutoResponse &&
+        lastMsg.message.message !== patientJoinedMeetingRoom &&
+        lastMsg.message.message !== leaveChatRoom
       ) {
         setIsNewMsg(true);
       } else {
@@ -517,7 +524,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessageText('');
         srollToBottomAction();
         if (props.appointmentStatus === 'COMPLETED') {
-          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE);
+          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE, (appointmentInfo && appointmentInfo.displayId) || '');
         }
       }
     );
@@ -613,7 +620,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (status: any, response: any) => {
         resetMessagesAction();
         if (props.appointmentStatus === 'COMPLETED') {
-          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE);
+          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE, (appointmentInfo && appointmentInfo.displayId) || '');
         }
       }
     );
@@ -627,6 +634,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message === jdThankyou
     ) {
       return rowData.automatedText;
+    }else if(rowData.id === doctorId && rowData.message === exotelCall){
+      return 'A Telephonic Voice call is initiated from '+ rowData.exotelNumber+'. Request you to answer the call.';
     } else {
       return rowData.message;
     }
@@ -652,7 +661,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
       rowData.message !== appointmentComplete &&
-      rowData.message !== doctorAutoResponse
+      rowData.message !== doctorAutoResponse &&
+      rowData.message !== patientJoinedMeetingRoom &&
+      rowData.message !== leaveChatRoom
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -758,7 +769,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
       rowData.message !== appointmentComplete &&
-      rowData.message !== doctorAutoResponse
+      rowData.message !== doctorAutoResponse &&
+      rowData.message !== patientJoinedMeetingRoom &&
+      rowData.message !== leaveChatRoom
     ) {
       leftComponent = 0;
       jrDrComponent = 0;
@@ -871,7 +884,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
       rowData.message !== appointmentComplete &&
-      rowData.message !== doctorAutoResponse
+      rowData.message !== doctorAutoResponse &&
+      rowData.message !== patientJoinedMeetingRoom &&
+      rowData.message !== leaveChatRoom
     ) {
       jrDrComponent++;
       leftComponent = 0;

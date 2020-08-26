@@ -367,11 +367,10 @@ export const AuthProvider: React.FC = (props) => {
       const search = window.location.search;
       const params = new URLSearchParams(search);
       const token = params.get('utm_token') || '';
+      // Mobile APP Autologin Case
       if (params.get('utm_mobile_number') && params.get('utm_mobile_number').length) {
         const mobileNumber = `+${params.get('utm_mobile_number').trim()}`;
         localStorage.setItem('userMobileNo', mobileNumber);
-      }
-      if (token && localStorage.getitem('userMobileNo')) {
         setAuthToken(token);
         apolloClient = buildApolloClient(token, () => signOut());
         apolloClient

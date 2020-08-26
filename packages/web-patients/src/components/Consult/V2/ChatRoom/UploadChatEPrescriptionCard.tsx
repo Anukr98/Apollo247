@@ -380,10 +380,8 @@ export const UploadChatEPrescriptionCard: React.FC<EPrescriptionCardProps> = (pr
     uuid: `PATIENT_${patientId}`,
     restore: true,
     keepAlive: true,
-    // autoNetworkDetection: true,
-    // listenToBrowserNetworkEvents: true,
-    // presenceTimeout: 20,
     heartbeatInterval: 20,
+    origin: 'apollo.pubnubapi.com',
   };
   const pubnub = new Pubnub(config);
 

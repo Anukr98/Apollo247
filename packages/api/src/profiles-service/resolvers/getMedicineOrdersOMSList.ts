@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import {
+  MedicineOrdersRepository,
+  SaveMedicineInfoInput,
+} from 'profiles-service/repositories/MedicineOrdersRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import {
   MedicineOrders,
@@ -13,7 +16,7 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { getUnixTime, format } from 'date-fns';
-import { hgetAllCache, hmsetCache } from 'profiles-service/database/connectRedis';
+import { hgetAllCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger';
 
@@ -21,14 +24,7 @@ const path = require('path');
 
 export const getMedicineOrdersOMSListTypeDefs = gql`
   type MedicineOrdersOMSListResult {
-    meta: PaginateMetaDataOMS
     medicineOrdersList: [MedicineOrdersOMS]
-  }
-
-  type PaginateMetaDataOMS {
-    total: Int
-    pageSize: Int
-    pageNo: Int
   }
 
   type getMedicineOrdersListResult {
@@ -68,7 +64,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     bookingSource: BOOKING_SOURCE
     medicineOrderLineItems: [MedicineOrderOMSLineItems]
     medicineOrderPayments: [MedicineOrderOMSPayments]
-    medicineOrderRefunds:[MedicineOrderOMSRefunds]
+    medicineOrderRefunds: [MedicineOrderOMSRefunds]
     medicineOrdersStatus: [MedicineOrdersOMSStatus]
     medicineOrderShipments: [MedicineOrderOMSShipment]
     medicineOrderAddress: MedicineOrderOMSAddress
@@ -165,10 +161,10 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     Success: Boolean
     Message: String
     RequestNumber: String
-    AvailablePoints: Int
-    BalancePoints: Int
-    RedeemedPoints: Int
-    PointsValue: Int
+    AvailablePoints: Float
+    BalancePoints: Float
+    RedeemedPoints: Float
+    PointsValue: Float
   }
 
   type MedicineOrderOMSAddress {
@@ -185,7 +181,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     landmark: String
     latitude: Float
     longitude: Float
-    statecode: String
+    stateCode: String
   }
 
   type RecommendedProductsListResult {
@@ -224,21 +220,40 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     quantity: String
   }
 
+  input SaveMedicineInfoInput {
+    sku: String!
+    name: String
+    status: String
+    price: String
+    special_price: String
+    special_price_from: String
+    special_price_to: String
+    qty: Int
+    description: String
+    url_key: String
+    base_image: String
+    is_prescription_required: String
+    category_name: String
+    product_discount_category: String
+    sell_online: String
+    molecules: String
+    mou: Int
+    gallery_images: String
+    manufacturer: String
+  }
+
+  type SaveMedicineResult {
+    status: Boolean
+  }
+
   extend type Query {
-    getMedicineOrdersOMSList(
-      patientId: String
-      pageNo: Int
-      pageSize: Int
-    ): MedicineOrdersOMSListResult!
+    getMedicineOrdersOMSList(patientId: String): MedicineOrdersOMSListResult!
     getMedicineOrderOMSDetails(
       patientId: String
       orderAutoId: Int
       billNumber: String
     ): MedicineOrderOMSDetailsResult!
-    getMedicineOMSPaymentOrder(
-      pageNo: Int
-      pageSize: Int
-    ): MedicineOrdersOMSListResult!
+    getMedicineOMSPaymentOrder: MedicineOrdersOMSListResult!
     getRecommendedProductsList(patientUhid: String!): RecommendedProductsListResult!
     checkIfProductsOnline(productSkus: [String]): ProductAvailabilityResult!
     updateMedicineDataRedis(limit: Int, offset: Int): getMedicineOrdersListResult
@@ -249,20 +264,19 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
       billNumber: String
     ): MedicineOrderOMSDetailsResult!
   }
+
+  extend type Mutation {
+    updateMedicineDataRedisFromMagento(
+      saveMedicineInfoInput: SaveMedicineInfoInput
+    ): SaveMedicineResult!
+  }
 `;
 
 type getMedicineOrdersListResult = {
   updatedSkus: string[];
 };
 
-type PaginateMetaDataOMS = {
-  total: number | null,
-  pageSize: number | null,
-  pageNo: number | null
-}
-
 type MedicineOrdersOMSListResult = {
-  meta: PaginateMetaDataOMS
   medicineOrdersList: MedicineOrders[];
 };
 
@@ -297,6 +311,12 @@ type RecommendedProducts = {
   MaxOrderQty: number;
 };
 
+type SaveMedicineResult = {
+  status: boolean;
+};
+
+type SaveMedicineInfoInputArgs = { saveMedicineInfoInput: SaveMedicineInfoInput };
+
 type ProductAvailabilityResult = {
   productAvailabilityList: ProductAvailability[];
 };
@@ -309,15 +329,12 @@ type ProductAvailability = {
 
 const getMedicineOrdersOMSList: Resolver<
   null,
-  { patientId: string; orderAutoId?: number, pageNo?: number, pageSize?: number },
+  { patientId: string; orderAutoId?: number },
   ProfilesServiceContext,
   MedicineOrdersOMSListResult
 > = async (parent, args, { profilesDb, mobileNumber }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(args.patientId);
-  // paginated vars
-  const { pageNo, pageSize = 10 } = args; //default pageSize = 10
-  const paginateParams: { take?: number, skip?: number } = {};
 
   log(
     'profileServiceLogger',
@@ -336,27 +353,12 @@ const getMedicineOrdersOMSList: Resolver<
   }
   const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  //pageNo should be greater than 0
-  if (pageNo === 0) {
-    throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
-  }
-  if (pageNo) {
-    paginateParams.take = pageSize
-    paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
-  }
+  const medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
+    primaryPatientIds
+  );
 
-  // const [medicineOrdersList, totalCount]: any = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
-  //   primaryPatientIds,
-  //   paginateParams
-  // );
-
-  console.log('pagination params ---->', paginateParams)
-  const [medicineOrdersList, totalCount]: any = await Promise.all(medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
-    primaryPatientIds,
-    paginateParams
-  ));
-
-  console.log('medicineOrdersList length---->', medicineOrdersList.length, totalCount)
+  //to know later if medicineOrderList is updated or not
+  const saveCount = medicineOrdersList.length;
 
   let uhid = patientDetails.uhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
@@ -370,6 +372,7 @@ const getMedicineOrdersOMSList: Resolver<
       mobileNumber,
       ''
     );
+
     const ordersResp = await fetch(
       process.env.PRISM_GET_OFFLINE_ORDERS ? process.env.PRISM_GET_OFFLINE_ORDERS + uhid : '',
       {
@@ -459,19 +462,17 @@ const getMedicineOrdersOMSList: Resolver<
     }
   }
 
-  //redundant code as db calls takes care of sorting...
-  // function GetSortOrder(a: MedicineOrders, b: MedicineOrders) {
-  //   return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
-  // }
-  // medicineOrdersList.sort(GetSortOrder);
+  function GetSortOrder(a: MedicineOrders, b: MedicineOrders) {
+    return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
+  }
+
+  // needs to sort bcoz of updated medicineOrdersList orders
+  if (saveCount != medicineOrdersList.length) {
+    medicineOrdersList.sort(GetSortOrder);
+  }
 
   return {
-    meta: {
-      pageNo: pageNo || null,
-      pageSize: (Number.isInteger(pageNo) && pageSize) || null,
-      total: (Number.isInteger(pageNo) && totalCount) || null
-    },
-    medicineOrdersList
+    medicineOrdersList,
   };
 };
 
@@ -489,7 +490,11 @@ const getMedicineOrderOMSDetails: Resolver<
     if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
     const uhid = patientDetails.uhid;
 
-    medicineOrderDetails = await medicineOrdersRepo.getOfflineOrderDetails(args.patientId, uhid, args.billNumber);
+    medicineOrderDetails = await medicineOrdersRepo.getOfflineOrderDetails(
+      args.patientId,
+      uhid,
+      args.billNumber
+    );
 
     if (medicineOrderDetails == '' || medicineOrderDetails == null) {
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
@@ -544,31 +549,14 @@ const getMedicineOrderOMSDetails: Resolver<
 
 const getMedicineOMSPaymentOrder: Resolver<
   null,
-  { pageNo?: number, pageSize?: number }, //for consistency response though not mandatory
+  {}, //for consistency response though not mandatory
   ProfilesServiceContext,
   MedicineOrdersOMSListResult
 > = async (parent, args, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  // paginated vars
-  const { pageNo, pageSize = 10 } = args; //default pageSize = 10
-  const paginateParams: { take?: number, skip?: number } = {};
-  //pageNo should be greater than 0
-  if (pageNo === 0) {
-    throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
-  }
-  if (pageNo) {
-    paginateParams.take = pageSize
-    paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
-  }
-  const [medicineOrdersList, totalCount] = await medicineOrdersRepo.getPaymentMedicineOrders(paginateParams);
-  //meta added for consistency response 
+  const medicineOrdersList = await medicineOrdersRepo.getPaymentMedicineOrders();
   return {
-    meta: {
-      pageNo: pageNo || null,
-      pageSize: (Number.isInteger(pageNo) && pageSize) || null,
-      total: (Number.isInteger(pageNo) && totalCount) || null
-    },
-    medicineOrdersList
+    medicineOrdersList,
   };
 };
 
@@ -600,7 +588,7 @@ const getRecommendedProductsList: Resolver<
       //console.log(productsList.response[k], 'redis keys length');
       const key = 'medicine:sku:' + productsList.response.recommendations[k];
       const skuDets = await hgetAllCache(key);
-      if (skuDets && skuDets.status == 'Enabled') {
+      if (skuDets && (skuDets.status == 'Enabled' || skuDets.status == 'enabled')) {
         const recommendedProducts: RecommendedProducts = {
           productImage: decodeURIComponent(skuDets.gallery_images),
           productPrice: skuDets.price,
@@ -710,9 +698,11 @@ const updateMedicineDataRedis: Resolver<
       },
     ],
   });
+  const medicineRepo = context.profilesDb.getCustomRepository(MedicineOrdersRepository);
   const updatedSkus: string[] = [];
   for (let k = args.offset; k <= args.offset + args.limit - 1; k++) {
-    const skuKey = 'medicine:sku:' + rowData.Sheet1[k].sku;
+    await medicineRepo.saveMedicneInfoRedis(rowData.Sheet1[k]);
+    /*const skuKey = 'medicine:sku:' + rowData.Sheet1[k].sku;
     await hmsetCache(skuKey, {
       sku: encodeURIComponent(rowData.Sheet1[k].sku),
       name: encodeURIComponent(rowData.Sheet1[k].name),
@@ -745,12 +735,28 @@ const updateMedicineDataRedis: Resolver<
       mou: encodeURIComponent(rowData.Sheet1[k].mou),
       gallery_images: encodeURIComponent(rowData.Sheet1[k].gallery_images),
       manufacturer: encodeURIComponent(rowData.Sheet1[k].manufacturer),
-    });
+    });*/
     if (!updatedSkus.includes(rowData.Sheet1[k].sku)) {
       updatedSkus.push(rowData.Sheet1[k].sku);
     }
   }
   return { updatedSkus: updatedSkus };
+};
+
+const updateMedicineDataRedisFromMagento: Resolver<
+  null,
+  SaveMedicineInfoInputArgs,
+  ProfilesServiceContext,
+  SaveMedicineResult
+> = async (parent, { saveMedicineInfoInput }, context) => {
+  const medicineRepo = context.profilesDb.getCustomRepository(MedicineOrdersRepository);
+  const updatedSku = await medicineRepo.saveMedicneInfoRedis(saveMedicineInfoInput);
+  let response = true;
+  if (!updatedSku) {
+    response = false;
+  }
+
+  return { status: response };
 };
 
 const getLatestMedicineOrder: Resolver<
@@ -770,6 +776,7 @@ const getLatestMedicineOrder: Resolver<
   let uhid = args.patientUhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
+
   const listResp = await fetch(
     process.env.PRISM_GET_RECOMMENDED_PRODUCTS
       ? process.env.PRISM_GET_RECOMMENDED_PRODUCTS + uhid
@@ -863,26 +870,25 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
   MedicineOrderOMSDetailsResult
 > = async (parent, args, { profilesDb }) => {
   let medicineOrderDetails: any = '';
-  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  if (args.billNumber && args.billNumber != '' && args.billNumber != '0' && args.patientId) {
+  let patientDetails, uhid;
+  if (args.patientId) {
     const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-    const patientDetails = await patientRepo.getPatientDetails(args.patientId);
+    patientDetails = await patientRepo.getPatientDetails(args.patientId);
     if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-    const uhid = patientDetails.uhid;
-
-    medicineOrderDetails = await medicineOrdersRepo.getOfflineOrderDetails(args.patientId, uhid, args.billNumber);
+    uhid = patientDetails.uhid;
+  }
+  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  if (args.billNumber && args.billNumber != '0' && uhid) {
+    medicineOrderDetails = await medicineOrdersRepo.getOfflineOrderDetails(
+      args.patientId,
+      uhid,
+      args.billNumber
+    );
 
     if (medicineOrderDetails == '' || medicineOrderDetails == null) {
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
     }
   } else {
-    const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-    if (args.patientId) {
-      const patientDetails = await patientRepo.getPatientDetails(args.patientId);
-      if (!patientDetails) {
-        throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-      }
-    }
     //let medicineOrderDetails;
     medicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsWithAddressByOrderId(
       args.orderAutoId
@@ -913,6 +919,7 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
       return getUnixTime(new Date(a.statusDate)) - getUnixTime(new Date(b.statusDate));
     });
   }
+  medicineOrderDetails.patient = patientDetails;
   return { medicineOrderDetails };
 };
 
@@ -926,5 +933,8 @@ export const getMedicineOrdersOMSListResolvers = {
     updateMedicineDataRedis,
     getLatestMedicineOrder,
     getMedicineOrderOMSDetailsWithAddress,
+  },
+  Mutation: {
+    updateMedicineDataRedisFromMagento,
   },
 };

@@ -44,7 +44,7 @@ import { doctorProfileViewTracking } from 'webEngageTracking';
 import { getDiffInMinutes } from 'helpers/commonHelpers';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
-import { useHistory, useLocation } from 'react-router';
+import { useLocation } from 'react-router';
 
 export interface DoctorDetailsProps {
   id: string;
@@ -270,12 +270,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       doctorProfileViewTracking(eventData);
     }
   }, [doctorSlots, doctorData]);
-  const history = useHistory();
   const location = useLocation();
 
   useEffect(() => {
     if (location.pathname.includes('/specialties')) {
-      history.push(clientRoutes.doctorDetails(params.name, params.id));
+      history.replaceState(null, '', clientRoutes.doctorDetails(params.name, params.id));
     }
     setLoading(true);
     apolloClient
@@ -422,8 +421,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             title: `${fullName}: ${
               specialty && specialty.name ? specialty.name : ''
             } - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with ${fullName} - ${specialty &&
-              specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            description: `Book an appointment with ${fullName} - ${
+              specialty && specialty.name
+            } and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
             canonicalLink:
               window &&
               window.location &&
@@ -608,7 +608,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <OnlineConsult
                   setIsPopoverOpen={setIsPopoverOpen}
                   doctorDetails={doctorData}
-                  onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
                   tabValue={(tabValue: number) => setTabValue(tabValue)}
                   setIsShownOnce={(isShownOnce: boolean) => setIsShownOnce(isShownOnce)}
                   isShownOnce={isShownOnce}

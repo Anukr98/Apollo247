@@ -83,7 +83,7 @@ import com.android.build.OutputFile
 
 project.ext.react = [
     entryFile: "index.js",
-    enableHermes: true,  // clean and rebuild if changing
+    enableHermes: false,  // clean and rebuild if changing
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -123,7 +123,7 @@ def jscFlavor = 'org.webkit:android-jsc:+'
  * on project.ext.react, JavaScript will not be compiled to Hermes Bytecode
  * and the benefits of using Hermes will therefore be sharply reduced.
  */
-def enableHermes = project.ext.react.get("enableHermes", true);
+def enableHermes = project.ext.react.get("enableHermes", false);
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 52
-        versionName "4.0.0"
+        versionCode 54
+        versionName "4.0.1"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -198,16 +198,12 @@ android {
         pickFirst '**/libc++_shared.so'
     }
 
-    configurations.all {
-        resolutionStrategy {
-            force "com.facebook.soloader:soloader:0.8.0" // to fix crash on app bundle file
-        }
-    }
 }
 
 dependencies {
     implementation project(':@react-native-community_datetimepicker')
     implementation project(':react-native-code-push')
+    implementation project(':react-native-callkeep')
     implementation project(':react-native-background-timer')
     implementation project(':react-native-video')
     implementation project(':react-native-sound')
@@ -359,6 +355,10 @@ dependencies {
 
     implementation "androidx.browser:browser:1.0.0"
     implementation "com.google.android:flexbox:2.0.1"
+
+// PubNub SDK
+    compile group: 'com.pubnub', name: 'pubnub-gson', version: '4.31.3'
+
 }
 
 // Run this once to be able to run the application with BUCK

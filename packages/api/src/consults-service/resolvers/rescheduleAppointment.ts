@@ -7,7 +7,6 @@ import {
   TRANSFER_INITIATED_TYPE,
   STATUS,
   REQUEST_ROLES,
-  ES_DOCTOR_SLOT_STATUS,
   RescheduleAppointmentDetails,
   AppointmentUpdateHistory,
   VALUE_TYPE,
@@ -27,11 +26,11 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import {
   sendReminderNotification,
-  NotificationType,
   sendNotification,
   sendDoctorRescheduleAppointmentNotification,
-} from 'notifications-service/resolvers/notifications';
-import { addMilliseconds, differenceInDays } from 'date-fns';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
+import { differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 import { rescheduleAppointmentEmailTemplate } from 'helpers/emailTemplates/rescheduleAppointmentEmailTemplate';
@@ -257,7 +256,7 @@ const checkIfReschedule: Resolver<
     } else {
       if (
         Math.abs(differenceInDays(apptDetails.appointmentDateTime, args.rescheduleDate)) >
-        ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
+          ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
         apptDetails.isFollowPaid === false
       ) {
         isPaid = 1;
@@ -369,6 +368,13 @@ const bookRescheduleAppointment: Resolver<
 > = async (parent, { bookRescheduleAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   //input - appointmentid, doctorid, newslot, initiatedby-patient, initiatedid-patientid, rescheduledid
   //same doctor different slot - update datetime, and state = rescheduled
+
+  /**
+   * ES UPDATIONS HAPPEN THROUGH
+   * SUBSCRIBER ON APPOINTMENT IN
+   * OBSERVER.TS
+   */
+
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
   const apptDetails = await appointmentRepo.findById(bookRescheduleAppointmentInput.appointmentId);
@@ -434,43 +440,6 @@ const bookRescheduleAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
-  //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async function updateSlotsInEs(appointment: any, appointmentDateTime: any, status: string) {
-    const slotApptDt =
-      format(addMinutes(new Date(appointmentDateTime), +0), 'yyyy-MM-dd') + ' 18:30:00';
-    //format(appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
-    const actualApptDt = format(addMinutes(new Date(appointmentDateTime), +0), 'yyyy-MM-dd');
-    //format(appointmentDateTime, 'yyyy-MM-dd');
-    let apptDt = format(addMinutes(new Date(appointmentDateTime), +0), 'yyyy-MM-dd');
-    // format(appointmentDateTime, 'yyyy-MM-dd');
-    if (appointmentDateTime >= new Date(slotApptDt)) {
-      apptDt = format(addDays(new Date(apptDt), 1), 'yyyy-MM-dd');
-    }
-    const sl = `${actualApptDt}T${new Date(appointmentDateTime)
-      .getUTCHours()
-      .toString()
-      .padStart(2, '0')}:${new Date(appointmentDateTime)
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
-    console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
-    const esDocotrStatusOpen =
-      status === 'OPEN' ? ES_DOCTOR_SLOT_STATUS.OPEN : ES_DOCTOR_SLOT_STATUS.BOOKED;
-    await appointmentRepo.updateDoctorSlotStatusES(
-      appointment.doctorId,
-      apptDt,
-      sl,
-      appointment.appointmentType,
-      esDocotrStatusOpen
-    );
-  }
-  log(
-    'consultServiceLogger',
-    'bookRescheduleAppointment prev appointment',
-    'rescheduleAppointment()',
-    JSON.stringify(apptDetails),
-    'false'
-  );
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
     if (apptDetails.rescheduleCount == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT) {
       //cancel appt
@@ -490,7 +459,10 @@ const bookRescheduleAppointment: Resolver<
         fromState: apptDetails.appointmentState,
         toState: apptDetails.appointmentState,
         userName: bookRescheduleAppointmentInput.patientId,
-        reason: ApiConstants.APPT_STATE_CHANGED_3.toString() + apptDetails.appointmentDateTime.toString(),
+        reason:
+          ApiConstants.APPT_STATE_CHANGED_3.toString() +
+          ApiConstants.APPT_UPDATE_SEPERATOR +
+          apptDetails.appointmentDateTime.toString(),
       };
       appointmentRepo.saveAppointmentHistory(historyAttrs);
 
@@ -536,12 +508,7 @@ const bookRescheduleAppointment: Resolver<
         APPOINTMENT_STATE.RESCHEDULE,
         apptDetails
       );
-      // update on ES, should update new slot to booked and previous slot to open
-      //open old slot
-      await updateSlotsInEs(apptDetails, apptDetails.appointmentDateTime, 'OPEN');
-      // book new slot
-      await updateSlotsInEs(apptDetails, bookRescheduleAppointmentInput.newDateTimeslot, 'BOOKED');
-      //ends
+
       const historyAttrs: Partial<AppointmentUpdateHistory> = {
         appointment: apptDetails,
         userType: APPOINTMENT_UPDATED_BY.PATIENT,
@@ -551,7 +518,10 @@ const bookRescheduleAppointment: Resolver<
         fromState: apptDetails.appointmentState,
         toState: APPOINTMENT_STATE.RESCHEDULE,
         userName: apptDetails.patientId,
-        reason: ApiConstants.APPT_STATE_CHANGED_2.toString() + apptDetails.appointmentDateTime.toString(),
+        reason:
+          ApiConstants.APPT_STATE_CHANGED_2.toString() +
+          ApiConstants.APPT_UPDATE_SEPERATOR +
+          apptDetails.appointmentDateTime.toString(),
       };
       appointmentRepo.saveAppointmentHistory(historyAttrs);
     }
@@ -593,7 +563,10 @@ const bookRescheduleAppointment: Resolver<
         fromState: apptDetails.appointmentState,
         toState: apptDetails.appointmentState,
         userName: bookRescheduleAppointmentInput.doctorId,
-        reason: ApiConstants.APPT_STATE_CHANGED_3.toString() + apptDetails.appointmentDateTime.toString(),
+        reason:
+          ApiConstants.APPT_STATE_CHANGED_3.toString() +
+          ApiConstants.APPT_UPDATE_SEPERATOR +
+          apptDetails.appointmentDateTime.toString(),
       };
       appointmentRepo.saveAppointmentHistory(historyAttrs);
       const appointmentPayment = await appointmentRepo.findAppointmentPayment(apptDetails.id);
@@ -639,12 +612,6 @@ const bookRescheduleAppointment: Resolver<
         apptDetails
       );
 
-      // update on ES, should update new slot to booked and previous slot to open
-      //open old slot
-      await updateSlotsInEs(apptDetails, apptDetails.appointmentDateTime, 'OPEN');
-      // book new slot
-      await updateSlotsInEs(apptDetails, bookRescheduleAppointmentInput.newDateTimeslot, 'BOOKED');
-      //ends
       const historyAttrs: Partial<AppointmentUpdateHistory> = {
         appointment: apptDetails,
         userType: APPOINTMENT_UPDATED_BY.PATIENT,
@@ -654,7 +621,10 @@ const bookRescheduleAppointment: Resolver<
         fromState: apptDetails.appointmentState,
         toState: APPOINTMENT_STATE.RESCHEDULE,
         userName: bookRescheduleAppointmentInput.patientId,
-        reason: ApiConstants.APPT_STATE_CHANGED_2.toString() + apptDetails.appointmentDateTime.toString(),
+        reason:
+          ApiConstants.APPT_STATE_CHANGED_2.toString() +
+          ApiConstants.APPT_UPDATE_SEPERATOR +
+          apptDetails.appointmentDateTime.toString(),
       };
       appointmentRepo.saveAppointmentHistory(historyAttrs);
     }
@@ -755,32 +725,6 @@ const bookRescheduleAppointment: Resolver<
     rescheduledapptDetails.doctorId,
     doctorsDb
   );
-
-  //send mail to doctor admin start
-  if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
-    const adminRepo = doctorsDb.getCustomRepository(AdminDoctorMap);
-    const adminDetails = await adminRepo.findByadminId(apptDetails.doctorId);
-    console.log(adminDetails, 'adminDetails');
-    if (adminDetails == null) throw new AphError(AphErrorMessages.GET_ADMIN_USER_ERROR);
-
-    const listOfEmails: string[] = [];
-
-    adminDetails.length > 0 &&
-      adminDetails.map((value) => listOfEmails.push(value.adminuser.email));
-    console.log('listOfEmails', listOfEmails);
-    listOfEmails.forEach(async (adminemail) => {
-      const adminEmailContent: EmailMessage = {
-        //ccEmail: ccEmailIds.toString(),
-        toEmail: adminemail.toString(),
-        subject: mailSubject.toString(),
-        fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
-        fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
-        messageContent: mailContent,
-      };
-      sendMail(adminEmailContent);
-    });
-  }
-  //send mail to doctor admin end
 
   //send SMS to patient after appintment reschedule accepted by patient
 

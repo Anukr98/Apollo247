@@ -29,7 +29,6 @@ import {
 } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { usePrevious } from 'hooks/reactCustomHooks';
 import moment from 'moment';
-import { CouponCode } from 'components/Coupon/CouponCode';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { VALIDATE_CONSULT_COUPON } from 'graphql/consult';
 import {
@@ -198,7 +197,6 @@ const getYyMmDd = (ddmmyyyy: string) => {
 interface OnlineConsultProps {
   setIsPopoverOpen: (openPopup: boolean) => void;
   doctorDetails: DoctorDetails;
-  onBookConsult: (popover: boolean) => void;
   tabValue?: (tabValue: number) => void;
   setIsShownOnce?: (shownOnce: boolean) => void;
   isShownOnce?: boolean;
@@ -677,29 +675,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               </Grid>
             </>
           )}
-          {/* <CouponCode
-            disableSubmit={disableCoupon}
-            setCouponCodeFxn={() => {
-              setCouponCode(couponCode);
-            }}
-            setCouponCode={setCouponCode}
-            subtotal={onlineConsultationFees}
-            revisedAmount={revisedAmount}
-            setRevisedAmount={setRevisedAmount}
-            doctorId={doctorId}
-            appointmentDateTime={appointmentDateTime}
-            appointmentType={consultType}
-            removeCouponCode={() => {
-              const speciality = getSpeciality();
-              const couponValue = Number(onlineConsultationFees) - Number(revisedAmount);
-              gtmTracking({
-                category: 'Consultations',
-                action: speciality,
-                label: `Coupon Removed - ${couponCode}`,
-                value: couponValue,
-              });
-            }}
-          /> */}
           <p className={classes.consultGroup}>
             I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to
             the same. I am voluntarily availing of the services provided on this platform. I am
@@ -723,6 +698,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               (scheduleLater && timeSelected === '')
             }
             onClick={() => {
+              setMutationLoading(true);
               const bookRescheduleInput = {
                 appointmentId: appointmentId,
                 doctorId: doctorId,
@@ -732,7 +708,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 patientId: currentPatient ? currentPatient.id : '',
                 rescheduledId: '',
               };
-              rescheduleAPI(bookRescheduleInput);
+              rescheduleAPI(bookRescheduleInput, TRANSFER_INITIATED_TYPE.PATIENT);
             }}
             className={
               disableSubmit ||

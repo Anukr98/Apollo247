@@ -17,6 +17,12 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.common.white,
       marginBottom: 5,
     },
+    imageUpload: {
+      overflow: 'hidden',
+      borderRadius: 10,
+      width: 130,
+      cursor: 'pointer',
+    },
     petient: {
       color: '#fff',
       textAlign: 'left',
@@ -53,6 +59,34 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 10,
       marginTop: 2,
       display: 'block',
+      position: 'relative',
+      top: -15,
+      left: 30,
+      width: '70%',
+    },
+    chatImgBubble: {
+      padding: 0,
+      border: 'none',
+      '& img': {
+        maxWidth: '100%',
+        verticalAlign: 'middle',
+      },
+    },
+    audioCall: {
+      background: 'transparent',
+      boxShadow: 'none',
+      padding: 0,
+      color: '#02475B',
+      marginLeft: 10,
+      position: 'relative',
+      top: -4,
+    },
+    missedCall: {
+      background: 'transparent',
+      boxShadow: 'none',
+      padding: 0,
+      color: '#890000',
+      marginLeft: 10,
     },
   };
 });
@@ -60,6 +94,9 @@ const useStyles = makeStyles((theme: Theme) => {
 interface DoctorCardProps {
   message: string;
   duration: string;
+  messageDetails: any;
+  setModalOpen: (flag: boolean) => void;
+  setImgPrevUrl: (url: string) => void;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -68,35 +105,60 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   return (
     <div className={classes.doctorCardMain}>
       <div className={classes.doctorAvatar}>
-        <Avatar className={classes.avatar} src={require('images/ic_mascot_male.png')} alt="" />
+        {message.toLocaleLowerCase() !== 'video call ended' &&
+          message.toLocaleLowerCase() !== 'audio call ended' && (
+            <Avatar className={classes.avatar} src={require('images/ic_mascot_male.png')} alt="" />
+          )}
       </div>
       {props.duration === '00 : 00' ? (
-        <div
-          className={`${classes.blueBubble} ${classes.petient} `}
-          dangerouslySetInnerHTML={{
-            __html:
-              message.toLocaleLowerCase() === 'video call ended'
-                ? 'You missed a video call'
-                : 'You missed a voice call',
-          }}
-        ></div>
+        <>
+          <img src={require('images/ic_missedcall.svg')} />
+          <div
+            className={`${classes.blueBubble} ${classes.petient} ${classes.missedCall}`}
+            dangerouslySetInnerHTML={{
+              __html:
+                message.toLocaleLowerCase() === 'video call ended'
+                  ? 'You missed a video call'
+                  : 'You missed a voice call',
+            }}
+          ></div>
+        </>
+
       ) : props.duration ? (
         <div>
           <img src={require('images/ic_round_call.svg')} />
           <div
-            className={`${classes.blueBubble} ${classes.petient} `}
+            className={`${classes.blueBubble} ${classes.petient} ${classes.audioCall}`}
             dangerouslySetInnerHTML={{
               __html: message.replace(/\<(?!br).*?\>/g, ''),
             }}
           ></div>
           <span className={classes.durationMsg}>Duration- {props.duration}</span>
+        </div >
+      ) : props.messageDetails.message === '^^#DocumentUpload' ? (
+        <div className={classes.chatImgBubble}>
+          <div
+            className={classes.imageUpload}
+            onClick={() => {
+              props.setModalOpen(props.messageDetails.fileType === 'pdf' ? false : true);
+              props.setImgPrevUrl(props.messageDetails.url);
+            }}
+          >
+            {props.messageDetails.fileType === 'pdf' ? (
+              <a href={props.messageDetails.url} target="_blank">
+                <img src={require('images/pdf_thumbnail.png')} />
+              </a>
+            ) : (
+                <img src={props.messageDetails.url} alt={props.messageDetails.url} />
+              )}
+          </div>
         </div>
       ) : (
-        <div
-          className={`${classes.blueBubble} ${classes.petient} `}
-          dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}
-        ></div>
-      )}
-    </div>
+              <div
+                className={`${classes.blueBubble} ${classes.petient} `}
+                dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}
+              ></div>
+            )}
+    </div >
   );
 };

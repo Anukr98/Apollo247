@@ -26,13 +26,12 @@ import { Connection } from 'typeorm';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
-import { addMilliseconds, format, addDays, differenceInSeconds } from 'date-fns';
+import { addMilliseconds, format, differenceInSeconds } from 'date-fns';
 import {
   sendNotification,
-  NotificationType,
   sendDoctorAppointmentNotification,
-} from 'notifications-service/resolvers/notifications';
-
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { DoctorType } from 'doctors-service/entities';
 import { appointmentPaymentEmailTemplate } from 'helpers/emailTemplates/appointmentPaymentEmailTemplate';
 import { log } from 'customWinstonLogger';
@@ -40,6 +39,7 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { acceptCoupon } from 'helpers/couponServices';
 import { AcceptCouponRequest } from 'types/coupons';
+import { updateDoctorSlotStatusES } from 'doctors-service/entities/doctorElastic';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
@@ -69,6 +69,7 @@ export const makeAppointmentPaymentTypeDefs = gql`
     bankName: String
     refundAmount: Float
     paymentMode: PAYMENT_METHODS
+    partnerInfo: String
   }
 
   type AppointmentPayment {
@@ -124,6 +125,7 @@ type AppointmentPaymentInput = {
   bankName: string;
   refundAmount: number;
   paymentMode: PAYMENT_METHODS_REVERSE;
+  partnerInfo: string;
 };
 
 type AppointmentInputArgs = { paymentInput: AppointmentPaymentInput };
@@ -283,28 +285,13 @@ const makeAppointmentPayment: Resolver<
       };
     }
 
-    const slotApptDt =
-      format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
-    const actualApptDt = format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd');
-    let apptDt = format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd');
-    if (processingAppointment.appointmentDateTime >= new Date(slotApptDt)) {
-      apptDt = format(addDays(new Date(apptDt), 1), 'yyyy-MM-dd');
-    }
-
-    const sl = `${actualApptDt}T${processingAppointment.appointmentDateTime
-      .getUTCHours()
-      .toString()
-      .padStart(2, '0')}:${processingAppointment.appointmentDateTime
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, '0')}:00.000Z`;
-    console.log(slotApptDt, apptDt, sl, processingAppointment.doctorId, 'appoint date time');
-    apptsRepo.updateDoctorSlotStatusES(
+    //cannot remove this from here
+    updateDoctorSlotStatusES(
       processingAppointment.doctorId,
-      apptDt,
-      sl,
       processingAppointment.appointmentType,
-      ES_DOCTOR_SLOT_STATUS.BOOKED
+      ES_DOCTOR_SLOT_STATUS.BOOKED,
+      processingAppointment.appointmentDateTime,
+      processingAppointment
     );
 
     //Send booking confirmation SMS,EMAIL & NOTIFICATION to patient
@@ -449,6 +436,7 @@ const makeAppointmentPayment: Resolver<
   paymentInfo.paymentStatus = paymentInput.paymentStatus;
   paymentInfo.responseCode = paymentInput.responseCode;
   paymentInfo.responseMessage = paymentInput.responseMessage;
+  paymentInfo.partnerInfo = paymentInput.partnerInfo;
   await apptsRepo.updateAppointment(
     processingAppointment.id,
     {
@@ -553,8 +541,14 @@ const sendPatientAcknowledgements = async (
       : subjectLine + ' from ' + process.env.NODE_ENV;
 
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
+  const ccEmailIds =
+    process.env.NODE_ENV == 'dev' ||
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
+      ? ApiConstants.PATIENT_APPT_CC_EMAILID
+      : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
-    //ccEmail: <string>ccEmailIds.toString(),
+    ccEmail: <string>ccEmailIds.toString(),
     toEmail: <string>toEmailId.toString(),
     subject: subject,
     fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),

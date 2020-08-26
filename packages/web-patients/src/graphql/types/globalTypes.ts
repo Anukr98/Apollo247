@@ -401,6 +401,12 @@ export enum TRANSFER_INITIATED_TYPE {
   PATIENT = "PATIENT",
 }
 
+export enum TRANSFER_STATUS {
+  COMPLETED = "COMPLETED",
+  INITIATED = "INITIATED",
+  REJECTED = "REJECTED",
+}
+
 export enum UPLOAD_FILE_TYPES {
   JPEG = "JPEG",
   JPG = "JPG",
@@ -465,6 +471,7 @@ export interface AppointmentPaymentInput {
   bankName?: string | null;
   refundAmount?: number | null;
   paymentMode?: PAYMENT_METHODS | null;
+  partnerInfo?: string | null;
 }
 
 export interface BookAppointmentInput {
@@ -481,6 +488,15 @@ export interface BookAppointmentInput {
   pinCode?: string | null;
   actualAmount?: number | null;
   discountedAmount?: number | null;
+}
+
+export interface BookFollowUpAppointmentInput {
+  patientId: string;
+  doctorId: string;
+  appointmentDateTime: any;
+  appointmentType: APPOINTMENT_TYPE;
+  hospitalId?: string | null;
+  followUpParentId: string;
 }
 
 export interface BookRescheduleAppointmentInput {
@@ -528,7 +544,7 @@ export interface DiagnosticOrderInput {
   state: string;
   stateId: string;
   slotTimings: string;
-  employeeSlotId: number;
+  employeeSlotId?: any | null;
   diagnosticEmployeeCode: string;
   diagnosticBranchCode: string;
   totalPrice: number;
@@ -543,6 +559,7 @@ export interface DiagnosticOrderInput {
   deviceType?: DEVICETYPE | null;
   paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
+  slotId: string;
 }
 
 export interface DoctorAvailabilityInput {
@@ -706,6 +723,7 @@ export interface MedicinePaymentMqInput {
   orderId?: string | null;
   paymentMode?: PAYMENT_METHODS | null;
   healthCredits?: number | null;
+  partnerInfo?: string | null;
 }
 
 export interface OrderCancelInput {

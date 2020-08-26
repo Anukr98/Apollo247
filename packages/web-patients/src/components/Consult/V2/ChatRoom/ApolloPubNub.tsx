@@ -46,6 +46,7 @@ export const ApolloPubNubProvider: React.FC = (props) => {
     subscribeKey: process.env.SUBSCRIBE_KEY,
     uuid: currentPatient && currentPatient.id,
     ssl: false,
+    origin: 'apollo.pubnubapi.com',
   });
 
   useEffect(() => {

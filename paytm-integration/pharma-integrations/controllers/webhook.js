@@ -13,7 +13,10 @@ module.exports = async (req, res, next) => {
 
     const checksum = payload.CHECKSUMHASH;
     delete payload.CHECKSUMHASH;
-    if (!verifychecksum(payload, process.env.PAYTM_MERCHANT_KEY_PHARMACY, checksum)) {
+    let merchantKey = process.env.PAYTM_MERCHANT_KEY_PHARMACY;
+    if (payload.MID == process.env.SBI_MID_PHARMACY)
+      merchantKey = process.env.SBI_PAYTM_MERCHANT_KEY_PHARMACY;
+    if (!verifychecksum(payload, merchantKey, checksum)) {
       logger.error(
         `${orderId} - paymed-response: checksum did not match - ${JSON.stringify(payload)}`
       );
@@ -21,8 +24,15 @@ module.exports = async (req, res, next) => {
     }
 
     axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
-    const [bookingSource, healthCredits] = payload.MERC_UNQ_REF.split(':');
-    payload.HEALTH_CREDITS = healthCredits;
+    payload.partnerInfo = '';
+    if (payload.MERC_UNQ_REF) {
+      const info = payload.MERC_UNQ_REF.split(':');
+      if (info.length == 3) {
+        payload.partnerInfo = info[2];
+      }
+      payload.HEALTH_CREDITS = info[1];
+    }
+    //const [bookingSource, healthCredits] = payload.MERC_UNQ_REF.split(':');
     // this needs to be altered later.
     const requestJSON = {
       query: medicineOrderQuery(payload),

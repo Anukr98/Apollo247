@@ -17,7 +17,6 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
   const isProduction = process.env.NODE_ENV === 'production';
 
   const distDir = path.resolve(__dirname, 'dist');
-
   const plugins = [new DotenvPlugin({ path: envFile })];
 
   if (isLocal) {
@@ -28,14 +27,14 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
     loader: 'ts-loader',
     options: isLocal
       ? {
-          transpileOnly: true,
-        }
+        transpileOnly: true,
+      }
       : undefined,
   };
   const cache = isLocal
     ? {
-        type: 'memory',
-      }
+      type: 'memory',
+    }
     : false;
   return {
     target: 'node',

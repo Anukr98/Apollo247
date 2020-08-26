@@ -1,13 +1,10 @@
 import { Remove } from '@aph/mobile-patients/src/components/ui/Icons';
-import { productsThumbnailUrl } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { Dimensions, Image as ImageNative, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Header } from 'react-native-elements';
-import Carousel from 'react-native-snap-carousel';
+import ImageViewer from 'react-native-image-zoom-viewer';
 import { NavigationScreenProps } from 'react-navigation';
-
-const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -20,7 +17,6 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 13, '#fff', 1, undefined, 0.5),
     marginBottom: 4,
   },
-  image: { width: '100%', minHeight: height - height * 0.12 },
   sliderDotStyle: {
     height: 8,
     width: 8,
@@ -56,16 +52,6 @@ export const ImageSliderScreen: React.FC<ImageSliderScreenProps> = (props) => {
 
   const [slideIndex, setSlideIndex] = useState(0);
 
-  const renderSliderItem = ({ item }: { item: string; index: number }) => {
-    return (
-      <ImageNative
-        resizeMode="contain"
-        style={styles.image}
-        source={{ uri: productsThumbnailUrl(item) }}
-      />
-    );
-  };
-
   const renderDot = (active: boolean) => (
     <View style={active ? styles.activeSliderDotStyle : styles.sliderDotStyle} />
   );
@@ -84,12 +70,15 @@ export const ImageSliderScreen: React.FC<ImageSliderScreenProps> = (props) => {
           centerComponent={{ text: heading, style: styles.heading, numberOfLines: 1 }}
         />
       )}
-      <Carousel
-        onSnapToItem={setSlideIndex}
-        data={images}
-        renderItem={renderSliderItem}
-        sliderWidth={width}
-        itemWidth={width}
+      <ImageViewer
+        backgroundColor="#fff"
+        imageUrls={images.map((img) => ({
+          url: img,
+        }))}
+        onChange={(index) => {
+          Number.isInteger(index) && setSlideIndex(index!);
+        }}
+        renderIndicator={() => <></>}
       />
       {images.length > 1 && (
         <View style={styles.dotContainer}>

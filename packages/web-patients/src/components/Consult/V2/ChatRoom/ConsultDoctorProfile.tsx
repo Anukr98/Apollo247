@@ -406,7 +406,6 @@ const useStyles = makeStyles((theme: Theme) => {
 interface ConsultDoctorProfileProps {
   doctorDetails: DoctorDetails;
   appointmentId: string;
-  hasDoctorJoined: boolean;
   jrDoctorJoined: boolean;
   setDisplayId: (displayId: number | null) => void;
   setRescheduleCount: (rescheduleCount: number | null) => void;
@@ -422,7 +421,6 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const {
     doctorDetails,
     appointmentId,
-    hasDoctorJoined,
     jrDoctorJoined,
     setDisplayId,
     setRescheduleCount,
@@ -522,7 +520,10 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       const shouldRefreshComponent = (differenceInMinutes: number) => {
         const id = setInterval(() => {
           id && clearInterval(id);
-          if (differenceInMinutes >= 0 && differenceInMinutes <= 15) {
+          if (
+            differenceInMinutes >= -15 &&
+            (differenceInMinutes <= 30 || appointmentDetails.isConsultStarted)
+          ) {
             setRefreshTimer(!refreshTimer);
           }
         }, 60000);
@@ -590,13 +591,16 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                 src={photoUrl !== null ? photoUrl || '' : require('images/no_photo.png')}
                 alt={firstName || ''}
               />
-              <div
-                onClick={() => setIsCancelPopoverOpen(true)}
-                ref={cancelAppointRef}
-                className={classes.moreProfileActions}
-              >
-                <img src={require('images/ic_more.svg')} alt="" />
-              </div>
+              {appointmentDetails.status !== STATUS.COMPLETED &&
+                appointmentDetails.status !== STATUS.CANCELLED && (
+                  <div
+                    onClick={() => setIsCancelPopoverOpen(true)}
+                    ref={cancelAppointRef}
+                    className={classes.moreProfileActions}
+                  >
+                    <img src={require('images/ic_more.svg')} alt="" />
+                  </div>
+                )}
             </div>
             <div className={classes.doctorInfo}>
               <div className={classes.doctorName}>{_startCase(_toLower(fullName || ''))}</div>
@@ -687,8 +691,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                         </span>
                       </div>
                     ) : (
-                      differenceInMinutes > 0 && // enables only for upcoming and active  appointments
-                      (hasDoctorJoined ? (
+                      differenceInMinutes > -16 && // enables only for upcoming and active  appointments
+                      (appointmentDetails.isConsultStarted ? (
                         <div className={`${classes.joinInSection} ${classes.doctorjoinSection}`}>
                           <span>Doctor has joined!</span>
                         </div>
@@ -705,7 +709,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                     ))}
                 </div>
                 {appointmentDetails &&
-                !hasDoctorJoined &&
+                !appointmentDetails.isConsultStarted &&
                 appointmentDetails.status !== STATUS.COMPLETED ? (
                   <div className={classes.appointmentDetails}>
                     <div className={classes.sectionHead}>
@@ -745,19 +749,6 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                 ) : null}
               </Scrollbars>
             </div>
-            {hasDoctorJoined ? (
-              <div className={classes.bottomActions}>
-                <AphButton className={classes.joinBtn} fullWidth>
-                  Senior Doctor has joined!
-                </AphButton>
-              </div>
-            ) : jrDoctorJoined ? (
-              <div className={classes.bottomActions}>
-                <AphButton className={classes.joinBtn} fullWidth>
-                  Junior Doctor has joined!
-                </AphButton>
-              </div>
-            ) : null}
           </div>
           <Popover
             open={showCancelPopup}
@@ -793,6 +784,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                   >
                     Reschedule Instead
                   </AphButton>
+
                   <AphButton onClick={() => cancelAppointmentApi()}>
                     {apiLoading ? (
                       <CircularProgress size={22} color="secondary" />
@@ -835,3 +827,19 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     }
   }
 };
+
+{
+  /* {appointmentDetails.isConsultStarted ? (
+              <div className={classes.bottomActions}>
+                <AphButton className={classes.joinBtn} fullWidth>
+                  Senior Doctor has joined!
+                </AphButton>
+              </div>
+            ) : jrDoctorJoined ? (
+              <div className={classes.bottomActions}>
+                <AphButton className={classes.joinBtn} fullWidth>
+                  Junior Doctor has joined!
+                </AphButton>
+              </div>
+            ) : null} */
+}

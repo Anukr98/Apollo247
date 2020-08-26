@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef, useContext } from 'react';
-import { Theme, Grid, Button, Avatar, Modal, Popover, MenuItem } from '@material-ui/core';
+import React, { useEffect, useState, useRef } from 'react';
+import { Theme, Grid, Button, MenuItem, Modal } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import Scrollbars from 'react-custom-scrollbars';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -18,8 +18,8 @@ import WarningModel from 'components/WarningModel';
 import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
 import { DoctorCard } from 'components/Consult/V2/ChatRoom/DoctorCard';
 import { WelcomeCard } from 'components/Consult/V2/ChatRoom/WelcomeCard';
-import { BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
-import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { BookRescheduleAppointmentInput, STATUS } from 'graphql/types/globalTypes';
+// import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import PubNub, { PubnubStatus, PublishResponse, HistoryResponse } from 'pubnub';
 import _startCase from 'lodash/startCase';
@@ -28,7 +28,11 @@ import {
   JOIN_JDQ_WITH_AUTOMATED_QUESTIONS,
   GET_APPOINTMENT_DATA,
   UPDATE_APPOINTMENT_SESSION,
+  PAST_APPOINTMENTS_COUNT,
+  UPDATE_SAVE_EXTERNAL_CONNECT,
 } from 'graphql/consult';
+import { downloadDocuments } from 'graphql/types/downloadDocuments';
+import { DOWNLOAD_DOCUMENT } from 'graphql/profiles';
 import {
   AddToConsultQueueWithAutomatedQuestions,
   AddToConsultQueueWithAutomatedQuestionsVariables,
@@ -38,16 +42,20 @@ import {
   UpdateAppointmentSessionVariables,
 } from 'graphql/types/UpdateAppointmentSession';
 import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
+import {
+  GetPastAppointmentsCount,
+  GetPastAppointmentsCountVariables,
+} from 'graphql/types/GetPastAppointmentsCount';
+import {
+  UpdateSaveExternalConnect,
+  UpdateSaveExternalConnectVariables,
+} from 'graphql/types/UpdateSaveExternalConnect';
 import { useApolloClient } from 'react-apollo-hooks';
 import { UploadChatPrescription } from 'components/Consult/V2/ChatRoom/UploadChatPrescriptions';
 import { UploadChatEPrescriptionCard } from 'components/Consult/V2/ChatRoom/UploadChatEPrescriptionCard';
-
-type Params = { appointmentId: string; doctorId: string };
-
-const client = new AphStorageClient(
-  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_PATIENTS,
-  process.env.AZURE_STORAGE_CONTAINER_NAME
-);
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { BookAppointmentCard } from 'components/Consult/V2/ChatRoom/BookAppointmentCard';
+import { isPastAppointment } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -560,24 +568,25 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     modalWindow: {
-      backgroundColor: theme.palette.common.black,
-      maxWidth: 600,
+      backgroundColor: '#fff',
+      maxWidth: 440,
       margin: 'auto',
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.2)',
+      color: '#01475B',
       outline: 'none',
       '&:focus': {
         outline: 'none',
       },
     },
     modalHeader: {
-      minHeight: 56,
+      minHeight: 40,
       textAlign: 'center',
       fontSize: 13,
       fontWeight: 600,
       letterSpacing: 0.5,
       color: theme.palette.common.white,
-      padding: '16px 50px',
+      padding: '10px 50px',
       textTransform: 'uppercase',
       position: 'relative',
       wordBreak: 'break-word',
@@ -604,6 +613,10 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: '100%',
         maxHeight: 'calc(100vh - 212px)',
       },
+    },
+    modalPopupContent: {
+      maxHeight: 'calc(100vh - 180px)',
+      paddingBottom: 30,
     },
     quesContainer: {
       position: 'relative',
@@ -740,6 +753,39 @@ const useStyles = makeStyles((theme: Theme) => {
     ePrescriptionTitle: {
       zIndex: 9999,
     },
+    circlularProgress: {
+      display: 'flex',
+      padding: 20,
+      justifyContent: 'center',
+    },
+    modalHeading: {
+      fontWeight: 500,
+      fontSize: 16,
+      lineHeight: '21px',
+      marginBottom: 5,
+    },
+    modalsubHeading: {
+      fontWeight: 'normal',
+      fontSize: 16,
+      lineHeight: '21px',
+      margin: '5px auto 20px auto',
+      maxWidth: 280,
+    },
+    modalButton: {
+      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      borderRadius: 10,
+      marginRight: 15,
+      padding: 8,
+      minWidth: 132,
+      marginBottom: 10,
+      color: '#FC9916',
+      '&:hover': {
+        backgroundColor: '#fff',
+      },
+    },
+    modalNone: {
+      display: 'none',
+    },
   };
 });
 
@@ -775,7 +821,6 @@ interface AutoMessageStrings {
 interface ChatWindowProps {
   appointmentId: string;
   doctorId: string;
-  hasDoctorJoined: (hasDoctorJoined: boolean) => void;
   doctorDetails: DoctorDetails;
   isModalOpen: boolean;
   setIsModalOpen: (isModalOpen: boolean) => void;
@@ -784,6 +829,7 @@ interface ChatWindowProps {
   rescheduleAPI: (bookRescheduleInput: BookRescheduleAppointmentInput) => void;
   jrDoctorJoined: boolean;
   setJrDoctorJoined: (jrDoctorJoined: boolean) => void;
+  setAppointmentStatus: (appointmentStatus: STATUS) => void;
 }
 
 interface MessagesObjectProps {
@@ -795,9 +841,8 @@ interface MessagesObjectProps {
   transferInfo: any;
   messageDate: string;
   cardType: string;
-  // username: string;
-  // text: string;
 }
+let insertText: MessagesObjectProps[] = [];
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
 const ringtoneUrl = require('../../../../images/phone_ringing.mp3');
@@ -848,7 +893,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [weightError, setWeightError] = useState<boolean>(false);
   const [heightError, setHeightError] = useState<boolean>(false);
   const [messages, setMessages] = useState<any>([]);
-  const [newMessage, setNewMessage] = useState<any>('');
+  // const [newMessage, setNewMessage] = useState<any>('');
   const [drugAllergyError, setDrugAllergyError] = useState<boolean>(false);
   const [dietAllergyError, setDietAllergyError] = useState<boolean>(false);
   const [bpError, setBpError] = useState<boolean>(false);
@@ -858,7 +903,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [appDataLoading, setAppDataLoading] = useState<boolean>(true);
+  const [appHistoryLoading, setAppHistoryLoading] = useState<boolean>(true);
   const [consultQMutationLoading, setConsultQMutationLoading] = useState<boolean>(false);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
+  // const [appointmentsCount, setAppointmentsCount] = useState<any>(null);
+  const [doctorInteractionModal, setDoctorInteractionModal] = useState(true);
+
+  // console.log(appointmentsCount, '------------------------');
 
   const { currentPatient } = useAllCurrentPatients();
   const doctorDisplayName = props.doctorDetails.getDoctorDetailsById.displayName;
@@ -897,11 +949,38 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     AddToConsultQueueWithAutomatedQuestionsVariables
   >(JOIN_JDQ_WITH_AUTOMATED_QUESTIONS);
 
+  const mutationUpdateSaveExternalConnect = useMutation<
+    UpdateSaveExternalConnect,
+    UpdateSaveExternalConnectVariables
+  >(UPDATE_SAVE_EXTERNAL_CONNECT);
+
+  const getPrismUrls = (patientId: string, fileIds: string[]) => {
+    return new Promise((res, rej) => {
+      apolloClient
+        .query<downloadDocuments>({
+          query: DOWNLOAD_DOCUMENT,
+          fetchPolicy: 'no-cache',
+          variables: {
+            downloadDocumentsInput: {
+              patientId: patientId,
+              fileIds: fileIds,
+            },
+          },
+        })
+        .then(({ data }) => {
+          res({ urls: data && data.downloadDocuments && data.downloadDocuments.downloadPaths });
+        })
+        .catch((err: any) => {
+          console.log(err);
+        });
+    });
+  };
   const pubnubClient = new PubNub({
     publishKey: process.env.PUBLISH_KEY,
     subscribeKey: process.env.SUBSCRIBE_KEY,
     uuid: currentPatient && currentPatient.id,
     ssl: false,
+    origin: 'apollo.pubnubapi.com',
   });
 
   const scrollToBottomAction = () => {
@@ -910,10 +989,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       scrollDiv.scrollIntoView();
     }, 200);
   };
-
-  //console.log('pubnub messages.......', messages);
-  // console.log(appointmentDetails, 'appointment details.......');
-  // console.log(autoQuestionsCompleted, 'auto question status.....................');
 
   // subscribe for any udpates
   useEffect(() => {
@@ -934,6 +1009,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           ) {
             const isJdCompleted =
               response.data.getAppointmentData.appointmentsHistory[0].isJdQuestionsComplete;
+            props.setAppointmentStatus(
+              response.data.getAppointmentData.appointmentsHistory[0].status
+            );
             setAppointmentDetails(response.data.getAppointmentData.appointmentsHistory[0]);
             setAutoQuestionsCompleted(isJdCompleted);
             setAppDataLoading(false);
@@ -978,11 +1056,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             setShowVideo(false);
             setPlayRingtone(false);
           }
-          const messageObject = {
-            timetoken: message.timetoken,
-            entry: message.message,
-          };
-          setNewMessage(messageObject);
+          insertText[insertText.length] = message.message;
+          setMessages(() => [...insertText]);
           scrollToBottomAction();
         },
       });
@@ -991,9 +1066,22 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       pubnubClient.history(
         { channel: appointmentId, count: 100, stringifiedTimeToken: true },
         (status: PubnubStatus, response: HistoryResponse) => {
-          console.log(response.messages.length, 'messages length.......');
           if (response.messages.length === 0) sendWelcomeMessage();
-          setMessages(response.messages);
+
+          const newmessage: MessagesObjectProps[] = messages;
+          response.messages.forEach((element: any, index: number) => {
+            const item = element.entry;
+            if (item.prismId) {
+              getPrismUrls(currentPatient && currentPatient.id, item.prismId).then((data: any) => {
+                item.url = (data && data.urls[0]) || item.url;
+              });
+              newmessage[index] = item;
+            } else {
+              newmessage.push(element.entry);
+            }
+          });
+          insertText = newmessage;
+          setMessages(newmessage);
           scrollToBottomAction();
         }
       );
@@ -1004,13 +1092,58 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   }, [appointmentId]);
 
   useEffect(() => {
-    // console.log(newMessage, 'new message in useeffect is.......');
-    if (Object.keys(newMessage).length > 0) {
-      const exisitingMessages = messages;
-      exisitingMessages.push(newMessage);
-      setMessages([...exisitingMessages]);
+    const getPastAppointmentsWithTheDoctor = (
+      doctorId: string,
+      patientId: string,
+      appointmentId: string
+    ) => {
+      setAppHistoryLoading(true);
+      apolloClient
+        .query<GetPastAppointmentsCount, GetPastAppointmentsCountVariables>({
+          query: PAST_APPOINTMENTS_COUNT,
+          variables: {
+            doctorId: doctorId,
+            patientId: patientId,
+            appointmentId: appointmentId,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          setAppHistoryLoading(false);
+          if (response && response.data && response.data.getPastAppointmentsCount) {
+            const appointmentsCount = response.data.getPastAppointmentsCount;
+            const yesCount = appointmentsCount.yesCount;
+            if (yesCount > 0) {
+              setDoctorInteractionModal(false);
+            } else {
+              setDoctorInteractionModal(true);
+            }
+          }
+        })
+        .catch((e) => {
+          setAppHistoryLoading(false);
+          console.log(e);
+        });
+    };
+
+    if (appointmentDetails) {
+      getPastAppointmentsWithTheDoctor(
+        appointmentDetails.doctorId,
+        currentPatient.id,
+        appointmentDetails.id
+      );
+      // console.log(appointmentDetails, '===========================');
     }
-  }, [newMessage]);
+  }, [appointmentDetails]);
+
+  // useEffect(() => {
+  //   // console.log(newMessage, 'new message in useeffect is.......');
+  //   if (Object.keys(newMessage).length > 0) {
+  //     const exisitingMessages = messages;
+  //     exisitingMessages.push(newMessage);
+  //     setMessages([...exisitingMessages]);
+  //   }
+  // }, [newMessage]);
 
   // publish a message to pubnub channel
   const publishMessage = (channelName: string, message: any) => {
@@ -1029,6 +1162,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       }
     );
   };
+
   const startIntervalTimer = (timer: number) => {
     setstartTimerAppoinmentt(true);
     timerIntervalId = setInterval(() => {
@@ -1115,6 +1249,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     setIsVideoCall(false);
     setIsCalled(false);
   };
+
   const actionBtn = () => {
     const composeMessage = {
       id: currentPatient && currentPatient.id,
@@ -1161,10 +1296,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         // setAlertMessage('An error occurred while loading :(');
       });
   };
+
   const setCookiesAcceptcall = () => {
-    const cookieStr = `action=${
-      callAudio === autoMessageStrings.videoCallMsg ? 'videocall' : 'audiocall'
-    }`;
+    const cookieStr = `action=${isVideoCall ? 'videocall' : 'audiocall'}`;
     document.cookie = cookieStr + ';path=/;';
   };
 
@@ -1221,6 +1355,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
 
   const sliderRef = useRef(null);
+
   const heightQuestionContent = () => {
     return (
       <div>
@@ -1404,7 +1539,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     cardType: 'patient',
                   };
                   publishMessage(appointmentId, composeMessage);
-                  showNextSlide();
+                  if (drugAllergy === 'yes') showNextSlide();
+                  else slickGotoSlide(4);
                 }
               }}
             >
@@ -1453,6 +1589,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     cardType: 'patient',
                   };
                   publishMessage(appointmentId, composeMessage);
+                  if (dietAllergy === 'yes') showNextSlide();
+                  else slickGotoSlide(6);
                 }
               }}
             >
@@ -1501,6 +1639,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     cardType: 'patient',
                   };
                   publishMessage(appointmentId, composeMessage);
+                  if (smokeHabit === 'yes') showNextSlide();
+                  else slickGotoSlide(8);
                 }
               }}
             >
@@ -1549,6 +1689,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     cardType: 'patient',
                   };
                   publishMessage(appointmentId, composeMessage);
+                  if (drinkHabit === 'yes') showNextSlide();
+                  else slickGotoSlide(10);
                 }
               }}
             >
@@ -1806,6 +1948,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     );
   };
 
+  const slickGotoSlide = (slideNo: number) => {
+    sliderRef.current.slickGoTo(slideNo);
+  };
+  const getCardType = (messageDetails: any) => {
+    if (messageDetails && messageDetails.cardType) {
+      return messageDetails.cardType;
+    } else if (messageDetails.id === currentPatient.id) {
+      return 'patient';
+    } else {
+      return 'doctor';
+    }
+  };
   const bpInput = () => {
     return (
       <div>
@@ -1850,9 +2004,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   }, Drink: ${_startCase(drinkHabit)}${
                     drinkHabit === 'yes' ? ` ${drinkPerWeek}` : ''
                   }`;
-
                   setConsultQMutationLoading(true);
-
                   // console.log(lifeStyle, 'life style is...........');
                   mutationAddToConsultQ({
                     variables: {
@@ -1871,10 +2023,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   })
                     .then((response) => {
                       setAutoQuestionsCompleted(true);
-                      console.log(response, 'response after mutation is.....');
+                      // console.log(response, 'response after mutation is.....');
                     })
                     .catch((error) => {
-                      console.log(error, 'error after mutation.......');
+                      // console.log(error, 'error after mutation.......');
                     });
                 } else {
                   setBpError(true);
@@ -1898,249 +2050,384 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     sliderRef.current.slickNext();
   };
 
+  const pastAppointment =
+    appointmentDetails && isPastAppointment(appointmentDetails.appointmentDateTime);
+
   // console.log(messages, 'messages from pubnub.....');
 
   return (
-    <div className={classes.consultRoom}>
-      {/* Ot Errors Start */}
-      <WarningModel
-        error={sessionError}
-        onClose={() => {
-          setSessionError(null);
-        }}
-      />
-      <WarningModel
-        error={publisherError}
-        onClose={() => {
-          setPublisherError(null);
-        }}
-      />
-      <WarningModel
-        error={subscriberError}
-        onClose={() => {
-          setSubscriberError(null);
-        }}
-      />
-      {/* Ot Errors Ends */}
-      {playRingtone && (
-        <audio controls autoPlay loop className={classes.ringtone}>
-          <source src={ringtoneUrl} type="audio/mpeg" />
-          Your browser does not support the audio tag.
-        </audio>
-      )}
-      <div
-        className={`${classes.chatSection} ${
-          !showVideo ? classes.chatWindowContainer : classes.audioVideoContainer
-        } `}
-      >
-        {showVideo && sessionId !== '' && token !== '' && (
-          <ChatVideo
-            stopAudioVideoCall={() => stopAudioVideoCall()}
-            toggelChatVideo={() => toggelChatVideo()}
-            stopConsultCall={() => stopConsultCall()}
-            sessionId={sessionId}
-            token={token}
-            showVideoChat={showVideoChat}
-            isVideoCall={isVideoCall}
-            isNewMsg={isNewMsg}
-            timerMinuts={timerMinuts}
-            timerSeconds={timerSeconds}
-            doctorDetails={props.doctorDetails}
-            convertCall={() => convertCall()}
-            videoCall={videoCall}
-            audiocallmsg={audiocallmsg}
-            setSessionError={setSessionError}
-            setPublisherError={setPublisherError}
-            setSubscriberError={setSubscriberError}
-          />
+    <>
+      <div className={classes.consultRoom}>
+        {/* Ot Errors Start */}
+        <WarningModel
+          error={sessionError}
+          onClose={() => {
+            setSessionError(null);
+          }}
+        />
+        <WarningModel
+          error={publisherError}
+          onClose={() => {
+            setPublisherError(null);
+          }}
+        />
+        <WarningModel
+          error={subscriberError}
+          onClose={() => {
+            setSubscriberError(null);
+          }}
+        />
+        {/* Ot Errors Ends */}
+        {playRingtone && (
+          <audio controls autoPlay loop className={classes.ringtone}>
+            <source src={ringtoneUrl} type="audio/mpeg" />
+            Your browser does not support the audio tag.
+          </audio>
         )}
-        {/* <div className={`${classes.chatSection}`}> */}
-        <div>
-          {!showVideo && (
-            <div>
-              {isCalled && (
-                <div className={classes.incomingCallContainer}>
-                  <div className={classes.incomingCallWindow}>
-                    <img
-                      src={require('images/doctor_profile_image.png')}
-                      // src={
-                      //   profileImage !== null
-                      //     ? profileImage
-                      //     : require('images/doctor_profile_image.png')
-                      // }
-                    />
-                    <div className={classes.callOverlay}>
-                      <div className={classes.topText}>Ringing</div>
-                      <div className={classes.callActions}>
-                        <Button className={classes.callPickIcon} onClick={() => actionBtn()}>
-                          <img src={require('images/ic_callpick.svg')} alt="" />
-                        </Button>
+        <div
+          className={`${classes.chatSection} ${
+            !showVideo ? classes.chatWindowContainer : classes.audioVideoContainer
+          } `}
+        >
+          {showVideo && sessionId !== '' && token !== '' && (
+            <ChatVideo
+              stopAudioVideoCall={() => stopAudioVideoCall()}
+              toggelChatVideo={() => toggelChatVideo()}
+              stopConsultCall={() => stopConsultCall()}
+              sessionId={sessionId}
+              token={token}
+              showVideoChat={showVideoChat}
+              isVideoCall={isVideoCall}
+              isNewMsg={isNewMsg}
+              timerMinuts={timerMinuts}
+              timerSeconds={timerSeconds}
+              doctorDetails={props.doctorDetails}
+              convertCall={() => convertCall()}
+              videoCall={videoCall}
+              audiocallmsg={audiocallmsg}
+              setSessionError={setSessionError}
+              setPublisherError={setPublisherError}
+              setSubscriberError={setSubscriberError}
+            />
+          )}
+          {/* <div className={`${classes.chatSection}`}> */}
+          <div>
+            {!showVideo && (
+              <div>
+                {isCalled && (
+                  <div className={classes.incomingCallContainer}>
+                    <div className={classes.incomingCallWindow}>
+                      <img
+                        src={
+                          props.doctorDetails &&
+                          props.doctorDetails.getDoctorDetailsById &&
+                          props.doctorDetails.getDoctorDetailsById.photoUrl !== null
+                            ? props.doctorDetails.getDoctorDetailsById.photoUrl
+                            : require('images/doctor_profile_image.png')
+                        }
+                      />
+                      <div className={classes.callOverlay}>
+                        <div className={classes.topText}>Ringing</div>
+                        <div className={classes.callActions}>
+                          <Button className={classes.callPickIcon} onClick={() => actionBtn()}>
+                            <img src={require('images/ic_callpick.svg')} alt="" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          )}
-          <div className={classes.chatContainer}>
-            <Scrollbars
-              // className={`${classes.chatContainerSection} ${
-              //   autoQuestionsCompleted ? '' : classes.chatContainerSectionques
-              //   }`}
-              autoHide={true}
-              autoHeight
-              autoHeightMax={'calc(100vh - 332px)'}
-            >
-              {messages.map((messageDetails: any) => {
-                const cardType =
-                  messageDetails.entry && messageDetails.entry.cardType
-                    ? messageDetails.entry.cardType
-                    : 'doctor';
-                const message =
-                  messageDetails.entry && messageDetails.entry.message
-                    ? messageDetails.entry.message
-                    : '';
-                if (
-                  messageDetails.entry.message === autoMessageStrings.typingMsg ||
-                  messageDetails.entry.message === autoMessageStrings.endCallMsg ||
-                  messageDetails.entry.message === autoMessageStrings.audioCallMsg ||
-                  messageDetails.entry.message === autoMessageStrings.videoCallMsg ||
-                  messageDetails.entry.message === autoMessageStrings.acceptedCallMsg ||
-                  messageDetails.entry.message === autoMessageStrings.stopConsultMsg ||
-                  messageDetails.entry.message === autoMessageStrings.startConsultMsg
-                ) {
-                  return null;
-                }
-                const duration = messageDetails.entry.duration;
-                console.log(duration);
-                if (cardType === 'welcome') {
-                  return <WelcomeCard doctorName={doctorDisplayName} />;
-                } else if (cardType === 'doctor') {
-                  return <DoctorCard message={message} duration={duration} />;
-                } else {
-                  return (
-                    <PatientCard
-                      message={message}
-                      duration={duration}
-                      chatTime={messageDetails.entry.messageDate}
-                    />
-                  );
-                }
-              })}
-              <span id="scrollDiv" ref={scrollDivRef}></span>
-            </Scrollbars>
-          </div>
-          {autoQuestionsCompleted ? (
-            <div className={`${classes.chatWindowFooter} ${classes.chatWindowFooterInput}`}>
-              <AphTextField
-                autoFocus
-                className={classes.searchInput}
-                inputProps={{ type: 'text' }}
-                placeholder="Type here..."
-                value={userMessage}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setUserMessage(e.target.value)
-                }
-                onKeyPress={(e: any) => {
-                  if ((e.which == 13 || e.keyCode == 13) && userMessage.trim() !== '') {
-                    const composeMessage = {
-                      id: currentPatient && currentPatient.id,
-                      message: e.target.value,
-                      automatedText: '',
-                      duration: '',
-                      url: '',
-                      transferInfo: '',
-                      messageDate: new Date(),
-                      cardType: 'patient',
-                    };
-                    publishMessage(appointmentId, composeMessage);
-                    setUserMessage('');
+                )}
+              </div>
+            )}
+            <div className={classes.chatContainer}>
+              <Scrollbars
+                // className={`${classes.chatContainerSection} ${
+                //   autoQuestionsCompleted ? '' : classes.chatContainerSectionques
+                //   }`}
+                autoHide={true}
+                autoHeight
+                autoHeightMax={'calc(100vh - 332px)'}
+              >
+                {messages.map((messageDetails: any) => {
+                  const cardType = getCardType(messageDetails);
+
+                  const message =
+                    messageDetails && messageDetails.message ? messageDetails.message : '';
+                  if (messageDetails.message === '^^#DocumentUpload') {
+                    console.log(messageDetails);
                   }
+                  if (
+                    messageDetails.message === autoMessageStrings.typingMsg ||
+                    messageDetails.message === autoMessageStrings.endCallMsg ||
+                    messageDetails.message === autoMessageStrings.audioCallMsg ||
+                    messageDetails.message === autoMessageStrings.videoCallMsg ||
+                    messageDetails.message === autoMessageStrings.acceptedCallMsg ||
+                    messageDetails.message === autoMessageStrings.stopConsultMsg ||
+                    messageDetails.message === autoMessageStrings.startConsultMsg ||
+                    messageDetails.message === autoMessageStrings.covertVideoMsg ||
+                    messageDetails.message === autoMessageStrings.covertAudioMsg
+                  ) {
+                    return null;
+                  }
+                  const duration = messageDetails.duration;
+                  if (cardType === 'welcome') {
+                    return <WelcomeCard doctorName={doctorDisplayName} />;
+                  } else if (cardType === 'doctor') {
+                    return (
+                      <DoctorCard
+                        message={message}
+                        duration={duration}
+                        messageDetails={messageDetails}
+                        setModalOpen={(flag: boolean) => setModalOpen(flag)}
+                        setImgPrevUrl={(url: string) => setImgPrevUrl(url)}
+                      />
+                    );
+                  } else {
+                    return (
+                      <PatientCard
+                        message={message}
+                        duration={duration}
+                        chatTime={messageDetails.messageDate}
+                        messageDetails={messageDetails}
+                        setModalOpen={(flag: boolean) => setModalOpen(flag)}
+                        setImgPrevUrl={(url: string) => setImgPrevUrl(url)}
+                      />
+                    );
+                  }
+                })}
+                <span id="scrollDiv" ref={scrollDivRef}></span>
+              </Scrollbars>
+            </div>
+            {autoQuestionsCompleted ? (
+              <>
+                {pastAppointment && appointmentDetails && (
+                  <BookAppointmentCard
+                    doctorName={
+                      (appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.fullName) ||
+                      ''
+                    }
+                    doctorId={appointmentDetails.doctorId}
+                  />
+                )}
+                <div className={`${classes.chatWindowFooter} ${classes.chatWindowFooterInput}`}>
+                  <AphTextField
+                    disabled={pastAppointment}
+                    autoFocus
+                    className={classes.searchInput}
+                    inputProps={{ type: 'text' }}
+                    placeholder="Type here..."
+                    value={userMessage}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setUserMessage(e.target.value)
+                    }
+                    onKeyPress={(e: any) => {
+                      if ((e.which == 13 || e.keyCode == 13) && userMessage.trim() !== '') {
+                        const composeMessage = {
+                          id: currentPatient && currentPatient.id,
+                          message: e.target.value,
+                          automatedText: '',
+                          duration: '',
+                          url: '',
+                          transferInfo: '',
+                          messageDate: new Date(),
+                          cardType: 'patient',
+                        };
+                        publishMessage(appointmentId, composeMessage);
+                        setUserMessage('');
+                      }
+                    }}
+                  />
+                  <AphButton
+                    className={classes.chatSend}
+                    disabled={pastAppointment || userMessage.length === 0}
+                    onClick={() => {
+                      const composeMessage = {
+                        id: currentPatient && currentPatient.id,
+                        message: userMessage,
+                        automatedText: '',
+                        duration: '',
+                        url: '',
+                        transferInfo: '',
+                        messageDate: new Date(),
+                        cardType: 'patient',
+                      };
+                      publishMessage(appointmentId, composeMessage);
+                      setUserMessage('');
+                    }}
+                  >
+                    <img src={require('images/ic_send.svg')} alt="" />
+                  </AphButton>
+                  <AphButton
+                    disabled={pastAppointment}
+                    className={classes.chatSubmitBtn}
+                    onClick={() => {
+                      setIsUploadPreDialogOpen(true);
+                    }}
+                  >
+                    <img
+                      src={require('images/ic_paperclip.svg')}
+                      alt="Upload Records"
+                      title="Upload Records"
+                    />
+                    <span>Upload Records</span>
+                  </AphButton>
+                </div>
+              </>
+            ) : !appDataLoading ? (
+              consultQMutationLoading || appHistoryLoading ? (
+                <div className={classes.circlularProgress}>
+                  <CircularProgress />
+                </div>
+              ) : (
+                <div className={classes.quesContainer}>
+                  <Slider
+                    {...sliderSettings}
+                    className={classes.slider}
+                    ref={(slider) => (sliderRef.current = slider)}
+                  >
+                    {heightQuestionContent()}
+                    {weightQuestionContent()}
+                    {drugAlergyQuestionChoice()}
+                    {drugsInput() /*slide 4 */}
+                    {foodAlergyQuestionChoice()}
+                    {foodAlergyInput() /*slide 6 */}
+                    {smokeQuestionChoice()}
+                    {smokeInput() /*slide 8 */}
+                    {drinkQuestionChoice()}
+                    {drinkInput() /*slide 10 */}
+                    {temperatureInput()}
+                    {bpInput()}
+                  </Slider>
+                </div>
+              )
+            ) : null}
+
+            <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
+              <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
+              <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
+              <UploadChatPrescription
+                closeDialog={() => {
+                  setIsUploadPreDialogOpen(false);
                 }}
+                appointmentId={props.appointmentId}
+                displayName={doctorDisplayName}
+                setIsEPrescriptionOpen={setIsEPrescriptionOpen}
               />
-              <AphButton
-                className={classes.chatSend}
-                disabled={userMessage.length === 0}
+            </AphDialog>
+            <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
+              <AphDialogClose
                 onClick={() => {
-                  const composeMessage = {
-                    id: currentPatient && currentPatient.id,
-                    message: userMessage,
-                    automatedText: '',
-                    duration: '',
-                    url: '',
-                    transferInfo: '',
-                    messageDate: new Date(),
-                    cardType: 'patient',
-                  };
-                  publishMessage(appointmentId, composeMessage);
-                  setUserMessage('');
+                  setIsEPrescriptionOpen(false);
                 }}
-              >
-                <img src={require('images/ic_send.svg')} alt="" />
-              </AphButton>
-              <AphButton
-                className={classes.chatSubmitBtn}
-                onClick={() => {
-                  setIsUploadPreDialogOpen(true);
-                }}
-              >
-                <img
-                  src={require('images/ic_paperclip.svg')}
-                  alt="Upload Records"
-                  title="Upload Records"
-                />
-                <span>Upload Records</span>
-              </AphButton>
-            </div>
-          ) : !appDataLoading ? (
-            <div className={classes.quesContainer}>
-              <Slider
-                {...sliderSettings}
-                className={classes.slider}
-                ref={(slider) => (sliderRef.current = slider)}
-              >
-                {heightQuestionContent()}
-                {weightQuestionContent()}
-                {drugAlergyQuestionChoice()}
-                {drugAllergy === 'yes' && drugsInput()}
-                {foodAlergyQuestionChoice()}
-                {dietAllergy === 'yes' && foodAlergyInput()}
-                {smokeQuestionChoice()}
-                {smokeHabit === 'yes' && smokeInput()}
-                {drinkQuestionChoice()}
-                {drinkHabit === 'yes' && drinkInput()}
-                {temperatureInput()}
-                {bpInput()}
-              </Slider>
-            </div>
-          ) : null}
-          <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
-            <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} title={'Close'} />
-            <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
-            <UploadChatPrescription
-              closeDialog={() => {
-                setIsUploadPreDialogOpen(false);
-              }}
-              appointmentId={props.appointmentId}
-              displayName={doctorDisplayName}
-              setIsEPrescriptionOpen={setIsEPrescriptionOpen}
-            />
-          </AphDialog>
-          <AphDialog open={isEPrescriptionOpen} maxWidth="sm">
-            <AphDialogClose
-              onClick={() => {
-                setIsEPrescriptionOpen(false);
-              }}
-              title={'Close'}
-            />
-            <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
-            <UploadChatEPrescriptionCard
-              setIsEPrescriptionOpen={setIsEPrescriptionOpen}
-              appointmentId={props.appointmentId}
-            />
-          </AphDialog>
+                title={'Close'}
+              />
+              <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
+              <UploadChatEPrescriptionCard
+                setIsEPrescriptionOpen={setIsEPrescriptionOpen}
+                appointmentId={props.appointmentId}
+              />
+            </AphDialog>
+          </div>
         </div>
+        {/* model popup for image preview start */}
+        <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+          <div className={classes.modalWindowWrap}>
+            <div className={classes.tableContent}>
+              <div className={classes.modalWindow}>
+                <div className={classes.modalHeader}>
+                  <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
+                    <img src={require('images/ic_round_clear.svg')} alt="" />
+                  </div>
+                </div>
+                <div className={classes.modalContent}>
+                  <img src={imgPrevUrl} alt="" />
+                  {/* <ReactPanZoom image={imgPrevUrl} alt="" /> */}
+                </div>
+                <div className={classes.modalFooter}></div>
+              </div>
+            </div>
+          </div>
+        </Modal>
+        {/* model popup for image preview ends */}
       </div>
-    </div>
+      {/* modal popup for doctor interaciton questions */}
+      {!appHistoryLoading ? (
+        <Modal open={doctorInteractionModal} onClose={() => setDoctorInteractionModal(false)}>
+          <div
+            className={
+              doctorInteractionModal && !appHistoryLoading
+                ? classes.modalWindowWrap
+                : classes.modalNone
+            }
+          >
+            <div className={classes.tableContent}>
+              <div className={classes.modalWindow}>
+                <div className={classes.modalHeader}>
+                  <div
+                    className={classes.modalClose}
+                    onClick={() => setDoctorInteractionModal(false)}
+                  >
+                    <img src={require('images/ic_round_clear.svg')} alt="" />
+                  </div>
+                </div>
+                <div className={`${classes.modalContent} ${classes.modalPopupContent}`}>
+                  <div className={classes.modalHeading}>
+                    Have you interacted with the doctor before?
+                  </div>
+                  <div className={classes.modalsubHeading}>
+                    (This is to know more about your past health records)
+                  </div>
+                  <div>
+                    <AphButton
+                      className={classes.modalButton}
+                      onClick={() => {
+                        mutationUpdateSaveExternalConnect({
+                          variables: {
+                            appointmentId: appointmentId,
+                            doctorId: appointmentDetails.doctorId,
+                            externalConnect: false,
+                            patientId: currentPatient && currentPatient.id,
+                          },
+                        })
+                          .then(() => setDoctorInteractionModal(false))
+                          .catch(() => {
+                            setDoctorInteractionModal(false);
+                          });
+                      }}
+                    >
+                      No
+                    </AphButton>
+                    <AphButton
+                      className={classes.modalButton}
+                      onClick={() => {
+                        mutationUpdateSaveExternalConnect({
+                          variables: {
+                            appointmentId: appointmentId,
+                            doctorId: appointmentDetails.doctorId,
+                            externalConnect: true,
+                            patientId: currentPatient && currentPatient.id,
+                          },
+                        })
+                          .then(() => setDoctorInteractionModal(false))
+                          .catch(() => {
+                            setDoctorInteractionModal(false);
+                          });
+                      }}
+                    >
+                      Yes
+                    </AphButton>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      ) : (
+        <Modal open={doctorInteractionModal} onClose={() => setDoctorInteractionModal(false)}>
+          <div className={classes.modalNone}></div>
+        </Modal>
+      )}
+      {/* modal popup for doctor interaciton questions */}
+    </>
   );
 };

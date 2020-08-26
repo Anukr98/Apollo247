@@ -294,6 +294,12 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#0187BA',
       background: '#fff',
     },
+    doctornameFilter: {
+      width: '25%',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+      },
+    },
   };
 });
 

@@ -45,6 +45,38 @@ const useStyles = makeStyles((theme: Theme) => {
     chatQuesTxt: {
       lineHeight: '22px',
     },
+    imageUpload: {
+      overflow: 'hidden',
+      borderRadius: 10,
+      width: 130,
+      cursor: 'pointer',
+    },
+    chatImgBubble: {
+      padding: 0,
+      border: 'none',
+      '& img': {
+        maxWidth: '100%',
+        verticalAlign: 'middle',
+      },
+    },
+    audioCall: {
+      background: 'transparent',
+      boxShadow: 'none',
+      padding: 0,
+      color: '#02475B',
+      marginLeft: 10,
+      position: 'relative',
+      top: -4,
+      display: 'inline',
+      fontWeight: 500,
+    },
+    missedCall: {
+      background: 'transparent',
+      boxShadow: 'none',
+      padding: 0,
+      color: '#890000',
+      marginLeft: 10,
+    },
   };
 });
 
@@ -52,6 +84,9 @@ interface PatientCardProps {
   message: string;
   chatTime: string;
   duration: string;
+  messageDetails: any;
+  setModalOpen: (flag: boolean) => void;
+  setImgPrevUrl: (url: string) => void;
 }
 
 export const PatientCard: React.FC<PatientCardProps> = (props) => {
@@ -64,24 +99,56 @@ export const PatientCard: React.FC<PatientCardProps> = (props) => {
   return (
     <div className={classes.patientCardMain}>
       <div className={classes.chatBub}>
-        <div className={classes.chatBubble}>
+        <div className={message.toLocaleLowerCase() !== 'video call ended' &&
+          message.toLocaleLowerCase() !== 'audio call ended' ? classes.chatBubble : ''}>
           <div className={classes.chatQuesTxt}>
             {props.duration === '00 : 00' ? (
-              <div
-                dangerouslySetInnerHTML={{
-                  __html:
-                    message.toLocaleLowerCase() === 'video call ended'
-                      ? 'Doctor missed a video call'
-                      : 'Doctor missed a voice call',
-                }}
-              ></div>
-            ) : (
               <>
+                <img src={require('images/ic_missedcall.svg')} />
                 <div
-                  dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      message.toLocaleLowerCase() === 'video call ended'
+                        ? 'Doctor missed a video call'
+                        : 'Doctor missed a voice call',
+                  }}
                 ></div>
               </>
-            )}
+
+            ) : props.messageDetails.message === '^^#DocumentUpload' ? (
+              <div className={classes.chatImgBubble}>
+                <div
+                  className={classes.imageUpload}
+                  onClick={() => {
+                    props.setModalOpen(props.messageDetails.fileType === 'pdf' ? false : true);
+                    props.setImgPrevUrl(props.messageDetails.url);
+                  }}
+                >
+                  {props.messageDetails.fileType === 'pdf' ? (
+                    <a href={props.messageDetails.url} target="_blank">
+                      <img src={require('images/pdf_thumbnail.png')} />
+                    </a>
+                  ) : (
+                      <img
+                        src={props.messageDetails.url}
+                        alt={props.messageDetails.url}
+                      // onError={(e: any) => {
+                      //   handleImageError(e, props.messageDetails.url);
+                      // }}
+                      />
+                    )}
+                </div>
+              </div>
+            ) : (
+                  <>
+                    {props.duration && props.duration !== '00 : 00' && (
+                      <img src={require('images/ic_round_call.svg')} />
+                    )}
+                    <div className={classes.audioCall}
+                      dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}
+                    ></div>
+                  </>
+                )}
           </div>
           {props.duration && props.duration !== '00 : 00' && (
             <div className={`${classes.chatTime} ${classes.defaultChatTime}`}>
@@ -91,6 +158,6 @@ export const PatientCard: React.FC<PatientCardProps> = (props) => {
           <div className={`${classes.chatTime} ${classes.defaultChatTime}`}>{chatTime}</div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
