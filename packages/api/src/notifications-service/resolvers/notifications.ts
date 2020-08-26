@@ -335,6 +335,29 @@ export const sendDoctorNotificationWhatsapp = async (
           Authorization: process.env.WHATSAPP_AUTH_HEADER ? process.env.WHATSAPP_AUTH_HEADER : '',
         },
       });
+      const fileName =
+        process.env.NODE_ENV + '_whatsapp_' + format(new Date(), 'yyyyMMdd') + '.txt';
+      let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+      if (process.env.NODE_ENV != 'local') {
+        assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+      }
+      let content =
+        format(new Date(), 'yyyy-MM-dd hh:mm') +
+        '\n ' +
+        phoneNumber +
+        ' - ' +
+        templateName +
+        ' - ' +
+        process.env.WHATSAPP_DOCTOR_NUMBER +
+        ' - ' +
+        process.env.WHATSAPP_AUTH_HEADER +
+        ' - ' +
+        keyResp.key +
+        ' - ' +
+        response.status;
+      content +=
+        '\n------------------------------------------------------------------------------------\n';
+      fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
       console.log(response, 'response');
     }
   }

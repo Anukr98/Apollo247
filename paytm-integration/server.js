@@ -63,6 +63,7 @@ app.get(
   deeplink({
     fallback: 'https://apollo247.com',
     android_package_name: 'com.apollo.patientapp',
+    ios_store_link: 'https://apps.apple.com/in/app/apollo-247/id1496740273',
   })
 );
 app.get(
@@ -151,7 +152,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
     });
   //updatePhrDocSummary api call
   axios
-    .post(process.env.API_URL, updatePhrDocSummaryRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, updatePhrDocSummaryRequestJSON)
     .then((response) => {
       console.log(response.data.data.updatePhrDocSummary, 'Summary response is....');
       const fileName =
@@ -173,7 +174,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
 
   //getAvailableDoctorsCount api call
   axios
-    .post(process.env.API_URL, getAvailableDoctorsCountRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, getAvailableDoctorsCountRequestJSON)
     .then((response) => {
       console.log(response.data.data.getAvailableDoctorsCount, 'Summary response is....');
       const fileName =
@@ -195,7 +196,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
 
   //updateConsultRating api call
   axios
-    .post(process.env.API_URL, updateConsultRatingRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, updateConsultRatingRequestJSON)
     .then((response) => {
       console.log(response.data.data.updateConsultRating, 'Summary response is....');
       const fileName =
