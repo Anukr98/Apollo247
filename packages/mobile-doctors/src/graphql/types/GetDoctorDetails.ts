@@ -130,6 +130,7 @@ export interface GetDoctorDetails_getDoctorDetails {
   firstName: string;
   isActive: boolean;
   id: string;
+  chatDays: number | null;
   languages: string | null;
   lastName: string;
   mobileNumber: string;

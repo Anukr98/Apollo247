@@ -357,7 +357,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
                   .join('\n')
               )
             : null}
-          {/* {renderFollowUp()} */}
+          {renderFollowUp()}
           {renderReferral()}
         </View>
       </View>
@@ -378,9 +378,9 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
     return followUp.doFollowUp
       ? renderSubItems(
           'Follow Up',
-          <Text
-            style={styles.subHeadingText}
-          >{`${'Free'} Follow up (${'Online'}) after ${'5'} day${'s'} with reports`}</Text>
+          <Text style={styles.subHeadingText}>{`Free Follow-up (Chat) upto ${
+            followUp.followUpDays
+          } day${Number(followUp.followUpDays) == 1 ? '' : 's'} from consultation.`}</Text>
         )
       : null;
   };

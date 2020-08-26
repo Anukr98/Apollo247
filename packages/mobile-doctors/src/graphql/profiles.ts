@@ -17,6 +17,7 @@ export const GET_DOCTOR_DETAILS = gql`
       firstName
       isActive
       id
+      chatDays
       languages
       lastName
       mobileNumber
@@ -431,6 +432,7 @@ export const MODIFY_CASESHEET = gql`
       }
       doctorId
       doctorType
+      followUpChatDays
       followUp
       followUpAfterInDays
       followUpDate
@@ -877,6 +879,7 @@ export const GET_CASESHEET = gql`
         followUp
         followUpDate
         followUpAfterInDays
+        followUpChatDays
         followUpConsultType
         consultType
         notes
@@ -1753,6 +1756,15 @@ export const SAVE_APPOINTMENT_CALL_FEEDBACK = gql`
       ratingValue
       feedbackResponseType
       feedbackResponses
+    }
+  }
+`;
+
+export const UPDATE_CHAT_DAYS = gql`
+  mutation updateDoctorChatDays($doctorId: String!, $chatDays: Int) {
+    updateDoctorChatDays(doctorId: $doctorId, chatDays: $chatDays) {
+      isError
+      response
     }
   }
 `;
