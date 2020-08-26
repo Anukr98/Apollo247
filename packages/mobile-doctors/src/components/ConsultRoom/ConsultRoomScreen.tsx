@@ -808,9 +808,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
     setFollowupChatDays({
       key:
-        g(caseSheet, 'caseSheetDetails', 'followUpChatDays') || g(doctorDetails, 'chatDays') || '',
+        g(caseSheet, 'caseSheetDetails', 'followUpChatDays') || g(doctorDetails, 'chatDays') || 0,
       value:
-        g(caseSheet, 'caseSheetDetails', 'followUpChatDays') || g(doctorDetails, 'chatDays') || '',
+        g(caseSheet, 'caseSheetDetails', 'followUpChatDays') || g(doctorDetails, 'chatDays') || '0',
     });
     setSwitchValue(g(caseSheet, 'caseSheetDetails', 'followUp') || null);
     setFollowupDays(g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays') || '');
