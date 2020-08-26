@@ -2,7 +2,7 @@
 # $1 refers the environment: 'local' | 'development' | 'staging' | 'production'
 
 echo -e "\ncleaning up any old build files..."
-rm -fv aph-$1*.tar.gz
+#rm -fv aph-$1*.tar.gz
 rm -rfv skeleton || exit 2
 rm -rfv packages/api/dist/* || exit 2
 rm -rfv packages/web-doctors/dist/* || exit 2
@@ -54,6 +54,7 @@ cd -
 echo -e "\ncopying all api files..."
 mkdir -pv skeleton/apollo-hospitals/packages/api/ || exit 2
 cp -Rv packages/api/dist/* skeleton/apollo-hospitals/packages/api/ || exit 2
+cp -Rv packages/api/dist/migration/* skeleton/apollo-hospitals/packages/api/ || exit 2
 cp -Rv packages/api/src/**/*.sql skeleton/apollo-hospitals/packages/api/ || exit 2
 echo "'packages/api/node_modules' -> 'skeleton/apollo-hospitals/packages/api/node_modules'"
 cp -RL packages/api/node_modules skeleton/apollo-hospitals/packages/api/ || exit 2
