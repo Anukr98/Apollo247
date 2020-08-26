@@ -67,6 +67,16 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_lab
   outOfRange: boolean | null;
 }
 
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_testResultFiles {
+  __typename: "PrecriptionFileParameters";
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  content: string | null;
+  byteContent: string | null;
+  dateCreated: number | null;
+}
+
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response {
   __typename: "LabResultsBaseResponse";
   id: string;
@@ -78,6 +88,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_lab
   observation: string | null;
   labTestResults: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_labTestResults | null)[] | null;
   fileUrl: string;
+  testResultFiles: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_testResultFiles | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults {
