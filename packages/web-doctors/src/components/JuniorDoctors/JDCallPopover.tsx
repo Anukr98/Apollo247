@@ -1292,7 +1292,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== cancelConsultInitiated &&
           message.message.message !== callAbandonment &&
           message.message.message !== appointmentComplete &&
-          message.message.message !== doctorAutoResponse
+          message.message.message !== doctorAutoResponse &&
+          message.message.message !== exotelCall
         ) {
           setIsNewMsg(true);
         } else {
