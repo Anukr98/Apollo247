@@ -122,6 +122,7 @@ export const LOGGED_IN_USER_DETAILS = gql`
 export const GET_DOCTOR_DETAILS = gql`
   query GetDoctorDetails {
     getDoctorDetails {
+      chatDays
       awards
       city
       country
@@ -791,6 +792,7 @@ export const GET_CASESHEET = gql`
       }
       caseSheetDetails {
         id
+        followUpChatDays
         blobName
         doctorId
         sentToPatient
@@ -1124,6 +1126,7 @@ export const DELETE_DOCTOR_FAVOURITE_TEST = gql`
 export const MODIFY_CASESHEET = gql`
   mutation ModifyCaseSheet($ModifyCaseSheetInput: ModifyCaseSheetInput) {
     modifyCaseSheet(ModifyCaseSheetInput: $ModifyCaseSheetInput) {
+      followUpChatDays
       appointment {
         id
         sdConsultationDate
@@ -1574,6 +1577,15 @@ export const ADD_CHAT_DOCUMENT = gql`
     addChatDocument(appointmentId: $appointmentId, documentPath: $documentPath) {
       id
       documentPath
+    }
+  }
+`;
+
+export const UPDATE_DOCTOR_CHAT_DAYS = gql`
+  mutation updateDoctorChatDays($doctorId: String!, $chatDays: number!) {
+    updateDoctorChatDays(doctorId: $doctorId, chatDays: $chatDays) {
+      isError
+      response
     }
   }
 `;

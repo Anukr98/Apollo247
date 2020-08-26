@@ -159,6 +159,7 @@ export interface ModifyCaseSheet_modifyCaseSheet {
   status: string | null;
   sentToPatient: boolean | null;
   updatedDate: any | null;
+  followUpChatDays: number | null;
 }
 
 export interface ModifyCaseSheet {

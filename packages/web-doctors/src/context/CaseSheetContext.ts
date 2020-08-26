@@ -112,7 +112,9 @@ export interface CaseSheetContextProps {
   occupationHistory: string;
   updatedDate: string;
   casesheetVersion: number;
+  followUpChatDays: number;
 
+  setFollowUpChatDays: (days: number) => void;
   setHeight: (height: string) => void;
   setWeight: (weight: string) => void;
   setTemperature: (temperature: string) => void;
@@ -143,6 +145,8 @@ export interface CaseSheetContextProps {
 
 export const CaseSheetContext = createContext<CaseSheetContextProps>({
   loading: true,
+  followUpChatDays: null,
+  setFollowUpChatDays: () => {},
   setCaseSheetEdit: () => {},
   caseSheetEdit: false,
   patientDetails: null,
