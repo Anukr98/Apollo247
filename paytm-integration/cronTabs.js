@@ -210,7 +210,7 @@ exports.updateSdSummary = (req, res) => {
     query: docCountQuery,
   };
   axios
-    .post(process.env.API_URL, seniorDataRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, seniorDataRequestJSON)
     .then((response) => {
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
@@ -237,7 +237,7 @@ exports.updateSdSummary = (req, res) => {
               query: Query,
             };
             axios
-              .post(process.env.API_URL, updateSdSummaryRequestJSON)
+              .post(process.env.DASHBOARD_API_URL, updateSdSummaryRequestJSON)
               .then((response) => {
                 const fileName =
                   process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-updateSdSummary.txt';
@@ -276,7 +276,7 @@ exports.updateJdSummary = (req, res) => {
     query: docCountQuery,
   };
   axios
-    .post(process.env.API_URL, juniorDataRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, juniorDataRequestJSON)
     .then((response) => {
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
@@ -303,7 +303,7 @@ exports.updateJdSummary = (req, res) => {
               query: Query,
             };
             axios
-              .post(process.env.API_URL, updateJdSummaryRequestJSON)
+              .post(process.env.DASHBOARD_API_URL, updateJdSummaryRequestJSON)
               .then((response) => {
                 const fileName =
                   process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-updateJdSummary.txt';
@@ -343,7 +343,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
     query: docCountQuery,
   };
   axios
-    .post(process.env.API_URL, seniorDataRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, seniorDataRequestJSON)
     .then((response) => {
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert

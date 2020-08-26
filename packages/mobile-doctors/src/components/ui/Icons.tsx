@@ -936,19 +936,42 @@ export const CheckboxOrangeSelected: React.FC<IconProps> = (props) => (
   <IconBase size="xs" {...props} source={require('../../images/icons/box_select_orange.png')} />
 );
 
+export const InfoGreen: React.FC<IconProps> = (props) => (
+  <IconBase size="xs" {...props} source={require('../../images/icons/info_green.png')} />
+);
+
+export const RefreshIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/refresh.png')} />
+);
+
 export const AudioActive: React.FC<IconProps> = (props) => (
-  <IconBase style={{width: 24, height: 22}} {...props} source={require('../../images/icons/audioActive.png')} />
+  <IconBase
+    style={{ width: 24, height: 22 }}
+    {...props}
+    source={require('../../images/icons/audioActive.png')}
+  />
 );
 
 export const AudioInactive: React.FC<IconProps> = (props) => (
-  <IconBase style={{width: 24, height: 22}} {...props} source={require('../../images/icons/audioInactive.png')} />
+  <IconBase
+    style={{ width: 24, height: 22 }}
+    {...props}
+    source={require('../../images/icons/audioInactive.png')}
+  />
 );
 
 export const VideoActive: React.FC<IconProps> = (props) => (
-  <IconBase style={{width: 24, height: 14}} {...props} source={require('../../images/icons/videoActive.png')} />
+  <IconBase
+    style={{ width: 24, height: 14 }}
+    {...props}
+    source={require('../../images/icons/videoActive.png')}
+  />
 );
 
 export const VideoInactive: React.FC<IconProps> = (props) => (
-  <IconBase style={{width: 24, height: 14}} {...props} source={require('../../images/icons/videoInactive.png')} />
+  <IconBase
+    style={{ width: 24, height: 14 }}
+    {...props}
+    source={require('../../images/icons/videoInactive.png')}
+  />
 );
-

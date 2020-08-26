@@ -9,7 +9,7 @@ export const MyAccountStyles = StyleSheet.create({
   viewMainContainer: {
     flex: 1,
     marginTop: 26,
-    marginHorizontal: 20,
+    // marginHorizontal: 20,
   },
   ivrCardContainer: {
     flexDirection: 'row',
@@ -25,6 +25,7 @@ export const MyAccountStyles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
     marginBottom: 10,
+    marginHorizontal: 20,
   },
   cardContainer: {
     flexDirection: 'row',
@@ -40,6 +41,7 @@ export const MyAccountStyles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
     marginBottom: 10,
+    marginHorizontal: 20,
   },
   cardTextStyle: {
     flex: 1,
@@ -49,6 +51,10 @@ export const MyAccountStyles = StyleSheet.create({
     width: 24,
     height: 24,
     transform: [{ rotate: '90deg' }],
+  },
+  cardNextUpIcon: {
+    width: 24,
+    height: 24,
   },
   yesTextStyle: {
     marginRight: 10,
@@ -76,6 +82,7 @@ export const MyAccountStyles = StyleSheet.create({
   ivrDetailsContainer: {
     marginTop: 10,
     marginBottom: 20,
+    marginHorizontal: 20,
   },
   ivrSubHeadingStyle: {
     marginBottom: 22,
@@ -128,6 +135,13 @@ export const MyAccountStyles = StyleSheet.create({
     marginRight: 5,
     flexDirection: 'row',
   },
+  materialMenuTextContainer2: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 5,
+    flexDirection: 'row',
+    flex: 1,
+  },
   materialMenuDisplayText: {
     ...theme.viewStyles.text('M', 16, theme.colors.SHARP_BLUE, 1, undefined, 0.03),
   },
@@ -135,7 +149,12 @@ export const MyAccountStyles = StyleSheet.create({
     ...theme.viewStyles.text('R', 10, '#979797', 1, undefined, 0.03),
     marginRight: 10,
   },
-  buttonContainer: { marginHorizontal: 20 },
+  materialMenuDisplaySubText2: {
+    ...theme.viewStyles.text('R', 10, '#979797', 1, undefined, 0.03),
+    flex: 1,
+    textAlign: 'center',
+  },
+  buttonContainer: { marginHorizontal: 20, paddingTop: 10 },
   savedTextStyle: {
     marginLeft: 8,
     ...theme.viewStyles.text('M', 12, '#788080', 0.5, undefined, 0.03),
@@ -143,5 +162,11 @@ export const MyAccountStyles = StyleSheet.create({
   saveTextContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 10,
+  },
+  followupInfoText: {
+    ...theme.viewStyles.text('R', 10, '#979797', 1, 12, 1),
+    marginLeft: 10,
+    marginRight: 20,
   },
 });

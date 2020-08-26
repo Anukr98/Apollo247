@@ -474,6 +474,25 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
           const consultDuration = filterData ? filterData.consultDuration : 0;
           const showNext = showUpNext(i.appointmentDateTime, index, i.status);
 
+          const caseSheet =
+            i.caseSheet &&
+            i.caseSheet
+              .filter(
+                (
+                  j: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null
+                ) => j && j.doctorType !== DoctorType.JUNIOR
+              )
+              .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
+          const jrCaseSheet =
+            i.caseSheet &&
+            i.caseSheet
+              .filter(
+                (
+                  j: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null
+                ) => j && j.doctorType === DoctorType.JUNIOR
+              )
+              .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
+
           return (
             <>
               {index == 0 && <View style={{ height: 20 }} />}
@@ -494,17 +513,9 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   doctorname={i.patientInfo!.firstName || ''}
                   timing={formatTiming(i.appointmentDateTime, consultDuration || undefined)}
                   symptoms={
-                    i.caseSheet
-                      ? i.caseSheet.length > 0 &&
-                        i.caseSheet[0] !== null &&
-                        i.caseSheet[0].symptoms !== null
-                        ? i.caseSheet[0].symptoms || []
-                        : i.caseSheet.length > 1 &&
-                          i.caseSheet[1] !== null &&
-                          i.caseSheet[1]!.symptoms !== null
-                        ? i.caseSheet[1].symptoms || []
-                        : []
-                      : []
+                    (caseSheet && g(caseSheet[0], 'symptoms')) ||
+                    (jrCaseSheet && g(jrCaseSheet[0], 'symptoms')) ||
+                    []
                   }
                   doctorId={i.doctorId}
                   patientId={i.patientId}

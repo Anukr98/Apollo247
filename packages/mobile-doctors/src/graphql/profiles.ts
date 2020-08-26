@@ -17,6 +17,7 @@ export const GET_DOCTOR_DETAILS = gql`
       firstName
       isActive
       id
+      chatDays
       languages
       lastName
       mobileNumber
@@ -34,7 +35,11 @@ export const GET_DOCTOR_DETAILS = gql`
       zip
       signature
       specialty {
+        id
         name
+        specialistSingularTerm
+        specialistPluralTerm
+        userFriendlyNomenclature
       }
       consultHours {
         consultMode
@@ -427,6 +432,7 @@ export const MODIFY_CASESHEET = gql`
       }
       doctorId
       doctorType
+      followUpChatDays
       followUp
       followUpAfterInDays
       followUpDate
@@ -765,6 +771,9 @@ export const GET_CASESHEET = gql`
             specialty {
               id
               name
+              specialistSingularTerm
+              specialistPluralTerm
+              userFriendlyNomenclature
             }
           }
           hospitalId
@@ -870,6 +879,7 @@ export const GET_CASESHEET = gql`
         followUp
         followUpDate
         followUpAfterInDays
+        followUpChatDays
         followUpConsultType
         consultType
         notes
@@ -1672,10 +1682,10 @@ export const GET_ALL_SPECIALTIES = gql`
       id
       name
       image
-      # specialistSingularTerm
-      # specialistPluralTerm
+      specialistSingularTerm
+      specialistPluralTerm
       userFriendlyNomenclature
-      # displayOrder
+      displayOrder
     }
   }
 `;
@@ -1727,16 +1737,34 @@ export const CALL_DISCONNECT_NOTIFICATION = gql`
   }
 `;
 
+export const GET_DOCTOR_HELPLINE = gql`
+  query getDoctorHelpline {
+    getDoctorHelpline {
+      doctorType
+      mobileNumber
+    }
+  }
+`;
+
 export const SAVE_APPOINTMENT_CALL_FEEDBACK = gql`
- mutation saveAppointmentCallFeedback(
- $saveAppointmentCallFeedback: SaveAppointmentCallFeedbackInput
- ) {
- saveAppointmentCallFeedback(saveAppointmentCallFeedbackInput: $saveAppointmentCallFeedback) {
- id
- appointmentCallDetailsId
- ratingValue
- feedbackResponseType
- feedbackResponses
- }
- }
+  mutation saveAppointmentCallFeedback(
+    $saveAppointmentCallFeedback: SaveAppointmentCallFeedbackInput
+  ) {
+    saveAppointmentCallFeedback(saveAppointmentCallFeedbackInput: $saveAppointmentCallFeedback) {
+      id
+      appointmentCallDetailsId
+      ratingValue
+      feedbackResponseType
+      feedbackResponses
+    }
+  }
+`;
+
+export const UPDATE_CHAT_DAYS = gql`
+  mutation updateDoctorChatDays($doctorId: String!, $chatDays: Int) {
+    updateDoctorChatDays(doctorId: $doctorId, chatDays: $chatDays) {
+      isError
+      response
+    }
+  }
 `;

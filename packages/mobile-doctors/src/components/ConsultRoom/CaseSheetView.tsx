@@ -35,6 +35,8 @@ import {
   ToogleOn,
   UserPlaceHolder,
   Video,
+  InfoGreen,
+  Dropdown,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { MaterialMenu, OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
@@ -115,6 +117,7 @@ import {
 import { ReferralSelectPopup } from '@aph/mobile-doctors/src/components/ConsultRoom/ReferralSelectPopup';
 import firebase from 'react-native-firebase';
 import { isIphoneX } from 'react-native-iphone-x-helper';
+import { string } from '@aph/mobile-doctors/src/strings/string';
 
 const { width } = Dimensions.get('window');
 
@@ -247,6 +250,8 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   >;
   switchValue: boolean | null;
   setSwitchValue: React.Dispatch<React.SetStateAction<boolean | null>>;
+  followupChatDays: OptionsObject;
+  setFollowupChatDays: React.Dispatch<React.SetStateAction<OptionsObject>>;
   followupDays: string | number | undefined;
   setFollowupDays: React.Dispatch<React.SetStateAction<string | number | undefined>>;
   followUpConsultationType: APPOINTMENT_TYPE | undefined;
@@ -335,6 +340,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     selectedMedicinesId,
     setSelectedMedicinesId,
     switchValue,
+    followupChatDays,
+    setFollowupChatDays,
     setSwitchValue,
     followupDays,
     setFollowupDays,
@@ -360,7 +367,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     setRemovedMedicinePrescriptionData,
   } = props;
 
-  const sendToPatientAction = () => {
+  const sendToPatientAction = (callBack?: () => void) => {
     setLoading && setLoading(true);
     client
       .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
@@ -399,6 +406,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               },
               unDismissable: true,
             });
+          callBack && callBack();
         }
         firebase.analytics().logEvent('Doctor_send_prescription', {
           doctorName: doctorDetails ? doctorDetails.fullName : 'doctor',
@@ -478,9 +486,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           .map((i) => ({ itemname: i.itemname, testInstruction: i.testInstruction })),
         advice: addedAdvices.map((i) => ({ instruction: i.value })),
         followUp: {
-          doFollowUp: switchValue,
+          doFollowUp: followupChatDays.key > 0,
           followUpType: followUpConsultationType,
-          followUpDays: followupDays,
+          followUpDays: followupChatDays.key,
         },
         referralData: {
           referTo: selectedReferral.key !== '-1' ? selectedReferral.value.toString() : null,
@@ -492,9 +500,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           props.navigation.pop();
         },
         onSendPress: () => {
-          props.onStopConsult();
           setShowButtons(true);
-          saveDetails(true, undefined, sendToPatientAction);
+          saveDetails(true, undefined, () => {
+            sendToPatientAction(() => {
+              props.onStopConsult();
+            });
+          });
         },
       });
     }
@@ -1592,7 +1603,15 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
-  //It will be used in future
+  const defaultChatDays = g(doctorDetails, 'chatDays');
+  const daysOptionArray: OptionsObject[] = Array(31)
+    .fill(0)
+    .map((_, i) => {
+      if (defaultChatDays && i < defaultChatDays) return { key: -1, value: -1 };
+      else return { key: i, value: i < 10 ? (i == 0 ? '0' : '0' + i.toString()) : i.toString() };
+    })
+    .filter((i) => i.key !== -1);
+
   const renderFollowUpView = () => {
     return (
       <View>
@@ -1601,222 +1620,44 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           collapse={followup}
           onPress={() => setFollowUp(!followup)}
         >
-          <View style={{ marginHorizontal: 16 }}>
-            {switchValue && (
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, '#02474b', 1, undefined, 0.02),
-                  marginRight: 20,
-                  marginBottom: 10,
-                }}
-              >
-                {strings.case_sheet.first_follow_up_descr}
-              </Text>
-            )}
-            <View
-              style={{
-                marginBottom: 20,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Text style={styles.medicineText}>
-                {strings.case_sheet.do_you_recommend_followup}
-              </Text>
-              {!switchValue ? (
-                <View>
-                  <TouchableOpacity onPress={() => caseSheetEdit && setSwitchValue(!switchValue)}>
-                    <View>
-                      <ToogleOff />
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <View>
-                  <TouchableOpacity onPress={() => caseSheetEdit && setSwitchValue(!switchValue)}>
-                    <View>
-                      <ToogleOn />
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-            {switchValue ? (
-              <View>
-                <View style={styles.medicineunderline}></View>
-                <View style={{ marginBottom: 20, marginRight: 25 }}>
-                  <Text style={[styles.medicineText, { marginBottom: 7 }]}>
-                    {strings.case_sheet.follow_up_after}
-                  </Text>
-                  <View style={{ flex: 1, justifyContent: 'center' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <TextInput
-                        autoCorrect={false}
-                        keyboardType={'number-pad'}
-                        multiline={false}
-                        maxLength={4}
-                        style={styles.inputSingleView}
-                        value={followupDays ? followupDays.toString() : ''}
-                        blurOnSubmit={false}
-                        // returnKeyType="send"
-                        onChangeText={(value) => {
-                          setFollowupDays(parseInt(value, 10) || '');
-                        }}
-                        editable={caseSheetEdit}
-                      />
-                      <Text
-                        style={{
-                          ...theme.viewStyles.text('M', 14, '#02475b', 1, undefined, 0.02),
-                          marginBottom: 7,
-                          marginLeft: 8,
-                        }}
-                      >
-                        {strings.common.days}
+          <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
+            {renderHeaderText('Set your patient follow up chat days limit.')}
+            <View style={styles.rowContainer}>
+              <View style={{ width: '40%' }}>
+                <MaterialMenu
+                  options={daysOptionArray}
+                  selectedText={followupChatDays.key}
+                  onPress={(selectedOption) => {
+                    setFollowupChatDays(selectedOption);
+                  }}
+                  menuContainerStyle={styles.materialMenuContainer}
+                  itemContainer={styles.materialMenuItemContainer}
+                  itemTextStyle={styles.materialMenuItemText}
+                  selectedTextStyle={styles.materialMenuSelectedItemText}
+                  disable={!caseSheetEdit || caseSheetVersion > 1}
+                >
+                  <View style={styles.materialMenuViewContainer}>
+                    <View style={styles.materialMenuTextContainer}>
+                      <Text style={styles.materialMenuViewText}>
+                        {Number(followupChatDays.value) < 10 && Number(followupChatDays.value) > 0
+                          ? '0' + Number(followupChatDays.value).toString()
+                          : followupChatDays.value}
                       </Text>
+                      <View style={styles.materialMenuDropContainer}>
+                        <Dropdown />
+                      </View>
                     </View>
                   </View>
-                </View>
-                <TextInput
-                  placeholder={strings.common.add_instructions_here}
-                  style={[styles.inputView, { marginBottom: 18 }]}
-                  multiline={true}
-                  textAlignVertical={'top'}
-                  placeholderTextColor={theme.colors.placeholderTextColor}
-                  value={folloUpNotes}
-                  onChangeText={(value) => setFolloUpNotes(value)}
-                  autoCorrect={true}
-                  editable={caseSheetEdit}
-                />
-                {/* <View style={{ marginBottom: 20, zIndex: -1 }}>
-                  <Text
-                    style={{
-                      color: 'rgba(2, 71, 91, 0.6)',
-                      ...theme.fonts.IBMPlexSansMedium(14),
-                      marginBottom: 12,
-                    }}
-                  >
-                    Recommended Consult Type
-                  </Text>
-                  <View style={{ flexDirection: 'row' }}>
-                    <View>
-                      <SelectableButton
-                        containerStyle={{
-                          marginRight: 20,
-                          borderColor: '#00b38e',
-                          borderWidth: 1,
-                          minWidth: '40%',
-                          borderRadius: 5,
-                        }}
-                        onChange={() => {
-                          setConsultationPayType('PAID');
-                        }}
-                        title="Paid"
-                        isChecked={consultationPayType == 'PAID'}
-                      />
-                    </View>
-                    <View>
-                      <SelectableButton
-                        containerStyle={{
-                          marginRight: 20,
-                          borderColor: '#00b38e',
-                          borderWidth: 1,
-                          minWidth: '40%',
-                          borderRadius: 5,
-                        }}
-                        onChange={() => {
-                          setConsultationPayType('FREE');
-                        }}
-                        title="Free"
-                        isChecked={consultationPayType == 'FREE'}
-                      />
-                    </View>
-                  </View>
-                </View> */}
-                <View style={{ borderColor: '#00b38e', marginBottom: 12, zIndex: -1 }}>
-                  <Text
-                    style={{
-                      color: 'rgba(2, 71, 91, 0.6)',
-                      ...theme.fonts.IBMPlexSansMedium(14),
-                      marginBottom: 12,
-                    }}
-                  >
-                    {strings.case_sheet.recommend_consult_type}
-                  </Text>
-                  <View style={{ flexDirection: 'row' }}>
-                    <View>
-                      <SelectableButton
-                        containerStyle={{
-                          marginRight: 20,
-                          borderColor: '#00b38e',
-                          borderWidth: 1,
-                          minWidth: '40%',
-                          borderRadius: 5,
-                        }}
-                        onChange={() => {
-                          if (followUpConsultationType === APPOINTMENT_TYPE.ONLINE) {
-                            setFollowUpConsultationType(undefined);
-                          } else if (followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL) {
-                            setFollowUpConsultationType(APPOINTMENT_TYPE.BOTH);
-                          } else if (followUpConsultationType === APPOINTMENT_TYPE.BOTH) {
-                            setFollowUpConsultationType(APPOINTMENT_TYPE.PHYSICAL);
-                          } else {
-                            setFollowUpConsultationType(APPOINTMENT_TYPE.ONLINE);
-                          }
-                        }}
-                        title={strings.case_sheet.online}
-                        isChecked={
-                          followUpConsultationType === APPOINTMENT_TYPE.ONLINE ||
-                          followUpConsultationType === APPOINTMENT_TYPE.BOTH
-                        }
-                        icon={
-                          followUpConsultationType === APPOINTMENT_TYPE.ONLINE ||
-                          followUpConsultationType === APPOINTMENT_TYPE.BOTH ? (
-                            <PhysicalIcon />
-                          ) : (
-                            <GreenOnline />
-                          )
-                        }
-                      />
-                    </View>
-                    <View>
-                      <SelectableButton
-                        containerStyle={{
-                          marginRight: 20,
-                          borderColor: '#00b38e',
-                          borderWidth: 1,
-                          minWidth: '40%',
-                          borderRadius: 5,
-                        }}
-                        onChange={() => {
-                          if (followUpConsultationType === APPOINTMENT_TYPE.ONLINE) {
-                            setFollowUpConsultationType(APPOINTMENT_TYPE.BOTH);
-                          } else if (followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL) {
-                            setFollowUpConsultationType(undefined);
-                          } else if (followUpConsultationType === APPOINTMENT_TYPE.BOTH) {
-                            setFollowUpConsultationType(APPOINTMENT_TYPE.ONLINE);
-                          } else {
-                            setFollowUpConsultationType(APPOINTMENT_TYPE.PHYSICAL);
-                          }
-                        }}
-                        title={strings.case_sheet.in_person}
-                        isChecked={
-                          followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL ||
-                          followUpConsultationType === APPOINTMENT_TYPE.BOTH
-                        }
-                        icon={
-                          followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL ||
-                          followUpConsultationType === APPOINTMENT_TYPE.BOTH ? (
-                            <InpersonWhiteIcon />
-                          ) : (
-                            <InpersonIcon />
-                          )
-                        }
-                      />
-                    </View>
-                  </View>
-                </View>
+                </MaterialMenu>
               </View>
-            ) : null}
+              {renderInfoText(followupChatDays.key == 1 ? 'Day' : 'Days')}
+            </View>
+            <View style={styles.rowContainer}>
+              <InfoGreen />
+              <Text style={styles.infoTextStyle}>
+                {string.case_sheet.followup_instruction.replace('{0}', defaultChatDays)}
+              </Text>
+            </View>
           </View>
         </CollapseCard>
       </View>
@@ -2668,7 +2509,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     if (specialties) {
       setSpecialtiesData([
         ...specialties.map((i) => {
-          return { key: i.id, value: i.name };
+          return { key: i.id, value: i.specialistSingularTerm || i.name };
         }),
       ]);
     }
@@ -2752,8 +2593,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             {renderDiagnosisView()}
             {renderMedicinePrescription()}
             {renderDiagonisticPrescription()}
+            {renderFollowUpView()}
             {renderAdviceInstruction()}
-            {/* {renderFollowUpView()} */}
             {renderReferral()}
             <View style={{ zIndex: -1 }}>
               {/* {renderOtherInstructionsView()} */}

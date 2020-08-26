@@ -21,6 +21,7 @@ import { sendNotificationSMS, sendChatMessageNotification } from 'notifications-
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 type MessageInput = {
   fromId: string;
@@ -80,7 +81,11 @@ const insertMessage: Resolver<
     );
     const difference = differenceInDays(new Date(today), new Date(consultDate));
 
-    if (difference > parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10))
+    const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);  
+    const caseSheetDetails = await caseSheetRepo.getSDLatestCompletedCaseSheet(appointmentData.id);
+    if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
+
+    if (difference > parseInt(caseSheetDetails.followUpChatDays.toString(), 10))
       throw new AphError(AphErrorMessages.FREE_CHAT_DAYS_COMPLETED);
 
     //create message body
@@ -175,16 +180,20 @@ const sendUnreadMessagesNotification: Resolver<
     const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
     const appointmentsData = await appointmentRepo.getAppointmentsByIdsWithSpecificFields(
       appointmentIds,
-      ['appointment.doctorId', 'appointment.sdConsultationDate']
+      ['appointment.doctorId', 'appointment.sdConsultationDate', 'appointment.id']
     );
 
     //Filtering the last date appointments
-    const lastDayAppointments = appointmentsData.filter((appointment) => {
+    const lastDayAppointments = appointmentsData.filter(async (appointment) => {
+      const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);  
+      const caseSheetDetails = await caseSheetRepo.getSDLatestCompletedCaseSheet(appointment.id);
+      if (!caseSheetDetails) return false;
+  
       if (!appointment.sdConsultationDate) return false;
       const today = format(addMinutes(new Date(), +0), 'yyyy-MM-dd');
       const consultDate = format(addMinutes(appointment.sdConsultationDate, +0), 'yyyy-MM-dd');
       const difference = differenceInDays(new Date(today), new Date(consultDate));
-      return difference == parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10) - 1;
+      return difference == parseInt(caseSheetDetails.followUpChatDays.toString(), 10) - 1;
     });
 
     //Mapping the doctor ids with count of last day appointments
@@ -251,14 +260,11 @@ const archiveMessages: Resolver<null, {}, NotificationsServiceContext, String> =
   args,
   { consultsDb }
 ) => {
-  //Getting all the appointments past 1 day of free chat days
+
   const currentIstDate = addMinutes(new Date(), 330); //Taking IST time
-  const appointmentDateToBeArchived = subDays(currentIstDate, ApiConstants.FREE_CHAT_DAYS);
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointments = await appointmentRepo.getAllCompletedAppointmentsByConsultTime(
-    appointmentDateToBeArchived
-  );
-  const appointmentIdsToBeArchived = appointments.map((appointment) => appointment.id);
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const caseSheets = await caseSheetRepo.getAllAppointmentsToBeArchived(currentIstDate);
+  const appointmentIdsToBeArchived = caseSheets.map((caseSheet) => caseSheet.appointment_id);
 
   if (appointmentIdsToBeArchived.length) {
     //Getting the Notifications which needs to be archived
@@ -318,7 +324,7 @@ const getNotifications: Resolver<
   const startDate =
     args.startDate && args.endDate
       ? args.startDate
-      : subDays(new Date(), ApiConstants.FREE_CHAT_DAYS);
+      : subDays(new Date(), doctorDetails.chatDays);
   const endDate = args.startDate && args.endDate ? args.endDate : new Date();
   const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
   const notificationData = await notificationBinRepo.getNotificationInTimePeriod(

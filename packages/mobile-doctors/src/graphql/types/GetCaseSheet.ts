@@ -154,6 +154,9 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorIn
   __typename: "DoctorSpecialties";
   id: string;
   name: string;
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo {
@@ -324,6 +327,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   followUp: boolean | null;
   followUpDate: any | null;
   followUpAfterInDays: string | null;
+  followUpChatDays: number | null;
   followUpConsultType: APPOINTMENT_TYPE | null;
   consultType: string | null;
   notes: string | null;

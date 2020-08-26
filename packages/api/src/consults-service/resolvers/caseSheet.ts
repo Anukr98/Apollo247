@@ -53,6 +53,7 @@ import { NotificationType } from 'notifications-service/constants';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { addDays } from 'date-fns';
 
 export type DiagnosisJson = {
   name: string;
@@ -258,6 +259,7 @@ export const caseSheetTypeDefs = gql`
     doctorType: DoctorType
     followUp: Boolean
     followUpAfterInDays: String
+    followUpChatDays: Int
     followUpConsultType: APPOINTMENT_TYPE
     followUpDate: DateTime
     id: String
@@ -495,6 +497,7 @@ export const caseSheetTypeDefs = gql`
     followUp: Boolean
     followUpDate: Date
     followUpAfterInDays: Int
+    followUpChatDays: Int
     followUpConsultType: APPOINTMENT_TYPE
     otherInstructions: [OtherInstructionsInput!]
     medicinePrescription: [MedicinePrescriptionInput!]
@@ -757,6 +760,7 @@ type ModifyCaseSheetInput = {
   followUp: boolean;
   followUpDate: Date;
   followUpAfterInDays: number;
+  followUpChatDays: number;
   followUpConsultType: APPOINTMENT_TYPE;
   otherInstructions: CaseSheetOtherInstruction[];
   medicinePrescription: CaseSheetMedicinePrescription[];
@@ -859,16 +863,25 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.followUp = inputArguments.followUp;
   }
 
-  if (!(inputArguments.followUpDate === undefined)) {
+  if (!(inputArguments.followUpAfterInDays === undefined)) {
     getCaseSheetData.followUpDate = inputArguments.followUpDate;
+  }
+
+  if (!(inputArguments.followUpConsultType === undefined)) {
+    getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
   }
 
   if (!(inputArguments.followUpAfterInDays === undefined)) {
     getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
   }
 
-  if (!(inputArguments.followUpConsultType === undefined)) {
-    getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
+  if(!(inputArguments.followUpChatDays === undefined)) {
+    if(inputArguments.followUpChatDays > ApiConstants.CHAT_DAYS_LIMIT) {
+      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
+    } else if(inputArguments.followUpChatDays < 0){
+      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
+    }
+    getCaseSheetData.followUpChatDays = inputArguments.followUpChatDays;
   }
 
   if (!(inputArguments.status === undefined)) {

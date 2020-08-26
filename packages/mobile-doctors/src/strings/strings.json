@@ -193,7 +193,8 @@
     "subHeading": "Please follow the steps to connect to your patient :",
     "point1": "Answer the call from ‘040-48214566’ to connect.",
     "point2": "Wait for the patient to connect.",
-    "toastMessage": "You will get a call from 040-48214566.\nPlease pick up the call !"
+    "toastMessage": "You will get a call from 040-48214566.\nPlease pick up the call !",
+    "exotelNumber": "040-48214566"
   },
   "smartPrescr": {
     "smart_prescr_header": "SMART PRESCRIPTION",
@@ -367,13 +368,14 @@
     "test_prescription": "Test Prescription",
     "medicine_prescription": "Medicine Prescription",
     "patient_health_vault": "Patient Health Vault",
-    "follow_up": "Follow Up",
+    "follow_up": "Follow Up Chat Days",
     "first_follow_up_descr": " (The first follow up for the patient will be free for upto 7 days)",
     "do_you_recommend_followup": "Do you recommend a follow up?",
     "follow_up_after": "Follow Up After",
     "recommend_consult_type": "Recommended Consult Type",
     "in_person": "In-person",
     "diagnosis": "Diagnosis",
+    "followup_instruction": "The follow up chat days count will be changed for this individual patient. Your default follow up chat day count is set at {0}.",
     "instructions_to_patient": "Instructions to the patient",
     "how_do_you_talk": "How do you want to talk to the patient?",
     "advice_instructions": "Advice/Instructions",
@@ -533,6 +535,7 @@
     "inMins": "in mins",
     "notificationHeader": "Set up Notification prefrences",
     "followupHeader": "Set up your patient follow up days",
-    "saveText": "The last changes saved on {0}."
+    "saveText": "The last changes saved on {0}.",
+    "followupInfo": "This Value will be default for all patients, However you can change the follow-up chat day count on individual patient's Case-sheet."
   }
 }
