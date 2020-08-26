@@ -809,6 +809,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     medicationHistory,
     setReferralError,
   } = useContext(CaseSheetContextJrd);
+  
+  const exotelNumber = '040-48214566'; 
+  const exotelCall = '^^#exotelCall';
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
   const videoCallMsg = '^^callme`video^^';
@@ -2229,6 +2232,22 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                       },
                       fetchPolicy: 'no-cache',
                     });
+                    const text = {
+                        id: props.doctorId,
+                        message: exotelCall,
+                        exotelNumber: exotelNumber,
+                        isTyping: true,
+                        messageDate: new Date(),
+                        sentBy: REQUEST_ROLES.JUNIOR,
+                      };
+                      pubnub.publish(
+                        {
+                          message: text,
+                          channel: channel,
+                          storeInHistory: true,
+                        },
+                        (status: any, response: any) => {},
+                      );
                     setShowToastMessage(true);
                   }}
                 >
