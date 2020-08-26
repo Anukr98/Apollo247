@@ -21,16 +21,15 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  getDeliveryTime,
   getMedicineDetailsApi,
   getSubstitutes,
   MedicineProduct,
   MedicineProductDetails,
   trackTagalysEvent,
-  availabilityApi247,
   getDeliveryTAT247,
   TatApiInput247,
   getPlaceInfoByPincode,
+  pinCodeServiceabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -464,14 +463,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
     // To handle deeplink scenario and
     // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
-    const params = {
-      pincode: pincode,
-      sku: sku,
-    };
-    console.log("check availability 247", (await availabilityApi247(params)).data.response)
+   
     const pinCodeNotServiceable =
       isPharmacyLocationServiceable == undefined
-        ? !(await availabilityApi247(params)).data.response
+        ? !(await pinCodeServiceabilityApi247(pincode)).data.response
         : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
     if (pinCodeNotServiceable) {
       setdeliveryTime('');
@@ -503,16 +498,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             };
             postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
           }
-          if (isDeliveryDateWithInXDays(deliveryDate)) {
-            setdeliveryTime(moment(deliveryDate, "DD-MM-YYYY hh:mm:ss a").format(AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT));
-            setdeliveryError('');
-          } else {
-            setdeliveryError(pincodeServiceableItemOutOfStockMsg);
-            setdeliveryTime('');
-          }
-        } else {
-          setdeliveryTime(genericServiceableDate);
+          setdeliveryTime(moment(deliveryDate, "DD-MM-YYYY hh:mm:ss a").format(AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT));
           setdeliveryError('');
+        } else {
+          setdeliveryError(pincodeServiceableItemOutOfStockMsg);
+          setdeliveryTime('');
         }
       })
         .catch(() => {

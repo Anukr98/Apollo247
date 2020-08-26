@@ -119,12 +119,6 @@ export interface GetStoreInventoryResponse {
   }[];
 }
 
-export interface TatApiInput {
-  postalcode: string;
-  ordertype: 'pharma' | 'fmcg' | 'both';
-  lookup: { sku: string; qty: number }[];
-}
-
 export interface TatApiInput247 {
   pincode: string;
   lat: number;
@@ -146,20 +140,20 @@ export interface GetDeliveryTimeResponse {
   errorMSG?: string;
 }
 
+export interface GetAvailabilityResponse247 {
+  response: {
+    sku: string;
+    exist: boolean;
+  }[];
+  errorMSG?: string;
+}
+
 export interface GetTatResponse247 {
   response: {
     storeCode: string;
     tat: string;
     tatU: number;
   };
-  errorMSG?: string;
-}
-
-export interface GetDeliveryTimeHeaderTatResponse {
-  tat?: {
-    deliverydate: string; // format: 16-Jul-2020 20:00
-    siteId: string;
-  }[];
   errorMSG?: string;
 }
 
@@ -431,11 +425,11 @@ export const pinCodeServiceabilityApi247 = (pincode: string): Promise<AxiosRespo
   return Axios.post(url);
 };
 
-export const availabilityApi247 = (params: {
+export const availabilityApi247 = (
   pincode: string,
   sku: string
-}): Promise<AxiosResponse<{ response: boolean }>> => {
-  const url = `${config.TAT_SERVICEABILITY_BASE_URL}/availability?sku=${params.sku}&pincode=${params.pincode}`
+): Promise<AxiosResponse<GetAvailabilityResponse247>> => {
+  const url = `${config.TAT_SERVICEABILITY_BASE_URL}/availability?sku=${sku}&pincode=${pincode}`
   return Axios.post(url);
 };
 
@@ -578,44 +572,6 @@ export const getDeliveryTAT247 = (
     timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
     cancelToken: new CancelToken((c) => {
       cancelGetDeliveryTAT247 = c;
-    }),
-  });
-};
-
-let cancelGetDeliveryTimeApi: Canceler | undefined;
-
-export const getDeliveryTime = (
-  params: TatApiInput
-): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
-  const CancelToken = Axios.CancelToken;
-  cancelGetDeliveryTimeApi && cancelGetDeliveryTimeApi();
-  return Axios.post(config.GET_DELIVERY_TIME[0], params, {
-    headers: {
-      Authentication: config.GET_DELIVERY_TIME[1],
-    },
-    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
-    cancelToken: new CancelToken((c) => {
-      // An executor function receives a cancel function as a parameter
-      cancelGetDeliveryTimeApi = c;
-    }),
-  });
-};
-
-let cancelDeliveryTimeHeaderTatApi: Canceler | undefined;
-
-export const getDeliveryTimeHeaderTat = (
-  params: TatApiInput
-): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
-  const CancelToken = Axios.CancelToken;
-  cancelDeliveryTimeHeaderTatApi && cancelDeliveryTimeHeaderTatApi();
-  return Axios.post(config.GET_DELIVERY_TIME_HEADER_TAT[0], params, {
-    headers: {
-      Authentication: config.GET_DELIVERY_TIME_HEADER_TAT[1],
-    },
-    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
-    cancelToken: new CancelToken((c) => {
-      // An executor function receives a cancel function as a parameter
-      cancelDeliveryTimeHeaderTatApi = c;
     }),
   });
 };

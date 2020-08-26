@@ -6,11 +6,8 @@ import {
   GooglePlacesType,
   MedicineProduct,
   PlacesApiResponse,
-  getDeliveryTime,
   medCartItemsDetailsApi,
   MedicineOrderBilledItem,
-  TatApiInput247,
-  getDeliveryTAT247,
   availabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
@@ -1357,14 +1354,9 @@ export const addPharmaItemToCart = (
   }
 
   setLoading && setLoading(true);
-  const params = {
-    pincode: pincode,
-    sku: cartItem.id,
-  };
-  availabilityApi247(params)
+  availabilityApi247(pincode, cartItem.id)
     .then((res) => {
-      console.log("add to cart availability", res.data, " response ", res)
-      const availability = g(res, 'data', 'response')
+      const availability = g(res, 'data', 'response', '0' as any, 'exist')
       if (availability) {
         addToCart();
       } else {
@@ -1378,36 +1370,6 @@ export const addPharmaItemToCart = (
       setLoading && setLoading(false);
       onComplete && onComplete();
     });
-
-  // getDeliveryTime({
-  //   postalcode: pincode,
-  //   ordertype: cartItem.isMedicine ? 'pharma' : 'fmcg',
-  //   lookup: [
-  //     {
-  //       sku: cartItem.id,
-  //       qty: cartItem.quantity,
-  //     },
-  //   ],
-  // })
-  //   .then((res) => {
-  //     const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
-  //     if (deliveryDate) {
-  //       if (isDeliveryDateWithInXDays(deliveryDate)) {
-  //         addToCart();
-  //       } else {
-  //         navigate();
-  //       }
-  //     } else {
-  //       addToCart();
-  //     }
-  //   })
-  //   .catch(() => {
-  //     addToCart();
-  //   })
-  //   .finally(() => {
-  //     setLoading && setLoading(false);
-  //     onComplete && onComplete();
-  //   });
 };
 
 export const dataSavedUserID = async (key: string) => {
