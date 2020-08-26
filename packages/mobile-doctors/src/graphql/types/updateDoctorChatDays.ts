@@ -18,5 +18,5 @@ export interface updateDoctorChatDays {
 
 export interface updateDoctorChatDaysVariables {
   doctorId: string;
-  chatDays: string;
+  chatDays?: number | null;
 }

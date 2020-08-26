@@ -364,7 +364,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           mutation: UPDATE_CHAT_DAYS,
           variables: {
             doctorId: g(doctorDetails, 'id') || '',
-            chatDays: followUpDays.key.toString(),
+            chatDays: Number(followUpDays.key),
           },
           fetchPolicy: 'no-cache',
         })

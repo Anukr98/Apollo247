@@ -432,6 +432,7 @@ export const MODIFY_CASESHEET = gql`
       }
       doctorId
       doctorType
+      followUpChatDays
       followUp
       followUpAfterInDays
       followUpDate
@@ -878,6 +879,7 @@ export const GET_CASESHEET = gql`
         followUp
         followUpDate
         followUpAfterInDays
+        followUpChatDays
         followUpConsultType
         consultType
         notes
@@ -1759,7 +1761,7 @@ export const SAVE_APPOINTMENT_CALL_FEEDBACK = gql`
 `;
 
 export const UPDATE_CHAT_DAYS = gql`
-  mutation updateDoctorChatDays($doctorId: String!, $chatDays: String!) {
+  mutation updateDoctorChatDays($doctorId: String!, $chatDays: Int) {
     updateDoctorChatDays(doctorId: $doctorId, chatDays: $chatDays) {
       isError
       response
