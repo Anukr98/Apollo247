@@ -110,7 +110,7 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
     }
 
     const audioFeedbackCallback = (data: {
-        value: string;
+        responseValue: string;
         responseName: string
     }[]) => {
         setAudioFeedbacks(data);
@@ -118,7 +118,7 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
     }
 
     const videoFeedbackCallback = (data: {
-        value: string;
+        responseValue: string;
         responseName: string
     }[]) => {
         setVideoFeedbacks(data);
@@ -188,7 +188,6 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
                             obj.comment = othersAudioFeedback;
                             obj.responseName = "OTHER"
                         }
-                        delete obj.value;
                         return obj
                     });
 
@@ -199,7 +198,6 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
                             obj.comment = othersVideoFeedback;
                             obj.responseName = "OTHER"
                         }
-                        delete obj.value;
                         return obj
                     });
                     props.submitRatingCallback({

@@ -436,25 +436,25 @@
     "audio": "Audio",
     "video": "Video",
     "audioReviews": [
-      {"value": "Patient Did not pick up the call", "responseName": "AUDIO_CALL_NOT_PICKED"},
-      {"value": "Call Disconnected Abruptly", "responseName": "AUDIO_CALL_DISCONNECTED_ABRUPTLY"},
-      {"value": "Could not hear any sound", "responseName": "AUDIO_NO_SOUND_HEARED"},
-      {"value": "Patient could not hear me", "responseName": "AUDIO_NO_SOUND_RECEIVED"},
-      {"value": "Audio Echo was heard", "responseName": "AUDIO_ECHO"},
-      {"value": "I heard a strange noise (not background noise)", "responseName": "AUDIO_STRANGE_NOISE"},
-      {"value": "Volume was low", "responseName": "AUDIO_VOLUME_LOW"},
-      {"value": "Other", "responseName": "AUDIO_OTHER"}
+      {"responseValue": "Patient Did not pick up the call", "responseName": "AUDIO_CALL_NOT_PICKED"},
+      {"responseValue": "Call Disconnected Abruptly", "responseName": "AUDIO_CALL_DISCONNECTED_ABRUPTLY"},
+      {"responseValue": "Could not hear any sound", "responseName": "AUDIO_NO_SOUND_HEARED"},
+      {"responseValue": "Patient could not hear me", "responseName": "AUDIO_NO_SOUND_RECEIVED"},
+      {"responseValue": "Audio Echo was heard", "responseName": "AUDIO_ECHO"},
+      {"responseValue": "I heard a strange noise (not background noise)", "responseName": "AUDIO_STRANGE_NOISE"},
+      {"responseValue": "Volume was low", "responseName": "AUDIO_VOLUME_LOW"},
+      {"responseValue": "Other", "responseName": "AUDIO_OTHER"}
     ],
     "videoReviews": [
-      {"value": "Patient Did not pick up the call", "responseName": "VIDEO_CALL_NOT_PICKED"},
-      {"value": "Call Disconnected Abruptly", "responseName": "VIDEO_CALL_DISCONNECTED_ABRUPTLY"},
-      {"value": "Could not see anything in the video", "responseName": "VIDEO_NOT_VISIBLE"},
-      {"value": "Video was working but video was not clear", "responseName": "VIDEO_NOT_CLEAR"},
-      {"value": "Patient could not see my video", "responseName": "VIDEO_NOT_RECEIVED"},
-      {"value": "Video froze during the call", "responseName": "VIDEO_FREEZE"},
-      {"value": "Video Stopped working during the call", "responseName": "VIDEO_STOPPED"},
-      {"value": "Video and audio was not in sync", "responseName": "VIDEO_AUDIO_NOT_SYNC"},
-      {"value": "Other", "responseName": "VIDEO_OTHER"}
+      {"responseValue": "Patient Did not pick up the call", "responseName": "VIDEO_CALL_NOT_PICKED"},
+      {"responseValue": "Call Disconnected Abruptly", "responseName": "VIDEO_CALL_DISCONNECTED_ABRUPTLY"},
+      {"responseValue": "Could not see anything in the video", "responseName": "VIDEO_NOT_VISIBLE"},
+      {"responseValue": "Video was working but video was not clear", "responseName": "VIDEO_NOT_CLEAR"},
+      {"responseValue": "Patient could not see my video", "responseName": "VIDEO_NOT_RECEIVED"},
+      {"responseValue": "Video froze during the call", "responseName": "VIDEO_FREEZE"},
+      {"responseValue": "Video Stopped working during the call", "responseName": "VIDEO_STOPPED"},
+      {"responseValue": "Video and audio was not in sync", "responseName": "VIDEO_AUDIO_NOT_SYNC"},
+      {"responseValue": "Other", "responseName": "VIDEO_OTHER"}
     ],
     "othersReasonPlaceholder": "Others,  Please specify",
     "feedbackResponseType": {
