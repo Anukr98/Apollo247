@@ -85,7 +85,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     deviceType: DEVICETYPE
     paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE
     items: [DiagnosticLineItem]
-    slotId: String!
+    slotId: String
   }
 
   input DiagnosticLineItem {
