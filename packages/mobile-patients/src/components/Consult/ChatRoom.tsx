@@ -47,8 +47,6 @@ import {
   ADD_CHAT_DOCUMENTS,
   UPLOAD_MEDIA_DOCUMENT_PRISM,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet } from '../../graphql/types/getPatientAllAppointments';
-import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   bookRescheduleAppointment,
   bookRescheduleAppointmentVariables,
@@ -145,6 +143,7 @@ import {
   g,
   postWebEngageEvent,
   nameFormater,
+  followUpChatDaysCaseSheet,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -372,23 +371,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
 
   let appointmentData: any = props.navigation.getParam('data');
-  const caseSheet:
-    | getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet
-    | any =
-    appointmentData.caseSheet &&
-    appointmentData.caseSheet
-      .filter((j) => j && j.doctorType !== DoctorType.JUNIOR)
-      .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
-  const followUpAfterInDays =
-    caseSheet && caseSheet.length && caseSheet[0].followUpAfterInDays
-      ? Number(caseSheet[0].followUpAfterInDays) === 0
-        ? 6
-        : Number(caseSheet[0].followUpAfterInDays) - 1
+  const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
+  const followUpChatDays =
+    caseSheet &&
+    caseSheet.length &&
+    (caseSheet[0]!.followUpChatDays || caseSheet[0]!.followUpChatDays === 0)
+      ? caseSheet[0]!.followUpChatDays === 0
+        ? 0
+        : caseSheet[0]!.followUpChatDays - 1
       : 6;
   const disableChat =
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
-      .add(followUpAfterInDays, 'days')
+      .add(followUpChatDays, 'days')
       .startOf('day')
       .isBefore(moment(new Date()).startOf('day'));
   // console.log('appointmentData >>>>', appointmentData);
@@ -629,12 +624,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const consultWebEngageEvents = (
-    type: 
-    | WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM
-    | WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM
-    | WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM
-    | WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM) => {
-    const eventAttributes: 
+    type:
+      | WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM
+      | WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM
+      | WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM
+      | WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM
+  ) => {
+    const eventAttributes:
       | WebEngageEvents[WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]
       | WebEngageEvents[WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM]
       | WebEngageEvents[WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM]
@@ -649,8 +645,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Doctor ID': doctorId,
       'Speciality name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
       'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
-      'Hospital Name': g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
-      'Hospital City': g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+      'Hospital Name': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      )!,
+      'Hospital City': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'city'
+      )!,
     };
     postWebEngageEvent(type, eventAttributes);
   };
@@ -6305,8 +6315,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           if (selectedType == 'CAMERA_AND_GALLERY') {
             console.log('ca');
             if (type !== undefined) {
-              if (type === 'Camera') consultWebEngageEvents(WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM);
-              if (type === 'Gallery') consultWebEngageEvents(WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM);
+              if (type === 'Camera')
+                consultWebEngageEvents(WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM);
+              if (type === 'Gallery')
+                consultWebEngageEvents(WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM);
             }
             uploadDocument(response, response[0].base64, response[0].fileType);
             //updatePhysicalPrescriptions(response);

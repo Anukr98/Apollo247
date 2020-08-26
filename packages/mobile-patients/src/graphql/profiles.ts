@@ -529,7 +529,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           }
         }
         caseSheet {
-          followUpAfterInDays
+          followUpChatDays
           version
           doctorType
         }

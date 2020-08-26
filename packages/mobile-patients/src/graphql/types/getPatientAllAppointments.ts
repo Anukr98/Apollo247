@@ -170,7 +170,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_appointment
 
 export interface getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet {
   __typename: "CaseSheet";
-  followUpAfterInDays: string | null;
+  followUpChatDays: number | null;
   version: number | null;
   doctorType: DoctorType | null;
 }

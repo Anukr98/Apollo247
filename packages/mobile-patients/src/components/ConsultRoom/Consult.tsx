@@ -13,7 +13,6 @@ import {
   LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -26,6 +25,7 @@ import {
   getNetStatus,
   postWebEngageEvent,
   g,
+  followUpChatDaysCaseSheet,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -51,7 +51,6 @@ import { FlatList, NavigationEvents, NavigationScreenProps } from 'react-navigat
 import {
   getPatientAllAppointments,
   getPatientAllAppointments_getPatientAllAppointments_appointments,
-  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet,
 } from '../../graphql/types/getPatientAllAppointments';
 import {
   APPOINTMENT_STATE,
@@ -342,22 +341,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   | getPatientAllAppointments_getPatientAllAppointments_appointments
                   | any = [];
                 data.getPatientAllAppointments.appointments.forEach((item) => {
-                  const caseSheet:
-                    | getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet
-                    | any =
-                    item.caseSheet &&
-                    item.caseSheet
-                      .filter((j) => j && j.doctorType !== DoctorType.JUNIOR)
-                      .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
-                  const followUpAfterInDays =
-                    caseSheet && caseSheet.length && caseSheet[0].followUpAfterInDays
-                      ? Number(caseSheet[0].followUpAfterInDays) === 0
-                        ? 6
-                        : Number(caseSheet[0].followUpAfterInDays) - 1
+                  const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
+                  const followUpChatDays =
+                    caseSheet &&
+                    caseSheet.length &&
+                    (caseSheet[0]!.followUpChatDays || caseSheet[0]!.followUpChatDays === 0)
+                      ? caseSheet[0]!.followUpChatDays === 0
+                        ? 0
+                        : caseSheet[0]!.followUpChatDays - 1
                       : 6;
                   if (
                     moment(new Date(item.appointmentDateTime))
-                      .add(followUpAfterInDays, 'days')
+                      .add(followUpChatDays, 'days')
                       .startOf('day')
                       .isSameOrAfter(moment(new Date()).startOf('day'))
                   ) {
@@ -376,7 +371,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             })
             .catch((e) => {
               CommonBugFender('Consult_fetchAppointments', e);
-              console.log('Error occured in GET_PATIENT_APPOINTMENTS', e);
+              console.log('Error occured in GET_PATIENT_ALL_APPOINTMENTS', e);
             })
             .finally(() => {
               console.log('finally');
@@ -520,18 +515,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           // console.log(tomorrow, 'tomorrow');
           let appointmentDateTomarrow = moment(item.appointmentDateTime).format('DD MMM');
           // console.log(appointmentDateTomarrow, 'apptomorrow', tomorrowDate);
-          const caseSheet:
-            | getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet
-            | any =
-            item.caseSheet &&
-            item.caseSheet
-              .filter((j) => j && j.doctorType !== DoctorType.JUNIOR)
-              .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
-          const followUpAfterInDays =
-            caseSheet && caseSheet.length > 0 && caseSheet[0].followUpAfterInDays
-              ? Number(caseSheet[0].followUpAfterInDays) === 0
-                ? 8
-                : Number(caseSheet[0].followUpAfterInDays) + 1
+          const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
+          const followUpChatDays =
+            caseSheet &&
+            caseSheet.length &&
+            (caseSheet[0]!.followUpChatDays || caseSheet[0]!.followUpChatDays === 0)
+              ? caseSheet[0]!.followUpChatDays === 0
+                ? 2
+                : caseSheet[0]!.followUpChatDays + 1
               : 8;
           const appointmentDateTime = moment
             .utc(item.appointmentDateTime)
@@ -555,7 +546,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             // .set('hour', 0)
             // .set('minute', 0)
             .startOf('day')
-            .add(followUpAfterInDays, 'days'); // since we're calculating as EOD
+            .add(followUpChatDays, 'days'); // since we're calculating as EOD
           const day2 = moment(new Date());
           day1.diff(day2, 'days'); // 1
 
