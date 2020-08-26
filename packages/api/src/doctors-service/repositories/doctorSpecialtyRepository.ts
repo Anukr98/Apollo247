@@ -16,6 +16,17 @@ export class DoctorSpecialtyRepository extends Repository<DoctorSpecialty> {
         });
       });
   }
+
+  findAllWithPagination(take:number,skip:number){
+    return this.findAndCount({
+      take,
+      skip,
+      order: {
+        displayOrder: 'ASC'
+      }
+    })
+  }
+
   searchByName(searchString: string) {
     return this.createQueryBuilder('specialty')
       .where('LOWER(name) LIKE :searchString', {

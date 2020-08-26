@@ -3,14 +3,13 @@ import { Resolver } from 'api-gateway';
 import { ApiConstants } from 'ApiConstants';
 import {
   sendNotification,
-  NotificationType,
   sendCallsNotification,
-  DOCTOR_CALL_TYPE,
-  APPT_CALL_TYPE,
   sendDoctorNotificationWhatsapp,
   hitCallKitCurl,
   sendCallsDisconnectNotification,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
+import { DOCTOR_CALL_TYPE, APPT_CALL_TYPE } from 'notifications-service/constants';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -19,9 +18,10 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { format } from 'date-fns';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { DEVICE_TYPE } from 'profiles-service/entities';
+import path from 'path';
+import fs from 'fs';
 
 export const doctorCallNotificationTypeDefs = gql`
   type AppointmentCallDetails {
@@ -78,7 +78,7 @@ export const doctorCallNotificationTypeDefs = gql`
       doctorName: String
       deviceType: DEVICETYPE
       callSource: BOOKINGSOURCE
-      appVersion: String,
+      appVersion: String
       isDev: Boolean
     ): NotificationResult!
     endCallNotification(appointmentCallId: String, isDev: Boolean): EndCallResult!
@@ -111,7 +111,7 @@ type CallDetailsResult = {
 
 const endCallNotification: Resolver<
   null,
-  { appointmentCallId: string, isDev: boolean },
+  { appointmentCallId: string; isDev: boolean },
   ConsultServiceContext,
   EndCallResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
@@ -149,7 +149,8 @@ const endCallNotification: Resolver<
       callDetails.appointment.patientId,
       false,
       APPT_CALL_TYPE.AUDIO,
-      args.isDev)
+      args.isDev
+    );
   }
 
   await callDetailsRepo.updateCallDetails(args.appointmentCallId);
@@ -183,7 +184,7 @@ const sendCallNotification: Resolver<
     deviceType: DEVICETYPE;
     callSource: BOOKINGSOURCE;
     appVersion: string;
-    isDev: boolean
+    isDev: boolean;
   },
   ConsultServiceContext,
   NotificationResult
@@ -225,7 +226,7 @@ const sendCallNotification: Resolver<
       args.doctorType,
       appointmentCallDetails.id,
       args.isDev,
-      args.numberOfParticipants,
+      args.numberOfParticipants
     );
     console.log(notificationResult, 'doctor call appt notification');
   } else {
@@ -242,7 +243,7 @@ const sendCallNotification: Resolver<
       args.doctorType,
       appointmentCallDetails.id,
       args.isDev,
-      args.numberOfParticipants,
+      args.numberOfParticipants
     );
     console.log(notificationResult, 'doctor call appt notification');
   }
@@ -341,14 +342,28 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
   args,
   { consultsDb, doctorsDb }
 ) => {
+  let content = '\n-----------------\n' + format(new Date(), 'yyyy-MM-dd HH:mm');
+  const fileName =
+    process.env.NODE_ENV + '_docsecretarytnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.getNotStartedAppointments();
   const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
+  content += '\nappts length: ' + apptDetails.length.toString();
+  fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
   if (apptDetails.length > 0) {
     const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
     apptDetails.forEach(async (appt) => {
-      const doctorDetails = await docRepo.findById(appt.doctorId);
+      content += '\n apptId: ' + appt.id + ' - ' + appt.doctorId;
+      const doctorDetails = await docRepo.getDoctorSecretary(appt.doctorId);
       if (doctorDetails) {
+        //console.log(doctorDetails.id, doctorDetails.doctorSecretary, 'doc details');
+        content +=
+          doctorDetails.id + '-' + doctorDetails.doctorSecretary.secretary.mobileNumber + '\n';
+        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
         const templateData: string[] = [appt.appointmentType, appt.patientName, devLink];
         sendDoctorNotificationWhatsapp(
           ApiConstants.WHATSAPP_SD_CONSULT_DELAY,
@@ -358,7 +373,6 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
       }
     });
   }
-  console.log(apptDetails.length, 'apptDetails.length');
   return { status: true };
 };
 

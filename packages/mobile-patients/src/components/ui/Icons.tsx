@@ -1019,6 +1019,10 @@ export const CTVideo: React.FC<IconProps> = (props) => (
   <IconBase size="sm_l" {...props} source={require('./icons/ct_video.png')} />
 );
 
+export const CTLightGrayVideo: React.FC<IconProps> = (props) => (
+  <IconBase size="sm_l" {...props} source={require('./icons/light_gray_video.png')} />
+);
+
 export const CTPayment: React.FC<IconProps> = (props) => (
   <IconBase size="sm_l" {...props} source={require('./icons/ct_payment.png')} />
 );
@@ -1029,6 +1033,22 @@ export const CTPrescription: React.FC<IconProps> = (props) => (
 
 export const CTChat: React.FC<IconProps> = (props) => (
   <IconBase style={{ width: 18, height: 16 }} {...props} source={require('./icons/chat.png')} />
+);
+
+export const CTLightGrayChat: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 18, height: 16 }}
+    {...props}
+    source={require('./icons/light_gray_chat.png')}
+  />
+);
+
+export const CTGrayChat: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 18, height: 16 }}
+    {...props}
+    source={require('./icons/gray_chat.png')}
+  />
 );
 
 export const InPersonBlue: React.FC<IconProps> = (props) => (

@@ -16,7 +16,7 @@ module.exports = async (req, res, next) => {
     const checksum = payload.CHECKSUMHASH;
     delete payload.CHECKSUMHASH;
     let merchantKey = process.env.PAYTM_MERCHANT_KEY_PHARMACY;
-    if (payload.MID == process.env.SBI_MID_CONSULTS)
+    if (payload.MID == process.env.SBI_MID_PHARMACY)
       merchantKey = process.env.SBI_PAYTM_MERCHANT_KEY_PHARMACY;
     if (!verifychecksum(payload, merchantKey, checksum)) {
       logger.error(

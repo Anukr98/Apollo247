@@ -137,6 +137,7 @@ export enum DoctorType {
   STAR_APOLLO = "STAR_APOLLO",
   SUGAR = "SUGAR",
   WHITE_DENTAL = "WHITE_DENTAL",
+  SENIOR = "SENIOR"
 }
 
 export enum FEEDBACKTYPE {
@@ -530,6 +531,7 @@ export interface AppointmentPaymentInput {
   bankName?: string | null;
   refundAmount?: number | null;
   paymentMode?: PAYMENT_METHODS | null;
+  partnerInfo?: string | null;
 }
 
 export interface BookAppointmentInput {
@@ -629,6 +631,7 @@ export interface DiagnosticOrderInput {
   bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICETYPE | null;
   paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  slotId: string;
   items?: (DiagnosticLineItem | null)[] | null;
 }
 
@@ -801,6 +804,7 @@ export interface MedicinePaymentMqInput {
   orderId?: string | null;
   paymentMode?: PAYMENT_METHODS | null;
   healthCredits?: number | null;
+  partnerInfo?: string | null;
 }
 
 export interface MessageInput {
@@ -934,11 +938,6 @@ export interface SaveDeviceTokenInput {
   patientId: string;
 }
 
-export interface VoipPushTokenInput {
-  patientId: string;
-  voipToken: string;
-}
-
 export interface SavePatientNotificationSettingsInput {
   patient: string;
   commissionNotification?: boolean | null;
@@ -1038,6 +1037,11 @@ export interface prescriptionFileProperties {
   fileName: string;
   mimeType: string;
   content: string;
+}
+
+export interface voipPushTokenInput {
+  patientId?: string | null;
+  voipToken?: string | null;
 }
 
 //==============================================================

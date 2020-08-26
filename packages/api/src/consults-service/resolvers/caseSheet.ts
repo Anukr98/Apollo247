@@ -48,10 +48,12 @@ import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepos
 import { SymptomsList } from 'types/appointmentTypes';
 import { differenceInSeconds } from 'date-fns';
 import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
-import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import { sendNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { addDays } from 'date-fns';
 
 export type DiagnosisJson = {
   name: string;
@@ -257,6 +259,7 @@ export const caseSheetTypeDefs = gql`
     doctorType: DoctorType
     followUp: Boolean
     followUpAfterInDays: String
+    followUpChatDays: Int
     followUpConsultType: APPOINTMENT_TYPE
     followUpDate: DateTime
     id: String
@@ -494,6 +497,7 @@ export const caseSheetTypeDefs = gql`
     followUp: Boolean
     followUpDate: Date
     followUpAfterInDays: Int
+    followUpChatDays: Int
     followUpConsultType: APPOINTMENT_TYPE
     otherInstructions: [OtherInstructionsInput!]
     medicinePrescription: [MedicinePrescriptionInput!]
@@ -756,6 +760,7 @@ type ModifyCaseSheetInput = {
   followUp: boolean;
   followUpDate: Date;
   followUpAfterInDays: number;
+  followUpChatDays: number;
   followUpConsultType: APPOINTMENT_TYPE;
   otherInstructions: CaseSheetOtherInstruction[];
   medicinePrescription: CaseSheetMedicinePrescription[];
@@ -858,16 +863,25 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.followUp = inputArguments.followUp;
   }
 
-  if (!(inputArguments.followUpDate === undefined)) {
+  if (!(inputArguments.followUpAfterInDays === undefined)) {
     getCaseSheetData.followUpDate = inputArguments.followUpDate;
+  }
+
+  if (!(inputArguments.followUpConsultType === undefined)) {
+    getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
   }
 
   if (!(inputArguments.followUpAfterInDays === undefined)) {
     getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
   }
 
-  if (!(inputArguments.followUpConsultType === undefined)) {
-    getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
+  if(!(inputArguments.followUpChatDays === undefined)) {
+    if(inputArguments.followUpChatDays > ApiConstants.CHAT_DAYS_LIMIT) {
+      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
+    } else if(inputArguments.followUpChatDays < 0){
+      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
+    }
+    getCaseSheetData.followUpChatDays = inputArguments.followUpChatDays;
   }
 
   if (!(inputArguments.status === undefined)) {
@@ -1011,7 +1025,7 @@ const modifyCaseSheet: Resolver<
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(getCaseSheetData.appointment.id);
   if (appointmentData) {
-    let reason = ApiConstants.CASESHEET_COMPLETED_HISTORY.toString();
+    let reason = ApiConstants.CASESHEET_MODIFIED_HISTORY.toString();
     if (caseSheetAttrs.doctorType == DoctorType.JUNIOR) {
       reason = ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString();
     }
@@ -1307,7 +1321,7 @@ const submitJDCaseSheet: Resolver<
     fromState: appointmentData.appointmentState,
     toState: appointmentData.appointmentState,
     userName: virtualJDId,
-    reason: 'Virtaul JD ' + ApiConstants.CASESHEET_COMPLETED_HISTORY.toString(),
+    reason: 'Virtaul ' + ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString(),
   };
   appointmentRepo.saveAppointmentHistory(historyAttrs);
 
@@ -1367,6 +1381,7 @@ const updatePatientPrescriptionSentStatus: Resolver<
 
     const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientData);
     const pdfDocument = generateRxPdfDocument(rxPdfData);
+
     const uploadedPdfData = await uploadRxPdf(client, args.caseSheetId, pdfDocument);
     if (uploadedPdfData == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
 
@@ -1385,12 +1400,18 @@ const updatePatientPrescriptionSentStatus: Resolver<
       doctorData,
       getCaseSheetData
     );
+
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
+      data: {
+        caseSheetId: getCaseSheetData.id
+      }
     };
+
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
+
     caseSheetAttrs = {
       sentToPatient: args.sentToPatient,
       blobName: uploadedPdfData.name,
@@ -1509,10 +1530,14 @@ const generatePrescriptionTemp: Resolver<
       doctorData,
       getCaseSheetData
     );
+
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
+      data: {
+        caseSheetId: getCaseSheetData.id
+      }
     };
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
     caseSheetAttrs = {
@@ -1581,6 +1606,7 @@ const getSDLatestCompletedCaseSheet: Resolver<
 
   //check whether there is a senior doctor case-sheet
   const caseSheetDetails = await caseSheetRepo.getSDLatestCompletedCaseSheet(appointmentData.id);
+  console.log("caseSheetDetails > ", caseSheetDetails);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);

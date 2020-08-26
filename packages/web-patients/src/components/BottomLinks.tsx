@@ -8,7 +8,6 @@ import {
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import fetchUtil from 'helpers/fetch';
-import { Visibility } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

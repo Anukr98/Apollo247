@@ -1,21 +1,15 @@
-import gql from 'graphql-tag';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { Resolver } from 'api-gateway';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
 import { log } from 'customWinstonLogger';
 
-export const emailTypeDefs = gql`
-  extend type Query {
-    sendEmailMessage: String
-  }
-`;
 
 export async function sendMail(emailContent: EmailMessage) {
-  let ccEmailList: any[] | undefined = emailContent?.ccEmail?.split(',');
+  const ccEmailList: any[] | undefined = emailContent?.ccEmail?.split(',');
 
   const sendgrid = require('@sendgrid/mail');
   sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
-  let emailOptions = {
+  const emailOptions = {
     to: emailContent.toEmail,
     from: emailContent.fromEmail,
     fromname: emailContent.fromName,

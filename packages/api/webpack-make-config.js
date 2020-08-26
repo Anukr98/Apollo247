@@ -17,7 +17,6 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
   const isProduction = process.env.NODE_ENV === 'production';
 
   const distDir = path.resolve(__dirname, 'dist');
-
   const plugins = [new DotenvPlugin({ path: envFile })];
 
   if (isLocal) {

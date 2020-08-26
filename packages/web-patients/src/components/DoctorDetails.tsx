@@ -221,7 +221,7 @@ const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
 
-export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
+const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
@@ -421,8 +421,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             title: `${fullName}: ${
               specialty && specialty.name ? specialty.name : ''
             } - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with ${fullName} - ${specialty &&
-              specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            description: `Book an appointment with ${fullName} - ${
+              specialty && specialty.name
+            } and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
             canonicalLink:
               window &&
               window.location &&
@@ -607,7 +608,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <OnlineConsult
                   setIsPopoverOpen={setIsPopoverOpen}
                   doctorDetails={doctorData}
-                  onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
                   tabValue={(tabValue: number) => setTabValue(tabValue)}
                   setIsShownOnce={(isShownOnce: boolean) => setIsShownOnce(isShownOnce)}
                   isShownOnce={isShownOnce}
@@ -633,3 +633,5 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return <LinearProgress className={classes.loader} />;
   }
 };
+
+export default DoctorDetails;

@@ -78,6 +78,8 @@ import { winstonLogger } from 'customWinstonLogger';
 import { deepLinkTypeDefs, deepLinkResolvers } from 'doctors-service/resolvers/deepLink';
 import { sitemapTypeDefs, sitemapResolvers } from 'doctors-service/resolvers/sitemap';
 import { getDoctorHelplineTypeDef, getDoctorHelplineResolver } from 'doctors-service/resolvers/getHelpline';
+import { updateDoctorChatDaysResolvers, updateDoctorChatDaysTypeDefs } from 'doctors-service/resolvers/updateDoctorChatDays';
+
 (async () => {
   await connect();
 
@@ -198,6 +200,10 @@ import { getDoctorHelplineTypeDef, getDoctorHelplineResolver } from 'doctors-ser
       {
         typeDefs: getDoctorHelplineTypeDef,
         resolvers: getDoctorHelplineResolver,
+      }, 
+      {
+        typeDefs: updateDoctorChatDaysTypeDefs,
+        resolvers: updateDoctorChatDaysResolvers, 
       }
     ]),
     plugins: [

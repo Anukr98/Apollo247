@@ -33,6 +33,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   type brandType {
     name: String
     image: String
+    brandName: String
   }
 
   type cityType {
@@ -58,6 +59,8 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     doctorType: DoctorType
     sort: String
     filters: filters
+    apolloDoctorCount: Int
+    partnerDoctorCount: Int
   }
   type DoctorSlotAvailability {
     doctorId: String
@@ -93,6 +96,8 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     pincode: String
     doctorType: [String]
     sort: String
+    pageNo: Int
+    pageSize: Int
   }
   extend type Query {
     getDoctorsBySpecialtyAndFilters(filterInput: FilterDoctorInput): FilterDoctorsResult
@@ -111,6 +116,7 @@ type cityType = {
 type brandType = {
   name: string
   image: string
+  brandName: string
 }
 
 type filters = {
@@ -131,6 +137,8 @@ type FilterDoctorsResult = {
   doctorType?: DoctorType[];
   sort: string;
   filters: filters;
+  apolloDoctorCount: number;
+  partnerDoctorCount: number;
 };
 
 export type DoctorConsultModeAvailability = {
@@ -164,6 +172,8 @@ export type FilterDoctorInput = {
   pincode: string;
   doctorType: String[];
   sort: string;
+  pageNo: number;
+  pageSize: number;
 };
 
 export type ConsultModeAvailability = {
@@ -225,13 +235,21 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     earlyAvailableNonStarApolloDoctors = [],
     starDoctor = [],
     nonStarDoctor = [];
+  let apolloDoctorCount:number = 0,
+    partnerDoctorCount:number = 0;
 
   const facilityIds: string[] = [];
   const facilityLatLongs: number[][] = [];
   args.filterInput.sort = args.filterInput.sort || 'availablity';
   const minsForSort = args.filterInput.sort == 'distance' ? 2881 : 241;
+  const pageNo = args.filterInput.pageNo ? args.filterInput.pageNo : 1;
+  const pageSize = args.filterInput.pageSize ? args.filterInput.pageSize : 1000;
+  const offset = (pageNo - 1) * pageSize;
+
   elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
 
+  elasticMatch.push({ range: { 'doctorSlots.slots.slot': { gt :'now+15m'} } });
+ 
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
     elasticMatch.push({ match: { 'specialty.name': args.filterInput.specialtyName.join(',') } });
   }
@@ -294,17 +312,33 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   const searchParams: RequestParams.Search = {
     index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
-      size: 1000,
+      from: offset,
+      size: pageSize,
       query: {
         bool: {
           must: elasticMatch,
         },
       },
+      aggs:{
+        doctorTypeCount: {
+          terms: {
+            field: 'doctorType.keyword',
+          }
+        },
+      }
     },
   };
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
 
   const getDetails = await client.search(searchParams);
+  const doctorTypeCount = getDetails.body.aggregations.doctorTypeCount.buckets;
+  for(const doctorCount of doctorTypeCount) {
+    if(doctorCount.key === 'DOCTOR_CONNECT'){
+      partnerDoctorCount = doctorCount.doc_count;
+    } else {
+      apolloDoctorCount += doctorCount.doc_count;
+    }
+  }
 
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
@@ -556,6 +590,14 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
   }
 
+  function capitalize(input: string) {
+    const words = input.split('_');
+    const CapitalizedWords: string[] = [];
+    words.forEach((element: string) => {
+      CapitalizedWords.push(element[0].toUpperCase() + element.slice(1, element.length).toLowerCase());
+    });
+    return CapitalizedWords.join(' ');
+  }
 
   const filters: any = { city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: [] };
   let cityObj: { state: string, data: string[] };
@@ -581,7 +623,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
     // "doctor.photoUrl" needs to be replaced with actual brand images-links
     if (doctor.doctorType && !("name" in ifKeyExist(filters.brands, 'name', doctor.doctorType))) {
-      filters.brands.push({ 'name': doctor.doctorType, 'image': doctor.photoUrl });
+      filters.brands.push({ 'name': doctor.doctorType, 'image': doctor.photoUrl, 'brandName': capitalize(doctor.doctorType) });
     }
 
     if (doctor.languages instanceof Array) {
@@ -638,6 +680,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     specialty: finalSpecialtyDetails,
     sort: args.filterInput.sort,
     filters: filters,
+    apolloDoctorCount,
+    partnerDoctorCount
   };
 };
 

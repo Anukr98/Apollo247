@@ -1,5 +1,11 @@
-import React, { useState, useRef, Fragment, useEffect, useContext } from 'react';
-import { makeStyles } from '@material-ui/styles';
+import React, {
+  useState,
+  useRef,
+  Fragment,
+  useEffect,
+  useContext,
+} from "react";
+import { makeStyles } from "@material-ui/styles";
 import {
   Theme,
   Button,
@@ -13,33 +19,39 @@ import {
   FormControlLabel,
   Grid,
   Box,
-} from '@material-ui/core';
-import Scrollbars from 'react-custom-scrollbars';
-import { Prompt, Link } from 'react-router-dom';
-import moment from 'moment';
-import { isEmpty } from 'lodash';
-import { AphSelect, AphTextField, AphButton } from '@aph/web-ui-components';
-import { useAuth, useCurrentPatient } from 'hooks/authHooks';
-import { ApolloError } from 'apollo-client';
-import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
-import { useApolloClient, useMutation } from 'react-apollo-hooks';
-import { useParams } from 'hooks/routerHooks';
-import { CANCEL_APPOINTMENT } from 'graphql/profiles';
-import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/CancelAppointment';
-import { Consult } from 'components/Consult';
-import { CircularProgress } from '@material-ui/core';
-import { TestCall } from './TestCall';
-import Alert from './Alert';
+} from "@material-ui/core";
+import Scrollbars from "react-custom-scrollbars";
+import { Prompt, Link } from "react-router-dom";
+import moment from "moment";
+import { isEmpty } from "lodash";
+import { AphSelect, AphTextField, AphButton } from "@aph/web-ui-components";
+import { useAuth, useCurrentPatient } from "hooks/authHooks";
+import { ApolloError } from "apollo-client";
+import { GetDoctorDetails_getDoctorDetails } from "graphql/types/GetDoctorDetails";
+import { useApolloClient, useMutation } from "react-apollo-hooks";
+import { useParams } from "hooks/routerHooks";
+import { CANCEL_APPOINTMENT } from "graphql/profiles";
+import {
+  CancelAppointment,
+  CancelAppointmentVariables,
+} from "graphql/types/CancelAppointment";
+import { Consult } from "components/Consult";
+import { CircularProgress } from "@material-ui/core";
+import { TestCall } from "./TestCall";
+import Alert from "./Alert";
 
 import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
-} from 'graphql/types/EndAppointmentSession';
+} from "graphql/types/EndAppointmentSession";
 import {
   SendCallDisconnectNotification,
   SendCallDisconnectNotificationVariables,
-} from 'graphql/types/SendCallDisconnectNotification';
-import { INITIATE_RESCHDULE_APPONITMENT, END_APPOINTMENT_SESSION } from 'graphql/profiles';
+} from "graphql/types/SendCallDisconnectNotification";
+import {
+  INITIATE_RESCHDULE_APPONITMENT,
+  END_APPOINTMENT_SESSION,
+} from "graphql/profiles";
 import {
   REQUEST_ROLES,
   TRANSFER_INITIATED_TYPE,
@@ -49,34 +61,37 @@ import {
   DEVICETYPE,
   BOOKINGSOURCE,
   APPT_CALL_TYPE,
-} from 'graphql/types/globalTypes';
-import * as _ from 'lodash';
-import { CaseSheetContext } from 'context/CaseSheetContext';
-import { clientRoutes } from 'helpers/clientRoutes';
-import { LoggedInUserType } from 'graphql/types/globalTypes';
-import { AuthContext, AuthContextProps } from 'components/AuthProvider';
-import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
+} from "graphql/types/globalTypes";
+import * as _ from "lodash";
+import { CaseSheetContext } from "context/CaseSheetContext";
+import { clientRoutes } from "helpers/clientRoutes";
+import { LoggedInUserType } from "graphql/types/globalTypes";
+import { AuthContext, AuthContextProps } from "components/AuthProvider";
+import { GET_DOCTOR_NEXT_AVAILABILITY } from "graphql/doctors";
 import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,
-} from 'graphql/types/GetDoctorNextAvailableSlot';
-import { format } from 'date-fns';
-import { AvailableSlots } from '../components/AvailableSlots';
+} from "graphql/types/GetDoctorNextAvailableSlot";
+import { format } from "date-fns";
+import { AvailableSlots } from "../components/AvailableSlots";
 import {
   INITIATE_CONFERENCE_TELEPHONE_CALL,
   SEND_CALL_DISCONNECT_NOTIFICATION,
-} from 'graphql/consults';
-import { getLocalStorageItem, updateLocalStorageItem } from './case-sheet/panels/LocalStorageUtils';
+} from "graphql/consults";
+import {
+  getLocalStorageItem,
+  updateLocalStorageItem,
+} from "./case-sheet/panels/LocalStorageUtils";
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     loginFormWrap: {
-      padding: '30px 0 50px 0',
-      '& p': {
+      padding: "30px 0 50px 0",
+      "& p": {
         fontSize: 20,
         fontWeight: 600,
         lineHeight: 1.28,
-        color: '#02475b',
+        color: "#02475b",
         marginTop: 10,
         marginBottom: 10,
       },
@@ -93,204 +108,204 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: 20,
       fontSize: 13,
       fontWeight: 600,
-      padding: '35px 20px',
-      color: '#02475b',
-      textTransform: 'uppercase',
-      display: 'flex',
-      alignItems: 'center',
+      padding: "35px 20px",
+      color: "#02475b",
+      textTransform: "uppercase",
+      display: "flex",
+      alignItems: "center",
       lineHeight: 1.86,
-      [theme.breakpoints.down('xs')]: {
-        position: 'fixed',
+      [theme.breakpoints.down("xs")]: {
+        position: "fixed",
         zIndex: 2,
         top: 0,
-        width: '100%',
+        width: "100%",
         backgroundColor: theme.palette.common.white,
         margin: 0,
         paddingLeft: 20,
         paddingRight: 20,
         paddingBottom: 20,
-        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+        boxShadow: "0 2px 10px 0 rgba(0, 0, 0, 0.1)",
       },
     },
     consultButton: {
       fontSize: 13,
       fontWeight: theme.typography.fontWeightBold,
-      color: '#fff',
-      padding: '8px 16px',
+      color: "#fff",
+      padding: "8px 16px",
       margin: theme.spacing(1, 1, 0, 0),
-      backgroundColor: '#fc9916',
+      backgroundColor: "#fc9916",
       marginLeft: 20,
       minWidth: 168,
       borderRadius: 10,
-      boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
+      boxShadow: "0 2px 4px 0 rgba(0,0,0,0.2)",
       marginTop: 0,
-      '&:hover': {
-        backgroundColor: '#e28913',
+      "&:hover": {
+        backgroundColor: "#e28913",
       },
-      '&:disabled': {
-        backgroundColor: '#fdd49c',
+      "&:disabled": {
+        backgroundColor: "#fdd49c",
       },
-      '& svg': {
+      "& svg": {
         marginRight: 5,
       },
     },
     endconsultButton: {
       fontSize: 13,
       fontWeight: theme.typography.fontWeightBold,
-      color: '#fff',
-      padding: '8px 16px',
-      backgroundColor: '#fc9916',
+      color: "#fff",
+      padding: "8px 16px",
+      backgroundColor: "#fc9916",
       marginLeft: 20,
       minWidth: 168,
       marginRight: 10,
       borderRadius: 10,
-      boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
-      '&:hover': {
-        backgroundColor: '#e28913',
+      boxShadow: "0 2px 4px 0 rgba(0,0,0,0.2)",
+      "&:hover": {
+        backgroundColor: "#e28913",
       },
-      '& svg': {
+      "& svg": {
         marginRight: 5,
       },
     },
     ResheduleCosultButton: {
       fontSize: 14,
       fontWeight: 600,
-      color: '#fff',
-      padding: '8px 16px',
-      backgroundColor: '#fc9916',
+      color: "#fff",
+      padding: "8px 16px",
+      backgroundColor: "#fc9916",
       minWidth: 168,
       borderRadius: 10,
-      boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
-      '&:hover': {
-        backgroundColor: '#fc9916',
+      boxShadow: "0 2px 4px 0 rgba(0,0,0,0.2)",
+      "&:hover": {
+        backgroundColor: "#fc9916",
       },
-      '&:disabled': {
-        backgroundColor: 'rgba(252,153,22,0.3)',
+      "&:disabled": {
+        backgroundColor: "rgba(252,153,22,0.3)",
       },
     },
 
     BackCosultButton: {
       fontSize: 14,
       fontWeight: 600,
-      color: '#fc9916',
-      padding: '8px 16px',
-      backgroundColor: '#fff',
+      color: "#fc9916",
+      padding: "8px 16px",
+      backgroundColor: "#fff",
       minWidth: 100,
       borderRadius: 10,
-      boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
-      position: 'absolute',
+      boxShadow: "0 2px 4px 0 rgba(0,0,0,0.2)",
+      position: "absolute",
       left: 20,
-      '&:hover': {
-        backgroundColor: '#fff',
+      "&:hover": {
+        backgroundColor: "#fff",
       },
-      '&:disabled': {
-        color: 'rgba(252,153,22,0.3)',
+      "&:disabled": {
+        color: "rgba(252,153,22,0.3)",
       },
     },
     cancelConsult: {
       minWidth: 120,
       fontSize: 14,
-      padding: '8px 16px',
+      padding: "8px 16px",
       fontWeight: 600,
-      color: '#fc9916',
-      backgroundColor: '#fff',
+      color: "#fc9916",
+      backgroundColor: "#fff",
       margin: theme.spacing(1, 1, 0, 0),
       marginTop: 0,
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      '&:hover': {
-        backgroundColor: '#fff',
+      boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.2)",
+      "&:hover": {
+        backgroundColor: "#fff",
       },
     },
     cancelConsultError: {
       fontSize: 10,
-      padding: '2px 16px',
+      padding: "2px 16px",
       fontWeight: 400,
-      color: 'red',
+      color: "red",
     },
     consultTest: {
-      position: 'relative',
-      width: '50%',
+      position: "relative",
+      width: "50%",
     },
     timeLeft: {
       fontSize: 12,
       fontWeight: 500,
-      color: 'rgba(2, 71, 91, 0.6)',
-      textTransform: 'capitalize',
-      position: 'relative',
+      color: "rgba(2, 71, 91, 0.6)",
+      textTransform: "capitalize",
+      position: "relative",
       top: -1,
-      display: 'none',
+      display: "none",
     },
     permission: {
       fontSize: 12,
       fontWeight: 500,
-      color: 'red',
-      textTransform: 'initial',
-      position: 'absolute',
+      color: "red",
+      textTransform: "initial",
+      position: "absolute",
       bottom: -15,
     },
     backArrow: {
-      cursor: 'pointer',
+      cursor: "pointer",
       marginRight: 50,
       [theme.breakpoints.up(1220)]: {
-        position: 'absolute',
+        position: "absolute",
         left: -82,
         top: 20,
         width: 48,
         height: 48,
-        lineHeight: '36px',
-        borderRadius: '50%',
-        textAlign: 'center',
-        backgroundColor: '#02475b',
+        lineHeight: "36px",
+        borderRadius: "50%",
+        textAlign: "center",
+        backgroundColor: "#02475b",
       },
-      '& img': {
-        verticalAlign: 'bottom',
+      "& img": {
+        verticalAlign: "bottom",
       },
     },
     whiteArrow: {
-      verticalAlign: 'middle',
+      verticalAlign: "middle",
       [theme.breakpoints.down(1220)]: {
-        display: 'none',
+        display: "none",
       },
     },
     blackArrow: {
-      verticalAlign: 'middle',
+      verticalAlign: "middle",
       [theme.breakpoints.up(1220)]: {
-        display: 'none',
+        display: "none",
       },
     },
     loginForm: {
       width: 280,
       minHeight: 282,
-      padding: '10px 20px 20px 20px',
+      padding: "10px 20px 20px 20px",
       borderRadius: 10,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      boxShadow: "0 5px 40px 0 rgba(0, 0, 0, 0.3)",
       backgroundColor: theme.palette.common.white,
     },
     consultButtonContainer: {
-      position: 'absolute',
+      position: "absolute",
       right: 0,
     },
     cross: {
-      position: 'absolute',
+      position: "absolute",
       right: 0,
       top: 8,
       fontSize: 18,
-      color: '#02475b',
+      color: "#02475b",
     },
     container: {
       maxWidth: 1064,
-      margin: 'auto',
-      position: 'relative',
-      backgroundColor: '#f7f7f7',
+      margin: "auto",
+      position: "relative",
+      backgroundColor: "#f7f7f7",
       paddingBottom: 95,
     },
     loading: {
-      position: 'absolute',
-      left: '-20%',
+      position: "absolute",
+      left: "-20%",
       top: 250,
     },
     fadedBg: {
-      position: 'fixed',
+      position: "fixed",
       top: 0,
       bottom: 0,
       right: 0,
@@ -300,79 +315,79 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     audioVideoContainer: {
       maxWidth: 1064,
-      margin: 'auto',
-      position: 'relative',
-      backgroundColor: '#f7f7f7',
+      margin: "auto",
+      position: "relative",
+      backgroundColor: "#f7f7f7",
       paddingBottom: 0,
     },
     needHelp: {
-      padding: '8px',
-      width: '100%',
+      padding: "8px",
+      width: "100%",
       marginTop: 15,
-      borderRadius: '5px',
-      boxShadow: '0 2px 4px 0 rgba(0,0,0,0.3)',
-      fontWeight: 'bold',
-      backgroundColor: '#fc9916',
-      '& img': {
+      borderRadius: "5px",
+      boxShadow: "0 2px 4px 0 rgba(0,0,0,0.3)",
+      fontWeight: "bold",
+      backgroundColor: "#fc9916",
+      "& img": {
         marginRight: 10,
       },
     },
     consultIcon: {
       padding: 6,
-      backgroundColor: 'transparent',
-      margin: '0 5px',
+      backgroundColor: "transparent",
+      margin: "0 5px",
       minWidth: 20,
-      boxShadow: 'none',
-      '&:hover': {
-        backgroundColor: 'transparent',
-        boxShadow: 'none',
+      boxShadow: "none",
+      "&:hover": {
+        backgroundColor: "transparent",
+        boxShadow: "none",
       },
-      '&:disabled': {
+      "&:disabled": {
         opacity: 0.7,
-        backgroundColor: 'transparent',
+        backgroundColor: "transparent",
       },
     },
     backButton: {
       minWidth: 120,
       fontSize: 13,
-      padding: '8px 16px',
+      padding: "8px 16px",
       fontWeight: theme.typography.fontWeightBold,
-      color: '#fc9916',
-      backgroundColor: '#fff',
+      color: "#fc9916",
+      backgroundColor: "#fff",
       margin: theme.spacing(0, 1, 0, 1),
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      '&:hover': {
-        backgroundColor: '#fff',
+      boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.2)",
+      "&:hover": {
+        backgroundColor: "#fff",
       },
-      '&:disabled': {
-        color: '#fc9916',
+      "&:disabled": {
+        color: "#fc9916",
         opacity: 0.7,
       },
     },
     popOverUL: {
-      listStyleType: 'none',
-      textAlign: 'center',
-      display: 'block',
-      padding: '5px 16px',
+      listStyleType: "none",
+      textAlign: "center",
+      display: "block",
+      padding: "5px 16px",
       margin: 0,
       minWidth: 225,
-      '& li': {
-        fontSize: '15px',
+      "& li": {
+        fontSize: "15px",
         fontWeight: 500,
-        fontStyle: 'normal',
-        fontStretch: 'normal',
-        lineHeight: 'normal',
-        letterSpacing: 'normal',
-        color: '#02475b',
+        fontStyle: "normal",
+        fontStretch: "normal",
+        lineHeight: "normal",
+        letterSpacing: "normal",
+        color: "#02475b",
         paddingBottom: 13,
         paddingTop: 13,
-        textAlign: 'left',
-        cursor: 'pointer',
-        borderBottom: '1px solid rgba(2,71,91,0.2)',
-        '&:last-child': {
-          borderBottom: 'none',
+        textAlign: "left",
+        cursor: "pointer",
+        borderBottom: "1px solid rgba(2,71,91,0.2)",
+        "&:last-child": {
+          borderBottom: "none",
         },
-        '&:hover': {
+        "&:hover": {
           fontWeight: 600,
         },
       },
@@ -381,8 +396,8 @@ const useStyles = makeStyles((theme: Theme) => {
     dotPaper: {
       padding: 0,
       borderRadius: 0,
-      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-      '& .MuiPaper-rounded': {
+      boxShadow: "0 5px 40px 0 rgba(0, 0, 0, 0.3)",
+      "& .MuiPaper-rounded": {
         borderRadius: 10,
       },
     },
@@ -391,7 +406,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     noSlotsAvailable: {
       fontSize: 14,
-      color: '#0087ba',
+      color: "#0087ba",
       fontWeight: 500,
       lineHeight: 1.71,
       padding: 6,
@@ -399,91 +414,91 @@ const useStyles = makeStyles((theme: Theme) => {
     modalBox: {
       maxWidth: 380,
       minHeight: 420,
-      margin: 'auto',
+      margin: "auto",
       marginTop: 88,
-      backgroundColor: '#eeeeee',
-      position: 'relative',
+      backgroundColor: "#eeeeee",
+      position: "relative",
     },
     modalBoxTabs: {
       maxWidth: 680,
       minHeight: 440,
-      margin: 'auto',
+      margin: "auto",
       marginTop: 88,
-      backgroundColor: '#eeeeee',
-      position: 'relative',
+      backgroundColor: "#eeeeee",
+      position: "relative",
     },
     modalBoxConsult: {
       maxWidth: 480,
       minHeight: 260,
-      margin: 'auto',
+      margin: "auto",
       marginTop: 88,
-      backgroundColor: '#fff',
-      position: 'relative',
+      backgroundColor: "#fff",
+      position: "relative",
       outline: 0,
     },
     modalBoxCancel: {
       maxWidth: 480,
       minHeight: 280,
-      margin: 'auto',
+      margin: "auto",
       marginTop: 88,
-      backgroundColor: '#eeeeee',
-      position: 'relative',
-      outline: 'none',
+      backgroundColor: "#eeeeee",
+      position: "relative",
+      outline: "none",
     },
     modalBoxClose: {
-      position: 'absolute',
+      position: "absolute",
       right: -48,
       top: 0,
       width: 28,
       height: 28,
-      borderRadius: '50%',
+      borderRadius: "50%",
       backgroundColor: theme.palette.common.white,
-      cursor: 'pointer',
-      [theme.breakpoints.down('xs')]: {
+      cursor: "pointer",
+      [theme.breakpoints.down("xs")]: {
         right: 0,
         top: -48,
       },
     },
     tabHeader: {
-      background: 'white',
+      background: "white",
       height: 50,
-      borderTopLeftRadius: '10px',
-      borderTopRightRadius: '10px',
-      '& h4': {
-        fontSize: '13px',
+      borderTopLeftRadius: "10px",
+      borderTopRightRadius: "10px",
+      "& h4": {
+        fontSize: "13px",
         fontWeight: 600,
-        letterSpacing: '0.5px',
-        color: '#01475b',
-        textTransform: 'uppercase',
-        padding: '17px 20px',
+        letterSpacing: "0.5px",
+        color: "#01475b",
+        textTransform: "uppercase",
+        padding: "17px 20px",
       },
     },
     tabFooter: {
-      background: 'white',
-      position: 'absolute',
-      borderBottomLeftRadius: '10px',
-      borderBottomRightRadius: '10px',
-      width: '100%',
-      bottom: '0px',
-      textAlign: 'right',
-      padding: '16px 20px',
+      background: "white",
+      position: "absolute",
+      borderBottomLeftRadius: "10px",
+      borderBottomRightRadius: "10px",
+      width: "100%",
+      bottom: "0px",
+      textAlign: "right",
+      padding: "16px 20px",
     },
     tabBody: {
-      background: 'white',
+      background: "white",
       minHeight: 80,
       margin: 20,
       borderRadius: 5,
-      padding: '10px 15px 15px 15px',
-      '& h3': {
+      padding: "10px 15px 15px 15px",
+      "& h3": {
         fontSize: 18,
-        color: '#02475b',
+        color: "#02475b",
       },
-      '& p': {
+      "& p": {
         margin: 0,
-        fontSize: '15px',
+        fontSize: "15px",
         fontWeight: 500,
         lineHeight: 1.2,
-        color: '#01475b',
+        color: "#01475b",
         paddingBottom: 5,
         paddingTop: 4,
       },
@@ -493,48 +508,48 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 50,
     },
     tabBodypadding: {
-      margin: '0 20px',
-      padding: '0 15px 15px 15px',
+      margin: "0 20px",
+      padding: "0 15px 15px 15px",
     },
     tabBodyTabs: {
-      backgroundColor: 'transparent',
+      backgroundColor: "transparent",
       margin: 8,
       padding: 8,
     },
     menuPopover: {
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      boxShadow: "0 5px 20px 0 rgba(128, 128, 128, 0.3)",
       marginLeft: -2,
       marginTop: 45,
       borderRadius: 10,
-      left: '270px',
-      width: '450px',
-      '& ul': {
-        padding: '10px 0px',
-        '& li': {
+      left: "270px",
+      width: "450px",
+      "& ul": {
+        padding: "10px 0px",
+        "& li": {
           fontSize: 18,
           width: 480,
           fontWeight: 500,
-          color: '#02475b',
-          minHeight: 'auto',
+          color: "#02475b",
+          minHeight: "auto",
           paddingLeft: 10,
           paddingRight: 10,
-          '&:last-child': {
-            borderBottom: 'none',
+          "&:last-child": {
+            borderBottom: "none",
           },
-          '&:hover': {
-            backgroundColor: '#f0f4f5',
+          "&:hover": {
+            backgroundColor: "#f0f4f5",
           },
         },
       },
     },
     menuSelected: {
-      backgroundColor: 'transparent !important',
-      color: '#00b38e !important',
+      backgroundColor: "transparent !important",
+      color: "#00b38e !important",
     },
     selectText: {
-      position: 'absolute',
+      position: "absolute",
       marginTop: 17,
-      color: '#01475b',
+      color: "#01475b",
       opacity: 0.7,
     },
     cancelBtn: {
@@ -542,13 +557,13 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: theme.spacing(1),
       fontSize: 15,
       fontWeight: 500,
-      color: '#02575b',
-      backgroundColor: 'transparent',
-      boxShadow: 'none',
-      border: 'none',
-      '&:hover': {
-        backgroundColor: 'transparent',
-        boxShadow: 'none',
+      color: "#02575b",
+      backgroundColor: "transparent",
+      boxShadow: "none",
+      border: "none",
+      "&:hover": {
+        backgroundColor: "transparent",
+        boxShadow: "none",
       },
     },
     searchInput: {
@@ -557,159 +572,159 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 10,
     },
     textFieldColor: {
-      '& input': {
+      "& input": {
         marginTop: 5,
-        color: 'initial',
-        border: '2px solid #00b38e ',
-        paddingTop: '15px',
-        paddingBottom: '15px',
+        color: "initial",
+        border: "2px solid #00b38e ",
+        paddingTop: "15px",
+        paddingBottom: "15px",
         borderRadius: 10,
         paddingLeft: 10,
         paddingRight: 10,
-        '& :before': {
+        "& :before": {
           border: 0,
         },
       },
     },
     doctorSearch: {
-      display: 'block',
+      display: "block",
       padding: 10,
       zIndex: 9,
-      color: '#02475b',
-      backgroundColor: '#fff',
+      color: "#02475b",
+      backgroundColor: "#fff",
       borderRadius: 10,
-      position: 'absolute',
-      width: '95%',
+      position: "absolute",
+      width: "95%",
       maxHeight: 200,
-      overflow: 'auto',
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.8)',
-      '& h6': {
-        color: 'rgba(2,71,91,0.3)',
+      overflow: "auto",
+      boxShadow: "0 5px 20px 0 rgba(128, 128, 128, 0.8)",
+      "& h6": {
+        color: "rgba(2,71,91,0.3)",
         fontSize: 12,
         marginBottom: 5,
         marginTop: 12,
         fontWeight: 500,
       },
-      '& ul': {
-        listStyleType: 'none',
+      "& ul": {
+        listStyleType: "none",
         paddingLeft: 0,
         marginTop: 0,
-        '& li': {
+        "& li": {
           fontSize: 18,
-          color: '#02475b',
+          color: "#02475b",
           fontWeight: 500,
-          '&:hover': {
-            cursor: 'pointer',
+          "&:hover": {
+            cursor: "pointer",
           },
         },
-        '& span': {
-          color: 'rgba(0, 0, 0, 0.87)',
+        "& span": {
+          color: "rgba(0, 0, 0, 0.87)",
           zIndex: 9,
-          fontSize: '14px',
-          fontWeight: 'normal',
+          fontSize: "14px",
+          fontWeight: "normal",
         },
       },
-      '& p': {
-        borderBottom: '1px solid #01475b',
+      "& p": {
+        borderBottom: "1px solid #01475b",
       },
     },
     othercases: {
       marginTop: 10,
     },
     posRelative: {
-      position: 'relative',
+      position: "relative",
     },
     stickyHeader: {
-      position: 'sticky',
+      position: "sticky",
       top: 0,
       zIndex: 1,
-      backgroundColor: '#f7f7f7',
-      boxShadow: 'inset 0px 0px 10px 0 rgba(128,128,128,0.2)',
+      backgroundColor: "#f7f7f7",
+      boxShadow: "inset 0px 0px 10px 0 rgba(128,128,128,0.2)",
     },
     prescriptionSent: {
-      position: 'relative',
+      position: "relative",
       top: 4,
       right: 15,
     },
     KeyboardDatePicker: {
-      width: '100%',
-      color: '#02475b !important',
-      '& label': {
-        color: '#02475b !important',
+      width: "100%",
+      color: "#02475b !important",
+      "& label": {
+        color: "#02475b !important",
       },
-      '& svg': {
-        fill: '#02475b',
+      "& svg": {
+        fill: "#02475b",
       },
-      '& div': {
-        '&:before': {
-          borderBottom: '2px solid #00b38e !important',
+      "& div": {
+        "&:before": {
+          borderBottom: "2px solid #00b38e !important",
         },
-        '&:after': {
-          borderBottom: '2px solid #00b38e !important',
+        "&:after": {
+          borderBottom: "2px solid #00b38e !important",
         },
       },
-      '& input': {
+      "& input": {
         fontSize: 18,
-        color: '#01475b',
-        borderBottom: '2px solid #00b38e',
+        color: "#01475b",
+        borderBottom: "2px solid #00b38e",
         fontWeight: 500,
       },
     },
     timepicker: {
-      margin: '10px 20px 10px 0',
-      width: '100%',
-      borderBottom: '2px solid #00b38e',
-      '&:hover': {
-        borderBottom: '2px solid #00b38e',
+      margin: "10px 20px 10px 0",
+      width: "100%",
+      borderBottom: "2px solid #00b38e",
+      "&:hover": {
+        borderBottom: "2px solid #00b38e",
       },
     },
     textField: {
       marginLeft: theme.spacing(1),
       marginRight: theme.spacing(1),
-      width: '95%',
-      '& div': {
-        color: '#01475b',
+      width: "95%",
+      "& div": {
+        color: "#01475b",
         fontSize: 15,
         lineHeight: 20,
         fontWeight: 500,
-        borderBottom: '1px solid rgba(2,71,91,0.2)',
+        borderBottom: "1px solid rgba(2,71,91,0.2)",
       },
-      '& :before': {
-        borderBottom: 'none',
+      "& :before": {
+        borderBottom: "none",
       },
-      '& :after': {
-        borderBottom: 'none',
+      "& :after": {
+        borderBottom: "none",
       },
     },
     suggestSlot: {
-      textAlign: 'right',
+      textAlign: "right",
       fontSize: 14,
       fontWeight: 500,
-      color: '#fc9916',
-      width: '100%',
+      color: "#fc9916",
+      width: "100%",
       paddingTop: 0,
       paddingBottom: 0,
-      boxShadow: 'none',
-      '& span': {
-        display: 'inline-block',
-        textAlign: 'right',
+      boxShadow: "none",
+      "& span": {
+        display: "inline-block",
+        textAlign: "right",
       },
     },
     consultGroup: {
-      boxShadow: '0 2px 4px 0 rgba(128, 128, 128, 0.3)',
-      backgroundColor: '#f7f8f5',
+      boxShadow: "0 2px 4px 0 rgba(128, 128, 128, 0.3)",
+      backgroundColor: "#f7f8f5",
       padding: 16,
       marginTop: 10,
       marginBottom: 10,
-      display: 'inline-block',
-      width: '100%',
+      display: "inline-block",
+      width: "100%",
       fontSize: 14,
       fontWeight: 500,
       lineHeight: 1.43,
       letterSpacing: 0.35,
       color: theme.palette.secondary.light,
       borderRadius: 10,
-      '& p': {
+      "& p": {
         marginTop: 0,
       },
     },
@@ -717,272 +732,272 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 10,
       minHeight: 278,
       marginBottom: 0,
-      backgroundColor: '#fff',
+      backgroundColor: "#fff",
     },
     scheduleTimeSlots: {
       padding: 10,
       minHeight: 278,
       marginBottom: 0,
-      backgroundColor: '#fff',
+      backgroundColor: "#fff",
     },
     showCalendar: {
-      display: 'inline-block',
+      display: "inline-block",
     },
     showTimeSlot: {
-      display: 'inline-block',
+      display: "inline-block",
       paddingTop: 0,
     },
     modalPopup: {
-      '& div': {
-        '&:focus': {
-          outline: 'none',
+      "& div": {
+        "&:focus": {
+          outline: "none",
         },
       },
     },
     dateField: {
-      borderBottom: '1px solid rgba(2,71,91,0.02)',
+      borderBottom: "1px solid rgba(2,71,91,0.02)",
       paddingBottom: 10,
       paddingTop: 15,
       fontSize: 15,
-      color: '#01475b',
+      color: "#01475b",
       fontWeight: 500,
       marginBottom: 15,
     },
     dateAndTieWrapper: {
-      display: 'flex',
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
-      padding: '0 0 12px 0',
-      margin: '0 0 8px 0',
+      display: "flex",
+      borderBottom: "0.5px solid rgba(2,71,91,0.3)",
+      padding: "0 0 12px 0",
+      margin: "0 0 8px 0",
     },
     flexGrow: {
       flexGrow: 1,
     },
     header: {
-      color: 'rgba(2,71,91,0.6)',
-      margin: '16px 0 8px 0',
+      color: "rgba(2,71,91,0.6)",
+      margin: "16px 0 8px 0",
       fontSize: 12,
     },
     data: {
       fontSize: 15,
       fontWeight: 500,
-      color: '#01475b',
+      color: "#01475b",
     },
     testCallWrappper: {
-      borderTop: '1px solid rgba(2, 71, 91, 0.15)',
+      borderTop: "1px solid rgba(2, 71, 91, 0.15)",
       marginTop: 20,
-      textAlign: 'center',
+      textAlign: "center",
       paddingTop: 15,
     },
     okButtonWrapper: {
-      textAlign: 'right',
+      textAlign: "right",
     },
     okButton: {
       fontWeight: 700,
-      color: '#fc9916',
+      color: "#fc9916",
     },
     modalBoxVital: {
-      minHeight: 'auto',
+      minHeight: "auto",
     },
     previewButton: {
       minWidth: 170,
       fontSize: 13,
-      padding: '8px 40px',
+      padding: "8px 40px",
       fontWeight: theme.typography.fontWeightBold,
-      color: '#fff',
-      backgroundColor: '#fc9916',
+      color: "#fff",
+      backgroundColor: "#fc9916",
       margin: theme.spacing(0, 1, 0, 1),
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      '&:hover': {
-        backgroundColor: '#e68c15',
+      boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.2)",
+      "&:hover": {
+        backgroundColor: "#e68c15",
       },
-      '&:disabled': {
+      "&:disabled": {
         opacity: 0.7,
       },
     },
     phoneCallConnect: {
-      textTransform: 'none',
-      fontSize: '12px',
+      textTransform: "none",
+      fontSize: "12px",
       fontWeight: 500,
-      fontStretch: 'normal',
-      fontStyle: 'normal',
+      fontStretch: "normal",
+      fontStyle: "normal",
       lineHeight: 2,
-      letterSpacing: 'normal',
-      color: '#fc9916',
-      cursor: 'pointer',
-      '& img': {
-        right: '7px',
-        top: '5px',
-        position: 'relative',
+      letterSpacing: "normal",
+      color: "#fc9916",
+      cursor: "pointer",
+      "& img": {
+        right: "7px",
+        top: "5px",
+        position: "relative",
       },
     },
     connectCallModal: {
-      width: '482px',
-      height: '320px',
-      borderRadius: '10px',
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-      backgroundColor: '#ffffff',
-      margin: 'auto',
+      width: "482px",
+      height: "320px",
+      borderRadius: "10px",
+      boxShadow: "0 5px 20px 0 rgba(128, 128, 128, 0.3)",
+      backgroundColor: "#ffffff",
+      margin: "auto",
       marginTop: 88,
-      position: 'relative',
+      position: "relative",
     },
     callHeader: {
-      fontSize: '24px',
+      fontSize: "24px",
       fontWeight: 600,
-      fontStretch: 'normal',
-      fontStyle: 'normal',
-      lineHeight: 'normal',
-      letterSpacing: 'normal',
-      color: '#02475b',
+      fontStretch: "normal",
+      fontStyle: "normal",
+      lineHeight: "normal",
+      letterSpacing: "normal",
+      color: "#02475b",
     },
     callSubheader: {
-      fontSize: '14px',
-      fontWeight: 'normal',
-      fontStretch: 'normal',
-      fontStyle: 'normal',
-      lineHeight: 'normal',
-      letterSpacing: 'normal',
-      color: '#979797',
-      display: 'block',
+      fontSize: "14px",
+      fontWeight: "normal",
+      fontStretch: "normal",
+      fontStyle: "normal",
+      lineHeight: "normal",
+      letterSpacing: "normal",
+      color: "#979797",
+      display: "block",
       marginTop: 8,
     },
     callOption: {
       width: 30,
       height: 30,
-      backgroundColor: '#00b38e',
-      color: '#FFFFFF',
-      display: 'inline-block',
+      backgroundColor: "#00b38e",
+      color: "#FFFFFF",
+      display: "inline-block",
       marginRight: 10,
       fontWeight: 600,
       fontSize: 20,
       borderRadius: 5,
-      textAlign: 'center',
+      textAlign: "center",
     },
     callOptionFirst: {
-      fontSize: '16px',
+      fontSize: "16px",
       fontWeight: 500,
-      fontStretch: 'normal',
-      fontStyle: 'normal',
-      lineHeight: 'normal',
-      letterSpacing: 'normal',
-      color: '#00b38e',
-      width: '50%',
+      fontStretch: "normal",
+      fontStyle: "normal",
+      lineHeight: "normal",
+      letterSpacing: "normal",
+      color: "#00b38e",
+      width: "50%",
     },
 
     callNote: {
-      fontSize: '14px',
-      fontWeight: 'normal',
-      fontStretch: 'normal',
-      fontStyle: 'normal',
-      lineHeight: 'normal',
-      letterSpacing: 'normal',
-      color: '#01475b',
+      fontSize: "14px",
+      fontWeight: "normal",
+      fontStretch: "normal",
+      fontStyle: "normal",
+      lineHeight: "normal",
+      letterSpacing: "normal",
+      color: "#01475b",
     },
     callButtonWrapper: {
-      display: 'flex',
-      justifyContent: 'flex-end',
+      display: "flex",
+      justifyContent: "flex-end",
       marginRight: 20,
       marginTop: 40,
     },
     content: {
-      position: 'relative',
-      borderRadius: '5px',
-      border: 'solid 1px rgba(2, 71, 91, 0.15)',
-      backgroundColor: 'rgba(0, 0, 0, 0.02)',
-      width: '100%',
-      '& textarea': {
-        border: 'none',
+      position: "relative",
+      borderRadius: "5px",
+      border: "solid 1px rgba(2, 71, 91, 0.15)",
+      backgroundColor: "rgba(0, 0, 0, 0.02)",
+      width: "100%",
+      "& textarea": {
+        border: "none",
         padding: 12,
         fontSize: 15,
         fontWeight: 500,
         borderRadius: 0,
-        color: '#01475b',
+        color: "#01475b",
       },
     },
     vitalLeft: {
-      width: '45%',
-      display: 'inline-block',
+      width: "45%",
+      display: "inline-block",
       paddingRight: 10,
-      [theme.breakpoints.down('xs')]: {
-        width: '100%',
+      [theme.breakpoints.down("xs")]: {
+        width: "100%",
         paddingRight: 0,
       },
     },
     vitalRight: {
-      width: '45%',
-      display: 'inline-block',
-      float: 'right',
-      [theme.breakpoints.down('xs')]: {
-        width: '100%',
+      width: "45%",
+      display: "inline-block",
+      float: "right",
+      [theme.breakpoints.down("xs")]: {
+        width: "100%",
         paddingRight: 0,
       },
     },
     dialogHeader: {
       padding: 20,
       paddingBottom: 10,
-      display: 'flex',
-      '& button': {
-        boxShadow: 'none',
-        minWidth: 'auto',
-        border: 'none',
+      display: "flex",
+      "& button": {
+        boxShadow: "none",
+        minWidth: "auto",
+        border: "none",
         padding: 0,
-        marginLeft: 'auto',
+        marginLeft: "auto",
       },
     },
     dialogBody: {
       padding: 20,
       paddingTop: 0,
-      '& h3': {
+      "& h3": {
         fontSize: 18,
-        lineHeight: '24px',
+        lineHeight: "24px",
         fontWeight: 500,
         margin: 0,
         paddingBottom: 16,
-        maxWidth: '80%',
+        maxWidth: "80%",
       },
     },
     noteText: {
       paddingTop: 20,
       fontSize: 16,
-      lineHeight: '20px',
-      color: 'rgba(0,0,0,0.6)',
+      lineHeight: "20px",
+      color: "rgba(0,0,0,0.6)",
       fontWeight: 500,
-      '& span': {
-        display: 'block',
+      "& span": {
+        display: "block",
         fontSize: 14,
         paddingTop: 10,
-        color: '#890000',
+        color: "#890000",
       },
     },
     formSection: {
-      width: '100%',
-      '& label': {
-        color: '#02475b',
-        display: 'block',
+      width: "100%",
+      "& label": {
+        color: "#02475b",
+        display: "block",
         opacity: 0.6,
         marginBottom: 5,
       },
     },
     checkBox: {
       paddingTop: 15,
-      '& label': {
-        '& >span:first-child': {
-          color: '#00b38e',
+      "& label": {
+        "& >span:first-child": {
+          color: "#00b38e",
         },
       },
     },
     bottomActions: {
-      display: 'flex',
-      justifyContent: 'flex-end',
+      display: "flex",
+      justifyContent: "flex-end",
       paddingTop: 16,
     },
     canceledBtn: {
       fontSize: 13,
-      fontWeight: 'bold',
-      padding: '9px 13px 9px 13px',
-      backgroundColor: '#fff',
-      boxShadow: '0 2px 5px 0 rgba(0, 0, 0, 0.2)',
+      fontWeight: "bold",
+      padding: "9px 13px 9px 13px",
+      backgroundColor: "#fff",
+      boxShadow: "0 2px 5px 0 rgba(0, 0, 0, 0.2)",
       borderRadius: 10,
-      color: '#fc9916',
+      color: "#fc9916",
       minWidth: 130,
     },
     cancelBtnDisabled: {
@@ -990,43 +1005,43 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sendBtn: {
       fontSize: 13,
-      fontWeight: 'bold',
-      padding: '9px 13px 9px 13px',
-      backgroundColor: '#fc9916',
-      boxShadow: '0 2px 5px 0 rgba(0, 0, 0, 0.2)',
+      fontWeight: "bold",
+      padding: "9px 13px 9px 13px",
+      backgroundColor: "#fc9916",
+      boxShadow: "0 2px 5px 0 rgba(0, 0, 0, 0.2)",
       borderRadius: 10,
-      color: '#fff',
+      color: "#fff",
       marginLeft: 16,
       minWidth: 210,
-      '&:hover': {
-        backgroundColor: '#fc9916',
-        color: '#fff',
+      "&:hover": {
+        backgroundColor: "#fc9916",
+        color: "#fff",
       },
     },
     sendBtnDisabled: {
       opacity: 0.6,
     },
     ringtone: {
-      position: 'absolute',
+      position: "absolute",
       zIndex: -1,
       height: 1,
       width: 1,
       padding: 0,
       margin: -1,
-      overflow: 'hidden',
-      clip: 'rect(0,0,0,0)',
+      overflow: "hidden",
+      clip: "rect(0,0,0,0)",
       border: 0,
     },
     toastMessage: {
-      width: '482px',
-      height: '40px',
-      borderRadius: '10px',
-      boxShadow: '0 1px 13px 0 rgba(0, 0, 0, 0.16)',
-      backgroundColor: '#00b38e',
-      position: 'relative',
-      top: '37px',
-      right: '529px',
-      marginBottom: '5px',
+      width: "482px",
+      height: "40px",
+      borderRadius: "10px",
+      boxShadow: "0 1px 13px 0 rgba(0, 0, 0, 0.16)",
+      backgroundColor: "#00b38e",
+      position: "relative",
+      top: "37px",
+      right: "529px",
+      marginBottom: "5px",
     },
     callButtonWrapperPrompt: {
       marginLeft: 30,
@@ -1034,21 +1049,21 @@ const useStyles = makeStyles((theme: Theme) => {
     floatingJoinPrompt: {
       width: 80,
       height: 80,
-      borderRadius: '50%',
-      background: '#FC9916',
-      position: 'fixed',
-      top: '80%',
-      right: '7%',
-      color: '#FFF',
-      padding: '15px 25px',
+      borderRadius: "50%",
+      background: "#FC9916",
+      position: "fixed",
+      top: "80%",
+      right: "7%",
+      color: "#FFF",
+      padding: "15px 25px",
     },
     joinPrompt: {
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      background: '#FFF',
-      width: '100%',
-      position: 'fixed',
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      background: "#FFF",
+      width: "100%",
+      position: "fixed",
       left: 0,
       bottom: -10,
       height: 100,
@@ -1060,24 +1075,24 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     collapse: {
       fontSize: 16,
-      color: '#FC9916',
+      color: "#FC9916",
     },
     fadedBgJoinPromt: {
-      background: '#000',
+      background: "#000",
       opacity: 0.5,
       top: 0,
       left: 0,
-      position: 'fixed',
-      width: '100%',
-      height: '100%',
+      position: "fixed",
+      width: "100%",
+      height: "100%",
       zIndex: 2,
     },
   };
 });
-const ringtoneUrl = require('../images/phone_ringing.mp3');
-const joinToneUrl = require('../images/join_sound.mp3');
-const exitToneUrl = require('../images/left_sound.mp3');
-const shortToneUrl = require('../images/short_tone.mp3');
+const ringtoneUrl = require("../images/phone_ringing.mp3");
+const joinToneUrl = require("../images/join_sound.mp3");
+const exitToneUrl = require("../images/left_sound.mp3");
+const shortToneUrl = require("../images/short_tone.mp3");
 
 interface errorObject {
   reasonError: boolean;
@@ -1143,15 +1158,15 @@ let didPatientJoined: boolean = false;
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
-  event.returnValue = '';
+  event.returnValue = "";
 };
 
 const subscribeBrowserButtonsListener = () => {
-  window.addEventListener('beforeunload', handleBrowserUnload);
+  window.addEventListener("beforeunload", handleBrowserUnload);
 };
 
 const unSubscribeBrowserButtonsListener = () => {
-  window.removeEventListener('beforeunload', handleBrowserUnload);
+  window.removeEventListener("beforeunload", handleBrowserUnload);
 };
 
 type Params = { id: string; patientId: string };
@@ -1187,33 +1202,43 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     updatedDate,
     setUpdatedDate,
   } = useContext(CaseSheetContext);
+  
+  const exotelCall = '^^#exotelCall';
+  const covertVideoMsg = "^^convert`video^^";
+  const covertAudioMsg = "^^convert`audio^^";
+  const videoCallMsg = "^^callme`video^^";
+  const audioCallMsg = "^^callme`audio^^";
+  const stopcallMsg = "^^callme`stop^^";
+  const acceptcallMsg = "^^callme`accept^^";
+  const startConsult = "^^#startconsult";
+  const stopConsult = "^^#stopconsult";
+  const transferconsult = "^^#transferconsult";
+  const rescheduleconsult = "^^#rescheduleconsult";
+  const followupconsult = "^^#followupconsult";
+  const patientConsultStarted = "^^#PatientConsultStarted";
+  const firstMessage = "^^#firstMessage";
+  const secondMessage = "^^#secondMessage";
+  const cancelConsultInitiated = "^^#cancelConsultInitiated";
+  const callAbandonment = "^^#callAbandonment";
+  const appointmentComplete = "^^#appointmentComplete";
+  const doctorAutoResponse = "^^#doctorAutoResponse";
+  const patientJoinedMeetingRoom = "^^#patientJoinedMeetingRoom";
+  const leaveChatRoom = "^^#leaveChatRoom";
+  const videoCallEnded = "Video call ended";
+  const patientRejectedCall = "^^#PATIENT_REJECTED_CALL";
 
-  const covertVideoMsg = '^^convert`video^^';
-  const covertAudioMsg = '^^convert`audio^^';
-  const videoCallMsg = '^^callme`video^^';
-  const audioCallMsg = '^^callme`audio^^';
-  const stopcallMsg = '^^callme`stop^^';
-  const acceptcallMsg = '^^callme`accept^^';
-  const startConsult = '^^#startconsult';
-  const stopConsult = '^^#stopconsult';
-  const transferconsult = '^^#transferconsult';
-  const rescheduleconsult = '^^#rescheduleconsult';
-  const followupconsult = '^^#followupconsult';
-  const patientConsultStarted = '^^#PatientConsultStarted';
-  const firstMessage = '^^#firstMessage';
-  const secondMessage = '^^#secondMessage';
-  const cancelConsultInitiated = '^^#cancelConsultInitiated';
-  const callAbandonment = '^^#callAbandonment';
-  const appointmentComplete = '^^#appointmentComplete';
-  const doctorAutoResponse = '^^#doctorAutoResponse';
-  const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
-  const leaveChatRoom = '^^#leaveChatRoom';
-  const videoCallEnded = 'Video call ended';
-
-  const [startConsultDisableReason, setStartConsultDisableReason] = useState<string>('');
-  const [iscallAbandonment, setIscallAbandonment] = React.useState<boolean>(false);
-  const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
-  const [showRescheduleLoader, setShowRescheduleLoader] = React.useState<boolean>(false);
+  const [startConsultDisableReason, setStartConsultDisableReason] = useState<
+    string
+  >("");
+  const [iscallAbandonment, setIscallAbandonment] = React.useState<boolean>(
+    false,
+  );
+  const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<
+    boolean
+  >(false);
+  const [showRescheduleLoader, setShowRescheduleLoader] = React.useState<
+    boolean
+  >(false);
 
   const [loading, setLoading] = React.useState<boolean>(false);
 
@@ -1222,19 +1247,24 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [showVital, setShowVital] = React.useState<boolean>(false);
   const [showReferral, setShowReferral] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
-  const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<string>('');
-  const [isConfirmationChecked, setIsConfirmationChecked] = React.useState<boolean>(false);
-  const [emptyFieldsString, setEmptyFieldsString] = useState<string>('');
+  const [doctorNextAvailableSlot, setDoctorNextAvailableSlot] = useState<
+    string
+  >("");
+  const [isConfirmationChecked, setIsConfirmationChecked] = React.useState<
+    boolean
+  >(false);
+  const [emptyFieldsString, setEmptyFieldsString] = useState<string>("");
   const [showToastMessage, setShowToastMessage] = useState<boolean>(false);
 
   const [floatingJoinPrompt, setFloatingJoinPrompt] = useState<boolean>(false);
   const [joinPrompt, setJoinPrompt] = useState<boolean>(false);
-  const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
+  const patientName = patientDetails!.firstName + " " +
+    patientDetails!.lastName;
 
   const moveCursorToEnd = (element: any) => {
-    if (typeof element.selectionStart == 'number') {
+    if (typeof element.selectionStart == "number") {
       element.selectionStart = element.selectionEnd = element.value.length;
-    } else if (typeof element.createTextRange != 'undefined') {
+    } else if (typeof element.createTextRange != "undefined") {
       element.focus();
       var range = element.createTextRange();
       range.collapse(false);
@@ -1242,7 +1272,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
   };
 
-  const [dateSelected, setDateSelected] = useState<string>(moment(new Date()).format('YYYY-MM-DD'));
+  const [dateSelected, setDateSelected] = useState<string>(
+    moment(new Date()).format("YYYY-MM-DD"),
+  );
 
   // timer for audio/video call start
   const timerMinuts = Math.floor(startingTime / 60);
@@ -1266,10 +1298,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     variables: {
       DoctorNextAvailableSlotInput: {
         doctorIds: [props.doctorId],
-        availableDate: format(new Date(), 'yyyy-MM-dd'),
+        availableDate: format(new Date(), "yyyy-MM-dd"),
       },
     },
-    fetchPolicy: 'no-cache',
+    fetchPolicy: "no-cache",
   });
 
   //call abundant timer start
@@ -1316,8 +1348,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [remainingCallTime, setRemainingCallTime] = useState<number>(600);
   const callIntervalTimer = (timer: number) => {
     intervalcallId = setInterval(() => {
-      const isAfter = moment(new Date()).isAfter(moment(props.appointmentDateTime));
-      if (!didPatientJoined && props.appointmentStatus !== STATUS.COMPLETED && isAfter) {
+      const isAfter = moment(new Date()).isAfter(
+        moment(props.appointmentDateTime),
+      );
+      if (
+        !didPatientJoined && props.appointmentStatus !== STATUS.COMPLETED &&
+        isAfter
+      ) {
         timer = timer - 1;
         stoppedTimerCall = timer;
         setRemainingCallTime(timer);
@@ -1337,8 +1374,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   const noShowAction = (status: STATUS) => {
     if (
-      window.location.pathname.indexOf('Consulttabs') > -1 ||
-      window.location.pathname.indexOf('consulttabs') > -1
+      window.location.pathname.indexOf("Consulttabs") > -1 ||
+      window.location.pathname.indexOf("consulttabs") > -1
     ) {
       client
         .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
@@ -1353,7 +1390,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               callType: APPT_CALL_TYPE.CHAT,
             },
           },
-          fetchPolicy: 'no-cache',
+          fetchPolicy: "no-cache",
         })
         .then((_data) => {
           const text = {
@@ -1369,7 +1406,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               channel: channel,
               storeInHistory: true,
             },
-            (status: any, response: any) => {}
+            (status: any, response: any) => {},
           );
           unSubscribeBrowserButtonsListener();
           // if (status === STATUS.NO_SHOW) {
@@ -1382,9 +1419,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         .catch((e) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
-          const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
+          const patientName = patientDetails!.firstName + " " +
+            patientDetails!.lastName;
           const logObject = {
-            api: 'EndAppointmentSession',
+            api: "EndAppointmentSession",
             inputParam: JSON.stringify({
               appointmentId: props.appointmentId,
               status: status,
@@ -1395,10 +1433,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             doctorDisplayName: currentPatient!.displayName,
             patientId: params.patientId,
             patientName: patientName,
-            currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-            appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
-              'MMMM DD YYYY h:mm:ss a'
-            ),
+            currentTime: moment(new Date()).format("MMMM DD YYYY h:mm:ss a"),
+            appointmentDateTime: moment(new Date(props.appointmentDateTime))
+              .format(
+                "MMMM DD YYYY h:mm:ss a",
+              ),
             error: JSON.stringify(e),
           };
 
@@ -1412,22 +1451,24 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   const startBtnInformationCheck = () => {
     if (currentUserType === LoggedInUserType.SECRETARY) {
-      setStartConsultDisableReason("You don't have permission to start consult.");
+      setStartConsultDisableReason(
+        "You don't have permission to start consult.",
+      );
     } else if (disableOnCancel) {
-      console.log('your appointment is cancelled');
+      console.log("your appointment is cancelled");
     } else if (
-      appointmentInfo!.appointmentState !== 'NEW' &&
-      appointmentInfo!.appointmentState !== 'TRANSFER' &&
-      appointmentInfo!.appointmentState !== 'RESCHEDULE'
+      appointmentInfo!.appointmentState !== "NEW" &&
+      appointmentInfo!.appointmentState !== "TRANSFER" &&
+      appointmentInfo!.appointmentState !== "RESCHEDULE"
     ) {
       setStartConsultDisableReason(
-        'This appointment is under reschedule and waiting for the patient to accept the new slot.'
+        "This appointment is under reschedule and waiting for the patient to accept the new slot.",
       );
     } else if (
       appointmentInfo!.status !== STATUS.IN_PROGRESS &&
       appointmentInfo!.status !== STATUS.PENDING
     ) {
-      console.log('Your appointment status is ' + appointmentInfo!.status);
+      console.log("Your appointment status is " + appointmentInfo!.status);
     }
   };
   // timer for audio/video call end
@@ -1435,17 +1476,23 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
-  const [startAppointmentButton, setStartAppointmentButton] = React.useState<boolean>(true);
+  const [startAppointmentButton, setStartAppointmentButton] = React.useState<
+    boolean
+  >(true);
   const [disableOnCancel, setDisableOnCancel] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isSlotPopoverOpen, setIsSlotPopoverOpen] = useState<boolean>(false);
-  const [isCancelPopoverOpen, setIsCancelPopoverOpen] = useState<boolean>(false);
-  const [reason, setReason] = useState<string>('');
-  const [cancelReason, setCancelReason] = useState<string>('Not related to my specialty');
+  const [isCancelPopoverOpen, setIsCancelPopoverOpen] = useState<boolean>(
+    false,
+  );
+  const [reason, setReason] = useState<string>("");
+  const [cancelReason, setCancelReason] = useState<string>(
+    "Not related to my specialty",
+  );
   const [textOther, setTextOther] = useState(false);
-  const [otherTextValue, setOtherTextValue] = useState('');
+  const [otherTextValue, setOtherTextValue] = useState("");
   const [textOtherCancel, setTextOtherCancel] = useState(false);
-  const [otherTextCancelValue, setOtherTextCancelValue] = useState('');
+  const [otherTextCancelValue, setOtherTextCancelValue] = useState("");
   const [isResendLoading, setIsResendLoading] = useState(false);
   const {
     currentPatient,
@@ -1457,7 +1504,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     searchError: false,
     otherErrorCancel: false,
   });
-  const [errorStateReshedule, setErrorStateReshedule] = React.useState<errorObjectReshedule>({
+  const [errorStateReshedule, setErrorStateReshedule] = React.useState<
+    errorObjectReshedule
+  >({
     otherError: false,
   });
   // audioVideoChat start
@@ -1469,12 +1518,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [consultStart, setConsultStart] = useState<boolean>(false);
-  const [sendToPatientButtonDisable, setSendToPatientButtonDisable] = useState<boolean>(false);
+  const [sendToPatientButtonDisable, setSendToPatientButtonDisable] = useState<
+    boolean
+  >(false);
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
   const [playJoinTone, setPlayJoinTone] = useState<boolean>(false);
   const [playExitTone, setPlayExitTone] = useState<boolean>(false);
   const [playShortTone, setPlayShortTone] = useState<boolean>(false);
   const [isCall, setIscall] = React.useState(true);
+  const [rejectedByPatientBeforeAnswer, setRejectedByPatientBeforeAnswer] =
+    React.useState(null);
 
   //OT Error state
   const [sessionError, setSessionError] = React.useState<boolean>(null);
@@ -1543,7 +1596,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     if (!isCallAccepted) sendCallDisconnectNotification();
 
     const cookieStr = `action=`;
-    document.cookie = cookieStr + ';path=/;';
+    document.cookie = cookieStr + ";path=/;";
     const text = {
       id: props.doctorId,
       message: stopcallMsg,
@@ -1559,14 +1612,20 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status: any, response: any) => {}
+      (status: any, response: any) => {},
     );
     const stoptext = {
       id: props.doctorId,
-      message: `${isVideoCall ? 'Video' : 'Audio'} call ended`,
+      message: `${isVideoCall ? "Video" : "Audio"} call ended`,
       duration: `${
-        timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+        timerLastMinuts.toString().length < 2
+          ? "0" + timerLastMinuts
+          : timerLastMinuts
+      } : ${
+        timerLastSeconds.toString().length < 2
+          ? "0" + timerLastSeconds
+          : timerLastSeconds
+      }`,
       isTyping: true,
       messageDate: new Date(),
       sentBy: REQUEST_ROLES.DOCTOR,
@@ -1578,7 +1637,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status: any, response: any) => {}
+      (status: any, response: any) => {},
     );
     stopIntervalTimer();
     props.endCallNotificationAction(true);
@@ -1590,32 +1649,41 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       callType: isVideoCall ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO,
     };
     client
-      .query<SendCallDisconnectNotification, SendCallDisconnectNotificationVariables>({
-        query: SEND_CALL_DISCONNECT_NOTIFICATION,
-        fetchPolicy: 'no-cache',
-        variables,
-      })
+      .query<
+      SendCallDisconnectNotification,
+      SendCallDisconnectNotificationVariables
+    >({
+      query: SEND_CALL_DISCONNECT_NOTIFICATION,
+      fetchPolicy: "no-cache",
+      variables,
+    })
       .catch((error: ApolloError) => {
         const patientName =
-          props.casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
-          props.casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
+          props.casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!
+            .firstName +
+          " " +
+          props.casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!
+            .lastName;
         const logObject = {
-          api: 'EndCallNotification',
+          api: "EndCallNotification",
           inputParam: JSON.stringify(variables),
           appointmentId: props.appointmentId,
           doctorId: currentPatient!.id,
           doctorDisplayName: currentPatient!.displayName,
           patientId: params.patientId,
           patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
-          ),
+          currentTime: moment(new Date()).format("MMMM DD YYYY h:mm:ss a"),
+          appointmentDateTime: moment(new Date(props.appointmentDateTime))
+            .format(
+              "MMMM DD YYYY h:mm:ss a",
+            ),
           error: JSON.stringify(error),
         };
         sessionClient.notify(JSON.stringify(logObject));
-        console.log('Error in Send Call Disconnect Notification', error.message);
+        console.log(
+          "Error in Send Call Disconnect Notification",
+          error.message,
+        );
       });
   };
 
@@ -1634,10 +1702,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status: any, response: any) => {}
+      (status: any, response: any) => {},
     );
     {
-      joinPrompt || floatingJoinPrompt ? setPlayRingtone(false) : setPlayRingtone(true);
+      joinPrompt || floatingJoinPrompt
+        ? setPlayRingtone(false)
+        : setPlayRingtone(true);
     }
 
     actionBtn();
@@ -1645,6 +1715,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const actionBtn = () => {
     setShowVideo(true);
   };
+
   const stopAudioVideoCallpatient = () => {
     setIsCallAccepted(false);
     setShowVideo(false);
@@ -1652,7 +1723,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     clearInterval(intervalMissCall);
     setDisableOnCancel(false);
     const cookieStr = `action=`;
-    document.cookie = cookieStr + ';path=/;';
+    document.cookie = cookieStr + ";path=/;";
     const text = {
       id: props.doctorId,
       message: stopcallMsg,
@@ -1667,10 +1738,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         storeInHistory: true,
         sendByPost: true,
       },
-      (status: any, response: any) => {}
+      (status: any, response: any) => {},
     );
     stopIntervalTimer();
   };
+
   const convertCall = () => {
     setConvertVideo(!convertVideo);
     setTimeout(() => {
@@ -1685,7 +1757,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           channel: channel,
           storeInHistory: false,
         },
-        (status: any, response: any) => {}
+        (status: any, response: any) => {},
       );
     }, 10);
   };
@@ -1722,7 +1794,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
       minute = diff;
     }
-    const addedMinutes = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
+    const addedMinutes = year + "-" + month + "-" + day + " " + hour + ":" +
+      minute + ":" + second;
     const addedTime = new Date(addedMinutes);
     if (current > consult && addedTime > current) {
       const diffrent = current.getTime() - consult.getTime();
@@ -1741,25 +1814,26 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   const startConstultCheck = () => {
     const selectedDay = moment()
-      .format('dddd')
+      .format("dddd")
       .toUpperCase();
     const consultHours = currentDoctor && currentDoctor.consultHours;
     let duration = 15;
     if (consultHours) {
-      const filteredDay =
-        consultHours &&
+      const filteredDay = consultHours &&
         _.filter(
           consultHours,
-          (dayObject) => dayObject && dayObject.actualDay && dayObject.actualDay === selectedDay
+          (dayObject) =>
+            dayObject && dayObject.actualDay &&
+            dayObject.actualDay === selectedDay,
         );
-      const consultDurationDay: any =
-        filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
-      duration =
-        consultDurationDay &&
-        Object.keys(consultDurationDay).length !== 0 &&
-        consultDurationDay.consultDuration
-          ? consultDurationDay.consultDuration
-          : 15;
+      const consultDurationDay: any = filteredDay && Array.isArray(filteredDay)
+        ? filteredDay[0]
+        : {};
+      duration = consultDurationDay &&
+          Object.keys(consultDurationDay).length !== 0 &&
+          consultDurationDay.consultDuration
+        ? consultDurationDay.consultDuration
+        : 15;
     }
     const disablecurrent = new Date();
     const disableconsult = new Date(props.appointmentDateTime);
@@ -1779,20 +1853,20 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       disableminute = disablediff;
     }
 
-    const disableaddedMinutes =
-      disableyear +
-      '-' +
-      (disablemonth < 10 ? '0' + disablemonth : disablemonth) +
-      '-' +
-      (disableday < 10 ? '0' + disableday : disableday) +
-      ' ' +
-      (disablehour < 10 ? '0' + disablehour : disablehour) +
-      ':' +
-      (disableminute < 10 ? '0' + disableminute : disableminute) +
-      ':' +
-      (disablesecond < 10 ? '0' + disablesecond : disablesecond);
-    const disableaddedTime = new Date(disableaddedMinutes.replace(/-/g, '/'));
-    const aptDTTM = new Date(new Date(props.appointmentDateTime).getTime()).toISOString();
+    const disableaddedMinutes = disableyear +
+      "-" +
+      (disablemonth < 10 ? "0" + disablemonth : disablemonth) +
+      "-" +
+      (disableday < 10 ? "0" + disableday : disableday) +
+      " " +
+      (disablehour < 10 ? "0" + disablehour : disablehour) +
+      ":" +
+      (disableminute < 10 ? "0" + disableminute : disableminute) +
+      ":" +
+      (disablesecond < 10 ? "0" + disablesecond : disablesecond);
+    const disableaddedTime = new Date(disableaddedMinutes.replace(/-/g, "/"));
+    const aptDTTM = new Date(new Date(props.appointmentDateTime).getTime())
+      .toISOString();
     const presentTime = new Date().toISOString();
 
     if (
@@ -1820,7 +1894,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setAnchorEl(null);
   }
   const open = Boolean(anchorEl);
-  const id = open ? 'simple-popover' : undefined;
+  const id = open ? "simple-popover" : undefined;
 
   function handleClickThreeDots(event: any) {
     setAnchorElThreeDots(event.currentTarget);
@@ -1829,7 +1903,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setAnchorElThreeDots(null);
   }
   const openThreeDots = Boolean(anchorElThreeDots);
-  const idThreeDots = openThreeDots ? 'simple-three-dots' : undefined;
+  const idThreeDots = openThreeDots ? "simple-three-dots" : undefined;
   const channel = props.appointmentId;
   const { setCaseSheetEdit } = useContext(CaseSheetContext);
   useEffect(() => {
@@ -1839,7 +1913,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   }, [props.urlToPatient]);
   useEffect(() => {
     setTextOtherCancel;
-    if (reason === 'Other') {
+    if (reason === "Other") {
       setTextOther(true);
     } else {
       setTextOther(false);
@@ -1847,7 +1921,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     clearOtherError();
   }, [reason]);
   useEffect(() => {
-    if (cancelReason === 'Other') {
+    if (cancelReason === "Other") {
       setTextOtherCancel(true);
     } else {
       setTextOtherCancel(false);
@@ -1887,7 +1961,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         lastMsg.message.message !== cancelConsultInitiated &&
         lastMsg.message.message !== callAbandonment &&
         lastMsg.message.message !== appointmentComplete &&
-        lastMsg.message.message !== doctorAutoResponse
+        lastMsg.message.message !== doctorAutoResponse &&
+        lastMsg.message.message !== exotelCall
       ) {
         setIsNewMsg(true);
       } else {
@@ -1911,6 +1986,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           if (isCall) forcelyDisconnect();
         }, 2000);
       }
+
+      /** Call rejected by patient before answer */
+      if (lastMsg && lastMsg.message === patientRejectedCall) {
+        setPlayRingtone(false);
+        setPlayExitTone(true);
+        setRejectedByPatientBeforeAnswer("Call rejected by patient");
+        setTimeout(() => {
+          forcelyDisconnect();
+        }, 500);
+      }
+
       if (
         isConsultStarted &&
         lastMsg.message &&
@@ -1919,7 +2005,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         setPlayShortTone(true);
         setJoinPrompt(true);
       }
-      if (isConsultStarted && lastMsg.message && lastMsg.message.message === videoCallEnded) {
+      if (
+        isConsultStarted && lastMsg.message &&
+        lastMsg.message.message === videoCallEnded
+      ) {
         setPlayShortTone(false);
         setJoinPrompt(false);
         setFloatingJoinPrompt(false);
@@ -1939,7 +2028,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       id: props.doctorId,
       message: startConsult,
       isTyping: true,
-      automatedText: currentPatient!.displayName + ' has joined your chat!',
+      automatedText: currentPatient!.displayName + " has joined your chat!",
       messageDate: new Date(),
       sentBy: REQUEST_ROLES.DOCTOR,
     };
@@ -1950,7 +2039,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         channel: channel,
         storeInHistory: true,
       },
-      (status: any, response: any) => {}
+      (status: any, response: any) => {},
     );
   };
   const onStopConsult = (isResend: boolean) => {
@@ -1969,7 +2058,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           channel: channel,
           storeInHistory: true,
         },
-        (status: any, response: any) => {}
+        (status: any, response: any) => {},
       );
     } else {
       setIsResendLoading(true);
@@ -1977,27 +2066,30 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
     let folloupDateTime = new Date(
       new Date(props.appointmentDateTime).getTime() +
-        parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000
+        parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000,
     ).toISOString();
     if (
       followUp[0] &&
       followUpDate &&
       followUpDate.length > 0 &&
       followUpDate[0] !== null &&
-      followUpDate[0] !== ''
+      followUpDate[0] !== ""
     ) {
-      folloupDateTime = followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '';
-    } else if (followUp[0] && followUpAfterInDays[0] !== 'Custom') {
+      folloupDateTime = followUpDate[0]
+        ? new Date(followUpDate[0]).toISOString()
+        : "";
+    } else if (followUp[0] && followUpAfterInDays[0] !== "Custom") {
       const apptdateTime = new Date(props.appointmentDateTime);
       folloupDateTime = new Date(
-        apptdateTime.getTime() + parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000
+        apptdateTime.getTime() +
+          parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000,
       ).toISOString();
     }
 
-    if (folloupDateTime !== '') {
+    if (folloupDateTime !== "") {
       const followupObj = {
         appointmentId: props.appointmentId,
-        folloupDateTime: followUp[0] ? folloupDateTime : '',
+        folloupDateTime: followUp[0] ? folloupDateTime : "",
         doctorId: props.doctorId,
         caseSheetId: props.caseSheetId,
         doctorInfo: currentPatient,
@@ -2021,9 +2113,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             storeInHistory: true,
           },
           (status: any, response: any) => {
-            alert('Prescription has been sent to patient successfully');
+            alert("Prescription has been sent to patient successfully");
             setIsResendLoading(false);
-          }
+          },
         );
       }, timeToLoad);
     }
@@ -2036,7 +2128,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         searchError: false,
         otherErrorCancel: false,
       });
-    } else if (cancelReason === 'Other' && isEmpty(otherTextCancelValue)) {
+    } else if (cancelReason === "Other" && isEmpty(otherTextCancelValue)) {
       setErrorState({
         ...errorState,
         reasonError: false,
@@ -2055,40 +2147,46 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   const isPastAppointment = () => {
     const selectedDay = moment()
-      .format('dddd')
+      .format("dddd")
       .toUpperCase();
     const consultHours = currentDoctor && currentDoctor.consultHours;
     let duration = 15;
     if (consultHours) {
-      const filteredDay =
-        consultHours &&
+      const filteredDay = consultHours &&
         _.filter(
           consultHours,
-          (dayObject) => dayObject && dayObject.actualDay && dayObject.actualDay === selectedDay
+          (dayObject) =>
+            dayObject && dayObject.actualDay &&
+            dayObject.actualDay === selectedDay,
         );
-      const consultDurationDay: any =
-        filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
-      duration =
-        consultDurationDay &&
-        Object.keys(consultDurationDay).length !== 0 &&
-        consultDurationDay.consultDuration
-          ? consultDurationDay.consultDuration
-          : 15;
+      const consultDurationDay: any = filteredDay && Array.isArray(filteredDay)
+        ? filteredDay[0]
+        : {};
+      duration = consultDurationDay &&
+          Object.keys(consultDurationDay).length !== 0 &&
+          consultDurationDay.consultDuration
+        ? consultDurationDay.consultDuration
+        : 15;
     }
     const diff = moment.duration(
       moment(new Date(props.appointmentDateTime)).diff(
-        moment(moment(new Date()).format('YYYY-MM-DD HH:mm:ss'))
-      )
+        moment(moment(new Date()).format("YYYY-MM-DD HH:mm:ss")),
+      ),
     );
     return diff.asMinutes() + duration < 0;
   };
 
   const currentDoctor = useCurrentPatient();
   const isSeniorDoctor =
-    currentDoctor && currentDoctor.doctorType !== DoctorType.JUNIOR ? true : false;
-  const srDoctorId = (currentDoctor && currentDoctor.id) || '';
-  const mutationCancelSrdConsult = useMutation<CancelAppointment, CancelAppointmentVariables>(
-    CANCEL_APPOINTMENT
+    currentDoctor && currentDoctor.doctorType !== DoctorType.JUNIOR
+      ? true
+      : false;
+  const srDoctorId = (currentDoctor && currentDoctor.id) || "";
+  const mutationCancelSrdConsult = useMutation<
+    CancelAppointment,
+    CancelAppointmentVariables
+  >(
+    CANCEL_APPOINTMENT,
   );
 
   const navigateToCalendar = () => {
@@ -2096,7 +2194,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   const rescheduleConsultAction = () => {
     // do api call
-    if (reason === 'Other' && isEmpty(otherTextValue)) {
+    if (reason === "Other" && isEmpty(otherTextValue)) {
       setErrorStateReshedule({
         ...errorStateReshedule,
         otherError: true,
@@ -2110,7 +2208,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
   };
 
-  const initiateRescheduleMutation = useMutation(INITIATE_RESCHDULE_APPONITMENT);
+  const initiateRescheduleMutation = useMutation(
+    INITIATE_RESCHDULE_APPONITMENT,
+  );
   // flag: true is for missed call reschedule & false for normal
   const callInitiateReschedule = (flag: boolean) => {
     setShowRescheduleLoader(true);
@@ -2119,49 +2219,52 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
     const rescheduleParam = flag
       ? {
-          appointmentId: props.appointmentId,
-          rescheduleReason: 'Missed 3 calls from doctor',
-          rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-          rescheduleInitiatedId: params.patientId,
-          rescheduledDateTime: moment(today)
-            .add(1, 'days')
-            .toISOString(),
-          autoSelectSlot: 0,
-        }
+        appointmentId: props.appointmentId,
+        rescheduleReason: "Missed 3 calls from doctor",
+        rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+        rescheduleInitiatedId: params.patientId,
+        rescheduledDateTime: moment(today)
+          .add(1, "days")
+          .toISOString(),
+        autoSelectSlot: 0,
+      }
       : {
-          appointmentId: props.appointmentId,
-          rescheduleReason: reason === 'Other' ? otherTextValue : reason,
-          rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
-          rescheduleInitiatedId: props.doctorId,
-          rescheduledDateTime:
-            moment(
+        appointmentId: props.appointmentId,
+        rescheduleReason: reason === "Other" ? otherTextValue : reason,
+        rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+        rescheduleInitiatedId: props.doctorId,
+        rescheduledDateTime: moment(
+          new Date(
+            new Date(new Date(dateSelected + "T" + timeSelected + ":00"))
+              .getTime() +
               new Date(
-                new Date(new Date(dateSelected + 'T' + timeSelected + ':00')).getTime() +
-                  new Date(
-                    new Date(dateSelected + 'T' + timeSelected + ':00')
-                  ).getTimezoneOffset() *
-                    60000
-              )
-            ).format('YYYY-MM-DDTHH:mm') + ':00.000Z',
-          autoSelectSlot: 0,
-        };
+                  new Date(dateSelected + "T" + timeSelected + ":00"),
+                ).getTimezoneOffset() *
+                60000,
+          ),
+        ).format("YYYY-MM-DDTHH:mm") + ":00.000Z",
+        autoSelectSlot: 0,
+      };
     initiateRescheduleMutation({
       variables: {
         RescheduleAppointmentInput: rescheduleParam,
       },
-      fetchPolicy: 'no-cache',
+      fetchPolicy: "no-cache",
     })
       .then(({ data }: any) => {
-        let rescheduledDateTime = '';
+        let rescheduledDateTime = "";
         let rescheduleCount = 0;
-        let reschduleId = '';
+        let reschduleId = "";
         if (data && data.initiateRescheduleAppointment) {
           if (data.initiateRescheduleAppointment.rescheduleAppointment) {
             rescheduledDateTime =
-              data.initiateRescheduleAppointment.rescheduleAppointment.rescheduledDateTime || '';
-            reschduleId = data.initiateRescheduleAppointment.rescheduleAppointment.id || '';
+              data.initiateRescheduleAppointment.rescheduleAppointment
+                .rescheduledDateTime || "";
+            reschduleId =
+              data.initiateRescheduleAppointment.rescheduleAppointment.id || "";
           }
-          rescheduleCount = data.initiateRescheduleAppointment.rescheduleCount || 0;
+          rescheduleCount =
+            data.initiateRescheduleAppointment.rescheduleCount || 0;
         }
 
         const reschduleObject: any = {
@@ -2188,7 +2291,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           (status: any, response: any) => {
             setShowRescheduleLoader(false);
             navigateToCalendar();
-          }
+          },
         );
         setIsPopoverOpen(false);
         setDisableOnCancel(true);
@@ -2196,19 +2299,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
-        const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
+        const patientName = patientDetails!.firstName + " " +
+          patientDetails!.lastName;
         const logObject = {
-          api: 'INITIATE_RESCHDULE_APPONITMENT',
+          api: "INITIATE_RESCHDULE_APPONITMENT",
           inputParam: JSON.stringify(rescheduleParam),
           appointmentId: props.appointmentId,
           doctorId: props.doctorId,
           doctorDisplayName: currentPatient!.displayName,
           patientId: params.patientId,
           patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
-          ),
+          currentTime: moment(new Date()).format("MMMM DD YYYY h:mm:ss a"),
+          appointmentDateTime: moment(new Date(props.appointmentDateTime))
+            .format(
+              "MMMM DD YYYY h:mm:ss a",
+            ),
           error: JSON.stringify(e),
         };
         setShowRescheduleLoader(false);
@@ -2220,57 +2325,70 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const now = new Date();
     const diff = moment.duration(
       moment(new Date(props.appointmentDateTime)).diff(
-        moment(moment(now).format('YYYY-MM-DD HH:mm:ss'))
-      )
+        moment(moment(now).format("YYYY-MM-DD HH:mm:ss")),
+      ),
     );
     const diffInHours = diff.asHours();
-    if (diffInHours > 0 && diffInHours < 12)
+    if (diffInHours > 0 && diffInHours < 12) {
       if (diff.hours() <= 0) {
         return `| Time to consult ${
-          diff.minutes().toString().length < 2 ? '0' + diff.minutes() : diff.minutes()
-        } : ${diff.seconds().toString().length < 2 ? '0' + diff.seconds() : diff.seconds()}`;
+          diff.minutes().toString().length < 2
+            ? "0" + diff.minutes()
+            : diff.minutes()
+        } : ${
+          diff.seconds().toString().length < 2
+            ? "0" + diff.seconds()
+            : diff.seconds()
+        }`;
       }
-    return '';
+    }
+    return "";
   };
-  const showCallMoreBtns =
-    props.appointmentStatus === STATUS.COMPLETED &&
-    props.sentToPatient === false &&
-    (props.isClickedOnPriview || props.sentToPatient === false) &&
-    !props.isClickedOnEdit
-      ? true
-      : false;
+  const showCallMoreBtns = props.appointmentStatus === STATUS.COMPLETED &&
+      props.sentToPatient === false &&
+      (props.isClickedOnPriview || props.sentToPatient === false) &&
+      !props.isClickedOnEdit
+    ? true
+    : false;
 
-  const [timeSelected, setTimeSelected] = useState<string>('');
+  const [timeSelected, setTimeSelected] = useState<string>("");
   const calendarRef = useRef<HTMLDivElement>(null);
 
   const getDefaultValue = (type: string) => {
     const localStorageItem = getLocalStorageItem(params.id);
     switch (type) {
-      case 'height':
+      case "height":
         return localStorageItem ? localStorageItem.height : height;
-      case 'weight':
+      case "weight":
         return localStorageItem ? localStorageItem.weight : weight;
-      case 'bp':
+      case "bp":
         return localStorageItem ? localStorageItem.bp : bp;
-      case 'temperature':
+      case "temperature":
         return localStorageItem ? localStorageItem.temperature : temperature;
-      case 'referralSpecialtyName':
-        return localStorageItem ? localStorageItem.referralSpecialtyName : referralSpecialtyName;
-      case 'referralDescription':
-        return localStorageItem ? localStorageItem.referralDescription : referralDescription;
-      case 'medicationHistory':
-        return localStorageItem ? localStorageItem.medicationHistory : medicationHistory;
+      case "referralSpecialtyName":
+        return localStorageItem
+          ? localStorageItem.referralSpecialtyName
+          : referralSpecialtyName;
+      case "referralDescription":
+        return localStorageItem
+          ? localStorageItem.referralDescription
+          : referralDescription;
+      case "medicationHistory":
+        return localStorageItem
+          ? localStorageItem.medicationHistory
+          : medicationHistory;
     }
   };
 
   const checkForEmptyFields = () => {
-    const referralSpecialtyName = getDefaultValue('referralSpecialtyName') || '';
-    const referralDescription = getDefaultValue('referralDescription') || '';
-    if (referralSpecialtyName && referralDescription.trim() === '') {
+    const referralSpecialtyName = getDefaultValue("referralSpecialtyName") ||
+      "";
+    const referralDescription = getDefaultValue("referralDescription") || "";
+    if (referralSpecialtyName && referralDescription.trim() === "") {
       setShowVital(false);
       setVitalError({
-        height: '',
-        weight: '',
+        height: "",
+        weight: "",
       });
       setReferralError(true);
       setShowReferral(true);
@@ -2286,10 +2404,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setVitalIgnored(true);
     setShowVital(false);
 
-    const referralSpecialtyName = getDefaultValue('referralSpecialtyName');
-    const referralDescription = getDefaultValue('referralDescription');
+    const referralSpecialtyName = getDefaultValue("referralSpecialtyName");
+    const referralDescription = getDefaultValue("referralDescription");
 
-    const isEmptyFields = referralSpecialtyName && referralDescription.trim() === '';
+    const isEmptyFields = referralSpecialtyName &&
+      referralDescription.trim() === "";
 
     if (!isEmptyFields) {
       stopInterval();
@@ -2305,7 +2424,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     fetch(props.prescriptionPdf).then((response) => {
       response.blob().then((blob) => {
         let url = window.URL.createObjectURL(blob);
-        let a = document.createElement('a');
+        let a = document.createElement("a");
         a.href = url;
         a.download = `${props.appointmentId}_${patientDetails!.firstName}.pdf`;
         a.click();
@@ -2348,11 +2467,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
       <div className={classes.breadcrumbs}>
         <div>
-          {(props.appointmentStatus !== STATUS.COMPLETED || props.isClickedOnEdit) && (
-            <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>
-          )}
+          {(props.appointmentStatus !== STATUS.COMPLETED ||
+            props.isClickedOnEdit) && (
+              <Prompt
+                message="Are you sure to exit?"
+                when={props.startAppointment}
+              >
+              </Prompt>
+            )}
           <Link
-            to={localStorage.getItem('callBackUrl')}
+            to={localStorage.getItem("callBackUrl")}
             onClick={() => {
               pubnub.publish(
                 {
@@ -2364,40 +2488,47 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   storeInHistory: false,
                   sendByPost: false,
                 },
-                (status: any, response: any) => {}
+                (status: any, response: any) => {},
               );
             }}
           >
             <div className={classes.backArrow}>
-              <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-              <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+              <img
+                className={classes.blackArrow}
+                src={require("images/ic_back.svg")}
+              />
+              <img
+                className={classes.whiteArrow}
+                src={require("images/ic_back_white.svg")}
+              />
             </div>
           </Link>
         </div>
         <div className={classes.consultTest}>
           CONSULT ROOM
           <div className={classes.permission}>
-            {startConsultDisableReason !== ''
+            {startConsultDisableReason !== ""
               ? startConsultDisableReason
               : !props.hasCameraMicPermission
-              ? 'Note: Please allow access to Camera & Mic.'
-              : ''}
+              ? "Note: Please allow access to Camera & Mic."
+              : ""}
           </div>
         </div>
 
         <div className={classes.consultButtonContainer}>
-          <span style={{ display: 'inline-flex' }}>
+          <span style={{ display: "inline-flex" }}>
             {!showToastMessage &&
               (props.appointmentStatus === STATUS.COMPLETED ||
                 props.isClickedOnEdit ||
-                props.startAppointment) && (
+                props.startAppointment) &&
+              (
                 <span
                   className={classes.phoneCallConnect}
                   onClick={() => {
                     setConnectCall(true);
                   }}
                 >
-                  <img src={require('images/call_connect.svg')} />
+                  <img src={require("images/call_connect.svg")} />
                   Connect via phone call
                 </span>
               )}
@@ -2420,7 +2551,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       }
                     }}
                   >
-                    {props.isClickedOnEdit ? 'Preview Prescription' : 'View Casesheet'}
+                    {props.isClickedOnEdit ? "Preview Prescription"
+                    : "View Casesheet"}
                   </Button>
                 </>
               )}
@@ -2428,7 +2560,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               currentUserType !== LoggedInUserType.SECRETARY &&
               props.sentToPatient === false && (
                 <span>
-                  {(props.isClickedOnPriview || props.sentToPatient === false) &&
+                  {(props.isClickedOnPriview ||
+                    props.sentToPatient === false) &&
                     !props.isClickedOnEdit && (
                       <Fragment>
                         <Button
@@ -2452,20 +2585,20 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           onClick={() => {
                             const emptyArr = [];
                             if (diagnosis.length < 1) {
-                              emptyArr.push('Diagnosis');
+                              emptyArr.push("Diagnosis");
                             }
                             if (medicinePrescription.length < 1) {
-                              emptyArr.push('Medicine');
+                              emptyArr.push("Medicine");
                             }
                             if (diagnosticPrescription.length < 1) {
-                              emptyArr.push('Tests');
+                              emptyArr.push("Tests");
                             }
                             if (otherInstructions.length < 1) {
-                              emptyArr.push('Advices');
+                              emptyArr.push("Advices");
                             }
                             emptyArr.length > 0
-                              ? setEmptyFieldsString(emptyArr.join(', '))
-                              : setEmptyFieldsString('');
+                              ? setEmptyFieldsString(emptyArr.join(", "))
+                              : setEmptyFieldsString("");
                             props.setShowConfirmPrescription(true);
                             setIsConfirmationChecked(false);
                             // localStorage.removeItem(`${params.id}`);
@@ -2473,12 +2606,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             // props.saveCasesheetAction(true, true);
                           }}
                         >
-                          {sendToPatientButtonDisable && 'Please wait...'}
-                          {sendToPatientButtonDisable ? (
-                            <CircularProgress size={22} />
-                          ) : (
-                            'Send To Patient'
-                          )}
+                          {sendToPatientButtonDisable && "Please wait..."}
+                          {sendToPatientButtonDisable
+                            ? (
+                              <CircularProgress size={22} />
+                            )
+                            : (
+                              "Send To Patient"
+                            )}
                         </Button>
                       </Fragment>
                     )}
@@ -2513,114 +2648,116 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     </Fragment>
                   )}
                 </span>
-              )
-            // )
-            }
+              )}
             {(props.appointmentStatus !== STATUS.COMPLETED ||
               currentUserType === LoggedInUserType.SECRETARY) &&
-              (props.startAppointment ? (
-                <span>
-                  <Button
-                    className={classes.backButton}
-                    disabled={props.saving}
-                    onClick={() => {
-                      const isEmptyFields = checkForEmptyFields();
-                      if (!isEmptyFields) {
-                        props.saveCasesheetAction(true, false);
-                      }
-                    }}
-                  >
-                    Save
-                  </Button>
-                  <Button
-                    className={classes.endconsultButton}
-                    disabled={props.saving}
-                    onClick={() => {
-                      const isEmptyFields = checkForEmptyFields();
-                      if (!isEmptyFields) {
-                        stopInterval();
-                        if (showVideo) {
-                          stopAudioVideoCall();
+              (props.startAppointment
+                ? (
+                  <span>
+                    <Button
+                      className={classes.backButton}
+                      disabled={props.saving}
+                      onClick={() => {
+                        const isEmptyFields = checkForEmptyFields();
+                        if (!isEmptyFields) {
+                          props.saveCasesheetAction(true, false);
                         }
-                        props.endConsultAction();
-                        isConsultStarted = false;
-                      }
+                      }}
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      className={classes.endconsultButton}
+                      disabled={props.saving}
+                      onClick={() => {
+                        const isEmptyFields = checkForEmptyFields();
+                        if (!isEmptyFields) {
+                          stopInterval();
+                          if (showVideo) {
+                            stopAudioVideoCall();
+                          }
+                          props.endConsultAction();
+                          isConsultStarted = false;
+                        }
+                      }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                      >
+                        <g fill="none" fillRule="evenodd">
+                          <path d="M0 0h24v24H0z" />
+                          <path
+                            fill="#ffffff"
+                            fillRule="nonzero"
+                            d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"
+                          />
+                        </g>
+                      </svg>
+                      End Consult
+                    </Button>
+                    {props.saving && (
+                      <span>
+                        <CircularProgress className={classes.loading} />
+                        <div className={classes.fadedBg}></div>
+                      </span>
+                    )}
+                  </span>
+                )
+                : (
+                  <Button
+                    className={classes.consultButton}
+                    disabled={currentUserType === LoggedInUserType.SECRETARY ||
+                      // startAppointmentButton ||
+                      // disableOnCancel ||
+                      (appointmentInfo!.appointmentState !== "NEW" &&
+                        appointmentInfo!.appointmentState !== "TRANSFER" &&
+                        appointmentInfo!.appointmentState !== "RESCHEDULE") ||
+                      (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                        appointmentInfo!.status !== STATUS.PENDING)}
+                    onClick={() => {
+                      !props.startAppointment
+                        ? onStartConsult()
+                        : onStopConsult(false);
+                      !props.startAppointment
+                        ? startInterval(900)
+                        : stopInterval();
+                      props.startAppointmentClick(!props.startAppointment);
+                      props.createSessionAction();
+                      setCaseSheetEdit(true);
+                      setConsultStart(true);
+                      props.setIsClickedOnEdit(true);
+                      props.setIsClickedOnPriview(false);
+                      isConsultStarted = true;
                     }}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
+                      width="24"
+                      height="24"
                       viewBox="0 0 24 24"
                     >
-                      <g fill="none" fillRule="evenodd">
-                        <path d="M0 0h24v24H0z" />
-                        <path
-                          fill="#ffffff"
-                          fillRule="nonzero"
-                          d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"
-                        />
-                      </g>
+                      <path fill="#fff" d="M8 5v14l11-7z" />
                     </svg>
-                    End Consult
+                    Start Consult
                   </Button>
-                  {props.saving && (
-                    <span>
-                      <CircularProgress className={classes.loading} />
-                      <div className={classes.fadedBg}></div>
-                    </span>
-                  )}
-                </span>
-              ) : (
-                <Button
-                  className={classes.consultButton}
-                  disabled={
-                    currentUserType === LoggedInUserType.SECRETARY ||
-                    // startAppointmentButton ||
-                    // disableOnCancel ||
-                    (appointmentInfo!.appointmentState !== 'NEW' &&
-                      appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                      appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                    (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                      appointmentInfo!.status !== STATUS.PENDING)
-                  }
-                  onClick={() => {
-                    !props.startAppointment ? onStartConsult() : onStopConsult(false);
-                    !props.startAppointment ? startInterval(900) : stopInterval();
-                    props.startAppointmentClick(!props.startAppointment);
-                    props.createSessionAction();
-                    setCaseSheetEdit(true);
-                    setConsultStart(true);
-                    props.setIsClickedOnEdit(true);
-                    props.setIsClickedOnPriview(false);
-                    isConsultStarted = true;
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                  >
-                    <path fill="#fff" d="M8 5v14l11-7z" />
-                  </svg>
-                  Start Consult
-                </Button>
-              ))}
+                ))}
             {props.appointmentStatus !== STATUS.COMPLETED && (
               <Button
                 className={classes.backButton}
-                disabled={
-                  (isPastAppointment() && !consultStart) ||
-                  (appointmentInfo && appointmentInfo.appointmentState === 'AWAITING_RESCHEDULE') ||
+                disabled={(isPastAppointment() && !consultStart) ||
+                  (appointmentInfo &&
+                    appointmentInfo.appointmentState ===
+                      "AWAITING_RESCHEDULE") ||
                   props.appointmentStatus === STATUS.NO_SHOW ||
                   props.appointmentStatus === STATUS.CALL_ABANDON ||
-                  isCallAccepted
-                }
+                  isCallAccepted}
                 onClick={() => {
                   setLoading(true);
-                  const rescheduleCountByDoctor =
-                    (appointmentInfo && appointmentInfo.rescheduleCountByDoctor) || 0;
+                  const rescheduleCountByDoctor = (appointmentInfo &&
+                    appointmentInfo.rescheduleCountByDoctor) || 0;
                   if (rescheduleCountByDoctor >= 3) {
                     setIsCancelDialogOpen(true);
                   } else {
@@ -2632,67 +2769,80 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           if (
                             data &&
                             data.getDoctorNextAvailableSlot &&
-                            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-                            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                            data.getDoctorNextAvailableSlot
+                              .doctorAvailalbeSlots &&
+                            data.getDoctorNextAvailableSlot
+                              .doctorAvailalbeSlots[0]
                           ) {
                             setDoctorNextAvailableSlot(
-                              data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                                .availableSlot || ''
+                              data.getDoctorNextAvailableSlot
+                                .doctorAvailalbeSlots[0]
+                                .availableSlot || "",
                             );
                             setDateSelected(
                               moment(
-                                data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                                  .availableSlot
-                              ).format('YYYY-MM-DD')
+                                data.getDoctorNextAvailableSlot
+                                  .doctorAvailalbeSlots[0]
+                                  .availableSlot,
+                              ).format("YYYY-MM-DD"),
                             );
 
                             setTimeSelected(
                               moment(
-                                data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                                  .availableSlot
-                              ).format('HH:mm')
+                                data.getDoctorNextAvailableSlot
+                                  .doctorAvailalbeSlots[0]
+                                  .availableSlot,
+                              ).format("HH:mm"),
                             );
                           }
                         } catch (error) {
-                          const patientName =
-                            patientDetails!.firstName + ' ' + patientDetails!.lastName;
+                          const patientName = patientDetails!.firstName + " " +
+                            patientDetails!.lastName;
                           const logObject = {
                             appointmentId: props.appointmentId,
                             doctorId: props.doctorId,
                             doctorDisplayName: currentPatient!.displayName,
                             patientId: params.patientId,
                             patientName: patientName,
-                            currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-                            appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
-                              'MMMM DD YYYY h:mm:ss a'
+                            currentTime: moment(new Date()).format(
+                              "MMMM DD YYYY h:mm:ss a",
+                            ),
+                            appointmentDateTime: moment(
+                              new Date(props.appointmentDateTime),
+                            ).format(
+                              "MMMM DD YYYY h:mm:ss a",
                             ),
                             error: JSON.stringify(error),
                           };
 
                           props.sessionClient.notify(JSON.stringify(logObject));
-                          setDoctorNextAvailableSlot('');
+                          setDoctorNextAvailableSlot("");
                           alert(error);
                         } finally {
                           setLoading(false);
                         }
                       })
                       .catch((e) => {
-                        const patientName =
-                          patientDetails!.firstName + ' ' + patientDetails!.lastName;
+                        const patientName = patientDetails!.firstName + " " +
+                          patientDetails!.lastName;
                         const logObject = {
-                          api: 'getDoctorNextAvailableSlots',
+                          api: "getDoctorNextAvailableSlots",
                           inputParam: JSON.stringify({
                             doctorIds: [props.doctorId],
-                            availableDate: format(new Date(), 'yyyy-MM-dd'),
+                            availableDate: format(new Date(), "yyyy-MM-dd"),
                           }),
                           appointmentId: props.appointmentId,
                           doctorId: props.doctorId,
                           doctorDisplayName: currentPatient!.displayName,
                           patientId: params.patientId,
                           patientName: patientName,
-                          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-                          appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
-                            'MMMM DD YYYY h:mm:ss a'
+                          currentTime: moment(new Date()).format(
+                            "MMMM DD YYYY h:mm:ss a",
+                          ),
+                          appointmentDateTime: moment(
+                            new Date(props.appointmentDateTime),
+                          ).format(
+                            "MMMM DD YYYY h:mm:ss a",
                           ),
                           error: JSON.stringify(e),
                         };
@@ -2711,13 +2861,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 aria-describedby={id}
                 variant="contained"
                 onClick={(e) => handleClick(e)}
-                disabled={
-                  props.appointmentStatus === STATUS.COMPLETED ||
+                disabled={props.appointmentStatus === STATUS.COMPLETED ||
                   props.appointmentStatus === STATUS.CANCELLED ||
-                  (isPastAppointment() && !consultStart)
-                }
+                  (isPastAppointment() && !consultStart)}
               >
-                <img src={require('images/ic_call.svg')} />
+                <img src={require("images/ic_call.svg")} />
               </Button>
             )}
             <Popover
@@ -2726,17 +2874,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               anchorEl={anchorEl}
               onClose={handleClose}
               anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
+                vertical: "bottom",
+                horizontal: "right",
               }}
               transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
+                vertical: "top",
+                horizontal: "right",
               }}
             >
               <Paper className={classes.loginForm}>
                 <Button className={classes.cross}>
-                  <img src={require('images/ic_cross.svg')} alt="" onClick={() => handleClose()} />
+                  <img
+                    src={require("images/ic_cross.svg")}
+                    alt=""
+                    onClick={() => handleClose()}
+                  />
                 </Button>
                 <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
                   <p>How do you want to talk to the patient?</p>
@@ -2755,7 +2907,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       setIscall(true);
                     }}
                   >
-                    <img src={require('images/call_popup.svg')} alt="" />
+                    <img src={require("images/call_popup.svg")} alt="" />
                     AUDIO CALL
                   </Button>
                   <Button
@@ -2773,7 +2925,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       setIscall(true);
                     }}
                   >
-                    <img src={require('images/video_popup.svg')} alt="" />
+                    <img src={require("images/video_popup.svg")} alt="" />
                     VIDEO CALL
                   </Button>
                   <div className={classes.testCallWrappper}>
@@ -2786,15 +2938,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <Button
                 className={classes.consultIcon}
                 aria-describedby={idThreeDots}
-                disabled={
-                  (props.isNewPrescription && props.isNewprescriptionEditable) ||
+                disabled={(props.isNewPrescription &&
+                  props.isNewprescriptionEditable) ||
                   (!props.isNewPrescription &&
                     props.appointmentStatus === STATUS.COMPLETED &&
-                    !props.sentToPatient)
-                }
+                    !props.sentToPatient)}
                 onClick={(e) => handleClickThreeDots(e)}
               >
-                <img src={require('images/ic_more.svg')} />
+                <img src={require("images/ic_more.svg")} />
               </Button>
             )}
             <Popover
@@ -2805,12 +2956,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               onClose={handleCloseThreeDots}
               classes={{ paper: classes.popPaper }}
               anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
+                vertical: "bottom",
+                horizontal: "right",
               }}
               transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
+                vertical: "top",
+                horizontal: "right",
               }}
             >
               <div>
@@ -2825,14 +2976,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                                 onStopConsult(true);
                               }}
                             >
-                              {isResendLoading ? 'please wait...' : 'Resend Prescription'}
+                              {isResendLoading
+                                ? "please wait..."
+                                : "Resend Prescription"}
                             </li>
                             <li
                               onClick={() => {
                                 onDownload();
                               }}
                             >
-                              {'Download Prescription'}
+                              {"Download Prescription"}
                             </li>
                             <li
                               onClick={() => {
@@ -2846,7 +2999,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
                       {props.appointmentStatus !== STATUS.COMPLETED &&
                         (appointmentInfo!.status === STATUS.PENDING ||
-                          appointmentInfo!.status === STATUS.IN_PROGRESS) && (
+                          appointmentInfo!.status === STATUS.IN_PROGRESS) &&
+                        (
                           <li
                             onClick={() => {
                               if (
@@ -2856,7 +3010,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                                 handleCloseThreeDots();
                                 setIsCancelPopoverOpen(true);
                               } else {
-                                alert('You are not allowed to cancel the appointment.');
+                                alert(
+                                  "You are not allowed to cancel the appointment.",
+                                );
                               }
                             }}
                           >
@@ -2884,29 +3040,38 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             <Paper className={classes.connectCallModal}>
               <div
                 style={{
-                  display: 'inline-block',
+                  display: "inline-block",
                   marginTop: 30,
                   marginLeft: 20,
                 }}
               >
-                <span className={classes.callHeader}>Connect to your patient via phone call !</span>
+                <span className={classes.callHeader}>
+                  Connect to your patient via phone call !
+                </span>
                 <span className={classes.callSubheader}>
-                  {'Please follow the steps to connect to your patient :'}
+                  {"Please follow the steps to connect to your patient :"}
                 </span>
                 <span
-                  style={{ display: 'flex', margin: '30px 0px 20px 10px', alignItems: 'center' }}
+                  style={{
+                    display: "flex",
+                    margin: "30px 0px 20px 10px",
+                    alignItems: "center",
+                  }}
                 >
                   <span className={classes.callOption}>1</span>
                   <span className={classes.callOptionFirst}>
-                    Answer the call from {process.env.EXOTEL_CALLER_ID} <br />
+                    Answer the call from {process.env.EXOTEL_CALLER_ID}
+                    <br />
                     to connect.
                   </span>
                   <span className={classes.callOption}>2</span>
-                  <span className={classes.callOptionFirst}>Wait for the patient to connect.</span>
+                  <span className={classes.callOptionFirst}>
+                    Wait for the patient to connect.
+                  </span>
                 </span>
 
                 <span className={classes.callNote}>
-                  {'*Note : Your personal phone number will not be shared.'}
+                  {"*Note : Your personal phone number will not be shared."}
                 </span>
                 <div className={classes.callButtonWrapper}>
                   <AphButton
@@ -2915,26 +3080,30 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       setConnectCall(false);
                     }}
                     style={{
-                      backgroundColor: '#FFFFFF',
-                      color: '#fc9916',
-                      boxShadow: 'none',
+                      backgroundColor: "#FFFFFF",
+                      color: "#fc9916",
+                      boxShadow: "none",
                       marginRight: 20,
                     }}
                   >
-                    {'Cancel'}
+                    {"Cancel"}
                   </AphButton>
                   <AphButton
                     color="primary"
                     style={{
                       borderRadius: 5,
-                      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-                      backgroundColor: '#fc9916',
+                      boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.2)",
+                      backgroundColor: "#fc9916",
                     }}
                     onClick={() => {
                       const fromMobileNumber = currentPatient.mobileNumber;
                       const toMobileNumber = patientDetails.mobileNumber;
                       const appointmentId = params.id;
-                      console.log(fromMobileNumber, toMobileNumber, appointmentId);
+                      console.log(
+                        fromMobileNumber,
+                        toMobileNumber,
+                        appointmentId,
+                      );
 
                       const exotelInput = {
                         from: fromMobileNumber,
@@ -2947,12 +3116,28 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         variables: {
                           exotelInput: exotelInput,
                         },
-                        fetchPolicy: 'no-cache',
+                        fetchPolicy: "no-cache",
                       });
+                      const text = {
+                        id: props.doctorId,
+                        message: exotelCall,
+                        exotelNumber: process.env.EXOTEL_CALLER_ID,
+                        isTyping: true,
+                        messageDate: new Date(),
+                        sentBy: REQUEST_ROLES.DOCTOR,
+                      };
+                      pubnub.publish(
+                        {
+                          message: text,
+                          channel: channel,
+                          storeInHistory: true,
+                        },
+                        (status: any, response: any) => {},
+                      );
                       setShowToastMessage(true);
                     }}
                   >
-                    {'PROCEED TO CONNECT'}
+                    {"PROCEED TO CONNECT"}
                   </AphButton>
                 </div>
               </div>
@@ -2975,7 +3160,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 <h4>RESCHEDULE CONSULT</h4>
                 <Button className={classes.cross}>
                   <img
-                    src={require('images/ic_cross.svg')}
+                    src={require("images/ic_cross.svg")}
                     alt=""
                     onClick={() => {
                       setIsPopoverOpen(false);
@@ -2983,37 +3168,55 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   />
                 </Button>
               </div>
-              <Scrollbars autoHide={true} style={{ minHeight: 'calc(52vh)' }}>
+              <Scrollbars autoHide={true} style={{ minHeight: "calc(52vh)" }}>
                 <div className={classes.tabBody}>
                   <p>The following slot will be suggested —</p>
-                  {doctorNextAvailableSlot === '' || loading ? (
-                    <CircularProgress />
-                  ) : (
-                    <div className={classes.dateAndTieWrapper}>
-                      <div className={classes.flexGrow}>
-                        <Typography component="h5" variant="h5" className={classes.header}>
-                          Date
-                        </Typography>
-                        <div className={classes.data}>
-                          {dateSelected && timeSelected
-                            ? moment(dateSelected + 'T' + timeSelected + ':00.000').format(
-                                'ddd, DD/MM/YYYY'
+                  {doctorNextAvailableSlot === "" || loading
+                    ? (
+                      <CircularProgress />
+                    )
+                    : (
+                      <div className={classes.dateAndTieWrapper}>
+                        <div className={classes.flexGrow}>
+                          <Typography
+                            component="h5"
+                            variant="h5"
+                            className={classes.header}
+                          >
+                            Date
+                          </Typography>
+                          <div className={classes.data}>
+                            {dateSelected && timeSelected
+                              ? moment(
+                                dateSelected + "T" + timeSelected + ":00.000",
+                              ).format(
+                                "ddd, DD/MM/YYYY",
                               )
-                            : moment(doctorNextAvailableSlot).format('ddd, DD/MM/YYYY')}
+                              : moment(doctorNextAvailableSlot).format(
+                                "ddd, DD/MM/YYYY",
+                              )}
+                          </div>
+                        </div>
+                        <div className={classes.flexGrow}>
+                          <Typography
+                            component="h5"
+                            variant="h5"
+                            className={classes.header}
+                          >
+                            Time
+                          </Typography>
+                          <div className={classes.data}>
+                            {dateSelected && timeSelected
+                              ? moment(
+                                dateSelected + "T" + timeSelected + ":00.000",
+                              ).format("h:mm a")
+                              : moment(doctorNextAvailableSlot).format(
+                                "h:mm a",
+                              )}
+                          </div>
                         </div>
                       </div>
-                      <div className={classes.flexGrow}>
-                        <Typography component="h5" variant="h5" className={classes.header}>
-                          Time
-                        </Typography>
-                        <div className={classes.data}>
-                          {dateSelected && timeSelected
-                            ? moment(dateSelected + 'T' + timeSelected + ':00.000').format('h:mm a')
-                            : moment(doctorNextAvailableSlot).format('h:mm a')}
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                    )}
                   <AphButton
                     className={classes.suggestSlot}
                     onClick={() => {
@@ -3026,18 +3229,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
                 <div className={`${classes.tabBody} ${classes.tabbodyothers}`}>
                   <p>Why do you want to reschedule?</p>
-                  {!reason.trim() && <span className={classes.selectText}>Select a Reason</span>}
+                  {!reason.trim() &&
+                    <span className={classes.selectText}>Select a Reason</span>}
                   <AphSelect
                     value={reason}
                     MenuProps={{
                       classes: { paper: classes.menuPopover },
                       anchorOrigin: {
-                        vertical: 'top',
-                        horizontal: 'right',
+                        vertical: "top",
+                        horizontal: "right",
                       },
                       transformOrigin: {
-                        vertical: 'top',
-                        horizontal: 'right',
+                        vertical: "top",
+                        horizontal: "right",
                       },
                     }}
                     onChange={(e: any) => {
@@ -3068,7 +3272,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     >
                       Patient was not reachable
                     </MenuItem>
-                    <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
+                    <MenuItem
+                      value="Other"
+                      classes={{ selected: classes.menuSelected }}
+                    >
                       Other
                     </MenuItem>
                   </AphSelect>
@@ -3097,19 +3304,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 </div>
               </Scrollbars>
               <div className={classes.tabFooter}>
-                {showRescheduleLoader ? (
-                  <CircularProgress />
-                ) : (
-                  <Button
-                    className={classes.ResheduleCosultButton}
-                    disabled={!reason}
-                    onClick={() => {
-                      rescheduleConsultAction();
-                    }}
-                  >
-                    Reschedule Consult
-                  </Button>
-                )}
+                {showRescheduleLoader
+                  ? (
+                    <CircularProgress />
+                  )
+                  : (
+                    <Button
+                      className={classes.ResheduleCosultButton}
+                      disabled={!reason}
+                      onClick={() => {
+                        rescheduleConsultAction();
+                      }}
+                    >
+                      Reschedule Consult
+                    </Button>
+                  )}
               </div>
             </Paper>
           </div>
@@ -3127,7 +3336,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 <h4>PICK A SLOT</h4>
                 <Button className={classes.cross}>
                   <img
-                    src={require('images/ic_cross.svg')}
+                    src={require("images/ic_cross.svg")}
                     alt=""
                     onClick={() => {
                       setIsSlotPopoverOpen(false);
@@ -3161,7 +3370,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <h4>Cancel CONSULT</h4>
               <Button className={classes.cross}>
                 <img
-                  src={require('images/ic_cross.svg')}
+                  src={require("images/ic_cross.svg")}
                   alt=""
                   onClick={() => {
                     setIsCancelPopoverOpen(false);
@@ -3179,12 +3388,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 MenuProps={{
                   classes: { paper: classes.menuPopover },
                   anchorOrigin: {
-                    vertical: 'top',
-                    horizontal: 'right',
+                    vertical: "top",
+                    horizontal: "right",
                   },
                   transformOrigin: {
-                    vertical: 'top',
-                    horizontal: 'right',
+                    vertical: "top",
+                    horizontal: "right",
                   },
                 }}
                 onChange={(e: any) => {
@@ -3216,7 +3425,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 >
                   Patient needs a in person visit
                 </MenuItem>
-                <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
+                <MenuItem
+                  value="Other"
+                  classes={{ selected: classes.menuSelected }}
+                >
                   Other
                 </MenuItem>
               </AphSelect>
@@ -3252,7 +3464,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 </div>
               )}
             </div>
-            {cancelError && <div className={classes.cancelConsultError}>{cancelError}</div>}
+            {cancelError &&
+              <div className={classes.cancelConsultError}>{cancelError}</div>}
             <div className={classes.tabFooter}>
               <Button
                 className={classes.cancelConsult}
@@ -3265,16 +3478,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </Button>
               <Button
                 className={classes.ResheduleCosultButton}
-                disabled={textOtherCancel && otherTextCancelValue === ''}
+                disabled={textOtherCancel && otherTextCancelValue === ""}
                 onClick={() => {
                   mutationCancelSrdConsult({
                     variables: {
                       cancelAppointmentInput: {
                         appointmentId: params.id,
-                        cancelReason:
-                          cancelReason === 'Other' ? otherTextCancelValue : cancelReason,
-                        cancelledBy: isSeniorDoctor ? REQUEST_ROLES.DOCTOR : REQUEST_ROLES.JUNIOR,
-                        cancelledById: isSeniorDoctor ? srDoctorId || '' : params.patientId,
+                        cancelReason: cancelReason === "Other"
+                          ? otherTextCancelValue
+                          : cancelReason,
+                        cancelledBy: isSeniorDoctor
+                          ? REQUEST_ROLES.DOCTOR
+                          : REQUEST_ROLES.JUNIOR,
+                        cancelledById: isSeniorDoctor
+                          ? srDoctorId || ""
+                          : params.patientId,
                       },
                     },
                   })
@@ -3300,29 +3518,38 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         (status: any, response: any) => {
                           navigateToCalendar();
-                        }
+                        },
                       );
                     })
                     .catch((e: ApolloError) => {
-                      const patientName =
-                        patientDetails!.firstName + ' ' + patientDetails!.lastName;
+                      const patientName = patientDetails!.firstName + " " +
+                        patientDetails!.lastName;
                       const logObject = {
-                        api: 'CancelAppointment',
+                        api: "CancelAppointment",
                         inputParam: JSON.stringify({
                           appointmentId: params.id,
-                          cancelReason:
-                            cancelReason === 'Other' ? otherTextCancelValue : cancelReason,
-                          cancelledBy: isSeniorDoctor ? REQUEST_ROLES.DOCTOR : REQUEST_ROLES.JUNIOR,
-                          cancelledById: isSeniorDoctor ? srDoctorId || '' : params.patientId,
+                          cancelReason: cancelReason === "Other"
+                            ? otherTextCancelValue
+                            : cancelReason,
+                          cancelledBy: isSeniorDoctor
+                            ? REQUEST_ROLES.DOCTOR
+                            : REQUEST_ROLES.JUNIOR,
+                          cancelledById: isSeniorDoctor
+                            ? srDoctorId || ""
+                            : params.patientId,
                         }),
                         appointmentId: props.appointmentId,
                         doctorId: props.doctorId,
                         doctorDisplayName: currentPatient!.displayName,
                         patientId: params.patientId,
                         patientName: patientName,
-                        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-                        appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
-                          'MMMM DD YYYY h:mm:ss a'
+                        currentTime: moment(new Date()).format(
+                          "MMMM DD YYYY h:mm:ss a",
+                        ),
+                        appointmentDateTime: moment(
+                          new Date(props.appointmentDateTime),
+                        ).format(
+                          "MMMM DD YYYY h:mm:ss a",
                         ),
                         error: JSON.stringify(e),
                       };
@@ -3340,7 +3567,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       </div>
       {/* audio/video start*/}
       <div className={classes.posRelative}>
-        <div className={showVideo ? '' : classes.audioVideoContainer}>
+        <div className={showVideo ? "" : classes.audioVideoContainer}>
           {showVideo && (
             <Consult
               toggelChatVideo={() => toggelChatVideo()}
@@ -3376,7 +3603,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           <div className={classes.tabHeader}>
             <Button className={classes.cross}>
               <img
-                src={require('images/ic_cross.svg')}
+                src={require("images/ic_cross.svg")}
                 alt=""
                 onClick={() => setIsCancelDialogOpen(false)}
               />
@@ -3384,11 +3611,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
           <div className={classes.tabBody}>
             <h3>
-              You have reached limit of rescheduling the same appointment for 3 times, please
-              confirm if you want to proceed with Cancelling this appointment
+              You have reached limit of rescheduling the same appointment for 3
+              times, please confirm if you want to proceed with Cancelling this
+              appointment
             </h3>
 
-            <Button className={classes.cancelConsult} onClick={() => setIsCancelDialogOpen(false)}>
+            <Button
+              className={classes.cancelConsult}
+              onClick={() => setIsCancelDialogOpen(false)}
+            >
               No
             </Button>
             <Button
@@ -3398,9 +3629,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   variables: {
                     cancelAppointmentInput: {
                       appointmentId: params.id,
-                      cancelReason: 'MAX_RESCHEDULES_EXCEEDED',
-                      cancelledBy: isSeniorDoctor ? REQUEST_ROLES.DOCTOR : REQUEST_ROLES.JUNIOR,
-                      cancelledById: isSeniorDoctor ? srDoctorId || '' : params.patientId,
+                      cancelReason: "MAX_RESCHEDULES_EXCEEDED",
+                      cancelledBy: isSeniorDoctor
+                        ? REQUEST_ROLES.DOCTOR
+                        : REQUEST_ROLES.JUNIOR,
+                      cancelledById: isSeniorDoctor
+                        ? srDoctorId || ""
+                        : params.patientId,
                     },
                   },
                 })
@@ -3422,27 +3657,36 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       },
                       (status: any, response: any) => {
                         navigateToCalendar();
-                      }
+                      },
                     );
                   })
                   .catch((e: ApolloError) => {
-                    const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
+                    const patientName = patientDetails!.firstName + " " +
+                      patientDetails!.lastName;
                     const logObject = {
-                      api: 'CancelAppointment',
+                      api: "CancelAppointment",
                       inputParam: JSON.stringify({
                         appointmentId: params.id,
-                        cancelReason: 'MAX_RESCHEDULES_EXCEEDED',
-                        cancelledBy: isSeniorDoctor ? REQUEST_ROLES.DOCTOR : REQUEST_ROLES.JUNIOR,
-                        cancelledById: isSeniorDoctor ? srDoctorId || '' : params.patientId,
+                        cancelReason: "MAX_RESCHEDULES_EXCEEDED",
+                        cancelledBy: isSeniorDoctor
+                          ? REQUEST_ROLES.DOCTOR
+                          : REQUEST_ROLES.JUNIOR,
+                        cancelledById: isSeniorDoctor
+                          ? srDoctorId || ""
+                          : params.patientId,
                       }),
                       appointmentId: props.appointmentId,
                       doctorId: props.doctorId,
                       doctorDisplayName: currentPatient!.displayName,
                       patientId: params.patientId,
                       patientName: patientName,
-                      currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-                      appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
-                        'MMMM DD YYYY h:mm:ss a'
+                      currentTime: moment(new Date()).format(
+                        "MMMM DD YYYY h:mm:ss a",
+                      ),
+                      appointmentDateTime: moment(
+                        new Date(props.appointmentDateTime),
+                      ).format(
+                        "MMMM DD YYYY h:mm:ss a",
                       ),
                       error: JSON.stringify(e),
                     };
@@ -3470,7 +3714,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           <div className={classes.tabHeader}>
             <Button className={classes.cross}>
               <img
-                src={require('images/ic_cross.svg')}
+                src={require("images/ic_cross.svg")}
                 alt=""
                 onClick={() => setShowAbandonment(false)}
               />
@@ -3479,12 +3723,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
             <h3>
               {iscallAbandonment
-                ? 'We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult.'
-                : 'It seems that your patient is no longer active on the application. Would you like to continue with the consult?'}
+                ? "We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult."
+                : "It seems that your patient is no longer active on the application. Would you like to continue with the consult?"}
             </h3>
 
-            <Button className={classes.cancelConsult} onClick={() => setShowAbandonment(false)}>
-              {'Continue'}
+            <Button
+              className={classes.cancelConsult}
+              onClick={() => setShowAbandonment(false)}
+            >
+              {"Continue"}
             </Button>
             <Button
               className={classes.consultButton}
@@ -3492,7 +3739,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 noShowAction(STATUS.CALL_ABANDON);
               }}
             >
-              {'Reschedule'}
+              {"Reschedule"}
             </Button>
           </div>
         </Paper>
@@ -3505,11 +3752,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         disableBackdropClick
         disableEscapeKeyDown
       >
-        <Paper className={`${classes.modalBoxConsult} ${classes.modalBoxVital}`}>
+        <Paper
+          className={`${classes.modalBoxConsult} ${classes.modalBoxVital}`}
+        >
           <div className={classes.tabHeader}>
             <Button className={classes.cross}>
               <img
-                src={require('images/ic_cross.svg')}
+                src={require("images/ic_cross.svg")}
                 alt=""
                 onClick={() => setShowVital(false)}
               />
@@ -3517,9 +3766,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
           <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
             <h3>
-              {
-                "It seems some of the Vital info is empty. Please fill the vital section's field under the Case Sheet tab. Please click on “Edit” to edit details or “Continue” to submit the case sheet"
-              }
+              {"It seems some of the Vital info is empty. Please fill the vital section's field under the Case Sheet tab. Please click on “Edit” to edit details or “Continue” to submit the case sheet"}
             </h3>
             <div className={classes.okButtonWrapper}>
               <Button
@@ -3530,7 +3777,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               >
                 Continue
               </Button>
-              <Button className={classes.okButton} onClick={() => setShowVital(false)}>
+              <Button
+                className={classes.okButton}
+                onClick={() => setShowVital(false)}
+              >
                 Edit
               </Button>
             </div>
@@ -3545,11 +3795,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         disableBackdropClick
         disableEscapeKeyDown
       >
-        <Paper className={`${classes.modalBoxConsult} ${classes.modalBoxVital}`}>
+        <Paper
+          className={`${classes.modalBoxConsult} ${classes.modalBoxVital}`}
+        >
           <div className={classes.tabHeader}>
             <Button className={classes.cross}>
               <img
-                src={require('images/ic_cross.svg')}
+                src={require("images/ic_cross.svg")}
                 alt=""
                 onClick={() => setShowReferral(false)}
               />
@@ -3557,11 +3809,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
           <div className={`${classes.tabBody} ${classes.tabBodypadding}`}>
             <h3>
-              It seems referral description field is empty. Please fill the referral section's
-              description field under the Case Sheet tab.
+              It seems referral description field is empty. Please fill the
+              referral section's description field under the Case Sheet tab.
             </h3>
             <div className={classes.okButtonWrapper}>
-              <Button className={classes.okButton} onClick={() => setShowReferral(false)}>
+              <Button
+                className={classes.okButton}
+                onClick={() => setShowReferral(false)}
+              >
                 Ok
               </Button>
             </div>
@@ -3577,10 +3832,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         disableBackdropClick
         disableEscapeKeyDown
       >
-        <Paper className={`${classes.modalBoxConsult} ${classes.modalBoxVital}`}>
+        <Paper
+          className={`${classes.modalBoxConsult} ${classes.modalBoxVital}`}
+        >
           <div className={classes.dialogHeader}>
             <Button onClick={() => props.setShowConfirmPrescription(false)}>
-              <img src={require('images/ic_cross.svg')} alt="" />
+              <img src={require("images/ic_cross.svg")} alt="" />
             </Button>
           </div>
           <div className={classes.dialogBody}>
@@ -3594,7 +3851,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                       fullWidth
                       multiline
-                      defaultValue={getDefaultValue('height')}
+                      defaultValue={getDefaultValue("height")}
                       onBlur={(e) => {
                         const storageItem = getLocalStorageItem(params.id);
                         if (storageItem) {
@@ -3614,7 +3871,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       fullWidth
                       multiline
                       helperText={vitalError.weight}
-                      defaultValue={getDefaultValue('weight')}
+                      defaultValue={getDefaultValue("weight")}
                       onBlur={(e) => {
                         const storageItem = getLocalStorageItem(params.id);
                         if (storageItem) {
@@ -3633,7 +3890,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                       fullWidth
                       multiline
-                      defaultValue={getDefaultValue('bp')}
+                      defaultValue={getDefaultValue("bp")}
                       onBlur={(e) => {
                         const storageItem = getLocalStorageItem(params.id);
                         if (storageItem) {
@@ -3652,7 +3909,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       onFocus={(e) => moveCursorToEnd(e.currentTarget)}
                       fullWidth
                       multiline
-                      defaultValue={getDefaultValue('temperature')}
+                      defaultValue={getDefaultValue("temperature")}
                       onBlur={(e) => {
                         const storageItem = getLocalStorageItem(params.id);
                         if (storageItem) {
@@ -3675,16 +3932,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               )}
               <div className={classes.checkBox}>
                 <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={isConfirmationChecked}
-                      onChange={(event) => {
-                        setIsConfirmationChecked(event.target.checked);
-                        //setReason(e.target.value as string);
-                      }}
-                      name="confirmationcheck"
-                    />
-                  }
+                  control={<Checkbox
+                    checked={isConfirmationChecked}
+                    onChange={(event) => {
+                      setIsConfirmationChecked(event.target.checked);
+                      //setReason(e.target.value as string);
+                    }}
+                    name="confirmationcheck"
+                  />}
                   label="The prescription is ready to be sent"
                 />
               </div>
@@ -3713,8 +3968,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   props.saveCasesheetAction(true, true);
                 }}
               >
-                {sendToPatientButtonDisable && 'Please wait...'}
-                {sendToPatientButtonDisable ? <CircularProgress size={22} /> : 'Send Prescription'}
+                {sendToPatientButtonDisable && "Please wait..."}
+                {sendToPatientButtonDisable ? <CircularProgress size={22} />
+                : "Send Prescription"}
               </Button>
             </div>
           </div>
@@ -3726,7 +3982,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         <div
           className={classes.floatingJoinPrompt}
           style={{
-            cursor: 'pointer',
+            cursor: "pointer",
           }}
           onClick={() => {
             handleClose();
@@ -3737,14 +3993,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           }}
         >
           <img
-            src={require('images/ic_joinPrompt_white.svg')}
+            src={require("images/ic_joinPrompt_white.svg")}
             alt=""
             style={{
               height: 30,
               width: 30,
             }}
           />
-          {'JOIN'}
+          {"JOIN"}
         </div>
       )}
 
@@ -3753,19 +4009,23 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       {joinPrompt && (
         <Box boxShadow={5} borderRadius={15} className={classes.joinPrompt}>
           <img
-            src={require('images/ic_joinPrompt.svg')}
+            src={require("images/ic_joinPrompt.svg")}
             alt=""
             style={{
               height: 50,
               width: 50,
-              position: 'relative',
+              position: "relative",
               marginRight: 30,
             }}
           />
 
-          <Typography component="h4" variant="h4" className={classes.joinPromptText}>
-            Patient "{patientName}" is waiting in the consult room. Please click on Proceed to join
-            consultation.
+          <Typography
+            component="h4"
+            variant="h4"
+            className={classes.joinPromptText}
+          >
+            Patient "{patientName}" is waiting on the call. Please click on the
+            'Join' button to join the call.
           </Typography>
 
           <div className={classes.callButtonWrapperPrompt}>
@@ -3774,9 +4034,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               style={{
                 fontSize: 15,
                 borderRadius: 5,
-                boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-                backgroundColor: '#fc9916',
-                cursor: 'pointer',
+                boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.2)",
+                backgroundColor: "#fc9916",
+                cursor: "pointer",
               }}
               onClick={() => {
                 handleClose();
@@ -3787,13 +4047,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 setJoinPrompt(false);
               }}
             >
-              {'PROCEED'}
+              {"JOIN"}
             </AphButton>
 
             <span
               className={classes.collapse}
               style={{
-                cursor: 'pointer',
+                cursor: "pointer",
               }}
               onClick={() => {
                 setPlayRingtone(false);
@@ -3802,18 +4062,18 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               }}
             >
               <img
-                src={require('images/ic_collapse.svg')}
+                src={require("images/ic_collapse.svg")}
                 alt=""
                 style={{
                   height: 18,
                   width: 18,
-                  position: 'relative',
+                  position: "relative",
                   marginLeft: 15,
                   marginRight: 4,
-                  verticalAlign: 'middle',
+                  verticalAlign: "middle",
                 }}
               />
-              {'COLLAPSE'}
+              {"COLLAPSE"}
             </span>
           </div>
         </Box>
@@ -3841,7 +4101,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       {showToastMessage && (
         <Alert
           error={{
-            message: `You will get a call from ${process.env.EXOTEL_CALLER_ID}. Please pick up the call !`,
+            message:
+              `You will get a call from ${process.env.EXOTEL_CALLER_ID}. Please pick up the call !`,
           }}
           onClose={() => {
             setShowToastMessage(false);
@@ -3849,6 +4110,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         />
       )}
       {/* Ot Errors Ends */}
+      {/** Patient rejected call before answer */}
+      {rejectedByPatientBeforeAnswer && (
+        <Alert
+          error={{
+            message: rejectedByPatientBeforeAnswer,
+          }}
+          onClose={() => {
+            setRejectedByPatientBeforeAnswer(null);
+          }}
+        />
+      )}
     </div>
   );
 };

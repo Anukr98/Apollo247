@@ -620,6 +620,7 @@ export const TestsCart: React.FC = (props) => {
           } as DiagnosticLineItem)
       ),
       deviceType: getDeviceType(),
+      slotId: ''
     };
     saveDiagnosticOrder({
       variables: { diagnosticOrderInput: orderInfo },
@@ -748,8 +749,8 @@ export const TestsCart: React.FC = (props) => {
                 <AppointmentsSlot setIsSlotSet={setIsSlotSet} />
               ) : null
             ) : (
-              <ClinicHours />
-            )}
+                <ClinicHours />
+              )}
             {diagnosticsCartItems && diagnosticsCartItems.length > 0 && (
               <>
                 <div className={`${classes.sectionHeader} ${classes.uppercase}`}>
@@ -799,9 +800,9 @@ export const TestsCart: React.FC = (props) => {
             }
             className={
               !isPaymentButtonEnable ||
-              mutationLoading ||
-              (deliveryMode === 'Clinic' && !clinicId) ||
-              (deliveryMode === 'HOME' && (!deliveryAddressId || !isSlotSet))
+                mutationLoading ||
+                (deliveryMode === 'Clinic' && !clinicId) ||
+                (deliveryMode === 'HOME' && (!deliveryAddressId || !isSlotSet))
                 ? classes.buttonDisable
                 : ''
             }
@@ -863,8 +864,8 @@ export const TestsCart: React.FC = (props) => {
               {mutationLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : (
-                `Pay - RS. ${cartTotal.toFixed(2)}`
-              )}
+                  `Pay - RS. ${cartTotal.toFixed(2)}`
+                )}
             </AphButton>
           </div>
         </div>

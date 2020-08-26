@@ -164,7 +164,7 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       padding: '20px 40px',
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      marginTop: -48,
+      marginTop: -57,
       position: 'relative',
       display: 'flex',
       alignItems: 'center',
