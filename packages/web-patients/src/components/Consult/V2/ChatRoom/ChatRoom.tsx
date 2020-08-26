@@ -566,7 +566,10 @@ export const ChatRoom: React.FC = () => {
 
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
     setIsNextSlotLoading(true);
-    const todayDate = moment.utc(date).local().format('YYYY-MM-DD');
+    const todayDate = moment
+      .utc(date)
+      .local()
+      .format('YYYY-MM-DD');
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
         try {
@@ -615,81 +618,81 @@ export const ChatRoom: React.FC = () => {
     rescheduleCount < 3 ? rescheduleAPI(bookRescheduleInput) : setIsChangeSlot(true);
   };
 
-  if (loading) {
-    return <LinearProgress />;
-  }
   if (error) {
     return <div>Error....</div>;
   }
 
-  return !isSignedIn ? (
-    <LinearProgress />
-  ) : (
+  return (
     <div className={classes.root}>
       <Header />
       <div className={classes.container}>
-        <div className={classes.doctorListingPage}>
-          <div className={classes.breadcrumbs}>
-            <a onClick={() => (window.location.href = clientRoutes.appointments())}>
-              <div className={classes.backArrow}>
-                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-              </div>
-            </a>
-            Consult Room
-          </div>
-          <div className={classes.doctorListingSection}>
-            <div className={classes.leftSection}>
-              {data && (
-                <ConsultDoctorProfile
-                  setDisplayId={setDisplayId}
-                  setRescheduleCount={setRescheduleCount}
-                  handleRescheduleOpen={handleRescheduleOpen}
-                  doctorDetails={data}
-                  appointmentId={appointmentId}
-                  jrDoctorJoined={jrDoctorJoined}
-                />
-              )}
+        {!isSignedIn || loading ? (
+          <LinearProgress />
+        ) : (
+          <div className={classes.doctorListingPage}>
+            <div className={classes.breadcrumbs}>
+              <a onClick={() => (window.location.href = clientRoutes.appointments())}>
+                <div className={classes.backArrow}>
+                  <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                </div>
+              </a>
+              Consult Room
             </div>
-            <div className={classes.rightSection}>
-              <div className={classes.sectionHeader}>
-                {disaplayId && <span className={classes.caseNumber}>Case #{disaplayId} </span>}
-                {appointmentStatus !== STATUS.CANCELLED && appointmentStatus !== STATUS.COMPLETED && (
-                  <div className={classes.headerActions}>
-                    <AphButton
-                      disabled={jrDoctorJoined}
-                      classes={{
-                        root: classes.viewButton,
-                        disabled: classes.disabledButton,
-                      }}
-                      onClick={() => {
-                        handleRescheduleOpen();
-                      }}
-                    >
-                      Reschedule
-                    </AphButton>
-                  </div>
+            <div className={classes.doctorListingSection}>
+              <div className={classes.leftSection}>
+                {data && (
+                  <ConsultDoctorProfile
+                    setDisplayId={setDisplayId}
+                    setRescheduleCount={setRescheduleCount}
+                    handleRescheduleOpen={handleRescheduleOpen}
+                    doctorDetails={data}
+                    appointmentId={appointmentId}
+                    jrDoctorJoined={jrDoctorJoined}
+                  />
                 )}
               </div>
+              <div className={classes.rightSection}>
+                <div className={classes.sectionHeader}>
+                  {disaplayId && <span className={classes.caseNumber}>Case #{disaplayId} </span>}
+                  {appointmentStatus !== STATUS.CANCELLED &&
+                    appointmentStatus !== STATUS.COMPLETED && (
+                      <div className={classes.headerActions}>
+                        <AphButton
+                          disabled={jrDoctorJoined}
+                          classes={{
+                            root: classes.viewButton,
+                            disabled: classes.disabledButton,
+                          }}
+                          onClick={() => {
+                            handleRescheduleOpen();
+                          }}
+                        >
+                          Reschedule
+                        </AphButton>
+                      </div>
+                    )}
+                </div>
 
-              {data && (
-                <ChatWindow
-                  doctorDetails={data}
-                  appointmentId={appointmentId}
-                  doctorId={doctorId}
-                  jrDoctorJoined={jrDoctorJoined}
-                  setJrDoctorJoined={setJrDoctorJoined}
-                  isModalOpen={isModalOpen}
-                  setIsModalOpen={setIsModalOpen}
-                  nextSlotAvailable={nextSlotAvailable}
-                  availableNextSlot={nextAvailableSlot}
-                  rescheduleAPI={rescheduleAPI}
-                  setAppointmentStatus={setAppointmentStatus}
-                />
-              )}
+                {data && (
+                  <ChatWindow
+                    doctorDetails={data}
+                    appointmentId={appointmentId}
+                    doctorId={doctorId}
+                    jrDoctorJoined={jrDoctorJoined}
+                    setJrDoctorJoined={setJrDoctorJoined}
+                    isModalOpen={isModalOpen}
+                    setIsModalOpen={setIsModalOpen}
+                    nextSlotAvailable={nextSlotAvailable}
+                    availableNextSlot={nextAvailableSlot}
+                    rescheduleAPI={rescheduleAPI}
+                    setAppointmentStatus={setAppointmentStatus}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
       {!onePrimaryUser && <ManageProfile />}
       {data && (
@@ -730,18 +733,18 @@ export const ChatRoom: React.FC = () => {
                     ) : (
                       <h6>
                         {'Since you have already rescheduled 3 times with Dr. '}
-                        {`${
-                          data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName
-                        }`}{' '}
+                        {`${data &&
+                          data.getDoctorDetailsById &&
+                          data.getDoctorDetailsById.firstName}`}{' '}
                         {`, We will consider this a new paid appointment.`}
                       </h6>
                     )}
                     <br />
                     <h6>
                       Next slot for Dr.{' '}
-                      {`${
-                        data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName
-                      }`}
+                      {`${data &&
+                        data.getDoctorDetailsById &&
+                        data.getDoctorDetailsById.firstName}`}
                       is available on -
                     </h6>
                     <br />
