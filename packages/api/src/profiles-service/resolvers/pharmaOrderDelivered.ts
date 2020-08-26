@@ -23,9 +23,9 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
   sendCartNotification,
-  NotificationType,
   sendMedicineOrderStatusNotification,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { log } from 'customWinstonLogger';
 import { OneApollo } from 'helpers/oneApollo';
 import { PharmaItemsResponse } from 'types/medicineOrderTypes';

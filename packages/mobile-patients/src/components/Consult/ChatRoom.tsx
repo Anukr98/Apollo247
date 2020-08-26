@@ -547,6 +547,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const leaveChatRoom = '^^#leaveChatRoom';
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
   const patientRejectedCall = '^^#PATIENT_REJECTED_CALL';
+  const exotelCall = '^^#exotelCall';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -609,6 +610,33 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         'Download Screen'
       ] = 'Chat';
     }
+    postWebEngageEvent(type, eventAttributes);
+  };
+
+  const consultWebEngageEvents = (
+    type: 
+    | WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM
+    | WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM
+    | WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM
+    | WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM) => {
+    const eventAttributes: 
+      | WebEngageEvents[WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]
+      | WebEngageEvents[WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM]
+      | WebEngageEvents[WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM]
+      | WebEngageEvents[WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM] = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Doctor ID': doctorId,
+      'Speciality name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
+      'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
+      'Hospital Name': g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+      'Hospital City': g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+    };
     postWebEngageEvent(type, eventAttributes);
   };
 
@@ -2543,6 +2571,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setDoctorJoined(false);
       } else if (message.message.message === endCallMsg) {
         AsyncStorage.setItem('callDisconnected', 'true');
+      } else if (message.message.message === exotelCall) {
+        addMessages(message);
       }
     } else {
       console.log('succss');
@@ -3796,6 +3826,45 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </>
               ) : null}
             </View>
+          ) : rowData.message === exotelCall ? (
+            <View
+              style={{
+                backgroundColor: '#0087ba',
+                marginLeft: 38,
+                borderRadius: 10,
+              }}
+            >
+              <>
+                <Text
+                  style={{
+                    color: '#ffffff',
+                    paddingTop: 8,
+                    paddingBottom: 4,
+                    paddingHorizontal: 16,
+                    ...theme.fonts.IBMPlexSansMedium(15),
+                    textAlign: 'left',
+                  }}
+                  selectable={true}
+                >
+                  {doctorName +
+                    strings.common.exotelMessage +
+                    rowData.exotelNumber +
+                    strings.common.requestMessage}
+                </Text>
+                <Text
+                  style={{
+                    color: '#ffffff',
+                    paddingHorizontal: 16,
+                    paddingVertical: 4,
+                    textAlign: 'right',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  {convertChatTime(rowData)}
+                </Text>
+                <View style={{ backgroundColor: 'transparent', height: 4, width: 20 }} />
+              </>
+            </View>
           ) : (
             <>
               <View
@@ -4226,7 +4295,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === cancelConsultInitiated ||
       rowData.message === callAbandonment ||
       rowData.message === appointmentComplete ||
-      rowData.message === patientRejectedCall
+      rowData.message === patientRejectedCall || 
+      rowData === patientRejectedCall
     ) {
       return null;
     }
@@ -6221,16 +6291,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
         hideTAndCs={true}
         onClickClose={() => setDropdownVisible(false)}
-        onResponse={(selectedType, response) => {
+        onResponse={(selectedType, response, type) => {
           console.log('res', response);
           setDropdownVisible(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             console.log('ca');
-
+            if (type !== undefined) {
+              if (type === 'Camera') consultWebEngageEvents(WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM);
+              if (type === 'Gallery') consultWebEngageEvents(WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM);
+            }
             uploadDocument(response, response[0].base64, response[0].fileType);
             //updatePhysicalPrescriptions(response);
           } else {
             setSelectPrescriptionVisible(true);
+            consultWebEngageEvents(WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM);
           }
         }}
       />
@@ -6679,9 +6753,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     setDropdownVisible(false);
                   }}
                   onFocus={() => setDropdownVisible(false)}
-                  onSubmitEditing={() => {
-                    Keyboard.dismiss();
-                  }}
                   editable={!disableChat}
                 />
                 <View
@@ -6758,6 +6829,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }}
                 onPress={async () => {
                   if (!disableChat) {
+                    consultWebEngageEvents(WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM);
                     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
                     setDropdownVisible(!isDropdownVisible);
                   }

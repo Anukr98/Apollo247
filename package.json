@@ -18,6 +18,13 @@
   },
   "dependencies": {
     "@sendgrid/mail": "^7.1.1",
+    "@types/pubnub": "^4.28.1",
+    "pubnub": "^4.29.2",
+    "async": "^3.2.0",
+    "dotenv": "^8.2.0",
+    "form-data": "^3.0.0",
+    "node-fetch": "^2.6.0",
+    "pg": "^8.3.2",
     "sendgrid": "^5.2.3",
     "uuid": "^8.2.0"
   }

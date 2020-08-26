@@ -17,9 +17,31 @@ import {
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addDays, differenceInMinutes, getUnixTime } from 'date-fns';
-import { getCache, setCache } from 'profiles-service/database/connectRedis';
+import { getCache, setCache, hmsetCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger';
+
+export type SaveMedicineInfoInput = {
+  sku: string;
+  name: string;
+  status: string;
+  price: string;
+  special_price: string;
+  special_price_from: string;
+  special_price_to: string;
+  qty: number;
+  description: string;
+  url_key: string;
+  base_image: string;
+  is_prescription_required: string;
+  category_name: string;
+  product_discount_category: string;
+  sell_online: string;
+  molecules: string;
+  mou: number;
+  gallery_images: string;
+  manufacturer: string;
+};
 
 const REDIS_ORDER_AUTO_ID_KEY_PREFIX: string = 'orderAutoId:';
 @EntityRepository(MedicineOrders)
@@ -85,6 +107,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getRefundsAndPaymentsByOrderId(id: MedicineOrders['id']) {
     const paymentType = MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS;
     return MedicineOrderPayments.createQueryBuilder('medicineOrderPayments')
+      .innerJoinAndSelect('medicineOrderPayments.medicineOrders', 'medicineOrders')
       .leftJoinAndSelect('medicineOrderPayments.medicineOrderRefunds', 'medicineOrderRefunds')
       .where('medicineOrderPayments.medicineOrders = :id', { id })
       .getOne();
@@ -753,5 +776,44 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
     }
     return medicineOrderDetails;
+  }
+
+  async saveMedicneInfoRedis(saveMedicineInfoInput: SaveMedicineInfoInput) {
+    const skuKey = 'medicine:sku:' + saveMedicineInfoInput.sku;
+    return await hmsetCache(skuKey, {
+      sku: encodeURIComponent(saveMedicineInfoInput.sku),
+      name: encodeURIComponent(saveMedicineInfoInput.name),
+      status: encodeURIComponent(saveMedicineInfoInput.status),
+      price: encodeURIComponent(saveMedicineInfoInput.price),
+      special_price:
+        saveMedicineInfoInput.special_price != undefined
+          ? encodeURIComponent(saveMedicineInfoInput.special_price)
+          : '',
+      special_price_from:
+        saveMedicineInfoInput.special_price_from != undefined
+          ? encodeURIComponent(saveMedicineInfoInput.special_price_from)
+          : '',
+      special_price_to:
+        saveMedicineInfoInput.special_price_to != undefined
+          ? encodeURIComponent(saveMedicineInfoInput.special_price_to)
+          : '',
+      qty: encodeURIComponent(saveMedicineInfoInput.qty),
+      description: encodeURIComponent(saveMedicineInfoInput.description),
+      url_key: encodeURIComponent(saveMedicineInfoInput.url_key),
+      base_image: encodeURIComponent(saveMedicineInfoInput.base_image),
+      is_prescription_required: encodeURIComponent(saveMedicineInfoInput.is_prescription_required),
+      category_name: encodeURIComponent(saveMedicineInfoInput.category_name),
+      product_discount_category: encodeURIComponent(
+        saveMedicineInfoInput.product_discount_category
+      ),
+      sell_online: encodeURIComponent(saveMedicineInfoInput.sell_online),
+      molecules:
+        saveMedicineInfoInput.molecules != undefined
+          ? encodeURIComponent(saveMedicineInfoInput.molecules)
+          : '',
+      mou: encodeURIComponent(saveMedicineInfoInput.mou),
+      gallery_images: encodeURIComponent(saveMedicineInfoInput.gallery_images),
+      manufacturer: encodeURIComponent(saveMedicineInfoInput.manufacturer),
+    });
   }
 }

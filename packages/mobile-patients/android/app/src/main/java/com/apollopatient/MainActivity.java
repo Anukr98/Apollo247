@@ -25,10 +25,11 @@ public class MainActivity extends ReactActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (!Settings.canDrawOverlays(this)) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
-            startActivityForResult(intent, 0);
-        }
+        //TODO: remove after the auto permission is provided
+        // if (!Settings.canDrawOverlays(this)) {
+        //     Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+        //     startActivityForResult(intent, 0);
+        // }
         Intent intent = getIntent();
         String action = intent.getAction();
         Uri data = intent.getData();
