@@ -379,11 +379,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
   const itemIndexInCart = (item: MedicineProduct) => {
-    return cartItems.findIndex((cartItem) => cartItem.id == item.id);
+    return cartItems.findIndex((cartItem) => cartItem.sku == item.sku);
   };
-  const [medicineQty, setMedicineQty] = React.useState(
-    itemIndexInCart(data) !== -1 ? cartItems[itemIndexInCart(data)].quantity : 1
-  );
+  const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const addToCartRef = useRef(null);
   const subDrugsRef = useRef(null);
@@ -569,6 +567,12 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       fetchSubstitutes();
     }
   }, [substitutes]);
+
+  useEffect(() => {
+    if (cartItems && cartItems.length > 0) {
+      setMedicineQty(itemIndexInCart(data) !== -1 ? cartItems[itemIndexInCart(data)].quantity : 1);
+    }
+  }, [cartItems]);
 
   useEffect(() => {
     if (pharmaAddressDetails.pincode && pharmaAddressDetails.pincode.length > 0) {

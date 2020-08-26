@@ -35,6 +35,8 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import {
   searchDiagnostics,
@@ -124,6 +126,19 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+};
+
+export const followUpChatDaysCaseSheet = (
+  caseSheet:
+    | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
+    | null
+) => {
+  const case_sheet =
+    caseSheet &&
+    caseSheet
+      .filter((j) => j && j.doctorType !== DoctorType.JUNIOR)
+      .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
+  return case_sheet;
 };
 
 export const formatOrderAddress = (

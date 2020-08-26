@@ -528,6 +528,11 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
             isActive
           }
         }
+        caseSheet {
+          followUpChatDays
+          version
+          doctorType
+        }
       }
     }
   }
@@ -707,6 +712,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       fullName
       displayName
       doctorType
+      chatDays
       qualification
       mobileNumber
       experience

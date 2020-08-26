@@ -224,7 +224,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CovidArticleDetails: React.FC = (props: any) => {
+const CovidArticleDetails: React.FC = (props: any) => {
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
@@ -442,3 +442,5 @@ export const CovidArticleDetails: React.FC = (props: any) => {
     </div>
   );
 };
+
+export default CovidArticleDetails;

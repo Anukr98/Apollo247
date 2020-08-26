@@ -63,6 +63,8 @@ export const getAppointmentHistoryTypeDefs = gql`
     actualAmount: Float
     discountedAmount: Float
     appointmentPayments: [AppointmentPayment]
+    isConsultStarted: Boolean
+    symptoms: String
   }
 
   input AppointmentHistoryInput {
@@ -216,10 +218,10 @@ const getAppointmentStatus: Resolver<
   console.log('args', args);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
-  try { 
+  try {
     const appointment: Appointment | undefined = await appointmentRepo.findById(args.id);
     if (appointment == null) throw new AphUserInputError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
-    return { status: appointment.status, state: appointment.appointmentState }; 
+    return { status: appointment.status, state: appointment.appointmentState };
   } catch (invalidGrant) {
     throw new AphError(AphErrorMessages.GET_APPOINTMENT_STATUS_ERROR, undefined, { invalidGrant });
   }

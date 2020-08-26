@@ -87,7 +87,8 @@ export enum ApiConstants {
 
   //medicine order out for delivery
   ORDER_OUT_FOR_DELIVERY_TITLE = 'Medicine order is out for delivery',
-  ORDER_OUT_FOR_DELIVERY_BODY = 'Hi {0}! Your order {1} has been picked by the delivery person and is on its way.',
+  ORDER_OUT_FOR_DELIVERY_BODY = 'Hi {0}! Your order {1} has been picked by our delivery person and is out for delivery. For any support, reach out on our official WhatsApp channel (8 AM - 8:30 PM) bit.ly/apollo247Medicines',
+  ORDER_OUT_FOR_DELIVERY_BODY_EXTERNAL = 'Hi {0}! Your Order {1} has been picked-up by the courier and is in-transit. For any support, reach out on our official WhatsApp channel (8 AM - 8:30 PM) bit.ly/apollo247Medicines',
 
   //medicine order delivered
   ORDER_DELIVERY_TITLE = 'Medicine order is delivered',
@@ -164,7 +165,6 @@ export enum ApiConstants {
   FOLLOW_UP_NOTIFICATION_RESPONSE = 'Follow up notifications sent to {0} patients successfully',
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
   PRESCRIPTION_READY_BODY = 'Hi {0}! Your prescription from consultation with Doctor {1} for appointment {2} on {3} is ready :)',
-
 
   REFERRAL_CODE_TEXT = 'Hi {0}, Use code "CARE247" to avail discount up to Rs. 149  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
   REFERRAL_CODE_TEXT_WITH_COUPON = 'Hi {0}, Use code "{1}" to avail discount up to Rs. 299  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/XF7MWPebtkw',
@@ -442,8 +442,8 @@ export enum ApiConstants {
   NEW_VERSION_PRESCRIPTION_SENT_EVENT_NAME = 'New version of the prescription was sent',
   JD_CASE_SHEET_COMPLETED_EVENT_NAME = 'JD case sheet submitted completed',
   JD_CONSULTATION_STARTED_EVENT_NAME = 'JD consultation Started',
-  MEDICINE_ORDER_REFUND_PROCESSED_EVENT_NAME ='Refund Processed',
-  MEDICINE_ORDER_REFUND_SUCCESSFUL_EVENT_NAME ='Refund Successful',
+  MEDICINE_ORDER_REFUND_PROCESSED_EVENT_NAME = 'Refund Processed',
+  MEDICINE_ORDER_REFUND_SUCCESSFUL_EVENT_NAME = 'Refund Successful',
 
   WHATSAPP_SD_CONSULT_REMINDER_15 = 'inf_sd_consult_reminder_15_min',
   WHATSAPP_SD_CHAT_NOTIFICATION_ID = 'inf_sd_chat_notification',
@@ -457,7 +457,7 @@ export enum ApiConstants {
   PARTNER_SBI = 'SBIYONO',
 
   PRESCRIPTION_DEEPLINK_PLACEHOLDER = '<caseSheetId>',
-  PRESCRIPTION_CLICK_HERE = 'Click here to access the Prescription:'
+  PRESCRIPTION_CLICK_HERE = 'Click here to access the Prescription:',
 }
 
 export enum PATIENT_REPO_RELATIONS {
@@ -479,7 +479,7 @@ export enum PATIENT_REPO_RELATIONS {
 }
 
 export const migrationDir = {
-  consults_db: "dist/migration/consults/**/*.js",
-  doctors_db: "dist/migration/doctors/**/*.js",
-  profiles_db: "dist/migration/profiles/**/*.js"
-}
+  consults_db: 'dist/migration/consults/**/*.js',
+  doctors_db: 'dist/migration/doctors/**/*.js',
+  profiles_db: 'dist/migration/profiles/**/*.js',
+};
