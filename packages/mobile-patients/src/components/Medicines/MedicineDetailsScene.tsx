@@ -44,7 +44,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import moment, { lang } from 'moment';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,

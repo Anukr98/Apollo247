@@ -493,7 +493,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 serviceItem.siteId = g(tatRes, 'data', 'response', 'storeCode')
                 return serviceItem;
               })
-              if (serviceableSkus.length) {
+              if (serviceableSkus.length && !unserviceableSkus.length) {
                 fetchInventoryAndUpdateCartPricesAfterTat(serviceableSkus, updatedCartItems);
                 updateserviceableItemsTat(moment(deliveryDate, "DD-MM-YYYY hh:mm:ss a").format(AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT), lookUp);
               } else {
@@ -508,7 +508,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               setLoading!(false);
             }
           } else {
-            showUnServiceableItemsAlert(updatedCartItems)
+            showGenericTatDate(lookUp)
             setshowDeliverySpinner(false);
             setLoading!(false);
           }

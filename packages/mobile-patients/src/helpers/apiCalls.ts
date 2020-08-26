@@ -421,16 +421,24 @@ export const getStoreInventoryApi = (
 };
 
 export const pinCodeServiceabilityApi247 = (pincode: string): Promise<AxiosResponse<{ response: boolean }>> => {
-  const url = `${config.TAT_SERVICEABILITY_BASE_URL}/serviceable?pincode=${pincode}`
-  return Axios.post(url);
+  const url = `${config.UATTAT_CONFIG[0]}/serviceable?pincode=${pincode}`
+  return Axios.post(url, {}, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+  });
 };
 
 export const availabilityApi247 = (
   pincode: string,
   sku: string
 ): Promise<AxiosResponse<GetAvailabilityResponse247>> => {
-  const url = `${config.TAT_SERVICEABILITY_BASE_URL}/availability?sku=${sku}&pincode=${pincode}`
-  return Axios.post(url);
+  const url = `${config.UATTAT_CONFIG[0]}/availability?sku=${sku}&pincode=${pincode}`
+  return Axios.post(url, {}, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+  });
 };
 
 export const medCartItemsDetailsApi = (
@@ -565,9 +573,10 @@ export const getDeliveryTAT247 = (
 ) : Promise<AxiosResponse<GetTatResponse247>> => {
   const CancelToken = Axios.CancelToken;
   cancelGetDeliveryTAT247 && cancelGetDeliveryTAT247();
-  const url = `${config.TAT_SERVICEABILITY_BASE_URL}/tat?sku=${params.sku}&pincode=${params.pincode}&lat=${params.lat}&lng=${params.lng}`
-  return Axios.post(url, {
+  const url = `${config.UATTAT_CONFIG[0]}/tat?sku=${params.sku}&pincode=${params.pincode}&lat=${params.lat}&lng=${params.lng}`
+  return Axios.post(url, {}, {
     headers: {
+      Authorization: config.UATTAT_CONFIG[1],
     },
     timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
     cancelToken: new CancelToken((c) => {
