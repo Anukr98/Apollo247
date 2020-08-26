@@ -38,7 +38,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import {Dimensions,View, SafeAreaView, Text,StyleSheet,NativeSyntheticEvent,NativeEventEmitter} from 'react-native';
+import {Dimensions,View, SafeAreaView, Text,StyleSheet} from 'react-native';
 import { useApolloClient } from 'react-apollo-hooks';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
