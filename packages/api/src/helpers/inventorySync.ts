@@ -71,5 +71,4 @@ export async function syncInventory(orderDatails: MedicineOrders, syncType: SYNC
   }
 
   clearTimeout(timeout);
-  console.log(resp);
 }
