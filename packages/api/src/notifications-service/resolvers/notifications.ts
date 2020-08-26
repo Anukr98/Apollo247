@@ -37,7 +37,7 @@ import { log } from 'customWinstonLogger';
 import { APPOINTMENT_TYPE, Appointment, STATUS } from 'consults-service/entities';
 import Pubnub from 'pubnub';
 import fetch from 'node-fetch';
-import { Doctor } from 'doctors-service/entities';
+import { Doctor, DoctorType } from 'doctors-service/entities';
 import * as child_process from 'child_process';
 import PDFDocument from 'pdfkit';
 import { writeRow, textInRow, uploadPdfFileToBlobStorage } from 'helpers/uploadFileToBlob';
@@ -2484,141 +2484,133 @@ const sendDailyAppointmentSummary: Resolver<
   string
 > = async (parent, args, { doctorsDb, consultsDb }) => {
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctors = await doctorRepo.getAllDoctors('0', args.docLimit, args.docOffset);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const allAppts = await appointmentRepo.getTodaysAppointments(new Date());
-  console.log(allAppts.length, 'all appts count');
-  let pdfDoc: PDFKit.PDFDocument; // = new PDFDocument();
-  let fileName = '',
-    uploadPath = '';
-  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-  if (process.env.NODE_ENV != 'local') {
-    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-  }
-  let blobNames = '';
   const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
     let doctorsCount = 0;
-    if (allAppts.length == 0) {
-      resolve(doctorsCount);
-    }
-
-    let prevDoc = allAppts.length > 0 ? allAppts[0].doctorId : '';
-    let onlineAppointments = 0;
-    let physicalAppointments = 0;
-    let flag = 0;
-    let rowHeadx = 90;
-    let rowx = 100;
-    const docIds: string[] = [];
-    allAppts.forEach((appt) => {
-      docIds.push(appt.doctorId);
-    });
-    const allDoctorDetails = await doctorRepo.getAllDocsById(docIds);
-
-    allAppts.forEach(async (appointment, index, array) => {
-      //if (appointment.status != STATUS.COMPLETED) {
-      if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
-        physicalAppointments++;
-      } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
-        onlineAppointments++;
-      }
-      //}
-
-      if (flag == 0) {
-        fileName =
-          format(new Date(), 'dd-MM-yyyy') + '_' + appointment.doctorId + '_' + index + '.pdf';
-        uploadPath = assetsDir + '/' + fileName;
-        pdfDoc = new PDFDocument();
-        //console.log('came here', onlineAppointments, fileName);
-        pdfDoc.pipe(fs.createWriteStream(uploadPath));
-        rowHeadx = 90;
-        rowx = 100;
-        writeRow(pdfDoc, rowHeadx);
-        textInRow(pdfDoc, 'Patient Name', rowx, 30);
-        textInRow(pdfDoc, 'Appointment Date Time', rowx, 201);
-        textInRow(pdfDoc, 'Appt. Type', rowx, 341);
-        textInRow(pdfDoc, 'Display ID', rowx, 441);
-        flag = 1;
-      }
-      rowHeadx += 20;
-      rowx += 18;
-      writeRow(pdfDoc, rowHeadx);
-      textInRow(pdfDoc, appointment.patientName, rowx, 30);
-      textInRow(
-        pdfDoc,
-        format(addMinutes(appointment.appointmentDateTime, +330), 'yyyy-MM-dd hh:mm:ss'),
-        rowx,
-        201
+    doctors.forEach(async (doctor, index, array) => {
+      const appointments = await appointmentRepo.getDoctorAppointments(
+        doctor.id,
+        new Date(),
+        new Date()
       );
-      textInRow(pdfDoc, appointment.appointmentType, rowx, 341);
-      textInRow(pdfDoc, appointment.displayId.toString(), rowx, 441);
-
-      if (index + 1 == array.length) {
-        const doctorDetails = allDoctorDetails.filter((item) => {
-          return item.id == prevDoc;
-        });
-        const totalAppointments = onlineAppointments + physicalAppointments;
-        pdfDoc
-          .lineCap('butt')
-          .moveTo(200, 90)
-          .lineTo(200, totalAppointments * 30)
-          .moveTo(340, 90)
-          .lineTo(340, totalAppointments * 30)
-          .moveTo(420, 90)
-          .lineTo(420, totalAppointments * 30)
-          .stroke();
-        pdfDoc.end();
-
-        await delay(350);
-        console.log('pdf end');
-        const blobName = await uploadPdfFileToBlobStorage(fileName, uploadPath);
-        blobNames += blobName + ', ';
-        //console.log(blobName, 'blob names');
-        if (doctorDetails) {
-          doctorsCount++;
-          // let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
-          //   '{0}',
-          //   doctorDetails[0].firstName
-          // ).replace('{1}', totalAppointments.toString());
-          // const onlineAppointmentsText =
-          //   onlineAppointments > 0
-          //     ? ApiConstants.ONLINE_APPOINTMENTS.replace('{0}', onlineAppointments.toString())
-          //     : '';
-          // const physicalAppointmentsText =
-          //   physicalAppointments > 0
-          //     ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
-          //     : '';
-          // messageBody += onlineAppointmentsText + physicalAppointmentsText;
-          // sendBrowserNotitication(doctorDetails[0].id, messageBody);
-
-          // sendNotificationSMS('+918019677178', messageBody);
-          // const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
-          // const templateData: string[] = [
-          //   'https://apolloaphstorage.blob.core.windows.net/doctors/2020-08-12-2b3572d7-9623-44ea-89be-ece581d2e522.pdf',
-          //   todaysDate + ' Appointments List',
-          //   todaysDate,
-          //   totalAppointments.toString(),
-          // ];
-          // sendDoctorNotificationWhatsapp(
-          //   ApiConstants.WHATSAPP_DOC_SUMMARY,
-          //   '+918019677178',
-          //   templateData
-          // );
-          onlineAppointments = 0;
-          physicalAppointments = 0;
-          prevDoc = appointment.doctorId;
-          flag = 0;
+      let onlineAppointments = 0;
+      let physicalAppointments = 0;
+      appointments.forEach((appointment) => {
+        if (appointment.status != STATUS.COMPLETED) {
+          if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
+            physicalAppointments++;
+          } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
+            onlineAppointments++;
+          }
         }
-      }
+      });
 
+      const totalAppointments = onlineAppointments + physicalAppointments;
+
+      if (totalAppointments > 0) {
+        doctorsCount++;
+        const whatsAppLink =
+          ApiConstants.WHATSAPP_LINK + '' + process.env.WHATSAPP_LINK_BOOK_APOINTMENT;
+        let whatsAppMessageBody = ApiConstants.DAILY_WHATSAPP_NOTIFICATION.replace(
+          '{0}',
+          doctor.firstName
+        ).replace('{1}', totalAppointments.toString());
+        let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
+          '{0}',
+          doctor.firstName
+        ).replace('{1}', totalAppointments.toString());
+        const onlineAppointmentsText =
+          onlineAppointments > 0
+            ? ApiConstants.ONLINE_APPOINTMENTS.replace('{0}', onlineAppointments.toString())
+            : '';
+        const physicalAppointmentsText =
+          physicalAppointments > 0
+            ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
+            : '';
+        messageBody += onlineAppointmentsText + physicalAppointmentsText;
+        whatsAppMessageBody +=
+          onlineAppointmentsText + '' + physicalAppointmentsText + whatsAppLink;
+        sendBrowserNotitication(doctor.id, messageBody);
+
+        sendNotificationSMS(doctor.mobileNumber, messageBody);
+
+        sendDoctorNotificationWhatsappHotFix(
+          doctor.mobileNumber,
+          whatsAppMessageBody,
+          1,
+          doctor.doctorType
+        );
+      }
       if (index + 1 === array.length) {
         resolve(doctorsCount);
       }
     });
   });
-  const final = countOfNotifications + ' - ' + blobNames;
-  async function delay(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+
+  return ApiConstants.DAILY_APPOINTMENT_SUMMARY_RESPONSE.replace(
+    '{0}',
+    countOfNotifications.toString()
+  );
+};
+
+const sendDoctorNotificationWhatsappHotFix = async (
+  mobileNumber: string,
+  message: string,
+  loginType: number,
+  doctorType: string
+) => {
+  if (doctorType != DoctorType.DOCTOR_CONNECT) {
+    const apiUrl =
+      process.env.WHATSAPP_URL +
+      '?method=OPT_IN&phone_number=' +
+      mobileNumber +
+      '&userid=' +
+      process.env.WHATSAPP_DOCTOR_USERNAME +
+      '&password=' +
+      process.env.WHATSAPP_DOCTOR_PASSWORD +
+      '&auth_scheme=plain&format=text&v=1.1&channel=WHATSAPP';
+    const whatsAppResponse = await fetch(apiUrl)
+      .then(async (res) => {
+        const sendApiUrl = `${process.env.WHATSAPP_URL}?method=SendMessage&send_to=${mobileNumber}&userid=${process.env.WHATSAPP_DOCTOR_USERNAME}&password=${process.env.WHATSAPP_DOCTOR_PASSWORD}&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=${message}`;
+        fetch(sendApiUrl)
+          .then((res) => {
+            const fileName =
+              process.env.NODE_ENV +
+              '_docwhatsappnotification_' +
+              format(new Date(), 'yyyyMMdd') +
+              '.txt';
+            let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+            if (process.env.NODE_ENV != 'local') {
+              assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+            }
+            let content =
+              format(new Date(), 'yyyy-MM-dd hh:mm') +
+              '\n mobile number: ' +
+              mobileNumber +
+              '\n message: ' +
+              message +
+              '\n multicastId: ';
+            content +=
+              res +
+              '\n------------------------------------------------------------------------------------\n';
+            fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+              if (err) {
+                console.log('file saving error', err);
+              }
+              console.log('notification results saved');
+            });
+          })
+          .catch((error) => {
+            console.log('whatsapp error', error);
+            throw new AphError(AphErrorMessages.MESSAGE_SEND_WHATSAPP_ERROR);
+          });
+      })
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.GET_OTP_ERROR);
+      });
+    return whatsAppResponse;
   }
-  return ApiConstants.DAILY_APPOINTMENT_SUMMARY_RESPONSE.replace('{0}', final.toString());
 };
 
 const sendFollowUpNotification: Resolver<null, {}, NotificationsServiceContext, string> = async (
