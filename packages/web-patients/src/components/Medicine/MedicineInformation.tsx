@@ -555,7 +555,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               data.response.tatU != -1
             ) {
               if (getDiffInDays(data.response.tatU) < 10) {
-                console.log('getDiffInDays(data.response.tatU)', getDiffInDays(data.response.tatU));
                 setDeliveryTime(data.response.tat);
                 setErrorMessage('');
                 if (pharmaAddressDetails.pincode !== pinCode) {
@@ -602,7 +601,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       false
     )
       .then((data: any) => {
-        if (data && data.response) {
+        if (data && data.response && data.response.length > 0 && data.response[0].exist) {
           fetchDeliveryTime(pinCode);
         } else {
           setDeliveryTime('');

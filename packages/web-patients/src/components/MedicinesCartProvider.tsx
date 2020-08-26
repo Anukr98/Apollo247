@@ -337,7 +337,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
         false
       )
         .then((data: any) => {
-          if (data && data.response) {
+          if (data && data.response && data.response.length > 0 && data.response[0].exist) {
             setCartItems([...cartItems, itemToAdd]);
             setIsCartUpdated(true);
           } else {
@@ -359,7 +359,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
   };
 
   const removeCartItems: MedicineCartContextProps['removeCartItems'] = (arrSku) => {
-    const items = cartItems.filter((item) => !arrSku.includes(item.id || Number(item.sku)));
+    const items = cartItems.filter((item) => !arrSku.includes(item.sku));
     setCartItems(items);
     setIsCartUpdated(true);
   };

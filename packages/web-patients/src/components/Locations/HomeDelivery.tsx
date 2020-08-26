@@ -226,7 +226,11 @@ type HomeDeliveryProps = {
   setDeliveryTime: (deliveryTime: string) => void;
   deliveryTime: string;
   selectedZipCode: (zipCode: string) => void;
-  checkForPriceUpdate: (shopid: string) => void;
+  checkForPriceUpdate: (shopid: string, pincode: string, lat: string, lng: string) => void;
+  setLatitude: (latitude: string) => void;
+  setLongitude: (longitude: string) => void;
+  latitude: string;
+  longitude: string;
 };
 
 interface TatInterface {
@@ -266,6 +270,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [zipCode, setZipCode] = React.useState<string>('');
+  // const [latitude, setLatitude] = React.useState<string>('');
+  // const [longitude, setLongitude] = React.useState<string>('');
   const [isError, setIsError] = React.useState<boolean>(false);
   const [deliveryLoading, setDeliveryLoading] = React.useState<boolean>(false);
   const [selectingAddress, setSelectingAddress] = React.useState<boolean>(false);
@@ -284,7 +290,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
   useEffect(() => {
     if (isMounted.current && deliveryAddressId && !selectingAddress) {
-      !nonCartFlow && fetchDeliveryTime(zipCode);
+      !nonCartFlow && fetchDeliveryTime(zipCode, props.latitude, props.longitude);
     } else {
       isMounted.current = true;
     }
@@ -311,9 +317,13 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
             if (deliveryAddressId) {
               const index = addresses.findIndex((address) => address.id === deliveryAddressId);
               const zipCode = index !== -1 ? addresses[index].zipcode || '' : '';
+              const lat = index !== -1 ? addresses[index].latitude || '' : '';
+              const lng = index !== -1 ? addresses[index].longitude || '' : '';
               setZipCode(zipCode);
+              props.setLatitude(lat.toString());
+              props.setLongitude(lng.toString());
               if (cartItems.length > 0 && !nonCartFlow) {
-                fetchDeliveryTime(zipCode);
+                fetchDeliveryTime(zipCode, lat.toString(), lng.toString());
               }
               props.selectedZipCode(zipCode);
               setSelectedAddressDataIndex(index || 0);
@@ -354,7 +364,6 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         let obj = cartItems.find((o) => o.sku === nonDeliverableSKU);
         arrSku.push(obj.sku);
       });
-      removeCartItems && removeCartItems(arrSku);
       setShowNonDeliverablePopup(false);
       setNonServicableSKU([]);
     }
@@ -397,32 +406,28 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
   const fetchUserDisplayDeliveryTime = async (paramObject: {
     postalcode: string;
-    ordertype: string;
-    lookup: lookupType[];
+    lookup: string[];
+    lat: string;
+    lng: string;
   }) => {
-    const CancelToken = axios.CancelToken;
-    let cancelGetDeliveryTimeApi: Canceler | undefined;
-    await axios
-      .post(
-        apiDetails.deliveryHeaderTATUrl,
-        {
-          ...paramObject,
-        },
-        {
-          headers: {
-            Authentication: apiDetails.deliveryAuthToken,
-          },
-          timeout: TAT_API_TIMEOUT_IN_MILLI_SEC,
-          cancelToken: new CancelToken((c) => {
-            // An executor function receives a cancel function as a parameter
-            cancelGetDeliveryTimeApi = c;
-          }),
-        }
-      )
-      .then(async ({ data }: any) => {
-        if (data && data.tat && data.tat[0]) {
-          setDeliveryTime(data.tat[0].deliverydate);
-          props.checkForPriceUpdate(data.tat[0].siteId);
+    await fetchUtil(
+      `http://tat.phrdemo.com/tat?sku=${paramObject.lookup.join(',')}&pincode=${
+        paramObject.postalcode
+      }&lat=${paramObject.lat}&lng=${paramObject.lng}`,
+      'GET',
+      {},
+      '',
+      false
+    )
+      .then((data: any) => {
+        if (data && data.response && data.response.tat) {
+          setDeliveryTime(data.response.tat);
+          props.checkForPriceUpdate(
+            data.response.storeCode,
+            paramObject.postalcode,
+            paramObject.lat,
+            paramObject.lng
+          );
           changeCartTatStatus && changeCartTatStatus(true);
         }
       })
@@ -432,65 +437,32 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       });
   };
 
-  const fetchDeliveryTime = async (zipCode: string) => {
-    const CancelToken = axios.CancelToken;
-    let cancelGetDeliveryTimeApi: Canceler | undefined;
+  const fetchDeliveryTime = async (zipCode: string, lat: string, lng: string) => {
     const lookUp = cartItems.map((item: MedicineCartItem) => {
       return item.sku;
     });
     setDeliveryLoading(true);
-    // await axios
-    //   .post(
-    //     apiDetails.deliveryUrl || '',
-    //     {
-    //       postalcode: zipCode || '',
-    //       ordertype: medicineCartType,
-    //       lookup: lookUp,
-    //     },
-    //     {
-    //       headers: {
-    //         Authentication: apiDetails.deliveryAuthToken,
-    //       },
-    //       timeout: TAT_API_TIMEOUT_IN_MILLI_SEC,
-    //       cancelToken: new CancelToken((c) => {
-    //         // An executor function receives a cancel function as a parameter
-    //         cancelGetDeliveryTimeApi = c;
-    //       }),
-    //     }
-    //   )
-    fetchUtil(
-      `http://tat.phrdemo.com/tat?sku=${lookUp.join(',')}&pincode=${zipCode}&lat=${
-        pharmaAddressDetails.lat
-      }&lng=${pharmaAddressDetails.lng}`,
+    await fetchUtil(
+      `http://tat.phrdemo.com/availability?sku=${lookUp.join(',')}&pincode=${zipCode}`,
       'GET',
       {},
       '',
       false
     )
-      .then((res: AxiosResponse) => {
+      .then((data: any) => {
         try {
-          if (res && res.data) {
+          if (data && data.response) {
             setDeliveryLoading(false);
             setSelectingAddress(true);
-            if (
-              typeof res.data === 'object' &&
-              Array.isArray(res.data.tat) &&
-              res.data.tat.length
-            ) {
-              const tatResult = res.data.tat;
-
+            if (data.response.length > 0) {
+              const tatResult = data.response;
               const nonDeliverySKUArr = tatResult
-                .filter(
-                  (item: TatInterface) =>
-                    getDiffInDays(item.deliverydate) > 10 ||
-                    item.siteId === '' ||
-                    item.siteId === null
-                )
-                .map((filteredSku: TatInterface) => filteredSku.artCode);
+                .filter((item: any) => !item.exist)
+                .map((filteredSku: any) => filteredSku.sku);
 
               const deliverableSku = tatResult
-                .filter((item: TatInterface) => getDiffInDays(item.deliverydate) <= 10)
-                .map((filteredSku: TatInterface) => filteredSku.artCode);
+                .filter((item: any) => item.exist)
+                .map((filteredSku: any) => filteredSku.sku);
 
               deliverableSku.map((deliverableSKU: string) => {
                 let obj = cartItems.find((o) => o.sku === deliverableSKU);
@@ -511,18 +483,16 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                 setShowNonDeliverablePopup(true);
                 setNonServicableSKU(nonDeliverySKUArr);
               } else {
-                // fetchUserDisplayDeliveryTime({
-                //   postalcode: zipCode || '',
-                //   ordertype: medicineCartType,
-                //   lookup: lookUp,
-                // });
+                fetchUserDisplayDeliveryTime({
+                  postalcode: zipCode || '',
+                  lookup: lookUp,
+                  lat,
+                  lng,
+                });
               }
 
               setErrorDeliveryTimeMsg('');
-            } else if (
-              typeof res.data.errorMSG === 'string' ||
-              typeof res.data.errorMsg === 'string'
-            ) {
+            } else if (typeof data.errorMSG === 'string') {
               setDefaultDeliveryTime();
             }
           }
