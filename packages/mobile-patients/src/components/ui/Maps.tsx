@@ -38,13 +38,13 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import {Dimensions,View, SafeAreaView, Text,StyleSheet} from 'react-native';
+import {Dimensions,View, SafeAreaView, Text,StyleSheet,NativeSyntheticEvent,NativeEventEmitter} from 'react-native';
 import { useApolloClient } from 'react-apollo-hooks';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import MapView,{Marker,PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView,{Marker,PROVIDER_GOOGLE, Coordinate, MapEvent } from 'react-native-maps';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Location } from './Icons';
@@ -53,37 +53,6 @@ const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
 const { isIphoneX } = DeviceHelper();
-
-export interface markerEvent {
-  event: markerEvent_nativeEvent;
-}
-
-export interface markerEvent_nativeEvent{
-  nativeEvent: markerEvent_nativeEvent_coordinate
-}
-
-export interface markerEvent_nativeEvent_coordinate {
-  coordinate : markerEvent_nativeEvent_coordinateVariables
-}
-
-export interface markerEvent_nativeEvent_coordinateVariables{
-  latitude: number | 0,
-  longitude: number | 0
-}
-
-// export interface eventObject{
-//   event: nativeEvent
-// }
-
-// export interface  nativeEvent {
-//   nativeEvent: coordinate;
-// }
-
-// export interface coordinate{
-//   latitude?: number | 0,
-//   longitude?: number | 0
-// }
-
 
 export interface MapProps extends NavigationScreenProps<{
   KeyName?: string;
@@ -114,8 +83,14 @@ export const Maps : React.FC<MapProps> = (props) =>{
     const getLatitude = addressObject?.latitude;
     const getLongtitude = addressObject?.longitude;
     const getLandmark = addressObject?.landmark || '';
-
-    const address = addressObject?.addressLine1+', '+addressObject?.addressLine2+ ', '+getLandmark+ ', '+addressObject?.city+ ', '+addressObject?.state + ', '+addressObject?.zipcode;
+    let address;
+    if(getLandmark!=""){
+      address = addressObject?.addressLine1+', '+addressObject?.addressLine2+ ', '+getLandmark+ ', '+addressObject?.city+ ', '+addressObject?.state + ', '+addressObject?.zipcode;
+    }
+    else{
+      address = addressObject?.addressLine1+', '+addressObject?.addressLine2+ ', '+addressObject?.city+ ', '+addressObject?.state + ', '+addressObject?.zipcode;
+    }
+    
     setAddress(address);
     //check this condition for initial cases
     //if not zero then we can calculate lat=long from the address
@@ -169,12 +144,12 @@ export const Maps : React.FC<MapProps> = (props) =>{
     )
   }
 
-  const onMarkerDragEnd = (event: markerEvent) =>{
-    console.log(event);
+  const onMarkerDragEnd = (event: MapEvent) =>{
     const coordinates = event.nativeEvent.coordinate;
-    setLatitude(coordinates.latitude);
-    setLongitude(coordinates.longitude);
+    setLatitude(coordinates?.latitude);
+    setLongitude(coordinates?.longitude);
   }
+  
 
   // const onRegionChange = (region: RegionEvent) => {
   //   setLatitude(region.latitude);
@@ -200,7 +175,7 @@ export const Maps : React.FC<MapProps> = (props) =>{
             longitude: longitude
           }}
           draggable={true}
-          onDragEnd={(event) => onMarkerDragEnd(event)}
+          onDragEnd={(e) => onMarkerDragEnd(e)}
         />
       </MapView>
     )
