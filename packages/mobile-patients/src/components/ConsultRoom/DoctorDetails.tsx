@@ -1219,17 +1219,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             justifyContent: 'center',
           }}
         >
-          {!showVideo &&
-          doctorDetails &&
-          doctorDetails &&
-          doctorDetails.photoUrl &&
-          doctorDetails.photoUrl.match(
-            /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
-          ) ? (
+          {!showVideo && !!g(doctorDetails, 'photoUrl') ? (
             <>
               <View style={{ height: 20, width: '100%' }} />
               <Animated.Image
-                source={{ uri: doctorDetails.photoUrl }}
+                source={{ uri: doctorDetails!.photoUrl }}
                 style={{ top: 0, height: 140, width: 140, opacity: imgOp }}
               />
               {/* <TouchableOpacity
