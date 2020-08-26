@@ -232,16 +232,19 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
 
     try {
       const documents = await DocumentPicker.pickMultiple({
-        type: [DocumentPicker.types.pdf, DocumentPicker.types.images],
+        type: [DocumentPicker.types.allFiles],
       });
 
       console.log('\ndocuments\n', JSON.stringify(documents));
 
       const result = documents.filter((obj) => {
-        if (obj.uri.toLowerCase().match(/\.(jpeg|jpg|png|jfif|pdf)$/)) {
-          if (obj.uri.toLowerCase().endsWith('.pdf')) {
+        if (obj.name.toLowerCase().match(/\.(jpeg|jpg|png|jfif|pdf)$/)) {
+          if (obj.name.toLowerCase().endsWith('.pdf')) {
             if (obj.size > 2000000) {
-              Alert.alert('Alert', 'size exceeded');
+              Alert.alert(
+                strings.common.uhOh,
+                `Only images and PDF(less than 2MB) are supported.\n\n${obj.name}`
+              );
               setshowSpinner(false);
               return;
             } else {
@@ -251,7 +254,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             return obj;
           }
         } else {
-          Alert.alert('Alert', 'This type is not accepted. Only images and pdf are allowed');
+          Alert.alert(strings.common.uhOh, `Only images and PDF are supported.\n\n${obj.name}`);
           setshowSpinner(false);
           return;
         }
@@ -274,10 +277,9 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       setshowSpinner(false);
     } catch (e) {
       console.log('\ncatch error\n', JSON.stringify(e));
-      // setshowSpinner(false);
+      setshowSpinner(false);
       if (DocumentPicker.isCancel(e)) {
         CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
-        setshowSpinner(false);
       }
     }
   };
