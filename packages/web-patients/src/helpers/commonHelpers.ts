@@ -65,8 +65,8 @@ const getDeviceType = (): DEVICETYPE => {
     return /Android/i.test(userAgent)
       ? DEVICETYPE.ANDROID
       : /iPhone/i.test(userAgent)
-      ? DEVICETYPE.IOS
-      : null;
+        ? DEVICETYPE.IOS
+        : null;
   } else {
     return DEVICETYPE.DESKTOP;
   }
@@ -203,7 +203,7 @@ const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
 const OUT_OF_STOCK_MESSAGE = 'Sorry, this item is out of stock in your area';
-const TAT_API_TIMEOUT_IN_MILLI_SEC = 10000; // in milli sec
+const TAT_API_TIMEOUT_IN_MILLI_SEC = 20000; // in milli sec
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -370,7 +370,7 @@ const getAvailability = (nextAvailability: string, differenceInMinutes: number, 
   } else if (isAvailableAfterTomorrow) {
     return `${message} in ${
       nextAvailabilityMoment.diff(tomorrowAvailabilityTime, 'days') + 1 // intentionally added + 1 as we need to consider 6 am as next day
-    } days`;
+      } days`;
   } else if (!isAvailableTomorrow && differenceInMinutes >= 60) {
     return `${message} at ${nextAvailabilityMoment.format('hh:mm A')}`;
   } else {
@@ -396,7 +396,7 @@ const getPackOfMedicine = (medicineDetail: MedicineProductDetails) => {
     medicineDetail.PharmaOverview && medicineDetail.PharmaOverview.length > 0
       ? medicineDetail.PharmaOverview[0].Doseform
       : ''
-  }${medicineDetail.mou && parseFloat(medicineDetail.mou) !== 1 ? 'S' : ''}`;
+    }${medicineDetail.mou && parseFloat(medicineDetail.mou) !== 1 ? 'S' : ''}`;
 };
 
 const getImageUrl = (imageUrl: string) => {
