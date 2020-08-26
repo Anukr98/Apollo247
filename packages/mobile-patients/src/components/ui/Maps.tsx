@@ -38,7 +38,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import {Dimensions,View, SafeAreaView, Text,StyleSheet} from 'react-native';
+import {Dimensions,View, SafeAreaView, Text,StyleSheet, Image,Geolocation} from 'react-native';
 import { useApolloClient } from 'react-apollo-hooks';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -48,11 +48,19 @@ import MapView,{Marker,PROVIDER_GOOGLE, Coordinate, MapEvent } from 'react-nativ
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Location } from './Icons';
+const FakeMarker = require('../ui/icons/fakeMarker.png')
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
 const { isIphoneX } = DeviceHelper();
+
+export interface RegionObject{
+  latitude: number,
+  longitude: number,
+  latitudeDelta: number,
+  longitudeDelta: number
+}
 
 export interface MapProps extends NavigationScreenProps<{
   KeyName?: string;
@@ -121,26 +129,26 @@ export const Maps : React.FC<MapProps> = (props) =>{
   }
 
   const renderAddressBanner = () =>{
-    return (
-      <View style={{height:screenHeight/3.5,width:"100%",bottom:20,position:'absolute'}}>
-            <Button
-              title={'CHANGE'}
+    return ( 
+      <View style={{height:screenHeight/3,bottom:-10}}>
+          <Button
+               title={'CHANGE'}
               style={{top:'5%',marginHorizontal:screenWidth-110,width: '23%',height:23,backgroundColor:theme.colors.LIGHT_YELLOW,shadowColor: 'transparent' }}
               titleTextStyle={{color:theme.colors.SHERPA_BLUE,...theme.fonts.IBMPlexSansMedium(13)}}
               onPress={onChangePress}/>
-            <View style={{marginHorizontal:'4%',flexDirection:'row',marginTop:'6%'}}>
-              <Location style={{height:32,width:30,resizeMode:'contain'}}/>
-              <Text style={{marginTop:2,textAlign:'center',...theme.fonts.IBMPlexSansBold(18),color:theme.colors.SHERPA_BLUE}}> Help us locate your address</Text>
-            </View>
-            <View style={{margin:'5%',marginTop:'3%'}}>
-              <Text style={{color:theme.colors.SHERPA_BLUE , 
-                  ...theme.fonts.IBMPlexSansMedium(14.5),}}>{address}</Text>
-            </View>
-            <Button
-              title={'CONFIRM LOCATION'}
-              style={{alignSelf:'center', width: '70%' ,marginTop:'2%'}}
-              onPress={onConfirmLocation}/>
-       </View>
+          <View style={{marginHorizontal:'4%',flexDirection:'row',marginTop:'5%'}}>
+               <Location style={{height:32,width:30,resizeMode:'contain'}}/>
+               <Text style={{marginTop:2,textAlign:'center',...theme.fonts.IBMPlexSansBold(16.5),color:theme.colors.SHERPA_BLUE}}> Help us locate your address</Text>
+          </View>
+          <View style={{margin:'5%',marginTop:'3%'}}>
+               <Text style={{color:theme.colors.SHERPA_BLUE , 
+                   ...theme.fonts.IBMPlexSansMedium(14.5),}}>{address}</Text>
+          </View>
+          <Button
+            title={'CONFIRM LOCATION'}
+            style={{alignSelf:'center', width: '70%' ,marginTop:'2%'}}
+            onPress={onConfirmLocation}/>
+      </View>
     )
   }
 
@@ -149,23 +157,40 @@ export const Maps : React.FC<MapProps> = (props) =>{
     setLatitude(coordinates?.latitude);
     setLongitude(coordinates?.longitude);
   }
-  
 
-  // const onRegionChange = (region: RegionEvent) => {
+  /**to drag the map */
+  // const onRegionChange =(region: RegionObject)=>{
+  //   setRegion(region);
   //   setLatitude(region.latitude);
   //   setLongitude(region.longitude);
-  //   setRegion(region)
+  // }
+  
+  /** for getting current position */
+  // const showCurrentLocation = ()=>{
+  //     Geolocation.getCurrentPosition(
+  //       ({coords}) => {
+  //         const {latitude, longitude} = coords
+  //          const  currentRegion = {
+  //             latitude,
+  //             longitude,
+  //             latitudeDelta: 0.005,
+  //             longitudeDelta: 0.001,
+  //           }
+  //           setRegion(currentRegion);
+          
+  //       },
+  //       (error) =>  console.log(error.code, error.message, 'getCurrentPosition error')),
+  //       {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
   // }
 
   const renderMap = () =>{
     return (
       <MapView
         provider={PROVIDER_GOOGLE}
-        style={{height:screenHeight/1.55}}
+        style={{height: screenHeight/1.75}}
         region={region}
         zoomEnabled={true}
         minZoomLevel={5}
-        showsMyLocationButton={true}
         // onRegionChangeComplete={region => onRegionChange(region)}
         // initialRegion={{latitude:latitude,longitude:longitude,latitudeDelta:latitudeDelta,longitudeDelta:longitudeDelta}}
       >
@@ -174,19 +199,30 @@ export const Maps : React.FC<MapProps> = (props) =>{
             latitude: latitude,
             longitude: longitude
           }}
-          draggable={true}
+          draggable={false}
           onDragEnd={(e) => onMarkerDragEnd(e)}
         />
+
+          {/** drag the map to readjust */}
+         {/* <View style={{ left: '50%',marginLeft: -24, marginTop: -48,position: 'absolute',top: '50%'}}>
+            <Image style={{height: 48,width: 48}} source={FakeMarker} />
+        </View> */}
+       {/* 
+        <View style={{backgroundColor:'pink',height:40,width:40,zIndex:1000}}>
+          <TouchableOpacity onPress={showCurrentLocation} style={{height:"100%",width:"100%"}}>
+          <Text>Curre</Text>
+          </TouchableOpacity>
+        </View> */}
       </MapView>
     )
   }
 
   return (
-    // <View style={{flex:1}}>
+    <View style={{flex:1}}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderMap()}
         {renderAddressBanner()}
       </SafeAreaView>
-    // </View>
+    </View>
   )
 }
