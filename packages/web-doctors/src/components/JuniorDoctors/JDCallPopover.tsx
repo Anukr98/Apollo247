@@ -810,7 +810,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     setReferralError,
   } = useContext(CaseSheetContextJrd);
   
-  const exotelNumber = '040-48214566'; 
   const exotelCall = '^^#exotelCall';
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
@@ -2236,7 +2235,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                     const text = {
                         id: props.doctorId,
                         message: exotelCall,
-                        exotelNumber: exotelNumber,
+                        exotelNumber: process.env.EXOTEL_CALLER_ID,
                         isTyping: true,
                         messageDate: new Date(),
                         sentBy: REQUEST_ROLES.JUNIOR,
