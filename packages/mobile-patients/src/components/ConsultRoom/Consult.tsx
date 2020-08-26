@@ -342,13 +342,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   | any = [];
                 data.getPatientAllAppointments.appointments.forEach((item) => {
                   const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
+                  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpChatDays');
                   const followUpChatDays =
-                    caseSheet &&
-                    caseSheet.length &&
-                    (caseSheet[0]!.followUpChatDays || caseSheet[0]!.followUpChatDays === 0)
-                      ? caseSheet[0]!.followUpChatDays === 0
+                    caseSheetChatDays || caseSheetChatDays === 0
+                      ? caseSheetChatDays === 0
                         ? 0
-                        : caseSheet[0]!.followUpChatDays - 1
+                        : caseSheetChatDays - 1
                       : 6;
                   if (
                     moment(new Date(item.appointmentDateTime))
@@ -516,13 +515,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           let appointmentDateTomarrow = moment(item.appointmentDateTime).format('DD MMM');
           // console.log(appointmentDateTomarrow, 'apptomorrow', tomorrowDate);
           const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
+          const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpChatDays');
           const followUpChatDays =
-            caseSheet &&
-            caseSheet.length &&
-            (caseSheet[0]!.followUpChatDays || caseSheet[0]!.followUpChatDays === 0)
-              ? caseSheet[0]!.followUpChatDays === 0
+            caseSheetChatDays || caseSheetChatDays === 0
+              ? caseSheetChatDays === 0
                 ? 2
-                : caseSheet[0]!.followUpChatDays + 1
+                : caseSheetChatDays + 1
               : 8;
           const appointmentDateTime = moment
             .utc(item.appointmentDateTime)
