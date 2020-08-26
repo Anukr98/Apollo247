@@ -576,7 +576,7 @@ const getJuniorDoctorCaseSheet: Resolver<
 
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (
     doctorData == null &&
     secretaryDetails != null &&
@@ -677,7 +677,7 @@ const getCaseSheet: Resolver<
 
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (
     doctorData == null &&
     mobileNumber != patientDetails.mobileNumber &&
@@ -875,10 +875,10 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
   }
 
-  if(!(inputArguments.followUpChatDays === undefined)) {
-    if(inputArguments.followUpChatDays > ApiConstants.CHAT_DAYS_LIMIT) {
+  if (!(inputArguments.followUpChatDays === undefined)) {
+    if (inputArguments.followUpChatDays > ApiConstants.CHAT_DAYS_LIMIT) {
       throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
-    } else if(inputArguments.followUpChatDays < 0){
+    } else if (inputArguments.followUpChatDays < 0) {
       throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
     }
     getCaseSheetData.followUpChatDays = inputArguments.followUpChatDays;
@@ -1085,7 +1085,7 @@ const createJuniorDoctorCaseSheet: Resolver<
 
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   if (doctorData.doctorType != DoctorType.JUNIOR) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
@@ -1143,7 +1143,7 @@ const createSeniorDoctorCaseSheet: Resolver<
 > = async (parent, args, { mobileNumber, consultsDb, doctorsDb }) => {
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   if (doctorData.doctorType == DoctorType.JUNIOR) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
@@ -1406,8 +1406,8 @@ const updatePatientPrescriptionSentStatus: Resolver<
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
       data: {
-        caseSheetId: getCaseSheetData.id
-      }
+        caseSheetId: getCaseSheetData.id,
+      },
     };
 
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
@@ -1536,8 +1536,8 @@ const generatePrescriptionTemp: Resolver<
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
       data: {
-        caseSheetId: getCaseSheetData.id
-      }
+        caseSheetId: getCaseSheetData.id,
+      },
     };
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
     caseSheetAttrs = {
@@ -1592,7 +1592,7 @@ const getSDLatestCompletedCaseSheet: Resolver<
 
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (
     doctorData == null &&
     mobileNumber != patientDetails.mobileNumber &&
