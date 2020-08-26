@@ -11,6 +11,12 @@ import React, { useState, useContext } from 'react';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { FollowUp } from 'components/case-sheet/panels';
 import { AphButton } from '@aph/web-ui-components';
+import {
+  updateDoctorChatDays,
+  updateDoctorChatDaysVariables,
+} from 'graphql/types/UpdateDoctorChatDays';
+import { useApolloClient } from 'react-apollo-hooks';
+import { UPDATE_DOCTOR_CHAT_DAYS } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -104,10 +110,11 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const MyAccountSettings: React.FC = () => {
+  const apolloClient = useApolloClient();
   const classes = useStyles({});
   const [followUpExpand, setFollowUpExpand] = useState<boolean>(false);
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
-  const { chatDays } = useAuthContext();
+  const { chatDays, currentUser } = useAuthContext();
   const [chatValue, setChatValue] = useState<number>(chatDays);
   const items = [
     {
@@ -118,7 +125,7 @@ export const MyAccountSettings: React.FC = () => {
         <div>
           <div>{'Set your patient follow Up days'}</div>
           <div className={classes.expansionText}>
-            {'Default value set at'}
+            {'Default value set at '}
             <span
               style={{ fontSize: 18, fontWeight: 600, color: '#00B38E' }}
             >{`${chatValue} days`}</span>
@@ -126,7 +133,18 @@ export const MyAccountSettings: React.FC = () => {
         </div>
       ),
       state: followUpExpand,
-      component: <FollowUp origin={'settings'} setChatValue={setChatValue} chatValue={chatValue} />,
+      component: (
+        <FollowUp
+          origin={'settings'}
+          onChange={setChatValue}
+          value={chatValue}
+          header={'Select the number of days'}
+          disabled={false}
+          info={
+            "This value will be default for all patient, However you can change the follow up chat day count on individual patient's Case-sheet"
+          }
+        />
+      ),
     },
   ];
 
@@ -159,7 +177,18 @@ export const MyAccountSettings: React.FC = () => {
           variant="contained"
           color="primary"
           classes={{ root: classes.saveButton }}
-          // onClick={() => onNext()}
+          onClick={() => {
+            console.log(currentUser);
+            apolloClient
+              .mutate<updateDoctorChatDays, updateDoctorChatDaysVariables>({
+                mutation: UPDATE_DOCTOR_CHAT_DAYS,
+                fetchPolicy: 'no-cache',
+                variables: { doctorId: currentUser.id, chatDays: chatValue },
+              })
+              .then((_data) => {
+                alert(_data.data.updateDoctorChatDays.response);
+              });
+          }}
         >
           SAVE CHANGES
         </AphButton>

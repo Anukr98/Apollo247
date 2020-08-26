@@ -28,6 +28,7 @@ import { UserCard } from 'components/case-sheet/UserCard';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { useParams } from 'hooks/routerHooks';
 import { getLocalStorageItem, updateLocalStorageItem } from './panels/LocalStorageUtils';
+import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -232,6 +233,10 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   const [refferalState, setRefferalState] = useState<boolean>(props.startAppointment);
   const [vitalsState, setVitalsState] = useState<boolean>(props.startAppointment);
   const [firstTimeLanding, setFirstTimeLanding] = useState<boolean>(true);
+
+  const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
+  const { chatDays } = useAuthContext();
+  const { followUpChatDays, setFollowUpChatDays } = useContext(CaseSheetContext);
   const items = [
     {
       key: 'symptoms',
@@ -291,7 +296,16 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
       key: 'followup',
       value: 'Follow Up Chat Days',
       state: followUpPanelState,
-      component: <FollowUp />,
+      component: (
+        <FollowUp
+          origin={'casesheet'}
+          header={'Set your patient follow up chat days limit.'}
+          value={followUpChatDays}
+          onChange={setFollowUpChatDays}
+          disabled={!caseSheetEdit}
+          info={`The follow up chat days count will be changed for this individual patient. Your default follow up chat day count is set at ${chatDays}.`}
+        />
+      ),
     },
     {
       key: 'refferal',

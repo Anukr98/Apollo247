@@ -84,33 +84,24 @@ export const FollowUp = (props: any) => {
   const classes = useStyles({});
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { chatDays } = useAuthContext(); //from getDoctorDetails
-
-  const { followUpChatDays, setFollowUpChatDays, caseSheetEdit } = useContext(CaseSheetContext);
   let defaultValue = props.origin === 'settings' ? 0 : chatDays;
-  const [value, setValue] = useState(null);
   const NO_OF_DAYS = new Array(31 - defaultValue).fill(0);
   const messages = {
-    settings:
-      "This value will be default for all patient, However you can change the follow up chat day count on individual patient's Case-sheet",
-    caseSheet: `The follow up chat days count will be changed for this individual patient. Your default follow up chat day count is set at ${chatDays}.`,
+    settings: '',
+    caseSheet: '',
   };
 
   return (
     <div>
-      {console.log('casesheet follow up', followUpChatDays)}
-      {props.origin === 'settings' ? (
-        <span className={classes.header}> {'Select the number of days'}</span>
-      ) : (
-        <span className={classes.header}> {'Set your patient follow up chat days limit.'}</span>
-      )}
+      {console.log(props)}
+      <span className={classes.header}> {props.header}</span>
       <br />
       <div style={{ top: 10, left: 3, position: 'relative' }}>
         <AphCustomDropdown
-          label={'Days'}
-          value={props.origin === 'settings' ? props.chatValue : followUpChatDays}
+          value={props.value}
           onChange={(e: any) => {
             let val = parseInt(e.target.value, 10);
-            props.origin === 'settings' ? props.setChatValue(val) : setFollowUpChatDays(val);
+            props.onChange(val);
           }}
           classes={{
             root: classes.select,
@@ -118,7 +109,7 @@ export const FollowUp = (props: any) => {
           MenuProps={{
             classes: { paper: classes.menu },
           }}
-          disabled={props.origin === 'settings' ? false : !caseSheetEdit}
+          disabled={props.disabled}
         >
           {NO_OF_DAYS.map((val, index) => (
             <MenuItem
@@ -135,16 +126,14 @@ export const FollowUp = (props: any) => {
         </AphCustomDropdown>
         <span className={classes.daysLabel}>{'Days'}</span>
       </div>
-      {(caseSheetEdit || props.origin === 'settings') && (
+      {!props.disabled && (
         <span className={classes.infoWrapper}>
           <InfoOutlinedIcon
             style={{
               marginTop: 3,
             }}
           />
-          <span style={{ marginLeft: 10 }}>
-            {props.origin === 'settings' ? messages.settings : messages.caseSheet}
-          </span>
+          <span style={{ marginLeft: 10 }}>{props.info}</span>
         </span>
       )}
     </div>
