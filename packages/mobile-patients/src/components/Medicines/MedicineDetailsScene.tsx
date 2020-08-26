@@ -38,7 +38,6 @@ import {
   postwebEngageAddToCartEvent,
   postAppsFlyerAddToCartEvent,
   g,
-  isDeliveryDateWithInXDays,
   productsThumbnailUrl,
   getDiscountPercentage,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';

@@ -1279,14 +1279,6 @@ export const trimTextWithEllipsis = (text: string, count: number) =>
 export const parseNumber = (number: string | number, decimalPoints?: number) =>
   Number(Number(number).toFixed(decimalPoints || 2));
 
-export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
-  console.log("difference in days", deliveryDate,  moment(deliveryDate, "DD-MM-YYYY hh:mm:ss a").diff(moment(), 'days'))
-  return (
-    moment(deliveryDate, 'DD-MM-YYYY hh:mm:ss a').diff(moment(), 'days') <=
-    AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
-  );
-};
-
 export const getMaxQtyForMedicineItem = (qty?: number | string) => {
   return qty ? Number(qty) : AppConfig.Configuration.CART_ITEM_MAX_QUANTITY;
 };
