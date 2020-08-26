@@ -311,6 +311,7 @@ interface MessagesObjectProps {
   sentBy: string;
   type: string;
   fileType: string;
+  exotelNumber: string;
 }
 let insertText: MessagesObjectProps[] = [];
 export const ConsultTabs: React.FC = () => {
