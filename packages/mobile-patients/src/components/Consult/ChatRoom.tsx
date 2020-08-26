@@ -628,6 +628,33 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     postWebEngageEvent(type, eventAttributes);
   };
 
+  const consultWebEngageEvents = (
+    type: 
+    | WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM
+    | WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM
+    | WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM
+    | WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM) => {
+    const eventAttributes: 
+      | WebEngageEvents[WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]
+      | WebEngageEvents[WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM]
+      | WebEngageEvents[WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM]
+      | WebEngageEvents[WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM] = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Doctor ID': doctorId,
+      'Speciality name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
+      'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
+      'Hospital Name': g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+      'Hospital City': g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+    };
+    postWebEngageEvent(type, eventAttributes);
+  };
+
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
@@ -6272,16 +6299,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
         hideTAndCs={true}
         onClickClose={() => setDropdownVisible(false)}
-        onResponse={(selectedType, response) => {
+        onResponse={(selectedType, response, type) => {
           console.log('res', response);
           setDropdownVisible(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             console.log('ca');
-
+            if (type !== undefined) {
+              if (type === 'Camera') consultWebEngageEvents(WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM);
+              if (type === 'Gallery') consultWebEngageEvents(WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM);
+            }
             uploadDocument(response, response[0].base64, response[0].fileType);
             //updatePhysicalPrescriptions(response);
           } else {
             setSelectPrescriptionVisible(true);
+            consultWebEngageEvents(WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM);
           }
         }}
       />
@@ -6806,6 +6837,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }}
                 onPress={async () => {
                   if (!disableChat) {
+                    consultWebEngageEvents(WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM);
                     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
                     setDropdownVisible(!isDropdownVisible);
                   }
