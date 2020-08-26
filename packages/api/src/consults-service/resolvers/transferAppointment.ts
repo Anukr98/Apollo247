@@ -18,7 +18,8 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 //import { MailMessage } from 'types/notificationMessageTypes';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { addDays } from 'date-fns';
-import { NotificationType, sendNotification } from 'notifications-service/resolvers/notifications';
+import { sendNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 

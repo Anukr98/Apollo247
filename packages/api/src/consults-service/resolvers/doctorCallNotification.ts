@@ -3,14 +3,13 @@ import { Resolver } from 'api-gateway';
 import { ApiConstants } from 'ApiConstants';
 import {
   sendNotification,
-  NotificationType,
   sendCallsNotification,
-  DOCTOR_CALL_TYPE,
-  APPT_CALL_TYPE,
   sendDoctorNotificationWhatsapp,
   hitCallKitCurl,
   sendCallsDisconnectNotification,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
+import { DOCTOR_CALL_TYPE, APPT_CALL_TYPE } from 'notifications-service/constants';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -19,7 +18,6 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { format } from 'date-fns';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { DEVICE_TYPE } from 'profiles-service/entities';
 import path from 'path';
@@ -344,18 +342,28 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
   args,
   { consultsDb, doctorsDb }
 ) => {
-  let content = '\n-----------------\n' + format(new Date(), 'yyyy-MM-dd hh:mm');
+  let content = '\n-----------------\n' + format(new Date(), 'yyyy-MM-dd HH:mm');
+  const fileName =
+    process.env.NODE_ENV + '_docsecretarytnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.getNotStartedAppointments();
   const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   content += '\nappts length: ' + apptDetails.length.toString();
+  fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
   if (apptDetails.length > 0) {
     const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
     apptDetails.forEach(async (appt) => {
       content += '\n apptId: ' + appt.id + ' - ' + appt.doctorId;
-      const doctorDetails = await docRepo.findById(appt.doctorId);
+      const doctorDetails = await docRepo.getDoctorSecretary(appt.doctorId);
       if (doctorDetails) {
-        content += doctorDetails.doctorSecretary.secretary.mobileNumber + '\n';
+        //console.log(doctorDetails.id, doctorDetails.doctorSecretary, 'doc details');
+        content +=
+          doctorDetails.id + '-' + doctorDetails.doctorSecretary.secretary.mobileNumber + '\n';
+        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
         const templateData: string[] = [appt.appointmentType, appt.patientName, devLink];
         sendDoctorNotificationWhatsapp(
           ApiConstants.WHATSAPP_SD_CONSULT_DELAY,
@@ -365,19 +373,6 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
       }
     });
   }
-  const fileName =
-    process.env.NODE_ENV + '_docsecretarytnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
-  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-  if (process.env.NODE_ENV != 'local') {
-    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-  }
-  fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
-    if (err) {
-      console.log('file saving error', err);
-    }
-    console.log('notification results saved');
-  });
-  console.log(apptDetails.length, 'apptDetails.length');
   return { status: true };
 };
 

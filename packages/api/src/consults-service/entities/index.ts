@@ -30,6 +30,8 @@ import {
   trackWebEngageEventForAppointmentComplete,
 } from 'notifications-service/resolvers/webEngageAPI';
 
+import { AppointmentCallFeedback } from './appointmentCallFeedbackEntity';
+
 export enum APPOINTMENT_UPDATED_BY {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
@@ -400,7 +402,7 @@ export class Appointment extends BaseEntity {
     },
     { onDelete: 'CASCADE', onUpdate: 'CASCADE' }
   )
-  callDetails: Array<ExotelDetails>;
+  callDetails: ExotelDetails[];
 
   @AfterUpdate()
   async dropAppointmentCache() {
@@ -675,6 +677,9 @@ export class AppointmentCallDetails extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
+  @OneToOne(() => AppointmentCallFeedback, (appointmentCallFeedbackk) => appointmentCallFeedbackk.appointmentCallDetails)
+  appointmentCallFeedback: AppointmentCallFeedback[];
+
   @BeforeInsert()
   updateDateCreation() {
     this.createdDate = new Date();
@@ -891,6 +896,9 @@ export class CaseSheet extends BaseEntity {
 
   @Column({ nullable: true })
   followUpAfterInDays: number;
+
+  @Column({ default: 7, type: 'float8' })
+  followUpChatDays: number;
 
   @Column({ nullable: true })
   followUpDate: Date;

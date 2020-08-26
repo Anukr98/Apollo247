@@ -25,7 +25,10 @@ export const getAllSpecialtiesTypeDefs = gql`
   }
 
   extend type Query {
-    getAllSpecialties: [DoctorSpecialty!]!
+    getAllSpecialties(
+      pageSize: Int
+      pageNo: Int
+    ): [DoctorSpecialty!]!
     getAllCities: CitiesResult
   }
 
@@ -38,13 +41,17 @@ type CitiesResult = {
   city: string[];
 };
 
-const getAllSpecialties: Resolver<null, {}, DoctorsServiceContext, DoctorSpecialty[]> = async (
+const getAllSpecialties: Resolver<null, {pageSize: number,pageNo: number}, DoctorsServiceContext, DoctorSpecialty[]> = async (
   parent,
   args,
   { doctorsDb }
 ) => {
+  const pageNo = args.pageNo ? args.pageNo : 1;
+  const pageSize = args.pageSize ? args.pageSize : 100;
+  const offset = (pageNo - 1) * pageSize;
+
   const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
-  const allSpecialties = await specialtiesRepo.findAll();
+  const [allSpecialties]  = await specialtiesRepo.findAllWithPagination(pageSize, offset);
   return allSpecialties;
 };
 

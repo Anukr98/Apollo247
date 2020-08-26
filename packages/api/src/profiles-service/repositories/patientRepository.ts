@@ -16,7 +16,6 @@ import {
   uploadPrescriptions,
 } from 'profiles-service/resolvers/prescriptionUpload';
 import { LabResultsInputArgs, uploadLabResults } from 'profiles-service/resolvers/labResultsUpload';
-import { log } from 'customWinstonLogger';
 
 type DeviceCount = {
   mobilenumber: string;
@@ -98,12 +97,11 @@ export class PatientRepository extends Repository<Patient> {
       try {
         const patient: Patient | undefined = await this.getByIdCache(id);
         return resolve(patient);
-      }
-      catch (ex) {
+      } catch (ex) {
         console.log(`getPatientDetails`, ex);
         return reject(ex);
       }
-    })
+    });
   }
 
   async findByMobileNumber(mobileNumber: string) {
@@ -303,6 +301,7 @@ export class PatientRepository extends Repository<Patient> {
           prescriptionFiles: prescriptionFiles,
           speciality: '',
           hospital_name: '',
+          hospitalId: '',
           address: '',
           city: '',
           pincode: '',
@@ -385,7 +384,6 @@ export class PatientRepository extends Repository<Patient> {
     } else return null;
   }
 
-
   updateLinkedUhidAccount(
     ids: string[],
     column: string,
@@ -398,8 +396,7 @@ export class PatientRepository extends Repository<Patient> {
     if (primaryUhid) {
       if (primaryUhid == 'null') {
         check = false;
-      }
-      else {
+      } else {
         fieldToUpdate.primaryUhid = primaryUhid;
         fieldToUpdate.primaryPatientId = primaryPatientId;
       }

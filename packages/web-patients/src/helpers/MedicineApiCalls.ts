@@ -8,6 +8,7 @@ const apiDetails = {
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   service_url: process.env.PHARMACY_SERVICE_AVAILABILITY,
   cartItemDetails: process.env.PHARMACY_MED_CART_ITEM_DETAILS,
+  medicineDetails: process.env.PHARMACY_MED_PROD_DETAIL_URL,
 };
 
 export interface MedicineProduct {
@@ -30,6 +31,7 @@ export interface MedicineProduct {
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
   category_id: string;
+  sell_online: boolean;
 }
 export interface Brand {
   url_key: string;
@@ -54,6 +56,7 @@ export interface PharmaOverview {
 }
 
 export interface MedicineProductDetails extends MedicineProduct {
+  similar_products: MedicineProduct[];
   PharmaOverview: PharmaOverview[];
 }
 
@@ -382,4 +385,18 @@ export const reOrderItems = async (
       unavailableItemsCount: unAvailableItems.length,
     };
   }
+};
+
+export const getMedicineDetailsApi = (
+  productSku: string
+): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
+  return axios.post(
+    apiDetails.medicineDetails,
+    { params: productSku },
+    {
+      headers: {
+        Authorization: apiDetails.authToken,
+      },
+    }
+  );
 };

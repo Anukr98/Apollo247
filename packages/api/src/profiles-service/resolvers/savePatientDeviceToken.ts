@@ -81,8 +81,11 @@ const saveDeviceToken: Resolver<
       DEVICE_TYPE.IOS
     );
   
-    if(devPushToken.length && devPushToken[devPushToken.length-1].deviceVoipPushToken){
-      Object.assign(SaveDeviceTokenInput, {deviceVoipPushToken: devPushToken[devPushToken.length-1].deviceVoipPushToken});
+    for(let len = devPushToken.length; len > 0 ; len--){
+      if(devPushToken[len-1].deviceVoipPushToken){
+        Object.assign(SaveDeviceTokenInput, {deviceVoipPushToken: devPushToken[len-1].deviceVoipPushToken});
+        break;
+      }
     }
   }
 

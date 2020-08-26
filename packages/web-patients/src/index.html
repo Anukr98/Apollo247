@@ -3,23 +3,27 @@
   <head>
     <meta charset="utf-8" />
     <title>Apollo</title>
-    <link rel="alternate" href="android-app://com.apollopatient/https/www.apollo247.com/" />
     <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "MedicalOrganization",
-        "name": "Apollo24|7",
-        "alternateName": "Apollo24|7",
-        "url": "https://www.apollo247.com/",
-        "logo": "https://www.apollo247.com/campaign/online-medical-consultation/images/logo.png",
-        "sameAs": [
-          "https://www.facebook.com/Apollo24x7/",
-          "https://twitter.com/apollo24x7",
-          "https://www.youtube.com/channel/UCcu5m4OXFqKCqL2HaYREhcg",
-          "https://in.linkedin.com/company/apollo247",
-          "https://www.apollo247.com/"
-        ]
-      }
+      <head>
+        <meta charset="utf-8" />
+        <title>Apollo</title>
+        <link rel="alternate" href="android-app://com.apollopatient/https/www.apollo247.com/" />
+        <script type="application/ld+json">
+          {
+            "@context": "https://schema.org",
+            "@type": "MedicalOrganization",
+            "name": "Apollo24|7",
+            "alternateName": "Apollo24|7",
+            "url": "https://www.apollo247.com/",
+            "logo": "https://www.apollo247.com/campaign/online-medical-consultation/images/logo.png",
+            "sameAs": [
+              "https://www.facebook.com/Apollo24x7/",
+              "https://twitter.com/apollo24x7",
+              "https://www.youtube.com/channel/UCcu5m4OXFqKCqL2HaYREhcg",
+              "https://in.linkedin.com/company/apollo247",
+              "https://www.apollo247.com/"
+            ]
+          }
     </script>
 
     <link
@@ -59,7 +63,7 @@
         display: none !important;
       } */
     </style>
-
+    <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
     <script id="_webengage_script_tag" type="text/javascript">
       var webengage;
       const licenseCode = '<%= licenseCode %>';
@@ -106,5 +110,45 @@
   <body>
     <noscript>Your browser does not support JavaScript!</noscript>
     <div id="root"></div>
+
+    <style>
+      .OT_subscriber {
+        width: 100% !important;
+        min-height: calc(100vh - 186px) !important;
+        top: 0;
+      }
+
+      .chatVideo .OT_subscriber {
+        position: absolute;
+        width: 100% !important;
+        /* min-height: auto !important; */
+        bottom: 0;
+      }
+
+      .chatVideo .OT_publisher {
+        display: none !important;
+      }
+
+      .OT_publisher {
+        position: absolute;
+        min-width: 48px;
+        min-height: 48px;
+        width: 80%;
+        height: 80%;
+        top: 20px;
+        right: 20px;
+        z-index: 9;
+        border-radius: 10px;
+      }
+
+      .sdCall .OT_publisher {
+        top: 68px;
+      }
+
+      .OT_publisher .OT_edge-bar-item,
+      .OT_subscriber .OT_edge-bar-item {
+        display: none !important;
+      }
+    </style>
   </body>
 </html>

@@ -1216,6 +1216,10 @@ export const MedicinePrescription: React.FC = () => {
         setCustomDosageNoon('');
         setCustomDosageEvening('');
         setCustomDosageNight('');
+        let overview = result.data.productdp[0].PharmaOverview;
+        let generic = overview.length ? result.data.productdp[0].PharmaOverview[0].generic : '';
+        setGenericName(generic);
+
         if (
           result &&
           result.data &&
@@ -1239,7 +1243,6 @@ export const MedicinePrescription: React.FC = () => {
             medicineMappingObj[result.data.productdp[0].PharmaOverview[0].Doseform.toLowerCase()]
               .defaultRoa
           );
-          setGenericName(result.data.productdp[0].PharmaOverview[0].generic);
           setFreeTextSwitch(false);
         } else {
           setMedicineUnit(medicineMappingObj['others'].defaultUnitDp);
@@ -2343,7 +2346,9 @@ export const MedicinePrescription: React.FC = () => {
         const genericName = (
           <span>
             {medicine.includeGenericNameInPrescription! &&
-              medicine.genericName!.trim().length > 0 && (
+              medicine.genericName &&
+              medicine.genericName !== null &&
+              medicine.genericName.trim().length > 0 && (
                 <h6>{`Contains ${medicine.genericName}`}</h6>
               )}
           </span>
@@ -2539,7 +2544,9 @@ export const MedicinePrescription: React.FC = () => {
                   const genericName = (
                     <span>
                       {favMedicine.includeGenericNameInPrescription! &&
-                        favMedicine.genericName!.trim().length > 0 && (
+                        favMedicine.genericName &&
+                        favMedicine.genericName !== null &&
+                        favMedicine.genericName.trim().length > 0 && (
                           <h6>{`Contains ${favMedicine.genericName}`}</h6>
                         )}
                     </span>

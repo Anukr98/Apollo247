@@ -42,16 +42,9 @@ const plugins = [
     inject: true,
     favicon: './favicon.svg',
   }),
-  // new webpack.optimize.AggressiveSplittingPlugin({
-  //   minSize: 1000000,
-  //   maxSize: 3000000,
-  // }),
-  // new AggressiveMergingPlugin({
-  //   minSizeReduce: 2,
-  //   moveToParents: true,
-  // }),
   new MomentLocalesPlugin(),
   // new BundleAnalyzerPlugin(),
+
   new WorkboxPlugin.GenerateSW({
     // these options encourage the ServiceWorkers to get in there fast
     // and not allow any straggling "old" SWs to hang around
@@ -156,7 +149,7 @@ module.exports = {
         use: isLocal ? [rhlBabelLoader, tsLoader] : [tsLoader],
       },
       {
-        test: /\.(png|jpg|jpeg|svg|gif|webp)$/,
+        test: /\.(png|jpg|jpeg|svg|gif|webp|mp3)$/,
         use: [urlLoader],
       },
     ],

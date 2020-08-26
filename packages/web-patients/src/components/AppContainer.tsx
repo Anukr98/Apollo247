@@ -26,7 +26,7 @@ const MedicineLanding = loadable(() => import('components/Medicine/MedicineLandi
 import { ViewAllBrands } from 'components/Medicine/ViewAllBrands';
 import { SearchByBrand } from 'components/Medicine/SearchByBrand';
 import { Appointments } from 'components/Consult/V2/Appointments';
-import { ChatRoom } from 'components/ChatRoom/ChatRoom';
+import { ChatRoom } from 'components/Consult/V2/ChatRoom/ChatRoom';
 import { PrescriptionsLanding } from 'components/Prescriptions/PrescriptionsLanding';
 import { MyAccount } from 'components/MyAccount/MyAccount';
 import { NotificationSettings } from 'components/Notifications/NotificationSettings';
@@ -74,6 +74,7 @@ import { MedicineSearch } from './Medicine/MedicineSearch';
 const DoctorsLanding = loadable(() => import('components/DoctorsLanding'));
 import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
 import { Loader } from 'components/Loader';
+import { Prescription } from 'components/Consult/V2/Prescription';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -234,6 +235,11 @@ const App: React.FC = () => {
             component={MedicinePrescriptions}
           />
           <Route exact path={clientRoutes.covidProtocol()} component={covidProtocolLanding} />
+          <Route
+            exact
+            path={clientRoutes.prescription(':appointmentId')}
+            component={Prescription}
+          />
         </Switch>
       </div>
     </Scrollbars>
