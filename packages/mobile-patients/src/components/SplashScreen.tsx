@@ -204,6 +204,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
 
   const onDisconnetCallAction = () => {
+    RNCallKeep.endAllCalls();
     pubnub.publish(
       {
         message: '^^#PATIENT_REJECTED_CALL',
