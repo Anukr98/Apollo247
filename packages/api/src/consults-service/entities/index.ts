@@ -678,7 +678,7 @@ export class AppointmentCallDetails extends BaseEntity {
   updatedDate: Date;
 
   @OneToOne(() => AppointmentCallFeedback, (appointmentCallFeedbackk) => appointmentCallFeedbackk.appointmentCallDetails)
-  appointmentCallFeedback: AppointmentCallFeedback[];
+  appointmentCallFeedback: AppointmentCallFeedback
 
   @BeforeInsert()
   updateDateCreation() {
