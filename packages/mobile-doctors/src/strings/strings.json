@@ -537,5 +537,11 @@
     "followupHeader": "Set up your patient follow up days",
     "saveText": "The last changes saved on {0}.",
     "followupInfo": "This Value will be default for all patients, However you can change the follow-up chat day count on individual patient's Case-sheet."
+  },
+  "medicinePrescriptionPopup": {
+    "heading": "Previous prescriptions",
+    "casesheetHeading": "Select a Casesheet",
+    "remove": "REMOVE ALL FROM THE SELECTED DATE",
+    "addAll": "ADD ALL FROM SELECTED DATE"
   }
 }
