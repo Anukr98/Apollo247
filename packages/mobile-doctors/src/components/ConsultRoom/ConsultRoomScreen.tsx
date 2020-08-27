@@ -92,6 +92,7 @@ import {
   ConsultMode,
   WebEngageEvent,
   CALL_FEEDBACK_RESPONSES_TYPES,
+  DoctorType,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   initateConferenceTelephoneCall,
@@ -669,15 +670,30 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       g(caseSheet, 'caseSheetDetails', 'patientDetails', 'healthVault') || null
     );
     setPastList(
-      (g(caseSheet, 'pastAppointments') || []).sort(
-        (a, b) =>
-          moment(b ? b.sdConsultationDate || b.appointmentDateTime : new Date())
-            .toDate()
-            .getTime() -
-          moment(a ? a.sdConsultationDate || a.appointmentDateTime : new Date())
-            .toDate()
-            .getTime()
-      )
+      (g(caseSheet, 'pastAppointments') || [])
+        .filter(
+          (item) =>
+            g(item, 'displayId') !== g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId')
+        )
+        .sort(
+          (a, b) =>
+            moment(b ? b.sdConsultationDate || b.appointmentDateTime : new Date())
+              .toDate()
+              .getTime() -
+            moment(a ? a.sdConsultationDate || a.appointmentDateTime : new Date())
+              .toDate()
+              .getTime()
+        )
+        .map((item) => {
+          if (item) {
+            if (item.caseSheet) {
+              item.caseSheet
+                .sort((a, b) => (a.doctorType !== DoctorType.JUNIOR ? -1 : 1))
+                .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
+            }
+          }
+          return item;
+        })
     );
     setAppintmentdatetime(g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime'));
     setappointmentData(g(caseSheet, 'caseSheetDetails', 'appointment'));

@@ -118,6 +118,7 @@ import { ReferralSelectPopup } from '@aph/mobile-doctors/src/components/ConsultR
 import firebase from 'react-native-firebase';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { string } from '@aph/mobile-doctors/src/strings/string';
+import { AddMedicinePrescriptionPopUp } from '@aph/mobile-doctors/src/components/ui/AddMedicinePrescriptionPopUp';
 
 const { width } = Dimensions.get('window');
 
@@ -1559,44 +1560,120 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 }
               )
             : null}
-          {caseSheetEdit && (
-            <AddIconLabel
-              label={strings.smartPrescr.add_medicine}
-              onPress={() =>
-                props.overlayDisplay(
-                  <AddMedicinePopUp
-                    allowedDosages={g(caseSheet, 'allowedDosages')}
-                    onClose={() => props.overlayDisplay(null)}
-                    onAddnew={(data) => {
-                      if (
-                        (medicinePrescriptionData &&
-                          medicinePrescriptionData.findIndex(
-                            (
-                              i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
-                            ) => ((i || {}).externalId || (i || {}).id) === data.externalId
-                          ) < 0) ||
-                        medicinePrescriptionData === null ||
-                        medicinePrescriptionData === undefined
-                      ) {
-                        setMedicinePrescriptionData([
-                          ...(medicinePrescriptionData || []),
-                          data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-                        ]);
-                        setSelectedMedicinesId(
-                          [
-                            ...selectedMedicinesId.filter((i) => i !== data.externalId || data.id),
-                            data.externalId || data.id || '',
-                          ].filter((i) => i !== '')
-                        );
-                      } else {
-                        Alert.alert('', strings.alerts.already_exists);
-                      }
-                    }}
-                  />
-                )
-              }
-              style={{ marginBottom: 0, marginTop: 5, marginLeft: 0 }}
-            />
+          {caseSheetEdit  && (
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <AddIconLabel
+                label={strings.smartPrescr.add_medicine}
+                onPress={() =>
+                  props.overlayDisplay(
+                    <AddMedicinePopUp
+                      allowedDosages={g(caseSheet, 'allowedDosages')}
+                      onClose={() => props.overlayDisplay(null)}
+                      onAddnew={(data) => {
+                        if (
+                          (medicinePrescriptionData &&
+                            medicinePrescriptionData.findIndex(
+                              (
+                                i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
+                              ) => ((i || {}).externalId || (i || {}).id) === data.externalId
+                            ) < 0) ||
+                          medicinePrescriptionData === null ||
+                          medicinePrescriptionData === undefined
+                        ) {
+                          setMedicinePrescriptionData([
+                            ...(medicinePrescriptionData || []),
+                            data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                          ]);
+                          setSelectedMedicinesId(
+                            [
+                              ...selectedMedicinesId.filter(
+                                (i) => i !== data.externalId || data.id
+                              ),
+                              data.externalId || data.id || '',
+                            ].filter((i) => i !== '')
+                          );
+                        } else {
+                          Alert.alert('', strings.alerts.already_exists);
+                        }
+                      }}
+                    />
+                  )
+                }
+                style={{ marginBottom: 0, marginTop: 5, marginLeft: 0 }}
+              />
+              {pastList && pastList.length > 0 ? (
+                <AddIconLabel
+                  label={'PREVIOUS Rx'}
+                  onPress={() => {
+                    props.overlayDisplay(
+                      <AddMedicinePrescriptionPopUp
+                        prescriptionData={pastList.sort(
+                          (a, b) =>
+                            moment(a ? a.sdConsultationDate || a.appointmentDateTime : new Date())
+                              .toDate()
+                              .getTime() -
+                            moment(b ? b.sdConsultationDate || b.appointmentDateTime : new Date())
+                              .toDate()
+                              .getTime()
+                        )}
+                        onClose={() => {
+                          props.overlayDisplay(null);
+                        }}
+                        onProceed={(medicineData) => {
+                          const tmpNewMedicine: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] = [];
+                          const tempSelectedId: string[] = [];
+                          const tempRemoveSelectedId: string[] = [];
+                          medicineData.forEach((data) => {
+                            if (data) {
+                              tmpNewMedicine.push(data);
+                              if (
+                                selectedMedicinesId.findIndex(
+                                  (i) => i === (data.externalId || data.id || '')
+                                ) > -1
+                              ) {
+                                tempSelectedId.push(data.externalId || data.id || '');
+                                tempRemoveSelectedId.push(data.externalId || data.id || '');
+                              } else {
+                                tempSelectedId.push(data.externalId || data.id || '');
+                              }
+                            }
+                          });
+                          setMedicinePrescriptionData([
+                            ...(medicinePrescriptionData
+                              ? medicinePrescriptionData.filter(
+                                  (item) =>
+                                    !tempRemoveSelectedId.includes(
+                                      (item || {}).externalId || (item || {}).id || ''
+                                    ) &&
+                                    !tempSelectedId.includes(
+                                      (item || {}).externalId || (item || {}).id || ''
+                                    )
+                                )
+                              : []),
+                            ...tmpNewMedicine,
+                          ]);
+                          setSelectedMedicinesId(
+                            [
+                              ...selectedMedicinesId.filter(
+                                (i) => !tempRemoveSelectedId.includes(i)
+                              ),
+                              ...tempSelectedId,
+                            ].filter((i) => i !== '')
+                          );
+                        }}
+                      />
+                    );
+                  }}
+                  style={{ marginBottom: 0, marginTop: 5, marginLeft: 0 }}
+                />
+              ) : null}
+            </View>
           )}
         </View>
       </CollapseCard>
@@ -1801,75 +1878,76 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const renderPastConsults = () => {
     return (
       <View>
-        {pastList &&
-          pastList.map((i, index, array) => {
-            if (i)
-              return (
-                <>
-                  <View
-                    style={{
-                      flex: 1,
-                      flexDirection: 'row',
-                      // justifyContent: 'center',
-                      // alignItems: 'center',
-                    }}
-                  >
-                    {renderLeftTimeLineView(index !== 0, index !== array.length - 1)}
-                    <TouchableOpacity
-                      activeOpacity={1}
+        {pastList && pastList.length > 0
+          ? pastList.map((i, index, array) => {
+              if (i)
+                return (
+                  <>
+                    <View
                       style={{
-                        borderWidth: 1,
-                        borderColor: theme.colors.darkBlueColor(0.2),
-                        flexDirection: 'row',
-                        borderRadius: 10,
-                        backgroundColor: theme.colors.WHITE,
-                        height: 50,
-                        alignItems: 'center',
-                        paddingRight: 10,
-                        paddingLeft: 18,
-                        marginVertical: 4.5,
-                        marginRight: 20,
                         flex: 1,
-                        justifyContent: 'space-between',
-                      }}
-                      onPress={() => {
-                        if (!inCall) {
-                          props.navigation.navigate(AppRoutes.CaseSheetDetails, {
-                            consultDetails: i,
-                            patientDetails: props.patientDetails,
-                          });
-                        } else {
-                          showAphAlert &&
-                            showAphAlert({
-                              title: strings.common.alert,
-                              description: strings.alerts.disable_Casesheet_view,
-                            });
-                        }
+                        flexDirection: 'row',
+                        // justifyContent: 'center',
+                        // alignItems: 'center',
                       }}
                     >
-                      <Text
-                        style={theme.viewStyles.text(
-                          'M',
-                          12,
-                          theme.colors.darkBlueColor(0.6),
-                          1,
-                          12
-                        )}
+                      {renderLeftTimeLineView(index !== 0, index !== array.length - 1)}
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        style={{
+                          borderWidth: 1,
+                          borderColor: theme.colors.darkBlueColor(0.2),
+                          flexDirection: 'row',
+                          borderRadius: 10,
+                          backgroundColor: theme.colors.WHITE,
+                          height: 50,
+                          alignItems: 'center',
+                          paddingRight: 10,
+                          paddingLeft: 18,
+                          marginVertical: 4.5,
+                          marginRight: 20,
+                          flex: 1,
+                          justifyContent: 'space-between',
+                        }}
+                        onPress={() => {
+                          if (!inCall) {
+                            props.navigation.navigate(AppRoutes.CaseSheetDetails, {
+                              consultDetails: i,
+                              patientDetails: props.patientDetails,
+                            });
+                          } else {
+                            showAphAlert &&
+                              showAphAlert({
+                                title: strings.common.alert,
+                                description: strings.alerts.disable_Casesheet_view,
+                              });
+                          }
+                        }}
                       >
-                        {moment(i.sdConsultationDate || i.appointmentDateTime).format(
-                          'D MMM YYYY, HH:MM A'
-                        )}
-                      </Text>
-                      <View style={{ flexDirection: 'row' }}>
-                        <View style={{ marginRight: 24 }}>
-                          {i.appointmentType === APPOINTMENT_TYPE.ONLINE ? <Video /> : <Audio />}
+                        <Text
+                          style={theme.viewStyles.text(
+                            'M',
+                            12,
+                            theme.colors.darkBlueColor(0.6),
+                            1,
+                            12
+                          )}
+                        >
+                          {moment(i.sdConsultationDate || i.appointmentDateTime).format(
+                            'D MMM YYYY, HH:MM A'
+                          )}
+                        </Text>
+                        <View style={{ flexDirection: 'row' }}>
+                          <View style={{ marginRight: 24 }}>
+                            {i.appointmentType === APPOINTMENT_TYPE.ONLINE ? <Video /> : <Audio />}
+                          </View>
                         </View>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                </>
-              );
-          })}
+                      </TouchableOpacity>
+                    </View>
+                  </>
+                );
+            })
+          : renderInfoText('There are no past appointments.')}
       </View>
     );
   };
@@ -1984,7 +2062,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           collapse={patientHealthWallet}
           onPress={() => setPatientHealthWallet(!patientHealthWallet)}
         >
-          <View style={{ marginHorizontal: 16 }}>
+          <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
             {renderHeaderText(strings.case_sheet.photos_uploaded_by_patient)}
             {patientImages.length > 0
               ? renderRecordImages(patientImages, true)

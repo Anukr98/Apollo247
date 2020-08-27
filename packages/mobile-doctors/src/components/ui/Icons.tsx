@@ -975,3 +975,26 @@ export const VideoInactive: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/videoInactive.png')}
   />
 );
+
+export const RightPointer: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 12, height: 21 }}
+    {...props}
+    source={require('../../images/icons/right_pointer.png')}
+  />
+);
+
+export const LeftPointer: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 12, height: 21 }}
+    {...props}
+    source={require('../../images/icons/left_pointer.png')}
+  />
+);
+export const TickOrange: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 12, height: 9 }}
+    {...props}
+    source={require('../../images/icons/tick_orange.png')}
+  />
+);
