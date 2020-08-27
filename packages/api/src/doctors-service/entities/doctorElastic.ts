@@ -28,6 +28,7 @@ export async function addDoctorElastic(allDocsInfo: Doctor) {
             isActive: allDocsInfo.doctorSecretary.secretary.isActive,
             secretaryId: allDocsInfo.doctorSecretary.secretary.id,
         };
+
     }
     if (allDocsInfo.doctorHospital.length > 0) {
         for (let f = 0; f < allDocsInfo.doctorHospital.length; f++) {
@@ -55,8 +56,8 @@ export async function addDoctorElastic(allDocsInfo: Doctor) {
     if (allDocsInfo.specialty) {
         specialty = {
             specialtyId: allDocsInfo.specialty.id,
-            id: allDocsInfo.specialty.id
         };
+
         Object.assign(specialty, omit(allDocsInfo.specialty, ['id']));
     }
 
@@ -92,30 +93,51 @@ export async function addDoctorElastic(allDocsInfo: Doctor) {
 
     const doctorData = {
         doctorId: allDocsInfo.id,
+        firstName: allDocsInfo.firstName,
+        lastName: allDocsInfo.lastName,
+        mobileNumber: allDocsInfo.mobileNumber,
+        awards: allDocsInfo.awards,
+        country: allDocsInfo.country,
+        dateOfBirth: allDocsInfo.dateOfBirth,
+        displayName: allDocsInfo.displayName,
+        delegateName: allDocsInfo.delegateName,
+        delegateNumber: allDocsInfo.delegateNumber,
+        emailAddress: allDocsInfo.emailAddress,
+        externalId: allDocsInfo.externalId,
+        fullName: allDocsInfo.fullName,
+
+        doctorType: allDocsInfo.doctorType,
+        city: allDocsInfo.city,
+        experience: allDocsInfo.experience,
+        physicalConsultationFees: allDocsInfo.physicalConsultationFees,
+        onlineConsultationFees: allDocsInfo.onlineConsultationFees,
         age: '',
         experience_range: defineExperienceRange(allDocsInfo.experience),
         fee_range: defineFeeRange(allDocsInfo.onlineConsultationFees),
         languages: pushLanguagesInArray(allDocsInfo.languages),
+        gender: allDocsInfo.gender,
+
+        isActive: allDocsInfo.isActive,
+        middleName: allDocsInfo.middleName,
+        photoUrl: allDocsInfo.photoUrl,
+        qualification: allDocsInfo.qualification,
+        registrationNumber: allDocsInfo.registrationNumber,
+        salutation: allDocsInfo.salutation,
+        signature: allDocsInfo.signature,
+        specialization: allDocsInfo.specialization,
+        state: allDocsInfo.state,
+        streetLine1: allDocsInfo.streetLine1,
+        streetLine2: allDocsInfo.streetLine2,
+        streetLine3: allDocsInfo.streetLine3,
+        thumbnailUrl: allDocsInfo.thumbnailUrl,
+        zip: allDocsInfo.zip,
+        isSearchable: allDocsInfo.isSearchable,
         specialty,
         facility,
         consultHours,
         doctorSecratry,
         doctorSlots: [],
     };
-
-    Object.assign(doctorData, omit(allDocsInfo, [
-        'doctorId',
-        'id',
-        'experience_range',
-        'fee_range',
-        'age',
-        'languages',
-        'specialty',
-        'facility',
-        'consultHours',
-        'doctorSecratry',
-        'doctorSlots'
-    ]));
 
     if (!process.env.ELASTIC_INDEX_DOCTORS) {
         throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
