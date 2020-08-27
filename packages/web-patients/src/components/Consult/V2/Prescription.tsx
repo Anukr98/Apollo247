@@ -594,7 +594,7 @@ export const Prescription: React.FC = (props) => {
 
             const presToAdd = {
               id: caseSheetDetails.id,
-              uploadedUrl: `${process.env.REACT_APP_CASESHEET_LINK}${caseSheetDetails.blobName}`,
+              uploadedUrl: `${process.env.AZURE_PDF_BASE_URL}${caseSheetDetails.blobName}`,
               forPatient: (currentPatient && currentPatient.firstName) || '',
               date: moment(caseSheetDetails.appointment.appointmentDateTime).format('DD MMM YYYY'),
               medicines: (medicinesAll || [])
