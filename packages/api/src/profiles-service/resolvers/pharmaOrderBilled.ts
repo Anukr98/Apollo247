@@ -19,6 +19,8 @@ import { sendMedicineOrderStatusNotification } from 'notifications-service/handl
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
+import { syncInventory } from 'helpers/inventorySync';
+import { SYNC_TYPE } from 'types/inventorySync';
 
 export const saveOrderShipmentInvoiceTypeDefs = gql`
   input SaveOrderShipmentInvoiceInput {
@@ -290,6 +292,16 @@ const saveOrderShipmentInvoice: Resolver<
     },
   };
   postEvent(postBody);
+
+  orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
+    orderDetails.id
+  );
+  orderDetails.medicineOrderLineItems = orderDetails.medicineOrderLineItems.filter((lineItem) => {
+    return saveOrderShipmentInvoiceInput.itemDetails.find((inputItem) => {
+      return inputItem.articleCode == lineItem.medicineSKU;
+    });
+  });
+  syncInventory(orderDetails, SYNC_TYPE.RELEASE);
 
   return {
     status: MEDICINE_ORDER_STATUS.ORDER_BILLED,

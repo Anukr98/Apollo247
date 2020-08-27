@@ -101,6 +101,8 @@ target 'ApolloPatient' do
   pod 'react-native-maps', path: rn_maps_path
   pod 'GoogleMaps', '~> 3.9.0' 
   
+  pod 'react-native-document-picker', :path => '../node_modules/react-native-document-picker'
+  pod 'react-native-image-resizer', :path => '../node_modules/react-native-image-resizer'
   
   # ServiceExtension Target
 
@@ -116,3 +118,8 @@ target 'ApolloPatient' do
   end
 
 end
+#for static dependencies
+pre_install do |installer|
+  Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_no_static_framework_transitive_dependencies) {}
+end
+  

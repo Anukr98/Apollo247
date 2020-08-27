@@ -443,7 +443,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         }
       } catch (err) {
         CommonBugFender('YourCart_getDeliveryTime', err);
-        if (!Axios.isCancel(err)) {
+        if (!Axios.isCancel(err) || g(err, 'code') === 'ECONNABORTED') {
+          // "ECONNABORTED" - error code for timeout
+          // Checking condition !Axios.isCancel(err) to ignore manual API request cancellations triggered during cart item qty updates (since we need to update TAT on change in cart).
           showGenericTatDate(lookUp, err);
         }
       }
@@ -480,9 +482,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           );
           setNewAddressAdded && setNewAddressAdded('');
         }
+      } else {
+        showGenericTatDate(tatApiInput.lookup);
       }
     } catch (error) {
-      showGenericTatDate(tatApiInput.lookup, error, true);
+      showGenericTatDate(tatApiInput.lookup, error);
     }
   };
 
@@ -572,19 +576,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   };
 
-  const showGenericTatDate = (
-    lookUp: { sku: string; qty: number }[],
-    err?: Error,
-    dontStopLoading?: boolean
-  ) => {
+  const showGenericTatDate = (lookUp: { sku: string; qty: number }[], err?: Error) => {
     const genericServiceableDate = moment()
       .add(2, 'days')
       .set('hours', 20)
       .set('minutes', 0)
-      .toString();
+      .format(AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT);
     setdeliveryTime(genericServiceableDate);
     setshowDeliverySpinner(false);
-    dontStopLoading && setLoading!(false);
+    setLoading!(false);
     postTatResponseFailureEvent(err || {}, g(selectedAddress, 'zipcode')!, lookUp);
   };
 
