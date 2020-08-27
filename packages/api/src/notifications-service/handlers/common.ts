@@ -118,7 +118,7 @@ export function getNotificationLogFileName(notificationType: NotificationType) {
 
 const isWhitelisted = async (mobileNumber: string) => {
   const whiteListedContacts = await getCache(`${REDIS_PREFIX_WHITELISTED_KEY}${mobileNumber}`);
-  const isWhiteListedBool = whiteListedContacts && typeof whiteListedContacts == 'string';
+  const isWhiteListedBool: boolean = whiteListedContacts && typeof whiteListedContacts == 'string' ? true : false
   log('notificationServiceLogger', `isWhitelisted tracker, isWhiteListed: ${isWhiteListedBool} for number ${mobileNumber}`, 'common.ts/isWhitelisted', '', '');
   return isWhiteListedBool; //should always retrun boolean
 };
