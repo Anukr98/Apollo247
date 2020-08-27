@@ -24,7 +24,6 @@ const uattatToken = 'GWjKtviqHa4r4kiQmcVH';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
 const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
 const tagalysBaseUrl = 'https://api-r1.tagalys.com/v1';
-const uattatBaseUrl = 'https://uattat.apollo247.com';
 const testApiCredentialsDev = {
   UserName: 'ASKAPOLLO',
   Password: '3HAQbAb9wrsykr8TMLnV',
@@ -168,10 +167,10 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
 
 const Apollo247Config = {
   dev: {
-    UATTAT_CONFIG: [uattatBaseUrl, uattatToken],
+    UATTAT_CONFIG: ['https://uattat.apollo247.com', uattatToken],
   },
   prod: {
-    UATTAT_CONFIG: [uattatBaseUrl, uattatToken],
+    UATTAT_CONFIG: ['https://tat.apollo247.com', uattatToken],
   }
 }
 
