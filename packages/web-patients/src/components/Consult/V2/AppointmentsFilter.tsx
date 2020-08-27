@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme, Modal } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphButton } from '@aph/web-ui-components';
@@ -10,6 +10,7 @@ import {
   AppointmentFilterObject,
 } from 'helpers/commonHelpers';
 import _uniq from 'lodash/uniq';
+import _ from 'lodash';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -210,7 +211,8 @@ interface AppointmentsFilterProps {
 export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => {
   const classes = useStyles({});
   const { filter, setFilter, setIsFilterOpen, filterDoctorsList } = props;
-  const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(filter);
+
+  const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(_.cloneDeep(filter));
 
   const applyClass = (type: Array<string>, value: string) => {
     return type.includes(value) ? classes.filterActive : '';
@@ -251,7 +253,7 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
         <AphButton
           onClick={() => {
             setIsFilterOpen(false);
-            setFilter(localFilter);
+            // setFilter(localFilter);
           }}
         >
           <img src={require('images/ic_cross.svg')} alt="" />
@@ -259,88 +261,92 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
       </div>
       <div className={classes.dialogContent}>
         <div className={classes.filterGroup}>
-          <div className={classes.filterType}>
-            <h4>Consult Type</h4>
-            <div className={classes.filterBtns}>
-              {consultType.map((consultTypeValue) => (
-                <AphButton
-                  key={consultTypeValue}
-                  className={applyClass(localFilter.consultType, consultTypeValue)}
-                  onClick={() => {
-                    setFilterValues('consultType', consultTypeValue);
-                  }}
-                >
-                  {consultTypeValue}
-                </AphButton>
-              ))}
-            </div>
-          </div>
-          <div className={classes.filterType}>
-            <h4>Appointment Status</h4>
-            <div className={classes.filterBtns}>
-              {appointmentStatus.map((status) => (
-                <AphButton
-                  key={status}
-                  className={applyClass(localFilter.appointmentStatus, status)}
-                  onClick={() => {
-                    setFilterValues('appointmentStatus', status);
-                  }}
-                >
-                  {status}
-                </AphButton>
-              ))}
-            </div>
-          </div>
-          <div className={classes.filterType}>
-            <h4>Date</h4>
-            <div className={classes.filterBtns}>
-              {availabilityList.map((availability: string) => (
-                <AphButton
-                  key={availability}
-                  className={applyClass(localFilter.availability, availability)}
-                  onClick={() => {
-                    setFilterValues('availability', availability);
-                  }}
-                >
-                  {availability}
-                </AphButton>
-              ))}
-            </div>
-          </div>
-          <div className={`${classes.filterType} ${classes.doctornameFilter}`}>
-            <h4>Doctor</h4>
-            <div className={classes.filterBtns}>
-              {filterDoctorsList &&
-                filterDoctorsList.length > 0 &&
-                _uniq(filterDoctorsList).map((doctorName) => (
-                  <AphButton
-                    key={doctorName}
-                    className={applyClass(localFilter.doctorsList, doctorName)}
-                    onClick={() => {
-                      setFilterValues('doctor', doctorName);
-                    }}
-                  >
-                    {doctorName}
-                  </AphButton>
-                ))}
-            </div>
-          </div>
-          <div className={classes.filterType}>
-            <h4>Gender</h4>
-            <div className={classes.filterBtns}>
-              {genderList.map((gender) => (
-                <AphButton
-                  key={gender.key}
-                  className={applyClass(localFilter.gender, gender.key)}
-                  onClick={() => {
-                    setFilterValues('gender', gender.key);
-                  }}
-                >
-                  {gender.value}
-                </AphButton>
-              ))}
-            </div>
-          </div>
+          {localFilter && (
+            <>
+              <div className={classes.filterType}>
+                <h4>Consult Type</h4>
+                <div className={classes.filterBtns}>
+                  {consultType.map((consultTypeValue) => (
+                    <AphButton
+                      key={consultTypeValue}
+                      className={applyClass(localFilter.consultType, consultTypeValue)}
+                      onClick={() => {
+                        setFilterValues('consultType', consultTypeValue);
+                      }}
+                    >
+                      {consultTypeValue}
+                    </AphButton>
+                  ))}
+                </div>
+              </div>
+              <div className={classes.filterType}>
+                <h4>Appointment Status</h4>
+                <div className={classes.filterBtns}>
+                  {appointmentStatus.map((status) => (
+                    <AphButton
+                      key={status}
+                      className={applyClass(localFilter.appointmentStatus, status)}
+                      onClick={() => {
+                        setFilterValues('appointmentStatus', status);
+                      }}
+                    >
+                      {status}
+                    </AphButton>
+                  ))}
+                </div>
+              </div>
+              <div className={classes.filterType}>
+                <h4>Date</h4>
+                <div className={classes.filterBtns}>
+                  {availabilityList.map((availability: string) => (
+                    <AphButton
+                      key={availability}
+                      className={applyClass(localFilter.availability, availability)}
+                      onClick={() => {
+                        setFilterValues('availability', availability);
+                      }}
+                    >
+                      {availability}
+                    </AphButton>
+                  ))}
+                </div>
+              </div>
+              <div className={`${classes.filterType} ${classes.doctornameFilter}`}>
+                <h4>Doctor</h4>
+                <div className={classes.filterBtns}>
+                  {filterDoctorsList &&
+                    filterDoctorsList.length > 0 &&
+                    _uniq(filterDoctorsList).map((doctorName) => (
+                      <AphButton
+                        key={doctorName}
+                        className={applyClass(localFilter.doctorsList, doctorName)}
+                        onClick={() => {
+                          setFilterValues('doctor', doctorName);
+                        }}
+                      >
+                        {doctorName}
+                      </AphButton>
+                    ))}
+                </div>
+              </div>
+              <div className={classes.filterType}>
+                <h4>Gender</h4>
+                <div className={classes.filterBtns}>
+                  {genderList.map((gender) => (
+                    <AphButton
+                      key={gender.key}
+                      className={applyClass(localFilter.gender, gender.key)}
+                      onClick={() => {
+                        setFilterValues('gender', gender.key);
+                      }}
+                    >
+                      {gender.value}
+                    </AphButton>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
       <div className={classes.dialogActions}>
