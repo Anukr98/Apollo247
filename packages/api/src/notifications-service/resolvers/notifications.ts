@@ -359,7 +359,6 @@ export const sendDoctorNotificationWhatsapp = async (
       content +=
         '\n------------------------------------------------------------------------------------\n';
       fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
-
       console.log(response, 'response');
     }
   }
