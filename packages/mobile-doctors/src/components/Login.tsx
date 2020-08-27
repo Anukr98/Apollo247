@@ -49,7 +49,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [onClickOpen, setonClickOpen] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
-  const { setLoading } = useUIElements();
+  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const { setDoctorDetailsError, setDoctorDetails, clearFirebaseUser } = useAuth();
   const [appSign, setAppSign] = useState<string>('');
 
@@ -150,14 +150,41 @@ export const Login: React.FC<LoginProps> = (props) => {
                   loginId: confirmResult.loginId,
                 });
               })
-              .catch((error: Error) => {
-                console.log(error, 'error');
-                console.log(error.message, 'errormessage');
+              .catch((error) => {
                 setShowSpinner(false);
-                Alert.alert(
-                  strings.common.error,
-                  (error && error.message) || strings.login.interaction_cancelled_by_user
-                );
+                const errorMessage = error.graphQLErrors[0].message;
+                if (errorMessage === 'NOT_A_DOCTOR') {
+                  showAphAlert &&
+                    showAphAlert({
+                      title: strings.common.alert,
+                      description: strings.login.not_doctor_message,
+                      CTAs: [
+                        {
+                          text: strings.login.contact,
+                          onPress: () => {
+                            Linking.openURL(`mailto:${strings.common.contact_mailId}`).finally(
+                              () => {
+                                hideAphAlert && hideAphAlert();
+                              }
+                            );
+                          },
+                        },
+                        {
+                          text: strings.login.download_patients,
+                          onPress: () => {
+                            Linking.openURL(strings.login.download_URL).finally(() => {
+                              hideAphAlert && hideAphAlert();
+                            });
+                          },
+                        },
+                      ],
+                    });
+                } else {
+                  Alert.alert(
+                    strings.common.error,
+                    (error && error.message) || strings.login.interaction_cancelled_by_user
+                  );
+                }
               });
           }
         }
@@ -170,7 +197,7 @@ export const Login: React.FC<LoginProps> = (props) => {
 
   const openWebView = () => {
     Keyboard.dismiss();
-    Linking.openURL('https://www.apollo247.com/TnC.html');
+    Linking.openURL('https://www.apollo247.com/terms');
     // return (
     //   <View style={styles.viewWebStyles}>
     //     <Header
@@ -274,7 +301,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                 letterSpacing: 0,
               }}
               linkText={(url) =>
-                url === 'https://www.apollo247.com/TnC.html' ? 'Terms and Conditions' : url
+                url === 'https://www.apollo247.com/terms' ? 'Terms and Conditions' : url
               }
               onPress={(url, text) => openWebView()}
             >
@@ -286,7 +313,6 @@ export const Login: React.FC<LoginProps> = (props) => {
                   letterSpacing: 0,
                 }}
               >
-                {/* By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7 */}
                 {strings.login.by_signingup_descr}
               </Text>
             </HyperLink>

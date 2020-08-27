@@ -42,7 +42,8 @@
     "oops_msg": "Oops! seems like we are having an issue. Please try again.",
     "oops_msg_saving": "Oops! seems like we are having an issue while saving case sheet. Please try again.",
     "custom": "custom",
-    "default": "default"
+    "default": "default",
+    "contact_mailId": "admin@apollo247.com"
   },
   "login": {
     "hello": "hello!",
@@ -72,8 +73,12 @@
     "helpText": "Don’t worry. We are here for\nyou :)",
     "interaction_cancelled_by_user": "The interaction was cancelled by the user.",
     "terms_conditions": "Terms & Conditions",
-    "by_signingup_descr": "By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7",
-    "signout_error": "Something went wrong while signing you out."
+    "by_signingup_descr": "By signing up, I agree to the https://www.apollo247.com/terms of Apollo247",
+    "signout_error": "Something went wrong while signing you out.",
+    "not_doctor_message": "Seems like the mobile no. you entered is either not registered with us or your account has been disabled. If you are a doctor and wish to enroll with us, please contact admin@apollo247.com. If you are a patient, please click here to download application for patients.",
+    "contact": "Contact",
+    "download_patients": "Download Patients App",
+    "download_URL": "https://pmt.apollo247.com/deeplink?url=apollopatients"
   },
   "alerts": {
     "successfully_updated_delegate_num": "Successfully Updated Delegate Number",
@@ -162,7 +167,7 @@
     "enter_mobile_num_to_access_ac": "Enter the mobile number you’d like to assign access of your account to",
     "add_consult_hours": "ADD CONSULTATION HOURS",
     "thanku_dr": "thank you, dr.",
-    "profile_tab_descr": "Let’s go over now to see the Apollo24x7 portal and start consultations!",
+    "profile_tab_descr": "Let’s go over now to see the Apollo247 portal and start consultations!",
     "share_heading": "Share a link with your contacts\nprivately to book a consult with you",
     "share_text": "SHARE MY PROFILE",
     "share_header": "SHARE YOUR PROFILE",
