@@ -11,7 +11,7 @@ rm -rfv packages/universal/dist/* || exit 2
 
 echo -e "\nrunning migration..."
 cd packages/api
-npm run test --if-present start:migration
+npm run start:migration --if-present 
 cd -
 
 echo -e "\nrunning bootstrap:web..."
