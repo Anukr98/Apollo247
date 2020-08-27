@@ -2110,9 +2110,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
                   const message =
                     messageDetails && messageDetails.message ? messageDetails.message : '';
-                  if (messageDetails.message === '^^#DocumentUpload') {
-                    console.log(messageDetails);
-                  }
                   if (
                     messageDetails.message === autoMessageStrings.typingMsg ||
                     messageDetails.message === autoMessageStrings.endCallMsg ||
@@ -2122,7 +2119,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.stopConsultMsg ||
                     messageDetails.message === autoMessageStrings.startConsultMsg ||
                     messageDetails.message === autoMessageStrings.covertVideoMsg ||
-                    messageDetails.message === autoMessageStrings.covertAudioMsg
+                    messageDetails.message === autoMessageStrings.covertAudioMsg ||
+                    messageDetails.message === autoMessageStrings.appointmentComplete
                   ) {
                     return null;
                   }
@@ -2137,6 +2135,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         messageDetails={messageDetails}
                         setModalOpen={(flag: boolean) => setModalOpen(flag)}
                         setImgPrevUrl={(url: string) => setImgPrevUrl(url)}
+                        chatTime={messageDetails.messageDate}
                       />
                     );
                   } else {
