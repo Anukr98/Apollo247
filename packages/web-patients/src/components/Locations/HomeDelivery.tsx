@@ -410,15 +410,18 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     lat: string;
     lng: string;
   }) => {
-    await fetchUtil(
-      `http://tat.phrdemo.com/tat?sku=${paramObject.lookup.join(',')}&pincode=${
-        paramObject.postalcode
-      }&lat=${paramObject.lat}&lng=${paramObject.lng}`,
-      'GET',
-      {},
-      '',
-      false
-    )
+    await axios
+      .get(
+        `${process.env.TAT_BASE_URL}/tat?sku=${paramObject.lookup.join(',')}&pincode=${
+          paramObject.postalcode
+        }&lat=${paramObject.lat}&lng=${paramObject.lng}`,
+        {
+          headers: {
+            Authorization: 'GWjKtviqHa4r4kiQmcVH',
+            'Content-Type': 'application/json',
+          },
+        }
+      )
       .then((data: any) => {
         if (data && data.response && data.response.tat) {
           setDeliveryTime(data.response.tat);
@@ -442,13 +445,13 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       return item.sku;
     });
     setDeliveryLoading(true);
-    await fetchUtil(
-      `http://tat.phrdemo.com/availability?sku=${lookUp.join(',')}&pincode=${zipCode}`,
-      'GET',
-      {},
-      '',
-      false
-    )
+    await axios
+      .get(`${process.env.TAT_BASE_URL}/availability?sku=${lookUp.join(',')}&pincode=${zipCode}`, {
+        headers: {
+          Authorization: 'GWjKtviqHa4r4kiQmcVH',
+          'Content-Type': 'application/json',
+        },
+      })
       .then((data: any) => {
         try {
           if (data && data.response) {

@@ -6,7 +6,7 @@ import _uniq from 'lodash/uniq';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import fetchUtil from 'helpers/fetch';
+import axios from 'axios';
 
 export interface MedicineCartItem {
   url_key: string;
@@ -329,13 +329,16 @@ export const MedicinesCartProvider: React.FC = (props) => {
 
   const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
     if (pharmaAddressDetails && pharmaAddressDetails.pincode) {
-      fetchUtil(
-        `http://tat.phrdemo.com/availability?sku=${itemToAdd.sku}&pincode=${pharmaAddressDetails.pincode}`,
-        'GET',
-        {},
-        '',
-        false
-      )
+      axios
+        .get(
+          `${process.env.TAT_BASE_URL}/availability?sku=${itemToAdd.sku}&pincode=${pharmaAddressDetails.pincode}`,
+          {
+            headers: {
+              Authorization: 'GWjKtviqHa4r4kiQmcVH',
+              'Content-Type': 'application/json',
+            },
+          }
+        )
         .then((data: any) => {
           if (data && data.response && data.response.length > 0 && data.response[0].exist) {
             setCartItems([...cartItems, itemToAdd]);

@@ -251,28 +251,18 @@ export interface GetPackageDataResponse {
   data: PackageInclusion[];
 }
 
-// export const checkServiceAvailability = (zipCode: string) => {
-//   return axios.post(
-//     apiDetails.service_url || '',
-//     {
-//       postalcode: zipCode || '',
-//       skucategory: [
-//         {
-//           SKU: 'PHARMA',
-//         },
-//       ],
-//     },
-//     {
-//       headers: {
-//         Authorization: apiDetails.authToken,
-//       },
-//     }
-//   );
-// };
-
 export const checkServiceAvailability = (zipCode: string) => {
-  return fetchUtil(`http://tat.phrdemo.com/serviceable?pincode=${zipCode}`, 'GET', {}, '', false);
+  return axios.get(`https://uattat.apollo247.com/serviceable?pincode=${zipCode}`, {
+    headers: {
+      Authorization: 'GWjKtviqHa4r4kiQmcVH',
+      'Content-Type': 'application/json',
+    },
+  });
 };
+
+// export const checkServiceAvailability = (zipCode: string) => {
+//   return fetchUtil(`https://uattat.apollo247.com/serviceable?pincode=${zipCode}`, 'GET', {}, '', true)
+// }
 
 export interface MedicineOrderBilledItem {
   itemId: string;

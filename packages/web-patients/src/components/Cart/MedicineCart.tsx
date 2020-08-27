@@ -751,13 +751,18 @@ export const MedicineCart: React.FC = (props) => {
     const lookUp = cartItems.map((item: MedicineCartItem) => {
       return item.sku;
     });
-    return await fetchUtil(
-      `http://tat.phrdemo.com/tat?sku=${lookUp.join(',')}&pincode=${pincode}&lat=${lat}&lng=${lng}`,
-      'GET',
-      {},
-      '',
-      false
-    )
+    return await axios
+      .get(
+        `${process.env.TAT_BASE_URL}/tat?sku=${lookUp.join(
+          ','
+        )}&pincode=${pincode}&lat=${lat}&lng=${lng}`,
+        {
+          headers: {
+            Authorization: 'GWjKtviqHa4r4kiQmcVH',
+            'Content-Type': 'application/json',
+          },
+        }
+      )
       .then((data: any) => {
         const updatedCartItems = data && data.response && data.response.items;
         cartItems.map((item, index) => {

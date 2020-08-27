@@ -505,40 +505,17 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
 
   const fetchDeliveryTime = async (pinCode: string) => {
-    const CancelToken = axios.CancelToken;
-    let cancelGetDeliveryTimeApi: Canceler | undefined;
     setTatLoading(true);
-    // await axios
-    //   .post(
-    //     apiDetails.deliveryUrl || '',
-    //     {
-    //       postalcode: pinCode,
-    //       ordertype: _lowerCase(data.type_id) === 'pharma' ? CartTypes.PHARMA : CartTypes.FMCG,
-    //       lookup: [
-    //         {
-    //           sku: data.sku || params.sku,
-    //           qty: 1,
-    //         },
-    //       ],
-    //     },
-    //     {
-    //       headers: {
-    //         Authentication: apiDetails.deliveryAuthToken,
-    //       },
-    //       timeout: TAT_API_TIMEOUT_IN_MILLI_SEC,
-    //       cancelToken: new CancelToken((c) => {
-    //         // An executor function receives a cancel function as a parameter
-    //         cancelGetDeliveryTimeApi = c;
-    //       }),
-    //     }
-    //   )
-    fetchUtil(
-      `http://tat.phrdemo.com/tat?sku=${data.sku}&pincode=${pinCode}&lat=${pharmaAddressDetails.lat}&lng=${pharmaAddressDetails.lng}`,
-      'GET',
-      {},
-      '',
-      false
-    )
+    await axios
+      .get(
+        `${process.env.TAT_BASE_URL}/tat?sku=${data.sku}&pincode=${pinCode}&lat=${pharmaAddressDetails.lat}&lng=${pharmaAddressDetails.lng}`,
+        {
+          headers: {
+            Authorization: 'GWjKtviqHa4r4kiQmcVH',
+            'Content-Type': 'application/json',
+          },
+        }
+      )
       .then((data: any) => {
         try {
           if (data) {
@@ -593,13 +570,13 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   }, [pharmaAddressDetails]);
 
   const checkDeliveryTime = (pinCode: string, sku: string) => {
-    fetchUtil(
-      `http://tat.phrdemo.com/availability?sku=${sku}&pincode=${pinCode}`,
-      'GET',
-      {},
-      '',
-      false
-    )
+    axios
+      .get(`${process.env.TAT_BASE_URL}?sku=${sku}&pincode=${pinCode}`, {
+        headers: {
+          Authorization: 'GWjKtviqHa4r4kiQmcVH',
+          'Content-Type': 'application/json',
+        },
+      })
       .then((data: any) => {
         if (data && data.response && data.response.length > 0 && data.response[0].exist) {
           fetchDeliveryTime(pinCode);
