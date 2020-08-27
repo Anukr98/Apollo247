@@ -9,6 +9,7 @@ import {
   NeedHelpIcon,
   OneApollo,
   LinkedUhidIcon,
+  MyMembershipIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -462,6 +463,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           leftIcon={<OneApollo style={{ height: 20, width: 26 }} />}
           onPress={() => {
             props.navigation.navigate(AppRoutes.OneApolloMembership);
+          }}
+        />
+        <ListCard
+          title={'My Memberships'}
+          leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.MyMembership);
           }}
         />
         <ListCard

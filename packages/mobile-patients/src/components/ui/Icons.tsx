@@ -1077,3 +1077,47 @@ export const KavachIcon: React.FC<IconProps> = (props) => (
 export const RetryButtonIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/retryButton.png')} resizeMode="contain" />
 );
+
+export const HelpIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/help.png')} />
+);
+
+export const EllipseBulletPoint: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/Ellipse.png')} />
+);
+
+export const HdfcGoldMedal: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/medal_gold.png')} />
+);
+
+export const HdfcPlatinumMedal: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/medal_platinum.png')} />
+);
+
+export const LockIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/lock.png')} />
+);
+
+export const MyMembershipIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/membership_icon.png')} />
+);
+
+export const UpOrange: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/up_orange.png')} />
+);
+
+export const DownOrange: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/down_orange.png')} />
+);
+
+export const OneVectorNumber: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/Vector1.png')} />
+);
+
+export const TwoVectorNumber: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/Vector2.png')} />
+);
+
+export const RoundCancelIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/round-cancel.png')} />
+);
