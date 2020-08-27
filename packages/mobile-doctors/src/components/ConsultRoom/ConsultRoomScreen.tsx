@@ -285,7 +285,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const { setOpenTokKeys, setCallBacks, callData, callOptions, errorPopup } = useAudioVideo();
   useEffect(() => {
     getSpecialties();
-    console.log(appointmentData, 'appointmentData');
     // callAbandonmentCall();
     console.log('PatientConsultTime', PatientConsultTime);
     console.log(caseSheetEdit, 'caseSheetEdit');
@@ -321,6 +320,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       AsyncStorage.removeItem('callDataSend');
       AsyncStorage.removeItem('patientName');
       AsyncStorage.removeItem('postWebEngageData');
+      AsyncStorage.setItem('AppointmentSelect', 'false');
       KeepAwake.deactivate();
       pubnub.unsubscribeAll();
       pubnub.stop();

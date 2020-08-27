@@ -156,7 +156,10 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     return [
       {
         text: 'NO, WAIT',
-        onPress: () => hideAphAlert!(),
+        onPress: () => {
+          AsyncStorage.setItem('AppointmentSelect', 'false');
+          hideAphAlert!();
+        },
         type: 'white-button',
       },
       {
@@ -170,10 +173,10 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
             })
             .then((data) => {
               hideAphAlert!();
-              setLoading && setLoading(false);
               if (g(data, 'data', 'submitJDCaseSheet')) {
                 navigateToConsultRoom(doctorId, patientId, appId, apointmentData, prevCaseSheet);
               } else {
+                AsyncStorage.setItem('AppointmentSelect', 'false');
                 showAphAlert &&
                   showAphAlert({
                     title: `Hi ${
@@ -186,6 +189,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
             })
             .catch(() => {
               hideAphAlert!();
+              AsyncStorage.setItem('AppointmentSelect', 'false');
               setLoading && setLoading(false);
               showAphAlert &&
                 showAphAlert({
@@ -206,19 +210,27 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     prevCaseSheet?: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null,
     caseSheetEdit?: boolean
   ) => {
-    callPermissions(() => {
-      props.navigation.push(AppRoutes.ConsultRoomScreen, {
-        DoctorId: doctorId,
-        PatientId: patientId,
-        PatientConsultTime: null,
-        AppId: appId,
-        Appintmentdatetime: apointmentData.appointmentDateTime,
-        AppointmentStatus: apointmentData.status,
-        AppoinementData: apointmentData,
-        prevCaseSheet: prevCaseSheet,
-        caseSheetEnableEdit: caseSheetEdit,
+    setTimeout(() => {
+      AsyncStorage.getItem('AppointmentSelect').then((data) => {
+        if (JSON.parse(data || 'false')) {
+          callPermissions(() => {
+            AsyncStorage.setItem('AppointmentSelect', 'false');
+            setLoading && setLoading(false);
+            props.navigation.push(AppRoutes.ConsultRoomScreen, {
+              DoctorId: doctorId,
+              PatientId: patientId,
+              PatientConsultTime: null,
+              AppId: appId,
+              Appintmentdatetime: apointmentData.appointmentDateTime,
+              AppointmentStatus: apointmentData.status,
+              AppoinementData: apointmentData,
+              prevCaseSheet: prevCaseSheet,
+              caseSheetEnableEdit: caseSheetEdit,
+            });
+          });
+        }
       });
-    });
+    }, 500);
   };
   const showNotfoundAlert = () => {
     showAphAlert &&
@@ -253,6 +265,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
   const onAppointmentSelect = (
     appointmentsHistory: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   ) => {
+    AsyncStorage.setItem('AppointmentSelect', 'true');
+    setLoading && setLoading(true);
     const appId = appointmentsHistory.id;
     const doctorId = appointmentsHistory.doctorId;
     const patientId = appointmentsHistory.patientId;
@@ -280,6 +294,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       appointmentsHistory.status !== STATUS.COMPLETED &&
       !appointmentsHistory.isJdQuestionsComplete
     ) {
+      setLoading && setLoading(false);
       showAphAlert &&
         showAphAlert({
           title: `Hi ${doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'} :)`,
@@ -292,6 +307,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       ((jrCaseSheet && !jrCaseSheet.isJdConsultStarted) || !jrCaseSheet) &&
       appointmentsHistory.isJdQuestionsComplete
     ) {
+      setLoading && setLoading(false);
       showAphAlert &&
         showAphAlert({
           title: `Hi ${doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'} :)`,
@@ -304,6 +320,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       ((jrCaseSheet && jrCaseSheet.isJdConsultStarted && jrCaseSheet.status !== 'COMPLETED') ||
         !jrCaseSheet)
     ) {
+      setLoading && setLoading(false);
+      AsyncStorage.setItem('AppointmentSelect', 'false');
       showAphAlert &&
         showAphAlert({
           title: `Hi ${doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'} :)`,
@@ -319,7 +337,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
         const blobName = g(caseSheet && caseSheet[0], 'blobName');
         setLoading && setLoading(false);
         const caseSheetId = g(caseSheet && caseSheet[0], 'id');
-
+        AsyncStorage.setItem('AppointmentSelect', 'false');
         props.navigation.push(AppRoutes.RenderPdf, {
           uri: `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
           title: 'PRESCRIPTION',
@@ -399,7 +417,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                     },
                   })
                   .then((data) => {
-                    setLoading && setLoading(false);
                     navigateToConsultRoom(
                       doctorId,
                       patientId,
@@ -441,7 +458,6 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
           ],
         });
       } else {
-        setLoading && setLoading(false);
         navigateToConsultRoom(doctorId, patientId, appId, appointmentsHistory, prevCaseSheet);
       }
     }

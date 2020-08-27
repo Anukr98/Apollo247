@@ -28,6 +28,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const styles = ProfileStyles;
 
