@@ -168,6 +168,13 @@ export interface getPatientAllAppointments_getPatientAllAppointments_appointment
   starTeam: (getPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_starTeam | null)[] | null;
 }
 
+export interface getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet {
+  __typename: "CaseSheet";
+  followUpChatDays: number | null;
+  version: number | null;
+  doctorType: DoctorType | null;
+}
+
 export interface getPatientAllAppointments_getPatientAllAppointments_appointments {
   __typename: "PatinetAppointments";
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_appointments_appointmentPayments | null)[] | null;
@@ -188,6 +195,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_appointment
   isJdQuestionsComplete: boolean | null;
   symptoms: string | null;
   doctorInfo: getPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo | null;
+  caseSheet: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[] | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments {
