@@ -1,6 +1,9 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Avatar } from '@material-ui/core';
 import React from 'react';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -83,26 +86,42 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface WelcomeCardProps {
-  doctorName: string;
+interface ViewPrescriptionCardProps {
+  message: string;
+  duration: string;
+  messageDetails: any;
+  chatTime: string;
 }
 
-export const ViewPrescriptionCard: React.FC = (props) => {
+export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props) => {
   const classes = useStyles({});
+
+  const { currentPatient } = useAllCurrentPatients();
   return (
     <div className={classes.doctorCardMain}>
-      <div className={classes.doctorAvatar}>
+      {/* <div className={classes.doctorAvatar}>
         <Avatar className={classes.avatar} src={require('images/ic_mascot_male.png')} alt="" />
-      </div>
+      </div> */}
       <div className={`${classes.blueBubble} ${classes.petient} `}>
         <p>
-          <div>Hello <span>Surj,</span></div>
+          <div>
+            Hello <span>{currentPatient.firstName}</span>
+          </div>
           <div>Hope your consultation went well… Here is your prescription.</div>
           <div>
-            <button className={classes.downloadBtn} >Download</button>
-            <button className={classes.viewBtn} >View</button>
+            {props.messageDetails &&
+              props.messageDetails.transferInfo &&
+              props.messageDetails.transferInfo.pdfUrl && (
+                <a href={props.messageDetails.transferInfo.pdfUrl} target="_blank">
+                  <button className={classes.downloadBtn}>Download</button>
+                </a>
+              )}
+
+            <Link to={clientRoutes.prescription(props.messageDetails.transferInfo.appointmentId)}>
+              <button className={classes.viewBtn}>View</button>
+            </Link>
           </div>
-          <div className={classes.chatTime}> 07:10 pm </div>
+          <div className={classes.chatTime}>{props.chatTime} </div>
         </p>
       </div>
     </div>
