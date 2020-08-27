@@ -350,6 +350,8 @@ PODS:
     - React
   - react-native-background-timer (2.2.0):
     - React
+  - react-native-document-picker (3.5.4):
+    - React
   - react-native-fbsdk (1.1.2):
     - React
     - react-native-fbsdk/Core (= 1.1.2)
@@ -367,6 +369,8 @@ PODS:
   - react-native-geolocation (2.0.2):
     - React
   - react-native-image-picker (2.0.0):
+    - React
+  - react-native-image-resizer (1.2.6):
     - React
   - react-native-keep-awake (4.0.0):
     - React
@@ -433,7 +437,7 @@ PODS:
   - RNBugfender (1.1.0):
     - BugfenderSDK/ObjC (~> 1.6)
     - React
-  - RNCallKeep (3.1.0):
+  - RNCallKeep (3.1.1):
     - React
   - RNCAsyncStorage (1.11.0):
     - React
@@ -521,9 +525,11 @@ DEPENDENCIES:
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - react-native-appsflyer (from `../node_modules/react-native-appsflyer`)
   - react-native-background-timer (from `../node_modules/react-native-background-timer`)
+  - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - react-native-fbsdk (from `../node_modules/react-native-fbsdk`)
   - "react-native-geolocation (from `../node_modules/@react-native-community/geolocation`)"
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-image-resizer (from `../node_modules/react-native-image-resizer`)
   - react-native-keep-awake (from `../node_modules/react-native-keep-awake`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pdf (from `../node_modules/react-native-pdf`)
@@ -659,12 +665,16 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-appsflyer"
   react-native-background-timer:
     :path: "../node_modules/react-native-background-timer"
+  react-native-document-picker:
+    :path: "../node_modules/react-native-document-picker"
   react-native-fbsdk:
     :path: "../node_modules/react-native-fbsdk"
   react-native-geolocation:
     :path: "../node_modules/@react-native-community/geolocation"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
+  react-native-image-resizer:
+    :path: "../node_modules/react-native-image-resizer"
   react-native-keep-awake:
     :path: "../node_modules/react-native-keep-awake"
   react-native-netinfo:
@@ -789,9 +799,11 @@ SPEC CHECKSUMS:
   React-jsinspector: a8939cc6909607eb5e8a5ecfff7c6226984e174d
   react-native-appsflyer: 106d4167da049f7e9d0cab09236f4e53b7142ff3
   react-native-background-timer: 53c0e028a95d58b1f4498ef7ce152b6c6b337595
+  react-native-document-picker: c5752781fbc0c126c627c1549b037c139444a4cf
   react-native-fbsdk: c35d42169e64aaf66f01713c1e18d0674f7f6519
   react-native-geolocation: cbd9d6bd06bac411eed2671810f454d4908484a8
   react-native-image-picker: ba7fe85b3373ff33d4827210d989dfcbbd68f7f9
+  react-native-image-resizer: f9fd7a61ffb3683987a6528e15e32bc32eb9dee3
   react-native-keep-awake: eba3137546b10003361b37c761f6c429b59814ae
   react-native-netinfo: 7baf6d0436122ea5d98dc3f17a60fe56c8048046
   react-native-pdf: 29a09815e99c92743aa8459a90564aaddd4065e0
@@ -815,7 +827,7 @@ SPEC CHECKSUMS:
   ReverseExtension: 21c8dd4e767f93b56fb97d873686d24160f83945
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNBugfender: 5b5792c8b7d1b4e70ce29d730859650c9efce618
-  RNCallKeep: 671e4720edf42bfb91d74c5f0c0ee30e64c7af7b
+  RNCallKeep: ea9f0cec0e5d30de94eb571f37f7423c445d14f9
   RNCAsyncStorage: db711e29e5e0500d9bd21aa0c2e397efa45302b1
   RNDateTimePicker: f13c2d8c4cd1ea6d1a1f9ea7ddcdd24e82060770
   RNDeviceInfo: 54556486cd02538dbef727f39292d096abe0cf0e
@@ -837,6 +849,6 @@ SPEC CHECKSUMS:
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
   youtube-ios-player-helper: 21ab92db027c7ff86cb17a3843a3f6eafc8158d2
 
-PODFILE CHECKSUM: ce5bdfdfec8014600927395c8492df6aeca8f8c6
+PODFILE CHECKSUM: b24d9935851e18d8f3849b5b37ab8e289fbf25c4
 
 COCOAPODS: 1.7.1

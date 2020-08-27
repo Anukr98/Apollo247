@@ -1019,7 +1019,13 @@ export const callPermissions = (doRequest?: () => void) => {
       'microphone',
       'Enable microphone from settings for calls during consultation.',
       () => {
-        doRequest && doRequest();
+        permissionHandler(
+          'storage',
+          'Enable storage from settings for uploading documents during consultation.',
+          () => {
+            doRequest && doRequest();
+          }
+        );
       }
     );
   });
@@ -1034,8 +1040,12 @@ export const InitiateAppsFlyer = (
       console.log('res.data', res.data);
       // if (res.data.af_dp !== undefined) {
       try {
-        AsyncStorage.setItem('deeplink', res.data.af_dp);
-        AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+        if (res.data.af_dp !== undefined) {
+          AsyncStorage.setItem('deeplink', res.data.af_dp);
+        }
+        if (res.data.af_sub1 !== null) {
+          AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+        }
 
         console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
@@ -1087,8 +1097,12 @@ export const InitiateAppsFlyer = (
     // for iOS universal links
     if (Platform.OS === 'ios') {
       try {
-        AsyncStorage.setItem('deeplink', res.data.af_dp);
-        AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+        if (res.data.af_dp !== undefined) {
+          AsyncStorage.setItem('deeplink', res.data.af_dp);
+        }
+        if (res.data.af_sub1 !== null) {
+          AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+        }
 
         console.log('res.data.af_dp_onAppOpenAttribution', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);

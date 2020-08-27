@@ -348,6 +348,9 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    disableButton: {
+      opacity: 0.7,
+    },
     mobileView: {
       display: 'none',
       [theme.breakpoints.down('xs')]: {
@@ -597,13 +600,26 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       });
   };
 
+  const getItemIndexInCart = (cartItem: MedicineCartItem) => {
+    return cartItems.findIndex((item) => item.sku === cartItem.sku);
+  };
+
+  const isQtyUpdated = (cartItem: MedicineCartItem, index: number) => {
+    return index >= 0 && cartItems[index].quantity !== cartItem.quantity;
+  };
+
   const applyCartOperations = (cartItem: MedicineCartItem) => {
-    const index = cartItems.findIndex((item) => item.id === cartItem.id);
-    if (index >= 0) {
+    const index = getItemIndexInCart(cartItem);
+    if (cartItems && cartItems.length > 0 && isQtyUpdated(cartItem, index)) {
       updateCartItemQty && updateCartItemQty(cartItem);
-    } else {
+    } else if (index === -1) {
       addCartItem && addCartItem(cartItem);
     }
+  };
+
+  const disableAddCartItem = (cartItem: MedicineCartItem) => {
+    const index = getItemIndexInCart(cartItem);
+    return !isQtyUpdated(cartItem, index);
   };
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
@@ -878,7 +894,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             {is_in_stock && sell_online ? (
               <div className={classes.bottomActions}>
                 <AphButton
-                  disabled={addMutationLoading || updateMutationLoading}
+                  disabled={
+                    addMutationLoading || updateMutationLoading || disableAddCartItem(cartItem)
+                  }
+                  className={
+                    addMutationLoading || updateMutationLoading || disableAddCartItem(cartItem)
+                      ? classes.disableButton
+                      : ''
+                  }
                   onClick={() => {
                     setIsUpdateQuantity(false);
                     setClickAddCart(true);
@@ -939,6 +962,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
 
                 <AphButton
                   color="primary"
+                  className={
+                    addMutationLoading || updateMutationLoading ? classes.disableButton : ''
+                  }
                   disabled={addMutationLoading || updateMutationLoading}
                   onClick={() => {
                     setUpdateMutationLoading(true);

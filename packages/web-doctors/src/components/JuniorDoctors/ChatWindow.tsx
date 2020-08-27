@@ -699,9 +699,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message === jdThankyou
     ) {
       return rowData.automatedText;
-    }else if(rowData.id !== patientId && rowData.message === exotelCall){
-      return 'A Telephonic Voice call is initiated from '+ rowData.exotelNumber+'. Request you to answer the call.';
-    } else {
+    } else if(rowData.id !== patientId && rowData.message === exotelCall){	
+      return 'A Telephonic Voice call is initiated from '+ rowData.exotelNumber+'. Request you to answer the call.';	
+    }  else {
       srollToBottomAction();
       return rowData.message;
     }

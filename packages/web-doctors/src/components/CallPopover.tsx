@@ -1202,7 +1202,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     updatedDate,
     setUpdatedDate,
   } = useContext(CaseSheetContext);
-  
+
   const exotelCall = '^^#exotelCall';
   const covertVideoMsg = "^^convert`video^^";
   const covertAudioMsg = "^^convert`audio^^";
@@ -3118,21 +3118,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         fetchPolicy: "no-cache",
                       });
-                      const text = {
-                        id: props.doctorId,
-                        message: exotelCall,
-                        exotelNumber: process.env.EXOTEL_CALLER_ID,
-                        isTyping: true,
-                        messageDate: new Date(),
-                        sentBy: REQUEST_ROLES.DOCTOR,
-                      };
-                      pubnub.publish(
-                        {
-                          message: text,
-                          channel: channel,
-                          storeInHistory: true,
-                        },
-                        (status: any, response: any) => {},
+                      const text = {	
+                        id: props.doctorId,	
+                        message: exotelCall,	
+                        exotelNumber: process.env.EXOTEL_CALLER_ID,	
+                        isTyping: true,	
+                        messageDate: new Date(),	
+                        sentBy: REQUEST_ROLES.DOCTOR,	
+                      };	
+                      pubnub.publish(	
+                        {	
+                          message: text,	
+                          channel: channel,	
+                          storeInHistory: true,	
+                        },	
+                        (status: any, response: any) => {},	
                       );
                       setShowToastMessage(true);
                     }}

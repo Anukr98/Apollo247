@@ -11,13 +11,19 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
-  CommonLogEvent,
   CommonBugFender,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { aphConsole, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import {
+  Alert,
   SafeAreaView,
   StyleProp,
   StyleSheet,
@@ -25,16 +31,14 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  Alert,
+  Platform,
 } from 'react-native';
+import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
 import { Overlay } from 'react-native-elements';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ScrollView } from 'react-navigation';
-import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import strings from '@aph/mobile-patients/src/strings/strings.json';
+import RNFetchBlob from 'rn-fetch-blob';
+import ImageResizer from 'react-native-image-resizer';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -103,7 +107,11 @@ export interface UploadPrescriprionPopupProps {
   instructions?: string[];
   hideTAndCs?: boolean;
   onClickClose: () => void;
-  onResponse: (selectedType: EPrescriptionDisableOption, response: PhysicalPrescription[], type?: 'Camera' | 'Gallery') => void;
+  onResponse: (
+    selectedType: EPrescriptionDisableOption,
+    response: PhysicalPrescription[],
+    type?: 'Camera' | 'Gallery'
+  ) => void;
   isProfileImage?: boolean;
 }
 
@@ -183,7 +191,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           props.onResponse(
             'CAMERA_AND_GALLERY',
             formatResponse([response] as ImageCropPickerResponse[]),
-            'Camera',
+            'Camera'
           );
         })
         .catch((e: Error) => {
@@ -199,6 +207,22 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     }
   };
 
+  const getBase64 = (response: DocumentPickerResponse[]): Promise<string>[] => {
+    return response.map(async ({ fileCopyUri: uri, name: fileName, type }) => {
+      const isPdf = fileName.toLowerCase().endsWith('.pdf'); // TODO: check here if valid image by mime
+      uri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+      let compressedImageUri = '';
+      if (!isPdf) {
+        // Image Quality 0-100
+        compressedImageUri = (await ImageResizer.createResizedImage(uri, 2096, 2096, 'JPEG', 50))
+          .uri;
+        compressedImageUri =
+          Platform.OS === 'ios' ? compressedImageUri.replace('file://', '') : compressedImageUri;
+      }
+      return RNFetchBlob.fs.readFile(!isPdf ? compressedImageUri : uri, 'base64');
+    });
+  };
+
   const onClickGallery = async () => {
     postUPrescriptionWEGEvent('Choose Gallery');
     setshowSpinner(true);
@@ -209,37 +233,60 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     };
     postWebEngageEvent('Upload Photo', eventAttributes);
 
-    //   try {
-    //     const docs = await DocumentPicker.pickMultiple({
-    //       type: [DocumentPicker.types.images, DocumentPicker.types.pdf],
-    //     });
-    //     console.log({ docs });
-    //     const base64Array = await Promise.all(
-    //       docs.map((item) =>
-    //         RNFetchBlob.fs.readFile(
-    //           Platform.OS === 'ios' ? item.uri.replace('file:', '') : item.uri,
-    //           'base64'
-    //         )
-    //       )
-    //     );
-    //     console.log({ base64Array });
-    //     props.onResponse(
-    //       'CAMERA_AND_GALLERY',
-    //       formatResponse(
-    //         docs.map(
-    //           (item, i) =>
-    //             ({
-    //               mime: item.type,
-    //               data: base64Array[i],
-    //             } as ImageCropPickerResponse)
-    //         )
-    //       )
-    //     );
-    //     setshowSpinner(false);
-    //   } catch (error) {
-    //     setshowSpinner(false);
-    //   }
+    if (!props.isProfileImage) {
+      try {
+        const documents = await DocumentPicker.pickMultiple({
+          type: [DocumentPicker.types.allFiles],
+          copyTo: 'documentDirectory',
+        });
 
+        const result = documents.filter((obj) => {
+          if (obj.name.toLowerCase().match(/\.(jpeg|jpg|png|jfif|pdf)$/)) {
+            if (obj.name.toLowerCase().endsWith('.pdf')) {
+              if (obj.size > 2000000) {
+                Alert.alert(
+                  strings.common.uhOh,
+                  `Only images and PDF(less than 2MB) are supported.\n\n${obj.name}`
+                );
+                setshowSpinner(false);
+                return;
+              } else {
+                return obj;
+              }
+            } else {
+              return obj;
+            }
+          } else {
+            Alert.alert(strings.common.uhOh, `Only images and PDF are supported.\n\n${obj.name}`);
+            setshowSpinner(false);
+            return;
+          }
+        });
+        const base64Array = await Promise.all(getBase64(result));
+
+        const base64FormattedArray = base64Array.map(
+          (base64, index) =>
+            ({
+              mime: documents[index].type,
+              data: base64,
+            } as ImageCropPickerResponse)
+        );
+
+        props.onResponse('CAMERA_AND_GALLERY', formatResponse(base64FormattedArray));
+
+        setshowSpinner(false);
+      } catch (e) {
+        setshowSpinner(false);
+        if (DocumentPicker.isCancel(e)) {
+          CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
+        }
+      }
+    } else {
+      openGallery();
+    }
+  };
+
+  const openGallery = () => {
     ImagePicker.openPicker({
       cropping: true,
       hideBottomControls: true,
@@ -259,7 +306,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         props.onResponse(
           'CAMERA_AND_GALLERY',
           formatResponse(response as ImageCropPickerResponse[]),
-          'Gallery',
+          'Gallery'
         );
       })
       .catch((e: Error) => {

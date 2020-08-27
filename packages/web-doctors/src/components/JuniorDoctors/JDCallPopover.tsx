@@ -809,7 +809,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     medicationHistory,
     setReferralError,
   } = useContext(CaseSheetContextJrd);
-  
+
   const exotelCall = '^^#exotelCall';
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
@@ -2232,22 +2232,22 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                       },
                       fetchPolicy: 'no-cache',
                     });
-                    const text = {
-                        id: props.doctorId,
-                        message: exotelCall,
-                        exotelNumber: process.env.EXOTEL_CALLER_ID,
-                        isTyping: true,
-                        messageDate: new Date(),
-                        sentBy: REQUEST_ROLES.JUNIOR,
-                      };
-                      pubnub.publish(
-                        {
-                          message: text,
-                          channel: channel,
-                          storeInHistory: true,
-                        },
-                        (status: any, response: any) => {},
-                      );
+                    const text = {	
+                      id: props.doctorId,	
+                      message: exotelCall,	
+                      exotelNumber: process.env.EXOTEL_CALLER_ID,	
+                      isTyping: true,	
+                      messageDate: new Date(),	
+                      sentBy: REQUEST_ROLES.JUNIOR,	
+                    };	
+                    pubnub.publish(	
+                      {	
+                        message: text,	
+                        channel: channel,	
+                        storeInHistory: true,	
+                      },	
+                      (status: any, response: any) => {},	
+                    );
                     setShowToastMessage(true);
                   }}
                 >

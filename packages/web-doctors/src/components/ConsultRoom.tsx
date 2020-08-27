@@ -421,12 +421,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const languageQue = '^^#languageQue';
   const jdThankyou = '^^#jdThankyou';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
-  const exotelCall = '^^#exotelCall';
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
   const leaveChatRoom = '^^#leaveChatRoom';
+  const exotelCall = '^^#exotelCall';
 
   const { doctorId, patientId } = props;
   const channel = props.appointmentId;
@@ -493,12 +493,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         lastMsg.message.message !== covertVideoMsg &&
         lastMsg.message.message !== covertAudioMsg &&
         lastMsg.message.message !== cancelConsultInitiated &&
-        lastMsg.message.message !== exotelCall &&
         lastMsg.message.message !== callAbandonment &&
         lastMsg.message.message !== appointmentComplete &&
         lastMsg.message.message !== doctorAutoResponse &&
         lastMsg.message.message !== patientJoinedMeetingRoom &&
-        lastMsg.message.message !== leaveChatRoom
+        lastMsg.message.message !== leaveChatRoom &&
+        lastMsg.message.message !== exotelCall
       ) {
         setIsNewMsg(true);
       } else {
@@ -634,9 +634,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message === jdThankyou
     ) {
       return rowData.automatedText;
-    }else if(rowData.id === doctorId && rowData.message === exotelCall){
-      return 'A Telephonic Voice call is initiated from '+ rowData.exotelNumber+'. Request you to answer the call.';
-    } else {
+    }else if(rowData.id === doctorId && rowData.message === exotelCall){	
+      return 'A Telephonic Voice call is initiated from '+ rowData.exotelNumber+'. Request you to answer the call.';	
+    }  else {
       return rowData.message;
     }
   };

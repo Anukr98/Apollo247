@@ -600,6 +600,9 @@ export const MedicineDetails: React.FC = (props) => {
               url_key,
               mou,
               category_id,
+              is_in_stock,
+              MaxOrderQty,
+              is_prescription_required,
             } = data && data.productdp && data.productdp.length && data.productdp[0];
             let { description } = data.productdp[0];
             pharmacyProductViewTracking({
@@ -625,32 +628,97 @@ export const MedicineDetails: React.FC = (props) => {
             setProductSchemaJSON({
               '@context': 'https://schema.org/',
               '@type': 'Product',
-              name: name,
+              name,
+              sku,
               image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
+              alternateName: name,
+              brand: {
+                '@type': 'brand',
+                logo: '',
+              },
+              manufacturer: {
+                '@type': 'Organization',
+                name: manufacturer,
+              },
+              itemCondition: 'NewCondition',
               description,
-              brand: manufacturer,
-              sku: params.sku,
-              gtin8: id,
               offers: {
                 '@type': 'Offer',
-                url: `https://www.apollo247.com/medicine-details/${sku}`,
+                availability:
+                  is_in_stock == 1 ? 'http://schema.org/InStock' : 'http://schema.org/OutOfStock',
+                acceptedPaymentMethod: 'COD, Card, Paytm, UPI',
+                addOn: '',
+                advanceBookingRequirement: '',
+                areaServed: '',
                 priceCurrency: 'INR',
+                availabilityEnds: '',
+                availabilityStarts: '',
+                availableAtOrFrom: '',
+                availableDeliveryMethod: 'Home Delivery',
+                deliveryLeadTime: '',
+                eligibleCustomerType: '',
+                eligibleDuration: '',
+                eligibleQuantity: MaxOrderQty,
+                eligibleRegion: '',
+                eligibleTransactionVolume: '',
+                itemCondition: 'NewCondition',
+                ineligibleRegion: '',
                 price: special_price || price,
+                seller: 'APOLLO HOSPITALS ENTERPRISES LTD',
+                serialNumber: '',
+                validFrom: '',
+                validThrough: '',
+                warranty: '',
                 priceValidUntil: '2020-12-31',
-                availability: 'https://schema.org/InStock',
-                itemCondition: 'https://schema.org/NewCondition',
+                url: `https://www.apollo247.com/medicine/${sku}`,
               },
+              category: {
+                '@type': 'Thing',
+                image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
+              },
+              gtin8: id,
             });
             if (type_id && type_id.toLowerCase() === 'pharma') {
-              const { generic, Doseform } =
+              const { generic, Doseform, Strengh, Unit, Overview } =
                 PharmaOverview && PharmaOverview.length > 0 && PharmaOverview[0];
+              const renderContent = (reqKey: string) =>
+                Overview &&
+                Overview.length > 0 &&
+                Overview.filter((key: any) => key.Caption === reqKey);
               setDrugSchemaJSON({
                 '@context': 'https://schema.org/',
                 '@type': 'Drug',
-                name: name,
+                name,
+                mainEntityOfPage: `https://www.apollo247.com/medicine/${sku}`,
+                image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
                 description,
-                activeIngredient: generic && generic.length ? generic.split('+') : '',
+                activeIngredient: `${generic}-${Strengh}${Unit}`,
+                alcoholWarning: renderContent('DRUG ALCOHOL INTERACTION')[0].CaptionDesc,
+                availableStrength: {
+                  '@context': 'http://schema.org/',
+                  '@type': 'DrugStrength',
+                  activeIngredient: `${generic}-${Strengh}${Unit}`,
+                },
+                breastfeedingWarning: renderContent('DRUG BREAST FEEDING INTERACTION')[0]
+                  .CaptionDesc,
+                pregnancyWarning: renderContent('DRUG PREGNANCY INTERACTION')[0].CaptionDesc,
+                clinicalPharmacology: '',
                 dosageForm: Doseform,
+                drugUnit: Unit,
+                foodWarning: '',
+                isAvailableGenerically: 'True',
+                legalStatus: 'country: india, status: Approved',
+                overdosage: '',
+                manufacturer: {
+                  '@type': 'Organization',
+                  legalName: manufacturer,
+                },
+                mechanismOfAction: '',
+                nonProprietaryName: name,
+                isProprietary: true,
+                prescriptionStatus:
+                  is_prescription_required == 1 ? 'Available by prescription' : 'over-the-counter',
+                url: `https://www.apollo247.com/medicine/${sku}`,
               });
             }
             /**schema markup End */
@@ -695,8 +763,9 @@ export const MedicineDetails: React.FC = (props) => {
                 title: `${name} Price, Uses, Side Effects - Apollo 247`,
                 description: `Buy ${name}, Pack of ${getPackOfMedicine(
                   data.productdp[0]
-                )} at &#8377;${special_price ||
-                  price} in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
+                )} at &#8377;${
+                  special_price || price
+                } in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
                 canonicalLink:
                   typeof window !== 'undefined' &&
                   window.location &&
@@ -736,7 +805,7 @@ export const MedicineDetails: React.FC = (props) => {
 
   const renderComposition = () => {
     const generics = medicinePharmacyDetails[0].generic.split('+ ');
-    const strength = medicinePharmacyDetails[0].Strengh.split('+ ');
+    const strength = medicinePharmacyDetails[0].Strength.split('+ ');
     const units = medicinePharmacyDetails[0].Unit.split('+ ');
     const compositionArray = generics.map((key, ind) => `${key}-${strength[ind]}${units[ind]}`);
     return compositionArray.join(' + ');

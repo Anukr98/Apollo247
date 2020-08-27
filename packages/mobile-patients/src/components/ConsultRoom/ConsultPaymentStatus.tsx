@@ -39,6 +39,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  NativeModules,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import { Snackbar } from 'react-native-paper';
@@ -55,6 +56,9 @@ import { getPastAppoinmentCount, updateExternalConnect } from '../../helpers/cli
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
+const { RNAppSignatureHelper } = NativeModules;
+
+let showAlertPopUp: boolean = false;
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -78,7 +82,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const coupon = props.navigation.getParam('coupon');
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const [notificationAlert, setNotificationAlert] = useState(false);
   const [copiedText, setCopiedText] = useState('');
@@ -94,6 +98,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       title: 'Uh oh.. :(',
       description: `${desc || ''}`.trim(),
     });
+
+  useEffect(() => {
+    overlyPermissionAndroid();
+  }, []);
 
   useEffect(() => {
     // getTxnStatus(orderId)
@@ -221,6 +229,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const handleBack = () => {
+    if (showAlertPopUp) {
+      return true;
+    }
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,
@@ -500,6 +511,30 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     }
   };
 
+  const overlyPermissionAndroid = () => {
+    if (Platform.OS === 'android') {
+      RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
+        if (status) {
+          showAphAlert!({
+            title: `Hi ${currentPatient.firstName} :)`,
+            description: 'Please grant overlay permission to receive calls from doctor',
+            ctaContainerStyle: { justifyContent: 'flex-end' },
+            CTAs: [
+              {
+                text: 'OK, GOT IT',
+                type: 'orange-link',
+                onPress: () => {
+                  hideAphAlert!();
+                  RNAppSignatureHelper.requestOverlayPermission();
+                },
+              },
+            ],
+          });
+        }
+      });
+    }
+  };
+
   const handleButton = () => {
     const { navigation } = props;
     const { navigate } = navigation;
@@ -589,6 +624,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             if (noCount && noCount > 0) {
               setShowConnectAlertPopup(false);
             } else {
+              showAlertPopUp = true;
               setShowConnectAlertPopup(true);
             }
           }
@@ -601,6 +637,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const getUpdateExternalConnect = (connected: boolean) => {
     setLoading(true);
+    showAlertPopUp = false;
 
     updateExternalConnect(client, doctorID, g(currentPatient, 'id'), connected, orderId)
       .then((data) => {
@@ -655,7 +692,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       )}
       {showConnectAlertPopup && (
         <CustomAlert
-          description={`Have you consulted with ${doctor.displayName} before?`}
+          description={`Have you interacted with ${doctor.displayName} before?`}
           onNoPress={() => {
             setShowConnectAlertPopup(false);
             getUpdateExternalConnect(false);
