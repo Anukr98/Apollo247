@@ -167,6 +167,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     addressType === addressData.addressType &&
     optionalAddress === addressData.otherAddressType;
 
+  /** different on what case take it to map add name as well */
+  const areFieldsSame =  isChanged && phoneNumber === addressData?.mobileNumber;
+
   const formatCityStateDisplay = (city: string, state: string) => [city, state].join(', ');
 
   useEffect(() => {
@@ -475,13 +478,69 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     })
   }
 
+  const onUpdateDetails = () =>{
+    //will save the details in db, only we are coming from edit + all fields are filled
+    if(props.navigation.getParam('KeyName') == 'Update' && addressData){
+      setshowSpinner(true);
+      CommonLogEvent(AppRoutes.AddAddress, 'On Save Edit clicked');
+        if (!areFieldsSame) {
+          const finalStateCode =
+            AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
+              state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
+            ] || stateCode;
+          const updateaddressInputForEdit: UpdatePatientAddressInput = {
+            id: addressData.id,
+            addressLine1: addressLine1,
+            addressLine2: areaDetails,
+            city: city || '',
+            state: state|| '',
+            zipcode: pincode,
+            landmark: landMark,
+            mobileNumber: phoneNumber,
+            addressType: addressType,
+            otherAddressType: optionalAddress,
+            latitude: latitude,
+            longitude: longitude,
+            stateCode: finalStateCode,
+          };
+          console.log(updateaddressInputForEdit, 'updateaddressInputForEdit');
+          setshowSpinner(true);
+          client
+            .mutate<updatePatientAddress, updatePatientAddressVariables>({
+              mutation: UPDATE_PATIENT_ADDRESS,
+              variables: { UpdatePatientAddressInput: updateaddressInputForEdit },
+            })
+            .then((_data: any) => {
+              try {
+                setshowSpinner(false);
+                console.log('updateapicalled', _data);
+                props.navigation.pop(2, { immediate: true });
+                props.navigation.push(AppRoutes.AddressBook);
+              } catch (error) {
+                CommonBugFender('AddAddress_onSavePress_try', error);
+              }
+            })
+            .catch((e) => {
+              CommonBugFender('AddAddress_onSavePress', e);
+              setshowSpinner(false);
+              handleGraphQlError(e);
+            });
+          //props.navigation.goBack();
+        } else {
+          props.navigation.goBack();
+        }
+    }
+    
+  }
+
+
   /** this will save the details */
   const saveEditDetails = () =>{
     //if coming from the add section no details would be there
-    const noLatLong = latitude ==0 || longitude == 0 ? true : false;
+    const noLatLong = (latitude ==0 || longitude == 0) ? true : false;
     if(isEdit){
       //now if mandate fields are empty or not + lat-long 
-      isAddressValid ? onSavePress() : setEditProfile(false)
+      isAddressValid ? onUpdateDetails() : setEditProfile(false)
     }
     else{
       //save it locally
