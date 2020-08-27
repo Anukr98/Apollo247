@@ -37,6 +37,9 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../../../helpers/onePrimaryUser';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { GET_APPOINTMENT_DATA } from 'graphql/consult';
+import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
+import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -500,8 +503,6 @@ export const ChatRoom: React.FC = () => {
   const { isSignedIn } = useAuth();
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-  const [isSubmitPopoverOpen, setIsSubmitPopoverOpen] = React.useState<boolean>(false);
-  const [isFeedbackPopoverOpen, setIsFeedbackPopoverOpen] = React.useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
   const [jrDoctorJoined, setJrDoctorJoined] = useState<boolean>(false);
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
@@ -510,9 +511,7 @@ export const ChatRoom: React.FC = () => {
   const [isChangeSlot, setIsChangeSlot] = useState<boolean>(false);
   const [isNextSlotLoading, setIsNextSlotLoading] = useState<boolean>(false);
   const [apiLoading, setApiLoading] = useState<boolean>(false);
-  const [disaplayId, setDisplayId] = useState<number | null>(null);
   const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
-  const [appointmentStatus, setAppointmentStatus] = useState<STATUS | null>(null);
   const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -527,6 +526,18 @@ export const ChatRoom: React.FC = () => {
   >(GET_DOCTOR_DETAILS_BY_ID, {
     variables: { id: doctorId },
   });
+
+  const {
+    data: patientAppointmentData,
+    loading: appointmentLoading,
+    error: appointmentError,
+  } = useQueryWithSkip<GetAppointmentData, GetAppointmentDataVariables>(GET_APPOINTMENT_DATA, {
+    variables: {
+      appointmentId: appointmentId,
+    },
+    fetchPolicy: 'no-cache',
+  });
+
   const bookAppointment = useMutation(BOOK_APPOINTMENT_RESCHEDULE);
 
   const rescheduleAPI = (bookRescheduleInput: BookRescheduleAppointmentInput) => {
@@ -566,10 +577,7 @@ export const ChatRoom: React.FC = () => {
 
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
     setIsNextSlotLoading(true);
-    const todayDate = moment
-      .utc(date)
-      .local()
-      .format('YYYY-MM-DD');
+    const todayDate = moment.utc(date).local().format('YYYY-MM-DD');
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
         try {
@@ -596,7 +604,6 @@ export const ChatRoom: React.FC = () => {
       });
   };
 
-  const { allCurrentPatients } = useAllCurrentPatients();
   const onePrimaryUser = hasOnePrimaryUser();
 
   const handleRescheduleOpen = () => {
@@ -618,17 +625,26 @@ export const ChatRoom: React.FC = () => {
     rescheduleCount < 3 ? rescheduleAPI(bookRescheduleInput) : setIsChangeSlot(true);
   };
 
-  if (error) {
-    return <div>Error....</div>;
+  let displayId: number | null = null;
+  let appointmentDetails: AppointmentHistory | null = null;
+
+  if (
+    patientAppointmentData &&
+    patientAppointmentData.getAppointmentData &&
+    patientAppointmentData.getAppointmentData.appointmentsHistory &&
+    patientAppointmentData.getAppointmentData.appointmentsHistory.length > 0
+  ) {
+    appointmentDetails = patientAppointmentData.getAppointmentData.appointmentsHistory[0];
+    displayId = appointmentDetails.displayId;
   }
 
   return (
     <div className={classes.root}>
       <Header />
       <div className={classes.container}>
-        {!isSignedIn || loading ? (
+        {!isSignedIn || appointmentLoading || loading ? (
           <LinearProgress />
-        ) : (
+        ) : appointmentDetails && data ? (
           <div className={classes.doctorListingPage}>
             <div className={classes.breadcrumbs}>
               <a onClick={() => (window.location.href = clientRoutes.appointments())}>
@@ -641,22 +657,21 @@ export const ChatRoom: React.FC = () => {
             </div>
             <div className={classes.doctorListingSection}>
               <div className={classes.leftSection}>
-                {data && (
+                {data && appointmentDetails && (
                   <ConsultDoctorProfile
-                    setDisplayId={setDisplayId}
                     setRescheduleCount={setRescheduleCount}
                     handleRescheduleOpen={handleRescheduleOpen}
                     doctorDetails={data}
-                    appointmentId={appointmentId}
-                    jrDoctorJoined={jrDoctorJoined}
+                    appointmentDetails={appointmentDetails}
                   />
                 )}
               </div>
               <div className={classes.rightSection}>
                 <div className={classes.sectionHeader}>
-                  {disaplayId && <span className={classes.caseNumber}>Case #{disaplayId} </span>}
-                  {appointmentStatus !== STATUS.CANCELLED &&
-                    appointmentStatus !== STATUS.COMPLETED && (
+                  {displayId && <span className={classes.caseNumber}>Case #{displayId} </span>}
+                  {appointmentDetails &&
+                    appointmentDetails.status !== STATUS.CANCELLED &&
+                    appointmentDetails.status !== STATUS.COMPLETED && (
                       <div className={classes.headerActions}>
                         <AphButton
                           disabled={jrDoctorJoined}
@@ -674,11 +689,9 @@ export const ChatRoom: React.FC = () => {
                     )}
                 </div>
 
-                {data && (
+                {data && appointmentDetails && (
                   <ChatWindow
                     doctorDetails={data}
-                    appointmentId={appointmentId}
-                    doctorId={doctorId}
                     jrDoctorJoined={jrDoctorJoined}
                     setJrDoctorJoined={setJrDoctorJoined}
                     isModalOpen={isModalOpen}
@@ -686,12 +699,16 @@ export const ChatRoom: React.FC = () => {
                     nextSlotAvailable={nextSlotAvailable}
                     availableNextSlot={nextAvailableSlot}
                     rescheduleAPI={rescheduleAPI}
-                    setAppointmentStatus={setAppointmentStatus}
+                    appointmentDetails={appointmentDetails}
                   />
                 )}
               </div>
             </div>
           </div>
+        ) : (
+          (appointmentError || error) && (
+            <div className={classes.doctorListingPage}>Unable to load appointment information.</div>
+          )
         )}
       </div>
       {!onePrimaryUser && <ManageProfile />}
@@ -733,18 +750,18 @@ export const ChatRoom: React.FC = () => {
                     ) : (
                       <h6>
                         {'Since you have already rescheduled 3 times with Dr. '}
-                        {`${data &&
-                          data.getDoctorDetailsById &&
-                          data.getDoctorDetailsById.firstName}`}{' '}
+                        {`${
+                          data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName
+                        }`}{' '}
                         {`, We will consider this a new paid appointment.`}
                       </h6>
                     )}
                     <br />
                     <h6>
                       Next slot for Dr.{' '}
-                      {`${data &&
-                        data.getDoctorDetailsById &&
-                        data.getDoctorDetailsById.firstName}`}
+                      {`${
+                        data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName
+                      }`}
                       is available on -
                     </h6>
                     <br />

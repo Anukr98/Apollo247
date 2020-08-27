@@ -35,6 +35,8 @@ export const GET_APPOINTMENT_DATA = gql`
         appointmentState
         isJdQuestionsComplete
         isSeniorConsultStarted
+        isConsultStarted
+        symptoms
         doctorInfo {
           id
           salutation
