@@ -30,8 +30,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     justifyContent: 'space-between',
     alignItems: 'flex-end',
-    marginTop: 18,
-    marginBottom: 27,
+    marginTop: 32,
+    marginBottom: 25,
   },
   ctaWhiteButtonViewStyle: {
     flex: 1,
@@ -52,8 +52,8 @@ const styles = StyleSheet.create({
   },
   infoTextStyle: {
     marginHorizontal: 40,
-    marginVertical: 8,
-    ...theme.viewStyles.text('L', 14, '#01475b', 1, 18),
+    marginTop: 8,
+    ...theme.viewStyles.text('R', 14, '#01475b', 1, 18),
     textAlign: 'center',
   },
 });

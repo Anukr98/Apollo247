@@ -56,6 +56,8 @@ import { getPastAppoinmentCount, updateExternalConnect } from '../../helpers/cli
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
+let showAlertPopUp: boolean = false;
+
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
 export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props) => {
@@ -221,6 +223,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const handleBack = () => {
+    if (showAlertPopUp) {
+      return true;
+    }
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,
@@ -589,6 +594,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             if (noCount && noCount > 0) {
               setShowConnectAlertPopup(false);
             } else {
+              showAlertPopUp = true;
               setShowConnectAlertPopup(true);
             }
           }
@@ -601,6 +607,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   const getUpdateExternalConnect = (connected: boolean) => {
     setLoading(true);
+    showAlertPopUp = false;
 
     updateExternalConnect(client, doctorID, g(currentPatient, 'id'), connected, orderId)
       .then((data) => {
@@ -655,7 +662,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       )}
       {showConnectAlertPopup && (
         <CustomAlert
-          description={`Have you consulted with ${doctor.displayName} before?`}
+          description={`Have you interacted with ${doctor.displayName} before?`}
           onNoPress={() => {
             setShowConnectAlertPopup(false);
             getUpdateExternalConnect(false);
