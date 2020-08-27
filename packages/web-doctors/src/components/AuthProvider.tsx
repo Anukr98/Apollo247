@@ -86,6 +86,7 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
     | null;
   sessionClient: any;
   chatDays: number | null;
+  setChatDays: (days: number) => void;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -116,6 +117,7 @@ export const AuthContext = React.createContext<AuthContextProps>({
   addDoctorSecretary: null,
   sessionClient: sessionClient,
   chatDays: null,
+  setChatDays: null,
 });
 const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -564,6 +566,7 @@ export const AuthProvider: React.FC = (props) => {
             addDoctorSecretary,
             sessionClient,
             chatDays,
+            setChatDays,
           }}
         >
           {props.children}

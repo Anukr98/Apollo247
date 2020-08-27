@@ -114,8 +114,8 @@ export const MyAccountSettings: React.FC = () => {
   const classes = useStyles({});
   const [followUpExpand, setFollowUpExpand] = useState<boolean>(false);
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
-  const { chatDays, currentUser } = useAuthContext();
-  const [chatValue, setChatValue] = useState<number>(chatDays);
+  const { chatDays, setChatDays, currentUser } = useAuthContext();
+  // const [chatValue, setChatValue] = useState<number>(chatDays);
   const items = [
     {
       key: 'followUp',
@@ -128,7 +128,7 @@ export const MyAccountSettings: React.FC = () => {
             {'Default value set at '}
             <span
               style={{ fontSize: 18, fontWeight: 600, color: '#00B38E' }}
-            >{`${chatValue} days`}</span>
+            >{`${chatDays} days`}</span>
           </div>
         </div>
       ),
@@ -136,8 +136,8 @@ export const MyAccountSettings: React.FC = () => {
       component: (
         <FollowUp
           origin={'settings'}
-          onChange={setChatValue}
-          value={chatValue}
+          onChange={setChatDays}
+          value={chatDays}
           header={'Select the number of days'}
           disabled={false}
           info={
@@ -183,7 +183,7 @@ export const MyAccountSettings: React.FC = () => {
               .mutate<updateDoctorChatDays, updateDoctorChatDaysVariables>({
                 mutation: UPDATE_DOCTOR_CHAT_DAYS,
                 fetchPolicy: 'no-cache',
-                variables: { doctorId: currentUser.id, chatDays: chatValue },
+                variables: { doctorId: currentUser.id, chatDays: chatDays },
               })
               .then((_data) => {
                 alert(_data.data.updateDoctorChatDays.response);
