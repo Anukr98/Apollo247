@@ -12,6 +12,7 @@ export interface MedicineCartItem {
   url_key: string;
   description: string;
   id: number;
+  arrSku?: any[];
   arrId?: any[];
   image: string[] | null;
   is_in_stock: boolean;
@@ -70,9 +71,8 @@ export interface MedicineCartContextProps {
   cartItems: MedicineCartItem[];
   setCartItems: ((cartItems: MedicineCartItem[]) => void) | null;
   addCartItem: ((item: MedicineCartItem) => void) | null;
-  removeCartItem: ((itemId: MedicineCartItem['id']) => void) | null;
   removeCartItemSku: ((sku: MedicineCartItem['sku']) => void) | null;
-  removeCartItems: ((itemId: MedicineCartItem['arrId']) => void) | null;
+  removeCartItems: ((itemId: MedicineCartItem['arrSku']) => void) | null;
   updateCartItem:
     | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
     | null;
@@ -129,7 +129,6 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   cartItems: [],
   setCartItems: null,
   addCartItem: null,
-  removeCartItem: null,
   removeCartItemSku: null,
   removeCartItems: null,
   updateCartItem: null,
@@ -344,18 +343,13 @@ export const MedicinesCartProvider: React.FC = (props) => {
     }
   };
 
-  const removeCartItem: MedicineCartContextProps['removeCartItem'] = (id) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
-    setIsCartUpdated(true);
-  };
-
   const removeCartItemSku: MedicineCartContextProps['removeCartItemSku'] = (sku: string) => {
     setCartItems(cartItems.filter((item) => item.sku !== sku));
     setIsCartUpdated(true);
   };
 
-  const removeCartItems: MedicineCartContextProps['removeCartItems'] = (arrId) => {
-    const items = cartItems.filter((item) => !arrId.includes(item.id || Number(item.sku)));
+  const removeCartItems: MedicineCartContextProps['removeCartItems'] = (arrSku) => {
+    const items = cartItems.filter((item) => !arrSku.includes(item.id || Number(item.sku)));
     setCartItems(items);
     setIsCartUpdated(true);
   };
@@ -485,7 +479,6 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setCartItems,
         itemsStr,
         addCartItem,
-        removeCartItem,
         removeCartItemSku,
         removeCartItems,
         updateCartItem,
@@ -542,7 +535,6 @@ export const useShoppingCart = () => ({
   cartItems: useShoppingCartContext().cartItems,
   setCartItems: useShoppingCartContext().setCartItems,
   addCartItem: useShoppingCartContext().addCartItem,
-  removeCartItem: useShoppingCartContext().removeCartItem,
   removeCartItemSku: useShoppingCartContext().removeCartItemSku,
   removeCartItems: useShoppingCartContext().removeCartItems,
   updateCartItem: useShoppingCartContext().updateCartItem,

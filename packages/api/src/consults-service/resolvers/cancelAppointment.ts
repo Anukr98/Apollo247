@@ -4,7 +4,6 @@ import {
   STATUS,
   REQUEST_ROLES,
   APPOINTMENT_STATE,
-  ES_DOCTOR_SLOT_STATUS,
   AppointmentUpdateHistory,
   APPOINTMENT_UPDATED_BY,
   VALUE_TYPE,
@@ -17,7 +16,8 @@ import { EmailMessage } from 'types/notificationMessageTypes';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { cancellationEmailTemplate } from 'helpers/emailTemplates/cancellationEmailTemplate';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import { sendNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { addMilliseconds, format } from 'date-fns';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';

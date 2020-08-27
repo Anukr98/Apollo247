@@ -22,10 +22,8 @@ import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import {
-  NotificationType,
-  sendMedicineOrderStatusNotification,
-} from 'notifications-service/resolvers/notifications';
+import { sendMedicineOrderStatusNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { PharmaItemsResponse } from 'types/medicineOrderTypes';
@@ -33,6 +31,9 @@ import { OneApollo } from 'helpers/oneApollo';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
+import { syncInventory } from 'helpers/inventorySync';
+import { SYNC_TYPE } from 'types/inventorySync';
+
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
     orderId: Int!
@@ -130,7 +131,6 @@ const updateOrderStatus: Resolver<
   const orderDetails = await medicineOrdersRepo.getMedicineOrderWithPaymentAndShipments(
     updateOrderStatusInput.orderId
   );
-
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
@@ -385,6 +385,33 @@ const updateOrderStatus: Resolver<
         medicineOrdersRepo,
         updateOrderStatusInput.reasonCode
       );
+    }
+  }
+
+  // release inventory blocked
+  if (status == MEDICINE_ORDER_STATUS.CANCELLED) {
+    const medicineOrderStatus = shipmentDetails
+      ? shipmentDetails.medicineOrdersStatus
+      : orderDetails.medicineOrdersStatus;
+    const isOrderBilled = medicineOrderStatus.find((orderStatusObj) => {
+      return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED;
+    });
+    // if billed, inventory release woould have happened already at the time of billing
+    if (!isOrderBilled) {
+      orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
+        orderDetails.id
+      );
+      if (shipmentDetails) {
+        const itemDetails: ItemDetails[] = JSON.parse(shipmentDetails.itemDetails);
+        orderDetails.medicineOrderLineItems = orderDetails.medicineOrderLineItems.filter(
+          (lineItem) => {
+            return itemDetails.find((inputItem) => {
+              return inputItem.itemId == lineItem.medicineSKU;
+            });
+          }
+        );
+      }
+      syncInventory(orderDetails, SYNC_TYPE.CANCEL);
     }
   }
 

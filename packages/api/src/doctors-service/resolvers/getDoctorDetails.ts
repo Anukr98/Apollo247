@@ -112,6 +112,7 @@ export const getDoctorDetailsTypeDefs = gql`
     gender: Gender
     isActive: Boolean!
     id: ID!
+    chatDays: Int
     languages: String
     lastName: String!
     mobileNumber: String!

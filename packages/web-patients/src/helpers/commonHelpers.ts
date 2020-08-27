@@ -7,6 +7,8 @@ import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
+import fetchUtil from 'helpers/fetch';
+import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentDetails } from 'graphql/types/GetPatientAllAppointments';
 
 declare global {
   interface Window {
@@ -204,6 +206,10 @@ const INVALID_FILE_TYPE_ERROR =
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
 const OUT_OF_STOCK_MESSAGE = 'Sorry, this item is out of stock in your area';
 const TAT_API_TIMEOUT_IN_MILLI_SEC = 10000; // in milli sec
+const NO_ONLINE_SERVICE = 'NOT AVAILABLE FOR ONLINE SALE';
+const OUT_OF_STOCK = 'Out Of Stock';
+const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
+const PINCODE_MAXLENGTH = 6;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -256,6 +262,14 @@ interface SearchObject {
   prakticeSpecialties: string | null;
 }
 
+interface AppointmentFilterObject {
+  consultType: string[] | null;
+  appointmentStatus: string[] | null;
+  availability: string[] | null;
+  gender: string[] | null;
+  doctorsList: string[] | null;
+}
+
 const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
 const experienceList = [
   { key: '0-5', value: '0 - 5' },
@@ -269,6 +283,8 @@ const genderList = [
 ];
 const languageList = ['English', 'Telugu'];
 const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
+const consultType = ['Online', 'Clinic Visit'];
+const appointmentStatus = ['New', 'Completed', 'Cancelled', 'Rescheduled', 'Follow-Up'];
 
 // End of doctors list based on specialty related changes
 
@@ -409,9 +425,44 @@ const getImageUrl = (imageUrl: string) => {
   );
 };
 
+const getCouponByUserMobileNumber = () => {
+  return fetchUtil(
+    `${process.env.GET_PHARMA_AVAILABLE_COUPONS}?mobile=${localStorage.getItem('userMobileNo')}`,
+    'GET',
+    {},
+    '',
+    false
+  );
+};
+
+const isPastAppointment = (appointmentDateTime: string) =>
+  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
+
+const getAvailableFreeChatDays = (appointmentTime: string) => {
+  const followUpDayMoment = moment(appointmentTime).add(7, 'days');
+  const diffInDays = followUpDayMoment.diff(moment(), 'days');
+  if (diffInDays <= 0) {
+    const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
+    const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
+    return diffInHours > 0
+      ? `${diffInHours} hours free chat remaining`
+      : diffInMinutes > 0
+      ? `${diffInMinutes} minutes free chat remaining`
+      : '';
+  } else {
+    return `${diffInDays} days free chat remaining`;
+  }
+};
+
 export {
+  getCouponByUserMobileNumber,
   getPackOfMedicine,
   getImageUrl,
+  getAvailableFreeChatDays,
+  isPastAppointment,
+  AppointmentFilterObject,
+  consultType,
+  appointmentStatus,
   getStoreName,
   getAvailability,
   isRejectedStatus,
@@ -449,4 +500,8 @@ export {
   getTypeOfProduct,
   kavachHelpline,
   isActualUser,
+  NO_ONLINE_SERVICE,
+  OUT_OF_STOCK,
+  NOTIFY_WHEN_IN_STOCK,
+  PINCODE_MAXLENGTH,
 };

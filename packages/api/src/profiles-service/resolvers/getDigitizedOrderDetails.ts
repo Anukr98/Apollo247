@@ -9,8 +9,8 @@ import {
 import { Resolver } from 'api-gateway';
 import {
   sendCartNotification,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 
 export const getDigitizedOrderTypeDefs = gql`
   input MedicineOrderInput {

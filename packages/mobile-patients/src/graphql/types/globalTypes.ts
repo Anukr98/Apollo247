@@ -137,6 +137,7 @@ export enum DoctorType {
   STAR_APOLLO = "STAR_APOLLO",
   SUGAR = "SUGAR",
   WHITE_DENTAL = "WHITE_DENTAL",
+  SENIOR = "SENIOR"
 }
 
 export enum FEEDBACKTYPE {
@@ -616,7 +617,7 @@ export interface DiagnosticOrderInput {
   state: string;
   stateId: string;
   slotTimings: string;
-  employeeSlotId: number;
+  employeeSlotId?: any | null;
   diagnosticEmployeeCode: string;
   diagnosticBranchCode: string;
   totalPrice: number;

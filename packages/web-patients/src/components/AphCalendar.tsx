@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     transitionContainer: {
-      minHeight: 180,
+      minHeight: 220,
     },
   };
 });

@@ -95,6 +95,8 @@ target 'ApolloPatient' do
   pod 'RNDateTimePicker', :path => '../node_modules/@react-native-community/datetimepicker'
   pod 'RNCallKeep', :path => '../node_modules/react-native-callkeep'
   pod 'RNVoipPushNotification', :path => '../node_modules/react-native-voip-push-notification'
+  pod 'react-native-document-picker', :path => '../node_modules/react-native-document-picker'
+  pod 'react-native-image-resizer', :path => '../node_modules/react-native-image-resizer'
   
   # ServiceExtension Target
 
