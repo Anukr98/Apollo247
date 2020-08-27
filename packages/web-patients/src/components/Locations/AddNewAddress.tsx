@@ -518,8 +518,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       if (props.checkServiceAvailability) {
                         props
                           .checkServiceAvailability(pincode)
-                          .then((data: any) => {
-                            if (data && data.response) {
+                          .then((res: any) => {
+                            if (res && res.data && res.data.response) {
                               /**Gtm code start  */
                               gtmTracking({
                                 category: 'Profile',

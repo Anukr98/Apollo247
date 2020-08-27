@@ -7,6 +7,7 @@ import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import axios from 'axios';
+import { checkSkuAvailability } from 'helpers/MedicineApiCalls';
 
 export interface MedicineCartItem {
   url_key: string;
@@ -329,18 +330,15 @@ export const MedicinesCartProvider: React.FC = (props) => {
 
   const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
     if (pharmaAddressDetails && pharmaAddressDetails.pincode) {
-      axios
-        .get(
-          `${process.env.TAT_BASE_URL}/availability?sku=${itemToAdd.sku}&pincode=${pharmaAddressDetails.pincode}`,
-          {
-            headers: {
-              Authorization: 'GWjKtviqHa4r4kiQmcVH',
-              'Content-Type': 'application/json',
-            },
-          }
-        )
-        .then((data: any) => {
-          if (data && data.response && data.response.length > 0 && data.response[0].exist) {
+      checkSkuAvailability(itemToAdd.sku, pharmaAddressDetails.pincode)
+        .then((res: any) => {
+          if (
+            res &&
+            res.data &&
+            res.data.response &&
+            res.data.response.length > 0 &&
+            res.data.response[0].exist
+          ) {
             setCartItems([...cartItems, itemToAdd]);
             setIsCartUpdated(true);
           } else {

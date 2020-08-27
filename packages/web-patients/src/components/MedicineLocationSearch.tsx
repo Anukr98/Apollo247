@@ -352,18 +352,18 @@ export const MedicineLocationSearch: React.FC = (props) => {
 
   const isServiceable = (pincode: string) => {
     checkServiceAvailability(pincode)
-      .then((data: any) => {
+      .then((res: any) => {
         modeChoose === 'auto'
           ? pincodeAutoSelectTracking({
               pincode,
-              serviceability: data.response,
+              serviceability: res.data.response,
             })
           : pincodeManualSelectTracking({
               pincode,
-              serviceability: data.response,
+              serviceability: res.data.response,
               source: 'Pharmacy Home',
             });
-        if (data && data.response) {
+        if (res && res.data && res.data.response) {
           checkSelectedPincodeServiceability(pincode, '0');
           getPlaceDetails(pincode);
         } else {

@@ -12,7 +12,12 @@ import {
   buyNowTracking,
 } from 'webEngageTracking';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
-import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
+import {
+  MedicineProductDetails,
+  MedicineProduct,
+  checkSkuAvailability,
+  checkTatAvailability,
+} from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
 import axios, { AxiosResponse, AxiosError, Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
@@ -32,7 +37,6 @@ import {
   NOTIFY_WHEN_IN_STOCK,
   PINCODE_MAXLENGTH,
 } from 'helpers/commonHelpers';
-import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
 import { CartTypes } from 'components/MedicinesCartProvider';
@@ -506,33 +510,29 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
 
   const fetchDeliveryTime = async (pinCode: string) => {
     setTatLoading(true);
-    await axios
-      .get(
-        `${process.env.TAT_BASE_URL}/tat?sku=${data.sku}&pincode=${pinCode}&lat=${pharmaAddressDetails.lat}&lng=${pharmaAddressDetails.lng}`,
-        {
-          headers: {
-            Authorization: 'GWjKtviqHa4r4kiQmcVH',
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-      .then((data: any) => {
+    await checkTatAvailability(
+      data.sku,
+      pinCode,
+      pharmaAddressDetails.lat,
+      pharmaAddressDetails.lng
+    )
+      .then((res: any) => {
         try {
-          if (data) {
-            if (data.errorMsg) {
+          if (res && res.data) {
+            if (res && res.data.errorMsg) {
               setDeliveryTime('');
               setErrorMessage(NO_SERVICEABLE_MESSAGE);
             }
             setTatLoading(false);
             if (
-              data.response &&
-              data.response.tat &&
-              data.response.tat.length &&
-              data.response.tatU &&
-              data.response.tatU != -1
+              res.data.response &&
+              res.data.response.tat &&
+              res.data.response.tat.length &&
+              res.data.response.tatU &&
+              res.data.response.tatU != -1
             ) {
-              if (getDiffInDays(data.response.tatU) < 10) {
-                setDeliveryTime(data.response.tat);
+              if (getDiffInDays(res.data.response.tatU) < 10) {
+                setDeliveryTime(res.data.response.tat);
                 setErrorMessage('');
                 if (pharmaAddressDetails.pincode !== pinCode) {
                   getPlaceDetails(pinCode);
@@ -541,7 +541,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                 setDeliveryTime('');
                 setErrorMessage(OUT_OF_STOCK_MESSAGE);
               }
-            } else if (typeof data.errorMSG === 'string') {
+            } else if (typeof res.data.errorMSG === 'string') {
               setDefaultDeliveryTime(pinCode);
             }
           }
@@ -570,15 +570,22 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   }, [pharmaAddressDetails]);
 
   const checkDeliveryTime = (pinCode: string, sku: string) => {
-    axios
-      .get(`${process.env.TAT_BASE_URL}?sku=${sku}&pincode=${pinCode}`, {
-        headers: {
-          Authorization: 'GWjKtviqHa4r4kiQmcVH',
-          'Content-Type': 'application/json',
-        },
-      })
-      .then((data: any) => {
-        if (data && data.response && data.response.length > 0 && data.response[0].exist) {
+    // axios
+    //   .get(`${process.env.TAT_BASE_URL}?sku=${sku}&pincode=${pinCode}`, {
+    //     headers: {
+    //       Authorization: 'GWjKtviqHa4r4kiQmcVH',
+    //       'Content-Type': 'application/json',
+    //     },
+    //   })
+    checkSkuAvailability(sku, pinCode)
+      .then((res: any) => {
+        if (
+          res &&
+          res.data &&
+          res.data.response &&
+          res.data.response.length > 0 &&
+          res.data.response[0].exist
+        ) {
           fetchDeliveryTime(pinCode);
         } else {
           setDeliveryTime('');

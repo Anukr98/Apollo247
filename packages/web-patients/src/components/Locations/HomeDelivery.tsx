@@ -32,7 +32,11 @@ import {
   getDiffInDays,
   TAT_API_TIMEOUT_IN_MILLI_SEC,
 } from 'helpers/commonHelpers';
-import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
+import {
+  checkServiceAvailability,
+  checkSkuAvailability,
+  checkTatAvailability,
+} from 'helpers/MedicineApiCalls';
 import fetchUtil from 'helpers/fetch';
 
 export const formatAddress = (address: Address) => {
@@ -410,23 +414,17 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     lat: string;
     lng: string;
   }) => {
-    await axios
-      .get(
-        `${process.env.TAT_BASE_URL}/tat?sku=${paramObject.lookup.join(',')}&pincode=${
-          paramObject.postalcode
-        }&lat=${paramObject.lat}&lng=${paramObject.lng}`,
-        {
-          headers: {
-            Authorization: 'GWjKtviqHa4r4kiQmcVH',
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-      .then((data: any) => {
-        if (data && data.response && data.response.tat) {
-          setDeliveryTime(data.response.tat);
+    await checkTatAvailability(
+      paramObject.lookup.join(','),
+      paramObject.postalcode,
+      paramObject.lat,
+      paramObject.lng
+    )
+      .then((res: any) => {
+        if (res && res.data && res.data.response && res.data.response.tat) {
+          setDeliveryTime(res.data.response.tat);
           props.checkForPriceUpdate(
-            data.response.storeCode,
+            res.data.response.storeCode,
             paramObject.postalcode,
             paramObject.lat,
             paramObject.lng
@@ -445,20 +443,14 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       return item.sku;
     });
     setDeliveryLoading(true);
-    await axios
-      .get(`${process.env.TAT_BASE_URL}/availability?sku=${lookUp.join(',')}&pincode=${zipCode}`, {
-        headers: {
-          Authorization: 'GWjKtviqHa4r4kiQmcVH',
-          'Content-Type': 'application/json',
-        },
-      })
-      .then((data: any) => {
+    await checkSkuAvailability(lookUp.join(','), pharmaAddressDetails.pincode)
+      .then((res: any) => {
         try {
-          if (data && data.response) {
+          if (res && res.data && res.data.response) {
             setDeliveryLoading(false);
             setSelectingAddress(true);
-            if (data.response.length > 0) {
-              const tatResult = data.response;
+            if (res.data.response.length > 0) {
+              const tatResult = res.data.response;
               const nonDeliverySKUArr = tatResult
                 .filter((item: any) => !item.exist)
                 .map((filteredSku: any) => filteredSku.sku);
@@ -495,7 +487,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               }
 
               setErrorDeliveryTimeMsg('');
-            } else if (typeof data.errorMSG === 'string') {
+            } else if (typeof res.data.errorMSG === 'string') {
               setDefaultDeliveryTime();
             }
           }
@@ -627,8 +619,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                         label={formatAddress(address)}
                         onChange={() => {
                           checkServiceAvailabilityCheck(address.zipcode)
-                            .then((data: any) => {
-                              if (data && data.response) {
+                            .then((res: any) => {
+                              if (res && res.data && res.data.response) {
                                 /**Gtm code start  */
                                 gtmTracking({
                                   category: 'Pharmacy',

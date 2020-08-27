@@ -308,8 +308,8 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
               setMutationLoading(true);
               props
                 .checkServiceAvailability(localZipCode)
-                .then((data: any) => {
-                  if (data && data.response) {
+                .then((res: any) => {
+                  if (res && res.data && res.data.response) {
                     /**Gtm code start  */
                     gtmTracking({
                       category: 'Pharmacy',

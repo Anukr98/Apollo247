@@ -80,6 +80,7 @@ import { getItemSpecialPrice } from '../PayMedicine';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
 import fetchUtil from 'helpers/fetch';
+import { checkTatAvailability } from 'helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -751,20 +752,9 @@ export const MedicineCart: React.FC = (props) => {
     const lookUp = cartItems.map((item: MedicineCartItem) => {
       return item.sku;
     });
-    return await axios
-      .get(
-        `${process.env.TAT_BASE_URL}/tat?sku=${lookUp.join(
-          ','
-        )}&pincode=${pincode}&lat=${lat}&lng=${lng}`,
-        {
-          headers: {
-            Authorization: 'GWjKtviqHa4r4kiQmcVH',
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-      .then((data: any) => {
-        const updatedCartItems = data && data.response && data.response.items;
+    return await checkTatAvailability(lookUp.join(','), pincode, lat, lng)
+      .then((res: any) => {
+        const updatedCartItems = res && res.data && res.data.response && res.data.response.items;
         cartItems.map((item, index) => {
           const itemToBeMatched = _find(updatedCartItems, { sku: item.sku });
           const storeItemPrice =
