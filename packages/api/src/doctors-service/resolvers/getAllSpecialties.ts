@@ -52,6 +52,9 @@ const getAllSpecialties: Resolver<null, {pageSize: number,pageNo: number}, Docto
 
   const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
   const [allSpecialties]  = await specialtiesRepo.findAllWithPagination(pageSize, offset);
+  allSpecialties.forEach(element => {
+    element['commonSearchWords'] = element.commonSearchTerm;
+  });
   return allSpecialties;
 };
 
