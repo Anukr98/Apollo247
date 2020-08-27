@@ -1,12 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { AphTextField, AphCustomDropdown } from '@aph/web-ui-components';
+import { AphCustomDropdown } from '@aph/web-ui-components';
 import { MenuItem, Theme } from '@material-ui/core';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
-import { useAuth } from 'hooks/authHooks';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
-import { useParams } from 'hooks/routerHooks';
-import { CaseSheetContext } from 'context/CaseSheetContext';
 const useStyles = makeStyles((theme: Theme) => ({
   header: {
     fontStyle: 'normal',
@@ -86,14 +83,9 @@ export const FollowUp = (props: any) => {
   const { chatDays } = useAuthContext(); //from getDoctorDetails
   let defaultValue = props.origin === 'settings' ? 0 : chatDays;
   const NO_OF_DAYS = new Array(31 - defaultValue).fill(0);
-  const messages = {
-    settings: '',
-    caseSheet: '',
-  };
 
   return (
     <div>
-      {console.log(props)}
       <span className={classes.header}> {props.header}</span>
       <br />
       <div style={{ top: 10, left: 3, position: 'relative' }}>
@@ -101,7 +93,7 @@ export const FollowUp = (props: any) => {
           value={props.value}
           onChange={(e: any) => {
             let val = parseInt(e.target.value, 10);
-            props.onChange(val);
+            props.origin === 'settings' ? props.onChange(val) : props.onChange([val]);
           }}
           classes={{
             root: classes.select,

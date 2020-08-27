@@ -236,7 +236,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
 
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { chatDays } = useAuthContext();
-  const { followUpChatDays, setFollowUpChatDays } = useContext(CaseSheetContext);
+
   const items = [
     {
       key: 'symptoms',
@@ -300,8 +300,8 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         <FollowUp
           origin={'casesheet'}
           header={'Set your patient follow up chat days limit.'}
-          value={followUpChatDays}
-          onChange={setFollowUpChatDays}
+          value={followUpAfterInDays[0]}
+          onChange={setFollowUpAfterInDays}
           disabled={!caseSheetEdit}
           info={`The follow up chat days count will be changed for this individual patient. Your default follow up chat day count is set at ${chatDays}.`}
         />
@@ -380,7 +380,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         setMedicinePrescription(storageItem.medicinePrescription);
         setRemovedMedicinePrescription(storageItem.removedMedicinePrescription);
         setFollowUp(storageItem.followUp);
-        setFollowUpAfterInDays(storageItem.followUpAfterInDays);
+        // setFollowUpAfterInDays(storageItem.followUpAfterInDays);
         setFollowUpDate(storageItem.followUpDate);
         setDiagnosticPrescription(storageItem.diagnosticPrescription);
         setOtherInstructions(storageItem.otherInstructions);

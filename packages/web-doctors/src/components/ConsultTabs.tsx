@@ -422,7 +422,6 @@ export const ConsultTabs: React.FC = () => {
   const [isNewprescriptionEditable, setIsNewprescriptionEditable] = useState<boolean>(false);
   const [isNewPrescription, setIsNewPrescription] = useState<boolean>(false);
   const [showConfirmPrescription, setShowConfirmPrescription] = React.useState<boolean>(false);
-  const [followUpChatDays, setFollowUpChatDays] = useState<number>(null);
 
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
@@ -656,7 +655,6 @@ export const ConsultTabs: React.FC = () => {
         })
         .then((_data) => {
           setCasesheetInfo(_data.data);
-          setFollowUpChatDays(_data!.data!.getCaseSheet!.caseSheetDetails.followUpChatDays);
           setError('');
           if (_data!.data!.getCaseSheet!.caseSheetDetails.doctorId !== doctorId && !isSecretary) {
             setIsUnauthorized(true);
@@ -721,6 +719,14 @@ export const ConsultTabs: React.FC = () => {
                   _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
                 ] as unknown) as boolean[])
               : setFollowUp([]);
+            console.log(
+              'follow up old var',
+              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
+            );
+            console.log(
+              'follow up old var type',
+              typeof _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
+            );
             _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
               ? setFollowUpAfterInDays(([
                   _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
@@ -1543,10 +1549,7 @@ export const ConsultTabs: React.FC = () => {
         diagnosticPrescription: diagnosticPrescriptionFinal,
         followUp: followUp[0],
         followUpDate: '2020-08-31',
-        followUpAfterInDays:
-          followUp[0] && followUpAfterInDays[0] !== 'Custom'
-            ? parseInt(followUpAfterInDays[0], 10)
-            : 0,
+        followUpAfterInDays: parseInt(followUpAfterInDays[0], 10),
         followUpConsultType:
           followUpConsultType[0] === APPOINTMENT_TYPE.PHYSICAL
             ? APPOINTMENT_TYPE.PHYSICAL
@@ -1570,7 +1573,6 @@ export const ConsultTabs: React.FC = () => {
         occupationHistory: occupationHistory || '',
         referralSpecialtyName: referralSpecialtyName || '',
         referralDescription: referralDescription || '',
-        followUpChatDays: followUpChatDays,
       };
       client
         .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
@@ -1839,8 +1841,6 @@ export const ConsultTabs: React.FC = () => {
       {loaded && error === '' && !isUnauthorized && (
         <CaseSheetContext.Provider
           value={{
-            followUpChatDays,
-            setFollowUpChatDays,
             loading: !loaded,
             caseSheetId: appointmentId,
             documentArray,

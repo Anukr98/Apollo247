@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -407,7 +408,6 @@ export interface ModifyCaseSheetInput {
   occupationHistory?: string | null;
   referralSpecialtyName?: string | null;
   referralDescription?: string | null;
-  followUpChatDays?: number | null;
 }
 
 export interface OtherInstructionsInput {

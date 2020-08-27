@@ -792,7 +792,6 @@ export const GET_CASESHEET = gql`
       }
       caseSheetDetails {
         id
-        followUpChatDays
         blobName
         doctorId
         sentToPatient
@@ -1126,7 +1125,6 @@ export const DELETE_DOCTOR_FAVOURITE_TEST = gql`
 export const MODIFY_CASESHEET = gql`
   mutation ModifyCaseSheet($ModifyCaseSheetInput: ModifyCaseSheetInput) {
     modifyCaseSheet(ModifyCaseSheetInput: $ModifyCaseSheetInput) {
-      followUpChatDays
       appointment {
         id
         sdConsultationDate

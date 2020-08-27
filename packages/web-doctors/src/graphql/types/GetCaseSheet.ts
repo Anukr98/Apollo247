@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import {
@@ -237,7 +238,6 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   version: number | null;
   prescriptionGeneratedDate: any | null;
   updatedDate: any | null;
-  followUpChatDays: number | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis {
