@@ -2534,13 +2534,6 @@ const sendDailyAppointmentSummary: Resolver<
         sendBrowserNotitication(doctor.id, messageBody);
 
         sendNotificationSMS(doctor.mobileNumber, messageBody);
-
-        sendDoctorNotificationWhatsappHotFix(
-          doctor.mobileNumber,
-          whatsAppMessageBody,
-          1,
-          doctor.doctorType
-        );
       }
       if (index + 1 === array.length) {
         resolve(doctorsCount);
@@ -2552,65 +2545,6 @@ const sendDailyAppointmentSummary: Resolver<
     '{0}',
     countOfNotifications.toString()
   );
-};
-
-const sendDoctorNotificationWhatsappHotFix = async (
-  mobileNumber: string,
-  message: string,
-  loginType: number,
-  doctorType: string
-) => {
-  if (doctorType != DoctorType.DOCTOR_CONNECT) {
-    const apiUrl =
-      process.env.WHATSAPP_URL +
-      '?method=OPT_IN&phone_number=' +
-      mobileNumber +
-      '&userid=' +
-      process.env.WHATSAPP_DOCTOR_USERNAME +
-      '&password=' +
-      process.env.WHATSAPP_DOCTOR_PASSWORD +
-      '&auth_scheme=plain&format=text&v=1.1&channel=WHATSAPP';
-    const whatsAppResponse = await fetch(apiUrl)
-      .then(async (res) => {
-        const sendApiUrl = `${process.env.WHATSAPP_URL}?method=SendMessage&send_to=${mobileNumber}&userid=${process.env.WHATSAPP_DOCTOR_USERNAME}&password=${process.env.WHATSAPP_DOCTOR_PASSWORD}&auth_scheme=plain&msg_type=TEXT&format=text&v=1.1&msg=${message}`;
-        fetch(sendApiUrl)
-          .then((res) => {
-            const fileName =
-              process.env.NODE_ENV +
-              '_docwhatsappnotification_' +
-              format(new Date(), 'yyyyMMdd') +
-              '.txt';
-            let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-            if (process.env.NODE_ENV != 'local') {
-              assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-            }
-            let content =
-              format(new Date(), 'yyyy-MM-dd hh:mm') +
-              '\n mobile number: ' +
-              mobileNumber +
-              '\n message: ' +
-              message +
-              '\n multicastId: ';
-            content +=
-              res +
-              '\n------------------------------------------------------------------------------------\n';
-            fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
-              if (err) {
-                console.log('file saving error', err);
-              }
-              console.log('notification results saved');
-            });
-          })
-          .catch((error) => {
-            console.log('whatsapp error', error);
-            throw new AphError(AphErrorMessages.MESSAGE_SEND_WHATSAPP_ERROR);
-          });
-      })
-      .catch((error) => {
-        throw new AphError(AphErrorMessages.GET_OTP_ERROR);
-      });
-    return whatsAppResponse;
-  }
 };
 
 const sendFollowUpNotification: Resolver<null, {}, NotificationsServiceContext, string> = async (
