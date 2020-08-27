@@ -39,6 +39,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  NativeModules,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import { Snackbar } from 'react-native-paper';
@@ -55,6 +56,7 @@ import { getPastAppoinmentCount, updateExternalConnect } from '../../helpers/cli
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
+const { RNAppSignatureHelper } = NativeModules;
 
 let showAlertPopUp: boolean = false;
 
@@ -80,7 +82,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const coupon = props.navigation.getParam('coupon');
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const [notificationAlert, setNotificationAlert] = useState(false);
   const [copiedText, setCopiedText] = useState('');
@@ -96,6 +98,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       title: 'Uh oh.. :(',
       description: `${desc || ''}`.trim(),
     });
+
+  useEffect(() => {
+    overlyPermissionAndroid();
+  }, []);
 
   useEffect(() => {
     // getTxnStatus(orderId)
@@ -502,6 +508,30 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       return 'TRY AGAIN';
     } else {
       return 'GO TO HOME';
+    }
+  };
+
+  const overlyPermissionAndroid = () => {
+    if (Platform.OS === 'android') {
+      RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
+        if (status) {
+          showAphAlert!({
+            title: `Hi ${currentPatient.firstName} :)`,
+            description: 'Please grant overlay permission to receive calls from doctor',
+            ctaContainerStyle: { justifyContent: 'flex-end' },
+            CTAs: [
+              {
+                text: 'OK, GOT IT',
+                type: 'orange-link',
+                onPress: () => {
+                  hideAphAlert!();
+                  RNAppSignatureHelper.requestOverlayPermission();
+                },
+              },
+            ],
+          });
+        }
+      });
     }
   };
 
