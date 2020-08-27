@@ -1203,6 +1203,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setUpdatedDate,
   } = useContext(CaseSheetContext);
 
+  const exotelCall = '^^#exotelCall';
   const covertVideoMsg = "^^convert`video^^";
   const covertAudioMsg = "^^convert`audio^^";
   const videoCallMsg = "^^callme`video^^";
@@ -1960,7 +1961,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         lastMsg.message.message !== cancelConsultInitiated &&
         lastMsg.message.message !== callAbandonment &&
         lastMsg.message.message !== appointmentComplete &&
-        lastMsg.message.message !== doctorAutoResponse
+        lastMsg.message.message !== doctorAutoResponse &&
+        lastMsg.message.message !== exotelCall
       ) {
         setIsNewMsg(true);
       } else {
@@ -3116,6 +3118,22 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         fetchPolicy: "no-cache",
                       });
+                      const text = {	
+                        id: props.doctorId,	
+                        message: exotelCall,	
+                        exotelNumber: process.env.EXOTEL_CALLER_ID,	
+                        isTyping: true,	
+                        messageDate: new Date(),	
+                        sentBy: REQUEST_ROLES.DOCTOR,	
+                      };	
+                      pubnub.publish(	
+                        {	
+                          message: text,	
+                          channel: channel,	
+                          storeInHistory: true,	
+                        },	
+                        (status: any, response: any) => {},	
+                      );
                       setShowToastMessage(true);
                     }}
                   >
