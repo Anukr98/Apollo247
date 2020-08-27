@@ -121,7 +121,7 @@ export const NavigationBottom: React.FC = (props) => {
                 to={clientRoutes.medicines()}
                 icon={
                   <img
-                    src={require('images/bottom-nav/ic_medicines.svg')}
+                    src={require('images/ic_medicines.svg')}
                     alt="Medicines"
                     title="Medicines"
                   />
@@ -208,7 +208,7 @@ export const NavigationBottom: React.FC = (props) => {
                 to={clientRoutes.specialityListing()}
                 icon={
                   <img
-                    src={require('images/bottom-nav/ic_doctors.svg')}
+                    src={require('images/ic_doctors.svg')}
                     alt="Doctors"
                     title="Doctors"
                   />
@@ -228,7 +228,7 @@ export const NavigationBottom: React.FC = (props) => {
                 to={clientRoutes.medicines()}
                 icon={
                   <img
-                    src={require('images/bottom-nav/ic_medicines.svg')}
+                    src={require('images/ic_medicines.svg')}
                     alt="Medicines"
                     title="Medicines"
                   />
@@ -260,7 +260,7 @@ export const NavigationBottom: React.FC = (props) => {
                 to={clientRoutes.covidLanding()}
                 icon={
                   <img
-                    src={require('images/bottom-nav/ic_covid.svg')}
+                    src={require('images/ic_covid.svg')}
                     alt="Covid19"
                     title="Covid19"
                   />
