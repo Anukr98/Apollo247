@@ -382,7 +382,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                       </View>
                     </View>
                     <View>
-                    { hospitalName &&
+                    { hospitalName ?
                       <Text style={[
                         styles.descriptionTextStyles,
                         {
@@ -391,7 +391,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                         }
                       ]}>
                         {hospitalName}
-                      </Text>
+                      </Text> : null
                     }
                     </View>
                   </View>
