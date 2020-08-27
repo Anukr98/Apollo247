@@ -1,6 +1,7 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Failure, Pending, Success, Copy } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Copy, Failure, Pending, Success } from '@aph/mobile-patients/src/components/ui/Icons';
+import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -13,11 +14,12 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
+  g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import string, { Payment } from '@aph/mobile-patients/src/strings/strings.json';
+import { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
@@ -26,35 +28,37 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   BackHandler,
+  Clipboard,
   Dimensions,
+  Linking,
   PermissionsAndroid,
   Platform,
-  Linking,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Clipboard,
   NativeModules,
 } from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import firebase from 'react-native-firebase';
+import { Snackbar } from 'react-native-paper';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import {
   getAppointmentData,
   getAppointmentDataVariables,
 } from '../../graphql/types/getAppointmentData';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
-import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
-import firebase from 'react-native-firebase';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
-import { Snackbar } from 'react-native-paper';
+import { FirebaseEventName, FirebaseEvents } from '../../helpers/firebaseEvents';
+import { CustomAlert } from '../ui/CustomAlert';
+import { getPastAppoinmentCount, updateExternalConnect } from '../../helpers/clientCalls';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 const { RNAppSignatureHelper } = NativeModules;
+
+let showAlertPopUp: boolean = false;
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -83,6 +87,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const [notificationAlert, setNotificationAlert] = useState(false);
   const [copiedText, setCopiedText] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
+
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
     setSnackbarState(true);
@@ -142,6 +148,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         props.navigation.navigate(AppRoutes.DoctorSearch);
         renderErrorPopup(`Something went wrong, plaease try again after sometime`);
       });
+    getAppointmentCount();
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -222,6 +229,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const handleBack = () => {
+    if (showAlertPopUp) {
+      return true;
+    }
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,
@@ -602,6 +612,44 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       });
   };
 
+  const getAppointmentCount = async () => {
+    try {
+      getPastAppoinmentCount(client, doctorID, g(currentPatient, 'id'), orderId).then(
+        (data: any) => {
+          const yesCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'yesCount');
+          const noCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'noCount');
+          if (yesCount && yesCount > 0) {
+            setShowConnectAlertPopup(false);
+          } else {
+            if (noCount && noCount > 0) {
+              setShowConnectAlertPopup(false);
+            } else {
+              showAlertPopUp = true;
+              setShowConnectAlertPopup(true);
+            }
+          }
+        }
+      );
+    } catch (error) {
+      console.log('getAppointmentCount_error', error);
+    }
+  };
+
+  const getUpdateExternalConnect = (connected: boolean) => {
+    setLoading(true);
+    showAlertPopUp = false;
+
+    updateExternalConnect(client, doctorID, g(currentPatient, 'id'), connected, orderId)
+      .then((data) => {
+        setLoading(false);
+        console.log('getUpdateExternalConnect', data);
+      })
+      .catch((error) => {
+        setLoading(false);
+        console.log('InsertMessageToDoctor_error', error);
+      });
+  };
+
   const renderButton = () => {
     return (
       <TouchableOpacity
@@ -642,6 +690,19 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           }}
         />
       )}
+      {showConnectAlertPopup && (
+        <CustomAlert
+          description={`Have you interacted with ${doctor.displayName} before?`}
+          onNoPress={() => {
+            setShowConnectAlertPopup(false);
+            getUpdateExternalConnect(false);
+          }}
+          onYesPress={() => {
+            setShowConnectAlertPopup(false);
+            getUpdateExternalConnect(true);
+          }}
+        />
+      )}
     </View>
   );
 };
@@ -650,14 +711,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f0f1ec',
-  },
-  Payment: {
-    fontSize: 14,
-    color: theme.colors.ASTRONAUT_BLUE,
-    fontWeight: '500',
-    textShadowColor: 'rgba(0, 0, 0, 1)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 0.1,
   },
   statusIconStyles: {
     width: 45,
