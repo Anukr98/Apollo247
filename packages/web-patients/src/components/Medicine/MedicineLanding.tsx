@@ -439,7 +439,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicineLanding: React.FC = (props: any) => {
+const MedicineLanding: React.FC = (props: any) => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const addToCartRef = useRef(null);
@@ -980,3 +980,5 @@ export const MedicineLanding: React.FC = (props: any) => {
     </div>
   );
 };
+
+export default MedicineLanding;

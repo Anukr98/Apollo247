@@ -17,7 +17,7 @@ import {
 } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
-import { APPOINTMENT_TYPE } from 'consults-service/entities';
+import { APPOINTMENT_TYPE, BOOKINGSOURCE } from 'consults-service/entities';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
@@ -640,7 +640,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -1159,14 +1159,33 @@ export async function sendNotification(
     smsLink = smsLink.replace('{3}', apptDate.toString());
 
     //Create chatroom link and send for new booked appointment
-    if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
-      const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace(
-        '{0}',
-        appointment.id.toString()
-      );
-      smsLink = smsLink.replace('{5}', chatroom_sms_link);
-    } else {
-      throw new AphError(AphErrorMessages.SMS_DEEPLINK_APPOINTMENT_CHATROOM_MISSING);
+    switch (appointment.bookingSource) {
+      case BOOKINGSOURCE.MOBILE:
+        if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
+          const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace(
+            '{0}',
+            appointment.id.toString()
+          );
+          smsLink = smsLink.replace('{5}', chatroom_sms_link);
+        } else {
+          throw new AphError(AphErrorMessages.SMS_DEEPLINK_APPOINTMENT_CHATROOM_MISSING);
+        }
+        break;
+      case BOOKINGSOURCE.WEB:
+        if (process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM) {
+          const chatroom_sms_link = process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM.replace(
+            '{0}',
+            appointment.id.toString()
+          ).replace(
+            '{1}',
+            appointment.doctorId.toString()
+          );
+          smsLink = smsLink.replace('{5}', chatroom_sms_link);
+        } else {
+          throw new AphError(AphErrorMessages.SMS_WEBLINK_APPOINTMENT_CHATROOM_MISSING);
+        }
+      default:
+        return;
     }
 
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_TITLE;

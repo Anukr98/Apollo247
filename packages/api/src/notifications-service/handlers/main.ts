@@ -114,6 +114,11 @@ export async function sendMedicineOrderStatusNotification(
       notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
       notificationBody = ApiConstants.ORDER_OUT_FOR_DELIVERY_BODY;
       break;
+    case NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY_EXTERNAL:
+      payloadDataType = 'Order_Out_For_Delivery';
+      notificationTitle = ApiConstants.ORDER_OUT_FOR_DELIVERY_TITLE;
+      notificationBody = ApiConstants.ORDER_OUT_FOR_DELIVERY_BODY_EXTERNAL;
+      break;
     case NotificationType.MEDICINE_ORDER_READY_AT_STORE:
       payloadDataType = 'Order_ready_at_store';
       notificationTitle = ApiConstants.ORDER_READY_AT_STORE_TITLE;
@@ -151,6 +156,7 @@ export async function sendMedicineOrderStatusNotification(
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
   notificationBody = notificationBody.replace(/\{1}/g, orderNumber);
+
   if (notificationType == NotificationType.MEDICINE_ORDER_READY_AT_STORE) {
     const shopAddress = JSON.parse(orderDetails.shopAddress);
     notificationBody = notificationBody.replace('{2}', shopAddress.storename);
