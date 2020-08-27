@@ -46,7 +46,7 @@ import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import React, { useEffect, useState } from 'react';
-import {Dimensions,View, SafeAreaView, Text,StyleSheet, Image,Geolocation,TouchableOpacity} from 'react-native';
+import {Dimensions,View, SafeAreaView, Text,StyleSheet, Image,TouchableOpacity} from 'react-native';
 import { useApolloClient } from 'react-apollo-hooks';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -57,9 +57,11 @@ import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEven
 import MapView,{Marker,PROVIDER_GOOGLE, Coordinate, MapEvent } from 'react-native-maps';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Location } from './Icons';
+import Geolocation from '@react-native-community/geolocation';
 
 
-const FakeMarker = require('../ui/icons/fakeMarker.png');
+const FakeMarker = require('../ui/icons/ic-marker.png');
+const icon_gps = require('../ui/icons/ic_gps_fixed.png');
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -291,7 +293,8 @@ const { locationDetails, pharmacyLocation } = useAppCommonData();
 
   const renderAddressBanner = () =>{
     return ( 
-      <View style={{height:screenHeight/3,bottom:-10}}>
+      //screenHeight/3
+      <View style={{height:300,backgroundColor:'white'}}>
           <Button
                title={'CHANGE'}
               style={{top:'5%',marginHorizontal:screenWidth-110,width: '23%',height:23,backgroundColor:theme.colors.LIGHT_YELLOW,shadowColor: 'transparent' }}
@@ -313,36 +316,37 @@ const { locationDetails, pharmacyLocation } = useAppCommonData();
     )
   }
 
-  const onMarkerDragEnd = (event: MapEvent) =>{
-    const coordinates = event.nativeEvent.coordinate;
-    setLatitude(coordinates?.latitude);
-    setLongitude(coordinates?.longitude);
-  }
+  // const onMarkerDragEnd = (event: MapEvent) =>{
+  //   const coordinates = event.nativeEvent.coordinate;
+  //   setLatitude(coordinates?.latitude);
+  //   setLongitude(coordinates?.longitude);
+  // }
 
   /**to drag the map */
-  // const onRegionChange =(region: RegionObject)=>{
-  //   setRegion(region);
-  //   setLatitude(region.latitude);
-  //   setLongitude(region.longitude);
-  // }
+  const onRegionChange =(region: RegionObject)=>{
+    setRegion(region);
+    setLatitude(region.latitude);
+    setLongitude(region.longitude);
+    console.log(region.latitude, region.longitude)
+  }
   
   /** for getting current position */
-  // const showCurrentLocation = ()=>{
-  //     Geolocation.getCurrentPosition(
-  //       ({coords}) => {
-  //         const {latitude, longitude} = coords
-  //          const  currentRegion = {
-  //             latitude,
-  //             longitude,
-  //             latitudeDelta: 0.005,
-  //             longitudeDelta: 0.001,
-  //           }
-  //           setRegion(currentRegion);
+  const showCurrentLocation = ()=>{
+      Geolocation.getCurrentPosition(
+        ({coords}) => {
+          const {latitude, longitude} = coords
+           const  currentRegion = {
+              latitude,
+              longitude,
+              latitudeDelta: 0.005,
+              longitudeDelta: 0.001,
+            }
+            setRegion(currentRegion);
           
-  //       },
-  //       (error) =>  console.log(error.code, error.message, 'getCurrentPosition error')),
-  //       {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
-  // }
+        },
+        (error) =>  console.log(error.code, error.message, 'getCurrentPosition error')),
+        {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
+  }
 
   const renderMap = () =>{
     return (
@@ -352,36 +356,53 @@ const { locationDetails, pharmacyLocation } = useAppCommonData();
         region={region}
         zoomEnabled={true}
         minZoomLevel={5}
-        // onRegionChangeComplete={region => onRegionChange(region)}
+        onMapReady={()=>console.log("ready")}
+        onRegionChangeComplete={(region)=>onRegionChange(region)}
         // initialRegion={{latitude:latitude,longitude:longitude,latitudeDelta:latitudeDelta,longitudeDelta:longitudeDelta}}
       >
-        <Marker
+       {/**drag the marker */}
+        {/* <Marker
           coordinate={{
             latitude: latitude,
             longitude: longitude
           }}
           draggable={true}
           onDragEnd={(e) => onMarkerDragEnd(e)}
-        />
-
-          {/** drag the map to readjust */}
-         {/* <View style={{ left: '50%',marginLeft: -24, marginTop: -48,position: 'absolute',top: '50%'}}>
-            <Image style={{height: 48,width: 48}} source={FakeMarker} />
-        </View> */}
-       {/* 
-        <View style={{backgroundColor:'pink',height:40,width:40,zIndex:1000}}>
-          <TouchableOpacity onPress={showCurrentLocation} style={{height:"100%",width:"100%"}}>
-          <Text>Curre</Text>
-          </TouchableOpacity>
-        </View> */}
+        /> */}
       </MapView>
     )
   }
 
+  /**drag the map to adjust */
+  const renderMarker = () =>{
+    return (
+      <View style={{ left: '50%',marginLeft: -24, marginTop: -48,position:'absolute',top: '50%'}}>
+            <Image style={{height: 35,width: 35,resizeMode:'contain'}} source={FakeMarker} />
+        </View>
+    )
+  }
+
+  /**show the current location item */
+  const renderCurrentLocation = ()=>{
+    return(
+        <View style={{backgroundColor:'white',height:40,width:40,position:'absolute',bottom:'45%',right:"3%",borderRadius:40/2,shadowColor: 'rgba(0,0,0,0.2)',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.8,
+        shadowRadius: 2,
+        elevation: 3,}}>
+          <TouchableOpacity onPress={showCurrentLocation} style={{height:"100%",width:"100%"}}>
+            <Image source={icon_gps} style={{marginTop:6,width:25,height:25,alignSelf:'center',justifyContent:'center'}}/>
+          </TouchableOpacity>
+        </View> 
+    )
+  }
+
   return (
-    <View style={{flex:1}}>
+    <View style={{flex:1,backgroundColor:'white'}}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderMap()}
+        {renderCurrentLocation()}
+        {renderMarker()}
         {renderAddressBanner()}
         {showSpinner && <Spinner />}
       </SafeAreaView>
