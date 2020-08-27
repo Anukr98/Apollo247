@@ -10,7 +10,7 @@ import {
 } from 'profiles-service/entities';
 import { DiagnosticsRepository } from 'profiles-service/repositories/diagnosticsRepository';
 import { DiagnosticOrgansRepository } from 'profiles-service/repositories/diagnosticOrgansRepository';
-import fetch, { FetchError } from 'node-fetch';
+import fetch from 'node-fetch';
 import FormData from 'form-data'
 import { format } from 'date-fns';
 import { AphError, AphUserInputError } from 'AphError';
