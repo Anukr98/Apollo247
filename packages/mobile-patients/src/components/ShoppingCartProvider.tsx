@@ -47,6 +47,7 @@ export interface EPrescription {
   forPatient: string;
   date: string;
   medicines: string;
+  fileName?: string;
   doctorName: string;
   prismPrescriptionFileId: string;
   message?: string;
