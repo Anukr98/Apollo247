@@ -1192,6 +1192,7 @@ const createSeniorDoctorCaseSheet: Resolver<
   if (sdCaseSheets.length > 0) {
     //check whether latest version is not in complete status
     if (sdCaseSheets[0].status != CASESHEET_STATUS.COMPLETED) {
+      await delCache(lockKey);
       return sdCaseSheets[0];
     }
     const caseSheetAttrs: Partial<CaseSheet> = {
