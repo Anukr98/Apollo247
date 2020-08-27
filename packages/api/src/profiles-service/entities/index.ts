@@ -1351,6 +1351,9 @@ export class PatientAddress extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true })
+  name: string;
+
   @Column()
   addressLine1: string;
 

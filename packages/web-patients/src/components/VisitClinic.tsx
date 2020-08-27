@@ -38,7 +38,6 @@ import {
   ValidateConsultCoupon,
   ValidateConsultCouponVariables,
 } from 'graphql/types/ValidateConsultCoupon';
-import { ModeComment } from '@material-ui/icons';
 import moment from 'moment';
 import { gtmTracking, _cbTracking } from '../gtmTracking';
 
