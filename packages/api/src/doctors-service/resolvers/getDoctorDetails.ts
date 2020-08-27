@@ -312,7 +312,7 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
   let doctordata;
   try {
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-    doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+    doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
     if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
     if (!doctordata.firebaseToken)
       await doctorRepository.updateFirebaseId(doctordata.id, format(new Date(), 'yyyyMMddHHmm'));

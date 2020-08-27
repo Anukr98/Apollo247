@@ -339,21 +339,7 @@ export class DoctorRepository extends Repository<Doctor> {
   findByMobileNumber(mobileNumber: string, isActive: Boolean) {
     return this.findOne({
       where: [{ mobileNumber, isActive }],
-      relations: [
-        'specialty',
-        'doctorHospital',
-        'doctorHospital.facility',
-        'consultHours',
-        'starTeam',
-        'bankAccount',
-        'packages',
-        'starTeam.associatedDoctor',
-        'starTeam.associatedDoctor.specialty',
-        'starTeam.associatedDoctor.doctorHospital',
-        'starTeam.associatedDoctor.doctorHospital.facility',
-        'doctorSecretary',
-        'doctorSecretary.secretary',
-      ],
+      relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
     });
   }
 
