@@ -277,7 +277,7 @@ const generateTransactions = async (
 
     const healthCreditsToRefund = +new Decimal(healthCreditsRedeemed).minus(actualCreditsRedeemed);
 
-    if (healthCreditsToRefund) {
+    if (healthCreditsToRefund > 0) {
       const unblockHCRequest: UnblockPointsRequest = {
         RedemptionRequestNumber: RequestNumber || '',
         BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
