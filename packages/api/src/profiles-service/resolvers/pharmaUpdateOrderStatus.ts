@@ -17,7 +17,7 @@ import {
   MedicineOrderInvoice,
   TransactionLineItemsPartial,
 } from 'profiles-service/entities';
-import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+import { ONE_APOLLO_STORE_CODE, ItemDetails, UnblockPointsRequest } from 'types/oneApolloTypes';
 
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -79,14 +79,6 @@ type OrderStatusInput = {
 
 type OrderStatusInputArgs = {
   updateOrderStatusInput: OrderStatusInput;
-};
-type ItemDetails = {
-  itemId: string;
-  itemName: string;
-  batchId: string;
-  issuedQty: number;
-  mrp: number;
-  discountPrice: number;
 };
 
 type BillDetails = {
@@ -416,7 +408,16 @@ const createOneApolloTransaction = async (
       );
       return true;
     }
-    const transactionArr = await generateTransactions(invoiceDetails, patient, mobileNumber, order);
+    const oneApollo = new OneApollo();
+
+    const transactionArr = await generateTransactions(
+      invoiceDetails,
+      patient,
+      mobileNumber,
+      order,
+      oneApollo,
+      medicineOrdersRepo
+    );
     if (transactionArr) {
       log(
         'profileServiceLogger',
@@ -426,7 +427,6 @@ const createOneApolloTransaction = async (
         ''
       );
       const transactionsPromise: Promise<JSON>[] = [];
-      const oneApollo = new OneApollo();
       transactionArr.forEach((transaction) => {
         medicineOrdersRepo.updateMedicineOrderShipment(
           {
@@ -464,7 +464,9 @@ const generateTransactions = async (
   invoiceDetails: MedicineOrderInvoice[],
   patient: Patient,
   mobileNumber: string,
-  order: MedicineOrders
+  order: MedicineOrders,
+  oneApollo: OneApollo,
+  medicineOrdersRepo: MedicineOrdersRepository
 ) => {
   let transactions: OneApollTransaction[] = [];
   let index = 0;
@@ -474,16 +476,39 @@ const generateTransactions = async (
     let { transactionLineItemsPartial, totalDiscount, netAmount, itemSku } = createLineItems(
       itemDetails
     );
-
+    const { RequestNumber } = order.medicineOrderPayments[0].healthCreditsRedemptionRequest;
     const itemTypemap = await getSkuMap(itemSku);
     const healthCreditsRedeemed = +new Decimal(
       order.medicineOrderPayments[0].healthCreditsRedeemed
-    ).toDecimalPlaces(2, Decimal.ROUND_DOWN);
-    let transactionLineItems = addProductNameAndCat(
+    ).toDecimalPlaces(4, Decimal.ROUND_DOWN);
+    let [actualCreditsRedeemed, transactionLineItems] = addProductNameAndCat(
       transactionLineItemsPartial,
       itemTypemap,
       healthCreditsRedeemed
     );
+
+    const healthCreditsToRefund = +new Decimal(healthCreditsRedeemed).minus(actualCreditsRedeemed);
+
+    if (healthCreditsToRefund > 0) {
+      const unblockHCRequest: UnblockPointsRequest = {
+        RedemptionRequestNumber: RequestNumber || '',
+        BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
+        MobileNumber: mobileNumber,
+        PointsToRelease: '' + healthCreditsToRefund,
+        StoreCode: getStoreCodeFromDevice(order.deviceType, order.bookingSource),
+      };
+      log(
+        'profileServiceLogger',
+        `oneApollo unblock request - ${order.orderAutoId}`,
+        'createOneApolloTransaction()',
+        JSON.stringify(unblockHCRequest),
+        ''
+      );
+      await oneApollo.unblockHealthCredits(unblockHCRequest);
+      medicineOrdersRepo.updateMedicineOrderPayment(order.id, order.orderAutoId, {
+        healthCreditsRedeemed: actualCreditsRedeemed,
+      });
+    }
     netAmount = transactionLineItems.reduce((acc, curValue) => {
       return +new Decimal(acc).plus(curValue.NetAmount);
     }, 0);
@@ -497,15 +522,14 @@ const generateTransactions = async (
       BillNo: `${billDetails.billNumber}_${order.orderAutoId}`,
       NetAmount: netAmount,
       TransactionDate: billDetails.billDateTime,
-      GrossAmount: +new Decimal(netAmount).plus(totalDiscount).plus(healthCreditsRedeemed),
+      GrossAmount: +new Decimal(netAmount).plus(totalDiscount).plus(actualCreditsRedeemed),
       Discount: totalDiscount,
       TransactionLineItems: transactionLineItems,
       StoreCode: getStoreCodeFromDevice(order.deviceType, order.bookingSource),
     };
-    if (healthCreditsRedeemed) {
-      transaction.RedemptionRequestNo =
-        order.medicineOrderPayments[0].healthCreditsRedemptionRequest.RequestNumber;
-      transaction.CreditsRedeemed = healthCreditsRedeemed;
+    if (actualCreditsRedeemed) {
+      transaction.RedemptionRequestNo = RequestNumber;
+      transaction.CreditsRedeemed = actualCreditsRedeemed;
     }
     transactions.push(transaction);
     index++;
@@ -536,7 +560,7 @@ const addProductNameAndCat = (
   transactionLineItems: TransactionLineItemsPartial[],
   itemTypemap: ItemsSkuTypeMap,
   totalCreditsRedeemed: number
-): TransactionLineItems[] => {
+): [number, TransactionLineItems[]] => {
   const fmcgItems: TransactionLineItems[] = [];
   const pharmaItems: TransactionLineItems[] = [];
   const plItems: TransactionLineItems[] = [];
@@ -598,8 +622,10 @@ const addProductNameAndCat = (
     }
   }
 
+  totalCreditsRedeemed = +new Decimal(totalCreditsRedeemed).minus(availableCredits);
+
   const transactionLineItemsComplete = fmcgItems.concat(pharmaItems, plItems);
-  return transactionLineItemsComplete;
+  return [totalCreditsRedeemed, transactionLineItemsComplete];
 };
 
 const getSkuMap = async (itemSku: string[]) => {
@@ -645,10 +671,10 @@ const createLineItems = (itemDetails: Array<ItemDetails>) => {
   let transactionLineItemsPartial: TransactionLineItemsPartial[] = [];
   itemDetails.forEach((item: ItemDetails) => {
     itemSku.push(item.itemId);
-    const netMrp = Number(new Decimal(item.mrp).times(item.issuedQty).toFixed(2));
+    const netMrp = Number(new Decimal(item.mrp).times(item.issuedQty).toFixed(4));
     let netDiscount = 0;
     if (item.discountPrice) {
-      netDiscount = Number(new Decimal(item.discountPrice).times(item.issuedQty).toFixed(2));
+      netDiscount = Number(new Decimal(item.discountPrice).times(item.issuedQty).toFixed(4));
     }
     const netPrice: number = +new Decimal(netMrp).minus(netDiscount);
 
