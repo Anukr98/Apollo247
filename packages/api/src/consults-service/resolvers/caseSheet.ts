@@ -1216,6 +1216,8 @@ const createSeniorDoctorCaseSheet: Resolver<
       isJdConsultStarted: sdCaseSheets[0].isJdConsultStarted,
       notes: sdCaseSheets[0].notes,
     };
+
+    const newCaseSheet = await caseSheetRepo.savecaseSheet(caseSheetAttrs);
     const historyAttrs: Partial<AppointmentUpdateHistory> = {
       appointment: appointmentData,
       userType: APPOINTMENT_UPDATED_BY.DOCTOR,
@@ -1229,7 +1231,7 @@ const createSeniorDoctorCaseSheet: Resolver<
     };
     appointmentRepo.saveAppointmentHistory(historyAttrs);
     await delCache(lockKey);
-    return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
+    return newCaseSheet;
   }
 
   await delCache(lockKey);
