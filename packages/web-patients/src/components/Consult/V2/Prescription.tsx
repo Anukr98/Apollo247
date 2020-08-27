@@ -700,17 +700,15 @@ export const Prescription: React.FC = (props) => {
                         />
                       )}
                     </div> */}
-                    <div
-                      className={classes.shareIcon}
-                      onClick={() =>
-                        window.open(
-                          `${process.env.REACT_APP_CASESHEET_LINK}${caseSheetDetails.blobName}`,
-                          '_blank'
-                        )
-                      }
+
+                    <a
+                      href={`${process.env.REACT_APP_CASESHEET_LINK}${caseSheetDetails.blobName}`}
+                      target="_blank"
                     >
-                      <img src={require('images/ic_download.svg')} alt="download" />
-                    </div>
+                      <div className={classes.shareIcon}>
+                        <img src={require('images/ic_download.svg')} alt="download" />
+                      </div>
+                    </a>
                   </>
                 )}
               </div>
