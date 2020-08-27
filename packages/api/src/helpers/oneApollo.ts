@@ -3,6 +3,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { OneApollTransaction, ONE_APOLLO_USER_REG } from 'profiles-service/entities';
 import AbortController from 'abort-controller';
+import { log } from 'customWinstonLogger';
 
 export class OneApollo {
   baseUrl: string;
@@ -133,6 +134,13 @@ export class OneApollo {
         body: JSON.stringify(input),
         signal: this.controller.signal,
       });
+      log(
+        'profileServiceLogger',
+        `unblockHealthCredits()`,
+        `HEALTH_CREDITS_UNBLOCK_RESPONSE- ${JSON.stringify(response)}`,
+        JSON.stringify(response),
+        'true'
+      );
     } catch (e) {
       if (e.name === 'AbortError') throw new AphError(AphErrorMessages.ONEAPOLLO_REQUEST_TIMEOUT);
       throw new AphError(AphErrorMessages.UNBLOCK_CREDITS_ONEAPOLLO_ERROR, undefined, { e });
