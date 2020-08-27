@@ -27,3 +27,12 @@ export type UnblockPointsRequest = {
   PointsToRelease: string;
   RedemptionRequestNumber: string;
 };
+
+export type ItemDetails = {
+  itemId: string;
+  itemName: string;
+  batchId: string;
+  issuedQty: number;
+  mrp: number;
+  discountPrice: number;
+};
