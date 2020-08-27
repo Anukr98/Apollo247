@@ -18,7 +18,7 @@ echo -e "\nrunning bootstrap:web..."
 npm run bootstrap:web || exit 2
 echo "\n Building api-gateway..."
 cd packages/api
-npm run start:api-gateway || exit 2
+npm run test --if-present start:api-gateway || exit 2
 cd -
 
 echo -e "\nbuilding profiles-service..."
