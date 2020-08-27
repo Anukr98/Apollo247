@@ -897,9 +897,6 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   followUpAfterInDays: number;
 
-  @Column({ default: 7, type: 'smallint' })
-  followUpChatDays: number;
-
   @Column({ nullable: true })
   followUpDate: Date;
 

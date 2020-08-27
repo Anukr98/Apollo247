@@ -5,6 +5,7 @@ import { CaseSheet, CASESHEET_STATUS } from 'consults-service/entities';
 import { DoctorType } from 'doctors-service/entities';
 import { format, addDays } from 'date-fns';
 import { STATUS } from 'consults-service/entities';
+import { ApiConstants } from 'ApiConstants';
 
 @EntityRepository(CaseSheet)
 export class CaseSheetRepository extends Repository<CaseSheet> {
@@ -171,8 +172,8 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     const endDate = new Date(format(currentDate, 'yyyy-MM-dd') + 'T18:29');
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
-      .where(` appointment.sdConsultationDate + (case_sheet.followUpChatDays * ${ "'1 day'::INTERVAL"}) >= :startDate `, { startDate })
-      .andWhere(` appointment.sdConsultationDate + (case_sheet.followUpChatDays * ${ "'1 day'::INTERVAL"}) < :endDate `, { endDate })
+      .where(` appointment.sdConsultationDate + (CASE WHEN (case_sheet.followUpAfterInDays IS NOT NULL ) THEN case_sheet.followUpAfterInDays ELSE ${ApiConstants.FREE_CHAT_DAYS} END * ${ "'1 day'::INTERVAL"}) >= :startDate `, { startDate })
+      .andWhere(` appointment.sdConsultationDate + (CASE WHEN (case_sheet.followUpAfterInDays IS NOT NULL ) THEN case_sheet.followUpAfterInDays ELSE ${ApiConstants.FREE_CHAT_DAYS} END * ${ "'1 day'::INTERVAL"}) < :endDate `, { endDate })
       .andWhere(` appointment.status = :status`, { status: STATUS.COMPLETED })
       .select("appointment.id")
       .groupBy('appointment.id')
