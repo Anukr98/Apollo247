@@ -2053,6 +2053,11 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             # resultDate
           }
           fileUrl
+          testResultFiles {
+            id
+            fileName
+            mimeType
+          }
         }
         errorCode
         errorMsg
@@ -2071,6 +2076,11 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           prescriptionSource
           source
           fileUrl
+          prescriptionFiles {
+            id
+            fileName
+            mimeType
+          }
           hospital_name
           hospitalId
         }

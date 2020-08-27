@@ -4268,7 +4268,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === cancelConsultInitiated ||
       rowData.message === callAbandonment ||
       rowData.message === appointmentComplete ||
-      rowData.message === patientRejectedCall || 
+      rowData.message === patientRejectedCall ||
       rowData === patientRejectedCall
     ) {
       return null;
@@ -6099,9 +6099,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   const text = {
                     id: patientId,
                     message: imageconsult,
-                    fileType: ((data.urls && data.urls[0]) || '').match(/\.(pdf)$/)
-                      ? 'pdf'
-                      : 'image',
+                    fileType: item.fileType == 'pdf' ? 'pdf' : 'image',
                     prismId: recordId,
                     url: (data.urls && data.urls[0]) || '',
                     messageDate: new Date(),
