@@ -85,6 +85,7 @@ export const buildCaseSheet = (attrs?: Partial<CaseSheet>) => {
   caseSheet.diagnosticPrescription = (diagnosisPrescription as unknown) as string;
   caseSheet.followUp = faker.random.boolean();
   caseSheet.followUpAfterInDays = _random(1, 60);
+  caseSheet.followUpChatDays = _random(1, 60);
   caseSheet.otherInstructions = (otherInstructions as unknown) as string;
   caseSheet.medicinePrescription = (medicinePrescriptions as unknown) as string;
   caseSheet.symptoms = (symptoms as unknown) as string;

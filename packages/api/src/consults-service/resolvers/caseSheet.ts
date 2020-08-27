@@ -863,7 +863,7 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.followUp = inputArguments.followUp;
   }
 
-  if (!(inputArguments.followUpAfterInDays === undefined)) {
+  if (!(inputArguments.followUpDate === undefined)) {
     getCaseSheetData.followUpDate = inputArguments.followUpDate;
   }
 
@@ -1165,6 +1165,7 @@ const createSeniorDoctorCaseSheet: Resolver<
       diagnosticPrescription: juniorDoctorcaseSheet.diagnosticPrescription,
       followUp: juniorDoctorcaseSheet.followUp,
       followUpAfterInDays: juniorDoctorcaseSheet.followUpAfterInDays,
+      followUpChatDays: juniorDoctorcaseSheet.followUpChatDays,
       followUpDate: juniorDoctorcaseSheet.followUpDate,
       otherInstructions: juniorDoctorcaseSheet.otherInstructions,
       symptoms: juniorDoctorcaseSheet.symptoms,
@@ -1202,6 +1203,7 @@ const createSeniorDoctorCaseSheet: Resolver<
       diagnosticPrescription: sdCaseSheets[0].diagnosticPrescription,
       followUp: sdCaseSheets[0].followUp,
       followUpAfterInDays: sdCaseSheets[0].followUpAfterInDays,
+      followUpChatDays: sdCaseSheets[0].followUpChatDays,
       followUpDate: sdCaseSheets[0].followUpDate,
       otherInstructions: sdCaseSheets[0].otherInstructions,
       symptoms: sdCaseSheets[0].symptoms,
