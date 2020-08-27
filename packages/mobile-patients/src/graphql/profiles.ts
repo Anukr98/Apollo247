@@ -1067,6 +1067,7 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         latitude
         longitude
         stateCode
+        mobileNumber
       }
     }
   }
