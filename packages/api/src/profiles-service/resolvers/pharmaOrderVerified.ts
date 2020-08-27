@@ -19,6 +19,7 @@ import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
+import Decimal from 'decimal.js';
 
 export const saveOrderShipmentsTypeDefs = gql`
   input SaveOrderShipmentsInput {
@@ -164,8 +165,8 @@ const saveOrderShipments: Resolver<
       const itemDetails = shipment.itemDetails.map((item) => {
         return {
           ...item,
-          quantity: Number((item.quantity / item.packSize).toFixed(2)),
-          mrp: Number((item.unitPrice * item.packSize).toFixed(2)),
+          quantity: +new Decimal(item.quantity).dividedBy(item.packSize).toFixed(4),
+          mrp: +new Decimal(item.unitPrice).times(item.packSize).toFixed(4),
         };
       });
       const orderShipmentsAttrs: Partial<MedicineOrderShipments> = {

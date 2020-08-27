@@ -336,11 +336,11 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                       <>
                         <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
                           {validateCouponResult.products[idx].specialPrice !==
-                            validateCouponResult.products[idx].mrp ? (
-                              <span className={classes.lineThrough}>
-                                Rs. {validateCouponResult.products[idx].mrp}
-                              </span>
-                            ) : null}
+                          validateCouponResult.products[idx].mrp ? (
+                            <span className={classes.lineThrough}>
+                              Rs. {validateCouponResult.products[idx].mrp}
+                            </span>
+                          ) : null}
                           <div className={classes.mrpText}>(MRP)</div>
                         </div>
 
@@ -348,17 +348,17 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                           Rs.{' '}
                           {validateCouponResult.products[idx].onMrp
                             ? Number(
-                              (
-                                validateCouponResult.products[idx].mrp -
-                                validateCouponResult.products[idx].discountAmt
-                              ).toFixed(2)
-                            )
+                                (
+                                  validateCouponResult.products[idx].mrp -
+                                  validateCouponResult.products[idx].discountAmt
+                                ).toFixed(2)
+                              )
                             : Number(
-                              (
-                                validateCouponResult.products[idx].specialPrice -
-                                validateCouponResult.products[idx].discountAmt
-                              ).toFixed(2)
-                            )}
+                                (
+                                  validateCouponResult.products[idx].specialPrice -
+                                  validateCouponResult.products[idx].discountAmt
+                                ).toFixed(2)
+                              )}
                         </div>
                       </>
                     ) : (

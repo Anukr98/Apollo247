@@ -541,7 +541,12 @@ export const PayMedicine: React.FC = (props) => {
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
-            isMedicine: _lowerCase(cartItemDetails.type_id) === 'pharma' ? '1' : '0',
+            isMedicine:
+              _lowerCase(cartItemDetails.type_id) === 'pharma'
+                ? '1'
+                : _lowerCase(cartItemDetails.type_id) === 'pl'
+                ? '2'
+                : '0',
             specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
           };
         })

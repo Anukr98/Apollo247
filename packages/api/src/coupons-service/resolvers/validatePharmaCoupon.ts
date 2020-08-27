@@ -12,6 +12,7 @@ export const validatePharmaCouponTypeDefs = gql`
   enum CouponCategoryApplicable {
     PHARMA
     FMCG
+    PL
     PHARMA_FMCG
   }
 
