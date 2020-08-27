@@ -22,7 +22,7 @@ import { ConsultMode } from 'doctors-service/entities';
 import { BlockUserPointsResponse } from 'types/oneApolloTypes';
 import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
-import { log } from 'customWinstonLogger'
+import { log } from 'customWinstonLogger';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
@@ -85,6 +85,7 @@ export enum CouponApplicability {
 export enum CouponCategoryApplicable {
   PHARMA = 'PHARMA',
   FMCG = 'FMCG',
+  PL = 'PL',
   PHARMA_FMCG = 'PHARMA_FMCG',
 }
 
@@ -968,7 +969,7 @@ export class PatientDeviceTokens extends BaseEntity {
   deviceToken: string;
 
   @Index('device_voip_push_token')
-  @Column({nullable:true, type: 'text'})
+  @Column({ nullable: true, type: 'text' })
   deviceVoipPushToken: string;
 
   @Column()
@@ -1200,17 +1201,19 @@ export class Patient extends BaseEntity {
   private static notNullCheckForItems = new Set(['firstName', 'lastName', 'uhid', 'primaryUhid']);
 
   private static isValidString(input: any): Boolean {
-    if (input && typeof (input) == "string") {
+    if (input && typeof input == 'string') {
       input = input.trim().toLowerCase();
       const disallowedStrings: Set<string> = new Set(['', ' ', '.', 'null', 'undefined']);
       return !disallowedStrings.has(input);
-    }
-    else {
+    } else {
       return true;
     }
   }
 
-  private static isUpdationAllowedAgainstCurrentValue(currentValue: any, incomingValue: any): Boolean {
+  private static isUpdationAllowedAgainstCurrentValue(
+    currentValue: any,
+    incomingValue: any
+  ): Boolean {
     const updateAllowed: Boolean = currentValue ? Boolean(incomingValue && currentValue) : true;
     return updateAllowed;
   }
@@ -1226,7 +1229,10 @@ export class Patient extends BaseEntity {
         let newValue = event.entity[column.propertyName];
 
         const isValidString: Boolean = this.isValidString(newValue);
-        const isUpdateApplicable: Boolean = this.isUpdationAllowedAgainstCurrentValue(oldValue, newValue);
+        const isUpdateApplicable: Boolean = this.isUpdationAllowedAgainstCurrentValue(
+          oldValue,
+          newValue
+        );
 
         if (!(isValidString && isUpdateApplicable)) {
           validationFailedItems.push({
@@ -1234,19 +1240,27 @@ export class Patient extends BaseEntity {
             oldValue,
             newValue,
             isValidString,
-            isUpdateApplicable
-          })
+            isUpdateApplicable,
+          });
         }
       }
     });
 
     if (validationFailedItems.length > 0) {
       const validationFaiedForKeys: string[] = validationFailedItems.map((item) => {
-        return item.key
+        return item.key;
       });
 
-      log('profileServiceLogger', `patient updation failed!`, 'index.ts/checkNullsForProperty ', 'undefined', JSON.stringify(validationFailedItems));
-      throw new Error(`Patient validation failed for items: ${JSON.stringify(validationFaiedForKeys)}`);
+      log(
+        'profileServiceLogger',
+        `patient updation failed!`,
+        'index.ts/checkNullsForProperty ',
+        'undefined',
+        JSON.stringify(validationFailedItems)
+      );
+      throw new Error(
+        `Patient validation failed for items: ${JSON.stringify(validationFaiedForKeys)}`
+      );
     }
   }
 
@@ -1268,9 +1282,12 @@ export class Patient extends BaseEntity {
   async setPatientCache() {
     try {
       console.log(`Setting cache`);
-      await setCache(`patient:${this.id}`, JSON.stringify(this), ApiConstants.CACHE_EXPIRATION_3600);
-    }
-    catch (ex) {
+      await setCache(
+        `patient:${this.id}`,
+        JSON.stringify(this),
+        ApiConstants.CACHE_EXPIRATION_3600
+      );
+    } catch (ex) {
       console.log(`Exception #`, ex);
     }
   }
