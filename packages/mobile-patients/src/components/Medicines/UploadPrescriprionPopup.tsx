@@ -31,6 +31,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
 import { Overlay } from 'react-native-elements';
@@ -207,14 +208,16 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   };
 
   const getBase64 = (response: DocumentPickerResponse[]): Promise<string>[] => {
-    console.log('getBase64', { response });
     return response.map(async ({ fileCopyUri: uri, type }) => {
       const isPdf = uri.toLowerCase().endsWith('.pdf'); // TODO: check here if valid image by mime
+      uri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
       let compressedImageUri = '';
       if (!isPdf) {
         // Image Quality 0-100
         compressedImageUri = (await ImageResizer.createResizedImage(uri, 2096, 2096, 'JPEG', 50))
           .uri;
+        compressedImageUri =
+          Platform.OS === 'ios' ? compressedImageUri.replace('file://', '') : compressedImageUri;
       }
       return RNFetchBlob.fs.readFile(!isPdf ? compressedImageUri : uri, 'base64');
     });
@@ -233,9 +236,8 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     try {
       const documents = await DocumentPicker.pickMultiple({
         type: [DocumentPicker.types.allFiles],
+        copyTo: 'documentDirectory',
       });
-
-      console.log('\ndocuments\n', JSON.stringify(documents));
 
       const result = documents.filter((obj) => {
         if (obj.name.toLowerCase().match(/\.(jpeg|jpg|png|jfif|pdf)$/)) {
@@ -259,10 +261,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           return;
         }
       });
-      console.log('\nbase64Array\n', JSON.stringify(result));
-
       const base64Array = await Promise.all(getBase64(result));
-      console.log('\nbase64Array\n', JSON.stringify(base64Array));
 
       const base64FormattedArray = base64Array.map(
         (base64, index) =>
@@ -271,12 +270,10 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             data: base64,
           } as ImageCropPickerResponse)
       );
-      console.log('\nbase64FormattedArray\n', JSON.stringify(base64FormattedArray));
 
       props.onResponse('CAMERA_AND_GALLERY', formatResponse(base64FormattedArray));
       setshowSpinner(false);
     } catch (e) {
-      console.log('\ncatch error\n', JSON.stringify(e));
       setshowSpinner(false);
       if (DocumentPicker.isCancel(e)) {
         CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);

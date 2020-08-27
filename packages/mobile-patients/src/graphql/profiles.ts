@@ -2057,9 +2057,6 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             id
             fileName
             mimeType
-            content
-            byteContent
-            dateCreated
           }
         }
         errorCode
@@ -2079,6 +2076,11 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           prescriptionSource
           source
           fileUrl
+          prescriptionFiles {
+            id
+            fileName
+            mimeType
+          }
         }
         errorCode
         errorMsg

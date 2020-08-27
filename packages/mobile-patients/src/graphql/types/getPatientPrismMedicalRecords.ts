@@ -72,9 +72,6 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_lab
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  content: string | null;
-  byteContent: string | null;
-  dateCreated: number | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response {
@@ -99,6 +96,13 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_lab
   errorType: string | null;
 }
 
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response_prescriptionFiles {
+  __typename: "PrecriptionFileParameters";
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+}
+
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response {
   __typename: "PrescriptionsBaseResponse";
   id: string;
@@ -109,6 +113,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_pre
   prescriptionSource: string | null;
   source: string;
   fileUrl: string;
+  prescriptionFiles: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response_prescriptionFiles | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions {

@@ -32,6 +32,7 @@ import { BottomPopUp } from '../ui/BottomPopUp';
 import { Button } from '../ui/Button';
 import { useUIElements } from '../UIElementsProvider';
 import { MedicalTest } from './AddRecord';
+import { g } from '../../helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -312,10 +313,16 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
 
   const renderImage = () => {
     // const placeImage1 = placeImage.split(',');
-    console.log(!!data.fileUrl, 'placeImage1');
+    console.log(!!data.fileUrl, g(data, 'prescriptionFiles', '0', 'fileName'), 'placeImage1');
     // {
     //   placeImage.map((item: string, i: number) => console.log('hi', item));
     // }
+
+    const fileName = g(data, 'testResultFiles', '0', 'fileName')
+      ? ': ' + g(data, 'testResultFiles', '0', 'fileName')
+      : g(data, 'prescriptionFiles', '0', 'fileName')
+      ? ': ' + g(data, 'prescriptionFiles', '0', 'fileName')
+      : '';
     return (
       <View
         style={{
@@ -323,20 +330,18 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         }}
       >
         <ScrollView>
-          {data.testResultFiles[0].mimeType === 'application/pdf' ? (
+          {g(data, 'testResultFiles', '0', 'mimeType') === 'application/pdf' ||
+          g(data, 'prescriptionFiles', '0', 'mimeType') === 'application/pdf' ? (
             <View style={{ marginHorizontal: 20, marginBottom: 15, marginTop: 50 }}>
               <Button
-                title={
-                  'Open File' +
-                  (data.fileUrl.includes('fileName=')
-                    ? ': ' + data.fileUrl.split('fileName=').pop()
-                    : '')
-                }
+                title={'Open File' + fileName}
                 onPress={() =>
                   props.navigation.navigate(AppRoutes.RenderPdf, {
                     uri: data.fileUrl,
-                    title: data.fileUrl.includes('fileName=')
-                      ? data.fileUrl.split('fileName=').pop()
+                    title: g(data, 'testResultFiles', '0', 'fileName')
+                      ? g(data, 'testResultFiles', '0', 'fileName')
+                      : g(data, 'prescriptionFiles', '0', 'fileName')
+                      ? g(data, 'prescriptionFiles', '0', 'fileName')
                       : '',
                   })
                 }
