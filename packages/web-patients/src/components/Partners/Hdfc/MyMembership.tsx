@@ -3,7 +3,8 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -108,7 +109,7 @@ const useStyles = makeStyles((theme: Theme) => {
     btnContainer: {
       display: 'flex',
       alignItems: 'center',
-      '& button': {
+      '& a, button': {
         width: '50%',
         flex: '1 0 auto',
         borderRadius: 0,
@@ -131,6 +132,56 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    dialogclose: {
+      top: 16,
+      right: 16,
+    },
+    dialogTitle: {
+      '& h2': {
+        textAlign: 'left',
+        color: '#07AE8B',
+        fontSize: 16,
+        fontWeight: 500,
+      },
+    },
+    availContainer: {
+      padding: 16,
+      '& p': {
+        fontSize: 12,
+      },
+      '& button': {
+        width: '100%',
+      },
+    },
+    availList: {
+      margin: '10px 0',
+      padding: '0 0 0 35px',
+      listStyle: 'none',
+      counterReset: 'my-counter',
+      '& li': {
+        padding: '10px 0',
+        fontSize: 12,
+        color: '#007C9D',
+        fontWeight: 500,
+        position: 'relative',
+        counterIncrement: 'my-counter',
+        '&:before': {
+          content: 'counter(my-counter)',
+          position: 'absolute',
+          top: 10,
+          left: -35,
+          width: 24,
+          height: 24,
+          borderRadius: 5,
+          background: '#007C9D',
+          fontSize: 14,
+          color: '#fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+      },
+    },
     more: {
       position: 'absolute',
       bottom: 20,
@@ -147,6 +198,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const MyMembership: React.FC = (props) => {
   const classes = useStyles({});
   const [showMore, setShowMore] = React.useState<boolean>(false);
+  const [isHowToAvail, setIsHowToAvail] = React.useState<boolean>(false);
 
   return (
     <div className={classes.mainContainer}>
@@ -188,10 +240,14 @@ export const MyMembership: React.FC = (props) => {
             </a>
           </div>
           <div className={classes.btnContainer}>
-            <AphButton color="primary" variant="contained">
+            <AphButton
+              color="primary"
+              variant="contained"
+              href={clientRoutes.membershipPlanDetail()}
+            >
               View Details
             </AphButton>
-            <AphButton color="primary" variant="contained">
+            <AphButton color="primary" variant="contained" href={clientRoutes.welcome()}>
               Explore
             </AphButton>
           </div>
@@ -230,15 +286,38 @@ export const MyMembership: React.FC = (props) => {
             </a>
           </div>
           <div className={classes.btnContainer}>
-            <AphButton color="primary" variant="contained">
+            <AphButton
+              color="primary"
+              variant="contained"
+              href={clientRoutes.membershipPlanLocked()}
+            >
               View Details
             </AphButton>
-            <AphButton color="primary" variant="contained">
+            <AphButton color="primary" variant="contained" onClick={() => setIsHowToAvail(true)}>
               How To Avail
             </AphButton>
           </div>
         </div>
       </div>
+      <AphDialog open={isHowToAvail} maxWidth="sm">
+        <AphDialogClose
+          className={classes.dialogclose}
+          onClick={() => setIsHowToAvail(false)}
+          title={'Close'}
+        />
+        <AphDialogTitle className={classes.dialogTitle}>How To Avail?</AphDialogTitle>
+        <div className={classes.availContainer}>
+          <Typography>Please follow these steps</Typography>
+          <ul className={classes.availList}>
+            <li>Complete transactions worth Rs 25000+ on Apollo 24/7</li>
+            <li>
+              Duration of membership is 1 year. It will be auto renewed if you spend more than Rs
+              25000 within 1 year on Apollo 24/7
+            </li>
+          </ul>
+          <AphButton color="primary">Avail Now</AphButton>
+        </div>
+      </AphDialog>
     </div>
   );
 };

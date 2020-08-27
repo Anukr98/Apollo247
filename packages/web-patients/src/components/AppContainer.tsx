@@ -232,8 +232,8 @@ const App: React.FC = () => {
           />
           <Route exact path={clientRoutes.covidDiabetes()} component={CovidDiabetesLanding} />
           <Route exact path={clientRoutes.partnersHdfc()} component={HdfcLanding} />
-          <Route exact path={clientRoutes.membershipHdfc()} component={HdfcMemberShip} />
-          <Route exact path={clientRoutes.myMembership()} component={MyMembership} />
+          <AuthRouted exact path={clientRoutes.membershipHdfc()} component={HdfcMemberShip} />
+          <AuthRouted exact path={clientRoutes.myMembership()} component={MyMembership} />
           <Route
             exact
             path={clientRoutes.membershipPlanLocked()}

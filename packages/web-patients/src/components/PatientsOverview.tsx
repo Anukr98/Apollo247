@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
+import { HdfcCallDoctor } from 'components/HdfcCallDoctor';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -116,6 +117,7 @@ export const PatientsOverview: React.FC = () => {
           </div>
         </Grid> */}
       </Grid>
+      <HdfcCallDoctor patientPhone={currentPatient.mobileNumber} />
       <Alerts
         setAlertMessage={setAlertMessage}
         alertMessage={alertMessage}

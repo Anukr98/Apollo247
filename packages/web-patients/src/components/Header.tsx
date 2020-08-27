@@ -437,7 +437,7 @@ export const Header: React.FC = (props) => {
                               </Link>
                             </li>
                             <li>
-                              <Link to={clientRoutes.partnersHdfc()}>
+                              <Link to={clientRoutes.myMembership()}>
                                 <span>
                                   <img src={require('images/one-apollo.svg')} width="24" alt="" />{' '}
                                   OneApollo Membership

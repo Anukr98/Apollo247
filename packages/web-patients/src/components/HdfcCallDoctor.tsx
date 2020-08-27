@@ -2,6 +2,7 @@ import React from 'react';
 import { Theme, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphButton, AphDialog } from '@aph/web-ui-components';
+import { callToExotelApi } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -99,9 +100,14 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const HdfcCallDoctor: React.FC = (props) => {
+export interface HdfcCallDoctorProps {
+  patientPhone: string | null;
+}
+
+export const HdfcCallDoctor: React.FC<HdfcCallDoctorProps> = (props) => {
   const classes = useStyles({});
   const [callDoctorPopup, setCallDoctorPopup] = React.useState<boolean>(false);
+
   return (
     <div className={classes.hdcContainer}>
       <div className={classes.hdcContent}>
@@ -144,7 +150,19 @@ export const HdfcCallDoctor: React.FC = (props) => {
           </div>
           <div className={classes.btnContainer}>
             <AphButton onClick={() => setCallDoctorPopup(false)}>Cancel</AphButton>
-            <AphButton color="primary">Proceed To Connect</AphButton>
+            <AphButton
+              color="primary"
+              onClick={() => {
+                const param = {
+                  fromPhone: props.patientPhone,
+                  toPhone: '---to be filled later---',
+                  callerId: '04048217258',
+                };
+                callToExotelApi(param);
+              }}
+            >
+              Proceed To Connect
+            </AphButton>
           </div>
         </div>
       </AphDialog>

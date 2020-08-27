@@ -6,6 +6,7 @@ import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import Axios, { AxiosResponse, Canceler } from 'axios';
 
 declare global {
   interface Window {
@@ -339,6 +340,19 @@ const isRejectedStatus = (status: MEDICINE_ORDER_STATUS) => {
   );
 };
 
+const callToExotelApi = (params: any): Promise<AxiosResponse<any>> => {
+  const url = `https://notifications.apollo247.com/webhooks/exotel/call`;
+  return Axios.post(
+    url,
+    { ...params },
+    {
+      headers: {
+        'x-api-key': 'gNXyYhY2VDxwzv8f6TwJqvfYmPmj',
+      },
+    }
+  );
+};
+
 export {
   isRejectedStatus,
   getStatus,
@@ -373,4 +387,5 @@ export {
   ORDER_BILLING_STATUS_STRINGS,
   getTypeOfProduct,
   kavachHelpline,
+  callToExotelApi,
 };
