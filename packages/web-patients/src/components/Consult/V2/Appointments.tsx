@@ -510,6 +510,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     clearFilter: {
+      cursor: 'pointer',
       lineHeight: '10px',
       '& svg': {
         width: 14,
@@ -548,7 +549,6 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const apolloClient = useApolloClient();
   const { isSigningIn } = useAuth();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
-  console.log('currentPatient', currentPatient);
   const [tabValue, setTabValue] = React.useState<number>(0);
   const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
   const [triggerInvoice, setTriggerInvoice] = React.useState<boolean>(false);
@@ -558,6 +558,9 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [isFilterOpen, setIsFilterOpen] = React.useState<boolean>(false);
   const [appointmentsList, setAppointmentsList] = React.useState<AppointmentsType[] | null>(null);
   const [filteredAppointmentsList, setFilteredAppointmentsList] = React.useState<
+    AppointmentsType[] | null
+  >(null);
+  const [searchAppointmentList, setSearchAppointmentsList] = React.useState<
     AppointmentsType[] | null
   >(null);
   const [specialtyName, setSpecialtyName] = React.useState<string>('');
@@ -580,6 +583,26 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const readableDoctorname = (doctorName && doctorName.length && readableParam(doctorName)) || '';
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [selectCurrentUser, setSelectCurrentUser] = React.useState<boolean>(false);
+  const [searchKeyword, setSearchKeyword] = React.useState<string>('');
+
+  useEffect(() => {
+    if (searchKeyword.length > 2) {
+      console.log('searchKeyword', searchKeyword);
+      const doctorsOrSpecialitySearch = filteredAppointmentsList.filter(
+        (appointmentDetail: any) => {
+          return (
+            appointmentDetail.doctorInfo.fullName
+              .toLowerCase()
+              .includes(searchKeyword.toLowerCase()) ||
+            appointmentDetail.doctorInfo.specialty.name
+              .toLowerCase()
+              .includes(searchKeyword.toLowerCase())
+          );
+        }
+      );
+      setSearchAppointmentsList(doctorsOrSpecialitySearch);
+    }
+  }, [searchKeyword]);
 
   const getAppointmentHistory = (successApptId: string) => {
     if (!appointmentHistory) {
@@ -957,8 +980,11 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const followUpAppointments: AppointmentsType[] = [];
   const pastAppointments: AppointmentsType[] = [];
 
-  filteredAppointmentsList &&
-    filteredAppointmentsList.forEach((appointmentDetails) => {
+  const updatedAppointmentList =
+    searchKeyword.length > 2 ? searchAppointmentList : filteredAppointmentsList;
+
+  updatedAppointmentList &&
+    updatedAppointmentList.forEach((appointmentDetails) => {
       if (
         appointmentDetails.status !== STATUS.CANCELLED &&
         !isPastAppointment(appointmentDetails.appointmentDateTime)
@@ -1017,6 +1043,13 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
+
+  const { availability, appointmentStatus, doctorsList, specialtyList } = filter;
+  const filterLength =
+    (availability && availability.length) +
+    (appointmentStatus && appointmentStatus.length) +
+    (doctorsList && doctorsList.length) +
+    (specialtyList && specialtyList.length);
 
   return (
     <div className={classes.root}>
@@ -1090,6 +1123,9 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                     <AphInput
                       className={classes.searchInput}
                       placeholder="Search appointments by Doctor Name or Speciality"
+                      onChange={(e) => {
+                        setSearchKeyword(e.target.value);
+                      }}
                     />
                   </FormControl>
                 )}
@@ -1129,98 +1165,128 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
               </div>
             </div>
             <div className={classes.tabsContent}>
-              <div className={classes.afContainer}>
-                <div className={classes.appliedFilters}>
-                  <Typography>Filters Applied:</Typography>
-                  <ul className={classes.filterList}>
-                    <li>
-                      <AphButton className={classes.filterBtn}>
-                        Active
-                        <a href="javascript:void(0)" className={classes.clearFilter}>
-                          <CloseIcon />
-                        </a>
-                      </AphButton>
-                    </li>
-                    <li>
-                      <AphButton className={classes.filterBtn}>
-                        Now
-                        <a href="javascript:void(0)" className={classes.clearFilter}>
-                          <CloseIcon />
-                        </a>
-                      </AphButton>
-                    </li>
-                    <li>
-                      <AphButton className={classes.filterBtn}>
-                        3 Days
-                        <a href="javascript:void(0)" className={classes.clearFilter}>
-                          <CloseIcon />
-                        </a>
-                      </AphButton>
-                    </li>
-                    <li>
-                      <AphButton className={classes.filterBtn}>
-                        Dr.Simran Rai
-                        <a href="javascript:void(0)" className={classes.clearFilter}>
-                          <CloseIcon />
-                        </a>
-                      </AphButton>
-                    </li>
-                    <li>
-                      <AphButton className={classes.filterBtn}>
-                        Dr. Garima Suri
-                        <a href="javascript:void(0)" className={classes.clearFilter}>
-                          <CloseIcon />
-                        </a>
-                      </AphButton>
-                    </li>
-                    <li>
-                      <AphButton className={classes.filterBtn}>
-                        General Physician
-                        <a href="javascript:void(0)" className={classes.clearFilter}>
-                          <CloseIcon />
-                        </a>
-                      </AphButton>
-                    </li>
-                  </ul>
+              {filterLength > 0 ? (
+                <div className={classes.afContainer}>
+                  <div className={classes.appliedFilters}>
+                    <Typography>Filters Applied:</Typography>
+                    <ul className={classes.filterList}>
+                      {appointmentStatus.length > 0 &&
+                        appointmentStatus.map((key) => (
+                          <li>
+                            <AphButton className={classes.filterBtn}>
+                              {key}
+                              <div
+                                className={classes.clearFilter}
+                                onClick={() => {
+                                  const appointmentStatus = filter.appointmentStatus.filter(
+                                    (val) => val !== key
+                                  );
+                                  setFilter({ ...filter, appointmentStatus });
+                                }}
+                              >
+                                <CloseIcon />
+                              </div>
+                            </AphButton>
+                          </li>
+                        ))}
+                      {availability.length > 0 &&
+                        availability.map((key) => (
+                          <li>
+                            <AphButton className={classes.filterBtn}>
+                              {key}
+                              <div
+                                className={classes.clearFilter}
+                                onClick={() => {
+                                  const availability = filter.availability.filter(
+                                    (val) => val !== key
+                                  );
+                                  setFilter({ ...filter, availability });
+                                }}
+                              >
+                                <CloseIcon />
+                              </div>
+                            </AphButton>
+                          </li>
+                        ))}
+                      {doctorsList.length > 0 &&
+                        doctorsList.map((key) => (
+                          <li>
+                            <AphButton className={classes.filterBtn}>
+                              {key}
+                              <div
+                                className={classes.clearFilter}
+                                onClick={() => {
+                                  const doctorsList = filter.doctorsList.filter(
+                                    (val) => val !== key
+                                  );
+                                  setFilter({ ...filter, doctorsList });
+                                }}
+                              >
+                                <CloseIcon />
+                              </div>
+                            </AphButton>
+                          </li>
+                        ))}
+                      {specialtyList.length > 0 &&
+                        specialtyList.map((key) => (
+                          <li>
+                            <AphButton className={classes.filterBtn}>
+                              {key}
+                              <div
+                                className={classes.clearFilter}
+                                onClick={() => {
+                                  const specialtyList = filter.specialtyList.filter(
+                                    (val) => val !== key
+                                  );
+                                  setFilter({ ...filter, specialtyList });
+                                }}
+                              >
+                                <CloseIcon />
+                              </div>
+                            </AphButton>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
                 </div>
-              </div>
-
-              <Tabs
-                value={tabValue}
-                variant="fullWidth"
-                classes={{
-                  root: classes.tabsRoot,
-                  indicator: classes.tabsIndicator,
-                }}
-                onChange={(e, newValue) => {
-                  setTabValue(newValue);
-                }}
-              >
-                <Tab
+              ) : (
+                <Tabs
+                  value={tabValue}
+                  variant="fullWidth"
                   classes={{
-                    root: classes.tabRoot,
-                    selected: classes.tabSelected,
+                    root: classes.tabsRoot,
+                    indicator: classes.tabsIndicator,
                   }}
-                  label="Active"
-                  title="Active appointments"
-                />
-                <Tab
-                  classes={{
-                    root: classes.tabRoot,
-                    selected: classes.tabSelected,
+                  onChange={(e, newValue) => {
+                    setTabValue(newValue);
                   }}
-                  label="Upcoming"
-                  title={'Upcoming appointments'}
-                />
-                <Tab
-                  classes={{
-                    root: classes.tabRoot,
-                    selected: classes.tabSelected,
-                  }}
-                  label="Past"
-                  title={'Past appointments'}
-                />
-              </Tabs>
+                >
+                  <Tab
+                    classes={{
+                      root: classes.tabRoot,
+                      selected: classes.tabSelected,
+                    }}
+                    label="Active"
+                    title="Active appointments"
+                  />
+                  <Tab
+                    classes={{
+                      root: classes.tabRoot,
+                      selected: classes.tabSelected,
+                    }}
+                    label="Upcoming"
+                    title={'Upcoming appointments'}
+                  />
+                  <Tab
+                    classes={{
+                      root: classes.tabRoot,
+                      selected: classes.tabSelected,
+                    }}
+                    label="Past"
+                    title={'Past appointments'}
+                  />
+                </Tabs>
+              )}
               {tabValue === 0 && (
                 <TabContainer>
                   {todaysAppointments && todaysAppointments.length > 0 ? (

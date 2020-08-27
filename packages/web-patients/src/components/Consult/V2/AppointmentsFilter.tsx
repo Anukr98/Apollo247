@@ -556,7 +556,19 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
             <img src={require('images/ic_cross.svg')} alt="Close" />
           </Link>
           <Typography component="h2">Filters</Typography>
-          <Link to="#">
+          <Link
+            to="#"
+            onClick={() => {
+              const initialAppointmentFilterObject: AppointmentFilterObject = {
+                appointmentStatus: [],
+                availability: [],
+                doctorsList: [],
+                specialtyList: [],
+              };
+              setLocalFilter(initialAppointmentFilterObject);
+              setFilter(initialAppointmentFilterObject);
+            }}
+          >
             <img src={require('images/ic_refresh.svg')} alt="Refresh" />
           </Link>
         </div>
@@ -688,7 +700,14 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
           </div>
         </div>
         <div className={classes.filterFooter}>
-          <AphButton color="primary" variant="contained">
+          <AphButton
+            color="primary"
+            variant="contained"
+            onClick={() => {
+              setFilter(localFilter);
+              setIsFilterOpen(false);
+            }}
+          >
             Apply
           </AphButton>
         </div>
