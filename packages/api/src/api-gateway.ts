@@ -62,6 +62,12 @@ export type Resolver<Parent, Args, Context, Result> = (
           process.env.NOTIFICATIONS_SERVICE_PORT ? process.env.NOTIFICATIONS_SERVICE_PORT : '80'
         )}/graphql`,
       },
+      {
+        name: 'subscriptions',
+        url: `http://${process.env.SUBSCRIPTION_SERVICE_HOST}${getPortStr(
+          process.env.SUBSCRIPTION_SERVICE_PORT ? process.env.SUBSCRIPTION_SERVICE_PORT : '80'
+        )}/graphql`,
+      },
     ],
     buildService({ name, url }) {
       return new RemoteGraphQLDataSource({
@@ -110,7 +116,7 @@ export type Resolver<Parent, Args, Context, Result> = (
     'https://qapmt.apollo247.com',
     'https://stagingpatients.apollo247.com',
     'https://stagingdoctors.apollo247.com',
-    'https://stagingpmt.apollo247.com'
+    'https://stagingpmt.apollo247.com',
   ];
 
   const logger = winstonLogger.loggers.get('apiGatewayLogger');
