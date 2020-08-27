@@ -463,7 +463,7 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   zip: string;
 
-  @Column({ type: 'float8', default: 7 })
+  @Column({ type: 'smallint', default: 7 })
   chatDays: number;
 
   @Column({ default: false })
@@ -565,9 +565,6 @@ export class DoctorSpecialty extends BaseEntity {
 
   @Column({ nullable: true })
   symptoms: string;
-
-  @Column({ nullable: true })
-  commonSearchWords: string;
 
   @Column({ nullable: true })
   displayOrder: Number;
