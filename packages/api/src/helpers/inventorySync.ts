@@ -15,7 +15,7 @@ const dLogger = debugLog(
 );
 
 export async function syncInventory(orderDatails: MedicineOrders, syncType: SYNC_TYPE) {
-  if (!process.env.INVENTORY_SYNC_URL)
+  if (!process.env.INVENTORY_SYNC_URL || !process.env.INVENTORY_SYNC_TOKEN)
     throw new AphError(AphErrorMessages.INVALID_INVENTORY_SYNC_URL);
 
   const baseUrl = process.env.INVENTORY_SYNC_URL.toString();
@@ -52,6 +52,7 @@ export async function syncInventory(orderDatails: MedicineOrders, syncType: SYNC
     method: 'POST',
     body: JSON.stringify(reqBody),
     headers: {
+      Authentication: process.env.INVENTORY_SYNC_TOKEN,
       'Content-Type': 'application/json;charset=utf-8',
     },
     signal: controller.signal,

@@ -298,11 +298,17 @@ const updateOrderStatus: Resolver<
       };
       await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
       if (status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
-        sendMedicineOrderStatusNotification(
-          NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY,
-          orderDetails,
-          profilesDb
-        );
+        if (updateOrderStatusInput.trackingProvider) {
+          const trackingProvider = updateOrderStatusInput.trackingProvider.toLowerCase();
+          if (trackingProvider != 'apollo fleet')
+            sendMedicineOrderStatusNotification(
+              trackingProvider == 'apollo internal fleet'
+                ? NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY
+                : NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY_EXTERNAL,
+              orderDetails,
+              profilesDb
+            );
+        }
 
         //post order out for delivery event to webEngage
         const postBody: Partial<WebEngageInput> = {

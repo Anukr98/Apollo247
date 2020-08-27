@@ -143,6 +143,7 @@ import {
   g,
   postWebEngageEvent,
   nameFormater,
+  followUpChatDaysCaseSheet,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -204,6 +205,7 @@ let callhandelBack: boolean = true;
 let jdCount: any = 1;
 let isJdAllowed: boolean = true;
 let abondmentStarted = false;
+let showAlertPopUp: boolean = false;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -370,10 +372,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
 
   let appointmentData: any = props.navigation.getParam('data');
+  const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
+  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpChatDays');
+  const followUpChatDays =
+    caseSheetChatDays || caseSheetChatDays === 0
+      ? caseSheetChatDays === 0
+        ? 0
+        : caseSheetChatDays - 1
+      : 6;
   const disableChat =
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
-      .add(6, 'days')
+      .add(followUpChatDays, 'days')
       .startOf('day')
       .isBefore(moment(new Date()).startOf('day'));
   // console.log('appointmentData >>>>', appointmentData);
@@ -614,12 +624,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const consultWebEngageEvents = (
-    type: 
-    | WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM
-    | WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM
-    | WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM
-    | WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM) => {
-    const eventAttributes: 
+    type:
+      | WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM
+      | WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM
+      | WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM
+      | WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM
+  ) => {
+    const eventAttributes:
       | WebEngageEvents[WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]
       | WebEngageEvents[WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM]
       | WebEngageEvents[WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM]
@@ -634,8 +645,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Doctor ID': doctorId,
       'Speciality name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
       'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
-      'Hospital Name': g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
-      'Hospital City': g(appointmentData, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+      'Hospital Name': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      )!,
+      'Hospital City': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'city'
+      )!,
     };
     postWebEngageEvent(type, eventAttributes);
   };
@@ -671,6 +696,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const backDataFunctionality = () => {
     try {
       console.log(callhandelBack, 'is back called');
+
+      if (showAlertPopUp) {
+        return true;
+      }
       if (callhandelBack) {
         // handleCallTheEdSessionAPI();
         props.navigation.dispatch(
@@ -797,6 +826,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           if (noCount && noCount > 0) {
             setShowConnectAlertPopup(false);
           } else {
+            showAlertPopUp = true;
             setShowConnectAlertPopup(true);
           }
         }
@@ -813,6 +843,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE, eventAttributes);
     setLoading(true);
+    showAlertPopUp = false;
 
     updateExternalConnect(client, doctorId, patientId, connected, channel)
       .then((data) => {
@@ -4295,7 +4326,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === cancelConsultInitiated ||
       rowData.message === callAbandonment ||
       rowData.message === appointmentComplete ||
-      rowData.message === patientRejectedCall || 
+      rowData.message === patientRejectedCall ||
       rowData === patientRejectedCall
     ) {
       return null;
@@ -6126,9 +6157,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   const text = {
                     id: patientId,
                     message: imageconsult,
-                    fileType: ((data.urls && data.urls[0]) || '').match(/\.(pdf)$/)
-                      ? 'pdf'
-                      : 'image',
+                    fileType: item.fileType == 'pdf' ? 'pdf' : 'image',
                     prismId: recordId,
                     url: (data.urls && data.urls[0]) || '',
                     messageDate: new Date(),
@@ -6290,8 +6319,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           if (selectedType == 'CAMERA_AND_GALLERY') {
             console.log('ca');
             if (type !== undefined) {
-              if (type === 'Camera') consultWebEngageEvents(WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM);
-              if (type === 'Gallery') consultWebEngageEvents(WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM);
+              if (type === 'Camera')
+                consultWebEngageEvents(WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM);
+              if (type === 'Gallery')
+                consultWebEngageEvents(WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM);
             }
             uploadDocument(response, response[0].base64, response[0].fileType);
             //updatePhysicalPrescriptions(response);
@@ -7233,7 +7264,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       )}
       {showConnectAlertPopup && (
         <CustomAlert
-          description={`Have you consulted with ${appointmentData.doctorInfo.displayName} before?`}
+          description={`Have you interacted with ${appointmentData.doctorInfo.displayName} before?`}
           onNoPress={() => {
             setShowConnectAlertPopup(false);
             getUpdateExternalConnect(false);

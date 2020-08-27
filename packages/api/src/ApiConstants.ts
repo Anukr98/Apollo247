@@ -87,7 +87,8 @@ export enum ApiConstants {
 
   //medicine order out for delivery
   ORDER_OUT_FOR_DELIVERY_TITLE = 'Medicine order is out for delivery',
-  ORDER_OUT_FOR_DELIVERY_BODY = 'Hi {0}! Your order {1} has been picked by the delivery person and is on its way.',
+  ORDER_OUT_FOR_DELIVERY_BODY = 'Hi {0}! Your order {1} has been picked by our delivery person and is out for delivery. For any support, reach out on our official WhatsApp channel (8 AM - 8:30 PM) bit.ly/apollo247Medicines',
+  ORDER_OUT_FOR_DELIVERY_BODY_EXTERNAL = 'Hi {0}! Your Order {1} has been picked-up by the courier and is in-transit. For any support, reach out on our official WhatsApp channel (8 AM - 8:30 PM) bit.ly/apollo247Medicines',
 
   //medicine order delivered
   ORDER_DELIVERY_TITLE = 'Medicine order is delivered',

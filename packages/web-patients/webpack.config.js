@@ -4,6 +4,8 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
 const DotenvWebpack = require('dotenv-webpack');
 const dotenv = require('dotenv');
 const WorkboxPlugin = require('workbox-webpack-plugin');
@@ -17,7 +19,7 @@ const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isStaging = process.env.NODE_ENV === 'staging';
 const isProduction = process.env.NODE_ENV === 'production';
-
+const imageCdnBaseUrl = process.env.IMAGE_BASE_URL;
 const distDir = path.resolve(__dirname, 'dist');
 
 const plugins = [
@@ -29,8 +31,9 @@ const plugins = [
     cwd: process.cwd(),
   }),
   new HtmlWebpackPlugin({
+    title: 'Apollo 247',
     filename: 'index.html',
-    chunks: ['index'],
+    chunks: ['index']['vendors'],
     template: './index.html',
     templateParameters: {
       env: process.env.NODE_ENV,
@@ -39,6 +42,9 @@ const plugins = [
     inject: true,
     favicon: './favicon.svg',
   }),
+  new MomentLocalesPlugin(),
+  // new BundleAnalyzerPlugin(),
+
   new WorkboxPlugin.GenerateSW({
     // these options encourage the ServiceWorkers to get in there fast
     // and not allow any straggling "old" SWs to hang around
@@ -114,7 +120,7 @@ const urlLoader = {
   options: {
     limit: 16384,
     fallback: 'file-loader',
-    name: '[path][name]-[hash:6].[ext]',
+    name: '[path][name].[ext]',
   },
 };
 
@@ -143,10 +149,27 @@ module.exports = {
         use: isLocal ? [rhlBabelLoader, tsLoader] : [tsLoader],
       },
       {
-        test: /\.(png|jpg|jpeg|svg|gif|webp|mp3)$/,
+        test: /\.(mp3)$/,
         use: [urlLoader],
       },
+      {
+        test: /\.(png|jpg|jpeg|svg|gif|webp)$/i,
+        loader: 'file-loader',
+        options: {
+          publicPath: (url, resourcePath, context) => {
+            const imageName = resourcePath.split('/').pop()         
+            if(isProduction || isStaging) {
+              console.log('resourcePath', resourcePath.split('/').pop())   
+              return `${imageCdnBaseUrl}/${imageName}`;
+            }
+            return `/images/${imageName}`
+          },
+          name: (isProduction || isStaging) ? '' : '[path][name].[ext]',
+          outputPath: (isProduction || isStaging) ? 'images': '',
+        },
+      },
     ],
+    
   },
 
   resolve: {
@@ -177,6 +200,28 @@ module.exports = {
         // Also set `"sideEffects": false` in `package.json`
         sideEffects: true,
         usedExports: true,
+        minimize: true,
+        splitChunks: {
+          chunks: 'all',
+          minSize: 20000,
+          maxSize: 0,
+          minChunks: 1,
+          maxAsyncRequests: 30,
+          maxInitialRequests: 30,
+          automaticNameDelimiter: '~',
+          enforceSizeThreshold: 50000,
+          cacheGroups: {
+            defaultVendors: {
+              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+              priority: -10,
+            },
+            default: {
+              minChunks: 2,
+              priority: -20,
+              reuseExistingChunk: true,
+            },
+          },
+        },
       },
 
   devServer: isLocal

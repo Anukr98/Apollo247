@@ -259,31 +259,6 @@ const cancelAppointment: Resolver<
   if (cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT) {
     sendMail(emailContent);
   }
-  //send mail to doctor admin start
-  if (cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT) {
-    const adminRepo = doctorsDb.getCustomRepository(AdminDoctorMap);
-    const adminDetails = await adminRepo.findByadminId(appointment.doctorId);
-    console.log(adminDetails, 'adminDetails');
-    if (adminDetails == null) throw new AphError(AphErrorMessages.GET_ADMIN_USER_ERROR);
-
-    const listOfEmails: string[] = [];
-
-    adminDetails.length > 0 &&
-      adminDetails.map((value) => listOfEmails.push(value.adminuser.email));
-    console.log('listOfEmails', listOfEmails);
-    listOfEmails.forEach(async (adminemail) => {
-      const adminEmailContent: EmailMessage = {
-        //ccEmail: ccTriggerEmailIds.toString(),
-        toEmail: adminemail.toString(),
-        subject: mailSubject.toString(),
-        fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
-        fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
-        messageContent: mailContent,
-      };
-      sendMail(adminEmailContent);
-    });
-  }
-  //send mail to doctor admin end
   return { status: STATUS.CANCELLED };
 };
 

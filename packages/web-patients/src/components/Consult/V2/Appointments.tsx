@@ -384,16 +384,15 @@ interface statusMap {
   [name: string]: statusActionInterface;
 }
 
-const initialAppointmentFilterObject: AppointmentFilterObject = {
-  consultType: [],
-  appointmentStatus: [],
-  availability: [],
-  gender: [],
-  doctorsList: [],
-};
-
 export const Appointments: React.FC<AppointmentProps> = (props) => {
   const classes = useStyles({});
+  const initialAppointmentFilterObject: AppointmentFilterObject = {
+    consultType: [],
+    appointmentStatus: [],
+    availability: [],
+    gender: [],
+    doctorsList: [],
+  };
   const pageUrl = window.location.href;
   const urlParams = new URLSearchParams(window.location.search);
   const successApptId = urlParams.get('apptid') ? String(urlParams.get('apptid')) : '';

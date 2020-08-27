@@ -202,7 +202,9 @@ android {
 
 dependencies {
     implementation project(':@react-native-community_datetimepicker')
+    implementation project(':react-native-image-resizer')
     implementation project(':react-native-code-push')
+    implementation project(':react-native-document-picker')
     implementation project(':react-native-callkeep')
     implementation project(':react-native-background-timer')
     implementation project(':react-native-video')
