@@ -702,7 +702,7 @@ export const Prescription: React.FC = (props) => {
                     </div> */}
 
                     <a
-                      href={`${process.env.REACT_APP_CASESHEET_LINK}${caseSheetDetails.blobName}`}
+                      href={`${process.env.AZURE_PDF_BASE_URL}${caseSheetDetails.blobName}`}
                       target="_blank"
                     >
                       <div className={classes.shareIcon}>
