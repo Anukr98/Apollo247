@@ -223,9 +223,6 @@ export const generateOTP = () => {
 
 //utility method to send SMS
 const sendSMS = async (mobileNumber: string, otp: string, hashCode: string, message: string) => {
-  if (!isNotificationAllowed(mobileNumber)) {
-    return;
-  }
   const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
   const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_OTP_API_KEY}`;
   if (hashCode) {
@@ -238,6 +235,9 @@ const sendSMS = async (mobileNumber: string, otp: string, hashCode: string, mess
   //logging api call data here
   log('smsOtpAPILogger', `OPT_API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
 
+  if (!isNotificationAllowed(mobileNumber)) {
+    return;
+  }
   const smsResponse = await fetch(apiUrl)
     .then((res) => res.json())
     .catch((error) => {
