@@ -567,9 +567,6 @@ export class DoctorSpecialty extends BaseEntity {
   symptoms: string;
 
   @Column({ nullable: true })
-  commonSearchWords: string;
-
-  @Column({ nullable: true })
   displayOrder: Number;
 
   @Column({ nullable: true })
