@@ -907,15 +907,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [userMessage, setUserMessage] = useState<string>('');
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
-  const [appDataLoading, setAppDataLoading] = useState<boolean>(!appointmentDetails);
   const [appHistoryLoading, setAppHistoryLoading] = useState<boolean>(true);
   const [consultQMutationLoading, setConsultQMutationLoading] = useState<boolean>(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
-  // const [appointmentsCount, setAppointmentsCount] = useState<any>(null);
   const [doctorInteractionModal, setDoctorInteractionModal] = useState(true);
-
-  // console.log(appointmentsCount, '------------------------');
 
   const { currentPatient } = useAllCurrentPatients();
   const doctorDisplayName = props.doctorDetails.getDoctorDetailsById.displayName;
@@ -2235,7 +2231,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   </AphButton>
                 </div>
               </>
-            ) : !appDataLoading ? (
+            ) : appointmentDetails ? (
               consultQMutationLoading || appHistoryLoading ? (
                 <div className={classes.circlularProgress}>
                   <CircularProgress />
