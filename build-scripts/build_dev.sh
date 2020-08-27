@@ -11,14 +11,14 @@ rm -rfv packages/universal/dist/* || exit 2
 
 echo -e "\nrunning migration..."
 cd packages/api
-npm run start:migration
+npm run test --if-present start:migration
 cd -
 
 echo -e "\nrunning bootstrap:web..."
 npm run bootstrap:web || exit 2
 echo "\n Building api-gateway..."
 cd packages/api
-npm run test --if-present start:api-gateway || exit 2
+npm run start:api-gateway || exit 2
 cd -
 
 echo -e "\nbuilding profiles-service..."
