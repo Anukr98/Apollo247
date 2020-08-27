@@ -198,7 +198,7 @@ const { locationDetails, pharmacyLocation } = useAppCommonData();
             setshowSpinner(false);
             console.log('updateapicalled', _data);
             props.navigation.pop(2, { immediate: true });
-            props.navigation.push(AppRoutes.AddressBook);
+            // props.navigation.push(AppRoutes.AddressBook);
           } catch (error) {
             CommonBugFender('AddAddress_onConfirmLocation_try', error);
           }
@@ -254,7 +254,7 @@ const { locationDetails, pharmacyLocation } = useAppCommonData();
           setDiagnosticAddressId!(address.id || '');
           if(isComingFrom == 'My Account'){
             props.navigation.pop(2, { immediate: true });
-            props.navigation.push(AppRoutes.AddressBook);
+            // props.navigation.push(AppRoutes.AddressBook);
           }
           else{
             props.navigation.pop(2, { immediate: true });
@@ -281,7 +281,7 @@ const { locationDetails, pharmacyLocation } = useAppCommonData();
   const onAlertError = (source:string) =>{
     if(source == 'My Account'){
       props.navigation.pop(2, { immediate: true });
-      props.navigation.push(AppRoutes.AddressBook);
+      // props.navigation.push(AppRoutes.AddressBook);
     }
     else{
       props.navigation.pop(2, { immediate: true });
