@@ -253,7 +253,6 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
         <AphButton
           onClick={() => {
             setIsFilterOpen(false);
-            // setFilter(localFilter);
           }}
         >
           <img src={require('images/ic_cross.svg')} alt="" />
