@@ -2308,7 +2308,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         {/* model popup for image preview ends */}
       </div>
       {/* modal popup for doctor interaciton questions */}
-      {!appHistoryLoading && appointmentDetails.status !== STATUS.COMPLETED ? (
+      {!appHistoryLoading && appointmentDetails.status === STATUS.PENDING ? (
         <Modal open={doctorInteractionModal} onClose={() => setDoctorInteractionModal(false)}>
           <div
             className={
