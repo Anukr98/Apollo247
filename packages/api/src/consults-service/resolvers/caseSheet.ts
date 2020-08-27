@@ -52,6 +52,7 @@ import { sendNotification, NotificationType } from 'notifications-service/resolv
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { getCache, setCache } from 'consults-service/database/connectRedis';
 
 export type DiagnosisJson = {
   name: string;
@@ -1120,6 +1121,7 @@ const createJuniorDoctorCaseSheet: Resolver<
   return caseSheetDetails;
 };
 
+const REDIS_SDCASESHEET_LOCK_PREFIX = `sdcasesheet:lock:`;
 const createSeniorDoctorCaseSheet: Resolver<
   null,
   { appointmentId: string },
@@ -1144,6 +1146,13 @@ const createSeniorDoctorCaseSheet: Resolver<
   //check whether if senior doctors casesheet already exists
   const sdCaseSheets = await caseSheetRepo.getSeniorDoctorMultipleCaseSheet(args.appointmentId);
 
+  const lockKey = `${REDIS_SDCASESHEET_LOCK_PREFIX}${args.appointmentId}`;
+  const lockedAppointment = await getCache(lockKey);
+  if (lockedAppointment && typeof lockedAppointment == 'string') {
+    throw new Error(AphErrorMessages.CASESHEET_CREATION_IN_PROGRESS);
+  }
+  await setCache(lockKey, 'true', ApiConstants.CACHE_EXPIRATION_120);
+
   if (sdCaseSheets == null || sdCaseSheets.length == 0) {
     const caseSheetAttrs: Partial<CaseSheet> = {
       diagnosis: juniorDoctorcaseSheet.diagnosis,
@@ -1161,6 +1170,8 @@ const createSeniorDoctorCaseSheet: Resolver<
       createdDoctorId: appointmentData.doctorId,
       doctorType: doctorData.doctorType,
     };
+
+    const newCaseSheet = await caseSheetRepo.savecaseSheet(caseSheetAttrs);
     const historyAttrs: Partial<AppointmentUpdateHistory> = {
       appointment: appointmentData,
       userType: APPOINTMENT_UPDATED_BY.DOCTOR,
@@ -1174,7 +1185,7 @@ const createSeniorDoctorCaseSheet: Resolver<
         'SD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + appointmentData.doctorId,
     };
     appointmentRepo.saveAppointmentHistory(historyAttrs);
-    return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
+    return newCaseSheet;
   }
 
   if (sdCaseSheets.length > 0) {
