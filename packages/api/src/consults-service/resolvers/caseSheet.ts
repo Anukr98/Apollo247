@@ -52,7 +52,7 @@ import { sendNotification, NotificationType } from 'notifications-service/resolv
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
-import { getCache, setCache } from 'consults-service/database/connectRedis';
+import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
 
 export type DiagnosisJson = {
   name: string;
@@ -1185,6 +1185,7 @@ const createSeniorDoctorCaseSheet: Resolver<
         'SD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + appointmentData.doctorId,
     };
     appointmentRepo.saveAppointmentHistory(historyAttrs);
+    await delCache(lockKey);
     return newCaseSheet;
   }
 
@@ -1226,9 +1227,11 @@ const createSeniorDoctorCaseSheet: Resolver<
       reason: 'SD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + doctorData.id,
     };
     appointmentRepo.saveAppointmentHistory(historyAttrs);
+    await delCache(lockKey);
     return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
   }
 
+  await delCache(lockKey);
   return sdCaseSheets[0];
 };
 
