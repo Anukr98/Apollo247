@@ -18859,18 +18859,6 @@
             "deprecationReason": null
           },
           {
-            "name": "followUpChatDays",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "Int",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "followUpConsultType",
             "description": null,
             "args": [],
@@ -30076,47 +30064,6 @@
             "deprecationReason": null
           },
           {
-            "name": "updateDoctorChatDays",
-            "description": null,
-            "args": [
-              {
-                "name": "doctorId",
-                "description": null,
-                "type": {
-                  "kind": "NON_NULL",
-                  "name": null,
-                  "ofType": {
-                    "kind": "SCALAR",
-                    "name": "String",
-                    "ofType": null
-                  }
-                },
-                "defaultValue": null
-              },
-              {
-                "name": "chatDays",
-                "description": null,
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "Int",
-                  "ofType": null
-                },
-                "defaultValue": null
-              }
-            ],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "chatDaysResult",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "updateCallStatusBySid",
             "description": null,
             "args": [
@@ -41155,16 +41102,6 @@
           },
           {
             "name": "followUpAfterInDays",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "Int",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "followUpChatDays",
             "description": null,
             "type": {
               "kind": "SCALAR",

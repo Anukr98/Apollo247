@@ -172,8 +172,8 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     const endDate = new Date(format(currentDate, 'yyyy-MM-dd') + 'T18:29');
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
-      .where(` appointment.sdConsultationDate + (CASE WHEN (case_sheet.followUpChatDays IS NOT NULL ) THEN case_sheet.followUpChatDays ELSE ${ApiConstants.FREE_CHAT_DAYS} END * ${ "'1 day'::INTERVAL"}) >= :startDate `, { startDate })
-      .andWhere(` appointment.sdConsultationDate + (CASE WHEN (case_sheet.followUpChatDays IS NOT NULL ) THEN case_sheet.followUpChatDays ELSE ${ApiConstants.FREE_CHAT_DAYS} END * ${ "'1 day'::INTERVAL"}) < :endDate `, { endDate })
+      .where(` appointment.sdConsultationDate + (CASE WHEN (case_sheet.followUpAfterInDays IS NOT NULL ) THEN case_sheet.followUpAfterInDays ELSE ${ApiConstants.FREE_CHAT_DAYS} END * ${ "'1 day'::INTERVAL"}) >= :startDate `, { startDate })
+      .andWhere(` appointment.sdConsultationDate + (CASE WHEN (case_sheet.followUpAfterInDays IS NOT NULL ) THEN case_sheet.followUpAfterInDays ELSE ${ApiConstants.FREE_CHAT_DAYS} END * ${ "'1 day'::INTERVAL"}) < :endDate `, { endDate })
       .andWhere(` appointment.status = :status`, { status: STATUS.COMPLETED })
       .select("appointment.id")
       .groupBy('appointment.id')

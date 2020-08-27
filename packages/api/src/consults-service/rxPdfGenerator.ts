@@ -376,8 +376,8 @@ export const convertCaseSheetToRxPdfData = async (
     if (caseSheet.followUpConsultType)
       followUpDetails = followUpDetails + '(' + _capitalize(caseSheet.followUpConsultType) + ') ';
     let followUpDays;
-    if (caseSheet.followUpChatDays) {
-      followUpDays = caseSheet.followUpChatDays;
+    if (caseSheet.followUpAfterInDays) {
+      followUpDays = caseSheet.followUpAfterInDays;
       if (followUpDays) followUpDetails = followUpDetails + 'after ' + followUpDays + ' days';
     } else if (caseSheet.followUpDate) {
       //followUpDays = differenceInCalendarDays(caseSheet.followUpDate, caseSheet.createdDate!);

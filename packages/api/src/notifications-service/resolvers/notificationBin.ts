@@ -85,7 +85,7 @@ const insertMessage: Resolver<
     const caseSheetDetails = await caseSheetRepo.getSDLatestCompletedCaseSheet(appointmentData.id);
     if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
-    if (difference > parseInt(caseSheetDetails.followUpChatDays.toString(), 10))
+    if (difference > parseInt(caseSheetDetails.followUpAfterInDays.toString(), 10))
       throw new AphError(AphErrorMessages.FREE_CHAT_DAYS_COMPLETED);
 
     //create message body
@@ -193,7 +193,7 @@ const sendUnreadMessagesNotification: Resolver<
       const today = format(addMinutes(new Date(), +0), 'yyyy-MM-dd');
       const consultDate = format(addMinutes(appointment.sdConsultationDate, +0), 'yyyy-MM-dd');
       const difference = differenceInDays(new Date(today), new Date(consultDate));
-      return difference == parseInt(caseSheetDetails.followUpChatDays.toString(), 10) - 1;
+      return difference == parseInt(caseSheetDetails.followUpAfterInDays.toString(), 10) - 1;
     });
 
     //Mapping the doctor ids with count of last day appointments
