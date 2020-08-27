@@ -67,3 +67,9 @@ export const getToken = async (
 
     return token
 }
+
+export const updateToken = async () => {
+    let token
+    cache.del('token')
+    console.log(cache.get('token'))
+}
