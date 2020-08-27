@@ -30,11 +30,13 @@ import {
   CommonBugFender,
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
+import { TestSlot } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import {
   searchDiagnostics,
@@ -81,14 +83,6 @@ interface AphConsole {
   table(...data: any[]): void;
 }
 
-export interface TestSlot {
-  employeeCode: string;
-  employeeName: string;
-  diagnosticBranchCode: string;
-  date: Date;
-  slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
-}
-
 const isDebugOn = __DEV__;
 
 export const aphConsole: AphConsole = {
@@ -132,6 +126,19 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+};
+
+export const followUpChatDaysCaseSheet = (
+  caseSheet:
+    | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
+    | null
+) => {
+  const case_sheet =
+    caseSheet &&
+    caseSheet
+      .filter((j) => j && j.doctorType !== DoctorType.JUNIOR)
+      .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
+  return case_sheet;
 };
 
 export const formatOrderAddress = (
@@ -881,58 +888,25 @@ export const getRelations = (self?: string) => {
 
 export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
 
-export const isValidTestSlot = (
-  slot: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo,
-  date: Date
-) => {
+export const isValidTestSlot = (slot: TestSlot, date: Date) => {
   return (
-    slot.status != 'booked' &&
     (moment(date)
       .format('DMY')
       .toString() ===
     moment()
       .format('DMY')
       .toString()
-      ? moment(slot.startTime!.trim(), 'HH:mm').isSameOrAfter(
+      ? moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrAfter(
           moment(new Date()).add(
             AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
             'minutes'
           )
         )
       : true) &&
-    moment(slot.endTime!.trim(), 'HH:mm').isSameOrBefore(
+    moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
       moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
     )
   );
-};
-
-export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, endTime: string) => {
-  return slots.find(
-    (item) => item.slotInfo.startTime == startTime && item.slotInfo.endTime == endTime
-  )!;
-};
-
-export const getUniqueTestSlots = (slots: TestSlot[]) => {
-  return slots
-    .filter(
-      (item, idx, array) =>
-        array.findIndex(
-          (_item) =>
-            _item.slotInfo.startTime == item.slotInfo.startTime &&
-            _item.slotInfo.endTime == item.slotInfo.endTime
-        ) == idx
-    )
-    .map((val) => ({
-      startTime: val.slotInfo.startTime!,
-      endTime: val.slotInfo.endTime!,
-    }))
-    .sort((a, b) => {
-      if (moment(a.startTime.trim(), 'HH:mm').isAfter(moment(b.startTime.trim(), 'HH:mm')))
-        return 1;
-      else if (moment(b.startTime.trim(), 'HH:mm').isAfter(moment(a.startTime.trim(), 'HH:mm')))
-        return -1;
-      return 0;
-    });
 };
 
 const webengage = new WebEngage();

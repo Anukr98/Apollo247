@@ -10,12 +10,10 @@ import { AphSelect, AphButton } from '@aph/web-ui-components';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { ConsultationsCard } from 'components/Consult/V2/ConsultationsCard';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
-import { MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
-import { GetOrderInvoiceVariables, GetOrderInvoice } from 'graphql/types/GetOrderInvoice';
-// import { GET_PATIENT_APPOINTMENTS, GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
+import { APPOINTMENT_TYPE, APPOINTMENT_STATE, STATUS } from 'graphql/types/globalTypes';
+import { GetOrderInvoice } from 'graphql/types/GetOrderInvoice';
 import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
 import {
   GetPatientAllAppointments,
@@ -23,32 +21,31 @@ import {
 } from 'graphql/types/GetPatientAllAppointments';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
-// import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import _isEmpty from 'lodash/isEmpty';
 import _capitalize from 'lodash/capitalize';
 import { useAuth } from 'hooks/authHooks';
-// import { STATUS } from 'graphql/types/globalTypes';
-// import isToday from 'date-fns/isToday';
-// import { TransferConsultMessage } from 'components/ConsultRoom/TransferConsultMessage';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import moment from 'moment';
-// import { useApolloClient } from 'react-apollo-hooks';
 import _find from 'lodash/find';
 import { getAppStoreLink } from 'helpers/dateHelpers';
-// import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
 import { GET_APPOINTMENT_DATA, GET_CONSULT_INVOICE } from 'graphql/consult';
 import { PAYMENT_TRANSACTION_STATUS } from 'graphql/payments';
-// import { getIstTimestamp } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { gtmTracking } from '../../../gtmTracking';
 import { OrderStatusContent } from 'components/OrderStatusContent';
-import { readableParam } from 'helpers/commonHelpers';
+import { readableParam, AppointmentFilterObject, isPastAppointment } from 'helpers/commonHelpers';
 import { consultationBookTracking } from 'webEngageTracking';
-import { getDiffInMinutes } from 'helpers/commonHelpers';
+import { getDiffInMinutes, getDiffInDays } from 'helpers/commonHelpers';
 import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentsType } from 'graphql/types/GetPatientAllAppointments';
+import { AppointmentsFilter } from './AppointmentsFilter';
+import { GetAppointmentData } from 'graphql/types/GetAppointmentData';
+import { GetAppointmentData_getAppointmentData_appointmentsHistory as appointmentsHistoryType } from 'graphql/types/GetAppointmentData';
+import { PaymentTransactionStatus_paymentTransactionStatus_appointment as paymentTransactionAppointmentType } from 'graphql/types/PaymentTransactionStatus';
+import _uniq from 'lodash/uniq';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -352,7 +349,24 @@ const useStyles = makeStyles((theme: Theme) => {
     filterIcon: {
       float: 'right',
       position: 'relative',
-      top: '-3px',
+      top: -8,
+      right: -22,
+      cursor: 'pointer',
+    },
+    modalDialog: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      outline: 'none',
+    },
+    cardContainer: {
+      '& h1': {
+        color: '#0087BA',
+        fontSize: 17,
+        lineHeight: '22px',
+        fontWeight: 'bold',
+        margin: '45px 0 0 20px',
+      },
     },
   };
 });
@@ -369,62 +383,112 @@ interface statusActionInterface {
 interface statusMap {
   [name: string]: statusActionInterface;
 }
+
 export const Appointments: React.FC<AppointmentProps> = (props) => {
-  const pageUrl = window.location.href;
   const classes = useStyles({});
-  const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
+  const initialAppointmentFilterObject: AppointmentFilterObject = {
+    consultType: [],
+    appointmentStatus: [],
+    availability: [],
+    gender: [],
+    doctorsList: [],
+  };
+  const pageUrl = window.location.href;
   const urlParams = new URLSearchParams(window.location.search);
   const successApptId = urlParams.get('apptid') ? String(urlParams.get('apptid')) : '';
+  const apolloClient = useApolloClient();
   const { isSigningIn } = useAuth();
+  const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [tabValue, setTabValue] = React.useState<number>(0);
   const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
   const [triggerInvoice, setTriggerInvoice] = React.useState<boolean>(false);
-
-  const [appointmentDoctorName, setAppointmentDoctorName] = React.useState<string>('');
+  const [filter, setFilter] = React.useState<AppointmentFilterObject>(
+    initialAppointmentFilterObject
+  );
+  const [isFilterOpen, setIsFilterOpen] = React.useState<boolean>(false);
+  const [appointmentsList, setAppointmentsList] = React.useState<AppointmentsType[] | null>(null);
+  const [filteredAppointmentsList, setFilteredAppointmentsList] = React.useState<
+    AppointmentsType[] | null
+  >(null);
   const [specialtyName, setSpecialtyName] = React.useState<string>('');
-  const [photoUrl, setPhotoUrl] = React.useState<string>('');
-  const [isConfirmPopupLoaded, setIsConfirmPopupLoaded] = React.useState<boolean>(false);
-  const [isFailurePayment, setIsFailurePayment] = React.useState(pageUrl.includes('failed'));
-  const [anchorEl, setAnchorEl] = React.useState(null);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
-  const [isLoading, setIsLoading] = React.useState<boolean>(true);
-  const [appointmentDateTime, setAppointmentDateTime] = React.useState<string>('');
-  const [appointmentType, setAppointmentType] = React.useState<string>('');
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [mutationLoading, setMutationLoading] = React.useState<boolean>(false);
+  const [mutationError, setMutationError] = React.useState<boolean>(false);
   const [doctorDetail, setDoctorDetail] = React.useState<any>({});
-  const [paymentStatus, setPaymentStatus] = React.useState<string>('');
-  const [paymentRefId, setPaymentRefId] = React.useState<string>('');
-  const [displayId, setDisplayId] = React.useState<number>(0);
-  const [amountPaid, setAmountPaid] = React.useState<number>(0);
   const [doctorId, setDoctorId] = React.useState<string>('');
-  const client = useApolloClient();
+  const [
+    appointmentHistory,
+    setAppointmentHistory,
+  ] = React.useState<appointmentsHistoryType | null>(null);
+  const [paymentData, setPaymentData] = React.useState<paymentTransactionAppointmentType | null>(
+    null
+  );
+
   const doctorName = doctorDetail && doctorDetail.fullName;
   const readableDoctorname = (doctorName && doctorName.length && readableParam(doctorName)) || '';
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
-  const getPaymentData =
-    successApptId &&
-    successApptId.length &&
-    useQueryWithSkip(PAYMENT_TRANSACTION_STATUS, {
-      variables: {
-        appointmentId: successApptId || '',
-      },
-      fetchPolicy: 'no-cache',
-    });
+  const [filterDoctorsList, setFilterDoctorsList] = React.useState<string[]>([]);
 
-  const appointmentDetail =
-    successApptId &&
-    successApptId.length &&
-    useQueryWithSkip(GET_APPOINTMENT_DATA, {
-      variables: {
-        appointmentId: successApptId || '',
-      },
-      fetchPolicy: 'no-cache',
-    });
+  const getAppointmentHistory = (successApptId: string) => {
+    if (!appointmentHistory) {
+      apolloClient
+        .query<GetAppointmentData>({
+          query: GET_APPOINTMENT_DATA,
+          variables: {
+            appointmentId: successApptId || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }: any) => {
+          if (
+            data &&
+            data.getAppointmentData &&
+            data.getAppointmentData.appointmentsHistory &&
+            data.getAppointmentData.appointmentsHistory.length > 0
+          ) {
+            setAppointmentHistory(data.getAppointmentData.appointmentsHistory[0]);
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
+  };
+
+  const getPaymentData = (successApptId: string) => {
+    if (!paymentData) {
+      apolloClient
+        .query<GetAppointmentData>({
+          query: PAYMENT_TRANSACTION_STATUS,
+          variables: {
+            appointmentId: successApptId || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }: any) => {
+          if (data && data.paymentTransactionStatus && data.paymentTransactionStatus.appointment) {
+            setPaymentData(data.paymentTransactionStatus.appointment);
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
+  };
+
+  useEffect(() => {
+    if (successApptId && successApptId.length) {
+      getAppointmentHistory(successApptId);
+      getPaymentData(successApptId);
+    }
+  }, [successApptId, appointmentHistory, paymentData]);
 
   useEffect(() => {
     if (triggerInvoice) {
       setIsLoading(true);
-      client
+      apolloClient
         .query<GetOrderInvoice>({
           query: GET_CONSULT_INVOICE,
           variables: {
@@ -452,65 +516,74 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     if (!successApptId) {
       setIsLoading(false);
     }
-    const paymentData =
-      getPaymentData &&
-      getPaymentData.data &&
-      getPaymentData.data.paymentTransactionStatus &&
-      getPaymentData.data.paymentTransactionStatus.appointment;
-    const appointmentData =
-      appointmentDetail &&
-      appointmentDetail.data &&
-      appointmentDetail.data.getAppointmentData &&
-      appointmentDetail.data.getAppointmentData.appointmentsHistory[0];
-    if (!_isEmpty(appointmentData) && !_isEmpty(paymentData)) {
-      const { appointmentDateTime, appointmentType, doctorInfo, doctorId, id } = appointmentData;
-      const { paymentStatus, paymentRefId, displayId, amountPaid } = paymentData;
-      setAppointmentDateTime(appointmentDateTime);
-      setAppointmentType(appointmentType);
+    if (!_isEmpty(appointmentHistory) && !_isEmpty(paymentData)) {
+      const { appointmentDateTime, appointmentType, doctorInfo, doctorId, id } = appointmentHistory;
+      const { displayId } = paymentData;
       setDoctorDetail(doctorInfo);
-      setPaymentStatus(paymentStatus);
-      setPaymentRefId(paymentRefId);
       setDoctorId(doctorId);
-
-      setDisplayId(displayId);
-      setAmountPaid(amountPaid);
       setIsLoading(false);
       localStorage.setItem('consultBookDetails', '');
       const eventData = {
-        category: doctorInfo.doctorType,
+        category: doctorInfo ? doctorInfo.doctorType : '',
         consultDateTime: appointmentDateTime,
         consultId: id,
         consultMode: appointmentType,
         displayId: displayId,
-        doctorName: doctorInfo.fullName,
-        hospitalName: doctorInfo.doctorHospital[0].facility.name,
+        doctorName: doctorInfo ? doctorInfo.fullName : '',
+        hospitalName:
+          doctorInfo && doctorInfo.doctorHospital && doctorInfo.doctorHospital[0]
+            ? doctorInfo.doctorHospital[0].facility.name
+            : '',
         patientGender: currentPatient && currentPatient.gender,
-        specialisation: doctorInfo.specialty.name,
+        specialisation: doctorInfo && doctorInfo.specialty ? doctorInfo.specialty.name : '',
         relation: currentPatient && currentPatient.relation,
       };
       consultationBookTracking(eventData);
     }
-  }, [getPaymentData, appointmentDetail]);
+  }, [paymentData, appointmentHistory]);
 
-  const { data, loading, error } = useQueryWithSkip<
-    GetPatientAllAppointments,
-    GetPatientAllAppointmentsVariables
-  >(GET_PATIENT_ALL_APPOINTMENTS, {
-    variables: {
-      patientId:
-        (currentPatient && currentPatient.id) ||
-        (allCurrentPatients && allCurrentPatients[0].id) ||
-        '',
-    },
-    fetchPolicy: 'no-cache',
-  });
-
-  if (error) return <div>Unable to load Consults...</div>;
-
-  const appointmentsList =
-    data && data.getPatientAllAppointments && data.getPatientAllAppointments.appointments
-      ? data.getPatientAllAppointments.appointments
-      : [];
+  useEffect(() => {
+    if (currentPatient && currentPatient.id) {
+      setMutationLoading(true);
+      apolloClient
+        .query<GetPatientAllAppointments, GetPatientAllAppointmentsVariables>({
+          query: GET_PATIENT_ALL_APPOINTMENTS,
+          variables: {
+            patientId: currentPatient.id || (allCurrentPatients && allCurrentPatients[0].id) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }: any) => {
+          if (
+            data &&
+            data.getPatientAllAppointments &&
+            data.getPatientAllAppointments.appointments
+          ) {
+            const appointmentsListData = data.getPatientAllAppointments.appointments;
+            const doctorsList = appointmentsListData.map((appointment: AppointmentsType) => {
+              return appointment && appointment.doctorInfo && appointment.doctorInfo.fullName
+                ? appointment.doctorInfo.fullName
+                : null;
+            });
+            setFilterDoctorsList(doctorsList || []);
+            setAppointmentsList(appointmentsListData);
+            setFilteredAppointmentsList(appointmentsListData);
+            setFilter(initialAppointmentFilterObject);
+          } else {
+            setAppointmentsList([]);
+            setFilteredAppointmentsList([]);
+          }
+          setMutationError(false);
+        })
+        .catch((e) => {
+          console.log(e);
+          setMutationError(true);
+        })
+        .finally(() => {
+          setMutationLoading(false);
+        });
+    }
+  }, [currentPatient]);
 
   const statusActions: statusMap = {
     PAYMENT_PENDING: {
@@ -524,10 +597,12 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       },
     },
     PAYMENT_SUCCESS: {
-      ctaText: 'DOWNLOAD APOLLO 247 APP',
+      ctaText: 'Go to Consult Room',
       info: '',
       callbackFunction: () => {
-        window.open(getAppStoreLink(), '_blank');
+        props &&
+          props.history &&
+          props.history.push(clientRoutes.chatRoom(successApptId, doctorId));
       },
     },
     PAYMENT_FAILED: {
@@ -552,62 +627,209 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     },
   };
 
+  const getConsultTypeFilteredList = (
+    consultType: string[],
+    localFilteredAppointmentsList: AppointmentsType[]
+  ) => {
+    if (consultType.includes('Online') && consultType.includes('Clinic Visit')) {
+      return localFilteredAppointmentsList || [];
+    } else {
+      const isPhysicalConsult = consultType.includes('Clinic Visit');
+      const filteredList =
+        localFilteredAppointmentsList.filter(
+          (appointment) =>
+            appointment.appointmentType ===
+            (isPhysicalConsult ? APPOINTMENT_TYPE.PHYSICAL : APPOINTMENT_TYPE.ONLINE)
+        ) || [];
+      return filteredList;
+    }
+  };
   const handlePaymentModalClose = () => {
     setIsConfirmedPopoverOpen(false);
     window.location.href = clientRoutes.appointments();
   };
 
-  const upcomingAppointment: AppointmentsType[] = [];
-  const todaysAppointments: AppointmentsType[] = [];
-  const pastAppointments: AppointmentsType[] = [];
+  const getAppointmentStatusFilteredList = (
+    appointmentStatus: string[],
+    localFilteredAppointmentsList: AppointmentsType[]
+  ) => {
+    let finalList: AppointmentsType[] = [];
+    if (appointmentStatus.includes('New')) {
+      finalList = localFilteredAppointmentsList.filter(
+        (appointment) => appointment.appointmentState === APPOINTMENT_STATE.NEW
+      );
+    }
+    if (appointmentStatus.includes('Rescheduled')) {
+      const filteredList = localFilteredAppointmentsList.filter(
+        (appointment) => appointment.appointmentState === APPOINTMENT_STATE.RESCHEDULE
+      );
+      finalList = [...finalList, ...filteredList];
+    }
+    if (appointmentStatus.includes('Cancelled')) {
+      const filteredList = localFilteredAppointmentsList.filter(
+        (appointment) => appointment.status === STATUS.CANCELLED
+      );
+      finalList = [...finalList, ...filteredList];
+    }
+    if (appointmentStatus.includes('Completed')) {
+      const filteredList = localFilteredAppointmentsList.filter(
+        (appointment) => appointment.status === STATUS.COMPLETED
+      );
+      finalList = [...finalList, ...filteredList];
+    }
+    if (appointmentStatus.includes('Follow-Up')) {
+      const filteredList = localFilteredAppointmentsList.filter(
+        (appointment) => appointment.isFollowUp !== 'false'
+      );
+      finalList = [...finalList, ...filteredList];
+    }
+    return _uniq(finalList);
+  };
 
-  appointmentsList.forEach((appointmentDetails) => {
-    const differenceInMinutes = getDiffInMinutes(appointmentDetails.appointmentDateTime);
-    if (differenceInMinutes < 1) {
-      pastAppointments.push(appointmentDetails);
-    } else {
-      const tomorrowAvailabilityHourTime = moment('06:00', 'HH:mm');
+  const getGenericFilteredList = (
+    list: string[],
+    localFilteredAppointmentsList: AppointmentsType[],
+    type: string
+  ) => {
+    const finalList = localFilteredAppointmentsList.filter((appointment) => {
+      switch (type) {
+        case 'doctor':
+          return list.includes(appointment.doctorInfo.fullName);
+        case 'gender':
+          return list.includes(appointment.doctorInfo.gender);
+        default:
+          return false;
+      }
+    });
+    return finalList;
+  };
+
+  const getAvailabilityFilteredList = (
+    availabilityList: string[],
+    localFilteredAppointmentsList: AppointmentsType[]
+  ) => {
+    let finalList: AppointmentsType[] = [];
+    if (availabilityList.includes('Now')) {
+      finalList = localFilteredAppointmentsList.filter((appointment) => {
+        const diffInMinutes = getDiffInMinutes(appointment.appointmentDateTime);
+        return diffInMinutes < 15 && diffInMinutes >= 0;
+      });
+    }
+    if (
+      availabilityList.includes('Today') ||
+      availabilityList.includes('Tomorrow') ||
+      availabilityList.includes('Next 3 days')
+    ) {
+      const tomorrowAvailabilityHourTime = moment('00:00', 'HH:mm');
       const tomorrowAvailabilityTime = moment()
         .add('days', 1)
         .set({
           hour: tomorrowAvailabilityHourTime.get('hour'),
           minute: tomorrowAvailabilityHourTime.get('minute'),
         });
-      const diffInHoursForTomorrowAvailabilty = moment(appointmentDetails.appointmentDateTime).diff(
-        tomorrowAvailabilityTime,
-        'minutes'
-      );
-      diffInHoursForTomorrowAvailabilty < 1
-        ? todaysAppointments.push(appointmentDetails)
-        : upcomingAppointment.push(appointmentDetails);
-    }
-  });
-
-  useEffect(() => {
-    if (
-      appointmentsList &&
-      appointmentsList.length > 0 &&
-      successApptId !== '' &&
-      !isConfirmPopupLoaded
-    ) {
-      const isAppointmentAvailable = _find(
-        appointmentsList,
-        (appointmentDetails) => appointmentDetails.id === successApptId
-      );
-
-      if (isAppointmentAvailable && Object.keys(isAppointmentAvailable).length > 0) {
-        if (isAppointmentAvailable && isAppointmentAvailable.doctorInfo) {
-          const { fullName, photoUrl, specialty } = isAppointmentAvailable.doctorInfo;
-          const specialtyName = specialty ? specialty.specialistSingularTerm || '' : '';
-          setAppointmentDoctorName(fullName || '');
-          setSpecialtyName(specialtyName);
-          setPhotoUrl(photoUrl || '');
-          setIsConfirmedPopoverOpen(true);
-          setIsConfirmPopupLoaded(true);
-        }
+      if (availabilityList.includes('Today')) {
+        const filteredList = localFilteredAppointmentsList.filter((appointment) => {
+          const diffInHoursForTomorrowAvailabilty = tomorrowAvailabilityTime.diff(
+            moment(appointment.appointmentDateTime),
+            'minutes'
+          );
+          return diffInHoursForTomorrowAvailabilty >= 0 && diffInHoursForTomorrowAvailabilty < 1440;
+        });
+        finalList = [...finalList, ...filteredList];
+      }
+      if (availabilityList.includes('Tomorrow')) {
+        const filteredList = localFilteredAppointmentsList.filter((appointment) => {
+          const diffInHoursForTomorrowAvailabilty = moment(appointment.appointmentDateTime).diff(
+            tomorrowAvailabilityTime,
+            'minutes'
+          );
+          return diffInHoursForTomorrowAvailabilty >= 0 && diffInHoursForTomorrowAvailabilty < 1440;
+        });
+        finalList = [...finalList, ...filteredList];
+      }
+      if (availabilityList.includes('Next 3 days')) {
+        const filteredList = localFilteredAppointmentsList.filter((appointment) => {
+          const differenceInDays = moment(appointment.appointmentDateTime).diff(
+            tomorrowAvailabilityTime,
+            'days'
+          );
+          const differenceInMinutes = moment(appointment.appointmentDateTime).diff(
+            tomorrowAvailabilityTime,
+            'minutes'
+          );
+          return differenceInMinutes >= 0 && differenceInDays < 4 && differenceInDays >= 0;
+        });
+        finalList = [...finalList, ...filteredList];
       }
     }
-  }, [appointmentsList, successApptId, isConfirmPopupLoaded]);
+    return _uniq(finalList);
+  };
+
+  useEffect(() => {
+    const { consultType, availability, gender, appointmentStatus, doctorsList } = filter;
+    if (
+      filter.appointmentStatus === [] &&
+      filter.availability === [] &&
+      filter.consultType === [] &&
+      filter.doctorsList === [] &&
+      filter.gender === []
+    ) {
+      setFilteredAppointmentsList(appointmentsList || []);
+    } else {
+      let localFilteredList: AppointmentsType[] = appointmentsList || [];
+      if (consultType.length > 0) {
+        localFilteredList = getConsultTypeFilteredList(consultType, localFilteredList);
+      }
+      if (appointmentStatus.length > 0) {
+        localFilteredList = getAppointmentStatusFilteredList(appointmentStatus, localFilteredList);
+      }
+      if (availability.length > 0) {
+        localFilteredList = getAvailabilityFilteredList(availability, localFilteredList);
+      }
+      if (doctorsList.length > 0) {
+        localFilteredList = getGenericFilteredList(doctorsList, localFilteredList, 'doctor');
+      }
+      if (gender.length > 0) {
+        localFilteredList = getGenericFilteredList(gender, localFilteredList, 'gender');
+      }
+      setFilteredAppointmentsList(localFilteredList);
+    }
+  }, [filter]);
+
+  const upcomingAppointment: AppointmentsType[] = [];
+  const todaysAppointments: AppointmentsType[] = [];
+  const activeAppointments: AppointmentsType[] = [];
+  const followUpAppointments: AppointmentsType[] = [];
+  const pastAppointments: AppointmentsType[] = [];
+
+  filteredAppointmentsList &&
+    filteredAppointmentsList.forEach((appointmentDetails) => {
+      if (
+        appointmentDetails.status !== STATUS.CANCELLED &&
+        !isPastAppointment(appointmentDetails.appointmentDateTime)
+      ) {
+        const tomorrowAvailabilityHourTime = moment('00:00', 'HH:mm');
+        const tomorrowAvailabilityTime = moment()
+          .add('days', 1)
+          .set({
+            hour: tomorrowAvailabilityHourTime.get('hour'),
+            minute: tomorrowAvailabilityHourTime.get('minute'),
+          });
+        const diffInHoursForTomorrowAvailabilty = moment(
+          appointmentDetails.appointmentDateTime
+        ).diff(tomorrowAvailabilityTime, 'minutes');
+        diffInHoursForTomorrowAvailabilty < 1
+          ? todaysAppointments.push(appointmentDetails)
+          : upcomingAppointment.push(appointmentDetails);
+        if (diffInHoursForTomorrowAvailabilty < 1) {
+          appointmentDetails.status === STATUS.COMPLETED
+            ? followUpAppointments.push(appointmentDetails)
+            : activeAppointments.push(appointmentDetails);
+        }
+      } else {
+        pastAppointments.push(appointmentDetails);
+      }
+    });
 
   useEffect(() => {
     /**Gtm code start start */
@@ -630,6 +852,8 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const appointmentText = () => {
     return todaysAppointments && todaysAppointments.length > 0
       ? `You have ${todaysAppointments.length || 0} active appointment(s)!`
+      : upcomingAppointment && upcomingAppointment.length > 0
+      ? `You have ${upcomingAppointment.length || 0} upcoming appointment(s)!`
       : `You have ${
           pastAppointments && pastAppointments.length > 0 ? pastAppointments.length : 0
         } past appointment(s)!`;
@@ -643,260 +867,246 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     <div className={classes.root}>
       <Header />
       <div className={classes.container}>
-        <div className={classes.consultPage}>
-          <div className={`${classes.consultationsHeader}`}>
-            {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
-              <Typography variant="h1">
-                <span>hi</span>
-                <AphSelect
-                  value={currentPatient.id}
-                  onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
-                  classes={{
-                    root: classes.selectMenuRoot,
-                    selectMenu: classes.selectMenuItem,
-                  }}
-                >
-                  {allCurrentPatients.map((patient) => {
-                    const isSelected = patient.id === currentPatient.id;
-                    const name = isSelected
-                      ? (patient.firstName || '').toLocaleLowerCase()
-                      : (patient.firstName || '').toLocaleLowerCase();
-                    return (
-                      <MenuItem
-                        selected={isSelected}
-                        value={patient.id}
-                        classes={{ selected: classes.menuSelected }}
-                        key={patient.id}
+        {mutationError ? (
+          <div>Unable to load Consults...</div>
+        ) : (
+          <div className={classes.consultPage}>
+            <div className={`${classes.consultationsHeader}`}>
+              {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
+                <Typography variant="h1">
+                  <span>hi</span>
+                  <AphSelect
+                    value={currentPatient.id}
+                    onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
+                    classes={{
+                      root: classes.selectMenuRoot,
+                      selectMenu: classes.selectMenuItem,
+                    }}
+                  >
+                    {allCurrentPatients.map((patient) => {
+                      const isSelected = patient.id === currentPatient.id;
+                      const name = isSelected
+                        ? (patient.firstName || '').toLocaleLowerCase()
+                        : (patient.firstName || '').toLocaleLowerCase();
+                      return (
+                        <MenuItem
+                          selected={isSelected}
+                          value={patient.id}
+                          classes={{ selected: classes.menuSelected }}
+                          key={patient.id}
+                        >
+                          {name}
+                        </MenuItem>
+                      );
+                    })}
+                    <MenuItem classes={{ selected: classes.menuSelected }}>
+                      <AphButton
+                        color="primary"
+                        classes={{ root: classes.addMemberBtn }}
+                        onClick={() => {
+                          setIsAddNewProfileDialogOpen(true);
+                        }}
                       >
-                        {name}
-                      </MenuItem>
-                    );
-                  })}
-                  <MenuItem classes={{ selected: classes.menuSelected }}>
-                    <AphButton
-                      color="primary"
-                      classes={{ root: classes.addMemberBtn }}
-                      onClick={() => {
-                        setIsAddNewProfileDialogOpen(true);
-                      }}
-                    >
-                      Add Member
-                    </AphButton>
-                  </MenuItem>
-                </AphSelect>
-              </Typography>
-            ) : (
-              <Typography variant="h1">hello there!</Typography>
-            )}
-            <p>
-              {data && !loading && appointmentText()}{' '}
-              <span className={classes.filterIcon}>
-                <img src={require('images/ic_filterblack.svg')} alt="filter" />
-              </span>
-            </p>
-            <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
-              <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
-              <AphDialogTitle>Add New Member</AphDialogTitle>
-              <AddNewProfile
-                closeHandler={(isAddNewProfileDialogOpen: boolean) =>
-                  setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
-                }
-                isMeClicked={false}
-                selectedPatientId=""
-                successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
-                isProfileDelete={false}
-              />
-            </AphDialog>
-          </div>
-          <div>
-            <Tabs
-              value={tabValue}
-              variant="fullWidth"
-              classes={{
-                root: classes.tabsRoot,
-                indicator: classes.tabsIndicator,
-              }}
-              onChange={(e, newValue) => {
-                setTabValue(newValue);
-              }}
-            >
-              <Tab
-                classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
-                }}
-                label="Today"
-                title={'Today appointments'}
-              />
-              <Tab
-                classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
-                }}
-                label="Upcoming"
-                title={'Upcoming appointments'}
-              />
-              <Tab
-                classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
-                }}
-                label="Past"
-                title={'Past appointments'}
-              />
-            </Tabs>
-            {tabValue === 0 && (
-              <TabContainer>
-                {todaysAppointments && todaysAppointments.length > 0 ? (
-                  <ConsultationsCard appointments={todaysAppointments} pastOrCurrent="current" />
-                ) : loading || isSigningIn ? (
-                  <div className={classes.loader}>
-                    <CircularProgress />
-                  </div>
-                ) : (
-                  <div className={classes.consultSection}>
-                    <div className={classes.noAppointments}>
-                      <div className={classes.leftGroup}>
-                        <h3>Want to book an appointment?</h3>
-                        <Route
-                          render={({ history }) => (
-                            <AphButton
-                              color="primary"
-                              onClick={() => {
-                                history.push(clientRoutes.specialityListing());
-                              }}
-                              title={'Book an Appointment'}
-                            >
-                              Book an Appointment
-                            </AphButton>
-                          )}
-                        />
-                      </div>
-                      <div className={classes.rightGroup}>
-                        <img src={require('images/ic_doctor_consult.svg')} alt="" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </TabContainer>
-            )}
-            {tabValue === 1 && (
-              <TabContainer>
-                {upcomingAppointment && upcomingAppointment.length > 0 ? (
-                  <ConsultationsCard appointments={upcomingAppointment} pastOrCurrent="past" />
-                ) : loading || isSigningIn ? (
-                  <div className={classes.loader}>
-                    <CircularProgress />
-                  </div>
-                ) : (
-                  <div className={classes.consultSection}>
-                    <div className={classes.noAppointments}>
-                      <div className={classes.leftGroup}>
-                        <h3>Want to book an appointment?</h3>
-                        <Route
-                          render={({ history }) => (
-                            <AphButton
-                              color="primary"
-                              onClick={() => {
-                                history.push(clientRoutes.specialityListing());
-                              }}
-                              title={'Book an Appointment'}
-                            >
-                              Book an Appointment
-                            </AphButton>
-                          )}
-                        />
-                      </div>
-                      <div className={classes.rightGroup}>
-                        <img src={require('images/ic_doctor_consult.svg')} alt="" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </TabContainer>
-            )}
-            {tabValue === 2 && (
-              <TabContainer>
-                {pastAppointments && pastAppointments.length > 0 ? (
-                  <ConsultationsCard appointments={pastAppointments} pastOrCurrent="past" />
-                ) : loading || isSigningIn ? (
-                  <div className={classes.loader}>
-                    <CircularProgress />
-                  </div>
-                ) : (
-                  <div className={classes.consultSection}>
-                    <div className={classes.noAppointments}>
-                      <div className={classes.leftGroup}>
-                        <h3>Want to book an appointment?</h3>
-                        <Route
-                          render={({ history }) => (
-                            <AphButton
-                              color="primary"
-                              onClick={() => {
-                                history.push(clientRoutes.specialityListing());
-                              }}
-                              title={'Book an Appointment'}
-                            >
-                              Book an Appointment
-                            </AphButton>
-                          )}
-                        />
-                      </div>
-                      <div className={classes.rightGroup}>
-                        <img src={require('images/ic_doctor_consult.svg')} alt="" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </TabContainer>
-            )}
-          </div>
-        </div>
-      </div>
+                        Add Member
+                      </AphButton>
+                    </MenuItem>
+                  </AphSelect>
+                </Typography>
+              ) : (
+                <Typography variant="h1">hello there!</Typography>
+              )}
+              <p>
+                {filteredAppointmentsList && !mutationLoading && appointmentText()}{' '}
+                <span className={classes.filterIcon} onClick={() => setIsFilterOpen(true)}>
+                  <img src={require('images/ic_filterblack.svg')} alt="" />
+                </span>
+              </p>
 
-      {/* <AphDialog open={isConfirmedPopoverOpen} maxWidth="sm" className={classes.confirmedDialog}>
-        <Route
-          render={({ history }) => (
-            <AphDialogClose
-              onClick={() => {
-                setIsConfirmedPopoverOpen(false);
-                history.push(clientRoutes.appointments());
-              }}
-              title={'Close'}
-            />
-          )}
-        />
-        <AphDialogTitle>Confirmed</AphDialogTitle>
-        <div className={classes.messageBox}>
-          <div className={classes.doctorDetails}>
-            <div className={classes.doctorInfo}>
-              <Avatar
-                alt=""
-                src={photoUrl ? photoUrl : require('images/no_photo.png')}
-                className={classes.bigAvatar}
-              />
-              <div className={classes.doctorText}>
-                <div className={classes.drName}>{_startCase(_toLower(appointmentDoctorName))}</div>
-                <div className={classes.specality}>{specialtyName}</div>
-              </div>
+              <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
+                <AphDialogClose
+                  onClick={() => setIsAddNewProfileDialogOpen(false)}
+                  title={'Close'}
+                />
+                <AphDialogTitle>Add New Member</AphDialogTitle>
+                <AddNewProfile
+                  closeHandler={(isAddNewProfileDialogOpen: boolean) =>
+                    setIsAddNewProfileDialogOpen(isAddNewProfileDialogOpen)
+                  }
+                  isMeClicked={false}
+                  selectedPatientId=""
+                  successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
+                  isProfileDelete={false}
+                />
+              </AphDialog>
             </div>
-            <div className={classes.appLogo}>
-              <img src={require('images/ic_logo.png')} />
+            <div>
+              <Tabs
+                value={tabValue}
+                variant="fullWidth"
+                classes={{
+                  root: classes.tabsRoot,
+                  indicator: classes.tabsIndicator,
+                }}
+                onChange={(e, newValue) => {
+                  setTabValue(newValue);
+                }}
+              >
+                <Tab
+                  classes={{
+                    root: classes.tabRoot,
+                    selected: classes.tabSelected,
+                  }}
+                  label="Today"
+                  title="Today appointments"
+                />
+                <Tab
+                  classes={{
+                    root: classes.tabRoot,
+                    selected: classes.tabSelected,
+                  }}
+                  label="Upcoming"
+                  title={'Upcoming appointments'}
+                />
+                <Tab
+                  classes={{
+                    root: classes.tabRoot,
+                    selected: classes.tabSelected,
+                  }}
+                  label="Past"
+                  title={'Past appointments'}
+                />
+              </Tabs>
+              {tabValue === 0 && (
+                <TabContainer>
+                  {todaysAppointments && todaysAppointments.length > 0 ? (
+                    <>
+                      {activeAppointments && activeAppointments.length > 0 && (
+                        <div className={classes.cardContainer}>
+                          <h1>Active</h1>
+                          <ConsultationsCard
+                            appointments={activeAppointments}
+                            pastOrCurrent="current"
+                          />
+                        </div>
+                      )}
+                      {followUpAppointments && followUpAppointments.length > 0 && (
+                        <div className={classes.cardContainer}>
+                          <h1>Follow - Up Chat</h1>
+                          <ConsultationsCard
+                            appointments={followUpAppointments}
+                            pastOrCurrent="current"
+                          />
+                        </div>
+                      )}
+                    </>
+                  ) : mutationLoading || isSigningIn ? (
+                    <div className={classes.loader}>
+                      <CircularProgress />
+                    </div>
+                  ) : (
+                    <div className={classes.consultSection}>
+                      <div className={classes.noAppointments}>
+                        <div className={classes.leftGroup}>
+                          <h3>Want to book an appointment?</h3>
+                          <Route
+                            render={({ history }) => (
+                              <AphButton
+                                color="primary"
+                                onClick={() => {
+                                  history.push(clientRoutes.specialityListing());
+                                }}
+                                title={'Book an Appointment'}
+                              >
+                                Book an Appointment
+                              </AphButton>
+                            )}
+                          />
+                        </div>
+                        <div className={classes.rightGroup}>
+                          <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </TabContainer>
+              )}
+              {tabValue === 1 && (
+                <TabContainer>
+                  {upcomingAppointment && upcomingAppointment.length > 0 ? (
+                    <ConsultationsCard
+                      appointments={upcomingAppointment}
+                      pastOrCurrent="upcoming"
+                    />
+                  ) : mutationLoading || isSigningIn ? (
+                    <div className={classes.loader}>
+                      <CircularProgress />
+                    </div>
+                  ) : (
+                    <div className={classes.consultSection}>
+                      <div className={classes.noAppointments}>
+                        <div className={classes.leftGroup}>
+                          <h3>Want to book an appointment?</h3>
+                          <Route
+                            render={({ history }) => (
+                              <AphButton
+                                color="primary"
+                                onClick={() => {
+                                  history.push(clientRoutes.specialityListing());
+                                }}
+                                title={'Book an Appointment'}
+                              >
+                                Book an Appointment
+                              </AphButton>
+                            )}
+                          />
+                        </div>
+                        <div className={classes.rightGroup}>
+                          <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </TabContainer>
+              )}
+              {tabValue === 2 && (
+                <TabContainer>
+                  {pastAppointments && pastAppointments.length > 0 ? (
+                    <ConsultationsCard appointments={pastAppointments} pastOrCurrent="past" />
+                  ) : mutationLoading || isSigningIn ? (
+                    <div className={classes.loader}>
+                      <CircularProgress />
+                    </div>
+                  ) : (
+                    <div className={classes.consultSection}>
+                      <div className={classes.noAppointments}>
+                        <div className={classes.leftGroup}>
+                          <h3>Want to book an appointment?</h3>
+                          <Route
+                            render={({ history }) => (
+                              <AphButton
+                                color="primary"
+                                onClick={() => {
+                                  history.push(clientRoutes.specialityListing());
+                                }}
+                                title={'Book an Appointment'}
+                              >
+                                Book an Appointment
+                              </AphButton>
+                            )}
+                          />
+                        </div>
+                        <div className={classes.rightGroup}>
+                          <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </TabContainer>
+              )}
             </div>
           </div>
-          <p>
-            Your consultation with {_startCase(_toLower(appointmentDoctorName))} is confirmed. Thank
-            you for choosing Apollo 247.
-          </p>
-          <p className={classes.borderText}>
-            We shared your details with {_startCase(_toLower(appointmentDoctorName))}'s team. Please
-            download the app to continue with the consultation.
-          </p>
-          <a className={classes.appDownloadBtn} href={getAppStoreLink()} target="_blank">
-            Download Apollo247 App
-          </a>
-        </div>
-      </AphDialog> */}
+        )}
+      </div>
       {successApptId && (
         <Modal
           open={isConfirmedPopoverOpen}
@@ -910,100 +1120,50 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
             </div>
           ) : (
             <>
-              <OrderStatusContent
-                paymentStatus={
-                  paymentStatus === 'PAYMENT_FAILED'
-                    ? 'failed'
-                    : paymentStatus === 'PAYMENT_PENDING'
-                    ? 'pending'
-                    : paymentStatus === 'PAYMENT_ABORTED'
-                    ? 'aborted'
-                    : 'success'
-                }
-                paymentInfo={statusActions[paymentStatus].info}
-                orderId={displayId}
-                amountPaid={amountPaid}
-                doctorDetail={doctorDetail}
-                paymentRefId={paymentRefId}
-                bookingDateTime={moment(appointmentDateTime)
-                  .format('DD MMMM YYYY[,] LT')
-                  .replace(/(A|P)(M)/, '$1.$2.')
-                  .toString()}
-                type={'consult'}
-                consultMode={_capitalize(appointmentType)}
-                onClose={() => handlePaymentModalClose()}
-                ctaText={statusActions[paymentStatus].ctaText}
-                orderStatusCallback={statusActions[paymentStatus].callbackFunction}
-                fetchConsultInvoice={setTriggerInvoice}
-              />
+              {paymentData && appointmentHistory && (
+                <OrderStatusContent
+                  paymentStatus={
+                    paymentData.paymentStatus === 'PAYMENT_FAILED'
+                      ? 'failed'
+                      : paymentData.paymentStatus === 'PAYMENT_PENDING'
+                      ? 'pending'
+                      : paymentData.paymentStatus === 'PAYMENT_ABORTED'
+                      ? 'aborted'
+                      : 'success'
+                  }
+                  paymentInfo={statusActions[paymentData.paymentStatus].info}
+                  orderId={paymentData.displayId}
+                  amountPaid={paymentData.amountPaid}
+                  doctorDetail={doctorDetail}
+                  paymentRefId={paymentData.paymentRefId}
+                  bookingDateTime={moment(appointmentHistory.appointmentDateTime)
+                    .format('DD MMMM YYYY[,] LT')
+                    .replace(/(A|P)(M)/, '$1.$2.')
+                    .toString()}
+                  type="consult"
+                  consultMode={_capitalize(appointmentHistory.appointmentType)}
+                  onClose={() => handlePaymentModalClose()}
+                  ctaText={statusActions[paymentData.paymentStatus].ctaText}
+                  orderStatusCallback={statusActions[paymentData.paymentStatus].callbackFunction}
+                  fetchConsultInvoice={setTriggerInvoice}
+                />
+              )}
             </>
           )}
         </Modal>
       )}
-      {/* 
-      <Popover
-        open={isFailurePayment}
-        anchorEl={anchorEl}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
+      <Modal
+        className={classes.modalDialog}
+        open={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
       >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <div className={classes.contentGroup}>
-              <Typography variant="h3">Uh oh.. :)</Typography>
-              <p> We're sorry but the payment failed</p>
-              <div className={classes.bottomButtons}>
-                <Route
-                  render={({ history }) => (
-                    <AphButton
-                      color="primary"
-                      onClick={() => {
-                        setIsFailurePayment(false);
-                        history.push(clientRoutes.appointments());
-                      }}
-                    >
-                      OK, GOT IT
-                    </AphButton>
-                  )}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Popover> */}
-
-      {/* <Popover
-        open={isPopoverOpen}
-        anchorEl={mascotRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <TransferConsultMessage />
-          </div>
-        </div>
-      </Popover> */}
+        <AppointmentsFilter
+          filter={filter}
+          setFilter={setFilter}
+          setIsFilterOpen={setIsFilterOpen}
+          filterDoctorsList={filterDoctorsList}
+        />
+      </Modal>
       <NavigationBottom />
     </div>
   );

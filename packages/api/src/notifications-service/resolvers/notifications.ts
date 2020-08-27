@@ -133,7 +133,6 @@ const sendDailyAppointmentSummary: Resolver<
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
   let blobNames = '';
-  const allPdfs: string[] = [];
   const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
     let doctorsCount = 0;
     if (allAppts.length == 0) {
@@ -190,7 +189,7 @@ const sendDailyAppointmentSummary: Resolver<
       textInRow(pdfDoc, appointment.appointmentType, rowx, 341);
       textInRow(pdfDoc, appointment.displayId.toString(), rowx, 441);
 
-      if (prevDoc != appointment.doctorId || index + 1 == array.length) {
+      if (index + 1 == array.length) {
         const doctorDetails = allDoctorDetails.filter((item) => {
           return item.id == prevDoc;
         });
@@ -206,12 +205,10 @@ const sendDailyAppointmentSummary: Resolver<
           .stroke();
         pdfDoc.end();
 
-        //await delay(350);
+        await delay(350);
         console.log('pdf end');
-        //const blobName = await uploadPdfFileToBlobStorage(fileName, uploadPath);
-        //blobNames += fileName + ', ';
-        const pdfurl = fileName + '/' + totalAppointments + '/' + doctorDetails[0].mobileNumber;
-        allPdfs.push(pdfurl);
+        const blobName = await uploadPdfFileToBlobStorage(fileName, uploadPath);
+        blobNames += blobName + ', ';
         //console.log(blobName, 'blob names');
         if (doctorDetails) {
           doctorsCount++;
@@ -255,17 +252,10 @@ const sendDailyAppointmentSummary: Resolver<
       }
     });
   });
-  allPdfs.map(async (pdf) => {
-    const data = pdf.split('/');
-    uploadPath = assetsDir + '/' + data[0];
-    const blobName = await uploadPdfFileToBlobStorage(data[0], uploadPath);
-    blobNames += blobName + ',';
-  });
   const final = countOfNotifications + ' - ' + blobNames;
-  //const fn = await uploadFileToBlob(uploadPath);
-  // async function delay(ms: number) {
-  //   return new Promise((resolve) => setTimeout(resolve, ms));
-  // }
+  async function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
   return ApiConstants.DAILY_APPOINTMENT_SUMMARY_RESPONSE.replace('{0}', final.toString());
 };
 

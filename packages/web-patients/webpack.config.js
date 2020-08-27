@@ -4,8 +4,12 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
 const DotenvWebpack = require('dotenv-webpack');
 const dotenv = require('dotenv');
+const WorkboxPlugin = require('workbox-webpack-plugin');
+const WebpackPwaManifest = require('webpack-pwa-manifest');
 
 const envFile = path.resolve(__dirname, '../../.env');
 const dotEnvConfig = dotenv.config({ path: envFile });
@@ -27,8 +31,9 @@ const plugins = [
     cwd: process.cwd(),
   }),
   new HtmlWebpackPlugin({
+    title: 'Apollo 247',
     filename: 'index.html',
-    chunks: ['index'],
+    chunks: ['index']['vendors'],
     template: './index.html',
     templateParameters: {
       env: process.env.NODE_ENV,
@@ -36,6 +41,53 @@ const plugins = [
     },
     inject: true,
     favicon: './favicon.svg',
+  }),
+  new MomentLocalesPlugin(),
+  // new BundleAnalyzerPlugin(),
+
+  new WorkboxPlugin.GenerateSW({
+    // these options encourage the ServiceWorkers to get in there fast
+    // and not allow any straggling "old" SWs to hang around
+    clientsClaim: true,
+    skipWaiting: true,
+    maximumFileSizeToCacheInBytes: 50000000,
+  }),
+  new WebpackPwaManifest({
+    name: 'Apollo 247',
+    short_name: 'Apollo 247',
+    description:
+      'Apollo 24|7 helps you get treated from Apollo certified doctors at any time of the day, wherever you are. The mobile app has features like e-consultation in 15 minutes, online pharmacy to doorstep delivery of medicines, home diagnostic test and digital vault where you can upload all your medical history.',
+    background_color: '#ffffff',
+    theme_color: '#fdb714',
+    ios: true,
+    icons: [
+      {
+        src: path.resolve('src/images/apollo_logo.png'),
+        sizes: [96, 128, 192, 256, 384, 512], // multiple sizes
+      },
+      {
+        src: path.resolve('src/images/apollo_logo.jpg'),
+        size: '1024x1024',
+        purpose: 'maskable',
+      },
+      {
+        src: path.resolve('src/images/apollo_logo.png'),
+        sizes: [120, 152, 167, 180, 1024],
+        destination: path.join('icons', 'ios'),
+        ios: true,
+      },
+      {
+        src: path.resolve('src/images/apollo_logo.png'),
+        size: 1024,
+        destination: path.join('icons', 'ios'),
+        ios: 'startup',
+      },
+      {
+        src: path.resolve('src/images/apollo_logo.png'),
+        sizes: [36, 48, 72, 96, 144, 192, 512],
+        destination: path.join('icons', 'android'),
+      },
+    ],
   }),
 ];
 if (isLocal) {
@@ -97,7 +149,7 @@ module.exports = {
         use: isLocal ? [rhlBabelLoader, tsLoader] : [tsLoader],
       },
       {
-        test: /\.(png|jpg|jpeg|svg|gif|webp)$/,
+        test: /\.(png|jpg|jpeg|svg|gif|webp|mp3)$/,
         use: [urlLoader],
       },
     ],
@@ -131,6 +183,28 @@ module.exports = {
         // Also set `"sideEffects": false` in `package.json`
         sideEffects: true,
         usedExports: true,
+        minimize: true,
+        splitChunks: {
+          chunks: 'all',
+          minSize: 20000,
+          maxSize: 0,
+          minChunks: 1,
+          maxAsyncRequests: 30,
+          maxInitialRequests: 30,
+          automaticNameDelimiter: '~',
+          enforceSizeThreshold: 50000,
+          cacheGroups: {
+            defaultVendors: {
+              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+              priority: -10,
+            },
+            default: {
+              minChunks: 2,
+              priority: -20,
+              reuseExistingChunk: true,
+            },
+          },
+        },
       },
 
   devServer: isLocal
