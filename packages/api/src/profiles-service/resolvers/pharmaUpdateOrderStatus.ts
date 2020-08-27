@@ -480,7 +480,7 @@ const generateTransactions = async (
     const itemTypemap = await getSkuMap(itemSku);
     const healthCreditsRedeemed = +new Decimal(
       order.medicineOrderPayments[0].healthCreditsRedeemed
-    ).toDecimalPlaces(4, Decimal.ROUND_DOWN);
+    ).toDecimalPlaces(2, Decimal.ROUND_DOWN);
     let [actualCreditsRedeemed, transactionLineItems] = addProductNameAndCat(
       transactionLineItemsPartial,
       itemTypemap,
@@ -671,10 +671,10 @@ const createLineItems = (itemDetails: Array<ItemDetails>) => {
   let transactionLineItemsPartial: TransactionLineItemsPartial[] = [];
   itemDetails.forEach((item: ItemDetails) => {
     itemSku.push(item.itemId);
-    const netMrp = Number(new Decimal(item.mrp).times(item.issuedQty).toFixed(4));
+    const netMrp = Number(new Decimal(item.mrp).times(item.issuedQty).toFixed(2));
     let netDiscount = 0;
     if (item.discountPrice) {
-      netDiscount = Number(new Decimal(item.discountPrice).times(item.issuedQty).toFixed(4));
+      netDiscount = Number(new Decimal(item.discountPrice).times(item.issuedQty).toFixed(2));
     }
     const netPrice: number = +new Decimal(netMrp).minus(netDiscount);
 
