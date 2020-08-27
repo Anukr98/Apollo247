@@ -11,6 +11,8 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       padding: 16,
       margin: '20px 0 0',
+      display: 'none',
+
       '& h2': {
         fontSize: 14,
         fontWeight: 600,
@@ -22,6 +24,9 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
         marginLeft: 'auto',
         color: '#FC9916',
+      },
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
       },
     },
     hdcContent: {},
@@ -60,7 +65,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     dialogContent: {},
     dialogHeader: {
-      padding: '16px 16px 0',
+      padding: '16px 16px 10px',
       '& h3': {
         fontSize: 16,
         fontWeight: 600,
@@ -75,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'flex-end',
-      padding: '0 16px 16px',
+      padding: '10px 16px 16px',
       '& button': {
         margin: '0 0 0 10px',
         '&:first-child': {

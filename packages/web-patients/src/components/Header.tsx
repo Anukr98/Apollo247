@@ -436,6 +436,15 @@ export const Header: React.FC = (props) => {
                                 <img src={require('images/ic_arrow_right.svg')} alt="" />
                               </Link>
                             </li>
+                            <li>
+                              <Link to={clientRoutes.partnersHdfc()}>
+                                <span>
+                                  <img src={require('images/one-apollo.svg')} width="24" alt="" />{' '}
+                                  OneApollo Membership
+                                </span>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </Link>
+                            </li>
 
                             {currentPatient && (
                               <li>
