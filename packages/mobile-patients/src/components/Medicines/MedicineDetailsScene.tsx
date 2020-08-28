@@ -30,6 +30,7 @@ import {
   TatApiInput247,
   getPlaceInfoByPincode,
   pinCodeServiceabilityApi247,
+  availabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -463,17 +464,29 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     // To handle deeplink scenario and
     // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
    
-    const pinCodeNotServiceable =
+    let pinCodeNotServiceable =
       isPharmacyLocationServiceable == undefined
         ? !(await pinCodeServiceabilityApi247(pincode)).data.response
         : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
+
+    const checkAvailabilityRes = await availabilityApi247(pincode, sku)
+    const availabilityRes = g(checkAvailabilityRes, 'data', 'response')
+    if (availabilityRes) {
+      pinCodeNotServiceable = !availabilityRes[0].exist
+    } else {
+      setdeliveryTime('');
+      setdeliveryError(pincodeServiceableItemOutOfStockMsg);
+      setshowDeliverySpinner(false);
+      return;
+    }
+
     if (pinCodeNotServiceable) {
       setdeliveryTime('');
       setdeliveryError(unServiceableMsg);
       setshowDeliverySpinner(false);
       return;
     }
-
+    
     try {
       const data = await getPlaceInfoByPincode(pincode);
       const { lat, lng } = data.data.results[0].geometry.location;
