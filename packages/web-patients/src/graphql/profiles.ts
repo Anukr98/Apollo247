@@ -713,3 +713,44 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
     }
   }
 `;
+
+export const GET_SUBSCRIPTIONS_OF_USER_BY_STATUS = gql`
+  query getSubscriptionsOfUserByStatus($user: UserIdentification, $status: [String]) {
+    getSubscriptionsOfUserByStatus(user: $user, status: $status) {
+      code
+      message
+      success
+      response {
+        _id
+        status
+        coupon_availed
+        group_plan {
+          plan_id
+          name
+          status
+          group {
+            name
+            is_active
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const CREATE_SUBSCRIPTION = gql`
+  mutation createSubscription($userSubscription: CreateUserSubscriptionInput) {
+    createSubscription(userSubscription: $userSubscription) {
+      code
+      success
+      message
+      response {
+        status
+        transaction_date_time
+        group_plan {
+          name
+        }
+      }
+    }
+  }
+`;

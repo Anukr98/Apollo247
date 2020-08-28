@@ -39,7 +39,9 @@ export enum BOOKINGSOURCE {
 }
 
 export enum BOOKING_SOURCE {
+  MFINE = "MFINE",
   MOBILE = "MOBILE",
+  ORDER_PUNCHING_TOOL = "ORDER_PUNCHING_TOOL",
   WEB = "WEB",
 }
 
@@ -366,6 +368,13 @@ export enum SpecialtySearchType {
   NAME = "NAME",
 }
 
+export enum SubscriptionStatus {
+  active = "active",
+  cancelled = "cancelled",
+  deferred = "deferred",
+  disabled = "disabled",
+}
+
 export enum TEST_COLLECTION_TYPE {
   CENTER = "CENTER",
   HC = "HC",
@@ -468,6 +477,10 @@ export interface CancelAppointmentInput {
   cancelReason?: string | null;
   cancelledBy: REQUEST_ROLES;
   cancelledById: string;
+}
+
+export interface CreateUserSubscriptionInput {
+  mobile_number?: string | null;
 }
 
 export interface DiagnosticLineItem {
@@ -816,6 +829,7 @@ export interface UpdatePatientInput {
   photoUrl?: string | null;
   deviceCode?: string | null;
   employeeId?: string | null;
+  partnerId?: string | null;
 }
 
 export interface UploadDocumentInput {
@@ -823,6 +837,11 @@ export interface UploadDocumentInput {
   base64FileInput: string;
   patientId: string;
   category: PRISM_DOCUMENT_CATEGORY;
+}
+
+export interface UserIdentification {
+  mobile_number?: string | null;
+  patiend_id?: string | null;
 }
 
 //==============================================================
