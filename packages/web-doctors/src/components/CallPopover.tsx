@@ -1494,6 +1494,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [textOtherCancel, setTextOtherCancel] = useState(false);
   const [otherTextCancelValue, setOtherTextCancelValue] = useState("");
   const [isResendLoading, setIsResendLoading] = useState(false);
+  const [isNewprescriptionLoading, setIsNewprescriptionLoading] = useState(false);
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
@@ -2977,7 +2978,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                               }}
                             >
                               {isResendLoading
-                                ? "please wait..."
+                                ? "Please wait..."
                                 : "Resend Prescription"}
                             </li>
                             <li
@@ -2989,10 +2990,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             </li>
                             <li
                               onClick={() => {
-                                props.createSDCasesheetCall(true);
+                                if(!isNewprescriptionLoading){
+                                  setIsNewprescriptionLoading(true);
+                                  props.createSDCasesheetCall(true);
+                                }
                               }}
                             >
-                              Issue New Prescription
+                              {isNewprescriptionLoading ? 'Please wait...' : 'Issue New Prescription'}
                             </li>
                           </>
                         )}
