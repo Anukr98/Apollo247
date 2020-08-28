@@ -594,8 +594,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     modalClose: {
       position: 'absolute',
-      right: 16,
-      top: 16,
+      right: 10,
+      top: 10,
       width: 24,
       height: 24,
       cursor: 'pointer',
@@ -2293,7 +2293,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               <div className={classes.modalWindow}>
                 <div className={classes.modalHeader}>
                   <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
-                    <img src={require('images/ic_round_clear.svg')} alt="" />
+                    <img src={require('images/ic_cross.svg')} alt="" />
                   </div>
                 </div>
                 <div className={classes.modalContent}>
