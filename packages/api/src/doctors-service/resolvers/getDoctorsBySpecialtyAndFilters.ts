@@ -618,10 +618,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   const searchFilters: RequestParams.Search = {
     index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
-        query: {
-          match_all: {}
-        },
-      },
+      from: 0,
+      size: 10000,
+      query : {
+        match_all: {}
+      }
+   }
   };
 
   const allDoctorDetails = await client.search(searchFilters);
@@ -718,7 +720,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
           filters.language.push({ 'name': capitalize(language) });
         }
       }
-      doctor.languages = doctor.languages.join(', ');
     }
 
     if (doctor.experience_range && !("name" in ifKeyExist(filters.experience, 'name', doctor.experience_range))) {
