@@ -564,14 +564,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [existingMedicineId, setExistingMedicingId] = useState<string[]>([]);
   const [selectedMedicinesId, setSelectedMedicinesId] = useState<string[]>([]);
   const [caseSheetVersion, setCaseSheetVersion] = useState<number>(1);
-
-  const [switchValue, setSwitchValue] = useState<boolean | null>(true);
   const [followupChatDays, setFollowupChatDays] = useState<OptionsObject>({
     key: g(doctorDetails, 'chatDays') || '',
     value: g(doctorDetails, 'chatDays') || '',
   });
-  const [followupDays, setFollowupDays] = useState<number | string>();
-  const [followUpConsultationType, setFollowUpConsultationType] = useState<APPOINTMENT_TYPE>();
   const [doctorNotes, setDoctorNotes] = useState<string>('');
   const [displayId, setDisplayId] = useState<string>('');
   const [prescriptionPdf, setPrescriptionPdf] = useState('');
@@ -824,15 +820,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
     setFollowupChatDays({
       key:
-        g(caseSheet, 'caseSheetDetails', 'followUpChatDays') || g(doctorDetails, 'chatDays') || 0,
+        g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays') ||
+        g(doctorDetails, 'chatDays') ||
+        0,
       value:
-        g(caseSheet, 'caseSheetDetails', 'followUpChatDays') || g(doctorDetails, 'chatDays') || '0',
+        g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays') ||
+        g(doctorDetails, 'chatDays') ||
+        '0',
     });
-    setSwitchValue(g(caseSheet, 'caseSheetDetails', 'followUp') || null);
-    setFollowupDays(g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays') || '');
-    setFollowUpConsultationType(
-      g(caseSheet, 'caseSheetDetails', 'followUpConsultType') || undefined
-    );
     setDoctorNotes(g(caseSheet, 'caseSheetDetails', 'notes') || '');
 
     setDisplayId(g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') || '');
@@ -942,9 +937,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     doctorNotes,
     diagnosisData,
     tests,
-    switchValue,
-    followupDays,
-    followUpConsultationType,
+    followupChatDays,
     addedAdvices,
     medicinePrescriptionData,
     selectedMedicinesId,
@@ -998,15 +991,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               })
           : null,
       status: g(caseSheet, 'caseSheetDetails', 'status'),
-      followUpChatDays: followupChatDays.key,
-      followUp: switchValue,
+      followUp: followupChatDays.key > 0,
       followUpDate: moment(
         g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || new Date()
       )
-        .add(Number(followupDays), 'd')
+        .add(Number(followupChatDays.key), 'd')
         .format('YYYY-MM-DD'),
-      followUpAfterInDays: Number(followupDays),
-      followUpConsultType: followUpConsultationType,
+      followUpAfterInDays: Number(followupChatDays.key),
+      followUpConsultType: g(caseSheet, 'caseSheetDetails', 'followUpConsultType'),
       otherInstructions:
         addedAdvices && addedAdvices.length > 0
           ? addedAdvices.map((i) => {
@@ -2206,14 +2198,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   existingMedicineId={existingMedicineId}
                   removedMedicinePrescriptionData={removedMedicinePrescriptionData}
                   setRemovedMedicinePrescriptionData={setRemovedMedicinePrescriptionData}
-                  switchValue={switchValue}
-                  setSwitchValue={setSwitchValue}
                   followupChatDays={followupChatDays}
                   setFollowupChatDays={setFollowupChatDays}
-                  followupDays={followupDays}
-                  setFollowupDays={setFollowupDays}
-                  followUpConsultationType={followUpConsultationType}
-                  setFollowUpConsultationType={setFollowUpConsultationType}
                   doctorNotes={doctorNotes}
                   setDoctorNotes={setDoctorNotes}
                   displayId={displayId}

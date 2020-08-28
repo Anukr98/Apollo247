@@ -249,14 +249,8 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
       (GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription | null)[] | null
     >
   >;
-  switchValue: boolean | null;
-  setSwitchValue: React.Dispatch<React.SetStateAction<boolean | null>>;
   followupChatDays: OptionsObject;
   setFollowupChatDays: React.Dispatch<React.SetStateAction<OptionsObject>>;
-  followupDays: string | number | undefined;
-  setFollowupDays: React.Dispatch<React.SetStateAction<string | number | undefined>>;
-  followUpConsultationType: APPOINTMENT_TYPE | undefined;
-  setFollowUpConsultationType: React.Dispatch<React.SetStateAction<APPOINTMENT_TYPE | undefined>>;
   doctorNotes: string;
   setDoctorNotes: React.Dispatch<React.SetStateAction<string>>;
   displayId: string;
@@ -340,14 +334,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     setMedicinePrescriptionData,
     selectedMedicinesId,
     setSelectedMedicinesId,
-    switchValue,
     followupChatDays,
     setFollowupChatDays,
-    setSwitchValue,
-    followupDays,
-    setFollowupDays,
-    followUpConsultationType,
-    setFollowUpConsultationType,
     doctorNotes,
     setDoctorNotes,
     displayId,
@@ -449,7 +437,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             g(props.caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') ||
               new Date()
           )
-            .add(Number(followupDays), 'd')
+            .add(Number(followupChatDays.key), 'd')
             .format('YYYY-MM-DD')
         : '',
       doctorId: g(props.caseSheet, 'caseSheetDetails', 'doctorId'),
@@ -488,7 +476,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         advice: addedAdvices.map((i) => ({ instruction: i.value })),
         followUp: {
           doFollowUp: followupChatDays.key > 0,
-          followUpType: followUpConsultationType,
           followUpDays: followupChatDays.key,
         },
         referralData: {
@@ -1560,7 +1547,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 }
               )
             : null}
-          {caseSheetEdit  && (
+          {caseSheetEdit && (
             <View
               style={{
                 flexDirection: 'row',

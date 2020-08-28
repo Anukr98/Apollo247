@@ -432,7 +432,6 @@ export const MODIFY_CASESHEET = gql`
       }
       doctorId
       doctorType
-      followUpChatDays
       followUp
       followUpAfterInDays
       followUpDate
@@ -879,7 +878,6 @@ export const GET_CASESHEET = gql`
         followUp
         followUpDate
         followUpAfterInDays
-        followUpChatDays
         followUpConsultType
         consultType
         notes
