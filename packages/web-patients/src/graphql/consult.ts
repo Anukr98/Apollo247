@@ -35,6 +35,8 @@ export const GET_APPOINTMENT_DATA = gql`
         appointmentState
         isJdQuestionsComplete
         isSeniorConsultStarted
+        isConsultStarted
+        symptoms
         doctorInfo {
           id
           salutation
@@ -332,6 +334,19 @@ export const BOOK_FOLLOWUP_APPOINTMENT = gql`
         patientId
         status
       }
+    }
+  }
+`;
+
+export const GET_APPOINTMENT_DOCTOR_RESCHEDULED_DETAILS = gql`
+  query getAppointmentRescheduleDetails($appointmentId: String!) {
+    getAppointmentRescheduleDetails(appointmentId: $appointmentId) {
+      id
+      rescheduleReason
+      rescheduledDateTime
+      rescheduleInitiatedBy
+      rescheduleInitiatedId
+      rescheduleStatus
     }
   }
 `;

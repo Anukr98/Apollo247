@@ -401,6 +401,12 @@ export enum TRANSFER_INITIATED_TYPE {
   PATIENT = "PATIENT",
 }
 
+export enum TRANSFER_STATUS {
+  COMPLETED = "COMPLETED",
+  INITIATED = "INITIATED",
+  REJECTED = "REJECTED",
+}
+
 export enum UPLOAD_FILE_TYPES {
   JPEG = "JPEG",
   JPG = "JPG",
@@ -538,7 +544,7 @@ export interface DiagnosticOrderInput {
   state: string;
   stateId: string;
   slotTimings: string;
-  employeeSlotId: number;
+  employeeSlotId?: any | null;
   diagnosticEmployeeCode: string;
   diagnosticBranchCode: string;
   totalPrice: number;
@@ -552,8 +558,8 @@ export interface DiagnosticOrderInput {
   bookingSource?: BOOKINGSOURCE | null;
   deviceType?: DEVICETYPE | null;
   paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
-  slotId?: string | null;
   items?: (DiagnosticLineItem | null)[] | null;
+  slotId?: string | null;
 }
 
 export interface DoctorAvailabilityInput {
@@ -607,6 +613,8 @@ export interface FilterDoctorInput {
   pincode?: string | null;
   doctorType?: (string | null)[] | null;
   sort?: string | null;
+  pageNo?: number | null;
+  pageSize?: number | null;
 }
 
 export interface Geolocation {

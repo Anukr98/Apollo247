@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Grid, Avatar } from '@material-ui/core';
-import React, { useState } from 'react';
+import { Theme, Grid, Avatar, Modal, Paper, CircularProgress, Popover } from '@material-ui/core';
+import React, { useState, useRef, useEffect } from 'react';
 import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentDetails } from 'graphql/types/GetPatientAllAppointments';
 import { DoctorType, APPOINTMENT_STATE, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import _isNull from 'lodash/isNull';
@@ -8,13 +8,34 @@ import { format } from 'date-fns';
 import { clientRoutes } from 'helpers/clientRoutes';
 import isTomorrow from 'date-fns/isTomorrow';
 import isToday from 'date-fns/isToday';
-import { STATUS } from 'graphql/types/globalTypes';
+import {
+  TRANSFER_INITIATED_TYPE,
+  BookRescheduleAppointmentInput,
+  STATUS,
+} from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialogTitle } from '@aph/web-ui-components';
 import moment from 'moment';
 import { readableParam, getAvailableFreeChatDays } from 'helpers/commonHelpers';
 import { Link, Route } from 'react-router-dom';
+import { useApolloClient } from 'react-apollo-hooks';
+import { useMutation } from 'react-apollo-hooks';
+import { BOOK_FOLLOWUP_APPOINTMENT } from 'graphql/consult';
+import { OnlineConsult } from 'components/OnlineConsult';
+import { BookFollowupConsult } from 'components/BookFollowupConsult';
+import {
+  GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails,
+  GetDoctorDetailsById_getDoctorDetailsById_starTeam,
+  GetDoctorDetailsById_getDoctorDetailsById_consultHours,
+} from 'graphql/types/GetDoctorDetailsById';
+import { BOOK_APPOINTMENT_RESCHEDULE } from 'graphql/profiles';
+import { Alerts } from 'components/Alerts/Alerts';
+import {
+  getAppointmentRescheduleDetails,
+  getAppointmentRescheduleDetailsVariables,
+} from 'graphql/types/getAppointmentRescheduleDetails';
+import { GET_APPOINTMENT_DOCTOR_RESCHEDULED_DETAILS } from 'graphql/consult';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -87,6 +108,149 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: 'auto',
         cursor: 'pointer',
         display: 'flex',
+      },
+    },
+    modalBox: {
+      margin: 'auto',
+      marginTop: 88,
+      backgroundColor: theme.palette.common.white,
+      position: 'relative',
+      outline: 'none',
+    },
+    modalBoxClose: {
+      position: 'absolute',
+      right: -48,
+      top: 0,
+      width: 28,
+      height: 28,
+      borderRadius: '50%',
+      backgroundColor: theme.palette.common.white,
+      cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        right: 0,
+        top: -48,
+      },
+    },
+    popupHeading: {
+      padding: '20px 10px',
+      '& h6': {
+        fontSize: 13,
+        color: '#01475b',
+        fontWeight: 600,
+        textAlign: 'center',
+        padding: '0 50px',
+      },
+    },
+    dialogContent: {
+      margin: 22,
+
+      position: 'relative',
+      '& h6': {
+        fontSize: 15,
+        fontWeight: 500,
+        margin: 0,
+        lineHeight: 'normal',
+      },
+    },
+    highlightedText: {
+      color: '#0087BA',
+    },
+    dialogActions: {
+      padding: 10,
+      position: 'relative',
+      fontSize: 14,
+      fontWeight: 600,
+      maxWidth: 170,
+      display: 'inline-flex',
+      '& button': {
+        borderRadius: 10,
+        minwidth: 130,
+        padding: '8px 20px',
+        fontSize: 14,
+        fontWeight: 600,
+      },
+    },
+    dialogActionsProgress: {
+      marginLeft: 135,
+    },
+    primaryBtn: {
+      backgroundColor: '#fc9916 !important',
+      display: 'flex',
+      flex: '0 0 100%',
+    },
+    secondaryBtn: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: '#fc9916',
+      backgroundColor: 'transparent',
+      boxShadow: '0 2px 5px 0 rgba(0,0,0,0.2)',
+      border: 'none',
+      display: 'flex',
+      flex: '0 0 100%',
+      marginRight: 10,
+      '&:hover': {
+        backgroundColor: 'transparent',
+        color: '#fc9916',
+      },
+    },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        marginBottom: 0,
+      },
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    actions: {
+      padding: '0 20px 20px 20px',
+      display: 'flex',
+      '& button': {
+        borderRadius: 10,
+        color: '#fc9916',
+        padding: 0,
+        boxShadow: 'none',
+        '&:last-child': {
+          marginLeft: 'auto',
+        },
       },
     },
     appointBooked: {
@@ -338,7 +502,26 @@ interface ConsultationsCardProps {
 
 export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const classes = useStyles({});
+  const client = useApolloClient();
+  const mascotRef = useRef(null);
+  const [appointmentData, setAppointmentData] = useState<AppointmentDetails | null>(null);
+  // const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
+  const [isChangeSlot, setIsChangeSlot] = useState<boolean>(false);
   const [openSlotPopup, setOpenSlotPopup] = useState<boolean>(false);
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
+  const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
+  const [apiLoading, setApiLoading] = useState<boolean>(false);
+  const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
+  const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
+  const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [followupSuccessPopup, setFollowupSuccessPopup] = useState<boolean>(false);
+  const [doctorSelectedSlot, setDoctorSelectedSlot] = useState<string | null>(null);
+  const [doctorSelectedSlotLoading, setDoctorSelectedSlotLoading] = useState<boolean>(false);
+  const [followupAppointmentType, setFollwupAppoitnmentType] = useState<number>(0);
+
   const otherDateMarkup = (appointmentTime: number) => {
     if (isToday(new Date(appointmentTime))) {
       return format(new Date(appointmentTime), 'h:mm a');
@@ -367,7 +550,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       case STATUS.NO_SHOW || STATUS.CALL_ABANDON:
         return 'PICK ANOTHER SLOT';
       case STATUS.COMPLETED:
-        return props.pastOrCurrent === 'past' ? 'BOOK FOLLOW UP' : 'CHAT WITH DOCTOR';
+        return props.pastOrCurrent === 'past' ? 'BOOK FOLLOWUP' : 'CHAT WITH DOCTOR';
       case STATUS.IN_PROGRESS:
         return 'CHAT WITH DOCTOR';
       case STATUS.CANCELLED:
@@ -402,14 +585,16 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       isConsultStarted,
       status,
     } = appointmentDetails;
-    if (isFollowUp === 'false' && status === STATUS.COMPLETED && props.pastOrCurrent !== 'past') {
+    if (isFollowUp === 'false' && status === STATUS.COMPLETED) {
       return getAvailableFreeChatDays(appointmentDetails.appointmentDateTime);
-    } else if (!isConsultStarted) {
-      return 'Fill vitals to get started with the consult journey';
-    } else if (!isJdQuestionsComplete) {
-      return 'Connect with Junior Doctor before final consult';
-    } else if (!isSeniorConsultStarted) {
-      return 'Connect with doctor to start the consult';
+    } else if (status !== STATUS.COMPLETED) {
+      if (!isConsultStarted) {
+        return 'Fill vitals to get started with the consult journey';
+      } else if (!isJdQuestionsComplete) {
+        return 'Connect with Junior Doctor before final consult';
+      } else if (!isSeniorConsultStarted) {
+        return 'Connect with doctor to start the consult';
+      }
     }
   };
 
@@ -417,7 +602,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     const { status, appointmentState, isFollowUp } = appointmentDetails;
     if (status === STATUS.CANCELLED) {
       return 'Cancelled';
-    } else if (props.pastOrCurrent === 'past' && status === STATUS.COMPLETED) {
+    } else if (status === STATUS.COMPLETED) {
       return 'Completed';
     } else if (appointmentState === APPOINTMENT_STATE.RESCHEDULE) {
       return 'Rescheduled';
@@ -426,6 +611,195 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     } else {
       return null;
     }
+  };
+
+  const getDoctorDetails = (appointmentData: AppointmentDetails) => {
+    if (appointmentData && appointmentData.doctorInfo) {
+      const {
+        firstName,
+        salutation,
+        lastName,
+        fullName,
+        mobileNumber,
+        specialization,
+        languages,
+        city,
+        awards,
+        displayName,
+        photoUrl,
+        registrationNumber,
+        onlineConsultationFees,
+        physicalConsultationFees,
+        qualification,
+        doctorType,
+        specialty,
+        zip,
+        doctorHospital,
+        experience,
+        id,
+      } = appointmentData.doctorInfo;
+
+      const consultHours =
+        appointmentData.doctorInfo.consultHours &&
+        appointmentData.doctorInfo.consultHours.map((hours) => {
+          const {
+            consultMode,
+            consultType,
+            endTime,
+            id,
+            startTime,
+            weekDay,
+            isActive,
+            actualDay,
+          } = hours;
+          return {
+            consultMode,
+            consultType,
+            endTime,
+            id,
+            startTime,
+            weekDay,
+            isActive,
+            actualDay,
+          };
+        });
+
+      return {
+        __typename: 'DoctorDetails',
+        firstName,
+        salutation,
+        lastName,
+        fullName,
+        mobileNumber,
+        specialization,
+        languages,
+        city,
+        awards,
+        displayName,
+        photoUrl,
+        registrationNumber,
+        onlineConsultationFees,
+        physicalConsultationFees,
+        qualification,
+        doctorType,
+        specialty,
+        zip,
+        starTeam: appointmentData.doctorInfo
+          .starTeam as GetDoctorDetailsById_getDoctorDetailsById_starTeam[],
+        doctorHospital,
+        experience,
+        consultHours: consultHours as GetDoctorDetailsById_getDoctorDetailsById_consultHours[],
+        id,
+      } as DoctorDetails;
+    }
+  };
+
+  const bookAppointment = useMutation(BOOK_APPOINTMENT_RESCHEDULE);
+
+  const rescheduleAPI = (
+    bookRescheduleInput: BookRescheduleAppointmentInput,
+    type: TRANSFER_INITIATED_TYPE
+  ) => {
+    bookAppointment({
+      variables: {
+        bookRescheduleAppointmentInput: bookRescheduleInput,
+      },
+      fetchPolicy: 'no-cache',
+    })
+      .then((data: any) => {
+        setIsModalOpen(false);
+        setApiLoading(false);
+        setReschedulesRemaining(
+          type === TRANSFER_INITIATED_TYPE.PATIENT ? 3 - rescheduleCount - 1 : 3 - rescheduleCount
+        );
+        setIsRescheduleSuccess(true);
+        setRescheduledSlot(bookRescheduleInput.newDateTimeslot);
+      })
+
+      .catch((e) => {
+        console.log(e);
+        setApiLoading(false);
+        setIsAlertOpen(true);
+        setAlertMessage(`Error occured while rescheduling the appointment, ${e}`);
+      });
+  };
+
+  const handleAcceptReschedule = (appointmentData: AppointmentDetails) => {
+    setApiLoading(true);
+    const bookRescheduleInput = {
+      appointmentId: appointmentData.id,
+      doctorId: appointmentData.doctorId,
+      newDateTimeslot: doctorSelectedSlot,
+      initiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+      initiatedId: appointmentData.patientId,
+      patientId: appointmentData.patientId,
+      rescheduledId: '',
+    };
+    rescheduleAPI(bookRescheduleInput, TRANSFER_INITIATED_TYPE.DOCTOR);
+  };
+
+  const bookFollowupMutation = useMutation(BOOK_FOLLOWUP_APPOINTMENT);
+
+  const bookFollowup = (appointmentDetails: AppointmentDetails) => {
+    setAppointmentData(appointmentDetails);
+    setOpenSlotPopup(true);
+  };
+
+  useEffect(() => {
+    if (selectedSlot && appointmentData) {
+      const input = {
+        patientId: appointmentData.patientId,
+        doctorId: appointmentData.doctorId,
+        appointmentDateTime: selectedSlot,
+        appointmentType:
+          followupAppointmentType === 0 ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
+        hospitalId: appointmentData.hospitalId,
+        followUpParentId: appointmentData.id,
+      };
+      bookFollowupMutation({
+        variables: {
+          followUpAppointmentInput: input,
+        },
+        fetchPolicy: 'no-cache',
+      })
+        .then((_data: any) => {
+          setFollowupSuccessPopup(true);
+        })
+        .catch((e: any) => {
+          console.log('Error occured while BookFollowUpAppointment ', { e });
+        });
+    }
+  }, [selectedSlot]);
+
+  const getAppointmentNextSlotInitiatedByDoctor = (appointmentDetails: AppointmentDetails) => {
+    setAppointmentData(appointmentDetails);
+    setRescheduleCount(appointmentDetails.rescheduleCount);
+    setDoctorSelectedSlotLoading(true);
+    client
+      .query<getAppointmentRescheduleDetails, getAppointmentRescheduleDetailsVariables>({
+        query: GET_APPOINTMENT_DOCTOR_RESCHEDULED_DETAILS,
+        variables: {
+          appointmentId: appointmentDetails.id,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }: any) => {
+        if (
+          data &&
+          data.getAppointmentRescheduleDetails &&
+          data.getAppointmentRescheduleDetails.rescheduledDateTime
+        ) {
+          setDoctorSelectedSlot(data.getAppointmentRescheduleDetails.rescheduledDateTime);
+          setIsModalOpen(true);
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+        setDoctorSelectedSlot(null);
+      })
+      .finally(() => {
+        setDoctorSelectedSlotLoading(false);
+      });
   };
 
   return (
@@ -568,23 +942,24 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           {appointmentDetails.status === STATUS.COMPLETED &&
                             appointmentDetails.isFollowUp === 'false' && (
                               <div className={classes.bookFollowup}>
-                                <Link
-                                  to={
-                                    props.pastOrCurrent !== 'past'
-                                      ? clientRoutes.doctorDetails(
-                                          appointmentDetails.doctorInfo &&
-                                            appointmentDetails.doctorInfo.fullName
-                                            ? readableParam(appointmentDetails.doctorInfo.fullName)
-                                            : '',
-                                          appointmentDetails.doctorId
-                                        )
-                                      : clientRoutes.chatRoom(appointmentId, doctorId)
-                                  }
-                                >
-                                  <h3>
-                                    {props.pastOrCurrent !== 'past' ? 'BOOK FOLLOWUP' : 'VIEW CHAT'}
-                                  </h3>
-                                </Link>
+                                <Route
+                                  render={({ history }) => (
+                                    <h3
+                                      style={{ cursor: 'pointer' }}
+                                      onClick={() =>
+                                        props.pastOrCurrent !== 'past'
+                                          ? bookFollowup(appointmentDetails)
+                                          : history.push(
+                                              clientRoutes.chatRoom(appointmentId, doctorId)
+                                            )
+                                      }
+                                    >
+                                      {props.pastOrCurrent !== 'past'
+                                        ? 'BOOK FOLLOWUP'
+                                        : 'VIEW CHAT'}
+                                    </h3>
+                                  )}
+                                />
                                 {props.pastOrCurrent !== 'past' &&
                                   appointmentDetails &&
                                   appointmentDetails.doctorInfo &&
@@ -609,7 +984,15 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                       ? readableParam(appointmentDetails.doctorInfo.fullName)
                                       : '';
                                   if (pickAnotherSlot) {
-                                    setOpenSlotPopup(true);
+                                    getAppointmentNextSlotInitiatedByDoctor(appointmentDetails);
+                                  } else if (
+                                    showAppointmentAction(
+                                      appointmentState,
+                                      status,
+                                      isConsultStarted
+                                    ) === 'BOOK FOLLOWUP'
+                                  ) {
+                                    bookFollowup(appointmentDetails);
                                   } else {
                                     appointmentDetails.status === STATUS.CANCELLED ||
                                     (appointmentDetails.status === STATUS.COMPLETED &&
@@ -639,9 +1022,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                             )}
                           />
                           {appointmentDetails.appointmentState !==
-                            APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
-                            <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
-                          )}
+                            APPOINTMENT_STATE.AWAITING_RESCHEDULE &&
+                            props.pastOrCurrent !== 'past' && (
+                              <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
+                            )}
                         </div>
                       </div>
                     </div>
@@ -652,6 +1036,179 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
           })}
         </Grid>
       </div>
+      {appointmentData && doctorSelectedSlot && (
+        <Modal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <Paper className={classes.modalBox} style={{ width: isChangeSlot ? 700 : 328 }}>
+            <div
+              className={classes.modalBoxClose}
+              onClick={() => {
+                setIsModalOpen(false);
+                setIsChangeSlot(false);
+              }}
+            >
+              <img src={require('images/ic_cross_popup.svg')} alt="" />
+            </div>
+            <AphDialogTitle className={classes.popupHeading}>Reschedule</AphDialogTitle>
+            <div>
+              {isChangeSlot ? (
+                <OnlineConsult
+                  setIsPopoverOpen={setIsModalOpen}
+                  doctorDetails={getDoctorDetails(appointmentData)}
+                  isRescheduleConsult={rescheduleCount < 3}
+                  appointmentId={appointmentData.id}
+                  rescheduleAPI={rescheduleAPI}
+                />
+              ) : (
+                <div>
+                  <div className={classes.dialogContent}>
+                    Dr.{appointmentData.doctorInfo && appointmentData.doctorInfo.fullName} has
+                    suggested the below slot for rescheduling this appointment —
+                    {moment(doctorSelectedSlot).format(' DD MMMM YYYY, hh:mm A')}
+                  </div>
+                  <div className={classes.dialogActions}>
+                    {doctorSelectedSlotLoading ? (
+                      <div className={classes.dialogActionsProgress}>
+                        <CircularProgress size={22} color="primary" />
+                      </div>
+                    ) : (
+                      <>
+                        <AphButton
+                          className={classes.secondaryBtn}
+                          color="primary"
+                          onClick={() => setIsChangeSlot(true)}
+                        >
+                          {'CHANGE SLOT'}
+                        </AphButton>
+
+                        <AphButton
+                          className={classes.primaryBtn}
+                          color="primary"
+                          onClick={() => {
+                            handleAcceptReschedule(appointmentData);
+                          }}
+                        >
+                          {apiLoading ? (
+                            <CircularProgress size={22} color="secondary" />
+                          ) : (
+                            <span>ACCEPT</span>
+                          )}
+                        </AphButton>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Paper>
+        </Modal>
+      )}
+      {appointmentData && (
+        <Modal
+          open={openSlotPopup}
+          onClose={() => setOpenSlotPopup(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <BookFollowupConsult
+            setIsPopoverOpen={setOpenSlotPopup}
+            doctorDetails={getDoctorDetails(appointmentData)}
+            setSelectedSlot={setSelectedSlot}
+            setFollwupAppoitnmentType={setFollwupAppoitnmentType}
+          />
+        </Modal>
+      )}
+      {appointmentData && (
+        <Popover
+          open={isRescheduleSuccess}
+          anchorEl={mascotRef.current}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          classes={{ paper: classes.bottomPopover }}
+        >
+          <div className={classes.successPopoverWindow}>
+            <div className={classes.windowWrap}>
+              <div className={classes.mascotIcon}>
+                <img src={require('images/ic-mascot.png')} alt="" />
+              </div>
+              <div className={classes.windowBody}>
+                <p>Hi! :)</p>
+                <p>
+                  Your appointment with Dr.
+                  {` ${appointmentData.doctorInfo && appointmentData.doctorInfo.firstName} `}
+                  has been rescheduled for -{' '}
+                  {rescheduledSlot && moment(rescheduledSlot).format('Do MMMM, dddd \nhh:mm a')}
+                </p>
+                {reschedulesRemaining >= 0 && (
+                  <p>You have {reschedulesRemaining} free reschedueles left</p>
+                )}
+              </div>
+              <div className={classes.actions}>
+                <AphButton onClick={() => (window.location.href = clientRoutes.appointments())}>
+                  OK, GOT IT
+                </AphButton>
+              </div>
+            </div>
+          </div>
+        </Popover>
+      )}
+      {appointmentData && selectedSlot && (
+        <Popover
+          open={followupSuccessPopup}
+          anchorEl={mascotRef.current}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          classes={{ paper: classes.bottomPopover }}
+        >
+          <div className={classes.successPopoverWindow}>
+            <div className={classes.windowWrap}>
+              <div className={classes.mascotIcon}>
+                <img src={require('images/ic-mascot.png')} alt="" />
+              </div>
+              <div className={classes.windowBody}>
+                <p>`Hi! :)`</p>
+                <p>
+                  Your followup appointment with Dr.
+                  {` ${appointmentData.doctorInfo && appointmentData.doctorInfo.firstName} `}
+                  booked on - {moment(selectedSlot).format('Do MMMM, dddd \nhh:mm a')}
+                </p>
+              </div>
+              <div className={classes.actions}>
+                <AphButton
+                  onClick={() => {
+                    setSelectedSlot(null);
+                    window.location.href = clientRoutes.appointments();
+                  }}
+                >
+                  OK, GOT IT
+                </AphButton>
+              </div>
+            </div>
+          </div>
+        </Popover>
+      )}
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

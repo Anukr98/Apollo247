@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   redeemText: {
     ...theme.fonts.IBMPlexSansRegular(10),
     color: theme.colors.SKY_BLUE,
-    lineHeight: 24,
+    lineHeight: 15,
     marginLeft: 3,
   },
 });
@@ -198,14 +198,17 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   const coupon_discount = orderDetails.couponDiscount || 0;
   const packaging_charges = orderDetails.packagingCharges;
   const paymentMethod = g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentType');
-  const paymentMode = g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentMode');
+  const paymentMode =
+    g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentMode') || paymentMethod;
   const amountPaid = g(orderDetails, 'medicineOrderPayments', '0' as any, 'amountPaid');
-  const healthCreditsRedeemed = g(
-    orderDetails,
-    'medicineOrderPayments',
-    '0' as any,
-    'healthCreditsRedeemed'
-  );
+  const healthCreditsRedeemed =
+    g(
+      orderDetails,
+      'medicineOrderPayments',
+      '0' as any,
+      'healthCreditsRedemptionRequest',
+      'RedeemedPoints'
+    ) || 0;
   const paymentMethodToDisplay =
     paymentMethod == MEDICINE_ORDER_PAYMENT_TYPE.COD
       ? 'COD'
@@ -688,16 +691,18 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               </View>
             )}
             {!offlineOrderNumber && healthCreditsRedeemed != 0 && !billingDetails && (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <OneApollo style={{ height: 17, width: 22, marginRight: 4 }} />
-                  <Text style={styles.paymentLeftText}>Health Credits</Text>
-                  <Text style={styles.redeemText}>(Redeemed)</Text>
-                </View>
+              <View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <OneApollo style={{ height: 17, width: 22, marginRight: 4 }} />
+                    <Text style={styles.paymentLeftText}>Health Credits</Text>
+                  </View>
 
-                <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  Rs. {(healthCreditsRedeemed || 0).toFixed(2)}
-                </Text>
+                  <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
+                    Rs. {(healthCreditsRedeemed || 0).toFixed(2)}
+                  </Text>
+                </View>
+                <Text style={styles.redeemText}>(Will be Redeemed after delivery)</Text>
               </View>
             )}
             {!offlineOrderNumber && amountPaid != 0 && !billingDetails && (

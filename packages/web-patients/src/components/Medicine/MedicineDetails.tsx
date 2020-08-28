@@ -763,8 +763,9 @@ export const MedicineDetails: React.FC = (props) => {
                 title: `${name} Price, Uses, Side Effects - Apollo 247`,
                 description: `Buy ${name}, Pack of ${getPackOfMedicine(
                   data.productdp[0]
-                )} at &#8377;${special_price ||
-                  price} in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
+                )} at &#8377;${
+                  special_price || price
+                } in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
                 canonicalLink:
                   typeof window !== 'undefined' &&
                   window.location &&
@@ -804,7 +805,7 @@ export const MedicineDetails: React.FC = (props) => {
 
   const renderComposition = () => {
     const generics = medicinePharmacyDetails[0].generic.split('+ ');
-    const strength = medicinePharmacyDetails[0].Strengh.split('+ ');
+    const strength = medicinePharmacyDetails[0].Strength.split('+ ');
     const units = medicinePharmacyDetails[0].Unit.split('+ ');
     const compositionArray = generics.map((key, ind) => `${key}-${strength[ind]}${units[ind]}`);
     return compositionArray.join(' + ');

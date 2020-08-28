@@ -594,7 +594,7 @@ export const Prescription: React.FC = (props) => {
 
             const presToAdd = {
               id: caseSheetDetails.id,
-              uploadedUrl: `${process.env.REACT_APP_CASESHEET_LINK}${caseSheetDetails.blobName}`,
+              uploadedUrl: `${process.env.AZURE_PDF_BASE_URL}${caseSheetDetails.blobName}`,
               forPatient: (currentPatient && currentPatient.firstName) || '',
               date: moment(caseSheetDetails.appointment.appointmentDateTime).format('DD MMM YYYY'),
               medicines: (medicinesAll || [])
@@ -700,17 +700,15 @@ export const Prescription: React.FC = (props) => {
                         />
                       )}
                     </div> */}
-                    <div
-                      className={classes.shareIcon}
-                      onClick={() =>
-                        window.open(
-                          `${process.env.REACT_APP_CASESHEET_LINK}${caseSheetDetails.blobName}`,
-                          '_blank'
-                        )
-                      }
+
+                    <a
+                      href={`${process.env.AZURE_PDF_BASE_URL}${caseSheetDetails.blobName}`}
+                      target="_blank"
                     >
-                      <img src={require('images/ic_download.svg')} alt="download" />
-                    </div>
+                      <div className={classes.shareIcon}>
+                        <img src={require('images/ic_download.svg')} alt="download" />
+                      </div>
+                    </a>
                   </>
                 )}
               </div>

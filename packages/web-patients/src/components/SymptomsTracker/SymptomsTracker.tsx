@@ -230,7 +230,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
-export const SymptomsTracker: React.FC = () => {
+const SymptomsTracker: React.FC = () => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
@@ -365,3 +365,5 @@ export const SymptomsTracker: React.FC = () => {
     </div>
   );
 };
+
+export default SymptomsTracker;

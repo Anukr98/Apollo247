@@ -208,8 +208,8 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   };
 
   const getBase64 = (response: DocumentPickerResponse[]): Promise<string>[] => {
-    return response.map(async ({ fileCopyUri: uri, type }) => {
-      const isPdf = uri.toLowerCase().endsWith('.pdf'); // TODO: check here if valid image by mime
+    return response.map(async ({ fileCopyUri: uri, name: fileName, type }) => {
+      const isPdf = fileName.toLowerCase().endsWith('.pdf'); // TODO: check here if valid image by mime
       uri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
       let compressedImageUri = '';
       if (!isPdf) {
@@ -233,52 +233,87 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     };
     postWebEngageEvent('Upload Photo', eventAttributes);
 
-    try {
-      const documents = await DocumentPicker.pickMultiple({
-        type: [DocumentPicker.types.allFiles],
-        copyTo: 'documentDirectory',
-      });
+    if (!props.isProfileImage) {
+      try {
+        const documents = await DocumentPicker.pickMultiple({
+          type: [DocumentPicker.types.allFiles],
+          copyTo: 'documentDirectory',
+        });
 
-      const result = documents.filter((obj) => {
-        if (obj.name.toLowerCase().match(/\.(jpeg|jpg|png|jfif|pdf)$/)) {
-          if (obj.name.toLowerCase().endsWith('.pdf')) {
-            if (obj.size > 2000000) {
-              Alert.alert(
-                strings.common.uhOh,
-                `Only images and PDF(less than 2MB) are supported.\n\n${obj.name}`
-              );
-              setshowSpinner(false);
-              return;
+        const result = documents.filter((obj) => {
+          if (obj.name.toLowerCase().match(/\.(jpeg|jpg|png|jfif|pdf)$/)) {
+            if (obj.name.toLowerCase().endsWith('.pdf')) {
+              if (obj.size > 2000000) {
+                Alert.alert(
+                  strings.common.uhOh,
+                  `Only images and PDF(less than 2MB) are supported.\n\n${obj.name}`
+                );
+                setshowSpinner(false);
+                return;
+              } else {
+                return obj;
+              }
             } else {
               return obj;
             }
           } else {
-            return obj;
+            Alert.alert(strings.common.uhOh, `Only images and PDF are supported.\n\n${obj.name}`);
+            setshowSpinner(false);
+            return;
           }
-        } else {
-          Alert.alert(strings.common.uhOh, `Only images and PDF are supported.\n\n${obj.name}`);
-          setshowSpinner(false);
-          return;
+        });
+        const base64Array = await Promise.all(getBase64(result));
+
+        const base64FormattedArray = base64Array.map(
+          (base64, index) =>
+            ({
+              mime: documents[index].type,
+              data: base64,
+            } as ImageCropPickerResponse)
+        );
+
+        props.onResponse('CAMERA_AND_GALLERY', formatResponse(base64FormattedArray));
+
+        setshowSpinner(false);
+      } catch (e) {
+        setshowSpinner(false);
+        if (DocumentPicker.isCancel(e)) {
+          CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
         }
-      });
-      const base64Array = await Promise.all(getBase64(result));
-
-      const base64FormattedArray = base64Array.map(
-        (base64, index) =>
-          ({
-            mime: documents[index].type,
-            data: base64,
-          } as ImageCropPickerResponse)
-      );
-
-      props.onResponse('CAMERA_AND_GALLERY', formatResponse(base64FormattedArray));
-      setshowSpinner(false);
-    } catch (e) {
-      setshowSpinner(false);
-      if (DocumentPicker.isCancel(e)) {
-        CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
       }
+    } else {
+      openGallery();
     }
+  };
+
+  const openGallery = () => {
+    ImagePicker.openPicker({
+      cropping: true,
+      hideBottomControls: true,
+      width: props.isProfileImage ? 2096 : undefined,
+      height: props.isProfileImage ? 2096 : undefined,
+      includeBase64: true,
+      multiple: props.isProfileImage ? false : true,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
+      writeTempFile: false,
+    })
+      .then((response) => {
+        //console.log('res', response);
+
+        setshowSpinner(false);
+        props.onResponse(
+          'CAMERA_AND_GALLERY',
+          formatResponse(response as ImageCropPickerResponse[]),
+          'Gallery'
+        );
+      })
+      .catch((e: Error) => {
+        CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
+        //aphConsole.log({ e });
+        setshowSpinner(false);
+      });
   };
 
   const isOptionDisabled = (type: EPrescriptionDisableOption) => props.disabledOption == type;

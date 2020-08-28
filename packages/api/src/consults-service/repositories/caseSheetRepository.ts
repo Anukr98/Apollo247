@@ -171,8 +171,8 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     const endDate = new Date(format(currentDate, 'yyyy-MM-dd') + 'T18:29');
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
-      .where(` appointment.sdConsultationDate + (case_sheet.followUpAfterInDays * ${ "'1 day'::INTERVAL"}) >= :startDate `, { startDate })
-      .andWhere(` appointment.sdConsultationDate + (case_sheet.followUpAfterInDays * ${ "'1 day'::INTERVAL"}) < :endDate `, { endDate })
+      .where(` appointment.sdConsultationDate + (case_sheet.followUpChatDays * ${ "'1 day'::INTERVAL"}) >= :startDate `, { startDate })
+      .andWhere(` appointment.sdConsultationDate + (case_sheet.followUpChatDays * ${ "'1 day'::INTERVAL"}) < :endDate `, { endDate })
       .andWhere(` appointment.status = :status`, { status: STATUS.COMPLETED })
       .select("appointment.id")
       .groupBy('appointment.id')
