@@ -205,15 +205,15 @@ const saveOrderShipmentInvoice: Resolver<
     }),
     itemDetails: JSON.stringify(
       saveOrderShipmentInvoiceInput.itemDetails.map((item) => {
-        const quantity = item.quantity / item.packSize;
+        const quantity = +new Decimal(item.quantity).dividedBy(item.packSize).toFixed(4);
         return {
           itemId: item.articleCode,
           itemName: item.articleName,
           batchId: item.batch,
-          issuedQty: Number(quantity.toFixed(2)),
+          issuedQty: quantity,
           mou: item.packSize,
-          discountPrice: Number((item.discountPrice / quantity).toFixed(2)),
-          mrp: Number((item.packSize * item.unitPrice).toFixed(2)),
+          discountPrice: +new Decimal(item.discountPrice).dividedBy(quantity).toFixed(4),
+          mrp: +new Decimal(item.packSize).times(item.unitPrice).toFixed(4),
         };
       })
     ),

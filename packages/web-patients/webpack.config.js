@@ -17,7 +17,7 @@ if (dotEnvConfig.error) throw dotEnvConfig.error;
 Object.values(dotEnvConfig).forEach((val, KEY) => (process.env[KEY] = val));
 const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
-const isStaging = process.env.NODE_ENV === 'staging';
+const isStaging = process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'vapt';
 const isProduction = process.env.NODE_ENV === 'production';
 const imageCdnBaseUrl = process.env.IMAGE_BASE_URL;
 const distDir = path.resolve(__dirname, 'dist');
@@ -62,28 +62,28 @@ const plugins = [
     ios: true,
     icons: [
       {
-        src: path.resolve('src/images/apollo_logo.png'),
+        src: `${imageCdnBaseUrl}/apollo_logo.png`,
         sizes: [96, 128, 192, 256, 384, 512], // multiple sizes
       },
       {
-        src: path.resolve('src/images/apollo_logo.jpg'),
+        src: `${imageCdnBaseUrl}/apollo_logo.jpg`,
         size: '1024x1024',
         purpose: 'maskable',
       },
       {
-        src: path.resolve('src/images/apollo_logo.png'),
+        src: `${imageCdnBaseUrl}/apollo_logo.png`,
         sizes: [120, 152, 167, 180, 1024],
         destination: path.join('icons', 'ios'),
         ios: true,
       },
       {
-        src: path.resolve('src/images/apollo_logo.png'),
+        src: `${imageCdnBaseUrl}/apollo_logo.png`,
         size: 1024,
         destination: path.join('icons', 'ios'),
         ios: 'startup',
       },
       {
-        src: path.resolve('src/images/apollo_logo.png'),
+        src: `${imageCdnBaseUrl}/apollo_logo.png`,
         sizes: [36, 48, 72, 96, 144, 192, 512],
         destination: path.join('icons', 'android'),
       },
@@ -157,19 +157,18 @@ module.exports = {
         loader: 'file-loader',
         options: {
           publicPath: (url, resourcePath, context) => {
-            const imageName = resourcePath.split('/').pop()         
-            if(isProduction || isStaging) {
-              console.log('resourcePath', resourcePath.split('/').pop())   
+            const imageName = resourcePath.split('/').pop();
+            if (isProduction || isStaging) {
+              console.log('resourcePath', resourcePath.split('/').pop());
               return `${imageCdnBaseUrl}/${imageName}`;
             }
-            return `/images/${imageName}`
+            return `/images/${imageName}`;
           },
-          name: (isProduction || isStaging) ? '' : '[path][name].[ext]',
-          outputPath: (isProduction || isStaging) ? 'images': '',
+          name: isProduction || isStaging ? '' : '[path][name].[ext]',
+          outputPath: isProduction || isStaging ? 'images' : '',
         },
       },
     ],
-    
   },
 
   resolve: {

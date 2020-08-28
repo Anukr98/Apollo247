@@ -24,6 +24,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import {
   Alert,
+  Platform,
   SafeAreaView,
   StyleProp,
   StyleSheet,
@@ -31,14 +32,14 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  Platform,
 } from 'react-native';
+import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet';
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
 import { Overlay } from 'react-native-elements';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
+import ImageResizer from 'react-native-image-resizer';
 import { ScrollView } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
-import ImageResizer from 'react-native-image-resizer';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -117,6 +118,7 @@ export interface UploadPrescriprionPopupProps {
 
 export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  let actionSheetRef: ActionSheet;
 
   const postUPrescriptionWEGEvent = (
     source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
@@ -224,8 +226,15 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   };
 
   const onClickGallery = async () => {
+    if (!props.isProfileImage) {
+      actionSheetRef.show();
+    } else {
+      openGallery();
+    }
+  };
+
+  const onBrowseClicked = async () => {
     postUPrescriptionWEGEvent('Choose Gallery');
-    setshowSpinner(true);
     CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Gallery opened');
 
     const eventAttributes: WebEngageEvents['Upload Photo'] = {
@@ -233,60 +242,68 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     };
     postWebEngageEvent('Upload Photo', eventAttributes);
 
-    if (!props.isProfileImage) {
-      try {
-        const documents = await DocumentPicker.pickMultiple({
-          type: [DocumentPicker.types.allFiles],
-          copyTo: 'documentDirectory',
-        });
+    try {
+      setshowSpinner(true);
 
-        const result = documents.filter((obj) => {
-          if (obj.name.toLowerCase().match(/\.(jpeg|jpg|png|jfif|pdf)$/)) {
-            if (obj.name.toLowerCase().endsWith('.pdf')) {
-              if (obj.size > 2000000) {
-                Alert.alert(
-                  strings.common.uhOh,
-                  `Only images and PDF(less than 2MB) are supported.\n\n${obj.name}`
-                );
-                setshowSpinner(false);
-                return;
-              } else {
-                return obj;
-              }
+      const documents = await DocumentPicker.pickMultiple({
+        type: [DocumentPicker.types.pdf],
+        copyTo: 'documentDirectory',
+      });
+
+      const result = documents.filter((obj) => {
+        if (obj.name.toLowerCase().match(/\.(jpeg|jpg|png|jfif|pdf)$/)) {
+          if (obj.name.toLowerCase().endsWith('.pdf')) {
+            if (obj.size > 2000000) {
+              Alert.alert(
+                strings.common.uhOh,
+                `Only images and PDF(less than 2MB) are supported.\n\n${obj.name}`
+              );
+              setshowSpinner(false);
+              return;
             } else {
               return obj;
             }
           } else {
-            Alert.alert(strings.common.uhOh, `Only images and PDF are supported.\n\n${obj.name}`);
-            setshowSpinner(false);
-            return;
+            return obj;
           }
-        });
-        const base64Array = await Promise.all(getBase64(result));
-
-        const base64FormattedArray = base64Array.map(
-          (base64, index) =>
-            ({
-              mime: documents[index].type,
-              data: base64,
-            } as ImageCropPickerResponse)
-        );
-
-        props.onResponse('CAMERA_AND_GALLERY', formatResponse(base64FormattedArray));
-
-        setshowSpinner(false);
-      } catch (e) {
-        setshowSpinner(false);
-        if (DocumentPicker.isCancel(e)) {
-          CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
+        } else {
+          Alert.alert(strings.common.uhOh, `Only images and PDF are supported.\n\n${obj.name}`);
+          setshowSpinner(false);
+          return;
         }
+      });
+      const base64Array = await Promise.all(getBase64(result));
+
+      const base64FormattedArray = base64Array.map(
+        (base64, index) =>
+          ({
+            mime: documents[index].type,
+            data: base64,
+          } as ImageCropPickerResponse)
+      );
+
+      props.onResponse('CAMERA_AND_GALLERY', formatResponse(base64FormattedArray));
+
+      setshowSpinner(false);
+    } catch (e) {
+      setshowSpinner(false);
+      if (DocumentPicker.isCancel(e)) {
+        CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
       }
-    } else {
-      openGallery();
     }
   };
 
   const openGallery = () => {
+    postUPrescriptionWEGEvent('Choose Gallery');
+    CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Gallery opened');
+
+    const eventAttributes: WebEngageEvents['Upload Photo'] = {
+      Source: 'Gallery',
+    };
+    postWebEngageEvent('Upload Photo', eventAttributes);
+
+    setshowSpinner(true);
+    console.log('openGallery');
     ImagePicker.openPicker({
       cropping: true,
       hideBottomControls: true,
@@ -521,6 +538,12 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     );
   };
 
+  const options = [
+    <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Photo Library</Text>,
+    <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Browse</Text>,
+    <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Cancel</Text>,
+  ];
+
   return (
     <Overlay
       onRequestClose={() => props.onClickClose()}
@@ -574,6 +597,25 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           </ScrollView>
         </SafeAreaView>
         {showSpinner && <Spinner />}
+        <ActionSheet
+          ref={(o: ActionSheet) => (actionSheetRef = o)}
+          title={''}
+          options={options}
+          cancelButtonIndex={2}
+          onPress={(index: number) => {
+            /* do something */
+            console.log('index', index);
+            if (index === 0) {
+              setTimeout(() => {
+                openGallery();
+              }, 100);
+            } else if (index === 1) {
+              setTimeout(() => {
+                onBrowseClicked();
+              }, 100);
+            }
+          }}
+        />
       </View>
     </Overlay>
   );

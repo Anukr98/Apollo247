@@ -440,7 +440,11 @@ const validateStoreItems = async (medicineCartOMSInput: MedicineCartOMSInput) =>
         itemId: item.medicineSKU,
         productName: item.medicineName,
         productType:
-          item.isMedicine == '1' ? CouponCategoryApplicable.PHARMA : CouponCategoryApplicable.FMCG,
+          item.isMedicine == '1'
+            ? CouponCategoryApplicable.PHARMA
+            : item.isMedicine == '2'
+            ? CouponCategoryApplicable.PL
+            : CouponCategoryApplicable.FMCG,
         mrp: price,
         specialPrice: item.specialPrice || price,
         quantity: item.quantity,
@@ -492,12 +496,15 @@ const validatePharmaItems = async (medicineCartOMSInput: MedicineCartOMSInput) =
       return productItem.sku == item.medicineSKU;
     });
     if (orderLineItem) {
+      const type = orderLineItem.type_id && orderLineItem.type_id.toLowerCase();
       orderLineItems.push({
         itemId: orderLineItem.sku,
         productName: orderLineItem.name,
         productType:
-          (orderLineItem.type_id && orderLineItem.type_id.toLowerCase()) == 'pharma'
+          type == 'pharma'
             ? CouponCategoryApplicable.PHARMA
+            : type == 'pl'
+            ? CouponCategoryApplicable.PL
             : CouponCategoryApplicable.FMCG,
         mrp: orderLineItem.price,
         specialPrice: orderLineItem.special_price || orderLineItem.price,

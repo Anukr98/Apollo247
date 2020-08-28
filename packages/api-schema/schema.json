@@ -18859,18 +18859,6 @@
             "deprecationReason": null
           },
           {
-            "name": "followUpChatDays",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "Int",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "followUpConsultType",
             "description": null,
             "args": [],
@@ -41114,16 +41102,6 @@
           },
           {
             "name": "followUpAfterInDays",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "Int",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "followUpChatDays",
             "description": null,
             "type": {
               "kind": "SCALAR",

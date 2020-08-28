@@ -337,42 +337,40 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           <div className={classes.customScrollBar}>
             <div className={classes.root}>
               <div className={classes.addressGroup}>
-                {availableCoupons && availableCoupons.length > 0 && (
-                  <div className={classes.pinSearch}>
-                    <AphTextField
-                      inputProps={{
-                        maxLength: 20,
-                      }}
-                      value={selectCouponCode}
-                      onChange={(e) => {
-                        setErrorMessage('');
-                        props.setValidityStatus(false);
-                        const value = e.target.value.replace(/\s/g, '');
-                        setSelectCouponCode(value);
-                      }}
-                      placeholder="Enter coupon code"
-                      error={errorMessage.length > 0 && true}
-                    />
-                    <div className={classes.pinActions}>
-                      {errorMessage.length === 0 && props.validityStatus ? (
-                        <div className={classes.tickMark}>
-                          <img src={require('images/ic_tickmark.svg')} alt="" />
-                        </div>
-                      ) : (
-                        <AphButton
-                          classes={{
-                            disabled: classes.buttonDisabled,
-                          }}
-                          className={classes.searchBtn}
-                          disabled={disableCoupon}
-                          onClick={() => verifyCoupon()}
-                        >
-                          <img src={require('images/ic_send.svg')} alt="" />
-                        </AphButton>
-                      )}
-                    </div>
+                <div className={classes.pinSearch}>
+                  <AphTextField
+                    inputProps={{
+                      maxLength: 20,
+                    }}
+                    value={selectCouponCode}
+                    onChange={(e) => {
+                      setErrorMessage('');
+                      props.setValidityStatus(false);
+                      const value = e.target.value.replace(/\s/g, '');
+                      setSelectCouponCode(value);
+                    }}
+                    placeholder="Enter coupon code"
+                    error={errorMessage.length > 0 && true}
+                  />
+                  <div className={classes.pinActions}>
+                    {errorMessage.length === 0 && props.validityStatus ? (
+                      <div className={classes.tickMark}>
+                        <img src={require('images/ic_tickmark.svg')} alt="" />
+                      </div>
+                    ) : (
+                      <AphButton
+                        classes={{
+                          disabled: classes.buttonDisabled,
+                        }}
+                        className={classes.searchBtn}
+                        disabled={disableCoupon}
+                        onClick={() => verifyCoupon()}
+                      >
+                        <img src={require('images/ic_send.svg')} alt="" />
+                      </AphButton>
+                    )}
                   </div>
-                )}
+                </div>
                 {errorMessage.length > 0 && (
                   <div className={classes.pinErrorMsg}>{errorMessage}</div>
                 )}
