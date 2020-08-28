@@ -372,12 +372,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
-  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpChatDays');
+  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
   const followUpChatDays =
-    caseSheetChatDays || caseSheetChatDays === 0
-      ? caseSheetChatDays === 0
+    caseSheetChatDays || caseSheetChatDays === '0'
+      ? caseSheetChatDays === '0'
         ? 0
-        : caseSheetChatDays - 1
+        : Number(caseSheetChatDays) - 1
       : 6;
   const disableChat =
     props.navigation.getParam('disableChat') ||
