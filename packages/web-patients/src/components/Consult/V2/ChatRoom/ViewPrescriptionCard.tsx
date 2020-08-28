@@ -104,23 +104,69 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
       </div> */}
       <div className={`${classes.blueBubble} ${classes.petient} `}>
         <p>
-          <div>
-            Hello <span>{currentPatient.firstName}</span>
-          </div>
-          <div>Hope your consultation went well… Here is your prescription.</div>
-          <div>
-            {props.messageDetails &&
-              props.messageDetails.transferInfo &&
-              props.messageDetails.transferInfo.pdfUrl && (
-                <a href={props.messageDetails.transferInfo.pdfUrl} target="_blank">
-                  <button className={classes.downloadBtn}>Download</button>
-                </a>
+          {props.messageDetails.message === '^^#followupconsult' && (
+            <>
+              <div>
+                Hello <span>{currentPatient.firstName}</span>
+              </div>
+              <div>Hope your consultation went well… Here is your prescription.</div>
+              <div>
+                {props.messageDetails &&
+                  props.messageDetails.transferInfo &&
+                  props.messageDetails.transferInfo.pdfUrl && (
+                    <a href={props.messageDetails.transferInfo.pdfUrl} target="_blank">
+                      <button className={classes.downloadBtn}>Download</button>
+                    </a>
+                  )}
+
+                <Link
+                  to={clientRoutes.prescription(props.messageDetails.transferInfo.appointmentId)}
+                >
+                  <button className={classes.viewBtn}>View</button>
+                </Link>
+              </div>
+            </>
+          )}
+          {props.messageDetails.message === '^^#rescheduleconsult' && (
+            <>
+              <div>
+                {props.messageDetails.transferInfo &&
+                props.messageDetails.transferInfo.reschduleCount &&
+                props.messageDetails.transferInfo.reschduleCount > 2
+                  ? 'Since you have already rescheduled 3 times with ' +
+                      props.messageDetails.transferInfo.doctorInfo &&
+                    props.messageDetails.transferInfo.doctorInfo.displayName
+                    ? props.messageDetails.transferInfo.doctorInfo.displayName
+                    : 'Dr. ' + ', we will consider this a new paid appointment.'
+                  : "We're sorry that you have to reschedule. You can reschedule up to 3 times for free."}
+              </div>
+              {props.messageDetails && props.messageDetails.transferInfo && (
+                <>
+                  <div>
+                    {`Next slot for ${props.messageDetails.transferInfo.doctorInfo &&
+                      props.messageDetails.transferInfo.doctorInfo.displayName} is available on- `}
+                  </div>
+                  <div>{props.messageDetails.transferInfo.transferDateTime}</div>
+                </>
               )}
 
-            <Link to={clientRoutes.prescription(props.messageDetails.transferInfo.appointmentId)}>
-              <button className={classes.viewBtn}>View</button>
-            </Link>
-          </div>
+              <div>
+                {props.messageDetails &&
+                  props.messageDetails.transferInfo &&
+                  props.messageDetails.transferInfo.pdfUrl && (
+                    <a href={props.messageDetails.transferInfo.pdfUrl} target="_blank">
+                      <button className={classes.downloadBtn}>Download</button>
+                    </a>
+                  )}
+
+                <Link
+                  to={clientRoutes.prescription(props.messageDetails.transferInfo.appointmentId)}
+                >
+                  <button className={classes.viewBtn}>View</button>
+                </Link>
+              </div>
+            </>
+          )}
           <div className={classes.chatTime}>{props.chatTime} </div>
         </p>
       </div>

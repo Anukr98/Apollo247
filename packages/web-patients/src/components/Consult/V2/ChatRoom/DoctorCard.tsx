@@ -160,13 +160,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             )}
           </div>
         </div>
-      ) : props.messageDetails.message === '^^#followupconsult' ? (
-        // <div className={`${classes.blueBubble} ${classes.petient} `}>
-        //   <Link
-        //     to={clientRoutes.prescription(props.messageDetails.transferInfo.appointmentId)}
-        //   ></Link>
-        //   <Button>Download</Button>
-        // </div>
+      ) : props.messageDetails.message === '^^#followupconsult' ||
+        props.messageDetails.message === '^^#rescheduleconsult' ? (
         <ViewPrescriptionCard
           message={props.message}
           duration={props.duration}
