@@ -373,7 +373,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
   const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
-  const followUpChatDays =
+  const followUpAfterInDays =
     caseSheetChatDays || caseSheetChatDays === '0'
       ? caseSheetChatDays === '0'
         ? 0
@@ -382,7 +382,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const disableChat =
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
-      .add(followUpChatDays, 'days')
+      .add(followUpAfterInDays, 'days')
       .startOf('day')
       .isBefore(moment(new Date()).startOf('day'));
   // console.log('appointmentData >>>>', appointmentData);
