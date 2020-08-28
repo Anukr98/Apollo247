@@ -17,6 +17,7 @@ import { Link } from 'react-router-dom';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import _ from 'lodash';
+import format from 'date-fns/format';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -362,11 +363,21 @@ interface AppointmentsFilterProps {
   setIsFilterOpen: (filterOpen: boolean) => void;
   filterDoctorsList: string[];
   filterSpecialtyList: string[];
+  selectedDate: Date | null;
+  setSelectedDate: (selectedDate: Date | null) => void;
 }
 
 export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => {
   const classes = useStyles({});
-  const { filter, setFilter, setIsFilterOpen, filterDoctorsList, filterSpecialtyList } = props;
+  const {
+    filter,
+    setFilter,
+    setIsFilterOpen,
+    filterDoctorsList,
+    filterSpecialtyList,
+    selectedDate,
+    setSelectedDate,
+  } = props;
   const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(filter);
   const [value, setValue] = React.useState(0);
 
@@ -403,13 +414,13 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
     }
   };
 
-  const [selectedDate, setSelectedDate] = React.useState<Date | null>(
-    new Date('2014-08-18T21:11:54')
-  );
-
   const handleDateChange = (date: Date | null) => {
     setSelectedDate(date);
   };
+
+  useEffect(() => {
+    selectedDate && setFilterValues('availability', format(selectedDate, 'dd/MM/yyyy'));
+  }, [selectedDate]);
 
   return (
     <div className={classes.filterWrapper}>
@@ -448,6 +459,7 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
                 <ThemeProvider theme={defaultMaterialTheme}>
                   <KeyboardDatePicker
+                    autoOk={true}
                     className={classes.keyboardDatepicker}
                     disableToolbar
                     variant="inline"
@@ -634,6 +646,7 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
                 <MuiPickersUtilsProvider utils={DateFnsUtils}>
                   <ThemeProvider theme={defaultMaterialTheme}>
                     <KeyboardDatePicker
+                      autoOk={true}
                       className={classes.keyboardDatepicker}
                       disableToolbar
                       variant="inline"

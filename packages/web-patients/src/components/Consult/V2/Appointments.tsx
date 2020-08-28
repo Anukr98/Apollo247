@@ -583,10 +583,10 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [selectCurrentUser, setSelectCurrentUser] = React.useState<boolean>(false);
   const [searchKeyword, setSearchKeyword] = React.useState<string>('');
+  const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
 
   useEffect(() => {
     if (searchKeyword.length > 2) {
-      console.log('searchKeyword', searchKeyword);
       const doctorsOrSpecialitySearch = filteredAppointmentsList.filter(
         (appointmentDetail: any) => {
           return (
@@ -942,6 +942,11 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
         });
         finalList = [...finalList, ...filteredList];
       }
+    } else if (selectedDate) {
+      const filteredList = localFilteredAppointmentsList.filter((appointment) => {
+        return moment(appointment.appointmentDateTime).date() === moment(selectedDate).date();
+      });
+      finalList = [...finalList, ...filteredList];
     }
     return _uniq(finalList);
   };
@@ -1049,6 +1054,10 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     (appointmentStatus && appointmentStatus.length) +
     (doctorsList && doctorsList.length) +
     (specialtyList && specialtyList.length);
+
+  useEffect(() => {
+    filterLength === 0 && setSelectedDate(null);
+  }, [filterLength]);
 
   return (
     <div className={classes.root}>
@@ -1473,6 +1482,8 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
           setIsFilterOpen={setIsFilterOpen}
           filterDoctorsList={filterDoctorsList}
           filterSpecialtyList={filterSpecialtyList}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
         />
       </Modal>
       <NavigationBottom />
