@@ -373,17 +373,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
-  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpChatDays');
-  const followUpChatDays =
-    caseSheetChatDays || caseSheetChatDays === 0
-      ? caseSheetChatDays === 0
+  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+  const followUpAfterInDays =
+    caseSheetChatDays || caseSheetChatDays === '0'
+      ? caseSheetChatDays === '0'
         ? 0
-        : caseSheetChatDays - 1
+        : Number(caseSheetChatDays) - 1
       : 6;
   const disableChat =
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
-      .add(followUpChatDays, 'days')
+      .add(followUpAfterInDays, 'days')
       .startOf('day')
       .isBefore(moment(new Date()).startOf('day'));
   // console.log('appointmentData >>>>', appointmentData);
@@ -5196,6 +5196,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             )}
 
             <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+            {waitAndEndCall()}
             {patientJoinedCall.current && !subscriberConnected.current && (
               <Text style={styles.centerTxt}>
                 {strings.common.waitForDoctirToJoinCall.replace('doctor_name', doctorName)}
@@ -5872,6 +5873,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         </View>
       </View>
     );
+  };
+
+  const waitAndEndCall = () => {
+    if (patientJoinedCall.current && !subscriberConnected.current && callMinutes === 5) {
+      handleEndCall();
+    }
   };
 
   const handleEndCall = () => {

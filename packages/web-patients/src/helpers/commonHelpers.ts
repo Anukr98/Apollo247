@@ -205,7 +205,7 @@ const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
 const OUT_OF_STOCK_MESSAGE = 'Sorry, this item is out of stock in your area';
-const TAT_API_TIMEOUT_IN_MILLI_SEC = 10000; // in milli sec
+const TAT_API_TIMEOUT_IN_MILLI_SEC = 20000; // in milli sec
 const NO_ONLINE_SERVICE = 'NOT AVAILABLE FOR ONLINE SALE';
 const OUT_OF_STOCK = 'Out Of Stock';
 const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
@@ -436,7 +436,9 @@ const getCouponByUserMobileNumber = () => {
 };
 
 const isPastAppointment = (appointmentDateTime: string) =>
-  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
+  moment(appointmentDateTime)
+    .add(7, 'days')
+    .isBefore(moment());
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const followUpDayMoment = moment(appointmentTime).add(7, 'days');

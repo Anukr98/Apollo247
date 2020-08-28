@@ -897,9 +897,6 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   followUpAfterInDays: number;
 
-  @Column({ default: 7, type: 'smallint' })
-  followUpChatDays: number;
-
   @Column({ nullable: true })
   followUpDate: Date;
 
@@ -991,8 +988,9 @@ export class CaseSheet extends BaseEntity {
 ///////////////////////////////////////////////////////////
 @Entity()
 export class ConsultQueueItem extends BaseEntity {
+
   @Index('ConsultQueueItem_appointmentId')
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   appointmentId: string;
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.consultQueueItem)
