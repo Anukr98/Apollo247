@@ -250,54 +250,47 @@ const saveMedicineOrderOMS: Resolver<
     } else {
       orderLineItems = await validatePharmaItems(medicineCartOMSInput);
     }
-    if (medicineCartOMSInput.coupon) {
-      const pharmaCouponInput: PharmaCouponInputArgs = {
-        pharmaCouponInput: {
-          code: medicineCartOMSInput.coupon,
-          patientId: medicineCartOMSInput.patientId,
-          orderLineItems: orderLineItems,
-        },
-      };
-      const context: CouponServiceContext = {
-        mobileNumber,
-        doctorsDb,
-        consultsDb,
-        patientsDb: profilesDb,
-      };
-      const couponValidity: PharmaOutput = (await validatePharmaCoupon(
-        null,
-        pharmaCouponInput,
-        context
-      )) as PharmaOutput;
-      if (!couponValidity.validityStatus) {
-        throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, {});
-      }
-      if (couponValidity.discountedTotals) {
-        const discountedTotals = couponValidity.discountedTotals;
-        const finalAmount =
-          (medicineCartOMSInput.devliveryCharges || 0) +
-          discountedTotals.mrpPriceTotal -
-          discountedTotals.couponDiscount -
-          discountedTotals.productDiscount;
-        if (
-          Math.abs(Math.floor(finalAmount) - Math.floor(medicineCartOMSInput.estimatedAmount)) > 1
-        ) {
-          throw new AphError(
-            AphErrorMessages.SAVE_MEDICINE_ORDER_INVALID_AMOUNT_ERROR,
-            undefined,
-            {}
-          );
+    if (orderLineItems.length > 0) {
+      let finalAmount = 0;
+      if (medicineCartOMSInput.coupon) {
+        const pharmaCouponInput: PharmaCouponInputArgs = {
+          pharmaCouponInput: {
+            code: medicineCartOMSInput.coupon,
+            patientId: medicineCartOMSInput.patientId,
+            orderLineItems: orderLineItems,
+          },
+        };
+        const context: CouponServiceContext = {
+          mobileNumber,
+          doctorsDb,
+          consultsDb,
+          patientsDb: profilesDb,
+        };
+        const couponValidity: PharmaOutput = (await validatePharmaCoupon(
+          null,
+          pharmaCouponInput,
+          context
+        )) as PharmaOutput;
+        if (!couponValidity.validityStatus) {
+          throw new AphError(AphErrorMessages.INVALID_COUPON_CODE, undefined, {});
         }
+        if (couponValidity.discountedTotals) {
+          const discountedTotals = couponValidity.discountedTotals;
+          finalAmount =
+            discountedTotals.mrpPriceTotal -
+            discountedTotals.couponDiscount -
+            discountedTotals.productDiscount;
+        }
+      } else {
+        finalAmount = orderLineItems.reduce((addedAmount, lineItem) => {
+          return addedAmount + lineItem.quantity * lineItem.specialPrice;
+        }, 0);
       }
-    } else {
-      let estimatedAmount = orderLineItems.reduce((addedAmount, lineItem) => {
-        return addedAmount + lineItem.quantity * lineItem.specialPrice;
-      }, 0);
       if (medicineCartOMSInput.devliveryCharges) {
-        estimatedAmount += medicineCartOMSInput.devliveryCharges;
+        finalAmount += medicineCartOMSInput.devliveryCharges;
       }
       if (
-        Math.abs(Math.floor(estimatedAmount) - Math.floor(medicineCartOMSInput.estimatedAmount)) > 1
+        Math.abs(Math.floor(finalAmount) - Math.floor(medicineCartOMSInput.estimatedAmount)) > 1
       ) {
         throw new AphError(
           AphErrorMessages.SAVE_MEDICINE_ORDER_INVALID_AMOUNT_ERROR,
@@ -383,7 +376,9 @@ const validateStoreItems = async (medicineCartOMSInput: MedicineCartOMSInput) =>
   apiPromises.push(getMagentoItems(medicineCartOMSInput.items));
 
   const [storeItemDetails, magentoItemDetails] = await Promise.all(apiPromises);
-
+  if (storeItemDetails.length == 0) {
+    return orderLineItems;
+  }
   medicineCartOMSInput.items.map((item) => {
     const storeItem = storeItemDetails.find((productItem: StoreItemDetail) => {
       return productItem.itemId == item.medicineSKU;
@@ -510,7 +505,6 @@ const getStoreItems = async (items: MedicineCartOMSItem[], shopId: string) => {
     body: reqBody,
     headers: { 'Content-Type': 'application/json', Authentication: authToken },
   });
-
   if (pharmaResp.status != 200) {
     log(
       'profileServiceLogger',
@@ -519,7 +513,7 @@ const getStoreItems = async (items: MedicineCartOMSItem[], shopId: string) => {
       JSON.stringify(pharmaResp),
       ''
     );
-    throw new AphError(AphErrorMessages.FETCH_STORE_INVENTORY_FROM_PHARMACY_ERROR, undefined, {});
+    return [];
   }
 
   const storeItemsDetails: StoreInventoryResp = await pharmaResp.json();
@@ -531,7 +525,7 @@ const getStoreItems = async (items: MedicineCartOMSItem[], shopId: string) => {
       JSON.stringify(pharmaResp),
       ''
     );
-    throw new AphError(AphErrorMessages.FETCH_STORE_INVENTORY_FROM_PHARMACY_ERROR, undefined, {});
+    return [];
   }
 
   return storeItemsDetails.itemDetails;
