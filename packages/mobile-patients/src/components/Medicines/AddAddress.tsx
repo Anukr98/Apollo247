@@ -94,6 +94,38 @@ const styles = StyleSheet.create({
   selectedButtonTitleStyle: {
     color: theme.colors.WHITE,
   },
+  userDetailsOuterView:{
+    ...theme.viewStyles.cardViewStyle,
+    margin: 20,
+    padding: 16,
+  },
+  viewRowStyle:{flexDirection: 'row'},
+  userSave:{
+    flex: 0.2,
+    justifyContent:'flex-end',
+    alignItems:'center'
+  },
+  userSaveText:{
+    ...theme.viewStyles.yellowTextStyle, 
+    ...fonts.IBMPlexSansBold(15),
+    textAlign:'right'
+  },
+  addressHeadingText:{ 
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.SHERPA_BLUE,
+  },
+  dropDownContainer:{ 
+    position: 'absolute', 
+    top: 10, 
+    zIndex: 1, 
+    width: '100%' 
+  },
+  addressFieldsText:{ 
+    marginTop: 5, 
+    marginBottom: 10 
+  },
+  pincodeView:{justifyContent:'space-between',flex:0.45,marginRight:'12%'},
+  addressLabel:{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) },
 });
 
 export type AddressSource = 'My Account' | 'Upload Prescription' | 'Cart' | 'Diagnostics Cart';
@@ -555,14 +587,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   /**view added for the patient's details */
 const renderUserDetails = () => {
     return (
-      <View style={{
-        ...theme.viewStyles.cardViewStyle,
-        margin: 20,
-        padding: 16,
-      }}>
-        <View style={{flexDirection: 'row'}}>
+      <View style={styles.userDetailsOuterView}>
+        <View style={styles.viewRowStyle}>
           <View style={{flex: editProfile ? 0.9 : 1,height:60}}>
-            <View style={{flexDirection:'row'}}>
+            <View style={styles.viewRowStyle}>
               <Text style={{color: editProfile ? theme.colors.placeholderTextColor :'#02475b', ...fonts.IBMPlexSansMedium(16)}}>Name : </Text>
               <TextInputComponent 
                 conatinerstyles={{flex:1,top: editProfile ?-9 :-6}}
@@ -592,8 +620,13 @@ const renderUserDetails = () => {
                 value={phoneNumber} 
                 editable={editProfile} 
                 placeholder={'Mobile Number'} 
-                inputStyle={{borderBottomWidth: editProfile ? 1 : 2,
-                  paddingBottom: editProfile ?1 :3, color: editProfile ? theme.colors.placeholderTextColor : theme.colors.SHERPA_BLUE,...theme.fonts.IBMPlexSansMedium(16),borderColor: editProfile ? theme.colors.INPUT_BORDER_SUCCESS : 'transparent'}}/>
+                inputStyle={{
+                  borderBottomWidth: editProfile ? 1 : 2,
+                  paddingBottom: editProfile ? 1 :3, 
+                  color: editProfile ? theme.colors.placeholderTextColor : theme.colors.SHERPA_BLUE,
+                  ...theme.fonts.IBMPlexSansMedium(16),
+                  borderColor: editProfile ? theme.colors.INPUT_BORDER_SUCCESS : 'transparent'
+                }}/>
             </View>
             
           </View>
@@ -604,12 +637,12 @@ const renderUserDetails = () => {
               }}>
                 <EditIconNewOrange/>
             </TouchableOpacity> :
-            <View style={{flex: 0.2,justifyContent:'flex-end',alignItems:'center'}}>
+            <View style={styles.userSave}>
               <TouchableOpacity style={{width:"100%"}}
                 onPress={() => {
                   validateUserDetails()
                 }}>
-                <Text style={{...theme.viewStyles.yellowTextStyle, ...fonts.IBMPlexSansBold(15),textAlign:'right'}}>Save</Text>
+                <Text style={styles.userSaveText}>Save</Text>
               </TouchableOpacity>
             </View>
           }
@@ -621,7 +654,7 @@ const renderUserDetails = () => {
 const renderAddressText = () =>{
   return (
     <View style={{marginLeft:16}}>
-      <Text style={{ ...theme.fonts.IBMPlexSansMedium(18),color: theme.colors.SHERPA_BLUE,}}>ADDRESS DETAILS</Text>
+      <Text style={styles.addressHeadingText}>ADDRESS DETAILS</Text>
     </View>
   )
 }
@@ -629,11 +662,7 @@ const renderAddressText = () =>{
   const renderAddress = () => {
     return (
       <View
-        style={{
-          ...theme.viewStyles.cardViewStyle,
-          margin: 20,
-          padding: 16,
-        }}
+        style={styles.userDetailsOuterView}
       >
         {/* <TouchableOpacity
           activeOpacity={1}
@@ -649,7 +678,7 @@ const renderAddressText = () =>{
         </TouchableOpacity> */}
         {showPopup && (
           <DropDown
-            cardContainer={{ position: 'absolute', top: 10, zIndex: 1, width: '100%' }}
+            cardContainer={styles.dropDownContainer}
             options={(allCurrentPatients || []).map(
               (item) =>
                 ({
@@ -746,7 +775,7 @@ const renderAddressText = () =>{
               }
             }}
             placeholder={'*House no | Apartment name'}
-            inputStyle={{ marginTop: 5, marginBottom: 10 }}
+            inputStyle={styles.addressFieldsText}
         />
           <TextInputComponent
             value={areaDetails}
@@ -768,18 +797,18 @@ const renderAddressText = () =>{
               }
             }}
             placeholder={'*Area Details'}
-            inputStyle={{ marginTop: 5, marginBottom: 10 }}
+            inputStyle={styles.addressHeadingText}
         />
 
         <TextInputComponent
           value={landMark}
           onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
           placeholder={'Landmark (Optional)'}
-          inputStyle={{ marginTop: 5, marginBottom: 10 }}
+          inputStyle={styles.addressHeadingText}
         />
-        <View style={{flexDirection:'row',marginTop:12}}>
-          <View style={{justifyContent:'space-between',flex:0.45,marginRight:'12%'}}>
-          <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>*Pincode</Text>
+        <View style={[styles.viewRowStyle,{marginTop:12}]}>
+          <View style={styles.pincodeView}>
+          <Text style={styles.addressLabel}>*Pincode</Text>
 
           <TextInputComponent
             value={pincode}
@@ -800,7 +829,7 @@ const renderAddressText = () =>{
           />
         </View>
           <View style={{flex:0.55}}>
-          <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>City</Text>
+          <Text style={styles.addressLabel}>City</Text>
           <TextInputComponent
             value={city}
             textInputprops={{ editable: false }}
@@ -816,7 +845,7 @@ const renderAddressText = () =>{
           </View>
         </View>
         {/* state*/}
-        <Text style={{ marginTop: 12,color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>State</Text>
+        <Text style={[styles.addressLabel,{marginTop:12}]}>State</Text>
         <TextInputComponent
             value={(state || '').startsWith(',') ? state.replace(', ', '') : state}
             textInputprops={{ editable: false }}
@@ -829,7 +858,7 @@ const renderAddressText = () =>{
             placeholder={'State'}
             multiline={false}
         />
-        <Text style={{ marginTop:12,color: '#02475b', ...fonts.IBMPlexSansMedium(14), marginBottom: 8 }}>
+        <Text style={[styles.addressLabel,{marginTop:12,marginBottom:8}]}>
           Choose nick name for the address
         </Text>
         {renderAddressOption()}
