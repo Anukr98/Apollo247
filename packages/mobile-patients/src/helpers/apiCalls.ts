@@ -119,10 +119,16 @@ export interface GetStoreInventoryResponse {
   }[];
 }
 
-export interface TatApiInput {
-  postalcode: string;
-  ordertype: 'pharma' | 'fmcg' | 'both';
-  lookup: { sku: string; qty: number }[];
+export interface TatApiInput247 {
+  pincode: string;
+  lat: number;
+  lng: number;
+  sku: string;
+}
+
+export interface ServiceAbilityApiInput {
+  pincode: string;
+  sku: string;
 }
 
 export interface GetDeliveryTimeResponse {
@@ -134,11 +140,20 @@ export interface GetDeliveryTimeResponse {
   errorMSG?: string;
 }
 
-export interface GetDeliveryTimeHeaderTatResponse {
-  tat?: {
-    deliverydate: string; // format: 16-Jul-2020 20:00
-    siteId: string;
+export interface GetAvailabilityResponse247 {
+  response: {
+    sku: string;
+    exist: boolean;
   }[];
+  errorMSG?: string;
+}
+
+export interface GetTatResponse247 {
+  response: {
+    storeCode: string;
+    tat: string;
+    tatU: number;
+  };
   errorMSG?: string;
 }
 
@@ -405,26 +420,25 @@ export const getStoreInventoryApi = (
   );
 };
 
-export const pinCodeServiceabilityApi = (
-  pinCode: string
-): Promise<AxiosResponse<{ Availability: boolean }>> => {
-  return Axios.post(
-    // `${config.PHARMA_UAT_BASE_URL}/pincode_api.php`,
-    `${config.PIN_SERVICEABILITY[0]}/servicability_api.php`, //Production
-    {
-      postalcode: pinCode,
-      skucategory: [
-        {
-          SKU: 'PHARMA',
-        },
-      ],
+export const pinCodeServiceabilityApi247 = (pincode: string): Promise<AxiosResponse<{ response: boolean }>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/serviceable?pincode=${pincode}`
+  return Axios.post(url, {}, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
     },
-    {
-      headers: {
-        Authorization: config.PIN_SERVICEABILITY[1],
-      },
-    }
-  );
+  });
+};
+
+export const availabilityApi247 = (
+  pincode: string,
+  sku: string
+): Promise<AxiosResponse<GetAvailabilityResponse247>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/availability?sku=${sku}&pincode=${pincode}`
+  return Axios.post(url, {}, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+  });
 };
 
 export const medCartItemsDetailsApi = (
@@ -557,40 +571,21 @@ export const autoCompletePlaceSearch = (
   });
 };
 
-let cancelGetDeliveryTimeApi: Canceler | undefined;
+let cancelGetDeliveryTAT247 : Canceler | undefined;
 
-export const getDeliveryTime = (
-  params: TatApiInput
-): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
+export const getDeliveryTAT247 = (
+  params : TatApiInput247
+) : Promise<AxiosResponse<GetTatResponse247>> => {
   const CancelToken = Axios.CancelToken;
-  cancelGetDeliveryTimeApi && cancelGetDeliveryTimeApi();
-  return Axios.post(config.GET_DELIVERY_TIME[0], params, {
+  cancelGetDeliveryTAT247 && cancelGetDeliveryTAT247();
+  const url = `${config.UATTAT_CONFIG[0]}/tat?sku=${params.sku}&pincode=${params.pincode}&lat=${params.lat}&lng=${params.lng}`
+  return Axios.post(url, {}, {
     headers: {
-      Authentication: config.GET_DELIVERY_TIME[1],
+      Authorization: config.UATTAT_CONFIG[1],
     },
     timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
     cancelToken: new CancelToken((c) => {
-      // An executor function receives a cancel function as a parameter
-      cancelGetDeliveryTimeApi = c;
-    }),
-  });
-};
-
-let cancelDeliveryTimeHeaderTatApi: Canceler | undefined;
-
-export const getDeliveryTimeHeaderTat = (
-  params: TatApiInput
-): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
-  const CancelToken = Axios.CancelToken;
-  cancelDeliveryTimeHeaderTatApi && cancelDeliveryTimeHeaderTatApi();
-  return Axios.post(config.GET_DELIVERY_TIME_HEADER_TAT[0], params, {
-    headers: {
-      Authentication: config.GET_DELIVERY_TIME_HEADER_TAT[1],
-    },
-    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
-    cancelToken: new CancelToken((c) => {
-      // An executor function receives a cancel function as a parameter
-      cancelDeliveryTimeHeaderTatApi = c;
+      cancelGetDeliveryTAT247 = c;
     }),
   });
 };

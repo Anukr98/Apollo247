@@ -3,6 +3,7 @@ import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAdd
 import { MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
 import moment from 'moment';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as LatestOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
+import fetchUtil from 'helpers/fetch';
 
 const apiDetails = {
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -251,23 +252,38 @@ export interface GetPackageDataResponse {
 }
 
 export const checkServiceAvailability = (zipCode: string) => {
-  return axios.post(
-    apiDetails.service_url || '',
-    {
-      postalcode: zipCode || '',
-      skucategory: [
-        {
-          SKU: 'PHARMA',
-        },
-      ],
+  return axios.get(`${process.env.TAT_BASE_URL}/serviceable?pincode=${zipCode}`, {
+    headers: {
+      Authorization: 'GWjKtviqHa4r4kiQmcVH',
+      'Content-Type': 'application/json',
     },
+  });
+};
+
+export const checkSkuAvailability = (sku: string, pincode: string) => {
+  return axios.get(`${process.env.TAT_BASE_URL}/availability?sku=${sku}&pincode=${pincode}`, {
+    headers: {
+      Authorization: 'GWjKtviqHa4r4kiQmcVH',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const checkTatAvailability = (sku: string, pincode: string, lat: string, lng: string) => {
+  return axios.get(
+    `${process.env.TAT_BASE_URL}/tat?sku=${sku}&pincode=${pincode}&lat=${lat}&lng=${lng}`,
     {
       headers: {
-        Authorization: apiDetails.authToken,
+        Authorization: 'GWjKtviqHa4r4kiQmcVH',
+        'Content-Type': 'application/json',
       },
     }
   );
 };
+
+// export const checkServiceAvailability = (zipCode: string) => {
+//   return fetchUtil(`https://uattat.apollo247.com/serviceable?pincode=${zipCode}`, 'GET', {}, '', true)
+// }
 
 export interface MedicineOrderBilledItem {
   itemId: string;
@@ -368,9 +384,9 @@ export const reOrderItems = async (
         ({
           id: item,
           date: moment().format('DD MMM YYYY'),
-          doctorName: `Meds Rx ${
-            (orderDetails.id && orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) || ''
-          }`,
+          doctorName: `Meds Rx ${(orderDetails.id &&
+            orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) ||
+            ''}`,
           forPatient: patientName,
           medicines: medicineNames,
           uploadedUrl: item,

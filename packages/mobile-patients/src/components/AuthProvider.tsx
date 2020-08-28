@@ -111,23 +111,24 @@ export const AuthProvider: React.FC = (props) => {
   const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
   const setNewToken = async () => {
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
-    if(userLoggedIn == 'true'){ // no need to refresh jwt token on login
-    try {
-      firebase.auth().onAuthStateChanged(async (user) => {
-        // console.log('authprovider', user);
-        if (user) {
-          // console.log('authprovider login');
-          const jwt = await user.getIdToken(true).catch((error) => {
-            setIsSigningIn(false);
-            setSignInError(true);
-            setAuthToken('');
-            throw error;
-          });
-          setAuthToken(jwt);
-        }
-      });
-    } catch (e) {}
-  }
+    if (userLoggedIn == 'true') {
+      // no need to refresh jwt token on login
+      try {
+        firebase.auth().onAuthStateChanged(async (user) => {
+          // console.log('authprovider', user);
+          if (user) {
+            // console.log('authprovider login');
+            const jwt = await user.getIdToken(true).catch((error) => {
+              setIsSigningIn(false);
+              setSignInError(true);
+              setAuthToken('');
+              throw error;
+            });
+            setAuthToken(jwt);
+          }
+        });
+      } catch (e) {}
+    }
   };
   const buildApolloClient = (authToken: string, handleUnauthenticated: any) => {
     if (authToken) {
@@ -281,16 +282,16 @@ export const AuthProvider: React.FC = (props) => {
             apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
             authStateRegistered = false;
             resolve(jwt);
-            getNetStatus()
-              .then(async (item) => {
-                const userLoggedIn = await AsyncStorage.getItem('logginHappened');
-                if (userLoggedIn == 'true') {
-                  item && getPatientApiCall();
-                }
-              })
-              .catch((e) => {
-                CommonBugFender('AuthProvider_getNetStatus', e);
-              });
+            // getNetStatus()
+            //   .then(async (item) => {
+            //     const userLoggedIn = await AsyncStorage.getItem('logginHappened');
+            //     if (userLoggedIn == 'true') {
+            //       item && getPatientApiCall();
+            //     }
+            //   })
+            //   .catch((e) => {
+            //     CommonBugFender('AuthProvider_getNetStatus', e);
+            //   });
           }
           setIsSigningIn(false);
         });

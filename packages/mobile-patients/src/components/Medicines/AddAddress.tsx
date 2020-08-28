@@ -44,7 +44,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
 import {
   getPlaceInfoByPincode,
-  pinCodeServiceabilityApi,
+  pinCodeServiceabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   g,

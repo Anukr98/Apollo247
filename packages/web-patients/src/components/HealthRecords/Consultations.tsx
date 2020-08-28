@@ -345,6 +345,11 @@ const useStyles = makeStyles((theme: Theme) => {
         wordBreak: 'break-word',
       },
     },
+    noteText: {
+      fontSize: 12,
+      padding: 10,
+      color: '#0087ba',
+    },
   };
 });
 
@@ -440,6 +445,10 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
+        <div className={classes.noteText}>
+          Please note that you can share these health records with the doctor during a consult by
+          uploading them in the consult chat room!
+        </div>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
