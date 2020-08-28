@@ -33,10 +33,13 @@ const FooterButton: FC<FooterButtonProps> = (props) => {
         status: status,
       };
     } else {
-      const { medicineOrderPayments, orderAutoId } = item;
+      const { medicineOrderPayments, orderAutoId, currentStatus } = item;
+      const { medicineOrderRefunds } = medicineOrderPayments[0]
       orderID = orderAutoId;
       if (!medicineOrderPayments.length) {
         status = 'PENDING';
+      } else if (currentStatus === 'CANCELLED' && medicineOrderRefunds.length) {
+        status = REFUND;
       } else {
         status = medicineOrderPayments[0].paymentStatus;
       }

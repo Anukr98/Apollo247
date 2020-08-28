@@ -16,6 +16,15 @@ export const GET_PATIENTS = gql`
     }
   }
 `;
+export const POST_WEB_ENGAGE = gql`
+  mutation PostDoctorConsultEvent($doctorConsultEventInput: DoctorConsultEventInput) {
+    postDoctorConsultEvent(doctorConsultEventInput: $doctorConsultEventInput) {
+      response {
+        status
+      }
+    }
+  }
+`;
 export const GET_ALL_SPECIALTIES = gql`
   query GetAllSpecialties {
     getAllSpecialties {
@@ -124,6 +133,7 @@ export const GET_DOCTOR_DETAILS = gql`
       experience
       firebaseToken
       firstName
+      fullName
       isActive
       id
       languages
@@ -847,6 +857,9 @@ export const GET_CASESHEET = gql`
           medicineConsumptionDurationUnit
           routeOfAdministration
           medicineCustomDosage
+          medicineCustomDetails
+          genericName
+          includeGenericNameInPrescription
         }
         removedMedicinePrescription {
           id
@@ -971,6 +984,9 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
         externalId
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        genericName
+        includeGenericNameInPrescription
       }
       allowedDosages
     }
@@ -1181,6 +1197,9 @@ export const MODIFY_CASESHEET = gql`
         medicineConsumptionDurationUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        genericName
+        includeGenericNameInPrescription
       }
       removedMedicinePrescription {
         medicineConsumptionDurationInDays

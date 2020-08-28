@@ -7,6 +7,9 @@ import { differenceInDays, addDays, format } from 'date-fns';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { ES_DOCTOR_SLOT_STATUS } from 'consults-service/entities';
 import { Doctor } from 'doctors-service/entities';
+import { addDoctorElastic } from 'doctors-service/entities/doctorElastic';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { AphError } from 'AphError';
 
 export const doctorDataElasticTypeDefs = gql`
   extend type Mutation {
@@ -31,9 +34,14 @@ const deleteDocumentElastic: Resolver<null, { id: string }, DoctorsServiceContex
   { doctorsDb }
 ) => {
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+
+  if (!process.env.ELASTIC_INDEX_DOCTORS) {
+    throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+  }
+
   const deleteParams: RequestParams.Delete = {
     id: args.id,
-    index: 'doctors',
+    index: process.env.ELASTIC_INDEX_DOCTORS,
   };
   const delResp = await client.delete(deleteParams);
   console.log(delResp, 'delete resp');
@@ -57,11 +65,16 @@ const updateApptDoctorSlotStatus: Resolver<
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appt.appointmentDateTime
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+          .getUTCMinutes()
+          .toString()
+          .padStart(2, '0')}:00.000Z`;
+
+      if (!process.env.ELASTIC_INDEX_DOCTORS) {
+        throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+      }
+
       const doc1: RequestParams.Update = {
-        index: 'doctors',
+        index: process.env.ELASTIC_INDEX_DOCTORS,
         type: 'posts',
         id: appt.doctorId,
         body: {
@@ -91,8 +104,13 @@ const updateDoctorSlotStatus: Resolver<
   string
 > = async (parent, args, { doctorsDb }) => {
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+
+  if (!process.env.ELASTIC_INDEX_DOCTORS) {
+    throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+  }
+
   const doc1: RequestParams.Update = {
-    index: 'doctors',
+    index: process.env.ELASTIC_INDEX_DOCTORS,
     type: 'posts',
     id: args.id,
     body: {
@@ -129,8 +147,13 @@ const addAllDoctorSlotsElastic: Resolver<
       stDate = new Date(args.fromSlotDate);
       slotsAdded += '{';
       console.log('came here');
+
+      if (!process.env.ELASTIC_INDEX_DOCTORS) {
+        throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+      }
+
       const searchParams: RequestParams.Search = {
-        index: 'doctors',
+        index: process.env.ELASTIC_INDEX_DOCTORS,
         type: 'posts',
         body: {
           query: {
@@ -146,9 +169,14 @@ const addAllDoctorSlotsElastic: Resolver<
       if (getDetails.body.hits.hits.length == 0) {
         await addDoctorElastic(allDocsInfo[k]);
       } else {
+
+        if (!process.env.ELASTIC_INDEX_DOCTORS) {
+          throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+        }
+
         const deleteParams: RequestParams.Delete = {
           id: allDocsInfo[k].id,
-          index: 'doctors',
+          index: process.env.ELASTIC_INDEX_DOCTORS,
         };
         const delResp = await client.delete(deleteParams);
         console.log(delResp, 'delete resp');
@@ -162,8 +190,9 @@ const addAllDoctorSlotsElastic: Resolver<
           doctorsDb
         );
         //console.log(doctorSlots, 'doctor slots');
+
         const doc1: RequestParams.Update = {
-          index: 'doctors',
+          index: process.env.ELASTIC_INDEX_DOCTORS,
           id: allDocsInfo[k].id,
           body: {
             script: {
@@ -195,8 +224,13 @@ const addDoctorSlotsElastic: Resolver<
   string
 > = async (parent, args, { doctorsDb, consultsDb }) => {
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+
+  if (!process.env.ELASTIC_INDEX_DOCTORS) {
+    throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+  }
+
   const searchParams: RequestParams.Search = {
-    index: 'doctors',
+    index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
       query: {
         bool: {
@@ -229,8 +263,13 @@ const addDoctorSlotsElastic: Resolver<
       doctorsDb
     );
     console.log(doctorSlots, 'doctor slots');
+
+    if (!process.env.ELASTIC_INDEX_DOCTORS) {
+      throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+    }
+
     const doc1: RequestParams.Update = {
-      index: 'doctors',
+      index: process.env.ELASTIC_INDEX_DOCTORS,
       id: args.id,
       body: {
         script: {
@@ -263,9 +302,14 @@ const insertDataElastic: Resolver<
   let extDocData = '',
     newDocData = '';
   if (allDocsInfo.length > 0) {
+
+    if (!process.env.ELASTIC_INDEX_DOCTORS) {
+      throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+    }
+
     for (let i = 0; i < allDocsInfo.length; i++) {
       const searchParams: RequestParams.Search = {
-        index: 'doctors',
+        index: process.env.ELASTIC_INDEX_DOCTORS,
         body: {
           query: {
             match_phrase: {
@@ -290,172 +334,6 @@ const insertDataElastic: Resolver<
 
   return 'Elastic search query. NewdocData: ' + newDocData + ' ExtDocdata: ' + extDocData;
 };
-
-async function addDoctorElastic(allDocsInfo: Doctor) {
-  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
-  const consultHours = [];
-  for (let k = 0; k < allDocsInfo.consultHours.length; k++) {
-    const hourData = {
-      consultHoursId: allDocsInfo.consultHours[k].id,
-      weekDay: allDocsInfo.consultHours[k].weekDay,
-      startTime: allDocsInfo.consultHours[k].startTime,
-      endTime: allDocsInfo.consultHours[k].endTime,
-      consultMode: allDocsInfo.consultHours[k].consultMode,
-      consultDuration: allDocsInfo.consultHours[k].consultDuration,
-      consultBuffer: allDocsInfo.consultHours[k].consultBuffer,
-      actualDay: allDocsInfo.consultHours[k].actualDay,
-      slotsPerHour: allDocsInfo.consultHours[k].slotsPerHour,
-      isActive: allDocsInfo.consultHours[k].isActive,
-      consultType: allDocsInfo.consultHours[k].consultType,
-    };
-    consultHours.push(hourData);
-  }
-  let doctorSecratry = {};
-  let specialty = {};
-  const facility = [];
-  if (allDocsInfo.doctorSecretary) {
-    doctorSecratry = {
-      docSecretaryId: allDocsInfo.doctorSecretary.id,
-      name: allDocsInfo.doctorSecretary.secretary.name,
-      mobileNumber: allDocsInfo.doctorSecretary.secretary.mobileNumber,
-      isActive: allDocsInfo.doctorSecretary.secretary.isActive,
-      secretaryId: allDocsInfo.doctorSecretary.secretary.id,
-    };
-  }
-  if (allDocsInfo.doctorHospital.length > 0) {
-    for (let f = 0; f < allDocsInfo.doctorHospital.length; f++) {
-      const location = {
-        lat: allDocsInfo.doctorHospital[f].facility.latitude,
-        lon: allDocsInfo.doctorHospital[f].facility.longitude,
-      };
-      const facilityData = {
-        docFacilityId: allDocsInfo.doctorHospital[f].id,
-        name: allDocsInfo.doctorHospital[f].facility.name,
-        facilityType: allDocsInfo.doctorHospital[f].facility.facilityType,
-        streetLine1: allDocsInfo.doctorHospital[f].facility.streetLine1,
-        streetLine2: allDocsInfo.doctorHospital[f].facility.streetLine2,
-        streetLine3: allDocsInfo.doctorHospital[f].facility.streetLine3,
-        city: allDocsInfo.doctorHospital[f].facility.city,
-        state: allDocsInfo.doctorHospital[f].facility.state,
-        zipcode: allDocsInfo.doctorHospital[f].facility.zipcode,
-        imageUrl: allDocsInfo.doctorHospital[f].facility.imageUrl,
-        latitude: allDocsInfo.doctorHospital[f].facility.latitude,
-        longitude: allDocsInfo.doctorHospital[f].facility.longitude,
-        country: allDocsInfo.doctorHospital[f].facility.country,
-        facilityId: allDocsInfo.doctorHospital[f].facility.id,
-        location,
-      };
-      facility.push(facilityData);
-    }
-  }
-  if (allDocsInfo.specialty) {
-    specialty = {
-      specialtyId: allDocsInfo.specialty.id,
-      name: allDocsInfo.specialty.name,
-      image: allDocsInfo.specialty.image,
-      specialistSingularTerm: allDocsInfo.specialty.specialistSingularTerm,
-      specialistPluralTerm: allDocsInfo.specialty.specialistPluralTerm,
-      groupName: allDocsInfo.specialty.groupName,
-      commonSearchTerm: allDocsInfo.specialty.commonSearchTerm,
-      userFriendlyNomenclature: allDocsInfo.specialty.userFriendlyNomenclature,
-      slugName: allDocsInfo.specialty.slugName,
-      updatedDate: allDocsInfo.specialty.updatedDate,
-      createdDate: allDocsInfo.specialty.createdDate,
-      shortDescription: allDocsInfo.specialty.shortDescription,
-      symptoms: allDocsInfo.specialty.symptoms,
-      commonSearchWords: allDocsInfo.specialty.commonSearchWords,
-      displayOrder: allDocsInfo.specialty.displayOrder,
-      externalId: allDocsInfo.specialty.externalId,
-      id: allDocsInfo.specialty.id,
-    };
-  }
-  //console.log(allDocsInfo.doctorSecretary.id, 'specialty dets');
-
-  function defineExperienceRange(experience: Number){
-    let experience_range: string = "";
-    if(experience >=  16){
-      experience_range = "16+"
-    } else if (experience > 10 && experience < 16){
-      experience_range = "11-16"
-    } else if (experience > 5 && experience <11) {
-      experience_range = "6-10"
-    } else {
-      experience_range = "0-5"
-    }
-    return experience_range;
-  }
-
-  function defineFeeRange(fees: Number){
-    let fees_range: string = "";
-    if(fees >=  1000){
-      fees_range = "1000+"
-    } else if (fees > 500 && fees < 1000){
-      fees_range = "500-1000"
-    } else {
-      fees_range = "100-500"
-    }
-    return fees_range;
-  }
-
-  function pushLanguagesInArray(cslanguages: string){
-    return cslanguages.split(',').map(elem => elem.trim());
-  }
-
-  const doctorData = {
-    doctorId: allDocsInfo.id,
-    firstName: allDocsInfo.firstName,
-    lastName: allDocsInfo.lastName,
-    mobileNumber: allDocsInfo.mobileNumber,
-    awards: allDocsInfo.awards,
-    country: allDocsInfo.country,
-    dateOfBirth: allDocsInfo.dateOfBirth,
-    displayName: allDocsInfo.displayName,
-    delegateName: allDocsInfo.delegateName,
-    delegateNumber: allDocsInfo.delegateNumber,
-    emailAddress: allDocsInfo.emailAddress,
-    externalId: allDocsInfo.externalId,
-    fullName: allDocsInfo.fullName,
-    
-    doctorType: allDocsInfo.doctorType,
-    city: allDocsInfo.city,
-    experience: allDocsInfo.experience,
-    physicalConsultationFees: allDocsInfo.physicalConsultationFees,
-    onlineConsultationFees: allDocsInfo.onlineConsultationFees,
-    age: "",
-    experience_range: defineExperienceRange(allDocsInfo.experience),
-    fee_range: defineFeeRange(allDocsInfo.onlineConsultationFees),
-    languages: pushLanguagesInArray(allDocsInfo.languages),
-    gender: allDocsInfo.gender,
-    
-    isActive: allDocsInfo.isActive,
-    middleName: allDocsInfo.middleName,
-    photoUrl: allDocsInfo.photoUrl,
-    qualification: allDocsInfo.qualification,
-    registrationNumber: allDocsInfo.registrationNumber,
-    salutation: allDocsInfo.salutation,
-    signature: allDocsInfo.signature,
-    specialization: allDocsInfo.specialization,
-    state: allDocsInfo.state,
-    streetLine1: allDocsInfo.streetLine1,
-    streetLine2: allDocsInfo.streetLine2,
-    streetLine3: allDocsInfo.streetLine3,
-    thumbnailUrl: allDocsInfo.thumbnailUrl,
-    zip: allDocsInfo.zip,
-    isSearchable: allDocsInfo.isSearchable,
-    specialty,
-    facility,
-    consultHours,
-    doctorSecratry,
-    doctorSlots: [],
-  };
-  //console.log(doctorData, 'doc data');
-  const resp: ApiResponse = await client.index({
-    index: 'doctors',
-    id: allDocsInfo.id,
-    body: doctorData,
-  });
-  console.log(resp, 'index resp');
-}
 
 export const doctorDataElasticResolvers = {
   Mutation: {

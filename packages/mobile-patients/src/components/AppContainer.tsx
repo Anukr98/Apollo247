@@ -5,8 +5,22 @@ import { NavigatorContainer } from '@aph/mobile-patients/src/components/Navigato
 import { ShoppingCartProvider } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsProvider } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import React from 'react';
-import { Text, TextInput } from 'react-native';
+import { Text, TextInput, Platform } from 'react-native';
 import Axios from 'axios';
+import codePush, { CodePushOptions, DownloadProgress } from 'react-native-code-push';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { CodePushInfoUi } from '@aph/mobile-patients/src/components/CodePushInfoUi';
+
+const codePushOptions: CodePushOptions = {
+  checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
+  installMode: codePush.InstallMode.ON_NEXT_RESTART,
+  mandatoryInstallMode: codePush.InstallMode.ON_NEXT_RESTART,
+  deploymentKey:
+    Platform.OS == 'android'
+      ? AppConfig.Configuration.CODE_PUSH_DEPLOYMENT_KEY_ANDROID
+      : AppConfig.Configuration.CODE_PUSH_DEPLOYMENT_KEY_IOS,
+  updateDialog: {},
+};
 
 if (__DEV__) {
   Axios.interceptors.request.use((request) => {
@@ -30,30 +44,57 @@ if (__DEV__) {
     return response;
   });
 }
-interface AppContainerTypes {}
 
-export class AppContainer extends React.Component<AppContainerTypes> {
-  constructor(props: AppContainerTypes) {
+export type CodePushInfo = {
+  syncStatus?: codePush.SyncStatus;
+  downloadProgress?: DownloadProgress;
+};
+
+interface AppContainerProps {}
+interface AppContainerState {
+  codePushInfo: CodePushInfo;
+}
+
+class AppContainer extends React.Component<AppContainerProps, AppContainerState> {
+  constructor(props: AppContainerProps) {
     super(props);
+    this.state = { codePushInfo: {} };
     (Text as any).defaultProps = (Text as any).defaultProps || {};
     (Text as any).defaultProps.allowFontScaling = false;
     (TextInput as any).defaultProps = (TextInput as any).defaultProps || {};
     (TextInput as any).defaultProps.allowFontScaling = false;
   }
 
+  codePushStatusDidChange(status: codePush.SyncStatus) {
+    this.setState({ codePushInfo: { ...this.state.codePushInfo, syncStatus: status } });
+  }
+
+  codePushDownloadDidProgress(progress: DownloadProgress) {
+    this.setState({ codePushInfo: { ...this.state.codePushInfo, downloadProgress: progress } });
+  }
+
+  renderCodePushUi = () => {
+    return <CodePushInfoUi codePushInfo={this.state.codePushInfo} />;
+  };
+
   render() {
     return (
-      <AppCommonDataProvider>
-        <AuthProvider>
-          <UIElementsProvider>
-            <ShoppingCartProvider>
-              <DiagnosticsCartProvider>
-                <NavigatorContainer />
-              </DiagnosticsCartProvider>
-            </ShoppingCartProvider>
-          </UIElementsProvider>
-        </AuthProvider>
-      </AppCommonDataProvider>
+      <>
+        <AppCommonDataProvider>
+          <AuthProvider>
+            <UIElementsProvider>
+              <ShoppingCartProvider>
+                <DiagnosticsCartProvider>
+                  <NavigatorContainer />
+                  {this.renderCodePushUi()}
+                </DiagnosticsCartProvider>
+              </ShoppingCartProvider>
+            </UIElementsProvider>
+          </AuthProvider>
+        </AppCommonDataProvider>
+      </>
     );
   }
 }
+
+export default codePush(codePushOptions)(AppContainer);

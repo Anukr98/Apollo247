@@ -368,6 +368,12 @@ const useStyles = makeStyles((theme: Theme) => {
     hideButton: {
       display: 'none !important',
     },
+    offerMessage: {
+      color: '#00b38e',
+      fontSize: 12,
+      fontWeight: 300,
+      textTransform: 'none',
+    },
   };
 });
 
@@ -436,6 +442,7 @@ export const PayMedicine: React.FC = (props) => {
     deliveryTime,
     totalWithCouponDiscount,
     validateCouponResult,
+    shopId,
   } = cartValues;
   const deliveryCharges =
     cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
@@ -504,16 +511,10 @@ export const PayMedicine: React.FC = (props) => {
     }
   }, [validateConsultCouponResult]);
 
-  const getDiscountedLineItemPrice = (id: number) => {
-    if (
-      couponCode.length > 0 &&
-      validateCouponResult &&
-      validateCouponResult.pharmaLineItemsWithDiscountedPrice
-    ) {
-      const item = validateCouponResult.pharmaLineItemsWithDiscountedPrice.find(
-        (item: pharmaCouponItem) => item.itemId === id.toString()
-      );
-      return item.applicablePrice.toFixed(2);
+  const getDiscountedLineItemPrice = (sku: string) => {
+    if (couponCode.length > 0 && validateCouponResult && validateCouponResult.products) {
+      const item: any = validateCouponResult.products.find((item: any) => item.sku === sku);
+      return item.specialPrice.toFixed(2);
     }
   };
 
@@ -525,22 +526,27 @@ export const PayMedicine: React.FC = (props) => {
             medicineName: cartItemDetails.name,
             price:
               couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
-            itemValue: cartItemDetails.quantity * cartItemDetails.price,
+            itemValue: Number((cartItemDetails.quantity * cartItemDetails.price).toFixed(2)),
             itemDiscount: Number(
               (
                 cartItemDetails.quantity *
                 (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                  ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                  ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.sku))
                   : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
               ).toFixed(2)
             ),
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
-            isMedicine: _lowerCase(cartItemDetails.type_id) === 'pharma' ? '1' : '0',
+            isMedicine:
+              _lowerCase(cartItemDetails.type_id) === 'pharma'
+                ? '1'
+                : _lowerCase(cartItemDetails.type_id) === 'pl'
+                ? '2'
+                : '0',
             specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
           };
         })
@@ -571,6 +577,7 @@ export const PayMedicine: React.FC = (props) => {
           items: cartItemsForApi,
           coupon: couponCode ? couponCode : null,
           deviceType: getDeviceType(),
+          shopId: shopId,
         },
       },
     }
@@ -646,7 +653,7 @@ export const PayMedicine: React.FC = (props) => {
         grandTotal: mrpTotal,
         discountAmount:
           (productDiscount && productDiscount.toFixed(2)) ||
-          (couponValue && couponValue.toFixed(2)),
+          (couponValue && parseFloat(couponValue).toFixed(2)),
       })
     );
     setMutationLoading(true);
@@ -702,7 +709,9 @@ export const PayMedicine: React.FC = (props) => {
               process.env.PHARMACY_PG_URL
             }/paymed?amount=${totalWithCouponDiscount.toFixed(
               2
-            )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
+            )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES${
+              sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
+            }`;
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
@@ -848,7 +857,9 @@ export const PayMedicine: React.FC = (props) => {
               res.data.bookAppointment.appointment.id
             }&patientId=${
               currentPatient ? currentPatient.id : ''
-            }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES`;
+            }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES${
+              sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
+            }`;
             window.location.href = pgUrl;
           }
           // setMutationLoading(false);
@@ -911,6 +922,34 @@ export const PayMedicine: React.FC = (props) => {
                     />
                   ) : (
                     <ul className={classes.paymentOptions}>
+                      {sessionStorage.getItem('utm_source') === 'sbi' && (
+                        <li
+                          key={'sbiCashCard'}
+                          onClick={() =>
+                            params.payType === 'pharmacy'
+                              ? onClickPay(
+                                  process.env.SBI_CASHCARD_PAY_TYPE,
+                                  'SBI YONO CASHLESS CARD'
+                                )
+                              : onClickConsultPay(process.env.SBI_CASHCARD_PAY_TYPE)
+                          }
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <img
+                            src={
+                              'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
+                            }
+                            alt=""
+                            style={{ height: 30, width: 30 }}
+                          />
+                          <div style={{ paddingLeft: 10 }}>
+                            SBI YONO CASHLESS CARD
+                            <div className={classes.offerMessage}>
+                              You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}% cashback
+                            </div>
+                          </div>
+                        </li>
+                      )}
                       {paymentOptions.length > 0 &&
                         paymentOptions.map((payType, index) => {
                           return (

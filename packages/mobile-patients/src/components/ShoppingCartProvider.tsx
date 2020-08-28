@@ -11,12 +11,15 @@ import {
   validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice,
 } from '@aph/mobile-patients/src/graphql/types/validatePharmaCoupon';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { addToCartTagalysEvent } from '@aph/mobile-patients/src/helpers/Tagalys';
 
 export interface ShoppingCartItem {
   id: string;
   name: string;
-  mou: string; // pack of how many units (eg. 10 tablets)
+  mou: string; // Minimum order unit (eg. 10 tablets)
   quantity: number;
+  maxOrderQty: number;
   price: number;
   prescriptionRequired: boolean;
   thumbnail: string | null;
@@ -25,6 +28,7 @@ export interface ShoppingCartItem {
   isInStock: boolean;
   unserviceable?: boolean;
   isMedicine: boolean;
+  productType?: 'FMCG' | 'Pharma' | 'PL';
 }
 
 export interface PhysicalPrescription {
@@ -50,15 +54,28 @@ export interface EPrescription {
 }
 
 export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon {
-  code: string;
+  coupon: string;
+  discount: number;
+  valid: boolean;
+  reason: String;
+  products: [];
 }
 
+export interface CartProduct {
+  sku: string;
+  categoryId: any;
+  subCategoryId: any;
+  mrp: number;
+  specialPrice: number;
+  quantity: number;
+  discountAmt: number;
+  onMrp: boolean;
+}
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
 
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
-  setItemsWithQtyRestriction: ((itemSkus: string[]) => void) | null;
   addCartItem: ((item: ShoppingCartItem) => void) | null;
   addMultipleCartItems: ((items: ShoppingCartItem[]) => void) | null;
   removeCartItem: ((itemId: ShoppingCartItem['id']) => void) | null;
@@ -100,6 +117,9 @@ export interface ShoppingCartContextProps {
   deliveryAddressId: string;
   setDeliveryAddressId: ((id: string) => void) | null;
 
+  newAddressAdded: string;
+  setNewAddressAdded: ((id: string) => void) | null;
+
   addresses: savePatientAddress_savePatientAddress_patientAddress[];
   setAddresses:
     | ((addresses: savePatientAddress_savePatientAddress_patientAddress[]) => void)
@@ -120,7 +140,6 @@ export interface ShoppingCartContextProps {
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   cartItems: [],
   setCartItems: null,
-  setItemsWithQtyRestriction: null,
   addCartItem: null,
   addMultipleCartItems: null,
   removeCartItem: null,
@@ -165,6 +184,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
 
   deliveryAddressId: '',
   setDeliveryAddressId: null,
+  newAddressAdded: '',
+  setNewAddressAdded: null,
   storeId: '',
   setStoreId: null,
   deliveryType: null,
@@ -182,8 +203,8 @@ const showGenericAlert = (message: string) => {
 };
 
 export const ShoppingCartProvider: React.FC = (props) => {
+  const { currentPatient } = useAllCurrentPatients();
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
-  const [itemsWithQtyRestriction, setItemsWithQtyRestriction] = useState<string[]>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
     0
   );
@@ -198,6 +219,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [pinCode, setPinCode] = useState<string>('');
   const [deliveryAddressId, _setDeliveryAddressId] = useState<
     ShoppingCartContextProps['deliveryAddressId']
+  >('');
+  const [newAddressAdded, _setNewAddedAddress] = useState<
+    ShoppingCartContextProps['newAddressAdded']
   >('');
   const [storeId, _setStoreId] = useState<ShoppingCartContextProps['storeId']>('');
   const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
@@ -259,24 +283,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
     });
   };
 
-  const validateCartItemsQty = (
-    itemToAddOrUpdate: Partial<ShoppingCartItem> & { id: ShoppingCartItem['id'] }
-  ) => {
-    if (itemsWithQtyRestriction.find((item) => itemToAddOrUpdate.id == item)) {
-      const maxQty = AppConfig.Configuration.HOTSELLERS_MAX_QUANTITY;
-      if (maxQty && itemToAddOrUpdate.quantity && itemToAddOrUpdate.quantity > maxQty) {
-        showGenericAlert(`Maximum quantity allowed for this item is ${maxQty}.`);
-        return true;
-      }
-    }
-    return false;
-  };
-
   const addCartItem: ShoppingCartContextProps['addCartItem'] = (itemToAdd) => {
-    if (validateCartItemsQty(itemToAdd)) return;
     if (cartItems.find((item) => item.id == itemToAdd.id)) {
       return;
     }
+    addToCartTagalysEvent(
+      { sku: itemToAdd.id, quantity: itemToAdd.quantity },
+      g(currentPatient, 'id')
+    );
     const newCartItems = [itemToAdd, ...cartItems];
     setCartItems(newCartItems);
   };
@@ -292,6 +306,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
       ...itemsToAdd.filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i),
     ];
     // console.log('newCartItems\n', { newCartItems });
+    newCartItems.forEach((i) =>
+      addToCartTagalysEvent({ sku: i.id, quantity: i.quantity }, g(currentPatient, 'id'))
+    );
     setCartItems(newCartItems);
   };
 
@@ -300,9 +317,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setCartItems(newCartItems);
   };
   const updateCartItem: ShoppingCartContextProps['updateCartItem'] = (itemUpdates) => {
-    if (validateCartItemsQty(itemUpdates)) return;
     const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
     if (foundIndex !== -1) {
+      addToCartTagalysEvent(
+        { sku: cartItems[foundIndex].id, quantity: itemUpdates.quantity || 1 },
+        g(currentPatient, 'id')
+      );
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...itemUpdates };
       setCartItems([...cartItems]);
     }
@@ -338,7 +358,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const uploadPrescriptionRequired =
-    cartItems.findIndex((item) => item.prescriptionRequired) != -1 || physicalPrescriptions.length || ePrescriptions.length;
+    cartItems.findIndex((item) => item.prescriptionRequired) != -1 ||
+    !!physicalPrescriptions.length ||
+    !!ePrescriptions.length;
 
   const addAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
     setAddresses([address, ...addresses]);
@@ -354,6 +376,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setDeliveryType(id ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY : null);
     _setDeliveryAddressId(id);
     _setStoreId('');
+  };
+
+  const setNewAddressAdded = (id: ShoppingCartContextProps['newAddressAdded']) => {
+    _setNewAddedAddress(id);
   };
 
   const addPhysicalPrescription: ShoppingCartContextProps['addPhysicalPrescription'] = (item) => {
@@ -387,6 +413,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setEPrescriptions([]);
     setCartItems([]);
     setDeliveryAddressId('');
+    setNewAddressAdded('');
     setStoreId('');
     setPinCode('');
     setStores([]);
@@ -422,9 +449,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
     cartItem: ShoppingCartItem,
     lineItems: validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice[]
   ) => {
-    const foundItem = lineItems.find((item) => item.itemId == cartItem.id);
-    return foundItem && foundItem.applicablePrice < (cartItem.specialPrice || cartItem.price)
-      ? foundItem.applicablePrice
+    const foundItem = lineItems.find((item) => item.sku == cartItem.id);
+    return foundItem
+      ? foundItem.onMrp
+        ? foundItem.mrp - foundItem.discountAmt
+        : foundItem.specialPrice - foundItem.discountAmt
       : undefined;
   };
 
@@ -447,17 +476,28 @@ export const ShoppingCartProvider: React.FC = (props) => {
       );
 
     if (coupon) {
-      setCouponDiscount(g(coupon, 'discountedTotals', 'couponDiscount') || 0);
-      setProductDiscount(g(coupon, 'discountedTotals', 'productDiscount') || 0);
-      setCartItems(
-        cartItems.map((item) => ({
-          ...item,
-          couponPrice: getDiscountPrice(
-            item,
-            coupon.pharmaLineItemsWithDiscountedPrice as validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice[]
-          ),
-        }))
-      );
+      if (
+        g(coupon, 'discount') != 0 &&
+        g(coupon, 'discount') > deductProductDiscount(coupon.products)
+      ) {
+        setCouponDiscount(g(coupon, 'discount') - deductProductDiscount(coupon.products) || 0);
+        setProductDiscount(getProductDiscount(coupon.products) || 0);
+        setCartItems(
+          cartItems.map((item) => ({
+            ...item,
+            couponPrice: getDiscountPrice(item, coupon.products),
+          }))
+        );
+      } else {
+        setCouponDiscount(0);
+        setProductDiscount(getProductDiscount(coupon.products) || 0);
+        setCartItems(
+          cartItems.map((item) => ({
+            ...item,
+            couponPrice: undefined,
+          }))
+        );
+      }
     } else {
       setCouponDiscount(0);
       setProductDiscount(productDiscount);
@@ -465,6 +505,27 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   }, [cartTotal, coupon]);
 
+  const deductProductDiscount = (products: CartProduct[]) => {
+    let discount = 0;
+    products &&
+      products.forEach((item) => {
+        if (item.mrp != item.specialPrice && item.onMrp) {
+          discount = discount + (item.mrp - item.specialPrice) * item.quantity;
+        }
+      });
+    return discount;
+  };
+
+  const getProductDiscount = (products: CartProduct[]) => {
+    let discount = 0;
+    products &&
+      products.forEach((item) => {
+        if (item.mrp != item.specialPrice) {
+          discount = discount + (item.mrp - item.specialPrice) * item.quantity;
+        }
+      });
+    return discount;
+  };
   useEffect(() => {
     // updating prescription here on update in cart items
     if (cartTotalOfRxProducts == 0) {
@@ -485,7 +546,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
       value={{
         cartItems,
         setCartItems,
-        setItemsWithQtyRestriction,
         addCartItem,
         addMultipleCartItems,
         removeCartItem,
@@ -516,6 +576,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         addAddress,
         deliveryAddressId,
         setDeliveryAddressId,
+        newAddressAdded,
+        setNewAddressAdded,
 
         stores,
         setStores,

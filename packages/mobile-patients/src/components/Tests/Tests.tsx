@@ -73,6 +73,7 @@ import {
   isValidSearch,
   postWebEngageEvent,
   postWEGNeedHelpEvent,
+  setWebEngageScreenNames,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -267,6 +268,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [locationDetails, currentPatient, diagnosticsCities]);
 
   useEffect(() => {
+    checkLocation();
+  }, [locationDetails]);
+
+  const checkLocation = () => {
     !locationDetails &&
       showAphAlert!({
         unDismissable: true,
@@ -321,7 +326,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           </View>
         ),
       });
-  }, [locationDetails]);
+  };
 
   useEffect(() => {
     if (
@@ -382,6 +387,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [ordersLoading]);
 
   useEffect(() => {
+    setWebEngageScreenNames('Diagnostic Home Page');
     hRefetch();
     if (ordersFetched.length == 0) {
       ordersRefetch()
@@ -607,7 +613,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
             zIndex: 15,
             elevation: 15,
           }}
-          onPress={() => setshowLocationpopup(false)}
+          onPress={() => {
+            setshowLocationpopup(false), checkLocation();
+          }}
         >
           <View
             style={{
@@ -1700,7 +1708,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <>
         <Input
-          autoFocus={focusSearch}
+          autoFocus={!locationDetails ? false : focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
               props.navigation.navigate(AppRoutes.SearchTestScene, {

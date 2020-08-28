@@ -13,7 +13,7 @@ export interface MedicineCartItem {
   description: string;
   id: number;
   arrId?: any[];
-  image: string | null;
+  image: string[] | null;
   is_in_stock: boolean;
   is_prescription_required: '0' | '1';
   name: string;
@@ -71,6 +71,7 @@ export interface MedicineCartContextProps {
   setCartItems: ((cartItems: MedicineCartItem[]) => void) | null;
   addCartItem: ((item: MedicineCartItem) => void) | null;
   removeCartItem: ((itemId: MedicineCartItem['id']) => void) | null;
+  removeCartItemSku: ((sku: MedicineCartItem['sku']) => void) | null;
   removeCartItems: ((itemId: MedicineCartItem['arrId']) => void) | null;
   updateCartItem:
     | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
@@ -120,6 +121,7 @@ export interface MedicineCartContextProps {
   setDurationDays: (durationDays: number | null) => void | null;
   prescriptionDuration: string | null;
   setPrescriptionDuration: ((prescriptionDuration: string) => void) | null;
+  updateEprescriptions: ((ePrescriptionData: EPrescription[] | null) => void) | null;
 }
 
 export const MedicinesCartContext = createContext<MedicineCartContextProps>({
@@ -128,6 +130,7 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setCartItems: null,
   addCartItem: null,
   removeCartItem: null,
+  removeCartItemSku: null,
   removeCartItems: null,
   updateCartItem: null,
   updateCartItemPrice: null,
@@ -171,6 +174,7 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setDurationDays: null,
   prescriptionDuration: null,
   setPrescriptionDuration: null,
+  updateEprescriptions: null,
 });
 
 export enum CartTypes {
@@ -345,14 +349,19 @@ export const MedicinesCartProvider: React.FC = (props) => {
     setIsCartUpdated(true);
   };
 
+  const removeCartItemSku: MedicineCartContextProps['removeCartItemSku'] = (sku: string) => {
+    setCartItems(cartItems.filter((item) => item.sku !== sku));
+    setIsCartUpdated(true);
+  };
+
   const removeCartItems: MedicineCartContextProps['removeCartItems'] = (arrId) => {
-    const items = cartItems.filter((item) => !arrId.includes(item.id));
+    const items = cartItems.filter((item) => !arrId.includes(item.id || Number(item.sku)));
     setCartItems(items);
     setIsCartUpdated(true);
   };
 
   const updateCartItem: MedicineCartContextProps['updateCartItem'] = (itemUpdates) => {
-    const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
+    const foundIndex = cartItems.findIndex((item) => item.sku == itemUpdates.sku);
     if (foundIndex !== -1) {
       if (cartItems && itemUpdates && itemUpdates.quantity) {
         cartItems[foundIndex].quantity = cartItems[foundIndex].quantity + itemUpdates.quantity;
@@ -367,7 +376,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
     per the passed input and its usages are corrected everywhere
   */
   const updateCartItemPrice: MedicineCartContextProps['updateCartItemPrice'] = (itemUpdates) => {
-    const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
+    const foundIndex = cartItems.findIndex((item) => item.sku == itemUpdates.sku);
     if (foundIndex !== -1) {
       if (cartItems && itemUpdates && itemUpdates.price) {
         cartItems[foundIndex].price = itemUpdates.price;
@@ -380,7 +389,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
   };
 
   const updateItemShippingStatus = (itemUpdates: any) => {
-    const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
+    const foundIndex = cartItems.findIndex((item) => item.sku == itemUpdates.sku);
     if (foundIndex !== -1) {
       if (cartItems && itemUpdates) {
         cartItems[foundIndex].isShippable = itemUpdates.isShippable;
@@ -391,7 +400,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
   };
 
   const updateCartItemQty: MedicineCartContextProps['updateCartItemQty'] = (itemUpdates) => {
-    const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
+    const foundIndex = cartItems.findIndex((item) => item.sku == itemUpdates.sku);
     if (foundIndex !== -1) {
       if (cartItems && itemUpdates) {
         cartItems[foundIndex].quantity = itemUpdates.quantity;
@@ -401,11 +410,19 @@ export const MedicinesCartProvider: React.FC = (props) => {
     }
   };
 
+  const updateEprescriptions: MedicineCartContextProps['updateEprescriptions'] = (
+    eprescriptionsToAdd
+  ) => {
+    const updatedEprescriptionData = _uniq([...ePrescriptionData, ...eprescriptionsToAdd]);
+    setEPrescriptionData(updatedEprescriptionData);
+    setUploadedEPrescription(true);
+  };
+
   const addMultipleCartItems: MedicineCartContextProps['addMultipleCartItems'] = (itemsToAdd) => {
     const existingCartItems = cartItems;
     const newCartItems = cartItems;
     itemsToAdd.forEach((item: MedicineCartItem) => {
-      const foundIdx = existingCartItems.findIndex((existingItem) => existingItem.id === item.id);
+      const foundIdx = existingCartItems.findIndex((existingItem) => existingItem.sku === item.sku);
       if (foundIdx >= 0) {
         newCartItems[foundIdx].quantity = newCartItems[foundIdx].quantity + item.quantity;
       } else {
@@ -462,12 +479,14 @@ export const MedicinesCartProvider: React.FC = (props) => {
   return (
     <MedicinesCartContext.Provider
       value={{
+        updateEprescriptions,
         medicineCartType,
         cartItems,
         setCartItems,
         itemsStr,
         addCartItem,
         removeCartItem,
+        removeCartItemSku,
         removeCartItems,
         updateCartItem,
         updateCartItemPrice,
@@ -524,6 +543,7 @@ export const useShoppingCart = () => ({
   setCartItems: useShoppingCartContext().setCartItems,
   addCartItem: useShoppingCartContext().addCartItem,
   removeCartItem: useShoppingCartContext().removeCartItem,
+  removeCartItemSku: useShoppingCartContext().removeCartItemSku,
   removeCartItems: useShoppingCartContext().removeCartItems,
   updateCartItem: useShoppingCartContext().updateCartItem,
 
@@ -568,4 +588,5 @@ export const useShoppingCart = () => ({
   prescriptionOptionSelected: useShoppingCartContext().prescriptionOptionSelected,
   prescriptionDuration: useShoppingCartContext().prescriptionDuration,
   setPrescriptionDuration: useShoppingCartContext().setPrescriptionDuration,
+  updateEprescriptions: useShoppingCartContext().updateEprescriptions,
 });

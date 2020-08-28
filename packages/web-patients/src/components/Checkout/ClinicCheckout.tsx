@@ -353,7 +353,9 @@ export const ClinicCheckout: React.FC = () => {
 
   const apolloClient = useApolloClient();
 
-  const pageData: any = JSON.parse(localStorage.getItem('consultBookDetails'));
+  const pageData: any = localStorage.getItem('consultBookDetails')
+    ? JSON.parse(localStorage.getItem('consultBookDetails'))
+    : {};
   const {
     consultCouponCodeInitial,
     consultCouponValue,
