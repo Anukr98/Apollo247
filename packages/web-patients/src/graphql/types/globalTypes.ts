@@ -369,6 +369,12 @@ export enum SpecialtySearchType {
   NAME = "NAME",
 }
 
+export enum Status {
+  active = "active",
+  discontinued = "discontinued",
+  inactive = "inactive",
+}
+
 export enum SubscriptionStatus {
   active = "active",
   cancelled = "cancelled",

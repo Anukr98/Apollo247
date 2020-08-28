@@ -17,6 +17,13 @@ import { AphButton } from '@aph/web-ui-components';
 import { useParams } from 'hooks/routerHooks';
 import moment from 'moment';
 
+import { useApolloClient } from 'react-apollo-hooks';
+import { GET_SUBSCRIPTIONS_OF_USER_BY_STATUS } from 'graphql/profiles';
+import {
+  getSubscriptionsOfUserByStatus,
+  getSubscriptionsOfUserByStatusVariables,
+} from 'graphql/types/getSubscriptionsOfUserByStatus';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     header: {
@@ -332,6 +339,9 @@ export const Header: React.FC<HeaderProps> = (props) => {
   const isMobileView = screen.width <= 768;
   const node = useRef(null);
 
+  const [userSubscriptions, setUserSubscriptions] = React.useState([]);
+  const apolloClient = useApolloClient();
+
   const params = useParams<{
     searchMedicineType: string;
     searchText: string;
@@ -354,6 +364,37 @@ export const Header: React.FC<HeaderProps> = (props) => {
       document.removeEventListener('mousedown', handleClick);
     };
   }, []);
+
+  useEffect(() => {
+    const userSubscriptionsLocalStorage = JSON.parse(localStorage.getItem('userSubscriptions'));
+    userSubscriptionsLocalStorage
+      ? setUserSubscriptions(userSubscriptionsLocalStorage)
+      : setUserSubscriptions([]);
+    if (isSignedIn && userSubscriptions.length == 0 && !userSubscriptionsLocalStorage) {
+      apolloClient
+        .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
+          query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+          variables: {
+            user: {
+              mobile_number: currentPatient.mobileNumber,
+              patiend_id: currentPatient.id,
+            },
+            status: [],
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          setUserSubscriptions(response.data.getSubscriptionsOfUserByStatus.response);
+          localStorage.setItem(
+            'userSubscriptions',
+            JSON.stringify(response.data.getSubscriptionsOfUserByStatus.response)
+          );
+        })
+        .catch((error) => {
+          alert('Something went wrong :(');
+        });
+    }
+  }, [isSignedIn]);
 
   const MedicineRoutes = [
     clientRoutes.medicines(),
@@ -467,15 +508,21 @@ export const Header: React.FC<HeaderProps> = (props) => {
                                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                                 </Link>
                               </li>
-                              <li>
-                                <Link to={clientRoutes.partnersHdfc()}>
-                                  <span>
-                                    <img src={require('images/one-apollo.svg')} width="24" alt="" />{' '}
-                                    OneApollo Membership
-                                  </span>
-                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
-                                </Link>
-                              </li>
+                              {userSubscriptions.length != 0 && (
+                                <li>
+                                  <Link to={clientRoutes.myMembership()}>
+                                    <span>
+                                      <img
+                                        src={require('images/one-apollo.svg')}
+                                        width="24"
+                                        alt=""
+                                      />{' '}
+                                      OneApollo Membership
+                                    </span>
+                                    <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                  </Link>
+                                </li>
+                              )}
                               {currentPatient && (
                                 <li>
                                   <Link to={clientRoutes.yourOrders()}>
