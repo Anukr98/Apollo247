@@ -142,8 +142,8 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
 
   const renderLabelDesc = (label?: string, description?: string) => (
     <View>
-      {label && <Text style={styles.lablestyle}>{label}</Text>}
-      {description && <Text style={styles.descrText}>{description}</Text>}
+      {label ? <Text style={styles.lablestyle}>{label}</Text> : null}
+      {description ? <Text style={styles.descrText}>{description}</Text> : null}
     </View>
   );
 
@@ -216,7 +216,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
             : i.description || '-' + '\n';
         }
       });
-      return familyHistory.slice(0, -1);
+      return familyHistory.slice(0, -1) || '-';
     } else {
       return '-';
     }
