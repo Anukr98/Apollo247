@@ -82,6 +82,55 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   referenceSlot: string | null;
 }
 
+export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_city {
+  __typename: "cityType";
+  state: string | null;
+  data: (string | null)[] | null;
+}
+
+export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_brands {
+  __typename: "brandType";
+  name: string | null;
+  image: string | null;
+  brandName:string|null;
+}
+
+export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_language {
+  __typename: "DefaultfilterType";
+  name: string | null;
+}
+
+export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_experience {
+  __typename: "DefaultfilterType";
+  name: string | null;
+}
+
+export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_availability {
+  __typename: "DefaultfilterType";
+  name: string | null;
+}
+
+export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_fee {
+  __typename: "DefaultfilterType";
+  name: string | null;
+}
+
+export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_gender {
+  __typename: "DefaultfilterType";
+  name: string | null;
+}
+
+export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters {
+  __typename: "filters";
+  city: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_city | null)[] | null;
+  brands: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_brands | null)[] | null;
+  language: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_language | null)[] | null;
+  experience: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_experience | null)[] | null;
+  availability: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_availability | null)[] | null;
+  fee: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_fee | null)[] | null;
+  gender: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_gender | null)[] | null;
+}
+
 export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters {
   __typename: "FilterDoctorsResult";
   doctors: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[] | null;
@@ -89,6 +138,7 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   specialty: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty | null;
   doctorsNextAvailability: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[] | null;
   sort: string | null;
+  filters: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters | null;
 }
 
 export interface getDoctorsBySpecialtyAndFilters {

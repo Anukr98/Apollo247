@@ -64,8 +64,10 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .getOne();
   }
 
-  updateCaseSheet(id: string, caseSheetAttrs: Partial<CaseSheet>) {
-    return this.update(id, caseSheetAttrs).catch((createErrors) => {
+  updateCaseSheet(id: string, caseSheetAttrs: Partial<CaseSheet>, caseSheet: CaseSheet) {
+    const modifiedCaseSheet = this.create(caseSheet);
+    Object.assign(modifiedCaseSheet, { ...caseSheetAttrs });
+    return modifiedCaseSheet.save().catch((createErrors) => {
       throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { createErrors });
     });
   }
@@ -104,14 +106,16 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     });
   }
 
-  updateJDCaseSheet(appointmentId: string) {
-    return this.createQueryBuilder()
-      .update('case_sheet')
-      .set({ status: CASESHEET_STATUS.COMPLETED })
-      .where('"appointmentId" = :id', { id: appointmentId })
-      .andWhere('doctorType = :type', { type: DoctorType.JUNIOR })
-      .andWhere('status = :status', { status: CASESHEET_STATUS.PENDING })
-      .execute();
+  async updateJDCaseSheet(appointmentId: string) {
+    const JDCaseSheetDetails = await this.getJuniorDoctorCaseSheet(appointmentId);
+    Object.assign(JDCaseSheetDetails, {
+      status: CASESHEET_STATUS.COMPLETED,
+    });
+    if (!JDCaseSheetDetails) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined);
+
+    return JDCaseSheetDetails.save().catch((appointmentError) => {
+      throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { appointmentError });
+    });
   }
 
   getSeniorDoctorMultipleCaseSheet(appointmentId: string) {

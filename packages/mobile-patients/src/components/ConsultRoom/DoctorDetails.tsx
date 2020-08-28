@@ -34,6 +34,7 @@ import {
   postWebEngageEvent,
   statusBarHeight,
   timeDiffFromNow,
+  setWebEngageScreenNames,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -197,6 +198,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { VirtualConsultationFee } = useAppCommonData();
   const [consultType, setConsultType] = useState<ConsultMode>(ConsultMode.BOTH);
   const [showVideo, setShowVideo] = useState<boolean>(false);
+  const callSaveSearch = props.navigation.getParam('callSaveSearch');
 
   useEffect(() => {
     if (!currentPatient) {
@@ -221,6 +223,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   });
 
   useEffect(() => {
+    setWebEngageScreenNames('Doctor Profile');
     getNetStatus()
       .then((status) => {
         if (status) {
@@ -648,6 +651,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       </Text>
                       <AvailabilityCapsule
                         titleTextStyle={{ paddingHorizontal: 7 }}
+                        styles={{ marginTop: -5 }}
                         availableTime={availableTime}
                       />
                     </View>
@@ -713,6 +717,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                           </Text>
                           <AvailabilityCapsule
                             titleTextStyle={{ paddingHorizontal: 7 }}
+                            styles={{ marginTop: -5 }}
                             availableTime={physicalAvailableTime}
                           />
                         </>
@@ -1188,7 +1193,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           consultModeSelected={consultMode}
           externalConnect={null}
           availableMode={ConsultMode.BOTH}
-          // availableMode={consultType}
+          callSaveSearch={callSaveSearch}
         />
       )}
       <Animated.View

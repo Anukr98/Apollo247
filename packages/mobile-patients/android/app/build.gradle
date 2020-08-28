@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 47
-        versionName "2.63"
+        versionCode 52
+        versionName "4.14"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -197,9 +197,13 @@ android {
     packagingOptions {
         pickFirst '**/libc++_shared.so'
     }
+
 }
 
 dependencies {
+    implementation project(':@react-native-community_datetimepicker')
+    implementation project(':react-native-code-push')
+    implementation project(':react-native-callkeep')
     implementation project(':react-native-background-timer')
     implementation project(':react-native-video')
     implementation project(':react-native-sound')
@@ -351,6 +355,10 @@ dependencies {
 
     implementation "androidx.browser:browser:1.0.0"
     implementation "com.google.android:flexbox:2.0.1"
+
+// PubNub SDK
+    compile group: 'com.pubnub', name: 'pubnub-gson', version: '4.31.3'
+
 }
 
 // Run this once to be able to run the application with BUCK
@@ -367,3 +375,4 @@ configurations {
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'io.fabric'
+apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"

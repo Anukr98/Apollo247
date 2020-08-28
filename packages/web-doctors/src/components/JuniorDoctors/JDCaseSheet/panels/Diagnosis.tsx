@@ -8,6 +8,12 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { SearchDiagnosis } from 'graphql/types/SearchDiagnosis';
 import { SEARCH_DIAGNOSIS } from 'graphql/profiles';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
+import { useParams } from 'hooks/routerHooks';
+import { Params } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
+import {
+  getLocalStorageItem,
+  updateLocalStorageItem,
+} from 'components/case-sheet/panels/LocalStorageUtils';
 
 interface OptionType {
   name: string;
@@ -191,6 +197,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export const Diagnosis: React.FC = () => {
   const classes = useStyles({});
+  const params = useParams<Params>();
   const [idx, setIdx] = React.useState<any>();
   const [searchInput, setSearchInput] = useState('');
   const { diagnosis: selectedValues, setDiagnosis: setSelectedValues } = useContext(
@@ -306,6 +313,11 @@ export const Diagnosis: React.FC = () => {
   };
   const handleDelete = (item: any, idx: number) => {
     selectedValues!.splice(idx, 1);
+    const storageItem = getLocalStorageItem(params.appointmentId);
+    if (storageItem) {
+      storageItem.diagnosis = selectedValues;
+      updateLocalStorageItem(params.appointmentId, storageItem);
+    }
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
     setIdx(sum);
@@ -393,6 +405,11 @@ export const Diagnosis: React.FC = () => {
           <Autosuggest
             onSuggestionSelected={(e, { suggestion }) => {
               selectedValues && selectedValues.push(suggestion);
+              const storageItem = getLocalStorageItem(params.appointmentId);
+              if (storageItem) {
+                storageItem.diagnosis = selectedValues;
+                updateLocalStorageItem(params.appointmentId, storageItem);
+              }
               setSelectedValues(selectedValues);
               setShowAddCondition(false);
               suggestions = suggestions.filter(
@@ -415,6 +432,11 @@ export const Diagnosis: React.FC = () => {
                 if (e.which == 13 || e.keyCode == 13) {
                   if (selectedValues && suggestions.length === 1) {
                     selectedValues.push(suggestions[0]);
+                    const storageItem = getLocalStorageItem(params.appointmentId);
+                    if (storageItem) {
+                      storageItem.diagnosis = selectedValues;
+                      updateLocalStorageItem(params.appointmentId, storageItem);
+                    }
                     setSelectedValues(selectedValues);
                     setShowAddCondition(false);
                     suggestions = suggestions.filter((val) => selectedValues.includes(val));
@@ -455,6 +477,13 @@ export const Diagnosis: React.FC = () => {
                   name: diagnosisValue,
                   __typename: 'Diagnosis',
                 });
+
+                const storageItem = getLocalStorageItem(params.appointmentId);
+                if (storageItem) {
+                  storageItem.diagnosis = selectedValues;
+                  updateLocalStorageItem(params.appointmentId, storageItem);
+                }
+
                 setSelectedValues(selectedValues);
                 setShowAddCondition(false);
 

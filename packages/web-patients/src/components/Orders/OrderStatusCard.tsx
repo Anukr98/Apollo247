@@ -1,29 +1,28 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress, Typography, Link } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails,
-  getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus as StatusDetails,
-} from 'graphql/types/getMedicineOrderOMSDetails';
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails as OrderDetails,
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus as StatusDetails,
+  getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderAddress as OrderAddress,
+} from 'graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import moment from 'moment';
 import { OrderFeedback } from './OrderFeedback';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { AphButton } from '@aph/web-ui-components';
 import Popover from '@material-ui/core/Popover';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
-import {
-  GetPatientAddressList,
-  GetPatientAddressListVariables,
-  GetPatientAddressList_getPatientAddressList_addressList as AddressDetails,
-} from 'graphql/types/GetPatientAddressList';
-import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import { getStatus, isRejectedStatus } from 'helpers/commonHelpers';
+import { ReOrder } from './ReOrder';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { GetPatientFeedback, GetPatientFeedbackVariables } from 'graphql/types/GetPatientFeedback';
+import { GET_PATIENT_FEEDBACK } from 'graphql/medicines';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     orderStatusGroup: {
-      padding: 0,
+      padding: '0 0 30px',
     },
     cardRoot: {
       padding: 20,
@@ -263,6 +262,9 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 80,
       },
     },
+    reorderBtn: {
+      marginBottom: 15,
+    },
   };
 });
 
@@ -294,8 +296,8 @@ export const getDeliveredDateTime = (orderStatusList: StatusDetails[]) => {
 export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   const classes = useStyles({});
   const { orderDetailsData, isLoading } = props;
-  const { deliveryAddresses, setDeliveryAddresses } = useShoppingCart();
   const client = useApolloClient();
+  const [showDeliveryRateBtn, setShowDeliveryRateBtn] = useState<Boolean>(false);
 
   const getSortedStatusList = (statusList: (StatusDetails | null)[]) => {
     if (statusList && statusList.length > 0) {
@@ -359,54 +361,53 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
   const mascotRef = useRef(null);
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
-  const getAddressDetails = (id: string) => {
-    client
-      .query<GetPatientAddressList, GetPatientAddressListVariables>({
-        query: GET_PATIENT_ADDRESSES_LIST,
-        variables: {
-          patientId: id || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        if (
-          _data.data &&
-          _data.data.getPatientAddressList &&
-          _data.data.getPatientAddressList.addressList
-        ) {
-          const addresses = _data.data.getPatientAddressList.addressList.reverse();
-          if (addresses && addresses.length > 0) {
-            setDeliveryAddresses && setDeliveryAddresses(addresses);
-            getPatientAddress(addresses);
-          } else {
-            setDeliveryAddresses && setDeliveryAddresses([]);
+  useEffect(() => {
+    updateRateDeliveryBtnVisibility();
+  }, [orderDetailsData]);
+  const { currentPatient } = useAllCurrentPatients();
+
+  const updateRateDeliveryBtnVisibility = () => {
+    if (
+      !showDeliveryRateBtn &&
+      orderDetailsData &&
+      orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED
+    ) {
+      client
+        .query<GetPatientFeedback, GetPatientFeedbackVariables>({
+          query: GET_PATIENT_FEEDBACK,
+          variables: {
+            patientId: currentPatient ? currentPatient.id : '',
+            transactionId: `${orderDetailsData.id}`,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((res) => {
+          const feedback =
+            res &&
+            res.data &&
+            res.data.getPatientFeedback &&
+            res.data.getPatientFeedback.feedback &&
+            res.data.getPatientFeedback.feedback.length;
+          if (!feedback) {
+            setShowDeliveryRateBtn(true);
           }
-        }
-      })
-      .catch((e) => {
-        console.log('Error occured while fetching Doctor', e);
-      });
+        })
+        .catch((e) => {
+          console.log('Error occured while getting Patient Feedback', e);
+        });
+    }
   };
 
-  const getPatientAddress = (deliveryAddresses: AddressDetails[]) => {
-    if (deliveryAddresses.length > 0) {
-      if (orderDetailsData && orderDetailsData.patientAddressId) {
-        const selectedAddress = deliveryAddresses.find(
-          (address: AddressDetails) => address.id == orderDetailsData.patientAddressId
-        );
-        const addressData = selectedAddress
-          ? `${selectedAddress.addressLine1 ? `${selectedAddress.addressLine1}, ` : ''}${
-              selectedAddress.addressLine2 ? `${selectedAddress.addressLine2}, ` : ''
-            }${selectedAddress.city ? `${selectedAddress.city}, ` : ''}${
-              selectedAddress.state ? `${selectedAddress.state}, ` : ''
-            }${selectedAddress.zipcode || ''}`
-          : '';
-        return addressData;
-      } else {
-        return '';
-      }
-    } else {
-      getAddressDetails(orderDetailsData.patient.id);
+  const getPatientAddress = (deliveryAddress: OrderAddress) => {
+    if (deliveryAddress) {
+      const address1 = deliveryAddress.addressLine1 ? `${deliveryAddress.addressLine1}, ` : '';
+      const address2 = deliveryAddress.addressLine2 ? `${deliveryAddress.addressLine2}, ` : '';
+      const city = deliveryAddress.city ? `${deliveryAddress.city}, ` : '';
+      const state = deliveryAddress.state ? `${deliveryAddress.state}, ` : '';
+      const addressData = deliveryAddress
+        ? `${address1}${address2}${city}${state}${deliveryAddress.zipcode || ''}`
+        : '';
+      return addressData;
     }
   };
 
@@ -513,17 +514,19 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
                 {getOrderState(orderDetailsData.currentStatus)}
               </div>
             )}
-            {orderDetailsData.patient && (
+            {orderDetailsData.medicineOrderAddress && (
               <div className={classes.detailsRow}>
                 <div className={classes.orderTitle}>Name -</div>
                 <div className={classes.discription}>
-                  {`${orderDetailsData.patient.firstName} ${orderDetailsData.patient.lastName}`}
+                  {`${orderDetailsData.medicineOrderAddress.name}`}
                 </div>
               </div>
             )}
             <div className={classes.detailsRow}>
               <div className={classes.orderTitle}>Address -</div>
-              <div className={classes.discription}>{getPatientAddress(deliveryAddresses)}</div>
+              <div className={classes.discription}>
+                {getPatientAddress(orderDetailsData.medicineOrderAddress)}
+              </div>
             </div>
           </div>
           {!isRejectedStatus(orderDetailsData.currentStatus) && orderDetailsData.orderTat && (
@@ -590,14 +593,27 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
       </div>
       {orderDetailsData && orderDetailsData.currentStatus === MEDICINE_ORDER_STATUS.DELIVERED && (
         <div className={classes.bottomNotification}>
+          <div className={classes.reorderBtn}>
+            <ReOrder
+              orderDetailsData={orderDetailsData}
+              type="Order Details"
+              patientName={
+                orderDetailsData.medicineOrderAddress && orderDetailsData.medicineOrderAddress.name
+                  ? orderDetailsData.medicineOrderAddress.name
+                  : ''
+              }
+            />
+          </div>
           <p>
             Your order no.#{orderDetailsData && orderDetailsData.orderAutoId} is successfully
             delivered on {getDeliveredDateTime(orderStatusList)}.
           </p>
           <h4>Thank You for choosing Apollo 24|7</h4>
-          <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
-            Rate your delivery experience
-          </AphButton>
+          {showDeliveryRateBtn && (
+            <AphButton color="primary" onClick={() => setIsPopoverOpen(true)}>
+              Rate your delivery experience
+            </AphButton>
+          )}
         </div>
       )}
       <Popover
@@ -621,6 +637,7 @@ export const OrderStatusCard: React.FC<OrderStatusCardProps> = (props) => {
             <OrderFeedback
               setIsPopoverOpen={setIsPopoverOpen}
               orderDetailsData={orderDetailsData}
+              setShowDeliveryRateBtn={setShowDeliveryRateBtn}
             />
           </div>
         </div>

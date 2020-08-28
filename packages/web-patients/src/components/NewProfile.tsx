@@ -187,6 +187,9 @@ const useStyles = makeStyles((theme: Theme) => {
     labelText: {
       fontSize: 13,
     },
+    required: {
+      color: 'red',
+    },
   });
 });
 
