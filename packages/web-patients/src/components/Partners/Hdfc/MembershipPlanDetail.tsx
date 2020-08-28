@@ -11,6 +11,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { HDFC_SUBSCRIPTION_GOLD } from 'helpers/constants';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -448,12 +449,6 @@ export const MembershipPlanDetail: React.FC = (props) => {
                         <div className={classes.couponDetails}>
                           <Typography component="h3">HDFCGold3</Typography>
                           <Typography>Discount on Medicines for HDFC customers</Typography>
-                        </div>
-                        <div className={classes.couponDetails}>
-                          <Typography component="h3">HDFCGold4</Typography>
-                          <Typography>
-                            Free Health Assessment Consultation for HDFC customers
-                          </Typography>
                         </div>
                       </div>
                     </div>

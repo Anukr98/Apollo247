@@ -404,28 +404,6 @@ export const HdfcLanding: React.FC = (props) => {
     setSelectedDate(date);
   };
 
-  const handleCTAClick = () => {
-    if (!isSignedIn) setIsLoginPopupVisible(true);
-    else {
-      // getSubsciptionsofUser(currentPatient);
-
-      createSubscription({
-        variables: {
-          userSubscription: {
-            mobile_number: currentPatient.mobileNumber,
-          },
-        },
-      })
-        .then(() => {
-          alert('Something went Right :)');
-        })
-        .catch((error) => {
-          console.error(error);
-          alert('Something went wrong :(');
-        });
-    }
-  };
-
   if (showProfileSuccess) {
     return (
       <ProfileSuccess

@@ -8,6 +8,7 @@ import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import Axios, { AxiosResponse, Canceler } from 'axios';
 import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
+import { EXOTEL_CALL_URL, EXOTEL_X_API } from 'helpers/constants';
 
 declare global {
   interface Window {
@@ -66,8 +67,8 @@ const getDeviceType = (): DEVICETYPE => {
     return /Android/i.test(userAgent)
       ? DEVICETYPE.ANDROID
       : /iPhone/i.test(userAgent)
-        ? DEVICETYPE.IOS
-        : null;
+      ? DEVICETYPE.IOS
+      : null;
   } else {
     return DEVICETYPE.DESKTOP;
   }
@@ -341,17 +342,18 @@ const isRejectedStatus = (status: MEDICINE_ORDER_STATUS) => {
   );
 };
 
-
 const callToExotelApi = (params: any): Promise<AxiosResponse<any>> => {
-  const url = `https://notifications.apollo247.com/webhooks/exotel/call`;
+  const url = EXOTEL_CALL_URL;
   return Axios.post(
     url,
     { ...params },
     {
       headers: {
-        'x-api-key': 'gNXyYhY2VDxwzv8f6TwJqvfYmPmj',
+        'x-api-key': EXOTEL_X_API,
       },
     }
+  );
+};
 
 const getAvailability = (nextAvailability: string, differenceInMinutes: number, type: string) => {
   const nextAvailabilityMoment = moment(nextAvailability);
@@ -383,7 +385,7 @@ const getAvailability = (nextAvailability: string, differenceInMinutes: number, 
   } else if (isAvailableAfterTomorrow) {
     return `${message} in ${
       nextAvailabilityMoment.diff(tomorrowAvailabilityTime, 'days') + 1 // intentionally added + 1 as we need to consider 6 am as next day
-      } days`;
+    } days`;
   } else if (!isAvailableTomorrow && differenceInMinutes >= 60) {
     return `${message} at ${nextAvailabilityMoment.format('hh:mm A')}`;
   } else {
@@ -409,7 +411,7 @@ const getPackOfMedicine = (medicineDetail: MedicineProductDetails) => {
     medicineDetail.PharmaOverview && medicineDetail.PharmaOverview.length > 0
       ? medicineDetail.PharmaOverview[0].Doseform
       : ''
-    }${medicineDetail.mou && parseFloat(medicineDetail.mou) !== 1 ? 'S' : ''}`;
+  }${medicineDetail.mou && parseFloat(medicineDetail.mou) !== 1 ? 'S' : ''}`;
 };
 
 const getImageUrl = (imageUrl: string) => {
@@ -462,5 +464,5 @@ export {
   getTypeOfProduct,
   kavachHelpline,
   callToExotelApi,
-  isActualUser
+  isActualUser,
 };

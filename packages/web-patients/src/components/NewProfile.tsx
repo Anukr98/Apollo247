@@ -21,6 +21,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { Route } from 'react-router-dom';
 import { webengageUserLoginTracking, webengageUserDetailTracking } from '../webEngageTracking';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { PARTNER_TP_REF_CODES } from 'helpers/constants';
 
 const isoDatePattern = 'yyyy-MM-dd';
 const clientDatePattern = 'dd/MM/yyyy';
@@ -520,8 +521,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                                 }}
                                 inputProps={{ type: 'text', maxLength: 25 }}
                                 disabled={
-                                  tpRefCode.length > 0 &&
-                                  (tpRefCode === 'SBIYONO' || tpRefCode === 'HDFCBANK')
+                                  tpRefCode.length > 0 && PARTNER_TP_REF_CODES.includes(tpRefCode)
                                     ? true
                                     : false
                                 }

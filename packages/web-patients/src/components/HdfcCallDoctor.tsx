@@ -3,6 +3,7 @@ import { Theme, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphButton, AphDialog } from '@aph/web-ui-components';
 import { callToExotelApi } from 'helpers/commonHelpers';
+import { HDFC_EXOTEL_CALLERID, HDFC_EXOTEL_NUMBER } from 'helpers/constants';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -155,8 +156,8 @@ export const HdfcCallDoctor: React.FC<HdfcCallDoctorProps> = (props) => {
               onClick={() => {
                 const param = {
                   fromPhone: props.patientPhone,
-                  toPhone: '---to be filled later---',
-                  callerId: '04048217258',
+                  toPhone: HDFC_EXOTEL_NUMBER,
+                  callerId: HDFC_EXOTEL_CALLERID,
                 };
                 callToExotelApi(param);
               }}
