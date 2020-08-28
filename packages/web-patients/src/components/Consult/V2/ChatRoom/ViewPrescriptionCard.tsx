@@ -1,10 +1,16 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Avatar } from '@material-ui/core';
-import React from 'react';
+import { Theme, Avatar, Modal, Paper, CircularProgress, Popover } from '@material-ui/core';
+import React, { useState, useRef } from 'react';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
+import { AphButton, AphDialogTitle } from '@aph/web-ui-components';
+import { OnlineConsult } from 'components/OnlineConsult';
+import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
+import { BOOK_APPOINTMENT_RESCHEDULE } from 'graphql/profiles';
+import { useMutation } from 'react-apollo-hooks';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -53,6 +59,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     downloadBtn: {
+      cursor: 'pointer',
       fontSize: 13,
       lineHeight: '24px',
       color: '#fff',
@@ -69,6 +76,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     viewBtn: {
+      cursor: 'pointer',
       fontSize: 13,
       lineHeight: '24px',
       color: '#fff',
@@ -84,6 +92,146 @@ const useStyles = makeStyles((theme: Theme) => {
         outline: 'none',
       },
     },
+    modalBox: {
+      margin: 'auto',
+      marginTop: 88,
+      backgroundColor: theme.palette.common.white,
+      position: 'relative',
+      outline: 'none',
+    },
+    modalBoxClose: {
+      position: 'absolute',
+      right: -48,
+      top: 0,
+      width: 28,
+      height: 28,
+      borderRadius: '50%',
+      backgroundColor: theme.palette.common.white,
+      cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        right: 0,
+        top: -48,
+      },
+    },
+    popupHeading: {
+      padding: '20px 10px',
+      '& h6': {
+        fontSize: 13,
+        color: '#01475b',
+        fontWeight: 600,
+        textAlign: 'center',
+        padding: '0 50px',
+      },
+    },
+    dialogContent: {
+      margin: 22,
+
+      position: 'relative',
+      '& h6': {
+        fontSize: 15,
+        fontWeight: 500,
+        margin: 0,
+        lineHeight: 'normal',
+      },
+    },
+    dialogActions: {
+      padding: 10,
+      position: 'relative',
+      fontSize: 14,
+      fontWeight: 600,
+      maxWidth: 170,
+      display: 'inline-flex',
+      '& button': {
+        borderRadius: 10,
+        minwidth: 130,
+        padding: '8px 20px',
+        fontSize: 14,
+        fontWeight: 600,
+      },
+    },
+    dialogActionsProgress: {
+      marginLeft: 135,
+    },
+    primaryBtn: {
+      backgroundColor: '#fc9916 !important',
+      display: 'flex',
+      flex: '0 0 100%',
+    },
+    secondaryBtn: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: '#fc9916',
+      backgroundColor: 'transparent',
+      boxShadow: '0 2px 5px 0 rgba(0,0,0,0.2)',
+      border: 'none',
+      display: 'flex',
+      flex: '0 0 100%',
+      marginRight: 10,
+      '&:hover': {
+        backgroundColor: 'transparent',
+        color: '#fc9916',
+      },
+    },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        marginBottom: 0,
+      },
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    actions: {
+      padding: '0 20px 20px 20px',
+      display: 'flex',
+      '& button': {
+        borderRadius: 10,
+        color: '#fc9916',
+        padding: 0,
+        boxShadow: 'none',
+        '&:last-child': {
+          marginLeft: 'auto',
+        },
+      },
+    },
   };
 });
 
@@ -96,8 +244,68 @@ interface ViewPrescriptionCardProps {
 
 export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props) => {
   const classes = useStyles({});
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const mascotRef = useRef(null);
+  const [isChangeSlot, setIsChangeSlot] = useState<boolean>(false);
+  const [apiLoading, setApiLoading] = useState<boolean>(false);
+  const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
+  const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
+  const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
 
+  const { messageDetails, chatTime } = props;
+
+  console.log(messageDetails);
   const { currentPatient } = useAllCurrentPatients();
+
+  const bookAppointment = useMutation(BOOK_APPOINTMENT_RESCHEDULE);
+  const rescheduleAPI = (
+    bookRescheduleInput: BookRescheduleAppointmentInput,
+    type: TRANSFER_INITIATED_TYPE
+  ) => {
+    const { transferInfo } = messageDetails;
+    bookAppointment({
+      variables: {
+        bookRescheduleAppointmentInput: bookRescheduleInput,
+      },
+      fetchPolicy: 'no-cache',
+    })
+      .then((data: any) => {
+        setIsModalOpen(false);
+        setApiLoading(false);
+        setReschedulesRemaining(
+          type === TRANSFER_INITIATED_TYPE.PATIENT
+            ? 3 - transferInfo.reschduleCount - 1
+            : 3 - transferInfo.reschduleCount
+        );
+        setIsRescheduleSuccess(true);
+        setRescheduledSlot(bookRescheduleInput.newDateTimeslot);
+      })
+
+      .catch((e) => {
+        console.log(e);
+        setApiLoading(false);
+        setIsAlertOpen(true);
+        setAlertMessage(`Error occured while rescheduling the appointment, ${e}`);
+      });
+  };
+
+  const handleAcceptReschedule = () => {
+    setApiLoading(true);
+    const { appointmentId, doctorId, transferDateTime, reschduleId } = messageDetails.transferInfo;
+    const bookRescheduleInput = {
+      appointmentId,
+      doctorId,
+      newDateTimeslot: transferDateTime,
+      initiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+      initiatedId: doctorId,
+      patientId: (currentPatient && currentPatient.id) || '',
+      rescheduledId: reschduleId,
+    };
+    rescheduleAPI(bookRescheduleInput, TRANSFER_INITIATED_TYPE.DOCTOR);
+  };
+
   return (
     <div className={classes.doctorCardMain}>
       {/* <div className={classes.doctorAvatar}>
@@ -105,50 +313,48 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
       </div> */}
       <div className={`${classes.blueBubble} ${classes.petient} `}>
         <p>
-          {props.messageDetails.message === '^^#followupconsult' && (
+          {messageDetails && messageDetails.message === '^^#followupconsult' && (
             <>
               <div>
                 Hello <span>{currentPatient.firstName}</span>
               </div>
               <div>Hope your consultation went well… Here is your prescription.</div>
               <div>
-                {props.messageDetails &&
-                  props.messageDetails.transferInfo &&
-                  props.messageDetails.transferInfo.pdfUrl && (
-                    <a href={props.messageDetails.transferInfo.pdfUrl} target="_blank">
-                      <button className={classes.downloadBtn}>Download</button>
-                    </a>
-                  )}
+                {messageDetails.transferInfo && messageDetails.transferInfo.pdfUrl && (
+                  <a href={messageDetails.transferInfo.pdfUrl} target="_blank">
+                    <button className={classes.downloadBtn}>Download</button>
+                  </a>
+                )}
 
-                <Link
-                  to={clientRoutes.prescription(props.messageDetails.transferInfo.appointmentId)}
-                >
+                <Link to={clientRoutes.prescription(messageDetails.transferInfo.appointmentId)}>
                   <button className={classes.viewBtn}>View</button>
                 </Link>
               </div>
             </>
           )}
-          {props.messageDetails.message === '^^#rescheduleconsult' && (
+          {messageDetails && messageDetails.message === '^^#rescheduleconsult' && (
             <>
               <div>
-                {props.messageDetails.transferInfo &&
-                props.messageDetails.transferInfo.reschduleCount &&
-                props.messageDetails.transferInfo.reschduleCount > 2
+                {messageDetails.transferInfo &&
+                messageDetails.transferInfo.reschduleCount &&
+                messageDetails.transferInfo.reschduleCount > 2
                   ? 'Since you have already rescheduled 3 times with ' +
-                      props.messageDetails.transferInfo.doctorInfo &&
-                    props.messageDetails.transferInfo.doctorInfo.displayName
-                    ? props.messageDetails.transferInfo.doctorInfo.displayName
+                      messageDetails.transferInfo.doctorInfo &&
+                    messageDetails.transferInfo.doctorInfo.displayName
+                    ? messageDetails.transferInfo.doctorInfo.displayName
                     : 'Dr. ' + ', we will consider this a new paid appointment.'
                   : "We're sorry that you have to reschedule. You can reschedule up to 3 times for free."}
               </div>
-              {props.messageDetails && props.messageDetails.transferInfo && (
+              {messageDetails.transferInfo && (
                 <>
                   <div>
-                    {`Next slot for ${props.messageDetails.transferInfo.doctorInfo &&
-                      props.messageDetails.transferInfo.doctorInfo.displayName} is available on- `}
+                    {`Next slot for ${
+                      messageDetails.transferInfo.doctorInfo &&
+                      messageDetails.transferInfo.doctorInfo.displayName
+                    } is available on- `}
                   </div>
                   <div>
-                    {moment(props.messageDetails.transferInfo.transferDateTime).format(
+                    {moment(messageDetails.transferInfo.transferDateTime).format(
                       'Do MMMM, dddd \nhh:mm a'
                     )}
                   </div>
@@ -156,17 +362,138 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
               )}
 
               <div>
-                {props.messageDetails && props.messageDetails.transferInfo && (
-                  <button className={classes.downloadBtn}>CHANGE SLOT</button>
+                {messageDetails && messageDetails.transferInfo && (
+                  <button className={classes.downloadBtn} onClick={() => setIsModalOpen(true)}>
+                    CHANGE SLOT
+                  </button>
                 )}
 
-                <button className={classes.viewBtn}>ACCEPT</button>
+                <button className={classes.viewBtn} onClick={() => handleAcceptReschedule()}>
+                  {apiLoading ? (
+                    <CircularProgress size={22} color="secondary" />
+                  ) : (
+                    <span>ACCEPT</span>
+                  )}
+                </button>
               </div>
             </>
           )}
-          <div className={classes.chatTime}>{props.chatTime} </div>
+          <div className={classes.chatTime}>{chatTime} </div>
         </p>
       </div>
+      {messageDetails && (
+        <Modal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <Paper className={classes.modalBox} style={{ width: isChangeSlot ? 700 : 328 }}>
+            <div
+              className={classes.modalBoxClose}
+              onClick={() => {
+                setIsModalOpen(false);
+                setIsChangeSlot(false);
+              }}
+            >
+              <img src={require('images/ic_cross_popup.svg')} alt="" />
+            </div>
+            <AphDialogTitle className={classes.popupHeading}>Reschedule</AphDialogTitle>
+            <div>
+              {isChangeSlot ? (
+                <OnlineConsult
+                  setIsPopoverOpen={setIsModalOpen}
+                  doctorDetails={messageDetails.transferInfo.doctorInfo || null}
+                  isRescheduleConsult={messageDetails.transferInfo.reschduleCount < 3}
+                  appointmentId={messageDetails.transferInfo.appointmentId}
+                  rescheduleAPI={rescheduleAPI}
+                />
+              ) : (
+                <div>
+                  <div className={classes.dialogContent}>
+                    Dr.{messageDetails.doctorInfo && messageDetails.doctorInfo.fullName} has
+                    suggested the below slot for rescheduling this appointment —
+                    {moment(messageDetails.transferInfo.transferDateTime).format(
+                      'Do MMMM, dddd \nhh:mm a'
+                    )}
+                  </div>
+                  <div className={classes.dialogActions}>
+                    <>
+                      <AphButton
+                        className={classes.secondaryBtn}
+                        color="primary"
+                        onClick={() => setIsChangeSlot(true)}
+                      >
+                        {'CHANGE SLOT'}
+                      </AphButton>
+
+                      <AphButton
+                        className={classes.primaryBtn}
+                        color="primary"
+                        onClick={() => {
+                          handleAcceptReschedule();
+                        }}
+                      >
+                        {apiLoading ? (
+                          <CircularProgress size={22} color="secondary" />
+                        ) : (
+                          <span>ACCEPT</span>
+                        )}
+                      </AphButton>
+                    </>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Paper>
+        </Modal>
+      )}
+      {messageDetails && (
+        <Popover
+          open={isRescheduleSuccess}
+          anchorEl={mascotRef.current}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          classes={{ paper: classes.bottomPopover }}
+        >
+          <div className={classes.successPopoverWindow}>
+            <div className={classes.windowWrap}>
+              <div className={classes.mascotIcon}>
+                <img src={require('images/ic-mascot.png')} alt="" />
+              </div>
+              <div className={classes.windowBody}>
+                <p>Hi! :)</p>
+                <p>
+                  Your appointment with Dr.
+                  {` ${messageDetails.doctorInfo && messageDetails.doctorInfo.firstName} `}
+                  has been rescheduled for -{' '}
+                  {rescheduledSlot && moment(rescheduledSlot).format('Do MMMM, dddd \nhh:mm a')}
+                </p>
+                {reschedulesRemaining >= 0 && (
+                  <p>You have {reschedulesRemaining} free reschedueles left</p>
+                )}
+              </div>
+              <div className={classes.actions}>
+                <AphButton onClick={() => (window.location.href = clientRoutes.appointments())}>
+                  OK, GOT IT
+                </AphButton>
+              </div>
+            </div>
+          </div>
+        </Popover>
+      )}
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };
