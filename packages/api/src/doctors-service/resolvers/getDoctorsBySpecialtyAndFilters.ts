@@ -405,6 +405,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
     }
+    if (doctor.languages instanceof Array) {
+      doctor.languages = doctor.languages.join(', ');
+    }
     for (const slots of doc._source.doctorSlots) {
       for (const slot of slots['slots']) {
         if (
@@ -611,12 +614,54 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       .concat(docs);
   }
 
+  // for filters querying all doctors
+  const searchFilters: RequestParams.Search = {
+    index: process.env.ELASTIC_INDEX_DOCTORS,
+    body: {
+        query: {
+          match_all: {}
+        },
+      },
+  };
+
+  const allDoctorDetails = await client.search(searchFilters);
+  type doctorNextAvailSlotsType = {
+    availableInMinutes: number
+  }
+  const allDoctorsNextAvailSlots: doctorNextAvailSlotsType[] = [];
+  const allDoctors = allDoctorDetails.body.hits.hits.map((doc: any)=> {
+    const doctor = doc._source;
+    doctor['activeSlotCount'] = 0;
+    let bufferTime = 5;
+    for (const consultHour of doctor.consultHours) {
+      if(consultHour['consultBuffer']){
+        bufferTime = consultHour['consultBuffer'];
+      }
+    }
+    for (const slots of doc._source.doctorSlots) {
+      for (const slot of slots['slots']) {
+        if (
+          slot.status == 'OPEN' &&
+          differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
+        ) {
+          if (doctor['activeSlotCount'] === 0) {
+            allDoctorsNextAvailSlots.push({
+              availableInMinutes: Math.abs(differenceInMinutes(callStartTime, new Date(slot.slot))),
+            });
+          }
+          doctor['activeSlotCount'] += 1;
+        }
+      }
+    }
+    doctor.facility = Array.isArray(doctor.facility) ? doctor.facility : [doctor.facility];
+    return doctor;
+  });
+
   function ifKeyExist(arr: any[], key: string, value: string) {
     if (arr.length) {
       arr = arr.filter((elem: any) => {
         return elem[key] === value
       });
-      // if filter returned a non-empty array
       if (arr.length) {
         return arr[0];
       }
@@ -640,23 +685,22 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   const filters: any = { city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: [] };
   let cityObj: { state: string, data: string[] };
 
-  // making filters
-  for (const doctor of doctors) {
-    for (const hospital of doctor.doctorHospital) {
+  for (const doctor of allDoctors) {
+    for (const facility of doctor.facility) {
       cityObj = { state: '', data: [] };
-      if(hospital.facility.state){
+      if(facility.state){
         if (filters.city.length) {
-          cityObj = ifKeyExist(filters.city, 'state', capitalize(hospital.facility.state));
+          cityObj = ifKeyExist(filters.city, 'state', capitalize(facility.state));
         }
         if (cityObj && cityObj.state) {
-          if (hospital.facility.city && !cityObj.data.includes(capitalize(hospital.facility.city))) {
-            cityObj.data.push(capitalize(hospital.facility.city));
+          if (facility.city && !cityObj.data.includes(capitalize(facility.city))) {
+            cityObj.data.push(capitalize(facility.city));
           }
         } else {
-          cityObj.state = capitalize(hospital.facility.state);
+          cityObj.state = capitalize(facility.state);
           cityObj.data = [];
-          if(hospital.facility.city) {
-            cityObj.data.push(capitalize(hospital.facility.city));
+          if(facility.city) {
+            cityObj.data.push(capitalize(facility.city));
           }
           filters.city.push(cityObj);
         }
@@ -693,7 +737,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const dayEndMinutes = differenceInMinutes(endOfDay(new Date()), (new Date()));
   const twoDaysEndMinutes = differenceInMinutes(endOfDay(addDays(new Date(), 1)), (new Date()));
-  for (const availablity of finalDoctorNextAvailSlots) {
+  for (const availablity of allDoctorsNextAvailSlots) {
     if (241 > availablity.availableInMinutes) {
       if (!("name" in ifKeyExist(filters.availability, 'name', 'Now'))) {
         filters.availability.push({ 'name': 'Now' });
