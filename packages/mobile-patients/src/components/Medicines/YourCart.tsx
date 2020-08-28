@@ -474,8 +474,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
           const tatApiInput247: TatApiInput247 = {
             pincode: selectedAddress.zipcode || '',
-            lng: selectedAddress?.latitude!,
-            lat: selectedAddress?.longitude!,
+            lat: selectedAddress?.latitude!,
+            lng: selectedAddress?.longitude!,
             sku: availableItems.join(",")
           }
           const tatRes = await getDeliveryTAT247(tatApiInput247)
