@@ -2,14 +2,15 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { HelpIcon, OneApolloGold, HdfcGoldMedal, DownOrange, UpOrange, EllipseBulletPoint, OneApolloPlatinum, HdfcPlatinumMedal, OneVectorNumber, TwoVectorNumber } from '../ui/Icons';
 import { TabsComponent } from '../ui/TabsComponent';
 import { SubscriptionBanner } from './SubscriptionBanner';
 import { AvailSubscriptionPopup } from './AvailSubscriptionPopup';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AppRoutes } from '../NavigatorContainer';
+import { HdfcConnectPopup } from './HdfcConnectPopup';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -53,6 +54,8 @@ const hdfc_tnc = [
 
 export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const membershipType = props.navigation.getParam('membershipType');
+  const { currentPatient } = useAllCurrentPatients();
+
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [selectedTab, setSelectedTab] = useState<string>('Benefits Available');
   const [isActiveCouponVisible, setIsActiveCouponVisible] = useState<boolean>(true);
@@ -60,8 +63,74 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [isHowToAvailVisible, setIsHowToAvailVisible] = useState<boolean>(true);
   const [isTnCVisible, setIsTnCVisible] = useState<boolean>(false);
   const [showAvailPopup, setshowAvailPopup] = useState<boolean>(false);
+  const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
 
-  const isActivePlan = false; // testing purpose
+  const isActivePlan = true; // testing purpose
+
+  const redeemCardsContent = [
+    {
+      title: 'Access to Apollo doctors through 24|7 App',
+      description: ['Choose a Doctor and Book an Online Consultation instantly on our App'],
+      redeemCall: () => {
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+      }
+    },
+    {
+      title: '24/7 Access to a General Physician on Call',
+      description: ['Round-the-clock doctor availability at a click of a button'],
+      redeemCall: () => {
+        setShowHdfcConnectPopup(true);
+      }
+    },
+    {
+      title: 'Access to Diagnostic Services',
+      description: ['Access to Diagnostic Services'],
+      redeemCall: () => {
+        props.navigation.navigate('TESTS');
+      }
+    },
+    {
+      title: 'Digital Vault for health records',
+      description: ['Store all your medical documents in your personal digital vault'],
+      redeemCall: () => {
+        props.navigation.navigate('APPOINTMENTS');
+      }
+    },
+    {
+      title: 'Free Health Assesment Consultation',
+      description: ['Get a free medical consultation from Top Apollo Doctors'],
+      redeemCall: () => {
+        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
+          specialityId: '',
+        });
+      }
+    },
+    {
+      title: 'Covid-19 Care',
+      description: [
+        'Preferential Access to Pre & Post COVID Assessments',
+        'Preferential Access to COVID Home Testing',
+        'Preferential Access to Home & Hotel Care',
+      ],
+      redeemCall: () => {
+        Linking.openURL(`whatsapp://send?text=&phone=`);
+      }
+    },
+    {
+      title: 'OneApollo Membership Benefits',
+      description: ['OneApollo Membership Benefits'],
+      redeemCall: () => {
+        console.log('OneApollo Membership Benefits');
+      }
+    },
+    {
+      title: 'Free Medicine Delivery',
+      description: ['No delivery charges for orders greater than Rs 300'],
+      redeemCall: () => {
+        props.navigation.navigate('MEDICINES');
+      }
+    },
+  ];
 
   const renderTabComponent = () => {
     return (
@@ -123,33 +192,30 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             }}>
               <Text style={{
                 ...theme.viewStyles.text('R', 13, '#02475B', 1, 17, 0.35),
-                width: '70%'
+                width: '90%'
               }}>
                 You are eligible for the following coupons on Apollo 24|7
               </Text>
-              {renderCouponInfo()}
-              {renderCouponInfo()}
-              {renderCouponInfo()}
-              {renderCouponInfo()}
+              {renderCouponInfo('HDFCGold1', 'Discount of Rs 249 on Virtual Consultations for HDFC customers')}
+              {renderCouponInfo('HDFCGold2', 'Discount on Medicines and Apollo Private Label for HDFC customers')}
+              {renderCouponInfo('HDFCGold3', 'Discount on Medicines for HDFC customers')}
+              {renderCouponInfo('HDFCGold4', 'Free Health Assessment Consultation for HDFC customers')}
             </View>
           }
         </View>
-        {renderRedeemableCards(
-          '24/7 Access to a General Physician on Call',
-          ['Round-the-clock doctor availability at a click of a button']
-        )}
-        {renderRedeemableCards(
+        {
+          redeemCardsContent.map(value => {
+            const {title, description, redeemCall} = value;
+            return (
+              renderRedeemableCards(title, description, redeemCall)
+            )
+          })
+        }
+        {/* {renderRedeemableCards(
           'Concierge for 24|7 services',
-          ['Priority Chat Support on Whatsapp with our Executives']
-        )}
-        {renderRedeemableCards(
-          'Covid-19 Care',
-          [
-            'Preferential Access to Pre & Post COVID Assessments',
-            'Preferential Access to COVID Home Testing',
-            'Preferential Access to Home & Hotel Care',
-          ]
-        )}
+          ['Priority Chat Support on Whatsapp with our Executives'],
+          () => {console.log('Concierge for 24|7 services')}
+        )} */}
       </>
     );
   };
@@ -157,32 +223,24 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderInactivePlans = () => {
     return (
       <View style={styles.cardStyle}>
-        {renderRedeemableCardsContent(
-          '24/7 Access to a General Physician on Call',
-          ['Round-the-clock doctor availability at a click of a button']
-        )}
-        <View style={{
-          marginVertical: 20,
-          borderTopColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-          borderTopWidth: 1,
-        }}></View>
-        {renderRedeemableCardsContent(
-          'Concierge for 24|7 services',
-          ['Priority Chat Support on Whatsapp with our Executives']
-        )}
-        <View style={{
-          marginVertical: 20,
-          borderTopColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-          borderTopWidth: 1,
-        }}></View>
-        {renderRedeemableCardsContent(
-          'Covid-19 Care',
-          [
-            'Preferential Access to Pre & Post COVID Assessments',
-            'Preferential Access to COVID Home Testing',
-            'Preferential Access to Home & Hotel Care',
-          ]
-        )}
+        {
+          redeemCardsContent.map((value, index) => {
+            const {title, description} = value;
+            return (
+              <>
+                {renderRedeemableCardsContent(title, description)}
+                {
+                  (index + 1 !== redeemCardsContent.length) &&
+                  <View style={{
+                    marginVertical: 20,
+                    borderTopColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+                    borderTopWidth: 1,
+                  }} />
+                }
+              </>
+            )
+          })
+        }
       </View>
     )
   };
@@ -261,11 +319,11 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
   };
 
-  const renderRedeemableCards = (heading: string, bodyText: string[]) => {
+  const renderRedeemableCards = (heading: string, bodyText: string[], onRedeem: () => void) => {
     return (
       <View style={[styles.cardStyle, { marginVertical: 10 }]}>
         {renderRedeemableCardsContent(heading, bodyText)}
-        <TouchableOpacity onPress={() => {}}>
+        <TouchableOpacity onPress={() => {onRedeem()}}>
           <Text style={{
             ...theme.viewStyles.text('B', 15, '#FC9916', 1, 20, 0.35),
             textAlign: 'right',
@@ -330,16 +388,16 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
   };
 
-  const renderCouponInfo = () => {
+  const renderCouponInfo = (name?: string, description?: string) => {
     return (
       <View style={{
         marginTop: 15,
       }}>
-        <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
-          Coupon Name 1
+        <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 25, 0.35)}>
+          {name}
         </Text>
-        <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0.35)}>
-          Get Rs. 249/- Off on 2 Virtual Consultations Bookings 
+        <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0.35)}>
+          {description}
         </Text>
       </View>
     );
@@ -575,6 +633,13 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             />
         } */}
       </SafeAreaView>
+      {
+        showHdfcConnectPopup &&
+        <HdfcConnectPopup
+          onClose={() => setShowHdfcConnectPopup(false)}
+          onConnect={() => setShowHdfcConnectPopup(false)}
+        />
+      }
       {showSpinner && <Spinner />}
     </View>
   );

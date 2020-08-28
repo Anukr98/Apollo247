@@ -1121,3 +1121,19 @@ export const TwoVectorNumber: React.FC<IconProps> = (props) => (
 export const RoundCancelIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/round-cancel.png')} />
 );
+
+export const CallConnectIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/call_connect.png')} />
+);
+
+export const CallRingIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/call_ring.png')} />
+);
+
+export const GroupCallIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/Group_call.png')} />
+);
+
+export const HdfcBankLogo: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/HDFC_logo.png')} />
+);

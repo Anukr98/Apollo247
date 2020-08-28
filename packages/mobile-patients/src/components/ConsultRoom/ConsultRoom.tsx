@@ -31,6 +31,7 @@ import {
   TestsCartIcon,
   MedicineCartIcon,
   TestsIcon,
+  HdfcBankLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/LocationSearchHeader';
@@ -48,8 +49,13 @@ import {
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
+import {
+  getSubscriptionsOfUserByStatus,
+  getSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/getSubscriptionsOfUserByStatus';
 import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveDeviceToken,
@@ -112,6 +118,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
 import { getPatientPersonalizedAppointmentList } from '../../helpers/clientCalls';
 import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
+import { HdfcConnectPopup } from '../HdfcSubscription/HdfcConnectPopup';
 
 const { Vitals } = NativeModules;
 
@@ -301,8 +308,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [serviceable, setserviceable] = useState<String>('');
   const [personalizedData, setPersonalizedData] = useState<any>([]);
   const [isPersonalizedCard, setisPersonalizedCard] = useState(false);
+  const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
 
   const webengage = new WebEngage();
+  const client = useApolloClient();
 
   const updateLocation = async (locationDetails: LocationData) => {
     try {
@@ -609,7 +618,52 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     AsyncStorage.removeItem('deeplinkReferalCode');
     storePatientDetailsTOBugsnag();
     callAPIForNotificationResult();
+    getUserSubscriptions();
   }, []);
+
+  const getUserSubscriptions = () => {
+    console.log('here: ', g(currentPatient, 'mobileNumber'));
+    console.log('here: ', g(currentPatient, 'id'));
+    client
+    .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
+      query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+      variables: {
+        user: {
+          mobile_number: g(currentPatient, 'mobileNumber'),
+          patiend_id: g(currentPatient, 'id'),
+        },
+        status: [],
+      },
+      fetchPolicy: 'no-cache',
+    })
+    .then((response) => {
+      console.log('Something went Right :)');
+      console.log(response);
+    })
+    .catch((error) => {
+      console.error(error);
+      console.log('Something went wrong :(');
+    });
+      // .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
+      //   query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+      //   fetchPolicy: 'no-cache',
+      //   variables: {
+      //     status: [],
+      //     user: {
+      //       mobile_number: g(currentPatient, 'mobileNumber'),
+      //       // patiend_id: g(currentPatient, 'id'),
+      //     },
+      //   },
+      // })
+      // .then((data) => {
+      //   console.log('data: ----------------', data);
+      //   // console.log('data: ----------------', g(data, 'data', 'getSubscriptionsOfUserByStatus'));
+      // })
+      // .catch((e) => {
+      //   console.log('error!!: ----------------', e);
+      //   // CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
+      // })
+  };
 
   const storePatientDetailsTOBugsnag = async () => {
     try {
@@ -887,8 +941,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         });
     }
   };
-
-  const client = useApolloClient();
 
   const callDeviceTokenAPI = async () => {
     const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
@@ -1234,6 +1286,41 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             );
           }
         })}
+      </View>
+    );
+  };
+
+  const renderHdfcConnect = () => {
+    return (
+      <View
+        style={{
+          ...theme.viewStyles.cardViewStyle,
+          elevation: 15,
+          margin: 12,
+          padding: 15,
+        }}
+      >
+        <HdfcBankLogo style={{
+          resizeMode: 'contain',
+          width: 100,
+          height: 30,
+        }} />
+        <Text style={theme.viewStyles.text('LI', 13, '#01475B', 1, 20, 0.35)}>
+          As our privellaged customer in partnership with HDFC
+        </Text>
+        <Text style={theme.viewStyles.text('B', 15, '#07AE8B', 1, 35, 0.35)}>
+          You are eligible for a Free Call to a Doctor
+        </Text>
+        <Text style={theme.viewStyles.text('M', 13, '#FF637B', 1, 20, 0.35)}>
+          Note : You will be connected to a General Physician
+        </Text>
+        <TouchableOpacity onPress={() => {setShowHdfcConnectPopup(true)}}>
+          <Text style={{
+            ...theme.viewStyles.text('B', 15, '#FC9916', 1, 35, 0.35),
+            textAlign: 'right',
+            marginTop: 10,
+          }}>CONNECT</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -1717,6 +1804,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {/* <Text style={styles.descriptionTextStyle}>{string.home.description}</Text> */}
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
+              <View style={{ backgroundColor: '#f0f1ec' }}>{renderHdfcConnect()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
               {renderCovidMainView()}
               {/* {renderCovidHeader()}
@@ -1758,6 +1846,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </BottomPopUp>
       )}
       {showSpinner && <Spinner />}
+      {
+        showHdfcConnectPopup &&
+        <HdfcConnectPopup
+          onClose={() => setShowHdfcConnectPopup(false)}
+          onConnect={() => setShowHdfcConnectPopup(false)}
+        />
+      }
       {isLocationSearchVisible && (
         <LocationSearchPopup
           onPressLocationSearchItem={() => {

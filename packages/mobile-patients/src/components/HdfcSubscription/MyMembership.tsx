@@ -96,7 +96,11 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           {getEllipseBulletPoint('Seamless Medicine Delivery')}
           {getEllipseBulletPoint('Patients Health Record')}
           <Text 
-            onPress={() => {}}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.MembershipDetails, {
+                membershipType: planType,
+              });
+            }}
             style={{
               ...theme.viewStyles.text('B', 12, '#00B38E', 1, 20, 0.35),
               position: 'absolute',
@@ -104,7 +108,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               right: 20,
             }}
           >
-            +3 MORE
+            VIEW MORE
           </Text>
         </View>
         <View style={{

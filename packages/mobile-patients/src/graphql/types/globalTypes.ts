@@ -412,6 +412,19 @@ export enum SpecialtySearchType {
   NAME = "NAME",
 }
 
+export enum Status {
+  active = "active",
+  discontinued = "discontinued",
+  inactive = "inactive",
+}
+
+export enum SubscriptionStatus {
+  active = "active",
+  cancelled = "cancelled",
+  deferred = "deferred",
+  disabled = "disabled",
+}
+
 export enum TEST_COLLECTION_TYPE {
   CENTER = "CENTER",
   HC = "HC",
@@ -1004,6 +1017,11 @@ export interface UploadDocumentInput {
   base64FileInput: string;
   patientId: string;
   category: PRISM_DOCUMENT_CATEGORY;
+}
+
+export interface UserIdentification {
+  mobile_number?: string | null;
+  patiend_id?: string | null;
 }
 
 export interface prescriptionFileProperties {

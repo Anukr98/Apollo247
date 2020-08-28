@@ -2736,3 +2736,73 @@ export const GET_PERSONALIZED_APPOITNMENTS = gql`
     }
   }
 `;
+
+export const GET_SUBSCRIPTIONS_OF_USER_BY_STATUS = gql`
+  query getSubscriptionsOfUserByStatus($user: UserIdentification, $status: [String]) {
+    getSubscriptionsOfUserByStatus(user: $user, status: $status) {
+      code
+      message
+      success
+      response {
+        _id
+        status
+        coupon_availed
+        group_plan {
+          plan_id
+          name
+          status
+          group {
+            name
+            is_active
+          }
+        }
+      }
+    }
+  }
+`;
+
+// export const GET_SUBSCRIPTIONS_OF_USER_BY_STATUS = gql`
+//   query getSubscriptionsOfUserByStatus($user: UserIdentification, $status: [String]) {
+//     getSubscriptionsOfUserByStatus(user: $user, status: $status) {
+//       code
+//       message
+//       success
+//       response {
+//         _id
+//         status
+//         start_date
+//         end_date
+//         group_plan {
+//           _id
+//           plan_id
+//           name
+//           activation_modes
+//           status
+//           start_date
+//           end_date
+//           valid_duration
+//           group {
+//             _id
+//             name
+//             is_active
+//             start_date
+//             end_date
+//           }
+//         }
+//       }
+//     }
+//   }
+// `;
+
+// export const IS_SUBSCRIPTION_ACTIVE = gql`
+//   query isSubscriptionActive($userSubscriptionId: String!) {
+//     isSubscriptionActive(userSubscriptionId: $userSubscriptionId) {
+//       isSubscriptionActiveResponse {
+//         code
+//         message
+//         success
+//         response
+//       }
+//     }
+//   }
+// `;
