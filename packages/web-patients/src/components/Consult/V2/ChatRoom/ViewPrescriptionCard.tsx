@@ -154,16 +154,10 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
                 {props.messageDetails &&
                   props.messageDetails.transferInfo &&
                   props.messageDetails.transferInfo.pdfUrl && (
-                    <a href={props.messageDetails.transferInfo.pdfUrl} target="_blank">
-                      <button className={classes.downloadBtn}>Download</button>
-                    </a>
+                    <button className={classes.downloadBtn}>CHANGE SLOT</button>
                   )}
 
-                <Link
-                  to={clientRoutes.prescription(props.messageDetails.transferInfo.appointmentId)}
-                >
-                  <button className={classes.viewBtn}>View</button>
-                </Link>
+                <button className={classes.viewBtn}>ACCEPT</button>
               </div>
             </>
           )}
