@@ -235,6 +235,18 @@ const saveMedicineOrderOMS: Resolver<
       medicineOrderAddressDetails.latitude = patientAddressDetails.latitude;
       medicineOrderAddressDetails.longitude = patientAddressDetails.longitude;
       medicineOrderAddressDetails.stateCode = patientAddressDetails.stateCode;
+
+      if (patientAddressDetails.name) {
+        medicineOrderAddressDetails.name = patientAddressDetails.name;
+      } else {
+        medicineOrderAddressDetails.name = patientDetails.firstName;
+      }
+
+      if (patientAddressDetails.mobileNumber) {
+        medicineOrderAddressDetails.mobileNumber = patientAddressDetails.mobileNumber;
+      } else {
+        medicineOrderAddressDetails.mobileNumber = patientDetails.mobileNumber;
+      }
     }
   }
   // validate items prices and coupon for web orders
@@ -354,10 +366,7 @@ const saveMedicineOrderOMS: Resolver<
         saveOrder.orderAutoId
       );
 
-      medicineOrderAddressDetails.name = patientDetails.firstName;
-      medicineOrderAddressDetails.mobileNumber = patientDetails.mobileNumber;
       medicineOrderAddressDetails.medicineOrders = saveOrder;
-
       await medicineOrdersRepo.saveMedicineOrderAddress(medicineOrderAddressDetails);
     }
     return {
