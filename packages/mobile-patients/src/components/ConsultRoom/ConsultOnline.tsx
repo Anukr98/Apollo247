@@ -448,13 +448,9 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               ...theme.fonts.IBMPlexSansMedium(14),
             }}
           >
-            {`${props.doctor ? `${props.doctor.fullName}` : 'Doctor'} is ${
-              availableInMin <= 60 && availableInMin > 0
-                ? `${nextAvailability(NextAvailableSlot)}`
-                : `available on ${Moment(new Date(NextAvailableSlot), 'HH:mm:ss.SSSz').format(
-                    'DD MMM, h:mm A'
-                  )}`
-            }!\nWould you like to consult now or schedule for later?`}
+            {`${props.doctor ? `${props.doctor.fullName}` : 'Doctor'} is ${nextAvailability(
+              NextAvailableSlot
+            )}!\nWould you like to consult now or schedule for later?`}
           </Text>
         ) : null}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}>

@@ -72,7 +72,9 @@ const savePatientNotificationSettings: Resolver<
 
   //patiend id validation
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(<string>(<unknown>notificationAttrs.patient));
+  const patientDetails = await patientRepo.getPatientDetails(<string>(
+    (<unknown>notificationAttrs.patient)
+  ));
   if (patientDetails == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }

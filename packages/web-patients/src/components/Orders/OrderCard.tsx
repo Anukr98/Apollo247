@@ -1,23 +1,18 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress } from '@material-ui/core';
-import React, { useEffect, useState } from 'react';
-import { AphTrackSlider } from '@aph/web-ui-components';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { Theme } from '@material-ui/core';
+import React, { useState } from 'react';
+import { isRejectedStatus, getStoreName } from 'helpers/commonHelpers';
+import { MEDICINE_ORDER_STATUS, MEDICINE_DELIVERY_TYPE } from 'graphql/types/globalTypes';
 import {
-  getMedicineOrdersOMSList,
-  getMedicineOrdersOMSListVariables,
   getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList as OrdersList,
   getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus as StatusDetails,
 } from 'graphql/types/getMedicineOrdersOMSList';
-
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import moment from 'moment';
-import { useApolloClient } from 'react-apollo-hooks';
-import { GET_MEDICINE_ORDERS_OMS_LIST } from 'graphql/medicines';
-import { useAllCurrentPatients } from 'hooks/authHooks';
-import { MEDICINE_ORDER_STATUS, MEDICINE_DELIVERY_TYPE } from 'graphql/types/globalTypes';
-import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
-import { getStatus, isRejectedStatus } from 'helpers/commonHelpers';
+import { AphTrackSlider } from '@aph/web-ui-components';
+import { getStatus } from 'helpers/commonHelpers';
+import _upperFirst from 'lodash/upperFirst';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -34,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
         display: 'block',
-        padding: 16,
+        padding: 10,
       },
     },
     cardSelected: {
@@ -75,14 +70,17 @@ const useStyles = makeStyles((theme: Theme) => {
     itemImg: {
       paddingRight: 20,
       [theme.breakpoints.down('xs')]: {
-        paddingRight: 16,
+        paddingRight: 10,
       },
       '& img': {
         verticalAlign: 'middle',
       },
     },
     itemSection: {
-      paddingRight: 20,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      width: '100%',
     },
     itemName: {
       fontSize: 14,
@@ -115,12 +113,6 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingLeft: 1,
         borderLeft: 0,
       },
-      [theme.breakpoints.down('xs')]: {
-        position: 'absolute',
-        right: 6,
-        top: 22,
-        marginRight: 0,
-      },
     },
     customScroll: {
       paddingLeft: 10,
@@ -133,7 +125,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         width: '100%',
         display: 'flex',
-        paddingLeft: 40,
+        paddingLeft: 30,
         paddingRight: 0,
       },
     },
@@ -164,8 +156,8 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '40%',
       [theme.breakpoints.down('xs')]: {
         width: '100%',
-        paddingLeft: 40,
-        paddingRight: 0,
+        paddingLeft: 30,
+        paddingRight: 20,
         margin: '8px 0',
       },
     },
@@ -175,11 +167,6 @@ const useStyles = makeStyles((theme: Theme) => {
     returnAccepted: {
       backgroundColor: '#f0f1ec',
     },
-    loader: {
-      margin: '20px auto',
-      textAlign: 'center',
-      display: 'block',
-    },
     noData: {
       fontSize: 14,
       fontWeight: 500,
@@ -188,133 +175,29 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 20,
       textAlign: 'center',
     },
-
-    noOrdersWrapper: {
-      backgroundColor: '#F7F7F5',
-      borderRadius: 10,
-      padding: 20,
-      margin: '20px auto',
-      maxWidth: 320,
-      fontSize: 16,
-      fontWeight: 600,
-    },
-    noOrdersText: {
-      color: '#0087ba',
-      marginTop: 15,
-      marginBottom: 20,
-    },
-    orderNowButton: {
-      padding: '9px 13px',
-      width: '100%',
-      borderRadius: 10,
-      backgroundColor: '#fcb716',
-      color: '#fff',
-      textTransform: 'uppercase',
-      display: 'block',
-      textAlign: 'center',
-      fontSize: 13,
-      fontWeight: 'bold',
-      boxShadow: '0 2px 4px 0 rgba(0,0,0, 0.2)',
-    },
   };
 });
 
 interface OrderCardProps {
-  setOrderAutoId: (orderAutoId: number) => void;
+  orderInfo: OrdersList;
   setShowMobileDetails: (showMobileDetails: boolean) => void;
-  orderAutoId: number;
+  orderAutoId: number | null;
+  setOrderAutoId: (orderAutoId: number | null) => void;
+  setBillNumber: (billNumber: string | null) => void;
+  billNumber: string;
 }
 
 export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const classes = useStyles({});
-  const { currentPatient } = useAllCurrentPatients();
+  const {
+    orderInfo,
+    setOrderAutoId,
+    setShowMobileDetails,
+    setBillNumber,
+    billNumber,
+    orderAutoId,
+  } = props;
   const isSmallScreen = useMediaQuery('(max-width:767px)');
-  const apolloClient = useApolloClient();
-  const [orderListData, setOrderListData] = useState<OrdersList[] | null>(null);
-  const [error, setError] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (currentPatient && currentPatient.id) {
-      setLoading(true);
-      apolloClient
-        .query<getMedicineOrdersOMSList, getMedicineOrdersOMSListVariables>({
-          query: GET_MEDICINE_ORDERS_OMS_LIST,
-          variables: {
-            patientId: (currentPatient && currentPatient.id) || '',
-          },
-        })
-        .then(({ data }: any) => {
-          if (
-            data &&
-            data.getMedicineOrdersOMSList &&
-            data.getMedicineOrdersOMSList.medicineOrdersList
-          ) {
-            setOrderListData(data.getMedicineOrdersOMSList.medicineOrdersList || []);
-          } else {
-            setOrderListData([]);
-          }
-          setError(false);
-        })
-        .catch((e) => {
-          console.log(e);
-          setError(true);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
-  }, [currentPatient]);
-
-  if (loading)
-    return (
-      <div className={classes.loader}>
-        <CircularProgress />
-      </div>
-    );
-  if (error) return <div>Error :(</div>;
-
-  const getSortedStatusList = (statusList: (StatusDetails | null)[]) => {
-    const filteredStatusList = statusList.filter((status) => status && status.hideStatus);
-    if (filteredStatusList && filteredStatusList.length > 0) {
-      return (
-        filteredStatusList.sort(
-          (a, b) =>
-            moment(b && b.statusDate)
-              .toDate()
-              .getTime() -
-            moment(a && a.statusDate)
-              .toDate()
-              .getTime()
-        ) || []
-      );
-    }
-    return null;
-  };
-
-  const getOrderStatus = (statusList: (StatusDetails | null)[]) => {
-    const sortedList = getSortedStatusList(statusList);
-    if (sortedList && sortedList.length > 0) {
-      const firstSortedData = sortedList[0];
-      if (firstSortedData && firstSortedData.orderStatus) {
-        return getStatus(firstSortedData.orderStatus);
-      }
-    }
-  };
-
-  const getOrderStatusDate = (
-    status: (StatusDetails | null)[],
-    currentStatus: MEDICINE_ORDER_STATUS
-  ) => {
-    const sortedList = getSortedStatusList(status);
-    if (sortedList && sortedList.length > 0) {
-      const currentStatusData = sortedList.find((status) => status.orderStatus === currentStatus);
-      return (
-        currentStatusData &&
-        moment(new Date(currentStatusData.statusDate)).format('DD MMM YYYY ,hh:mm a')
-      );
-    }
-  };
 
   const getDefaultValue = (status: string) => {
     switch (status) {
@@ -331,6 +214,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
         return 280;
       case MEDICINE_ORDER_STATUS.DELIVERED:
+      case MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE:
         return 360;
     }
   };
@@ -354,6 +238,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       case MEDICINE_ORDER_STATUS.ORDER_BILLED:
       case MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS:
       case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
+      case MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE:
         return (
           <AphTrackSlider
             color="primary"
@@ -372,109 +257,114 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     }
   };
 
-  const getDeliveryType = (deliveryType: MEDICINE_DELIVERY_TYPE) => {
-    switch (deliveryType) {
-      case MEDICINE_DELIVERY_TYPE.HOME_DELIVERY:
-        return 'Home Delivery';
-      case MEDICINE_DELIVERY_TYPE.STORE_PICKUP:
-        return 'Store Pickup';
+  const getStorePickupItemName = () => {
+    const items = orderInfo ? orderInfo.medicineOrderLineItems : [];
+    if (items && items.length > 0) {
+      const itemsLength = items.length;
+      const text = itemsLength === 2 ? 'item' : 'items';
+      const firstMedicineName = _upperFirst(_lowerCase(items[0].medicineName));
+      return itemsLength > 1
+        ? `${firstMedicineName} + ${itemsLength - 1} ${text}`
+        : `${firstMedicineName}`;
     }
   };
-  if (orderListData) {
-    if (orderListData.length > 0) {
-      const firstOrderInfo = orderListData[0];
-      if (!isSmallScreen && !props.orderAutoId && firstOrderInfo && firstOrderInfo.orderAutoId) {
-        props.setOrderAutoId(firstOrderInfo.orderAutoId);
-      }
 
-      return (
-        <div className={classes.orderListing}>
-          <div className={classes.customScroll}>
-            {orderListData && orderListData.length > 0 ? (
-              orderListData.map(
-                (orderInfo: OrdersList) =>
-                  orderInfo &&
-                  orderInfo.medicineOrdersStatus &&
-                  orderInfo.currentStatus !== MEDICINE_ORDER_STATUS.QUOTE &&
-                  orderInfo.currentStatus !== MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE &&
-                  getOrderStatus(orderInfo.medicineOrdersStatus) && (
-                    <div
-                      key={orderInfo.id}
-                      className={`${classes.root} ${
-                        orderInfo.orderAutoId === props.orderAutoId ? classes.cardSelected : ''
-                      }`}
-                      onClick={() => {
-                        if (isSmallScreen) {
-                          props.setShowMobileDetails(true);
-                        }
-                        props.setOrderAutoId(orderInfo.orderAutoId || 0);
-                      }}
-                    >
-                      <div className={classes.orderedItem}>
-                        <div className={classes.itemImg}>
-                          <img src={require('images/ic_tablets.svg')} alt="" />
-                        </div>
-                        <div className={classes.itemSection}>
-                          <div className={classes.itemName}>Medicines</div>
-                          <div className={classes.orderID}>#{orderInfo.orderAutoId}</div>
-                          <div className={classes.deliveryType}>
-                            <span>
-                              {getDeliveryType(orderInfo.deliveryType)}{' '}
-                              {isSmallScreen ? null : `#${orderInfo.orderAutoId}`}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className={classes.orderTrackSlider}>
-                        {getSlider(orderInfo.currentStatus)}
-                      </div>
-                      <div className={classes.orderStatusGroup}>
-                        {orderInfo.medicineOrdersStatus && (
-                          <div
-                            className={
-                              isRejectedStatus(orderInfo.currentStatus)
-                                ? `${classes.orderStatusRejected}`
-                                : `${classes.orderStatus}`
-                            }
-                          >
-                            {getOrderStatus(orderInfo.medicineOrdersStatus)}
-                          </div>
-                        )}
-
-                        <div className={classes.statusInfo}>
-                          {orderInfo.currentStatus &&
-                            getOrderStatusDate(
-                              orderInfo.medicineOrdersStatus,
-                              orderInfo.currentStatus
-                            )}
-                        </div>
-                      </div>
-                    </div>
-                  )
-              )
-            ) : (
-              <div className={classes.noOrdersWrapper}>
-                <div>Uh oh! :)</div>
-                <div className={classes.noOrdersText}>No Orders Found!</div>
-                <Link to={clientRoutes.medicines()} className={classes.orderNowButton}>
-                  Order Now
-                </Link>
+  return (
+    <div
+      key={orderInfo.id}
+      className={`${classes.root} ${
+        (orderInfo.deliveryType === MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
+          orderAutoId === orderInfo.orderAutoId) ||
+        (orderInfo.deliveryType === MEDICINE_DELIVERY_TYPE.STORE_PICKUP &&
+          billNumber === orderInfo.billNumber)
+          ? classes.cardSelected
+          : ''
+      }`}
+      onClick={() => {
+        if (isSmallScreen) {
+          setShowMobileDetails(true);
+        }
+        if (orderInfo.deliveryType === MEDICINE_DELIVERY_TYPE.HOME_DELIVERY) {
+          setOrderAutoId(orderInfo.orderAutoId);
+          setBillNumber(null);
+        } else {
+          setBillNumber(orderInfo.billNumber);
+          setOrderAutoId(null);
+        }
+      }}
+    >
+      <div className={classes.orderedItem}>
+        {orderInfo.deliveryType === MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? (
+          <>
+            <div className={classes.itemImg}>
+              <img src={require('images/ic_basket.svg')} alt="" />
+            </div>
+            <div className={classes.itemSection}>
+              <div className={classes.itemName}>{getStorePickupItemName()}</div>
+              <div className={classes.orderID}>#{orderInfo.billNumber}</div>
+              <div className={classes.deliveryType}>
+                <span>
+                  {getStoreName(orderInfo.shopAddress)}
+                  {isSmallScreen ? null : ` #${orderInfo.billNumber}`}
+                </span>
               </div>
-            )}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className={classes.itemImg}>
+              <img src={require('images/ic_tablets.svg')} alt="" />
+            </div>
+            <div className={classes.itemSection}>
+              <div className={classes.itemName}>Medicines</div>
+              <div className={classes.orderID}>#{orderInfo.orderAutoId}</div>
+              <div className={classes.deliveryType}>
+                <span>
+                  Home Delivery
+                  {isSmallScreen ? null : ` #${orderInfo.orderAutoId}`}
+                </span>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+      <div className={classes.orderTrackSlider}>{getSlider(orderInfo.currentStatus)}</div>
+      <div className={classes.orderStatusGroup}>
+        {orderInfo.medicineOrdersStatus && (
+          <div
+            className={
+              isRejectedStatus(orderInfo.currentStatus)
+                ? `${classes.orderStatusRejected}`
+                : `${classes.orderStatus}`
+            }
+          >
+            {getStatus(orderInfo.currentStatus)}
           </div>
+        )}
+
+        <div className={classes.statusInfo}>
+          {orderInfo.currentStatus && moment(orderInfo.createdDate).format('D MMM YY, hh:mm A')}
         </div>
-      );
-    } else if (orderListData.length === 0) {
-      return (
-        <div className={classes.noOrdersWrapper}>
-          <div>Uh oh! :)</div>
-          <div className={classes.noOrdersText}>No Orders Found!</div>
-          <Link to={clientRoutes.medicines()} className={classes.orderNowButton}>
-            Order Now
-          </Link>
-        </div>
-      );
-    }
-  }
-  return null;
+      </div>
+    </div>
+  );
 };
+
+// const getOrderStatusDate = (currentStatus: MEDICINE_ORDER_STATUS) => {
+//   if (sortedList && sortedList.length > 0) {
+//     const currentStatusData = sortedList.find((status) => status.orderStatus === currentStatus);
+//     return (
+//       currentStatusData &&
+//       moment(new Date(currentStatusData.statusDate)).format('DD MMM YYYY ,hh:mm a')
+//     );
+//   }
+// };
+
+// const getDeliveryType = (deliveryType: MEDICINE_DELIVERY_TYPE) => {
+//   switch (deliveryType) {
+//     case MEDICINE_DELIVERY_TYPE.HOME_DELIVERY:
+//       return 'Home Delivery';
+//     case MEDICINE_DELIVERY_TYPE.STORE_PICKUP:
+//       return 'Store Pickup';
+//   }
+// };

@@ -91,6 +91,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const cmsUrlsList = JSON.parse(textRes);
 
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cmsUrlsList.data.forEach((link: any) => {
       let url = process.env.SITEMAP_BASE_URL + 'covid19/';
       if (link.type == 'ARTICLE') {
@@ -128,6 +129,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const healthAreasUrlsList = JSON.parse(healthAreaTextRes);
   let healthAreaUrls = '\n<!--Health Area links-->\n';
   if (healthAreasUrlsList.healthareas && healthAreasUrlsList.healthareas.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     healthAreasUrlsList.healthareas.forEach((link: any) => {
       const url = process.env.SITEMAP_BASE_URL + 'medicine/healthareas/' + link.url_key;
       healthAreaUrls +=
@@ -136,6 +138,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   }
   let ShopByCategory = '\n<!--Shop By Category links-->\n';
   if (healthAreasUrlsList.shop_by_category && healthAreasUrlsList.shop_by_category.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     healthAreasUrlsList.shop_by_category.forEach((link: any) => {
       const url = process.env.SITEMAP_BASE_URL + 'medicine/shop-by-category/' + link.url_key;
       ShopByCategory +=
@@ -154,7 +157,11 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
       //console.log(redisMedKeys[k], 'key');
       const skuDets = await hgetAllCache(redisMedKeys[k]);
       //console.log(skuDets, 'indise key');
-      if (skuDets && skuDets.url_key && skuDets.status == 'Enabled') {
+      if (
+        skuDets &&
+        skuDets.url_key &&
+        (skuDets.status == 'Enabled' || skuDets.status == 'enabled')
+      ) {
         medicineUrls += `<url>\n<loc>${
           process.env.SITEMAP_BASE_URL
         }medicine/${skuDets.url_key.toString()}</loc>\n<lastmod>${modifiedDate}</lastmod>\n</url>\n`;

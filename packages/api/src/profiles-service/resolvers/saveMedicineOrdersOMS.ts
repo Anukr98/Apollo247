@@ -12,6 +12,7 @@ import {
   DEVICE_TYPE,
   CouponCategoryApplicable,
   MedicineOrdersStatus,
+  MedicineOrderAddress,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -203,13 +204,18 @@ const saveMedicineOrderOMS: Resolver<
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
   }
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(medicineCartOMSInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(medicineCartOMSInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  if (!medicineCartOMSInput.patientAddressId && !medicineCartOMSInput.shopId) {
+  const deliveryType = medicineCartOMSInput.medicineDeliveryType;
+  if (
+    deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
+    !medicineCartOMSInput.patientAddressId
+  ) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
   }
+  const medicineOrderAddressDetails: Partial<MedicineOrderAddress> = {};
   if (medicineCartOMSInput.patientAddressId) {
     const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
     const patientAddressDetails = await patientAddressRepo.findById(
@@ -217,16 +223,25 @@ const saveMedicineOrderOMS: Resolver<
     );
     if (!patientAddressDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+    } else {
+      medicineOrderAddressDetails.addressLine1 = patientAddressDetails.addressLine1;
+      medicineOrderAddressDetails.addressLine2 = patientAddressDetails.addressLine2;
+      medicineOrderAddressDetails.addressType = patientAddressDetails.addressType;
+      medicineOrderAddressDetails.city = patientAddressDetails.city;
+      medicineOrderAddressDetails.otherAddressType = patientAddressDetails.otherAddressType;
+      medicineOrderAddressDetails.state = patientAddressDetails.state;
+      medicineOrderAddressDetails.zipcode = patientAddressDetails.zipcode;
+      medicineOrderAddressDetails.landmark = patientAddressDetails.landmark;
+      medicineOrderAddressDetails.latitude = patientAddressDetails.latitude;
+      medicineOrderAddressDetails.longitude = patientAddressDetails.longitude;
+      medicineOrderAddressDetails.stateCode = patientAddressDetails.stateCode;
     }
   }
+  // validate items prices and coupon for web orders
   if (medicineCartOMSInput.bookingSource == BOOKING_SOURCE.WEB) {
     let orderLineItems;
-    if (medicineCartOMSInput.medicineDeliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP) {
-      if (medicineCartOMSInput.shopId) {
-        orderLineItems = await validateStoreItems(medicineCartOMSInput);
-      } else {
-        throw new AphError(AphErrorMessages.INVALID_SHOP_ID_STORE_PICKUP, undefined, {});
-      }
+    if (medicineCartOMSInput.shopId) {
+      orderLineItems = await validateStoreItems(medicineCartOMSInput);
     } else {
       orderLineItems = await validatePharmaItems(medicineCartOMSInput);
     }
@@ -338,6 +353,12 @@ const saveMedicineOrderOMS: Resolver<
         medicineOrderStatusAttrs,
         saveOrder.orderAutoId
       );
+
+      medicineOrderAddressDetails.name = patientDetails.firstName;
+      medicineOrderAddressDetails.mobileNumber = patientDetails.mobileNumber;
+      medicineOrderAddressDetails.medicineOrders = saveOrder;
+
+      await medicineOrdersRepo.saveMedicineOrderAddress(medicineOrderAddressDetails);
     }
     return {
       errorCode,
@@ -410,9 +431,13 @@ const validateStoreItems = async (medicineCartOMSInput: MedicineCartOMSInput) =>
         itemId: item.medicineSKU,
         productName: item.medicineName,
         productType:
-          item.isMedicine == '1' ? CouponCategoryApplicable.PHARMA : CouponCategoryApplicable.FMCG,
+          item.isMedicine == '1'
+            ? CouponCategoryApplicable.PHARMA
+            : item.isMedicine == '2'
+            ? CouponCategoryApplicable.PL
+            : CouponCategoryApplicable.FMCG,
         mrp: price,
-        specialPrice: orderLineItem.mrp * item.mou,
+        specialPrice: item.specialPrice || price,
         quantity: item.quantity,
       });
     }
@@ -462,12 +487,15 @@ const validatePharmaItems = async (medicineCartOMSInput: MedicineCartOMSInput) =
       return productItem.sku == item.medicineSKU;
     });
     if (orderLineItem) {
+      const type = orderLineItem.type_id && orderLineItem.type_id.toLowerCase();
       orderLineItems.push({
         itemId: orderLineItem.sku,
         productName: orderLineItem.name,
         productType:
-          (orderLineItem.type_id && orderLineItem.type_id.toLowerCase()) == 'pharma'
+          type == 'pharma'
             ? CouponCategoryApplicable.PHARMA
+            : type == 'pl'
+            ? CouponCategoryApplicable.PL
             : CouponCategoryApplicable.FMCG,
         mrp: orderLineItem.price,
         specialPrice: orderLineItem.special_price || orderLineItem.price,

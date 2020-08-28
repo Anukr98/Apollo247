@@ -39,7 +39,9 @@ export enum BOOKINGSOURCE {
 }
 
 export enum BOOKING_SOURCE {
+  MFINE = "MFINE",
   MOBILE = "MOBILE",
+  ORDER_PUNCHING_TOOL = "ORDER_PUNCHING_TOOL",
   WEB = "WEB",
 }
 
@@ -78,6 +80,7 @@ export enum DEVICETYPE {
 
 export enum DEVICE_TYPE {
   ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
   IOS = "IOS",
 }
 
@@ -435,6 +438,7 @@ export interface AppointmentPaymentInput {
   bankName?: string | null;
   refundAmount?: number | null;
   paymentMode?: PAYMENT_METHODS | null;
+  partnerInfo?: string | null;
 }
 
 export interface BookAppointmentInput {
@@ -645,6 +649,8 @@ export interface MedicinePaymentMqInput {
   CODCity?: CODCity | null;
   orderId?: string | null;
   paymentMode?: PAYMENT_METHODS | null;
+  healthCredits?: number | null;
+  partnerInfo?: string | null;
 }
 
 export interface OrderCancelInput {
@@ -816,6 +822,7 @@ export interface UpdatePatientInput {
   photoUrl?: string | null;
   deviceCode?: string | null;
   employeeId?: string | null;
+  partnerId?: string | null;
 }
 
 export interface UploadDocumentInput {

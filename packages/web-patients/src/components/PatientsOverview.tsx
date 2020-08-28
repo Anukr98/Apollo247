@@ -83,7 +83,7 @@ export const PatientsOverview: React.FC = () => {
         })
         .catch((error) => {
           setIsAlertOpen(true);
-          setAlertMessage(error);
+          setAlertMessage('Something went wrong :(');
           setLoading(false);
         });
     }

@@ -1,7 +1,7 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import {
-  useAppCommonData,
   LocationData,
+  useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -12,15 +12,15 @@ import {
   Ambulance,
   CartIcon,
   ConsultationRoom,
-  CovidExpert,
-  KavachIcon,
   CovidRiskLevel,
   Diabetes,
   DoctorIcon,
   DropdownGreen,
+  KavachIcon,
   LatestArticle,
   LinkedUhidIcon,
   Mascot,
+  MedicineCartIcon,
   MedicineIcon,
   MyHealth,
   NotificationIcon,
@@ -29,12 +29,10 @@ import {
   Scan,
   Symptomtracker,
   TestsCartIcon,
-  MedicineCartIcon,
   TestsIcon,
   HdfcBankLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
-import { LocationSearchHeader } from '@aph/mobile-patients/src/components/ui/LocationSearchHeader';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -45,12 +43,15 @@ import {
   CommonSetUserBugsnag,
   DeviceHelper,
   setBugFenderLog,
+  isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  SAVE_VOIP_DEVICE_TOKEN
 } from '@aph/mobile-patients/src/graphql/profiles';
+import { UserIdentification } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
   getSubscriptionsOfUserByStatus,
@@ -73,13 +74,14 @@ import {
   PatientInfoWithSourceFirebase,
 } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
+  distanceBwTwoLatLng,
   doRequestAndAccessLocationModified,
   g,
+  getlocationDataFromLatLang,
   postFirebaseEvent,
   postWebEngageEvent,
   UnInstallAppsFlyer,
-  getlocationDataFromLatLang,
-  distanceBwTwoLatLng,
+  setWebEngageScreenNames,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -119,6 +121,9 @@ import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_a
 import { getPatientPersonalizedAppointmentList } from '../../helpers/clientCalls';
 import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
 import { HdfcConnectPopup } from '../HdfcSubscription/HdfcConnectPopup';
+import VoipPushNotification from 'react-native-voip-push-notification';
+import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
+import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
 
 const { Vitals } = NativeModules;
 
@@ -309,6 +314,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [personalizedData, setPersonalizedData] = useState<any>([]);
   const [isPersonalizedCard, setisPersonalizedCard] = useState(false);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
+  const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
 
   const webengage = new WebEngage();
   const client = useApolloClient();
@@ -412,18 +418,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         });
     }
   }
-
-  useEffect(() => {
-    if (locationDetails && locationDetails.pincode) {
-      isserviceable();
-      if (!isCurrentLocationFetched) {
-        setCurrentLocationFetched!(true);
-        updateLocation(locationDetails);
-      }
-    } else {
-      askLocationPermission();
-    }
-  }, []);
 
   useEffect(() => {
     try {
@@ -559,6 +553,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Home Screen');
         props.navigation.navigate('MEDICINES', { focusSearch: true });
+        const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+          source: 'app home',
+        };
+        postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
       },
     },
     {
@@ -618,51 +616,58 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     AsyncStorage.removeItem('deeplinkReferalCode');
     storePatientDetailsTOBugsnag();
     callAPIForNotificationResult();
-    getUserSubscriptions();
+    // getUserSubscriptions();
+    setWebEngageScreenNames('Home Screen');
   }, []);
+
+  useEffect(() => {
+    getUserSubscriptions();
+  }, [currentPatient])
+
+
+  // .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
+  //   query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  //   variables: {
+  //     user: {
+  //       mobile_number: g(currentPatient, 'mobileNumber'),
+  //       patiend_id: g(currentPatient, 'id'),
+  //     },
+  //     status: [],
+  //   },
+  //   fetchPolicy: 'no-cache',
+  // })
+  // .then((response) => {
+  //   console.log('Something went Right :)');
+  //   console.log(response);
+  // })
+  // .catch((error) => {
+  //   console.error(error);
+  //   console.log('Something went wrong :(');
+  // });
 
   const getUserSubscriptions = () => {
     console.log('here: ', g(currentPatient, 'mobileNumber'));
     console.log('here: ', g(currentPatient, 'id'));
+    const userVariables: UserIdentification = {
+      mobile_number: '+919666828389',
+    };
     client
-    .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
-      query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-      variables: {
-        user: {
-          mobile_number: g(currentPatient, 'mobileNumber'),
-          patiend_id: g(currentPatient, 'id'),
+      .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        variables: {
+          status: [],
+          user: userVariables,
         },
-        status: [],
-      },
-      fetchPolicy: 'no-cache',
-    })
-    .then((response) => {
-      console.log('Something went Right :)');
-      console.log(response);
-    })
-    .catch((error) => {
-      console.error(error);
-      console.log('Something went wrong :(');
-    });
-      // .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
-      //   query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-      //   fetchPolicy: 'no-cache',
-      //   variables: {
-      //     status: [],
-      //     user: {
-      //       mobile_number: g(currentPatient, 'mobileNumber'),
-      //       // patiend_id: g(currentPatient, 'id'),
-      //     },
-      //   },
-      // })
-      // .then((data) => {
-      //   console.log('data: ----------------', data);
-      //   // console.log('data: ----------------', g(data, 'data', 'getSubscriptionsOfUserByStatus'));
-      // })
-      // .catch((e) => {
-      //   console.log('error!!: ----------------', e);
-      //   // CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
-      // })
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        console.log('data: ----------------', data);
+        // console.log('data: ----------------', g(data, 'data', 'getSubscriptionsOfUserByStatus'));
+      })
+      .catch((e) => {
+        console.log('error!!: ----------------', e);
+        // CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
+      })
   };
 
   const storePatientDetailsTOBugsnag = async () => {
@@ -708,7 +713,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
     const params = {
       phone: '91' + storedPhoneNumber,
-      size: 10,
+      size: 40,
     };
     console.log('params', params);
     notifcationsApi(params)
@@ -747,10 +752,32 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
           const tempArray: any[] = [];
           const filteredNotifications = arrayNotification.filter((el: any) => {
-            // If it is not a duplicate, return true
-            if (tempArray.indexOf(el.notificatio_details.id) == -1) {
-              tempArray.push(el.notificatio_details.id);
-              return true;
+            // If it is not a duplicate and accepts these conditions, return true
+            const val = JSON.parse(el.notificatio_details.push_notification_content);
+            const event = val.cta;
+            if (event) {
+              const actionLink = decodeURIComponent(event.actionLink);
+
+              let routing = actionLink.replace('apollopatients://', '');
+              routing = routing.replace('w://p/open_url_in_browser/', '');
+              const data = routing.split('?');
+              routing = data[0];
+
+              if (
+                routing === 'Consult' ||
+                routing === 'Medicine' ||
+                routing === 'Test' ||
+                routing === 'Speciality' ||
+                routing === 'Doctor' ||
+                routing === 'DoctorSearch' ||
+                routing === 'MedicineSearch' ||
+                routing === 'MedicineDetail'
+              ) {
+                if (tempArray.indexOf(el.notificatio_details.id) == -1) {
+                  tempArray.push(el.notificatio_details.id);
+                  return true;
+                }
+              }
             }
             return false;
           });
@@ -842,6 +869,52 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     fetchData();
     callDeviceTokenAPI();
   }, []);
+
+  useEffect(() => {
+    if (isIos()) {
+      initializeVoip();
+    }
+  }, [])
+
+  const initializeVoip = () => {
+    VoipPushNotification.requestPermissions();
+    VoipPushNotification.registerVoipToken();
+
+    VoipPushNotification.addEventListener('register', (token: string) => {
+      if (token) setVoipDeviceToken(token);
+    });
+  }
+
+  useEffect(() => {
+    if (voipDeviceToken) {
+      setTimeout(() => {
+        callVoipDeviceTokenAPI(); // for safer side(to get currentPatient.id)
+      }, 2000);
+    }
+  }, [voipDeviceToken])
+
+  const callVoipDeviceTokenAPI = async () => {
+    const asyncVoipToken = await AsyncStorage.getItem(LocalStrings.voipDeviceToken);
+    const parsedToken = asyncVoipToken && JSON.parse(asyncVoipToken);
+    if (voipDeviceToken !== parsedToken) {
+      const input = {
+        patientId: currentPatient ? currentPatient.id : '',
+        voipToken: voipDeviceToken
+      }
+      client.mutate<addVoipPushToken, addVoipPushTokenVariables>({
+        mutation: SAVE_VOIP_DEVICE_TOKEN,
+        variables: {
+          voipPushTokenInput: input
+        },
+        fetchPolicy: 'no-cache'
+      }).then((data: any) => {
+        AsyncStorage.setItem(LocalStrings.voipDeviceToken, JSON.stringify(voipDeviceToken));
+      }).catch((e) => {
+        CommonBugFender('ConsultRoom_callDeviceVoipTokenAPI', e);
+        console.log('Error occured while sending voip token', e);
+      })
+    }
+  }
 
   const getTokenforCM = async () => {
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
@@ -1079,6 +1152,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   postHomeFireBaseEvent(FirebaseEventName.BUY_MEDICINES, 'Menu');
                   postHomeWEGEvent(WebEngageEventName.BUY_MEDICINES, 'Menu');
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+                    source: 'app home',
+                  };
+                  postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
                   postHomeFireBaseEvent(FirebaseEventName.ORDER_TESTS, 'Menu');
@@ -1446,11 +1523,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           'Take a mental health scan'
         )} */}
         {renderCovidBlueButtons(
-          onPressCallExperts,
-          <CovidExpert style={{ width: 24, height: 24 }} />,
-          `${AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_TEXT}`
-        )}
-        {renderCovidBlueButtons(
           onPressKavach,
           <KavachIcon style={{ width: 24, height: 24 }} />,
           `${AppConfig.Configuration.HOME_SCREEN_KAVACH_TEXT}`
@@ -1507,10 +1579,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const onPressReadArticle = () => {
+  const onPressReadArticle = async () => {
+    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const covidUrlWithPrm = AppConfig.Configuration.COVID_LATEST_ARTICLES_URL.concat(
+      '&utm_token=',
+      currentDeviceToken,
+      '&utm_mobile_number=',
+      currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
+    );
+
     postHomeWEGEvent(WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS);
     props.navigation.navigate(AppRoutes.CovidScan, {
-      covidUrl: AppConfig.Configuration.COVID_LATEST_ARTICLES_URL,
+      covidUrl: covidUrlWithPrm,
     });
   };
 
@@ -1550,20 +1631,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
     } catch (e) {}
 
-    // props.navigation.navigate(AppRoutes.CovidScan, {
-    //   covidUrl: AppConfig.Configuration.KAVACH_URL,
-    // });
-  };
-
-  // const onPressMentalHealth = () => {
-  //   console.log('onPressMentalHealth');
-  // }
-
-  const onPressCallExperts = () => {
-    const phoneNumber = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_NUMBER;
-    postHomeWEGEvent(WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT);
-    Linking.openURL(`tel:${phoneNumber}`);
-    console.log('onPressCallExperts');
   };
 
   const renderCovidScanBanner = () => {
@@ -1613,96 +1680,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderEmergencyCallBanner = () => {
-    const phoneNumber = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_NUMBER;
-    return (
-      <TouchableOpacity
-        activeOpacity={0.5}
-        onPress={() => {
-          {
-            postHomeWEGEvent(WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT);
-            Linking.openURL(`tel:${phoneNumber}`);
-          }
-        }}
-        style={{
-          height: 0.06 * height,
-          marginHorizontal: 20,
-          marginVertical: 16,
-          borderRadius: 10,
-          flex: 1,
-          flexDirection: 'row',
-          backgroundColor: '#d13135',
-        }}
-      >
-        <View
-          style={{
-            flex: 0.17,
-            borderTopLeftRadius: 10,
-            borderBottomLeftRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Ambulance style={{ height: 30, width: 30 }} />
-        </View>
-        <View
-          style={{
-            flex: 0.83,
-            borderTopRightRadius: 10,
-            borderBottomRightRadius: 10,
-            justifyContent: 'center',
-            alignItems: 'flex-start',
-          }}
-        >
-          <Text style={{ ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20) }}>
-            {AppConfig.Configuration.HOME_SCREEN_COVID_CONTACT_TEXT}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  // const renderEmergencyCallBanner = () => {
-  //   const heading = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_TEXT;
-  //   const phoneNumber = AppConfig.Configuration.HOME_SCREEN_EMERGENCY_BANNER_NUMBER;
-  //   return (
-  //     <TouchableOpacity
-  //       activeOpacity={1}
-  //       onPress={() => {
-  //         {
-  //           postHomeWEGEvent(WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT);
-  //           Linking.openURL(`tel:${phoneNumber}`);
-  //         }
-  //       }}
-  //     >
-  //       <View
-  //         style={{
-  //           marginHorizontal: 20,
-  //           marginVertical: 16,
-  //           paddingHorizontal: 10,
-  //           alignItems: 'center',
-  //           flexDirection: 'row',
-  //           justifyContent: 'space-between',
-  //           backgroundColor: '#d13135',
-  //           borderRadius: 10,
-  //         }}
-  //       >
-  //         <Text
-  //           style={{
-  //             flex: 1,
-  //             paddingVertical: 10,
-  //             paddingRight: 10,
-  //             ...theme.viewStyles.text('SB', 14, theme.colors.WHITE, 1, 20),
-  //           }}
-  //         >
-  //           {heading}
-  //         </Text>
-  //         <Ambulance style={{ height: 41, width: 41 }} />
-  //       </View>
-  //     </TouchableOpacity>
-  //   );
-  // };
-
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
     return (
       <View style={[styles.labelView, containerStyle]}>
@@ -1726,9 +1703,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
-          <LocationSearchHeader
-            onLocationProcess={() => setLocationSearchVisible(!isLocationSearchVisible)}
-          />
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}

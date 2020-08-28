@@ -4,6 +4,9 @@ import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.reactcommunity.rndatetimepicker.RNDateTimePickerPackage;
+import com.microsoft.codepush.react.CodePush;
+import io.wazo.callkeep.RNCallKeepPackage;
 import com.ocetnik.timer.BackgroundTimerPackage;
 import com.brentvatne.react.ReactVideoPackage;
 import com.zmxv.RNSound.RNSoundPackage;
@@ -79,6 +82,11 @@ public class MainApplication extends Application implements ReactApplication {
 
     private final ReactNativeHost mReactNativeHost =
             new ReactNativeHost(this) {
+                @Override
+                protected String getJSBundleFile() {
+                    return CodePush.getJSBundleFile();
+                }
+
                 @Override
                 public boolean getUseDeveloperSupport() {
                     return BuildConfig.DEBUG;

@@ -6,10 +6,11 @@ import {
   DoctorSlotAvailability,
   Geolocation,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
-import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
 import { debugLog } from 'customWinstonLogger';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { AphError } from 'AphError';
 
 const ES_FIELDS_PRIORITY = {
   doctor_fullName: 5,
@@ -119,10 +120,15 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   // const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   searchLogger(`GET_MATCHED_DOCTORS_AND_SPECIALTIES___START`);
+
+  if (!process.env.ELASTIC_INDEX_DOCTORS) {
+    throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+  }
+
   let PerfectdocSearchParams: RequestParams.Search = {
-    index: 'doctors',
+    index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
-      size: 1000,
+      size: 100,
       query: {
         bool: {
           must: [
@@ -149,9 +155,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
   if (args.city && args.city != '' && args.searchText != '') {
     PerfectdocSearchParams = {
-      index: 'doctors',
+      index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
-        size: 1000,
+        size: 100,
         query: {
           bool: {
             must: [
@@ -180,9 +186,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
   if (args.city && args.city != '' && args.searchText == '') {
     const PerfectdocCitySearchParams: RequestParams.Search = {
-      index: 'doctors',
+      index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
-        size: 1000,
+        size: 100,
         query: {
           bool: {
             must: [
@@ -209,6 +215,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     doctor['id'] = doctor.doctorId;
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
+    }
+    if (doctor['languages'] instanceof Array) {
+      doctor['languages'] = doctor['languages'].join(', ');
     }
     if (doctor['physicalConsultationFees'] === 0) {
       doctor['physicalConsultationFees'] = doctor['onlineConsultationFees'];
@@ -283,7 +292,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
   }
   const docSearchParams: RequestParams.Search = {
-    index: 'doctors',
+    index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
       size: 1000,
       query: {
@@ -318,6 +327,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   for (const doc of responseDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
+    if (doctor['languages'] instanceof Array) {
+      doctor['languages'] = doctor['languages'].join(', ');
+    }
     if (doctor['physicalConsultationFees'] === 0) {
       doctor['physicalConsultationFees'] = doctor['onlineConsultationFees'];
     }
@@ -396,12 +408,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       }
     }
   }
-  //console.log('earlyAvailableApolloMatchedDoctors', earlyAvailableApolloMatchedDoctors);
-  //console.log('earlyAvailableNonApolloMatchedDoctors', earlyAvailableNonApolloMatchedDoctors);
-  //console.log('matchedDoctors', matchedDoctors);
-
-  // matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
-
   const elasticMatch = [];
   elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
   elasticMatch.push({ match: { isSearchable: true } });
@@ -452,12 +458,17 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     },
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let matchedSpecialtiesES: any = await client.search(specialtiesSearchParams);
   const specialityBuckets = matchedSpecialtiesES.body.aggregations.matched_specialities.buckets;
 
   if (specialityBuckets && specialityBuckets.length) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     matchedSpecialtiesES = specialityBuckets.map((speciality: any) => {
       speciality = speciality.matched_specialities_hits.hits.hits[0]['_source']['specialty'];
+      if (!speciality['id']) {
+        speciality['id'] = speciality['specialtyId'];
+      }
       return speciality;
     });
   } else {
@@ -477,7 +488,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     matchedSpecialties.length === 0
   ) {
     const PossibleDoctorParams: RequestParams.Search = {
-      index: 'doctors',
+      index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
         size: 200,
         query: {
@@ -500,6 +511,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       doctor['id'] = doctor.doctorId;
       doctor['doctorHospital'] = [];
       doctor['activeSlotCount'] = 0;
+      if (doctor['languages'] instanceof Array) {
+        doctor['languages'] = doctor['languages'].join(', ');
+      }
       if (doctor['physicalConsultationFees'] === 0) {
         doctor['physicalConsultationFees'] = doctor['onlineConsultationFees'];
       }

@@ -16,6 +16,7 @@ const windowHeight = Dimensions.get('window').height;
 export interface MyTransactionsProps {
   earned: number;
   redeemed: number;
+  fetchFailed: boolean;
 }
 
 export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
@@ -58,8 +59,8 @@ export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
           <Text style={{ ...theme.fonts.IBMPlexSansMedium(13), color: '#525252' }}>
             Total Earned
           </Text>
-          <Text style={{ ...theme.fonts.IBMPlexSansMedium(17), color: '#01475b', marginTop: 5 }}>
-            {earned} Credits
+          <Text style={{ ...theme.fonts.IBMPlexSansMedium(14), color: '#01475b', marginTop: 5 }}>
+            {!props.fetchFailed ? (earned || 0).toFixed(2) : '--'}
           </Text>
         </View>
         <View style={styles.containerRight}>
@@ -74,13 +75,13 @@ export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
           </Text>
           <Text
             style={{
-              ...theme.fonts.IBMPlexSansMedium(17),
+              ...theme.fonts.IBMPlexSansMedium(14),
               color: '#01475b',
               marginTop: 5,
               paddingLeft: 0.1 * windowWidth,
             }}
           >
-            {redeemed} Credits
+            {!props.fetchFailed ? (redeemed || 0).toFixed(2) : '--'}
           </Text>
         </View>
       </View>
