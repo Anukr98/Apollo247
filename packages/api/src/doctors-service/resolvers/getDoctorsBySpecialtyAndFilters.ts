@@ -246,10 +246,46 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   const pageSize = args.filterInput.pageSize ? args.filterInput.pageSize : 1000;
   const offset = (pageNo - 1) * pageSize;
 
+  const elasticSlotDateAvailability: { [index: string]: any } = [];
+  const elasticSlotAvailability: { [index: string]: any } = [];
+
+  if (args.filterInput.availability && args.filterInput.availability.length > 0){
+    args.filterInput.availability.forEach((availability) => {
+      elasticSlotDateAvailability.push({
+          match: { 'doctorSlots.slotDate': availability }
+        });
+      elasticSlotAvailability.push({
+          match: { 'doctorSlots.slots.slot': availability }
+        });
+    }); 
+  }
+
   elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
 
-  elasticMatch.push({ range: { 'doctorSlots.slots.slot': { gt :'now+15m'} } });
+   elasticMatch.push({ range: { 'doctorSlots.slots.slotThreshold': { gt :'now' } } });
+  if (args.filterInput.availability && args.filterInput.availability.length > 0 && args.filterInput.availableNow) {
  
+    if (elasticSlotAvailability.length > 0 && elasticSlotDateAvailability.length > 0) {
+      elasticMatch.push({ bool: { should: [ 
+            { bool: { must: [
+                      { bool: { should: elasticSlotDateAvailability } },
+                      { bool: { should: elasticSlotAvailability } },
+                  ] }
+            },
+            { bool: { should: { range: { 'doctorSlots.slots.slot': { lte :'now+4h'} } } } }
+          ] } } );
+    }
+  } else if (args.filterInput.availability && args.filterInput.availability.length > 0) {
+    if (elasticSlotAvailability.length > 0 && elasticSlotDateAvailability.length > 0) {
+      elasticMatch.push({ bool:{ must: [
+                { bool: { should: elasticSlotDateAvailability } },
+                { bool: { should: elasticSlotAvailability } },
+              ] } });
+    }
+  } else if (args.filterInput.availableNow ) {
+    elasticMatch.push({ range: { 'doctorSlots.slots.slot': { lte :'now+4h'} } });
+  }
+
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
     elasticMatch.push({ match: { 'specialty.name': args.filterInput.specialtyName.join(',') } });
   }
