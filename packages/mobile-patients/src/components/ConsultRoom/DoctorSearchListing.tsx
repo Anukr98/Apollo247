@@ -192,7 +192,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const cityFilter = props.navigation.getParam('city');
   const brandFilter = props.navigation.getParam('brand');
   const [docFiltersOptions, setDocFilterOptions] = useState<any>(
-    docFilters === undefined ? searchFilters : docFilters
+    !docFilters ? searchFilters : docFilters
   );
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
