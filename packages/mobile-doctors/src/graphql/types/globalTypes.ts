@@ -427,7 +427,6 @@ export interface ModifyCaseSheetInput {
   followUp?: boolean | null;
   followUpDate?: any | null;
   followUpAfterInDays?: number | null;
-  followUpChatDays?: number | null;
   followUpConsultType?: APPOINTMENT_TYPE | null;
   otherInstructions?: OtherInstructionsInput[] | null;
   medicinePrescription?: MedicinePrescriptionInput[] | null;

@@ -241,7 +241,6 @@ export interface modifyCaseSheet_modifyCaseSheet {
   diagnosticPrescription: (modifyCaseSheet_modifyCaseSheet_diagnosticPrescription | null)[] | null;
   doctorId: string | null;
   doctorType: DoctorType | null;
-  followUpChatDays: number | null;
   followUp: boolean | null;
   followUpAfterInDays: string | null;
   followUpDate: any | null;

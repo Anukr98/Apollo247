@@ -58,7 +58,6 @@ export interface PreviewPrescriptionProps
       | undefined;
     followUp?: {
       doFollowUp: boolean | null;
-      followUpType: APPOINTMENT_TYPE | undefined;
       followUpDays: string | number | undefined;
     };
     referralData?: {
@@ -103,7 +102,6 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
     props.navigation.getParam('advice') || g(caseSheet, 'caseSheetDetails', 'otherInstructions');
   const followUp = props.navigation.getParam('followUp') || {
     doFollowUp: g(caseSheet, 'caseSheetDetails', 'followUp'),
-    followUpType: g(caseSheet, 'caseSheetDetails', 'followUpConsultType'),
     followUpDays: g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays'),
   };
 
