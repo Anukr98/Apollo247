@@ -1771,7 +1771,7 @@ export const MedicineCart: React.FC = (props) => {
                                       ? Number(totalAmount) -
                                         (Number(validateCouponResult.discount.toFixed(2)) -
                                           Number(productDiscount.toFixed(2)))
-                                      : Number(totalAmount) - Number(productDiscount.toFixed(2)),
+                                      : Number(totalAmount),
                                   deliveryTime: deliveryTime,
                                   validateCouponResult: validateCouponResult,
                                   shopId: shopId,
