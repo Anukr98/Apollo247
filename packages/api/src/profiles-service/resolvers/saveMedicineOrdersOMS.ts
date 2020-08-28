@@ -390,7 +390,7 @@ const validateStoreItems = async (medicineCartOMSInput: MedicineCartOMSInput) =>
       let price = Number((storeItem.mrp * item.mou).toFixed(2));
       let specialPrice = magentoItem.special_price || magentoItem.price;
       const type = magentoItem.type_id && magentoItem.type_id.toLowerCase();
-      if (isDiffLessThan25Percent(price, magentoItem.price)) {
+      if (isDiffLessThan25Percent(magentoItem.price, price)) {
         specialPrice = getSpecialPriceFromRelativePrices(magentoItem.price, specialPrice, price);
       } else {
         price = magentoItem.price;
