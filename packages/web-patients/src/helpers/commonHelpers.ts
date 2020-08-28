@@ -168,8 +168,8 @@ const toBase64 = (file: any) =>
   });
 
 const getDiffInDays = (nextAvailability: string) => {
-  if (nextAvailability && nextAvailability.length > 0) {
-    const nextAvailabilityTime = moment(new Date(nextAvailability.replace(/-/g, ' ')));
+  if (nextAvailability) {
+    const nextAvailabilityTime = moment(new Date(nextAvailability));
     const currentTime = moment(new Date());
     const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
     return differenceInDays;
@@ -436,7 +436,9 @@ const getCouponByUserMobileNumber = () => {
 };
 
 const isPastAppointment = (appointmentDateTime: string) =>
-  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
+  moment(appointmentDateTime)
+    .add(7, 'days')
+    .isBefore(moment());
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const followUpDayMoment = moment(appointmentTime).add(7, 'days');
