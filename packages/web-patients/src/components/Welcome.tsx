@@ -36,6 +36,14 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '5px 40px 40px 40px',
       },
     },
+    homeContent: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+      },
+    },
   };
 });
 
@@ -67,8 +75,10 @@ export const Welcome: React.FC = (props) => {
         <div className={classes.pageContainer}>
           <HeroBanner />
           <div className={classes.pageContent}>
-            {isSignedIn && <PatientsOverview />}
-            <HdfcCallDoctor />
+            <div className={classes.homeContent}>
+              {isSignedIn && <PatientsOverview />}
+              <HdfcCallDoctor />
+            </div>
             <WeAreHelpYou />
           </div>
         </div>

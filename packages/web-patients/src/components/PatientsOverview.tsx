@@ -18,6 +18,10 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       paddingTop: 20,
+      width: '50%',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+      },
     },
     card: {
       backgroundColor: '#fff',
@@ -90,21 +94,21 @@ export const PatientsOverview: React.FC = () => {
   }, [currentPatient]);
   return (
     <div className={classes.root}>
-      <Grid spacing={2} container>
-        <Grid item xs={12} sm={6}>
-          <Link to={clientRoutes.appointments()}>
-            <div className={classes.card} title={'View upcoming appointments'}>
-              <div className={classes.totalConsults}>
-                {loading ? <CircularProgress size={10} /> : activeAppointments}
-              </div>
-              <span>Upcoming Appointments</span>
-              <span className={classes.rightArrow}>
-                <img src={require('images/ic_arrow_right.svg')} />
-              </span>
-            </div>
-          </Link>
-        </Grid>
-        {/* <Grid item xs={12} sm={6}>
+      {/* <Grid spacing={2} container>
+        <Grid item xs={12} sm={6}> */}
+      <Link to={clientRoutes.appointments()}>
+        <div className={classes.card} title={'View upcoming appointments'}>
+          <div className={classes.totalConsults}>
+            {loading ? <CircularProgress size={10} /> : activeAppointments}
+          </div>
+          <span>Upcoming Appointments</span>
+          <span className={classes.rightArrow}>
+            <img src={require('images/ic_arrow_right.svg')} />
+          </span>
+        </div>
+      </Link>
+      {/* </Grid> */}
+      {/* <Grid item xs={12} sm={6}>
           <div className={classes.card}>
             <div className={classes.totalConsults}>
               {loading ? <CircularProgress size={10} /> : activeAppointments}
@@ -115,7 +119,7 @@ export const PatientsOverview: React.FC = () => {
             </span>
           </div>
         </Grid> */}
-      </Grid>
+      {/* </Grid> */}
       <Alerts
         setAlertMessage={setAlertMessage}
         alertMessage={alertMessage}
