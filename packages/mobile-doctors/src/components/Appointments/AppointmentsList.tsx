@@ -174,6 +174,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
             .then((data) => {
               hideAphAlert!();
               if (g(data, 'data', 'submitJDCaseSheet')) {
+                setLoading && setLoading(true);
+                AsyncStorage.setItem('AppointmentSelect', 'true');
                 navigateToConsultRoom(doctorId, patientId, appId, apointmentData, prevCaseSheet);
               } else {
                 AsyncStorage.setItem('AppointmentSelect', 'false');
@@ -417,6 +419,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                     },
                   })
                   .then((data) => {
+                    setLoading && setLoading(true);
+                    AsyncStorage.setItem('AppointmentSelect', 'true');
                     navigateToConsultRoom(
                       doctorId,
                       patientId,
@@ -446,6 +450,8 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
               title: 'VIEW CASESHEET',
               variant: 'white',
               onPress: () => {
+                setLoading && setLoading(true);
+                AsyncStorage.setItem('AppointmentSelect', 'true');
                 navigateToConsultRoom(
                   doctorId,
                   patientId,
