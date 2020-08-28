@@ -530,7 +530,7 @@ const SaveDiagnosticOrder: Resolver<
       }
 
       let homeCollectionData = {
-        'Patient_ID': patientDetails.id,
+        'Patient_ID': patientId,
         'Title': patientTitle,
         'PName': `${patientDetails.firstName} ${patientDetails.lastName}`,
         'Gender': patientGender,
@@ -809,7 +809,7 @@ const SaveItdoseHomeCollectionDiagnosticOrder: Resolver<
     }
 
     let homeCollectionData = {
-      'Patient_ID': patientDetails.id,
+      'Patient_ID': patientId,
       'Title': patientTitle,
       'PName': `${patientDetails.firstName} ${patientDetails.lastName}`,
       'Gender': patientGender,

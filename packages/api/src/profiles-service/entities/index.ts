@@ -55,7 +55,8 @@ export type OneApollTransaction = {
   CalculateHealthCredits: boolean;
   Gender: Gender;
   Discount: number;
-  CreditsRedeemed: number;
+  CreditsRedeemed?: number;
+  RedemptionRequestNo?: string;
   TransactionLineItems: TransactionLineItems[];
 };
 
@@ -1350,6 +1351,9 @@ export class SearchHistory extends BaseEntity {
 export class PatientAddress extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true })
+  name: string;
 
   @Column()
   addressLine1: string;
@@ -2671,6 +2675,15 @@ export class MedicineOrderShipments extends BaseEntity {
 
   @Column({ nullable: true })
   currentStatus: MEDICINE_ORDER_STATUS;
+
+  @Column({
+    nullable: true,
+    type: 'jsonb',
+    array: false,
+    name: 'oneApolloTransaction',
+    default: () => "'{}'",
+  })
+  oneApolloTransaction: OneApollTransaction;
 
   @Column({ nullable: true })
   updatedDate: Date;

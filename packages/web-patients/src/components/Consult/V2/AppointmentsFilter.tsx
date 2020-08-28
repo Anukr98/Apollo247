@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme, Modal, Typography } from '@material-ui/core';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { AphButton } from '@aph/web-ui-components';
@@ -16,6 +16,7 @@ import { createMuiTheme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import _ from 'lodash';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

@@ -600,7 +600,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     const { status, appointmentState, isFollowUp } = appointmentDetails;
     if (status === STATUS.CANCELLED) {
       return 'Cancelled';
-    } else if (props.pastOrCurrent === 'past' && status === STATUS.COMPLETED) {
+    } else if (status === STATUS.COMPLETED) {
       return 'Completed';
     } else if (appointmentState === APPOINTMENT_STATE.RESCHEDULE) {
       return 'Rescheduled';

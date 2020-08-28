@@ -17,7 +17,7 @@ import {
 } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
-import { APPOINTMENT_TYPE } from 'consults-service/entities';
+import { APPOINTMENT_TYPE, BOOKINGSOURCE } from 'consults-service/entities';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
@@ -36,12 +36,14 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { hitCallKitCurl } from 'notifications-service/handlers';
 import { DoctorDeviceTokenRepository } from 'doctors-service/repositories/doctorDeviceTokenRepository';
 import { admin } from 'firebase';
+import { log } from 'customWinstonLogger';
 
 type PushNotificationInput = {
   notificationType: NotificationType;
   appointmentId: string;
   doctorNotification?: boolean;
   blobName?: string;
+  data?: any
 };
 
 type CartPushNotificationInput = {
@@ -640,7 +642,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -1159,14 +1161,33 @@ export async function sendNotification(
     smsLink = smsLink.replace('{3}', apptDate.toString());
 
     //Create chatroom link and send for new booked appointment
-    if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
-      const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace(
-        '{0}',
-        appointment.id.toString()
-      );
-      smsLink = smsLink.replace('{5}', chatroom_sms_link);
-    } else {
-      throw new AphError(AphErrorMessages.SMS_DEEPLINK_APPOINTMENT_CHATROOM_MISSING);
+    switch (appointment.bookingSource) {
+      case BOOKINGSOURCE.MOBILE:
+        if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
+          const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace(
+            '{0}',
+            appointment.id.toString()
+          );
+          smsLink = smsLink.replace('{5}', chatroom_sms_link);
+        } else {
+          throw new AphError(AphErrorMessages.SMS_DEEPLINK_APPOINTMENT_CHATROOM_MISSING);
+        }
+        break;
+      case BOOKINGSOURCE.WEB:
+        if (process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM) {
+          const chatroom_sms_link = process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM.replace(
+            '{0}',
+            appointment.id.toString()
+          ).replace(
+            '{1}',
+            appointment.doctorId.toString()
+          );
+          smsLink = smsLink.replace('{5}', chatroom_sms_link);
+        } else {
+          throw new AphError(AphErrorMessages.SMS_WEBLINK_APPOINTMENT_CHATROOM_MISSING);
+        }
+      default:
+        return;
     }
 
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_TITLE;
@@ -1335,11 +1356,25 @@ export async function sendNotification(
       .replace('{1}', doctorDetails.firstName)
       .replace('{2}', appointment.displayId.toString())
       .replace('{3}', format(appointment.appointmentDateTime, 'yyyy-MM-dd'));
-    let smsLink = process.env.SMS_LINK ? process.env.SMS_LINK : '';
 
-    smsLink = notificationBody + smsLink;
-    //notificationBody = notificationBody + process.env.SMS_LINK ? process.env.SMS_LINK : '';
-    sendNotificationSMS(patientDetails.mobileNumber, smsLink);
+
+    if (!process.env.DEEPLINK_PRESCRIPTION) {
+      log('notificationServiceLogger', AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING, 'pushNotifications.ts/sendNotification', '', AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING);
+      throw new AphError(AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING, undefined, undefined);
+    }
+
+    let prescriptionDeeplink: string = process.env.DEEPLINK_PRESCRIPTION;
+
+    const { caseSheetId = null } = pushNotificationInput.data;
+    if (!caseSheetId) {
+      throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined, undefined);
+    }
+
+    prescriptionDeeplink = `${notificationBody} ${ApiConstants.PRESCRIPTION_CLICK_HERE} ${prescriptionDeeplink.replace(ApiConstants.PRESCRIPTION_DEEPLINK_PLACEHOLDER, caseSheetId)}`;
+
+    sendNotificationSMS(patientDetails.mobileNumber, prescriptionDeeplink);
+
+    // not sending whatsapp, leaving code here for future implementation purposes
     //sendNotificationWhatsapp(patientDetails.mobileNumber, smsLink);
   } else if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_PAYMENT_REFUND

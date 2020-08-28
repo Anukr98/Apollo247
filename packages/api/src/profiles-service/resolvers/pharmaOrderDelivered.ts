@@ -14,6 +14,7 @@ import {
   Patient,
   BOOKING_SOURCE,
   DEVICE_TYPE,
+  MedicineOrderShipments,
 } from 'profiles-service/entities';
 import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 
@@ -171,7 +172,8 @@ const saveOrderDeliveryStatus: Resolver<
     medicineOrdersRepo,
     orderDetails,
     orderDetails.patient,
-    mobileNumberIn
+    mobileNumberIn,
+    orderDeliveryInput.ordersResult.apOrderNo
   );
 
   const pushNotificationInput = {
@@ -187,7 +189,8 @@ const createOneApolloTransaction = async (
   medicineOrdersRepo: MedicineOrdersRepository,
   order: MedicineOrders,
   patient: Patient,
-  mobileNumber: string
+  mobileNumber: string,
+  apOrderNo: MedicineOrderShipments['apOrderNo']
 ) => {
   try {
     const invoiceDetails = await medicineOrdersRepo.getInvoiceDetailsByOrderId(order.orderAutoId);
@@ -213,6 +216,12 @@ const createOneApolloTransaction = async (
       const transactionsPromise: Promise<JSON>[] = [];
       const oneApollo = new OneApollo();
       transactionArr.forEach((transaction) => {
+        medicineOrdersRepo.updateMedicineOrderShipment(
+          {
+            oneApolloTransaction: transaction,
+          },
+          apOrderNo
+        );
         transactionsPromise.push(oneApollo.createOneApolloTransaction(transaction));
       });
       const oneApolloRes = await Promise.all(transactionsPromise);
@@ -263,7 +272,7 @@ const generateTransactions = async (
       healthCreditsRedeemed
     );
     netAmount = transactionLineItems.reduce((acc, curValue) => {
-      return acc + curValue.NetAmount;
+      return +new Decimal(acc).plus(curValue.NetAmount);
     }, 0);
     const billDetails: BillDetails = JSON.parse(val.billDetails);
     const transaction: OneApollTransaction = {
@@ -299,7 +308,7 @@ const getStoreCodeFromDevice = (
   if (bookingSource == BOOKING_SOURCE.MOBILE) {
     if (deviceType == DEVICE_TYPE.ANDROID) {
       storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
-    } else {
+    } else if (deviceType == DEVICE_TYPE.IOS) {
       storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
     }
   }
