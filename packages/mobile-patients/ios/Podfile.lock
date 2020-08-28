@@ -478,9 +478,9 @@ PODS:
   - RNVoipPushNotification (2.1.0):
     - React-Core
   - RSKImageCropper (2.2.3)
-  - SDWebImage (5.8.4):
-    - SDWebImage/Core (= 5.8.4)
-  - SDWebImage/Core (5.8.4)
+  - SDWebImage (5.9.0):
+    - SDWebImage/Core (= 5.9.0)
+  - SDWebImage/Core (5.9.0)
   - SSZipArchive (2.2.3)
   - Stylish (1.0.2)
   - TGFoursquareLocationDetail (1.0.1)
@@ -852,7 +852,7 @@ SPEC CHECKSUMS:
   RNVectorIcons: 368d6d8b8301224e5ffb6254191f4f8876c2be0d
   RNVoipPushNotification: be6f70cac9d1fd73e020063093f635f64d97c9c6
   RSKImageCropper: a446db0e8444a036b34f3c43db01b2373baa4b2a
-  SDWebImage: cf6922231e95550934da2ada0f20f2becf2ceba9
+  SDWebImage: 62ae4a18473520c67b79e9724c31a63599cc9423
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   Stylish: 28b6e4f177bfb94fae32fd8e6b31a31b38035318
   TGFoursquareLocationDetail: e2255e26b6c12d97b34fb95d88b67ab84cba1128
