@@ -54,7 +54,6 @@ import { NotificationBinRepository } from 'notifications-service/repositories/no
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
-import { addDays } from 'date-fns';
 
 export type DiagnosisJson = {
   name: string;
