@@ -35,6 +35,14 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '5px 40px 40px 40px',
       },
     },
+    homeContent: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+      },
+    },
   };
 });
 
