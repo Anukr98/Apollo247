@@ -711,7 +711,6 @@ export const MedicineCart: React.FC = (props) => {
   const [validityStatus, setValidityStatus] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [shopId, setShopId] = useState<string>('');
-  const [zipCode, setZipCode] = React.useState<string>('');
   const [latitude, setLatitude] = React.useState<string>('');
   const [longitude, setLongitude] = React.useState<string>('');
 

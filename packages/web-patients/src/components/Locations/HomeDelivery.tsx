@@ -274,8 +274,6 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [zipCode, setZipCode] = React.useState<string>('');
-  // const [latitude, setLatitude] = React.useState<string>('');
-  // const [longitude, setLongitude] = React.useState<string>('');
   const [isError, setIsError] = React.useState<boolean>(false);
   const [deliveryLoading, setDeliveryLoading] = React.useState<boolean>(false);
   const [selectingAddress, setSelectingAddress] = React.useState<boolean>(false);

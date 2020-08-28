@@ -570,13 +570,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   }, [pharmaAddressDetails]);
 
   const checkDeliveryTime = (pinCode: string, sku: string) => {
-    // axios
-    //   .get(`${process.env.TAT_BASE_URL}?sku=${sku}&pincode=${pinCode}`, {
-    //     headers: {
-    //       Authorization: 'GWjKtviqHa4r4kiQmcVH',
-    //       'Content-Type': 'application/json',
-    //     },
-    //   })
     checkSkuAvailability(sku, pinCode)
       .then((res: any) => {
         if (
