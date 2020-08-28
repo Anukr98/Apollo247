@@ -10,6 +10,8 @@ import {
   CTPrescription,
   CTChat,
   OnlineHeader,
+  CTLightGrayChat,
+  CTLightGrayVideo,
 } from './Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '../../theme/theme';
@@ -103,6 +105,7 @@ export interface ConsultTypeCardProps {
   onPhysicalPress: () => void;
   isOnlineSelected: boolean;
   DoctorId: string;
+  chatDays: string;
   DoctorName: string | null;
   nextAppointemntOnlineTime: string;
   nextAppointemntInPresonTime: string;
@@ -120,6 +123,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
     onPhysicalPress,
     isOnlineSelected,
     DoctorId,
+    chatDays,
     DoctorName,
     nextAppointemntOnlineTime,
     nextAppointemntInPresonTime,
@@ -215,15 +219,13 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
         { image: <CTCalender />, description: string.consultType.online.point2 },
         { image: <CTPayment />, description: string.consultType.online.point3 },
         {
-          image: <CTVideo />,
+          image: <CTLightGrayVideo />,
           description: string.consultType.online.point4,
-          textColor: theme.colors.SKY_BLUE,
         },
         { image: <CTPrescription />, description: string.consultType.online.point5 },
         {
-          image: <CTChat />,
-          description: string.consultType.online.point6,
-          textColor: theme.colors.SKY_BLUE,
+          image: <CTLightGrayChat />,
+          description: string.consultType.follow_up_chat_days_text.replace('{0}', chatDays),
         },
       ],
       () => {
@@ -258,7 +260,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
         { image: <CTPrescription />, description: string.consultType.inperson.point5 },
         {
           image: <CTChat />,
-          description: string.consultType.inperson.point6,
+          description: string.consultType.follow_up_chat_days_text.replace('{0}', chatDays),
           textColor: theme.colors.SKY_BLUE,
         },
       ],

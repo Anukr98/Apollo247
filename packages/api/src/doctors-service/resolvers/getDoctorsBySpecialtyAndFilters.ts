@@ -59,6 +59,8 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     doctorType: DoctorType
     sort: String
     filters: filters
+    apolloDoctorCount: Int
+    partnerDoctorCount: Int
   }
   type DoctorSlotAvailability {
     doctorId: String
@@ -94,6 +96,8 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     pincode: String
     doctorType: [String]
     sort: String
+    pageNo: Int
+    pageSize: Int
   }
   extend type Query {
     getDoctorsBySpecialtyAndFilters(filterInput: FilterDoctorInput): FilterDoctorsResult
@@ -133,6 +137,8 @@ type FilterDoctorsResult = {
   doctorType?: DoctorType[];
   sort: string;
   filters: filters;
+  apolloDoctorCount: number;
+  partnerDoctorCount: number;
 };
 
 export type DoctorConsultModeAvailability = {
@@ -166,6 +172,8 @@ export type FilterDoctorInput = {
   pincode: string;
   doctorType: String[];
   sort: string;
+  pageNo: number;
+  pageSize: number;
 };
 
 export type ConsultModeAvailability = {
@@ -227,12 +235,56 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     earlyAvailableNonStarApolloDoctors = [],
     starDoctor = [],
     nonStarDoctor = [];
+  let apolloDoctorCount:number = 0,
+    partnerDoctorCount:number = 0;
 
   const facilityIds: string[] = [];
   const facilityLatLongs: number[][] = [];
   args.filterInput.sort = args.filterInput.sort || 'availablity';
   const minsForSort = args.filterInput.sort == 'distance' ? 2881 : 241;
+  const pageNo = args.filterInput.pageNo ? args.filterInput.pageNo : 1;
+  const pageSize = args.filterInput.pageSize ? args.filterInput.pageSize : 1000;
+  const offset = (pageNo - 1) * pageSize;
+
+  const elasticSlotDateAvailability: { [index: string]: any } = [];
+  const elasticSlotAvailability: { [index: string]: any } = [];
+
+  if (args.filterInput.availability && args.filterInput.availability.length > 0){
+    args.filterInput.availability.forEach((availability) => {
+      elasticSlotDateAvailability.push({
+          match: { 'doctorSlots.slotDate': availability }
+        });
+      elasticSlotAvailability.push({
+          match: { 'doctorSlots.slots.slot': availability }
+        });
+    }); 
+  }
+
   elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
+
+   elasticMatch.push({ range: { 'doctorSlots.slots.slotThreshold': { gt :'now' } } });
+  if (args.filterInput.availability && args.filterInput.availability.length > 0 && args.filterInput.availableNow) {
+ 
+    if (elasticSlotAvailability.length > 0 && elasticSlotDateAvailability.length > 0) {
+      elasticMatch.push({ bool: { should: [ 
+            { bool: { must: [
+                      { bool: { should: elasticSlotDateAvailability } },
+                      { bool: { should: elasticSlotAvailability } },
+                  ] }
+            },
+            { bool: { should: { range: { 'doctorSlots.slots.slot': { lte :'now+4h'} } } } }
+          ] } } );
+    }
+  } else if (args.filterInput.availability && args.filterInput.availability.length > 0) {
+    if (elasticSlotAvailability.length > 0 && elasticSlotDateAvailability.length > 0) {
+      elasticMatch.push({ bool:{ must: [
+                { bool: { should: elasticSlotDateAvailability } },
+                { bool: { should: elasticSlotAvailability } },
+              ] } });
+    }
+  } else if (args.filterInput.availableNow ) {
+    elasticMatch.push({ range: { 'doctorSlots.slots.slot': { lte :'now+4h'} } });
+  }
 
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
     elasticMatch.push({ match: { 'specialty.name': args.filterInput.specialtyName.join(',') } });
@@ -296,17 +348,33 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   const searchParams: RequestParams.Search = {
     index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
-      size: 1000,
+      from: offset,
+      size: pageSize,
       query: {
         bool: {
           must: elasticMatch,
         },
       },
+      aggs:{
+        doctorTypeCount: {
+          terms: {
+            field: 'doctorType.keyword',
+          }
+        },
+      }
     },
   };
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
 
   const getDetails = await client.search(searchParams);
+  const doctorTypeCount = getDetails.body.aggregations.doctorTypeCount.buckets;
+  for(const doctorCount of doctorTypeCount) {
+    if(doctorCount.key === 'DOCTOR_CONNECT'){
+      partnerDoctorCount = doctorCount.doc_count;
+    } else {
+      apolloDoctorCount += doctorCount.doc_count;
+    }
+  }
 
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
@@ -562,7 +630,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     const words = input.split('_');
     const CapitalizedWords: string[] = [];
     words.forEach((element: string) => {
-      CapitalizedWords.push(element[0].toUpperCase() + element.slice(1, element.length).toLowerCase());
+      if(element.length >=1){
+        CapitalizedWords.push(element[0].toUpperCase() + element.slice(1, element.length).toLowerCase());
+      }
     });
     return CapitalizedWords.join(' ');
   }
@@ -574,18 +644,22 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   for (const doctor of doctors) {
     for (const hospital of doctor.doctorHospital) {
       cityObj = { state: '', data: [] };
-      if (filters.city.length) {
-        cityObj = ifKeyExist(filters.city, 'state', hospital.facility.state);
-      }
-      if (cityObj && cityObj.state) {
-        if (!cityObj.data.includes(hospital.facility.city)) {
-          cityObj.data.push(hospital.facility.city);
+      if(hospital.facility.state){
+        if (filters.city.length) {
+          cityObj = ifKeyExist(filters.city, 'state', capitalize(hospital.facility.state));
         }
-      } else {
-        cityObj.state = hospital.facility.state;
-        cityObj.data = [];
-        cityObj.data.push(hospital.facility.city);
-        filters.city.push(cityObj);
+        if (cityObj && cityObj.state) {
+          if (hospital.facility.city && !cityObj.data.includes(capitalize(hospital.facility.city))) {
+            cityObj.data.push(capitalize(hospital.facility.city));
+          }
+        } else {
+          cityObj.state = capitalize(hospital.facility.state);
+          cityObj.data = [];
+          if(hospital.facility.city) {
+            cityObj.data.push(capitalize(hospital.facility.city));
+          }
+          filters.city.push(cityObj);
+        }
       }
     }
 
@@ -596,8 +670,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
     if (doctor.languages instanceof Array) {
       for (const language of doctor.languages) {
-        if (!("name" in ifKeyExist(filters.language, 'name', language))) {
-          filters.language.push({ 'name': language });
+        if (language && !("name" in ifKeyExist(filters.language, 'name', capitalize(language)))) {
+          filters.language.push({ 'name': capitalize(language) });
         }
       }
       doctor.languages = doctor.languages.join(', ');
@@ -611,8 +685,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       filters.fee.push({ 'name': doctor.fee_range });
     }
 
-    if (doctor.gender && !("name" in ifKeyExist(filters.gender, 'name', doctor.gender))) {
-      filters.gender.push({ 'name': doctor.gender });
+    if (doctor.gender && !("name" in ifKeyExist(filters.gender, 'name', capitalize(doctor.gender)))) {
+      filters.gender.push({ 'name': capitalize(doctor.gender) });
     }
 
   }
@@ -640,6 +714,61 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
   }
 
+  function fieldCompare(field: string, order: string = 'asc') {
+    return function sort(objectA: any, objectB: any) {
+      if (!objectA.hasOwnProperty(field) || !objectB.hasOwnProperty(field)) {
+        return 0;
+      }
+      const fieldA = objectA[field];
+      const fieldB = objectB[field];
+      let comparison = 0;
+      if (fieldA > fieldB) {
+        comparison = 1;
+      } else if (fieldA < fieldB) {
+        comparison = -1;
+      }
+      return (
+        (order === 'desc') ? (comparison * -1) : comparison
+      );
+    };
+  }
+
+
+  function rangeCompare(field: string, order: string = 'asc') {
+    return function sort(objectA: any, objectB: any) {
+      if (!objectA.hasOwnProperty(field) || !objectB.hasOwnProperty(field)) {
+        return 0;
+      }
+      const fieldA = parseInt(objectA[field].split("-")[0], 10);
+      const fieldB = parseInt(objectB[field].split("-")[0], 10);
+      let comparison = 0;
+      if (fieldA > fieldB) {
+        comparison = 1;
+      } else if (fieldA < fieldB) {
+        comparison = -1;
+      }
+      return (
+        (order === 'desc') ? (comparison * -1) : comparison
+      );
+    };
+  }
+  
+  filters.city.sort(fieldCompare('state'));
+  for(const stateObject of filters.city){
+    stateObject.data.sort();
+  }
+  filters.brands.sort(fieldCompare('brandName'));
+  filters.language.sort(fieldCompare('name'));
+  filters.gender.sort(fieldCompare('name'));
+  filters.experience.sort(rangeCompare('name'));
+  filters.fee.sort(rangeCompare('name'));
+  filters.availability.sort(fieldCompare('name'));
+
+  if(filters.availability && filters.availability[0] && filters.availability[0]['name'] === 'Next 3 Days'){
+    const tail = filters.availability.shift();
+    filters.availability.push(tail);
+  }
+
   searchLogger(`API_CALL___END`);
   return {
     doctors: doctors,
@@ -648,6 +777,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     specialty: finalSpecialtyDetails,
     sort: args.filterInput.sort,
     filters: filters,
+    apolloDoctorCount,
+    partnerDoctorCount
   };
 };
 

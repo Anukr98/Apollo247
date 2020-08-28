@@ -37,7 +37,7 @@ module.exports = async (req, res, next) => {
 
     if (response.data.errors && response.data.errors.length) {
       logger.info(`${orderId} - consult-payment-webhook - ${JSON.stringify(response.data.errors)}`);
-      //throw new Error(`Error Occured in makeAppointmentPayment - consult-payment-webhook - for order id: ${orderId}`);
+      throw new Error(`Error Occured in makeAppointmentPayment - consult-payment-webhook - for order id: ${orderId}`);
     }
     res.send('webhook consumed successfully!');
   } catch (e) {

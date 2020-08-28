@@ -559,6 +559,7 @@ export interface DiagnosticOrderInput {
   deviceType?: DEVICETYPE | null;
   paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
+  slotId?: string | null;
 }
 
 export interface DoctorAvailabilityInput {
@@ -612,6 +613,8 @@ export interface FilterDoctorInput {
   pincode?: string | null;
   doctorType?: (string | null)[] | null;
   sort?: string | null;
+  pageNo?: number | null;
+  pageSize?: number | null;
 }
 
 export interface Geolocation {

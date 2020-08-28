@@ -63,6 +63,8 @@ export const getAppointmentHistoryTypeDefs = gql`
     actualAmount: Float
     discountedAmount: Float
     appointmentPayments: [AppointmentPayment]
+    isConsultStarted: Boolean
+    symptoms: String
   }
 
   input AppointmentHistoryInput {

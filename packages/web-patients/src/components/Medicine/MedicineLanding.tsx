@@ -439,7 +439,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicineLanding: React.FC = (props: any) => {
+const MedicineLanding: React.FC = (props: any) => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const addToCartRef = useRef(null);
@@ -573,12 +573,7 @@ export const MedicineLanding: React.FC = (props: any) => {
       .then((res: any) => {
         setData(res.data);
         if (res.data && res.data.metadata && res.data.metadata.length > 0) {
-          const removableData = [
-            'banners',
-            'orders',
-            'upload_prescription',
-            'recommended_products',
-          ];
+          const removableData = ['banners', 'orders', 'upload_prescription', 'recommended_for_you'];
           let position = 0;
           let updatedMetadata: any[] = [];
           res.data.metadata.forEach((section: any) => {
@@ -980,3 +975,5 @@ export const MedicineLanding: React.FC = (props: any) => {
     </div>
   );
 };
+
+export default MedicineLanding;

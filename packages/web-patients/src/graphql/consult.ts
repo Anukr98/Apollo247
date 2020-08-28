@@ -35,6 +35,8 @@ export const GET_APPOINTMENT_DATA = gql`
         appointmentState
         isJdQuestionsComplete
         isSeniorConsultStarted
+        isConsultStarted
+        symptoms
         doctorInfo {
           id
           salutation
@@ -265,6 +267,9 @@ export const GET_CASESHEET_DETAILS = gql`
           medicineConsumptionDurationUnit
           routeOfAdministration
           medicineCustomDosage
+          medicineCustomDetails
+          includeGenericNameInPrescription
+          genericName
         }
         notes
         otherInstructions {

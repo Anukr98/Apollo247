@@ -67,3 +67,7 @@ export const getToken = async (
 
     return token
 }
+
+export const updateToken = async () => {
+    cache.del('token')
+}
