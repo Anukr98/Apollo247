@@ -54,7 +54,6 @@ import {
   searchPickupStoresApi,
   Store,
   MedicineProduct,
-  GetDeliveryTimeResponse,
   validateConsultCoupon,
   userSpecificCoupon,
   getMedicineDetailsApi,
@@ -494,18 +493,28 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 return serviceItem;
               })
               if (serviceableSkus.length && !unserviceableSkus.length) {
-                fetchInventoryAndUpdateCartPricesAfterTat(serviceableSkus, updatedCartItems);
-                updateserviceableItemsTat(moment(deliveryDate, "DD-MM-YYYY hh:mm:ss a").format(AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT), lookUp);
+
+                const inventoryDataRes = g(tatRes, 'data', 'response', 'items') || [];
+                const availableInventory = inventoryDataRes.filter(({ qty }) => qty > 0).map((item) => {
+                  const inventoryItem: any = {};
+                  inventoryItem.itemId = item.sku;
+                  inventoryItem.qty = item.qty;
+                  inventoryItem.mrp = item.qty;
+                  return inventoryItem;
+                })
+                if (availableInventory && availableInventory.length) {
+                  fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, availableInventory);
+                  updateserviceableItemsTat(moment(deliveryDate, "DD-MM-YYYY hh:mm:ss a").format(AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT), lookUp);  
+                } else {
+                  showUnserviceableAlert(updatedCartItems)
+                }
               } else {
                 setdeliveryTime('...');
                 setshowDeliverySpinner(false);
                 setLoading!(false);
               }
             } else {
-              showUnServiceableItemsAlert(updatedCartItems)
-              setdeliveryTime('...');
-              setshowDeliverySpinner(false);
-              setLoading!(false);
+              showUnserviceableAlert(updatedCartItems)
             }
           } else {
             showGenericTatDate(lookUp)
@@ -529,6 +538,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       setLoading!(false);
     }
   };
+
+  const showUnserviceableAlert = (cartItems: ShoppingCartItem[]) => {
+    showUnServiceableItemsAlert(cartItems)
+    setdeliveryTime('...');
+    setshowDeliverySpinner(false);
+    setLoading!(false);
+  }
 
   const updateserviceableItemsTat = async (deliverydate: string, 
     lookUp: { sku: string; qty: number }[]) => {
@@ -598,32 +614,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const fetchInventoryAndUpdateCartPricesAfterTat = async (
-    tatResponse: GetDeliveryTimeResponse['tat'],
-    cartItems: ShoppingCartItem[]
+    cartItems: ShoppingCartItem[],
+    inventoryData: GetStoreInventoryResponse['itemDetails']
   ) => {
     try {
-      const storeIdAndItemsMapping = tatResponse.reduce(
-        (prevVal, currentVal) => ({
-          ...prevVal,
-          [currentVal.siteId]: [...(prevVal[currentVal.siteId] || []), currentVal.artCode],
-        }),
-        {} as { [key: string]: string[] }
-      );
-      const storesInventory = await Promise.all(
-        Object.keys(storeIdAndItemsMapping).map((storeId) =>
-          getStoreInventoryApi(storeId, storeIdAndItemsMapping[storeId])
-        )
-      );
-      const storeItems = storesInventory.filter(
-        (item) => item.data.itemDetails && item.data.shopId
-      );
-      if (!storeItems.length) {
-        setLoading!(false);
-        return;
-      }
-
-      const filteredStoreItems = storeItems
-        .map((storeItem) => storeItem.data.itemDetails)
+      const filteredStoreItems = [inventoryData]
         .reduce((prevVal, currentVal) => [...prevVal, ...currentVal], [])
         .map((storeItem) => {
           const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;

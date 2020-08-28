@@ -131,15 +131,6 @@ export interface ServiceAbilityApiInput {
   sku: string;
 }
 
-export interface GetDeliveryTimeResponse {
-  tat: {
-    artCode: string;
-    deliverydate: string;
-    siteId: string;
-  }[];
-  errorMSG?: string;
-}
-
 export interface GetAvailabilityResponse247 {
   response: {
     sku: string;
@@ -150,6 +141,11 @@ export interface GetAvailabilityResponse247 {
 
 export interface GetTatResponse247 {
   response: {
+    items: {
+      sku: string;
+      qty: number;
+      mrp: number;
+    }[];
     storeCode: string;
     tat: string;
     tatU: number;
