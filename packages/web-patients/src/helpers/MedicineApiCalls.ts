@@ -252,7 +252,7 @@ export interface GetPackageDataResponse {
 }
 
 export const checkServiceAvailability = (zipCode: string) => {
-  return axios.get(`https://uattat.apollo247.com/serviceable?pincode=${zipCode}`, {
+  return axios.get(`${process.env.TAT_BASE_URL}/serviceable?pincode=${zipCode}`, {
     headers: {
       Authorization: 'GWjKtviqHa4r4kiQmcVH',
       'Content-Type': 'application/json',
@@ -261,7 +261,7 @@ export const checkServiceAvailability = (zipCode: string) => {
 };
 
 export const checkSkuAvailability = (sku: string, pincode: string) => {
-  return axios.get(`https://uattat.apollo247.com/availability?sku=${sku}&pincode=${pincode}`, {
+  return axios.get(`${process.env.TAT_BASE_URL}/availability?sku=${sku}&pincode=${pincode}`, {
     headers: {
       Authorization: 'GWjKtviqHa4r4kiQmcVH',
       'Content-Type': 'application/json',
@@ -271,7 +271,7 @@ export const checkSkuAvailability = (sku: string, pincode: string) => {
 
 export const checkTatAvailability = (sku: string, pincode: string, lat: string, lng: string) => {
   return axios.get(
-    `https://uattat.apollo247.com/tat?sku=${sku}&pincode=${pincode}&lat=${lat}&lng=${lng}`,
+    `${process.env.TAT_BASE_URL}/tat?sku=${sku}&pincode=${pincode}&lat=${lat}&lng=${lng}`,
     {
       headers: {
         Authorization: 'GWjKtviqHa4r4kiQmcVH',
