@@ -731,7 +731,6 @@ export const MedicineCart: React.FC = (props) => {
   }, [showOrderPopup]);
 
   const checkForPriceUpdate = (sId: string, pincode: string, lat: string, lng: string) => {
-    console.log('sId', sId);
     setShopId(sId);
     checkForCartChanges(pincode, lat, lng);
   };
