@@ -2,12 +2,13 @@ import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem } from '@material-ui/core';
 import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { gtmTracking } from '../../gtmTracking';
 import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
 import { removeFromCartTracking } from 'webEngageTracking';
+import { PharmaCoupon, CartProduct } from 'components/Cart/MedicineCart';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -200,14 +201,13 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 type MedicineListingCardProps = {
-  validateCouponResult: validatePharmaCoupon_validatePharmaCoupon | null;
+  validateCouponResult: PharmaCoupon | null;
 };
 
 export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) => {
   const classes = useStyles({});
   const { cartItems, removeCartItemSku, updateCartItemQty } = useShoppingCart();
   const { validateCouponResult } = props;
-
   return (
     <div className={classes.root}>
       {/** medice card normal state */}
@@ -332,15 +332,13 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         ))}
                       </AphCustomDropdown>
                     </div>
-                    {validateCouponResult &&
-                    validateCouponResult.pharmaLineItemsWithDiscountedPrice ? (
+                    {validateCouponResult && validateCouponResult.products ? (
                       <>
                         <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
-                          {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx]
-                            .applicablePrice !==
-                          validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp ? (
+                          {validateCouponResult.products[idx].specialPrice !==
+                          validateCouponResult.products[idx].mrp ? (
                             <span className={classes.lineThrough}>
-                              Rs. {validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx].mrp}
+                              Rs. {validateCouponResult.products[idx].mrp}
                             </span>
                           ) : null}
                           <div className={classes.mrpText}>(MRP)</div>
@@ -348,10 +346,19 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
 
                         <div className={classes.medicinePrice}>
                           Rs.{' '}
-                          {
-                            validateCouponResult.pharmaLineItemsWithDiscountedPrice[idx]
-                              .applicablePrice
-                          }
+                          {validateCouponResult.products[idx].onMrp
+                            ? Number(
+                                (
+                                  validateCouponResult.products[idx].mrp -
+                                  validateCouponResult.products[idx].discountAmt
+                                ).toFixed(2)
+                              )
+                            : Number(
+                                (
+                                  validateCouponResult.products[idx].specialPrice -
+                                  validateCouponResult.products[idx].discountAmt
+                                ).toFixed(2)
+                              )}
                         </div>
                       </>
                     ) : (

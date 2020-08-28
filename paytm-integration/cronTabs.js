@@ -370,7 +370,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
               query: Query,
             };
             axios
-              .post(process.env.API_URL, updateDoctorFeeSummaryRequestJSON)
+              .post(process.env.DASHBOARD_API_URL, updateDoctorFeeSummaryRequestJSON)
               .then((response) => {
                 const fileName =
                   process.env.PHARMA_LOGS_PATH +

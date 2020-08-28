@@ -297,11 +297,17 @@ const updateOrderStatus: Resolver<
       };
       await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
       if (status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
-        sendMedicineOrderStatusNotification(
-          NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY,
-          orderDetails,
-          profilesDb
-        );
+        if (updateOrderStatusInput.trackingProvider) {
+          const trackingProvider = updateOrderStatusInput.trackingProvider.toLowerCase();
+          if (trackingProvider != 'apollo fleet')
+            sendMedicineOrderStatusNotification(
+              trackingProvider == 'apollo internal fleet'
+                ? NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY
+                : NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY_EXTERNAL,
+              orderDetails,
+              profilesDb
+            );
+        }
 
         //post order out for delivery event to webEngage
         const postBody: Partial<WebEngageInput> = {
@@ -329,7 +335,8 @@ const updateOrderStatus: Resolver<
           medicineOrdersRepo,
           orderDetails,
           orderDetails.patient,
-          mobileNumberIn
+          mobileNumberIn,
+          shipmentDetails.apOrderNo
         );
 
         //post order delivered event to webEngage
@@ -399,7 +406,8 @@ const createOneApolloTransaction = async (
   medicineOrdersRepo: MedicineOrdersRepository,
   order: MedicineOrders,
   patient: Patient,
-  mobileNumber: string
+  mobileNumber: string,
+  apOrderNo: MedicineOrderShipments['apOrderNo']
 ) => {
   try {
     const invoiceDetails = await medicineOrdersRepo.getInvoiceDetailsByOrderId(order.orderAutoId);
@@ -425,8 +433,15 @@ const createOneApolloTransaction = async (
       const transactionsPromise: Promise<JSON>[] = [];
       const oneApollo = new OneApollo();
       transactionArr.forEach((transaction) => {
+        medicineOrdersRepo.updateMedicineOrderShipment(
+          {
+            oneApolloTransaction: transaction,
+          },
+          apOrderNo
+        );
         transactionsPromise.push(oneApollo.createOneApolloTransaction(transaction));
       });
+
       const oneApolloRes = await Promise.all(transactionsPromise);
 
       log(
@@ -475,7 +490,7 @@ const generateTransactions = async (
       healthCreditsRedeemed
     );
     netAmount = transactionLineItems.reduce((acc, curValue) => {
-      return acc + curValue.NetAmount;
+      return +new Decimal(acc).plus(curValue.NetAmount);
     }, 0);
     const billDetails: BillDetails = JSON.parse(val.billDetails);
     const transaction: OneApollTransaction = {
@@ -484,7 +499,6 @@ const generateTransactions = async (
       SendCommunication: true,
       CalculateHealthCredits: true,
       MobileNumber: mobileNumber,
-      CreditsRedeemed: healthCreditsRedeemed,
       BillNo: `${billDetails.billNumber}_${order.orderAutoId}`,
       NetAmount: netAmount,
       TransactionDate: billDetails.billDateTime,
@@ -493,6 +507,11 @@ const generateTransactions = async (
       TransactionLineItems: transactionLineItems,
       StoreCode: getStoreCodeFromDevice(order.deviceType, order.bookingSource),
     };
+    if (healthCreditsRedeemed) {
+      transaction.RedemptionRequestNo =
+        order.medicineOrderPayments[0].healthCreditsRedemptionRequest.RequestNumber;
+      transaction.CreditsRedeemed = healthCreditsRedeemed;
+    }
     transactions.push(transaction);
     index++;
     if (invoiceDetails[index]) {
@@ -511,7 +530,7 @@ const getStoreCodeFromDevice = (
   if (bookingSource == BOOKING_SOURCE.MOBILE) {
     if (deviceType == DEVICE_TYPE.ANDROID) {
       storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
-    } else {
+    } else if (deviceType == DEVICE_TYPE.IOS) {
       storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
     }
   }
