@@ -180,7 +180,7 @@ export const calculateRefund = async (
   profilesDb: Connection,
   medOrderRepo: MedicineOrdersRepository,
   reasonCode?: string,
-  devliveryCharges?: number
+  deliveryCharges?: number
 ) => {
   const paymentInfo = await medOrderRepo.getRefundsAndPaymentsByOrderId(orderDetails.id);
   if (!paymentInfo) {
@@ -228,12 +228,12 @@ export const calculateRefund = async (
   /**
    * We cannot refund money received for delivery
    */
-  if (totalOrderBilling != 0 && devliveryCharges) {
+  if (totalOrderBilling != 0 && deliveryCharges) {
     maxRefundAmountPossible = +new Decimal(maxRefundAmountPossible)
-      .minus(+devliveryCharges)
+      .minus(+deliveryCharges)
       .minus(+orderDetails.packagingCharges);
     healthCreditsToRefund = +new Decimal(healthCreditsToRefund)
-      .plus(+devliveryCharges)
+      .plus(+deliveryCharges)
       .plus(+orderDetails.packagingCharges);
   }
   /**
