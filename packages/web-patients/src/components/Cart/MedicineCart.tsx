@@ -889,7 +889,7 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult &&
     validateCouponResult.discount &&
     validateCouponResult.discount >= productDiscount
-      ? Number(cartTotal) - Number(validateCouponResult.discount)
+      ? Number(cartTotal) - couponDiscount
       : Number(cartTotal);
   const deliveryCharges =
     modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
