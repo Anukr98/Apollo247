@@ -80,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 13,
       lineHeight: '24px',
       color: '#fff',
-      minWidth: 101,
+      minWidth: 94,
       border: '2px solid #FCB716',
       height: 40,
       borderRadius: 10,
@@ -336,10 +336,10 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
             <>
               <div>
                 {messageDetails.transferInfo &&
-                messageDetails.transferInfo.reschduleCount &&
-                messageDetails.transferInfo.reschduleCount > 2
+                  messageDetails.transferInfo.reschduleCount &&
+                  messageDetails.transferInfo.reschduleCount > 2
                   ? 'Since you have already rescheduled 3 times with ' +
-                      messageDetails.transferInfo.doctorInfo &&
+                    messageDetails.transferInfo.doctorInfo &&
                     messageDetails.transferInfo.doctorInfo.displayName
                     ? messageDetails.transferInfo.doctorInfo.displayName
                     : 'Dr. ' + ', we will consider this a new paid appointment.'
@@ -351,7 +351,7 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
                     {`Next slot for ${
                       messageDetails.transferInfo.doctorInfo &&
                       messageDetails.transferInfo.doctorInfo.displayName
-                    } is available on- `}
+                      } is available on- `}
                   </div>
                   <div>
                     {moment(messageDetails.transferInfo.transferDateTime).format(
@@ -372,8 +372,8 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
                   {apiLoading ? (
                     <CircularProgress size={22} color="secondary" />
                   ) : (
-                    <span>ACCEPT</span>
-                  )}
+                      <span>ACCEPT</span>
+                    )}
                 </button>
               </div>
             </>
@@ -409,41 +409,41 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
                   rescheduleAPI={rescheduleAPI}
                 />
               ) : (
-                <div>
-                  <div className={classes.dialogContent}>
-                    Dr.{messageDetails.doctorInfo && messageDetails.doctorInfo.fullName} has
+                  <div>
+                    <div className={classes.dialogContent}>
+                      Dr.{messageDetails.doctorInfo && messageDetails.doctorInfo.fullName} has
                     suggested the below slot for rescheduling this appointment —
                     {moment(messageDetails.transferInfo.transferDateTime).format(
                       'Do MMMM, dddd \nhh:mm a'
                     )}
-                  </div>
-                  <div className={classes.dialogActions}>
-                    <>
-                      <AphButton
-                        className={classes.secondaryBtn}
-                        color="primary"
-                        onClick={() => setIsChangeSlot(true)}
-                      >
-                        {'CHANGE SLOT'}
-                      </AphButton>
+                    </div>
+                    <div className={classes.dialogActions}>
+                      <>
+                        <AphButton
+                          className={classes.secondaryBtn}
+                          color="primary"
+                          onClick={() => setIsChangeSlot(true)}
+                        >
+                          {'CHANGE SLOT'}
+                        </AphButton>
 
-                      <AphButton
-                        className={classes.primaryBtn}
-                        color="primary"
-                        onClick={() => {
-                          handleAcceptReschedule();
-                        }}
-                      >
-                        {apiLoading ? (
-                          <CircularProgress size={22} color="secondary" />
-                        ) : (
-                          <span>ACCEPT</span>
-                        )}
-                      </AphButton>
-                    </>
+                        <AphButton
+                          className={classes.primaryBtn}
+                          color="primary"
+                          onClick={() => {
+                            handleAcceptReschedule();
+                          }}
+                        >
+                          {apiLoading ? (
+                            <CircularProgress size={22} color="secondary" />
+                          ) : (
+                              <span>ACCEPT</span>
+                            )}
+                        </AphButton>
+                      </>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </Paper>
         </Modal>
