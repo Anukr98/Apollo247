@@ -46,7 +46,7 @@ import { PatientLifeStyleRepository } from 'profiles-service/repositories/patien
 import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/patientMedicalHistory';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { SymptomsList } from 'types/appointmentTypes';
-import { differenceInSeconds } from 'date-fns';
+import { differenceInSeconds, addDays } from 'date-fns';
 import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 import { sendNotification } from 'notifications-service/handlers';
 import { NotificationType } from 'notifications-service/constants';
