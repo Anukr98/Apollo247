@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid, CircularProgress, Typography, Link } from '@material-ui/core';
 import { AphButton, AphInput } from '@aph/web-ui-components';
-import { getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetails';
+import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { ADD_PATIENT_FEEDBACK } from 'graphql/medicines';
 import { useMutation } from 'react-apollo-hooks';
 import { addPatientFeedback, addPatientFeedbackVariables } from 'graphql/types/addPatientFeedback';
 import { FEEDBACKTYPE } from 'graphql/types/globalTypes';
 import { Alerts } from 'components/Alerts/Alerts';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -150,18 +151,15 @@ type Props = {
   children?: React.ReactNode;
   setIsPopoverOpen: (active: boolean) => void;
   orderDetailsData: OrderDetails | null;
+  setShowDeliveryRateBtn: (showDeliveryRateBtn: boolean) => void;
 };
 
 export const OrderFeedback: React.FC<Props> = (props) => {
   const classes = useStyles({});
   const {
     setIsPopoverOpen,
-    orderDetailsData: {
-      orderAutoId,
-      orderTat,
-      id: orderId,
-      patient: { id },
-    },
+    setShowDeliveryRateBtn,
+    orderDetailsData: { orderAutoId, orderTat, id: orderId },
   } = props;
   const [feedbackSubmitted, setFeedbackSubmitted] = React.useState<boolean>(false);
   const [selected, setSelected] = React.useState<number | null>(null);
@@ -179,13 +177,14 @@ export const OrderFeedback: React.FC<Props> = (props) => {
       label: 'Great',
     },
   ];
+  const { currentPatient } = useAllCurrentPatients();
 
   const addPatientFeedbackMutation = useMutation<addPatientFeedback, addPatientFeedbackVariables>(
     ADD_PATIENT_FEEDBACK,
     {
       variables: {
         patientFeedbackInput: {
-          patientId: id,
+          patientId: currentPatient && currentPatient.id,
           rating: rating,
           thankyouNote: reason,
           reason: reason,
@@ -268,7 +267,12 @@ export const OrderFeedback: React.FC<Props> = (props) => {
             Your feedback has been submitted. Thanks for your time.
           </Typography>
           <div className={classes.flex}>
-            <Link href="javascript:void(0);" onClick={() => setIsPopoverOpen(false)}>
+            <Link
+              onClick={() => {
+                setIsPopoverOpen(false);
+                setShowDeliveryRateBtn(false);
+              }}
+            >
               Ok, Got It
             </Link>
           </div>

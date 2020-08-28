@@ -15,7 +15,10 @@ import { PharmaCancelResult } from 'types/medicineOrderTypes';
 import { log } from 'customWinstonLogger';
 import { Connection } from 'typeorm';
 import {} from 'coupons-service/resolvers/validatePharmaCoupon';
-import { medicineOrderCancelled } from 'notifications-service/resolvers/notifications';
+import { calculateRefund } from 'profiles-service/helpers/refundHelper';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { ApiConstants } from 'ApiConstants';
+import { format, addMinutes } from 'date-fns';
 
 export const medicineOrderCancelOMSTypeDefs = gql`
   input MedicineOrderCancelOMSInput {
@@ -55,7 +58,7 @@ const cancelMedicineOrderOMS: Resolver<
   MedicineOrderCancelOMSResult
 > = async (parent, { medicineOrderCancelOMSInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithPaymentAndShipments(
     medicineOrderCancelOMSInput.orderNo
   );
   if (!orderDetails) {
@@ -136,14 +139,25 @@ const cancelMedicineOrderOMS: Resolver<
     const orderResp: PharmaCancelResult = JSON.parse(textRes);
 
     if (orderResp.Status) {
-      await updateOrderCancelled(profilesDb, orderDetails, medicineOrderCancelOMSInput);
+      updateOrderCancelled(profilesDb, orderDetails, medicineOrderCancelOMSInput);
     } else {
       throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, orderResp);
     }
   } else {
-    await updateOrderCancelled(profilesDb, orderDetails, medicineOrderCancelOMSInput);
+    updateOrderCancelled(profilesDb, orderDetails, medicineOrderCancelOMSInput);
   }
-  medicineOrderCancelled(orderDetails, medicineOrderCancelOMSInput.cancelReasonCode, profilesDb);
+
+  //post order cancelled event to webEngage
+  const postBody: Partial<WebEngageInput> = {
+    userId: orderDetails.patient.mobileNumber,
+    eventName: ApiConstants.MEDICINE_ORDER_CANCELLED_FROM_APP_EVENT_NAME.toString(),
+    eventData: {
+      orderId: orderDetails.orderAutoId,
+      statusDateTime: format(addMinutes(new Date(), +330), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
+      reasonCode: medicineOrderCancelOMSInput.cancelReasonCode.toString(),
+    },
+  };
+  postEvent(postBody);
 
   return { orderStatus: MEDICINE_ORDER_STATUS.CANCEL_REQUEST };
 };
@@ -162,15 +176,19 @@ const updateOrderCancelled = async (
     statusMessage: medicineOrderCancelOMSInput.cancelReasonCode,
     customReason: medicineOrderCancelOMSInput.cancelReasonText,
   };
-  await medicineOrdersStatusRepo.saveMedicineOrderStatus(
-    orderStatusAttrs,
-    orderDetails.orderAutoId
-  );
-  await medicineOrdersRepo.updateMedicineOrderDetails(
+  medicineOrdersStatusRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+  medicineOrdersRepo.updateMedicineOrderDetails(
     orderDetails.id,
     orderDetails.orderAutoId,
     new Date(),
     MEDICINE_ORDER_STATUS.CANCELLED
+  );
+  calculateRefund(
+    orderDetails,
+    0,
+    profilesDb,
+    medicineOrdersRepo,
+    medicineOrderCancelOMSInput.cancelReasonCode
   );
 };
 

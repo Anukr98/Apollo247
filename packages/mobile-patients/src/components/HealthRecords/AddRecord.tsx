@@ -677,9 +677,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         <DatePicker
           isDateTimePickerVisible={isDateTimePickerVisible}
           handleDatePicked={(date) => {
+            setIsDateTimePickerVisible(false);
             const formatDate = Moment(date).format('DD/MM/YYYY');
             setdateOfTest(formatDate);
-            setIsDateTimePickerVisible(false);
             Keyboard.dismiss();
           }}
           hideDateTimePicker={() => {

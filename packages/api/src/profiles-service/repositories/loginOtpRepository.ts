@@ -23,7 +23,7 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
     await setCache(
       this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id),
       JSON.stringify({ ...otpAttrs, id, incorrectAttempts: 0 }),
-      ApiConstants.CACHE_EXPIRATION_900
+      ApiConstants.CACHE_EXPIRATION_3600
     );
     return { id };
   }
@@ -42,7 +42,7 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
     const OtpRecord = await getCache(this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id));
     if (typeof OtpRecord === 'string') {
       const validOtpRecord = JSON.parse(OtpRecord);
-      return validOtpRecord && validOtpRecord.status == OTP_STATUS.NOT_VERIFIED
+      return validOtpRecord && (validOtpRecord.status == OTP_STATUS.NOT_VERIFIED || validOtpRecord.status == OTP_STATUS.BLOCKED)
         ? validOtpRecord
         : null;
     } else return null;
@@ -52,7 +52,7 @@ export class LoginOtpRepository extends Repository<LoginOtp> {
     await setCache(
       this.cacheKey(REDIS_OTP_MOBILE_PREFIX, id),
       JSON.stringify(updateAttrs),
-      ApiConstants.CACHE_EXPIRATION_900
+      ApiConstants.CACHE_EXPIRATION_3600
     );
   }
 

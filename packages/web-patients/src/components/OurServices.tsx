@@ -2,12 +2,13 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from 'hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import Avatar from '@material-ui/core/Avatar';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { buyMedicineClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -46,6 +47,11 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         fontSize: '14px !important',
       },
+      '& h3': {
+        color: '#01475b',
+        fontWeight: 500,
+        fontSize: '14px !important',
+      },
     },
     bigAvatar: {
       width: 40,
@@ -77,6 +83,10 @@ interface ServiceItemProps {
 const ServiceItem: React.FC<ServiceItemProps> = (props) => {
   const classes = useStyles({});
   const { title, imgUrl, content, action } = props.item;
+  const headTagCondition = title === 'Online Doctor Consultation' || title === 'Buy Medicines';
+  const { isSignedIn } = useAuth();
+  const { currentPatient } = useAllCurrentPatients();
+
   return (
     <ProtectedWithLoginPopup>
       {({ protectWithLoginPopup }) => (
@@ -88,12 +98,15 @@ const ServiceItem: React.FC<ServiceItemProps> = (props) => {
                 if (action.link === '') {
                   protectWithLoginPopup();
                 }
+                isSignedIn &&
+                  title === 'Buy Medicines' &&
+                  buyMedicineClickTracking(currentPatient && currentPatient.id);
               }}
               title={title}
             >
               <Avatar alt="" src={imgUrl} className={classes.bigAvatar} />
               <div className={classes.serviceInfo}>
-                <Typography variant="h1" title={title}>
+                <Typography variant={headTagCondition ? 'h1' : 'h3'} title={title}>
                   {title}
                 </Typography>
               </div>
@@ -111,7 +124,7 @@ export const OurServices: React.FC = (props) => {
   const classes = useStyles({});
   const serviceItems: ServiceItem[] = [
     {
-      title: 'Book Doctor Appointment',
+      title: 'Online Doctor Consultation',
       content: `Let's get you connected with them.`,
       imgUrl: `${require('images/ic-doctor.svg')}`,
       action: { link: clientRoutes.specialityListing(), content: 'Find specialist' },

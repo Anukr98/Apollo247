@@ -131,6 +131,7 @@ const validateConsultCoupon: Resolver<
       : doctorData.onlineConsultationFees;
   const payload: ValidateCouponRequest = {
     mobile: mobileNumber.replace('+91', ''),
+    email: patientData[0].emailAddress,
     billAmount: parseInt(amount.toString(), 10),
     coupon: code,
     paymentType: '',

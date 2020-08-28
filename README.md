@@ -18,7 +18,7 @@ _Note to windows users: Run the following steps on a Windows 10 Pro machine in a
 - Optional: Install [lazydocker](https://github.com/jesseduffield/lazydocker/) to manage your docker containers
 
 ## Web
-
+- Run `npm run delete:package-lock`
 - Run `npm run bootstrap:web`
 - Start the api-gateway `docker-compose up api-gateway`, graphql playground will be on http://localhost:4000
 - Navigate to either `web-patients` or `web-doctors` and run `npm run start`, patients app will be running on http://localhost:3000, web-doctors on http://localhost:3001

@@ -38,7 +38,7 @@ export const downloadDocuments: Resolver<
   DownloadDocumentsResult
 > = async (parent, { downloadDocumentsInput }, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientsRepo.findById(downloadDocumentsInput.patientId);
+  const patientDetails = await patientsRepo.getPatientDetails(downloadDocumentsInput.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const getToken = await getAuthToken(patientDetails.uhid);
@@ -48,8 +48,6 @@ export const downloadDocuments: Resolver<
     const fileIdNameArray = fileIdName.split('_');
     const fileId = fileIdNameArray.shift();
     const fileName = fileIdNameArray.join('_');
-
-    console.log(process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT!.toString());
 
     let prescriptionDocumentUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT!.toString();
     prescriptionDocumentUrl = prescriptionDocumentUrl.replace('{AUTH_KEY}', getToken.response);

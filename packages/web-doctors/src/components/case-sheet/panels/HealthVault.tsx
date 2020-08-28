@@ -22,6 +22,7 @@ import { format } from 'date-fns';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
 import ReactPanZoom from 'react-image-pan-zoom-rotate';
+import moment from 'moment';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocumentType } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles(() => ({
@@ -216,9 +217,11 @@ interface PastAppointmentProps {
 const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
   const classes = useStyles({});
   const ischild: boolean = true;
+
   return (
     <List className={isChild ? classes.childListStyle : classes.listStyle}>
       {data &&
+        data.length > 0 &&
         data.map((item, idx) => (
           <ListItem
             key={idx}
@@ -408,7 +411,7 @@ export const HealthVault: React.FC = () => {
                     if (
                       item &&
                       item.documentPath &&
-                      item.documentPath.substr(-4).toLowerCase() !== '.pdf'
+                      !item.documentPath.toLowerCase().includes('.pdf')
                     ) {
                       setModalOpen(true);
                       setImgPrevUrl(item.documentPath as string);
@@ -418,7 +421,7 @@ export const HealthVault: React.FC = () => {
                   <ListItemAvatar>
                     {item &&
                     item.documentPath &&
-                    item.documentPath.substr(-4).toLowerCase() !== '.pdf' ? (
+                    !item.documentPath.toLowerCase().includes('.pdf') ? (
                       <Avatar
                         alt={item.documentPath as string}
                         src={item.documentPath as string}

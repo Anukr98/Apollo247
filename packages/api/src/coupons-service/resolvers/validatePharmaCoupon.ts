@@ -4,21 +4,15 @@ import { CouponServiceContext } from 'coupons-service/couponServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { CouponRepository } from 'profiles-service/repositories/couponRepository';
-import { ApiConstants } from 'ApiConstants';
-import { discountCalculation, genericRuleCheck } from 'helpers/couponCommonFunctions';
-import {
-  Coupon,
-  CouponCategoryApplicable,
-  PharmaDiscountApplicableOn,
-} from 'profiles-service/entities';
-import { customerTypeInCoupons } from 'coupons-service/resolvers/validateConsultCoupon';
-import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import { CouponCategoryApplicable } from 'profiles-service/entities';
+import { getCouponsList, validateCoupon } from 'helpers/couponServices';
+import { CouponProduct, ValidateCouponRequestPharma } from 'types/coupons';
 
 export const validatePharmaCouponTypeDefs = gql`
   enum CouponCategoryApplicable {
     PHARMA
     FMCG
+    PL
     PHARMA_FMCG
   }
 
@@ -124,161 +118,73 @@ export const validatePharmaCoupon: Resolver<
   const patientData = await patientRepo.getPatientDetails(patientId);
   if (patientData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  //get coupon by code
-  const couponRepo = patientsDb.getCustomRepository(CouponRepository);
-  const couponData = await couponRepo.findPharmaCouponByCode(code);
-
-  if (couponData == null)
-    return {
-      discountedTotals: undefined,
-      pharmaLineItemsWithDiscountedPrice: undefined,
-      successMessage: '',
-      reasonForInvalidStatus: ApiConstants.INVALID_COUPON.toString(),
-      validityStatus: false,
-    };
-
-  //get coupon related generic rule
-  const couponGenericRulesData = couponData.couponGenericRule;
-  if (couponGenericRulesData == null)
-    return {
-      discountedTotals: undefined,
-      pharmaLineItemsWithDiscountedPrice: undefined,
-      successMessage: '',
-      reasonForInvalidStatus: ApiConstants.INVALID_COUPON.toString(),
-      validityStatus: false,
-    };
-
-  //get coupon related pharma rule
-  const couponRulesData = couponData.couponPharmaRule;
-  if (couponRulesData == null)
-    return {
-      discountedTotals: undefined,
-      pharmaLineItemsWithDiscountedPrice: undefined,
-      successMessage: '',
-      reasonForInvalidStatus: ApiConstants.INVALID_COUPON.toString(),
-      validityStatus: false,
-    };
-
-  //customer type check
-  const medicineOrderRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
-  if (
-    couponGenericRulesData.couponApplicableCustomerType &&
-    couponGenericRulesData.couponApplicableCustomerType == customerTypeInCoupons.FIRST
-  ) {
-    const orderCount = await medicineOrderRepo.getMedicineOrdersCountByPatient(patientId);
-    if (
-      couponGenericRulesData.couponApplicableCustomerType == customerTypeInCoupons.FIRST &&
-      orderCount != 0
-    ) {
-      return {
-        discountedTotals: undefined,
-        pharmaLineItemsWithDiscountedPrice: undefined,
-        successMessage: '',
-        reasonForInvalidStatus: ApiConstants.COUPON_FOR_FIRST_CUSTOMER_ONLY.toString(),
-        validityStatus: false,
-      };
-    }
-  }
-
-  // coupon count per customer check
-  if (couponGenericRulesData.couponReuseCountPerCustomer) {
-    const customerUsageCount = await medicineOrderRepo.getMedicineOrdersCountByCouponAndPatient(
-      patientId,
-      code
-    );
-    if (customerUsageCount >= couponGenericRulesData.couponReuseCountPerCustomer)
-      return {
-        discountedTotals: undefined,
-        pharmaLineItemsWithDiscountedPrice: undefined,
-        successMessage: '',
-        reasonForInvalidStatus: ApiConstants.COUPON_COUNT_PER_CUSTOMER_EXCEEDED.toString(),
-        validityStatus: false,
-      };
-  }
-
-  //total coupon count irrespective to customer
-  if (couponGenericRulesData.couponReuseCount) {
-    const customerUsageCount = await medicineOrderRepo.getMedicineOrdersCountByCoupon(code);
-    if (customerUsageCount >= couponGenericRulesData.couponReuseCount)
-      return {
-        discountedTotals: undefined,
-        pharmaLineItemsWithDiscountedPrice: undefined,
-        successMessage: '',
-        reasonForInvalidStatus: ApiConstants.COUPON_COUNT_USAGE_EXPIRED.toString(),
-        validityStatus: false,
-      };
-  }
-
-  let cartPrice = 0;
-  const lineItemsWithDiscount = orderLineItems.map((item) => {
-    const itemPrice = item.mrp < item.specialPrice ? item.mrp : item.specialPrice;
-    cartPrice = cartPrice + itemPrice * item.quantity;
-    return {
-      ...item,
-      discountedPrice: 0,
-      applicablePrice: 0,
-    };
-  });
-
-  //call to check generic rule
-  const genericRuleCheckResult = await genericRuleCheck(couponGenericRulesData, cartPrice);
-  if (genericRuleCheckResult) {
-    return {
-      discountedTotals: undefined,
-      pharmaLineItemsWithDiscountedPrice: undefined,
-      successMessage: '',
-      validityStatus: genericRuleCheckResult.validityStatus,
-      reasonForInvalidStatus: genericRuleCheckResult.reasonForInvalidStatus,
-    };
-  }
-
-  let specialPriceTotal = 0;
+  let billAmount = 0;
+  const couponProduct: CouponProduct[] = [];
   let mrpPriceTotal = 0;
-  let discountedPriceTotal = 0;
+  let specialPriceTotal = 0;
 
-  lineItemsWithDiscount.forEach((lineItem, index) => {
-    //coupon couponCategoryApplicable check
+  //calculate total amount
+  orderLineItems.map((item) => {
+    const amountToBeConsidered = item.specialPrice < item.mrp ? item.specialPrice : item.mrp;
+    billAmount = billAmount + amountToBeConsidered * item.quantity;
 
-    if (couponRulesData.couponCategoryApplicable) {
-      if (
-        couponRulesData.couponCategoryApplicable == CouponCategoryApplicable.PHARMA_FMCG ||
-        couponRulesData.couponCategoryApplicable == lineItem.productType
-      ) {
-        const itemPrice =
-          couponRulesData.discountApplicableOn == PharmaDiscountApplicableOn.MRP
-            ? lineItem.mrp * lineItem.quantity
-            : lineItem.specialPrice * lineItem.quantity;
-
-        lineItem.applicablePrice =
-          lineItem.mrp < lineItem.specialPrice ? lineItem.mrp : lineItem.specialPrice;
-
-        const discountedPrice = discountCalculation(
-          itemPrice,
-          couponGenericRulesData.discountType,
-          couponGenericRulesData.discountValue
-        );
-        lineItem.discountedPrice = Number(discountedPrice.toFixed(2));
-        lineItem.applicablePrice =
-          lineItem.discountedPrice < lineItem.specialPrice * lineItem.quantity
-            ? lineItem.discountedPrice
-            : lineItem.specialPrice * lineItem.quantity;
-      } else {
-        lineItem.applicablePrice =
-          lineItem.mrp < lineItem.specialPrice ? lineItem.mrp : lineItem.specialPrice;
-        lineItem.applicablePrice = lineItem.applicablePrice * lineItem.quantity;
-      }
-    }
-    lineItem.applicablePrice = Number((lineItem.applicablePrice / lineItem.quantity).toFixed(2));
-    specialPriceTotal = specialPriceTotal + lineItem.specialPrice * lineItem.quantity;
-    mrpPriceTotal = mrpPriceTotal + lineItem.mrp * lineItem.quantity;
-    discountedPriceTotal =
-      discountedPriceTotal + (lineItem.mrp - lineItem.applicablePrice) * lineItem.quantity;
+    const product: CouponProduct = {
+      sku: item.itemId,
+      mrp: item.mrp,
+      specialPrice: item.specialPrice,
+      quantity: item.quantity,
+      totalCost: amountToBeConsidered * item.quantity,
+      categoryId: item.productType.toString(),
+    };
+    couponProduct.push(product);
   });
+
+  //build product array
+
+  const payload: ValidateCouponRequestPharma = {
+    mobile: patientData.mobileNumber.replace('+91', ''),
+    email: patientData.emailAddress,
+    billAmount: billAmount,
+    coupon: code,
+    paymentType: '',
+    pinCode: '',
+    products: couponProduct,
+  };
+
+  const couponData = await validateCoupon(payload);
+  let validityStatus = false;
+  let reasonForInvalidStatus = '';
+  const lineItemsWithDiscount: PharmaLineItems[] = [];
+
+  if (couponData && couponData.response) {
+    validityStatus = couponData.response.valid;
+    reasonForInvalidStatus = couponData.response.reason || '';
+    couponData.response.products.map((item) => {
+      const orderLineItemData = orderLineItems.filter((item1) => item1.itemId == item.sku);
+      mrpPriceTotal = mrpPriceTotal + item.mrp * item.quantity;
+      specialPriceTotal = specialPriceTotal + item.specialPrice * item.quantity;
+
+      const lineItems: PharmaLineItems = {
+        applicablePrice: Number((item.mrp - item.discountAmt).toFixed(2)),
+        discountedPrice: Number(item.discountAmt.toFixed(2)),
+        itemId: item.sku ? item.sku.toString() : '',
+        mrp: item.mrp,
+        productName: orderLineItemData.length ? orderLineItemData[0].productName : '',
+        productType: orderLineItemData.length
+          ? orderLineItemData[0].productType
+          : CouponCategoryApplicable.PHARMA_FMCG,
+        quantity: item.quantity,
+        specialPrice: item.specialPrice,
+      };
+      lineItemsWithDiscount.push(lineItems);
+    });
+  }
 
   const productDiscount = Number((mrpPriceTotal - specialPriceTotal).toFixed(2));
+  const totalDiscountPrice = couponData.response!.discount;
 
-  const discountedTotals = {
-    couponDiscount: Number((Number(discountedPriceTotal.toFixed(2)) - productDiscount).toFixed(2)),
+  const discountedTotals: DiscountedTotals = {
+    couponDiscount: Number((totalDiscountPrice - productDiscount).toFixed(2)),
     mrpPriceTotal: mrpPriceTotal,
     productDiscount: productDiscount,
   };
@@ -286,28 +192,55 @@ export const validatePharmaCoupon: Resolver<
   return {
     discountedTotals: discountedTotals,
     pharmaLineItemsWithDiscountedPrice: lineItemsWithDiscount,
-    successMessage: couponRulesData.successMessage,
-    reasonForInvalidStatus: '',
-    validityStatus: true,
+    successMessage: '',
+    reasonForInvalidStatus: reasonForInvalidStatus,
+    validityStatus: validityStatus,
   };
 };
+
+type CouponData = {
+  code: string;
+  displayStatus: boolean;
+  couponPharmaRule: {
+    messageOnCouponScreen: string;
+  };
+  couponGenericRule: {
+    isActive: boolean;
+  };
+};
+
+type CouponDetails = CouponData[];
 
 const getPharmaCouponList: Resolver<
   null,
   {},
   CouponServiceContext,
   {
-    coupons: Coupon[];
+    coupons: CouponDetails;
   }
-> = async (parent, args, { mobileNumber, patientsDb, doctorsDb, consultsDb }) => {
+> = async (parent, args, { mobileNumber, patientsDb }) => {
   //check for patient request validity
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientData = await patientRepo.findDetailsByMobileNumber(mobileNumber);
   if (patientData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  const couponRepo = patientsDb.getCustomRepository(CouponRepository);
-  const couponData = await couponRepo.getPharmaActiveCoupons();
-  return { coupons: couponData };
+  const couponDetails: CouponDetails = [];
+  const couponData = await getCouponsList();
+  couponData.response.map((item) => {
+    const singleCoupon: CouponData = {
+      code: item.coupon,
+      displayStatus: true,
+      couponPharmaRule: {
+        messageOnCouponScreen: item.message,
+      },
+      couponGenericRule: {
+        isActive: true,
+      },
+    };
+    couponDetails.push(singleCoupon);
+  });
+
+  return { coupons: couponDetails };
 };
 
 export const validatePharmaCouponResolvers = {

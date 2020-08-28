@@ -6,6 +6,7 @@ import {
   g,
   postWebEngageEvent,
   postWEGWhatsAppEvent,
+  getMaxQtyForMedicineItem,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
@@ -57,6 +58,7 @@ import {
   GetDeliveryTimeResponse,
   TatApiInput,
   getDeliveryTimeHeaderTat,
+  validateConsultCoupon,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -64,6 +66,7 @@ import {
   postPharmacyAddNewAddressClick,
   postPharmacyStorePickupViewed,
   postPharmacyStoreSelectedSuccess,
+  postPharmacyAddNewAddressCompleted,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
   WebEngageEventName,
@@ -181,6 +184,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     addresses,
     setDeliveryAddressId,
     deliveryAddressId,
+    newAddressAdded,
+    setNewAddressAdded,
     storeId,
     setStoreId,
     showPrescriptionAtStore,
@@ -229,6 +234,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [lastPincodeReplica, setLastPincodeReplica] = useState('');
   const scrollViewRef = useRef<ScrollView | null>();
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+  const [alertShown, setAlertShown] = useState<boolean>(false);
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
@@ -264,10 +270,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             } as ShoppingCartItem)
         ),
         'Service Area': 'Pharmacy',
+        'Customer ID': g(currentPatient, 'id'),
         // 'Cart ID': '', // since we don't have cartId before placing order
       };
       if (coupon) {
-        eventAttributes['Coupon code used'] = coupon.code;
+        eventAttributes['Coupon code used'] = coupon.coupon;
       }
       postWebEngageEvent(WebEngageEventName.PHARMACY_CART_VIEWED, eventAttributes);
     }
@@ -359,7 +366,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   useEffect(() => {
     if (coupon && cartTotal > 0) {
-      applyCoupon(coupon.code, cartItems);
+      applyCoupon(coupon.coupon, cartItems);
     }
   }, [cartTotal]);
 
@@ -449,6 +456,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     try {
       const res = await getDeliveryTimeHeaderTat(tatApiInput);
       const tatDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
+      const currentDate = moment();
       if (tatDate) {
         setdeliveryTime(tatDate);
         setshowDeliverySpinner(false);
@@ -457,8 +465,21 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             selectedAddress.zipcode!,
             formatAddress(selectedAddress),
             'Yes',
-            moment(tatDate, 'D-MMM-YYYY HH:mm a').toDate()
+            moment(tatDate, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
+            moment(tatDate).diff(currentDate, 'd')
           );
+
+        if (selectedAddress && selectedAddress.id === newAddressAdded) {
+          postPharmacyAddNewAddressCompleted(
+            'Cart',
+            g(selectedAddress, 'zipcode')!,
+            formatAddress(selectedAddress),
+            moment(tatDate, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
+            moment(tatDate).diff(currentDate, 'd'),
+            'Yes'
+          );
+          setNewAddressAdded && setNewAddressAdded('');
+        }
       }
     } catch (error) {
       showGenericTatDate(tatApiInput.lookup, error, true);
@@ -537,6 +558,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             deliveryAddressId
         );
         setCartItems!(validation.newItems);
+        setAlertShown(true);
         showAphAlert!({
           title: 'Hi! :)',
           description: string.medicine_cart.cartUpdatedAfterPriceCheckMsg,
@@ -570,7 +592,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     cartItemMrp: number,
     cartItemPackSize: number,
     storeMrp: number,
-    skuId: string
+    skuId: string,
+    isDifference: boolean
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.SKU_PRICE_MISMATCH] = {
       'Mobile Number': g(currentPatient, 'mobileNumber') || '',
@@ -578,6 +601,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       'Magento MRP': cartItemMrp,
       'Magento Pack Size': cartItemPackSize,
       'Store API MRP': storeMrp,
+      'Price Change In Cart': isDifference ? 'No' : 'Yes'
     };
     postWebEngageEvent(WebEngageEventName.SKU_PRICE_MISMATCH, eventAttributes);
   };
@@ -597,9 +621,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     const isDiff = storeItemPrice
       ? isDiffLessOrGreaterThan25Percent(cartItem.price, storeItemPrice)
       : true;
-    if (isDiff) {
-      postSkuPriceMismatchEvent(cartItem.price, Number(cartItem.mou), storeItemPrice, cartItem.id);
-    }
+    postSkuPriceMismatchEvent(cartItem.price, Number(cartItem.mou), storeItemPrice, cartItem.id, isDiff);
     const storeItemSP =
       !isDiff && cartItem.specialPrice
         ? getSpecialPriceFromRelativePrices(
@@ -640,6 +662,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     if (validation.alertText) {
       // setStoreInventoryCheck(false);
       setLoading!(false);
+      setAlertShown(true);
       showAphAlert!({
         title: 'Hi! :)',
         description: validation.alertText,
@@ -664,34 +687,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     return !cartItems.find((item) => !isInventoryAvailable(item));
   };
 
-  const _validateCoupon = (variables: validatePharmaCouponVariables) =>
-    client.mutate<validatePharmaCoupon, validatePharmaCouponVariables>({
-      mutation: VALIDATE_PHARMA_COUPON,
-      variables,
-    });
-
-  const validateCoupon = (coupon: string, cartItems: ShoppingCartItem[], patientId: string) => {
-    return _validateCoupon({
-      pharmaCouponInput: {
-        code: coupon,
-        patientId: patientId,
-        orderLineItems: cartItems.map(
-          (item) =>
-            ({
-              itemId: item.id,
-              mrp: item.price,
-              productName: item.name,
-              productType: item.isMedicine
-                ? CouponCategoryApplicable.PHARMA
-                : CouponCategoryApplicable.FMCG,
-              quantity: item.quantity,
-              specialPrice: item.specialPrice || item.price,
-            } as OrderLineItems)
-        ),
-      },
-    });
-  };
-
   const removeCouponWithAlert = (message: string) => {
     setCoupon!(null);
     renderAlert(message);
@@ -700,23 +695,37 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const applyCoupon = (coupon: string, cartItems: ShoppingCartItem[]) => {
     CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
     setLoading!(true);
-    validateCoupon(coupon, cartItems, g(currentPatient, 'id') || '')
-      .then(({ data }) => {
-        const validityStatus = g(data, 'validatePharmaCoupon', 'validityStatus');
-        if (validityStatus) {
-          setCoupon!({ code: coupon, ...g(data, 'validatePharmaCoupon')! });
+    const data = {
+      mobile: g(currentPatient, 'mobileNumber'),
+      billAmount: cartTotal.toFixed(2),
+      coupon: coupon,
+      pinCode: locationDetails && locationDetails.pincode,
+      products: cartItems.map((item) => ({
+        sku: item.id,
+        categoryId: item.productType,
+        mrp: item.price,
+        quantity: item.quantity,
+        specialPrice: item.specialPrice || item.price,
+      })),
+    };
+    validateConsultCoupon(data)
+      .then((resp: any) => {
+        if (resp.data.errorCode == 0) {
+          if (resp.data.response.valid) {
+            setCoupon!(g(resp.data, 'response')!);
+          } else {
+            removeCouponWithAlert(g(resp.data, 'response', 'reason'));
+          }
         } else {
-          removeCouponWithAlert(
-            g(data, 'validatePharmaCoupon', 'reasonForInvalidStatus') || 'Invalid Coupon Code.'
-          );
+          CommonBugFender('validatingPharmaCoupon', resp.data.errorMsg);
+          removeCouponWithAlert(g(resp.data, 'errorMsg'));
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        CommonBugFender('validatingPharmaCoupon', error);
         removeCouponWithAlert('Sorry, unable to validate coupon right now.');
       })
-      .finally(() => {
-        setLoading!(false);
-      });
+      .finally(() => setLoading!(false));
   };
 
   const getTatOrderType = (cartItems: ShoppingCartItem[]): 'pharma' | 'fmcg' | 'both' => {
@@ -859,6 +868,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderItemsInCart = () => {
+    // console.log('cartItems >>', cartItems);
     const cartItemsCount =
       cartItems.length > 10 || cartItems.length == 0
         ? `${cartItems.length}`
@@ -904,6 +914,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
           return (
             <MedicineCard
+              maxQty={getMaxQtyForMedicineItem(medicine.maxOrderQty)}
               // personName={
               //   currentPatient && currentPatient.firstName ? currentPatient.firstName : ''
               // }
@@ -925,6 +936,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               onPressAdd={() => {}}
               onPressRemove={() => {
                 CommonLogEvent(AppRoutes.YourCart, 'Remove item from cart');
+                const eventAttributes: WebEngageEvents[WebEngageEventName.ITEMS_REMOVED_FROM_CART] = {
+                  'Customer ID': currentPatient && currentPatient!.id,
+                  'No. of items': medicine.quantity,
+                  'Product ID': medicine.id,
+                  'Product Name': medicine.name,
+                };
+                postWebEngageEvent(WebEngageEventName.ITEMS_REMOVED_FROM_CART, eventAttributes);
                 onRemoveCartItem(medicine);
               }}
               onChangeUnit={(unit) => {
@@ -1005,6 +1023,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderHomeDelivery = () => {
+    const deliveryTimeMomentFormat = moment(
+      deliveryTime,
+      AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
+    );
     return (
       <View
         style={{ marginTop: 8, marginHorizontal: 16 }}
@@ -1072,8 +1094,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 <View style={styles.rowSpaceBetweenStyle}>
                   <Text style={styles.deliveryStyle}>{deliveryTime && 'Delivery Time'}</Text>
                   <Text style={styles.deliveryTimeStyle}>
-                    {moment(deliveryTime).isValid()
-                      ? moment(deliveryTime).format('D MMM YYYY  | hh:mm A')
+                    {deliveryTimeMomentFormat.isValid()
+                      ? deliveryTimeMomentFormat.format(
+                          AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
+                        )
                       : '...'}
                   </Text>
                 </View>
@@ -1323,6 +1347,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderCouponSection = () => {
+    // console.log('coupon >>>', coupon);
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -1330,6 +1355,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           if (cartTotal == 0) {
             renderAlert('Please add items in the cart to apply coupon.');
           } else {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.CART_APPLY_COUPON_CLCIKED] = {
+              'Customer ID': currentPatient && currentPatient!.id,
+            };
+            postWebEngageEvent(WebEngageEventName.CART_APPLY_COUPON_CLCIKED, eventAttributes);
             props.navigation.navigate(AppRoutes.ApplyCouponScene);
             setCoupon!(null);
           }
@@ -1370,21 +1399,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                       paddingHorizontal: 16,
                     }}
                   >
-                    {coupon.code + ' '}
+                    {coupon.coupon + ' '}
                   </Text>
                   Applied
-                </Text>
-              )}
-
-              {!!coupon && (
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 12, '#01475b', 1, 24),
-                    paddingHorizontal: 16,
-                    marginTop: 1,
-                  }}
-                >
-                  {coupon.successMessage}
                 </Text>
               )}
             </View>
@@ -1407,7 +1424,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   paddingVertical: 4,
                 }}
               >
-                {coupon.discountedTotals!.couponDiscount > 0
+                {couponDiscount > 0
                   ? `Savings of Rs. ${couponDiscount.toFixed(2)} on the bill`
                   : 'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'}
               </Text>
@@ -1464,7 +1481,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 </Text>
               </View>
               <View style={[styles.rowSpaceBetweenStyle, { marginTop: 5 }]}>
-                <Text style={styles.blueTextStyle}>Discount({coupon.code})</Text>
+                <Text style={styles.blueTextStyle}>Discount({coupon.coupon})</Text>
                 <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
               </View>
               <View
@@ -1689,19 +1706,24 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const postwebEngageProceedToPayEvent = () => {
+    const numberOfOutOfStockItems = cartItems.filter((medicine) => medicine.isInStock === false)
+      .length;
     const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PROCEED_TO_PAY_CLICKED] = {
       'Total items in cart': cartItems.length,
       'Sub Total': cartTotal,
       'Delivery charge': deliveryCharges,
       'Net after discount': grandTotal,
-      'Prescription Needed?': uploadPrescriptionRequired,
+      'Prescription Needed?': uploadPrescriptionRequired ? true : false,
       // 'Cart ID': '', // since we don't have cartId before placing order
       'Mode of Delivery': selectedTab === tabs[0].title ? 'Home' : 'Pickup',
       'Delivery Date Time':
         selectedTab === tabs[0].title && moment(deliveryTime).isValid ? deliveryTime : undefined, // Optional (only if Home)
       'Pin Code': pinCode,
       'Service Area': 'Pharmacy',
+      'Popup Shown': alertShown,
+      'No. of out of stock items': numberOfOutOfStockItems,
     };
+    setAlertShown(false);
     if (selectedStore) {
       eventAttributes['Store Id'] = selectedStore.storeid;
       eventAttributes['Store Name'] = selectedStore.storename;

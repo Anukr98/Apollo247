@@ -50,6 +50,7 @@ import {
   doRequestAndAccessLocationModified,
   formatAddress,
   getFormattedLocation,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -68,9 +69,9 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { postPharmacyAddNewAddressCompleted } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 
 const { height, width } = Dimensions.get('window');
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -140,7 +141,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
-  const { addAddress, setDeliveryAddressId } = useShoppingCart();
+  const { addAddress, setDeliveryAddressId, setNewAddressAdded } = useShoppingCart();
   const {
     addAddress: addDiagnosticAddress,
     setDeliveryAddressId: setDiagnosticAddressId,
@@ -316,29 +317,23 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         addAddress!(address);
         addDiagnosticAddress!(address);
 
-        const formattedAddress = formatAddress(address);
+        if (source === 'Upload Prescription') {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED] = {
+            Serviceable: isAddressServiceable ? 'Yes' : 'No',
+          };
+          postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED, eventAttributes);
+        }
+
         if (isAddressServiceable || addOnly) {
-          if (source != 'Diagnostics Cart') {
-            postPharmacyAddNewAddressCompleted(
-              source,
-              g(address, 'zipcode')!,
-              formattedAddress,
-              source == 'My Account' ? undefined : 'Yes'
-            );
-          }
           setDeliveryAddressId!(address.id || '');
+          setNewAddressAdded!(address.id || '');
           setDiagnosticAddressId!(address.id || '');
           props.navigation.goBack();
         } else {
           setDeliveryAddressId!('');
+          setNewAddressAdded!('');
           setDiagnosticAddressId!(address.id || '');
 
-          postPharmacyAddNewAddressCompleted(
-            'Cart',
-            g(address, 'zipcode')!,
-            formattedAddress,
-            'No'
-          );
           showAphAlert!({
             title: 'Uh oh.. :(',
             description: string.medicine_cart.pharmaAddressUnServiceableAlert,
@@ -698,6 +693,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   .then((_data: any) => {
                     console.log(('dat', _data));
                     setDeliveryAddressId!('');
+                    setNewAddressAdded!('');
                     setDiagnosticAddressId!('');
                     props.navigation.pop(2, { immediate: true });
                     props.navigation.push(AppRoutes.AddressBook);
@@ -754,7 +750,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} {...keyboardVerticalOffset}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} {...keyboardVerticalOffset}>
           <ScrollView bounces={false}>
             {renderAddress()}
             <View style={{ height: Platform.OS == 'ios' ? 60 : 0 }} />

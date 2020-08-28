@@ -61,12 +61,18 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 0,
       borderTop: '0.5px solid rgba(2,71,91,0.2)',
       paddingTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        margin: '10px 0 0',
+      },
     },
     deliveryTimeGroupWrap: {
       display: 'flex',
       backgroundColor: theme.palette.common.white,
       padding: 10,
       borderRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        padding: 0,
+      },
     },
     deliveryTime: {
       fontSize: 14,
@@ -219,6 +225,7 @@ type HomeDeliveryProps = {
   setDeliveryTime: (deliveryTime: string) => void;
   deliveryTime: string;
   selectedZipCode: (zipCode: string) => void;
+  checkForPriceUpdate: (shopid: string) => void;
 };
 
 interface TatInterface {
@@ -410,13 +417,16 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           }),
         }
       )
-      .then(({ data }: any) => {
+      .then(async ({ data }: any) => {
+        sessionStorage.removeItem('tatFail');
         if (data && data.tat && data.tat[0]) {
           setDeliveryTime(data.tat[0].deliverydate);
+          props.checkForPriceUpdate(data.tat[0].siteId);
           changeCartTatStatus && changeCartTatStatus(true);
         }
       })
       .catch((e) => {
+        sessionStorage.setItem('tatFail', 'true');
         console.log(e);
         setDefaultDeliveryTime();
       });
@@ -461,7 +471,12 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               const tatResult = res.data.tat;
 
               const nonDeliverySKUArr = tatResult
-                .filter((item: TatInterface) => getDiffInDays(item.deliverydate) > 10)
+                .filter(
+                  (item: TatInterface) =>
+                    getDiffInDays(item.deliverydate) > 10 ||
+                    item.siteId === '' ||
+                    item.siteId === null
+                )
                 .map((filteredSku: TatInterface) => filteredSku.artCode);
 
               const deliverableSku = tatResult
@@ -506,6 +521,11 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         } catch (error) {
           console.log(error);
           setDefaultDeliveryTime();
+          fetchUserDisplayDeliveryTime({
+            postalcode: zipCode || '',
+            ordertype: medicineCartType,
+            lookup: lookUp,
+          });
         }
       })
       .catch((error: any) => {
@@ -617,53 +637,53 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               <CircularProgress />
             </div>
           ) : (
-            <ul>
-              {deliveryAddresses.map(
-                (address, idx) =>
-                  idx === selectedAddressDataIndex && (
-                    <li key={idx}>
-                      <FormControlLabel
-                        checked={address.id === deliveryAddressId}
-                        className={classes.radioLabel}
-                        value={address.id}
-                        control={<AphRadio color="primary" />}
-                        label={formatAddress(address)}
-                        onChange={() => {
-                          checkServiceAvailabilityCheck(address.zipcode)
-                            .then((res: AxiosResponse) => {
-                              if (res && res.data && res.data.Availability) {
-                                /**Gtm code start  */
-                                gtmTracking({
-                                  category: 'Pharmacy',
-                                  action: 'Order',
-                                  label: 'Address Selected',
-                                });
-                                /**Gtm code End  */
-                                checkLatLongStateCodeAvailability(address);
-                              } else {
-                                setShowPlaceNotFoundPopup(true);
-                              }
-                            })
-                            .catch((e: any) => {
-                              console.log(e);
-                            });
-                        }}
-                      />
-                    </li>
-                  )
-              )}
-            </ul>
-          )}
+              <ul>
+                {deliveryAddresses.map(
+                  (address, idx) =>
+                    idx === selectedAddressDataIndex && (
+                      <li key={idx}>
+                        <FormControlLabel
+                          checked={address.id === deliveryAddressId}
+                          className={classes.radioLabel}
+                          value={address.id}
+                          control={<AphRadio color="primary" />}
+                          label={formatAddress(address)}
+                          onChange={() => {
+                            checkServiceAvailabilityCheck(address.zipcode)
+                              .then((res: AxiosResponse) => {
+                                if (res && res.data && res.data.Availability) {
+                                  /**Gtm code start  */
+                                  gtmTracking({
+                                    category: 'Pharmacy',
+                                    action: 'Order',
+                                    label: 'Address Selected',
+                                  });
+                                  /**Gtm code End  */
+                                  checkLatLongStateCodeAvailability(address);
+                                } else {
+                                  setShowPlaceNotFoundPopup(true);
+                                }
+                              })
+                              .catch((e: any) => {
+                                console.log(e);
+                              });
+                          }}
+                        />
+                      </li>
+                    )
+                )}
+              </ul>
+            )}
         </>
       ) : (
-        <>
-          {isLoading && (
-            <div className={classes.alignCenter}>
-              <CircularProgress />
-            </div>
-          )}
-        </>
-      )}
+          <>
+            {isLoading && (
+              <div className={classes.alignCenter}>
+                <CircularProgress />
+              </div>
+            )}
+          </>
+        )}
 
       <div className={classes.bottomActions}>
         {!isSigningIn ? (

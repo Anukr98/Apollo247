@@ -1,6 +1,7 @@
 import AbortController from 'abort-controller';
 import { debugLog } from 'customWinstonLogger';
 import fetch from 'node-fetch';
+import fs from 'fs';
 import {
   LabResultsUploadResponse,
   LabResultsUploadRequest,
@@ -16,8 +17,11 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Patient, Gender } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
-import { getUnixTime } from 'date-fns';
+import { getUnixTime, format } from 'date-fns';
 import { PrismGetUsersResponse } from 'types/prism';
+
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import path from 'path';
 
 const prismTimeoutMillSeconds = Number(process.env.PRISM_TIMEOUT_IN_MILLISECONDS);
 
@@ -524,6 +528,94 @@ export async function getAuthToken(primaryuhid: string): Promise<GetAuthTokenRes
           throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
         } else {
           throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+
+export async function downloadDocumentAndSaveToBlob(
+  uhid: string,
+  fileUrl: string,
+  prismFileId: string
+): Promise<string> {
+  if (
+    !process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT ||
+    !process.env.PHR_V1_ACCESS_TOKEN ||
+    !process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT
+  )
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  const getToken = await getAuthToken(uhid);
+
+  const fileUrlArray = fileUrl.split('&');
+  const fileNameArray = fileUrlArray.filter((item) => item.indexOf('fileName') >= 0);
+  const fileName =
+    fileNameArray.length > 0
+      ? fileNameArray[0].replace('fileName=', '')
+      : format(new Date(), 'ddmmyyyy-HHmmss') + '.jpeg';
+
+  let apiUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
+  if (fileUrl.indexOf('labresults=') > 0)
+    apiUrl = process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT.toString();
+  apiUrl = apiUrl.replace('{AUTH_KEY}', getToken.response);
+  apiUrl = apiUrl.replace('{UHID}', uhid);
+  apiUrl = apiUrl.replace('{RECORDID}', prismFileId);
+  apiUrl = apiUrl.replace('{FILE_NAME}', fileName);
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+  })
+    .then(
+      async (res) => {
+        dLogger(
+          reqStartTime,
+          'PRISM_DOWNLOAD_FILE_AND_UPLOAD_BLOB_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(res)}`
+        );
+
+        const filePath = path.resolve(process.env.ASSETS_DIRECTORY!.toString(), fileName);
+
+        const file = fs.createWriteStream(filePath);
+        res.body.pipe(file);
+        await delay(350);
+
+        function delay(ms: number) {
+          return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        const client = new AphStorageClient(
+          process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+          process.env.AZURE_STORAGE_CONTAINER_NAME
+        );
+
+        const blob = await client.uploadFile({ name: fileName, filePath });
+        const blobUrl = client.getBlobUrl(blob.name);
+        fs.unlink(filePath, (error) => console.log(error));
+        return blobUrl;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'PRISM_DOWNLOAD_FILE_AND_UPLOAD_BLOB_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.PRISM_PRESCRIPTIONS_FETCH_ERROR);
         }
       }
     )

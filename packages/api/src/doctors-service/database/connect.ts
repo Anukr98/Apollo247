@@ -50,6 +50,7 @@ import {
   Deeplink,
   DoctorPatientExternalConnect,
   AdminAuditLogs,
+  DoctorProfileHistory,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -75,6 +76,7 @@ import {
   MedicineOrders,
   MedicineOrdersStatus,
   MedicineOrderShipments,
+  MedicineOrderRefunds,
   Patient,
   PatientAddress,
   PatientDeviceTokens,
@@ -90,9 +92,13 @@ import {
   CouponPharmaRules,
   MedicineOrderCancelReason,
   PharmacologistConsult,
+  MedicineOrderAddress,
+  PatientEntitiySubscriber,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
+import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
+import { AdminFilterMapper } from 'doctors-service/entities/AdminFilterMapper';
 
 export const connect = async () => {
   return await createConnections([
@@ -122,6 +128,8 @@ export const connect = async () => {
         CityPincodeMapper,
         DoctorPatientExternalConnect,
         AdminAuditLogs,
+        DoctorProfileHistory,
+        AdminFilterMapper,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -169,6 +177,7 @@ export const connect = async () => {
       username: process.env.CONSULTS_DB_USER,
       password: process.env.CONSULTS_DB_PASSWORD,
       database: `consults_${process.env.DB_NODE_ENV}`,
+      subscribers: [AppointmentEntitySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
@@ -201,6 +210,7 @@ export const connect = async () => {
         MedicineOrders,
         MedicineOrdersStatus,
         MedicineOrderShipments,
+        MedicineOrderRefunds,
         Patient,
         PatientAddress,
         PatientDeviceTokens,
@@ -215,6 +225,7 @@ export const connect = async () => {
         RegistrationCodes,
         MedicineOrderCancelReason,
         PharmacologistConsult,
+        MedicineOrderAddress,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
@@ -222,6 +233,7 @@ export const connect = async () => {
       username: process.env.PROFILES_DB_USER,
       password: process.env.PROFILES_DB_PASSWORD,
       database: `profiles_${process.env.DB_NODE_ENV}`,
+      subscribers: [PatientEntitiySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,

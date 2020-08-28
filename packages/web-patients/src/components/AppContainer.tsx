@@ -20,7 +20,7 @@ import { TestsCartLanding } from 'components/Tests/Cart/TestsCartLanding';
 import { MedicineLanding } from 'components/Medicine/MedicineLanding';
 import { ViewAllBrands } from 'components/Medicine/ViewAllBrands';
 import { SearchByBrand } from 'components/Medicine/SearchByBrand';
-import { Appointments } from 'components/ConsultRoom/Appointments';
+import { Appointments } from 'components/Consult/V2/Appointments';
 import { ChatRoom } from 'components/ChatRoom/ChatRoom';
 import { PrescriptionsLanding } from 'components/Prescriptions/PrescriptionsLanding';
 import { MyAccount } from 'components/MyAccount/MyAccount';
@@ -64,13 +64,14 @@ import { SpecialityListing } from 'components/SpecialityListing';
 import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
 import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 import { MedicineSearch } from './Medicine/MedicineSearch';
-import { CovidDiabetesLanding } from 'components/Covid/CovidDiabetesLanding';
 import { DoctorsLanding } from 'components/DoctorsLanding';
 import { HdfcLanding } from 'components/Partners/Hdfc/HdfcLanding';
 import { HdfcMemberShip } from 'components/Partners/Hdfc/HdfcMembership';
 import { MyMembership } from 'components/Partners/Hdfc/MyMembership';
 import { MembershipPlanLocked } from 'components/Partners/Hdfc/MembershipPlanLocked';
 import { MembershipPlanDetail } from 'components/Partners/Hdfc/MembershipPlanDetail';
+import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
+import { Loader } from 'components/Loader';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -103,7 +104,7 @@ const App: React.FC = () => {
   const pageName = window.location.pathname;
 
   useEffect(() => {
-    if (signInError) window.alert('Error signing in :(');
+    if (signInError) console.log('Error signing in :(');
   }, [signInError]);
 
   return (
@@ -149,7 +150,7 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
           <Route exact path={clientRoutes.medicineSearch()} component={MedicineSearch} />
           <Route exact path={clientRoutes.medicinesLandingViewCart()} component={MedicineLanding} />
-          <Route exact path={clientRoutes.payMedicine(':payType')} component={PayMedicine} />
+          <AuthRouted exact path={clientRoutes.payMedicine(':payType')} component={PayMedicine} />
           <AuthRouted
             exact
             path={clientRoutes.medicinesCartInfo(':orderAutoId', ':orderStatus')}
@@ -244,6 +245,7 @@ const App: React.FC = () => {
             path={clientRoutes.membershipPlanDetail()}
             component={MembershipPlanDetail}
           />
+          <Route exact path={clientRoutes.covidProtocol()} component={covidProtocolLanding} />
         </Switch>
       </div>
     </Scrollbars>
@@ -261,6 +263,7 @@ const AppContainer: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Loader />
         <AphThemeProvider theme={theme}>
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
             <MedicinesCartProvider>
