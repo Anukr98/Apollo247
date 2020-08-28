@@ -4,6 +4,7 @@ import React from 'react';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -146,16 +147,18 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
                     {`Next slot for ${props.messageDetails.transferInfo.doctorInfo &&
                       props.messageDetails.transferInfo.doctorInfo.displayName} is available on- `}
                   </div>
-                  <div>{props.messageDetails.transferInfo.transferDateTime}</div>
+                  <div>
+                    {moment(props.messageDetails.transferInfo.transferDateTime).format(
+                      'Do MMMM, dddd \nhh:mm a'
+                    )}
+                  </div>
                 </>
               )}
 
               <div>
-                {props.messageDetails &&
-                  props.messageDetails.transferInfo &&
-                  props.messageDetails.transferInfo.pdfUrl && (
-                    <button className={classes.downloadBtn}>CHANGE SLOT</button>
-                  )}
+                {props.messageDetails && props.messageDetails.transferInfo && (
+                  <button className={classes.downloadBtn}>CHANGE SLOT</button>
+                )}
 
                 <button className={classes.viewBtn}>ACCEPT</button>
               </div>
