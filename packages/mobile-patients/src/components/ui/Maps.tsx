@@ -33,7 +33,7 @@ import {
 import {
   getLatLongFromAddress,
   getPlaceInfoByLatLng,
-  pinCodeServiceabilityApi,
+  pinCodeServiceabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -49,7 +49,7 @@ import MapView,{Marker,PROVIDER_GOOGLE, Coordinate, MapEvent } from 'react-nativ
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Location } from './Icons';
 import Geolocation from '@react-native-community/geolocation';
-
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const FakeMarker = require('../ui/icons/ic-marker.png');
 const icon_gps = require('../ui/icons/ic_gps_fixed.png');
@@ -319,12 +319,13 @@ export const Maps : React.FC<MapProps> = (props) =>{
       try {
         const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
           saveAddress(addressInput),
-          addOnly ? null : pinCodeServiceabilityApi(pincode),
+          addOnly ? null : pinCodeServiceabilityApi247(pincode),
         ]);
 
         setshowSpinner(false);
         const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
-        const isAddressServiceable = pinAvailabilityResult && pinAvailabilityResult.data.Availability;
+        const isAddressServiceable =
+        pinAvailabilityResult && pinAvailabilityResult.data.response;
         let isComingFrom = props.navigation.getParam('source');
         addAddress!(address);
         addDiagnosticAddress!(address);
