@@ -470,30 +470,17 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     );
   };
  
-  const _validateAndSetUserName = (value: string) => {
-    if(value == ' '){
-      return false;
-    }
-    if (/^[a-zA-Z'’ ]*$/.test(value)) {
-      setuserName(value);
-    } else {
-      return false;
-    }
-  };
 
   const _validateAndSetPhoneNumber = (value : string) =>{
     if (/^\d+$/.test(value) || value == '') {
       setphoneNumber(value)
       setPhoneNumberIsValid(isValidPhoneNumber(value));
     }
-    else{
-      return false
-    }
   }
 
   const validateUserDetails = () =>{
     let validationMessage = '';
-    if(!userName){
+    if(!userName || !/^[A-Za-z]/.test(userName)){
       validationMessage = 'Enter Valid Name'
     }
     else if(!phoneNumberIsValid){
@@ -576,7 +563,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     const noLatLong = (latitude ==0 || longitude == 0) ? true : false;
     if(isEdit){
       //now if mandate fields are empty or not + lat-long 
-      isAddressValid ? onUpdateDetails() : setEditProfile(false)
+        isAddressValid ? onUpdateDetails() : setEditProfile(false)
     }
     else{
       //save it locally
@@ -594,7 +581,7 @@ const renderUserDetails = () => {
               <Text style={{color: editProfile ? theme.colors.placeholderTextColor :'#02475b', ...fonts.IBMPlexSansMedium(16)}}>Name : </Text>
               <TextInputComponent 
                 conatinerstyles={{flex:1,top: editProfile ?-9 :-6}}
-                onChangeText={(userName) => _validateAndSetUserName(userName)}
+                onChangeText={(userName) => (userName.startsWith(' ') ?  null : setuserName(userName))}
                 value={userName} 
                 editable={editProfile} 
                 placeholder={'Full Name'} 
@@ -761,14 +748,18 @@ const renderAddressText = () =>{
               if (addressLine1 == '') {
                 setaddressLine1(addressLine1);
               }
-              if (
-                addressLine1.startsWith(' ') ||
-                addressLine1.startsWith('.') ||
-                addressLine1.startsWith(',') ||
-                addressLine1.startsWith('/') ||
-                addressLine1.startsWith('-')
-              ) {
-                return;
+              // if (
+              //   addressLine1.startsWith(' ') ||
+              //   addressLine1.startsWith('.') ||
+              //   addressLine1.startsWith(',') ||
+              //   addressLine1.startsWith('/') ||
+              //   addressLine1.startsWith('-')
+              // ) {
+              //   return;
+              // }!/^[A-Za-z0-9]/
+
+              if(!/^[A-Za-z0-9]/.test(addressLine1)){
+                  return
               }
               if (/^([a-zA-Z0-9/,.-\s])+$/.test(addressLine1)) {
                 setaddressLine1(addressLine1);
@@ -783,14 +774,17 @@ const renderAddressText = () =>{
               if (areaDetails == '') {
                 setareaDetails(areaDetails);
               }
-              if (
-                areaDetails.startsWith(' ') ||
-                areaDetails.startsWith('.') ||
-                areaDetails.startsWith(',') ||
-                areaDetails.startsWith('/') ||
-                areaDetails.startsWith('-')
-              ) {
-                return;
+              // if (
+              //   areaDetails.startsWith(' ') ||
+              //   areaDetails.startsWith('.') ||
+              //   areaDetails.startsWith(',') ||
+              //   areaDetails.startsWith('/') ||
+              //   areaDetails.startsWith('-')
+              // ) {
+              //   return;
+              // }
+              if(!/^[A-Za-z0-9]/.test(addressLine1)){
+                return
               }
               if (/^([a-zA-Z0-9/,.-\s])+$/.test(areaDetails)) {
                 setareaDetails(areaDetails);

@@ -37,7 +37,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useRef } from 'react';
 import {Dimensions,View, SafeAreaView, Text,StyleSheet, Image,TouchableOpacity} from 'react-native';
 import { useApolloClient } from 'react-apollo-hooks';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -50,6 +50,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Location } from './Icons';
 import Geolocation from '@react-native-community/geolocation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+
 
 const FakeMarker = require('../ui/icons/ic-marker.png');
 const icon_gps = require('../ui/icons/ic_gps_fixed.png');
@@ -178,6 +179,7 @@ export const Maps : React.FC<MapProps> = (props) =>{
   setDeliveryAddressId: setDiagnosticAddressId,
   } = useDiagnosticsCart();
   const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const _map = useRef(null);
 
 
   const [region, setRegion] = useState({
@@ -212,6 +214,13 @@ export const Maps : React.FC<MapProps> = (props) =>{
           const latLang = data.results[0].geometry.location || {};
           setLatitude(latLang.lat);
           setLongitude(latLang.lng);
+          /**added so that, it always picks the one from the address entered.
+           * if we want to show the location wherever he has left, then remove this code.
+           */
+          // setRegion({ latitude: latLang.lat,
+          //   longitude: latLang.lng,
+          //   latitudeDelta: 0.01,
+          //   longitudeDelta: 0.01})
         }
         catch(e){
           //show current location
@@ -495,6 +504,7 @@ export const Maps : React.FC<MapProps> = (props) =>{
         provider={PROVIDER_GOOGLE}
         style={{height: screenHeight/1.75}}
         region={region}
+        ref={_map}
         zoomEnabled={true}
         minZoomLevel={9}
         onMapReady={()=>console.log("ready")}
