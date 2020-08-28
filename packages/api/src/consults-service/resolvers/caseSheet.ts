@@ -53,7 +53,7 @@ import { NotificationType } from 'notifications-service/constants';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
-import { addDays } from 'date-fns';
+import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
 
 export type DiagnosisJson = {
   name: string;
@@ -869,20 +869,22 @@ const modifyCaseSheet: Resolver<
   }
 
   if (!(inputArguments.followUpAfterInDays === undefined)) {
-    
-    if(inputArguments.followUpAfterInDays > ApiConstants.CHAT_DAYS_LIMIT) {
-      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
-    } else if(inputArguments.followUpAfterInDays < 0){
+    if (
+      inputArguments.followUpAfterInDays > ApiConstants.CHAT_DAYS_LIMIT ||
+      inputArguments.followUpAfterInDays < 0
+    ) {
       throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
     }
 
     getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
     getCaseSheetData.followUp = true;
 
-    if(getCaseSheetData.appointment.sdConsultationDate){
-      getCaseSheetData.followUpDate = addDays(getCaseSheetData.appointment.sdConsultationDate, getCaseSheetData.followUpAfterInDays);
+    if (getCaseSheetData.appointment.sdConsultationDate) {
+      getCaseSheetData.followUpDate = addDays(
+        getCaseSheetData.appointment.sdConsultationDate,
+        getCaseSheetData.followUpAfterInDays
+      );
     }
-
   }
 
   if (!(inputArguments.status === undefined)) {
@@ -1136,6 +1138,7 @@ const createJuniorDoctorCaseSheet: Resolver<
   return caseSheetDetails;
 };
 
+const REDIS_SDCASESHEET_LOCK_PREFIX = `sdcasesheet:lock:`;
 const createSeniorDoctorCaseSheet: Resolver<
   null,
   { appointmentId: string },
@@ -1160,6 +1163,13 @@ const createSeniorDoctorCaseSheet: Resolver<
   //check whether if senior doctors casesheet already exists
   const sdCaseSheets = await caseSheetRepo.getSeniorDoctorMultipleCaseSheet(args.appointmentId);
 
+  const lockKey = `${REDIS_SDCASESHEET_LOCK_PREFIX}${args.appointmentId}`;
+  const lockedAppointment = await getCache(lockKey);
+  if (lockedAppointment && typeof lockedAppointment == 'string') {
+    throw new Error(AphErrorMessages.CASESHEET_CREATION_IN_PROGRESS);
+  }
+  await setCache(lockKey, 'true', ApiConstants.CACHE_EXPIRATION_120);
+
   if (sdCaseSheets == null || sdCaseSheets.length == 0) {
     const caseSheetAttrs: Partial<CaseSheet> = {
       diagnosis: juniorDoctorcaseSheet.diagnosis,
@@ -1177,6 +1187,8 @@ const createSeniorDoctorCaseSheet: Resolver<
       createdDoctorId: appointmentData.doctorId,
       doctorType: doctorData.doctorType,
     };
+
+    const newCaseSheet = await caseSheetRepo.savecaseSheet(caseSheetAttrs);
     const historyAttrs: Partial<AppointmentUpdateHistory> = {
       appointment: appointmentData,
       userType: APPOINTMENT_UPDATED_BY.DOCTOR,
@@ -1190,12 +1202,14 @@ const createSeniorDoctorCaseSheet: Resolver<
         'SD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + appointmentData.doctorId,
     };
     appointmentRepo.saveAppointmentHistory(historyAttrs);
-    return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
+    await delCache(lockKey);
+    return newCaseSheet;
   }
 
   if (sdCaseSheets.length > 0) {
     //check whether latest version is not in complete status
     if (sdCaseSheets[0].status != CASESHEET_STATUS.COMPLETED) {
+      await delCache(lockKey);
       return sdCaseSheets[0];
     }
     const caseSheetAttrs: Partial<CaseSheet> = {
@@ -1219,6 +1233,8 @@ const createSeniorDoctorCaseSheet: Resolver<
       isJdConsultStarted: sdCaseSheets[0].isJdConsultStarted,
       notes: sdCaseSheets[0].notes,
     };
+
+    const newCaseSheet = await caseSheetRepo.savecaseSheet(caseSheetAttrs);
     const historyAttrs: Partial<AppointmentUpdateHistory> = {
       appointment: appointmentData,
       userType: APPOINTMENT_UPDATED_BY.DOCTOR,
@@ -1231,9 +1247,11 @@ const createSeniorDoctorCaseSheet: Resolver<
       reason: 'SD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + doctorData.id,
     };
     appointmentRepo.saveAppointmentHistory(historyAttrs);
-    return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
+    await delCache(lockKey);
+    return newCaseSheet;
   }
 
+  await delCache(lockKey);
   return sdCaseSheets[0];
 };
 
@@ -1407,8 +1425,8 @@ const updatePatientPrescriptionSentStatus: Resolver<
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
       data: {
-        caseSheetId: getCaseSheetData.id
-      }
+        caseSheetId: getCaseSheetData.id,
+      },
     };
 
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
@@ -1537,8 +1555,8 @@ const generatePrescriptionTemp: Resolver<
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
       data: {
-        caseSheetId: getCaseSheetData.id
-      }
+        caseSheetId: getCaseSheetData.id,
+      },
     };
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
     caseSheetAttrs = {
@@ -1607,7 +1625,7 @@ const getSDLatestCompletedCaseSheet: Resolver<
 
   //check whether there is a senior doctor case-sheet
   const caseSheetDetails = await caseSheetRepo.getSDLatestCompletedCaseSheet(appointmentData.id);
-  console.log("caseSheetDetails > ", caseSheetDetails);
+  console.log('caseSheetDetails > ', caseSheetDetails);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);

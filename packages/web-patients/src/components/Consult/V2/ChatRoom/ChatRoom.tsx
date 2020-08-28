@@ -828,7 +828,7 @@ export const ChatRoom: React.FC = () => {
               <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <div className={classes.windowBody}>
-              <p>`Hi! :)`</p>
+              <p>Hi! :)</p>
               <p>
                 Your appointment with Dr.
                 {` ${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName} `}

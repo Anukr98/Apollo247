@@ -968,7 +968,12 @@ export const MedicineCart: React.FC = (props) => {
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
-            isMedicine: _lowerCase(cartItemDetails.type_id) === 'pharma' ? '1' : '0',
+            isMedicine:
+              _lowerCase(cartItemDetails.type_id) === 'pharma'
+                ? '1'
+                : _lowerCase(cartItemDetails.type_id) === 'pl'
+                ? '2'
+                : '0',
             specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
           };
         })
@@ -1862,7 +1867,7 @@ export const MedicineCart: React.FC = (props) => {
                                       ? Number(totalAmount) -
                                         (Number(validateCouponResult.discount.toFixed(2)) -
                                           Number(productDiscount.toFixed(2)))
-                                      : Number(totalAmount) - Number(productDiscount.toFixed(2)),
+                                      : Number(totalAmount),
                                   deliveryTime: deliveryTime,
                                   validateCouponResult: validateCouponResult,
                                   shopId: shopId,
@@ -1962,6 +1967,7 @@ export const MedicineCart: React.FC = (props) => {
                     }
                     if (
                       checkForCartChanges(shopId).then((res) => {
+                        
                         if (res) {
                           if (isChennaiZipCode(zipCodeInt)) {
                             // redirect to chennai orders form
@@ -1974,9 +1980,11 @@ export const MedicineCart: React.FC = (props) => {
                               couponCode: couponCode == '' ? null : couponCode,
                               couponValue: couponDiscount,
                               totalWithCouponDiscount:
-                                Number(totalAmount) -
-                                (Number(validateCouponResult.discount.toFixed(2)) -
-                                  Number(productDiscount.toFixed(2))),
+                                validateCouponResult && validateCouponResult.discount
+                                  ? Number(totalAmount) -
+                                    (Number(validateCouponResult.discount.toFixed(2)) -
+                                      Number(productDiscount.toFixed(2)))
+                                  : Number(totalAmount),
                               deliveryTime: deliveryTime,
                               validateCouponResult: validateCouponResult,
                               shopId: shopId,
