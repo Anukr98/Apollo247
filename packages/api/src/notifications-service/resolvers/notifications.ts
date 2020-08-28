@@ -8,12 +8,10 @@ import { ApiConstants } from 'ApiConstants';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorDeviceTokenRepository } from 'doctors-service/repositories/doctorDeviceTokenRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { addMilliseconds, format, addDays, addMinutes } from 'date-fns';
+import { addMilliseconds, format, addDays } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
-import { log } from 'customWinstonLogger';
 import { APPOINTMENT_TYPE, Appointment, STATUS } from 'consults-service/entities';
-import * as child_process from 'child_process';
 import { admin } from 'firebase';
 import { NotificationType, NotificationPriority } from 'notifications-service/constants';
 import {
