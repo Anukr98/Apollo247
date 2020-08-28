@@ -935,6 +935,7 @@ export const SAVE_PATIENT_ADDRESS = gql`
         latitude
         longitude
         stateCode
+        name
       }
     }
   }
@@ -957,6 +958,8 @@ export const UPDATE_PATIENT_ADDRESS = gql`
         latitude
         longitude
         stateCode
+        mobileNumber
+        name
       }
     }
   }
@@ -978,6 +981,9 @@ export const GET_PATIENT_ADDRESS_BY_ID = gql`
         city
         state
         zipcode
+        landmark
+        mobileNumber
+        name
       }
     }
   }
@@ -1074,6 +1080,7 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         longitude
         stateCode
         mobileNumber
+        name
       }
     }
   }

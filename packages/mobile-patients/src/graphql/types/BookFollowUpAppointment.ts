@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { BookFollowUpAppointmentInput, APPOINTMENT_TYPE, APPOINTMENT_STATE, STATUS } from "./globalTypes";

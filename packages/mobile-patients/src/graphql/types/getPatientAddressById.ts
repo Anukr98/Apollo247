@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -13,6 +14,9 @@ export interface getPatientAddressById_getPatientAddressById_patientAddress {
   city: string | null;
   state: string | null;
   zipcode: string | null;
+  landmark: string | null;
+  mobileNumber: string | null;
+  name: string | null;
 }
 
 export interface getPatientAddressById_getPatientAddressById {

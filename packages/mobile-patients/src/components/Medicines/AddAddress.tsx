@@ -52,7 +52,6 @@ import {
   doRequestAndAccessLocationModified,
   formatAddress,
   getFormattedLocation,
-  postWebEngageEvent,
   isValidPhoneNumber
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -167,8 +166,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     addressType === addressData.addressType &&
     optionalAddress === addressData.otherAddressType;
 
-  /** different on what case take it to map add name as well */
-  const areFieldsSame =  isChanged && phoneNumber === addressData?.mobileNumber;
+  /** different on what case take it to map  */
+  const areFieldsSame =  isChanged && phoneNumber === addressData?.mobileNumber && userName === addressData?.name;
 
   const formatCityStateDisplay = (city: string, state: string) => [city, state].join(', ');
 
@@ -196,6 +195,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       setLatitude(addressData.latitude!);
       setLongitude(addressData.longitude!);
       setStateCode(addressData.stateCode || '');
+      setuserName(addressData.name!);
     } else {
       if (!(locationDetails && locationDetails.pincode)) {
         doRequestAndAccessLocationModified()
@@ -275,6 +275,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           latitude: latitude,
           longitude: longitude,
           stateCode: finalStateCode,
+          name: userName,
         };
         props.navigation.navigate(AppRoutes.Maps,{
           addressDetails: updateaddressInput,
@@ -310,6 +311,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         latitude: latitude, //from the pincode
         longitude: longitude, //from the pincode
         stateCode: finalStateCode,
+        name: userName
       };
         props.navigation.navigate(AppRoutes.Maps,{
           addressDetails: addressInput,
@@ -323,7 +325,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
 
   useEffect(() => {
     if (currentPatient) {
-      setuserName(currentPatient.firstName!);
+      const _setUserName = addressData?.name! ? addressData?.name :currentPatient.firstName!
+      setuserName(_setUserName);
       setuserId(currentPatient.id);
       if(addressData?.mobileNumber){
         setphoneNumber(addressData.mobileNumber);
@@ -502,6 +505,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             latitude: latitude,
             longitude: longitude,
             stateCode: finalStateCode,
+            name:userName,
           };
           console.log(updateaddressInputForEdit, 'updateaddressInputForEdit');
           setshowSpinner(true);

@@ -35,14 +35,12 @@ import {
   getPlaceInfoByLatLng,
   pinCodeServiceabilityApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import React, { useEffect, useState } from 'react';
 import {Dimensions,View, SafeAreaView, Text,StyleSheet, Image,TouchableOpacity} from 'react-native';
 import { useApolloClient } from 'react-apollo-hooks';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
@@ -51,8 +49,6 @@ import MapView,{Marker,PROVIDER_GOOGLE, Coordinate, MapEvent } from 'react-nativ
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Location } from './Icons';
 import Geolocation from '@react-native-community/geolocation';
-import { format } from 'crypto-js';
-import { Item } from 'react-native-paper/lib/typescript/src/components/List/List';
 
 
 const FakeMarker = require('../ui/icons/ic-marker.png');
@@ -223,7 +219,7 @@ export const Maps : React.FC<MapProps> = (props) =>{
         }
       })
       .catch()    
-  },[latitude,longitude]);
+  },[]);
 
   const onChangePress = () =>{
     props.navigation.goBack();
@@ -235,8 +231,33 @@ export const Maps : React.FC<MapProps> = (props) =>{
       variables: { PatientAddressInput: addressInput },
     });
 
+  /** haversine formula */
+  const calcuteDiffInMeters = (lat1: number, lon1: number, lat2:number, lon2:number) => {  
+      var R = 6378.137; // Radius of earth in KM
+      var dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
+      var dLon = lon2 * Math.PI / 180 - lon1 * Math.PI / 180;
+      var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      var d = R * c;
+      return d * 1000; // meters
+  }
+  
+  const sendWebEngageEvent = (lat1:number,lon1:number,lat2:number,lon2)=>{
+    const diff = calcuteDiffInMeters(lat1,lon1,lat2,lon2);
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CONFIRM_LOCATION] = {
+      'isMarkerModified': diff === 0? false : true,
+      'changedByInMeters' : diff
+    };
+    postWebEngageEvent(WebEngageEventName.CATEGORY_LIST_GRID_VIEW, eventAttributes);
+  }
+  
+  
+
   const onConfirmLocation = async () => {
     setshowSpinner(true);
+    sendWebEngageEvent(addressObject.latitude,addressObject.longitude,latitude,longitude);
     CommonLogEvent(AppRoutes.Maps, 'On Confirm Location Clicked');
     if (props.navigation.getParam('KeyName') == 'Update' && addressObject) {
       const updateaddressInput: UpdatePatientAddressInput = {
@@ -474,7 +495,7 @@ export const Maps : React.FC<MapProps> = (props) =>{
         style={{height: screenHeight/1.75}}
         region={region}
         zoomEnabled={true}
-        minZoomLevel={5}
+        minZoomLevel={9}
         onMapReady={()=>console.log("ready")}
         onRegionChangeComplete={(region)=>onRegionChange(region)}
         // initialRegion={{latitude:latitude,longitude:longitude,latitudeDelta:latitudeDelta,longitudeDelta:longitudeDelta}}
