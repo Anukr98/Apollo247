@@ -217,7 +217,7 @@ export const calculateRefund = async (
   let isRefundSuccessful = false;
 
   // Maximum possible refund
-  const maxRefundAmountPossible = +new Decimal(amountPaid).minus(totalRefundAmount);
+  let maxRefundAmountPossible = +new Decimal(amountPaid).minus(totalRefundAmount);
 
   /**
    * Preference would be given to health credits consumption
@@ -225,6 +225,17 @@ export const calculateRefund = async (
    */
   healthCreditsToRefund = +new Decimal(healthCreditsRedeemed).minus(totalOrderBilling);
 
+  /**
+   * We cannot refund money received for delivery
+   */
+  if (totalOrderBilling != 0) {
+    maxRefundAmountPossible = +new Decimal(maxRefundAmountPossible)
+      .minus(+orderDetails.devliveryCharges)
+      .minus(+orderDetails.packagingCharges);
+    healthCreditsToRefund = +new Decimal(healthCreditsToRefund)
+      .plus(+orderDetails.devliveryCharges)
+      .plus(+orderDetails.packagingCharges);
+  }
   /**
    * Refund all the money if health credits blocked are more than the amended order billing
    * Otherwise, refund the difference.

@@ -637,53 +637,53 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               <CircularProgress />
             </div>
           ) : (
-            <ul>
-              {deliveryAddresses.map(
-                (address, idx) =>
-                  idx === selectedAddressDataIndex && (
-                    <li key={idx}>
-                      <FormControlLabel
-                        checked={address.id === deliveryAddressId}
-                        className={classes.radioLabel}
-                        value={address.id}
-                        control={<AphRadio color="primary" />}
-                        label={formatAddress(address)}
-                        onChange={() => {
-                          checkServiceAvailabilityCheck(address.zipcode)
-                            .then((res: AxiosResponse) => {
-                              if (res && res.data && res.data.Availability) {
-                                /**Gtm code start  */
-                                gtmTracking({
-                                  category: 'Pharmacy',
-                                  action: 'Order',
-                                  label: 'Address Selected',
-                                });
-                                /**Gtm code End  */
-                                checkLatLongStateCodeAvailability(address);
-                              } else {
-                                setShowPlaceNotFoundPopup(true);
-                              }
-                            })
-                            .catch((e: any) => {
-                              console.log(e);
-                            });
-                        }}
-                      />
-                    </li>
-                  )
-              )}
-            </ul>
-          )}
+              <ul>
+                {deliveryAddresses.map(
+                  (address, idx) =>
+                    idx === selectedAddressDataIndex && (
+                      <li key={idx}>
+                        <FormControlLabel
+                          checked={address.id === deliveryAddressId}
+                          className={classes.radioLabel}
+                          value={address.id}
+                          control={<AphRadio color="primary" />}
+                          label={formatAddress(address)}
+                          onChange={() => {
+                            checkServiceAvailabilityCheck(address.zipcode)
+                              .then((res: AxiosResponse) => {
+                                if (res && res.data && res.data.Availability) {
+                                  /**Gtm code start  */
+                                  gtmTracking({
+                                    category: 'Pharmacy',
+                                    action: 'Order',
+                                    label: 'Address Selected',
+                                  });
+                                  /**Gtm code End  */
+                                  checkLatLongStateCodeAvailability(address);
+                                } else {
+                                  setShowPlaceNotFoundPopup(true);
+                                }
+                              })
+                              .catch((e: any) => {
+                                console.log(e);
+                              });
+                          }}
+                        />
+                      </li>
+                    )
+                )}
+              </ul>
+            )}
         </>
       ) : (
-        <>
-          {isLoading && (
-            <div className={classes.alignCenter}>
-              <CircularProgress />
-            </div>
-          )}
-        </>
-      )}
+          <>
+            {isLoading && (
+              <div className={classes.alignCenter}>
+                <CircularProgress />
+              </div>
+            )}
+          </>
+        )}
 
       <div className={classes.bottomActions}>
         {!isSigningIn ? (
