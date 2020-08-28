@@ -2176,6 +2176,9 @@ export class DiagnosticOrders extends BaseEntity {
   @Column({ nullable: true })
   centerState: string;
 
+  @Column({ nullable: true })
+  slotId: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
