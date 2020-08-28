@@ -21,7 +21,11 @@ const isStaging = process.env.NODE_ENV === 'staging' || process.env.NODE_ENV ===
 const isProduction = process.env.NODE_ENV === 'production';
 const imageCdnBaseUrl = process.env.IMAGE_BASE_URL;
 const distDir = path.resolve(__dirname, 'dist');
-
+const srcDir = path.resolve(__dirname, 'src');
+const PWA_IMG_URL =
+  isStaging || isProduction
+    ? `${imageCdnBaseUrl}/apollo_logo.png`
+    : `${srcDir}/images/apollo_logo.png`;
 const plugins = [
   new DotenvWebpack({ path: envFile }),
   new CircularDependencyPlugin({
@@ -62,28 +66,31 @@ const plugins = [
     ios: true,
     icons: [
       {
-        src: `${imageCdnBaseUrl}/apollo_logo.png`,
+        src: PWA_IMG_URL,
         sizes: [96, 128, 192, 256, 384, 512], // multiple sizes
       },
       {
-        src: `${imageCdnBaseUrl}/apollo_logo.jpg`,
+        src:
+          isStaging || isProduction
+            ? `${imageCdnBaseUrl}/apollo_logo.jpg`
+            : `${srcDir}/images/apollo_logo.jpg`,
         size: '1024x1024',
         purpose: 'maskable',
       },
       {
-        src: `${imageCdnBaseUrl}/apollo_logo.png`,
+        src: PWA_IMG_URL,
         sizes: [120, 152, 167, 180, 1024],
         destination: path.join('icons', 'ios'),
         ios: true,
       },
       {
-        src: `${imageCdnBaseUrl}/apollo_logo.png`,
+        src: PWA_IMG_URL,
         size: 1024,
         destination: path.join('icons', 'ios'),
         ios: 'startup',
       },
       {
-        src: `${imageCdnBaseUrl}/apollo_logo.png`,
+        src: PWA_IMG_URL,
         sizes: [36, 48, 72, 96, 144, 192, 512],
         destination: path.join('icons', 'android'),
       },
