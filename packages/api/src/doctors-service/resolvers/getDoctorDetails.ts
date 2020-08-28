@@ -352,7 +352,7 @@ const findLoggedinUserDetails: Resolver<
 > = async (parent, args, { mobileNumber, doctorsDb, consultsDb }) => {
   //check if doctor
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
 
   const adminRepository = doctorsDb.getCustomRepository(AdminUser);
   const adminData = await adminRepository.checkValidAccess(mobileNumber, true);
