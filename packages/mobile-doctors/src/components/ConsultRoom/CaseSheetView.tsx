@@ -269,6 +269,12 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setSelectedReferral: React.Dispatch<React.SetStateAction<OptionsObject>>;
   referralReason: string;
   setReferralReason: React.Dispatch<React.SetStateAction<string>>;
+  seniorDrDiagnosticTestResults: string;
+  setSeniorDrDiagnosticTestResults: React.Dispatch<React.SetStateAction<string>>,
+  seniorDrClinicNotes: string;
+  setSeniorDrClinicNotes: React.Dispatch<React.SetStateAction<string>>,
+  seniorDrPersonalNotes: string;
+  setSeniorDrPersonalNotes: React.Dispatch<React.SetStateAction<string>>
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -354,6 +360,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     existingMedicineId,
     removedMedicinePrescriptionData,
     setRemovedMedicinePrescriptionData,
+    seniorDrDiagnosticTestResults,
+    setSeniorDrDiagnosticTestResults,
+    seniorDrClinicNotes,
+    setSeniorDrClinicNotes,
+    seniorDrPersonalNotes,
+    setSeniorDrPersonalNotes
   } = props;
 
   const sendToPatientAction = (callBack?: () => void) => {
@@ -876,7 +888,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     data: string,
     onChange: (text: string) => void,
     placeHolder?: string,
-    multiline?: boolean
+    multiline?: boolean,
+    placeholderTextColor?: string
   ) => {
     return (
       <View>
@@ -907,7 +920,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             value={data}
             multiline={multiline}
             placeholder={placeHolder || ''}
-            placeholderTextColor={theme.colors.darkBlueColor(1)}
+            placeholderTextColor={placeholderTextColor || theme.colors.darkBlueColor(1)}
             textAlignVertical={multiline ? 'top' : undefined}
             selectionColor={theme.colors.INPUT_CURSOR_COLOR}
             onChange={(text) => onChange && caseSheetEdit && onChange(text.nativeEvent.text)}
@@ -1123,12 +1136,67 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading={strings.case_sheet.jr_doctor_notes}
+          heading={strings.case_sheet.notes}
           collapse={juniorshow}
           onPress={() => setJuniorShow(!juniorshow)}
         >
+          <Text style={[styles.symptomsText, { marginLeft: 16 }]}>{strings.case_sheet.jrDoctor}</Text>
+          <View style={styles.headerView}>
+            {renderHeaderText(strings.case_sheet.diagnosticTestResults)}
+          </View>
           <View style={styles.symptomsInputView}>
-            <Text style={[styles.symptomsText, { marginRight: 12 }]}>{juniordoctornotes}</Text>
+            <Text style={[styles.symptomsText, { marginRight: 12, ...theme.fonts.IBMPlexSansRegular(14) }]}>{juniordoctornotes}</Text>
+          </View>
+          <View style={styles.headerView}>
+            {renderHeaderText(strings.case_sheet.clinicalNotes)}
+          </View>
+          <View style={styles.symptomsInputView}>
+            <Text style={[styles.symptomsText, { marginRight: 12, ...theme.fonts.IBMPlexSansRegular(14) }]}>{juniordoctornotes}</Text>
+          </View>
+          <View style={styles.headerView}>
+            {renderHeaderText(strings.case_sheet.jrDoctorNotes)}
+          </View>
+          <View style={styles.symptomsInputView}>
+            <Text style={[styles.symptomsText, { marginRight: 12, ...theme.fonts.IBMPlexSansRegular(14) }]}>{juniordoctornotes}</Text>
+          </View>
+          <Text style={[styles.symptomsText, { marginLeft: 16 }]}>{strings.case_sheet.seniorDoctor}</Text>
+          <View style={{ marginHorizontal: 16 }}>
+            {renderFields(
+              strings.case_sheet.diagnosticTestResults,
+              seniorDrDiagnosticTestResults,
+              (text) => {
+                if (isValidSearch(text)) {
+                  setSeniorDrDiagnosticTestResults(text);
+                }
+              },
+              strings.case_sheet.typeYourNotes,
+              true,
+              theme.colors.placeholderTextColor
+            )}
+            {renderFields(
+              strings.case_sheet.clinicNotes,
+              seniorDrClinicNotes,
+              (text) => {
+                if (isValidSearch(text)) {
+                  setSeniorDrClinicNotes(text);
+                }
+              },
+              strings.case_sheet.typeYourNotes,
+              true,
+              theme.colors.placeholderTextColor
+            )}
+            {renderFields(
+              strings.case_sheet.personal_note,
+              seniorDrPersonalNotes,
+              (text) => {
+                if (isValidSearch(text)) {
+                  setSeniorDrPersonalNotes(text);
+                }
+              },
+              strings.case_sheet.typeYourNotes,
+              true,
+              theme.colors.placeholderTextColor
+            )}
           </View>
         </CollapseCard>
       </View>

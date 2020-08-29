@@ -576,6 +576,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     value: string.case_sheet.select_Speciality,
   });
   const [referralReason, setReferralReason] = useState<string>('');
+  const [seniorDrDiagnosticTestResults, setSeniorDrDiagnosticTestResults] = useState<string>('');
+  const [seniorDrClinicNotes, setSeniorDrClinicNotes] = useState<string>('');
+  const [seniorDrPersonalNotes, setSeniorDrPersonalNotes] = useState<string>('');
 
   const getFamilyHistoryText = (
     familyValues:
@@ -1104,6 +1107,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       bp: medicalHistory ? medicalHistory.bp || '' : '',
       referralSpecialtyName: selectedReferral.key !== '-1' ? selectedReferral.value : null,
       referralDescription: selectedReferral.key !== '-1' ? referralReason : null,
+      // seniorDrDiagnosticTestResults: seniorDrDiagnosticTestResults
     } as ModifyCaseSheetInput;
   };
 
@@ -2210,6 +2214,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   setSelectedReferral={setSelectedReferral}
                   referralReason={referralReason}
                   setReferralReason={setReferralReason}
+                  seniorDrDiagnosticTestResults={seniorDrDiagnosticTestResults}
+                  setSeniorDrDiagnosticTestResults={setSeniorDrDiagnosticTestResults}
+                  seniorDrClinicNotes={seniorDrClinicNotes}
+                  setSeniorDrClinicNotes={setSeniorDrClinicNotes}
+                  seniorDrPersonalNotes={seniorDrPersonalNotes}
+                  setSeniorDrPersonalNotes={setSeniorDrPersonalNotes}
                 />
               </View>
               <View style={{ width: width }}>
