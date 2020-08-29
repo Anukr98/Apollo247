@@ -459,6 +459,19 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    mobileMemberOption: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'flex',
+        alignItems: 'center',
+        paddingTop: 10,
+        '& p': {
+          fontSize: 12,
+          color: '#02475B',
+          fontWeight: 500,
+        },
+      },
+    },
     afContainer: {
       // padding: '0 16px',
     },
@@ -1129,7 +1142,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                   <FormControl className={classes.formControl}>
                     <img src={require('images/ic-search.svg')} alt="Search Doctors" />
                     <AphInput
-                      className={classes.searchInput}
+                      className={`${classes.searchInput}`}
                       placeholder="Search appointments by Doctor Name or Speciality"
                       onChange={(e) => {
                         setSearchKeyword(e.target.value);
@@ -1295,6 +1308,16 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                   />
                 </Tabs>
               )}
+              <div className={classes.mobileMemberOption}>
+                <Typography>View appointments of another member?</Typography>
+                <AphButton
+                  color="primary"
+                  classes={{ root: classes.addMemberBtn }}
+                  onClick={() => setSelectCurrentUser(true)}
+                >
+                  Select Member
+                </AphButton>
+              </div>
               {tabValue === 0 && (
                 <TabContainer>
                   {todaysAppointments && todaysAppointments.length > 0 ? (
