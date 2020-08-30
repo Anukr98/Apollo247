@@ -12,6 +12,8 @@ import {
   GetUsersResponse,
   CreateNewUsersResponse,
   GetAuthTokenResponse,
+  healthChecksResponse,
+  dischargeSummaryResponse
 } from 'types/phrv1';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -326,13 +328,13 @@ export async function createPrismUser(
 
   const queryParams = `securitykey=${
     process.env.PHR_V1_CREATE_USER_SECURITYKEY
-  }&gender=${patientData.gender.toLowerCase()}&firstName=${patientData.firstName}&lastName=${
+    }&gender=${patientData.gender.toLowerCase()}&firstName=${patientData.firstName}&lastName=${
     patientData.lastName
-  }&mobile=${patientData.mobileNumber.substr(3)}&uhid=${uhid}&CountryPhoneCode=${
+    }&mobile=${patientData.mobileNumber.substr(3)}&uhid=${uhid}&CountryPhoneCode=${
     ApiConstants.COUNTRY_CODE
-  }&dob=${dob}&sitekey=&martialStatus=&pincode=&email=${
+    }&dob=${dob}&sitekey=&martialStatus=&pincode=&email=${
     patientData.emailAddress
-  }&state=&country=&city=&address=`;
+    }&state=&country=&city=&address=`;
 
   apiUrl = apiUrl + '?' + queryParams;
 
@@ -616,6 +618,105 @@ export async function downloadDocumentAndSaveToBlob(
           throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
         } else {
           throw new AphError(AphErrorMessages.PRISM_PRESCRIPTIONS_FETCH_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+
+export async function getHealthCheckRecords(uhid: string): Promise<healthChecksResponse> {
+  if (!process.env.PHR_V1_GET_HEALTHCHECKS || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_GET_HEALTHCHECKS.toString();
+  apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
+  apiUrl = apiUrl.replace('{UHID}', uhid);
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+  })
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'getHealthcheckRecordsFromPrism PRISM_GET_HEALTHCHECKS_API_CALL___END',
+          `${apiUrl}--- ${JSON.stringify(data)}`
+        );
+        if (data.errorCode) throw new AphError(AphErrorMessages.PRISM_HEALTHCHECKS_FETCH_ERROR);
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'getHealthcheckRecordsFromPrism PRISM_GET_HEALTHCHECKS_API_CALL___ERROR',
+          `${apiUrl}--- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.PRISM_HEALTHCHECKS_FETCH_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+
+export async function getDischargeSummary(uhid: string): Promise<dischargeSummaryResponse> {
+
+  if (!process.env.PHR_V1_GET_DISCHARGESUMMARY || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_GET_DISCHARGESUMMARY.toString();
+  apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
+  apiUrl = apiUrl.replace('{UHID}', uhid);
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+  })
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'getDischargeSummaryFromPrism PRISM_GET_DISCHARGESUMMARY_API_CALL___END',
+          `${apiUrl}--- ${JSON.stringify(data)}`
+        );
+        if (data.errorCode) throw new AphError(AphErrorMessages.PRISN_DISCHARGESUMMARY_FETCH_ERROR);
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'getDischargeSummaryFromPrism PRISM_GET_DISCHARGESUMMARY_API_CALL___ERROR',
+          `${apiUrl}--- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.PRISN_DISCHARGESUMMARY_FETCH_ERROR);
         }
       }
     )

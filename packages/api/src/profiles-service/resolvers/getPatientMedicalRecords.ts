@@ -10,11 +10,13 @@ import winston from 'winston';
 import path from 'path';
 import { ApiConstants } from 'ApiConstants';
 
-import { getLabResults, getPrescriptionData, getAuthToken } from 'helpers/phrV1Services';
+import { getLabResults, getPrescriptionData, getAuthToken, getHealthCheckRecords, getDischargeSummary } from 'helpers/phrV1Services';
 import {
   LabResultsDownloadResponse,
   PrescriptionDownloadResponse,
   GetAuthTokenResponse,
+  healthChecksResponse,
+  dischargeSummaryResponse
 } from 'types/phrv1';
 import { format } from 'date-fns';
 import { prescriptionSource } from 'profiles-service/resolvers/prescriptionUpload';
@@ -177,6 +179,8 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     hospitalizations: [HospitalizationResult]
     labResults: LabResultsDownloadResponse
     prescriptions: PrescriptionDownloadResponse
+    healthChecksNew: healthChecksDownloadResponse
+    hospitalizationsNew: dischargeSummaryDownloadResponse
   }
 
   type PrismAuthTokenResponse {
@@ -184,6 +188,72 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     errorMsg: String
     errorType: String
     response: String
+  }
+
+  type healthChecksBaseResponse {
+    authToken: String
+    userId: String
+    id: String!
+    fileUrl: String!
+    date: Date!
+    healthCheckName: String!
+    healthCheckDate: Float
+    healthCheckSummary: String
+    healthCheckFiles: [healthCheckFileParameters]
+    source: String
+    healthCheckType: String
+    followupDate: Float
+  }
+
+  type healthCheckFileParameters {
+    id: String
+    fileName: String
+    mimeType: String
+    content: String
+    byteContent: String
+    dateCreated: Float
+  }
+
+  type healthChecksDownloadResponse {
+    errorCode: Int!
+    errorMsg: String
+    errorType: String
+    response: [healthChecksBaseResponse]
+  }
+
+  type dischargeSummaryBaseResponse {
+    authToken: String,
+    userId: String,
+    id: String,
+    fileUrl: String!
+    date: Date!
+    dateOfHospitalization: Float,
+    hospitalName: String,
+    doctorName: String,
+    reasonForAdmission: String,
+    diagnosisNotes: String,
+    dateOfDischarge: Float,
+    dischargeSummary: String,
+    doctorInstruction: String,
+    dateOfNextVisit: Float,
+    hospitalizationFiles :[hospitalizationFilesParameters]
+    source: String
+  }
+
+  type hospitalizationFilesParameters {
+    id: String,
+    fileName: String,
+    mimeType: String,
+    content: String,
+    byteContent: String,
+    dateCreated: Float
+  }
+
+  type dischargeSummaryDownloadResponse {
+    errorCode: Int!
+    errorMsg: String
+    errorType: String
+    response: [dischargeSummaryBaseResponse]
   }
 
   extend type Query {
@@ -244,6 +314,9 @@ type PrismMedicalRecordsResult = {
   hospitalizations: HospitalizationResult[];
   labResults: LabResultsDownloadResponse;
   prescriptions: PrescriptionDownloadResponse;
+  healthChecksNew: healthChecksResponse;
+  hospitalizationsNew: dischargeSummaryResponse;
+
 };
 
 //Not in use, to support backward compatability
@@ -281,7 +354,7 @@ const getPatientPrismMedicalRecords: Resolver<
   PrismMedicalRecordsResult
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientsRepo.getPatientDetails(args.patientId);
+  const patientDetails: any = await patientsRepo.getPatientDetails(args.patientId);
 
   if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 
@@ -434,12 +507,60 @@ const getPatientPrismMedicalRecords: Resolver<
     formattedLabResults.push(labResult);
   });
 
+  /* Fetch patient health check records from prism */
+
+  const healthCheckResults = await getHealthCheckRecords(patientDetails.uhid)
+
+  /* Add document urls to the response objects,
+  Modify date to ISO
+   */
+
+  let healthCheckDocumentUrl = process.env.PHR_V1_GET_HEALTHCHECK_DOCUMENT.toString();
+
+  healthCheckDocumentUrl = healthCheckDocumentUrl.replace('{AUTH_KEY}', getToken.response);
+  healthCheckDocumentUrl = healthCheckDocumentUrl.replace('{UHID}', patientDetails.uhid);
+
+  healthCheckResults.response.map((healthCheckResult: any) => {
+    healthCheckResult.fileUrl = healthCheckResult.healthCheckFiles.length ? healthCheckDocumentUrl.replace('{RECORDID}', healthCheckResult.id) : ''
+
+    if (healthCheckResult.healthCheckDate.toString().length < 11) {
+      healthCheckResult.healthCheckDate = healthCheckResult.healthCheckDate * 1000;
+    }
+    healthCheckResult.date = new Date(format(new Date(healthCheckResult.healthCheckDate), 'yyyy-MM-dd'));
+  });
+
+  /* Fetch patient discharge summary from prism */
+
+  const dischargeSummaryResults = await getDischargeSummary(patientDetails.uhid)
+
+  /* Add document urls to the response objects,
+  Modify date to ISO
+   */
+
+  let dischargeSummaryDocumentUrl = process.env.PHR_V1_GET_DISCHARGESUMMARY_DOCUMENT.toString();
+
+  dischargeSummaryDocumentUrl = dischargeSummaryDocumentUrl.replace('{AUTH_KEY}', getToken.response);
+  dischargeSummaryDocumentUrl = dischargeSummaryDocumentUrl.replace('{UHID}', patientDetails.uhid);
+
+  dischargeSummaryResults.response.map((dischargeSummaryResult: any) => {
+    dischargeSummaryResult.fileUrl = dischargeSummaryResult.hospitalizationFiles.length ? dischargeSummaryDocumentUrl.replace('{RECORDID}', dischargeSummaryResult.id) : ''
+
+    if (dischargeSummaryResult.dateOfDischarge.toString().length < 11) {
+      dischargeSummaryResult.dateOfDischarge = dischargeSummaryResult.dateOfDischarge * 1000;
+    }
+    dischargeSummaryResult.date = new Date(format(new Date(dischargeSummaryResult.dateOfDischarge), 'yyyy-MM-dd'));
+
+  });
+
+
   const result = {
     labTests: formattedLabResults,
     healthChecks: [],
     hospitalizations: [],
     labResults: labResults,
     prescriptions: prescriptions,
+    healthChecksNew: healthCheckResults,
+    hospitalizationsNew: dischargeSummaryResults
   };
 
   return result;
@@ -450,7 +571,7 @@ const getPrismAuthToken: Resolver<
   { uhid: string },
   ProfilesServiceContext,
   GetAuthTokenResponse
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   return await getAuthToken(args.uhid);
 };
 

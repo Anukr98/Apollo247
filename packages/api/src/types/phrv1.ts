@@ -183,3 +183,66 @@ export interface GetAuthTokenResponse {
   errorType: string;
   response: string;
 }
+
+export interface healthChecksResponse {
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
+  response: {
+    authToken: string;
+    userId: string;
+    id: string;
+    fileUrl: string; //this is not given by PHR. Added for internal purpose
+    date: Date; //this is not given by PHR. Added for internal purpose
+    healthCheckName: string;
+    healthCheckDate: number;
+    healthCheckSummary: string;
+    healthCheckFiles:
+    {
+      id: string;
+      fileName: string;
+      mimeType: string;
+      content: string;
+      byteContent: string;
+      dateCreated: number;
+    }[];
+    source: string;
+    healthCheckType: string;
+    followupDate: number;
+  }[];
+}
+
+export interface dischargeSummaryResponse {
+
+  errorCode: string,
+  errorMsg: string,
+  errorType: string,
+  response: [
+    {
+      authToken: string,
+      userId: string,
+      id: string,
+      fileUrl: string; //this is not given by PHR. Added for internal purpose
+      date: Date; //this is not given by PHR. Added for internal purpose
+      dateOfHospitalization: number,
+      hospitalName: string,
+      doctorName: string,
+      reasonForAdmission: string,
+      diagnosisNotes: string,
+      dateOfDischarge: number,
+      dischargeSummary: string,
+      doctorInstruction: string,
+      dateOfNextVisit: number,
+      hospitalizationFiles: {
+        id: string,
+        fileName: string,
+        mimeType: string,
+        content: string,
+        byteContent: string,
+        dateCreated: number
+      }[];
+      source: string
+    }
+  ]
+
+}
