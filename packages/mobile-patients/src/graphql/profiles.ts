@@ -2940,7 +2940,7 @@ export const GET_PERSONALIZED_APPOITNMENTS = gql`
 `;
 
 export const GET_SUBSCRIPTIONS_OF_USER_BY_STATUS = gql`
-  query getSubscriptionsOfUserByStatus($user: UserIdentification!, $status: [String]) {
+  query getSubscriptionsOfUserByStatus($user: UserIdentification, $status: [String]) {
     getSubscriptionsOfUserByStatus(user: $user, status: $status) {
       code
       message

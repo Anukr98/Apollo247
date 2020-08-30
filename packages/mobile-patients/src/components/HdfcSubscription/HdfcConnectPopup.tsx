@@ -33,7 +33,6 @@ const styles = StyleSheet.create({
 });
 
 export interface HdfcConnectPopupProps {
-  onConnect: () => void;
   onClose: () => void;
 }
 

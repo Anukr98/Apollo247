@@ -1,13 +1,13 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { HelpIcon, EllipseBulletPoint, HdfcGoldMedal, LockIcon } from '../ui/Icons';
 import { AvailSubscriptionPopup } from './AvailSubscriptionPopup';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -25,8 +25,10 @@ const styles = StyleSheet.create({
 export interface MyMembershipProps extends NavigationScreenProps {}
 
 export const MyMembership: React.FC<MyMembershipProps> = (props) => {
-  const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const { currentPatient } = useAllCurrentPatients();
+  const { hdfcUserSubscriptions } = useAppCommonData();
+  // const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const showSubscriptions = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.subscriptionName);
+  const isActive = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.is_active);
   const [showAvailPopup, setshowAvailPopup] = useState<boolean>(false);
 
   const getEllipseBulletPoint = (text: string) => {
@@ -45,7 +47,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   };
 
   const renderMembershipCard = (planType: string) => {
-    const isGold = planType === 'gold';
+    const isGold = true;
     return (
       <View style={styles.cardStyle}>
         <View style={{
@@ -82,7 +84,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               top: 20,
             }} />
           }
-
         </View>
         <View style={{
           marginTop: 10,
@@ -99,6 +100,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             onPress={() => {
               props.navigation.navigate(AppRoutes.MembershipDetails, {
                 membershipType: planType,
+                isActive: isActive,
               });
             }}
             style={{
@@ -126,6 +128,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             onPress={() => {
               props.navigation.navigate(AppRoutes.MembershipDetails, {
                 membershipType: planType,
+                isActive: isActive,
               });
             }}
           >
@@ -168,7 +171,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        <ScrollView bounces={false}>
+        {
+          showSubscriptions && 
+          <ScrollView bounces={false}>
           {renderMembershipCard('gold')}
           {/* <Text style={{
             ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
@@ -180,6 +185,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           </Text>
           {renderMembershipCard('platinum')} */}
         </ScrollView>
+        }
       </SafeAreaView>
       {
         showAvailPopup &&
@@ -188,7 +194,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           onClose={() => setshowAvailPopup(false)} 
         />
       }
-      {showSpinner && <Spinner />}
+      {/* {showSpinner && <Spinner />} */}
     </View>
   );
 };

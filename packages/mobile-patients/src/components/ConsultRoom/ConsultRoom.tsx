@@ -287,6 +287,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setisSelected,
     appointmentsPersonalized,
     setAppointmentsPersonalized,
+    setHdfcUserSubscriptions,
+    hdfcUserSubscriptions,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -313,6 +315,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [serviceable, setserviceable] = useState<String>('');
   const [personalizedData, setPersonalizedData] = useState<any>([]);
   const [isPersonalizedCard, setisPersonalizedCard] = useState(false);
+  const [showHdfcConnectWidget, setShowHdfcConnectWidget] = useState<boolean>(false);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
 
@@ -358,6 +361,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     // handleDeepLink(props.navigation);
     isserviceable();
   }, [locationDetails, currentPatient]);
+
+  useEffect(() => {
+    if (hdfcUserSubscriptions) {
+      setShowHdfcConnectWidget(hdfcUserSubscriptions.is_active);
+    }
+  }, [hdfcUserSubscriptions])
 
   const askLocationPermission = () => {
     showAphAlert!({
@@ -420,6 +429,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }
 
   useEffect(() => {
+    getUserSubscriptions();
     try {
       if (currentPatient && g(currentPatient, 'relation') == Relation.ME && !isWEGFired) {
         setWEGFired(true);
@@ -616,57 +626,35 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     AsyncStorage.removeItem('deeplinkReferalCode');
     storePatientDetailsTOBugsnag();
     callAPIForNotificationResult();
-    // getUserSubscriptions();
     setWebEngageScreenNames('Home Screen');
   }, []);
 
-  useEffect(() => {
-    getUserSubscriptions();
-  }, [currentPatient])
-
-
-  // .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
-  //   query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-  //   variables: {
-  //     user: {
-  //       mobile_number: g(currentPatient, 'mobileNumber'),
-  //       patiend_id: g(currentPatient, 'id'),
-  //     },
-  //     status: [],
-  //   },
-  //   fetchPolicy: 'no-cache',
-  // })
-  // .then((response) => {
-  //   console.log('Something went Right :)');
-  //   console.log(response);
-  // })
-  // .catch((error) => {
-  //   console.error(error);
-  //   console.log('Something went wrong :(');
-  // });
-
   const getUserSubscriptions = () => {
-    console.log('here: ', g(currentPatient, 'mobileNumber'));
-    console.log('here: ', g(currentPatient, 'id'));
     const userVariables: UserIdentification = {
       mobile_number: '+919666828389',
     };
     client
       .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
         query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-        variables: {
-          status: [],
-          user: userVariables,
-        },
+        variables: { user: userVariables, status: []},
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        console.log('data: ----------------', data);
-        // console.log('data: ----------------', g(data, 'data', 'getSubscriptionsOfUserByStatus'));
+        const groupPlans = g(data, 'data', 'getSubscriptionsOfUserByStatus', 'response')
+        if (groupPlans && groupPlans.length) {
+          const plan = g(groupPlans[0], 'group_plan');
+          const subscription = {
+            subscriptionName: plan!.name || '',
+            plan_id: plan!.plan_id || '',
+            status: plan!.status || '',
+            is_active: g(plan, 'group', 'is_active') || false,
+            name: g(plan, 'group', 'name') || '',
+          };
+          setHdfcUserSubscriptions && setHdfcUserSubscriptions(subscription);
+        }
       })
       .catch((e) => {
-        console.log('error!!: ----------------', e);
-        // CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
+        CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
       })
   };
 
@@ -1778,7 +1766,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {/* <Text style={styles.descriptionTextStyle}>{string.home.description}</Text> */}
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
-              <View style={{ backgroundColor: '#f0f1ec' }}>{renderHdfcConnect()}</View>
+              {
+                showHdfcConnectWidget && 
+                <View style={{ backgroundColor: '#f0f1ec' }}>{renderHdfcConnect()}</View>
+              }
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
               {renderCovidMainView()}
               {/* {renderCovidHeader()}
@@ -1824,7 +1815,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         showHdfcConnectPopup &&
         <HdfcConnectPopup
           onClose={() => setShowHdfcConnectPopup(false)}
-          onConnect={() => setShowHdfcConnectPopup(false)}
         />
       }
       {isLocationSearchVisible && (

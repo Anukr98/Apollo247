@@ -10,7 +10,6 @@ import { SubscriptionBanner } from './SubscriptionBanner';
 import { AvailSubscriptionPopup } from './AvailSubscriptionPopup';
 import { AppRoutes } from '../NavigatorContainer';
 import { HdfcConnectPopup } from './HdfcConnectPopup';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -30,7 +29,7 @@ const styles = StyleSheet.create({
 
 export interface MembershipDetailsProps extends NavigationScreenProps {
   membershipType: string;
-  isSubscribed?: boolean;
+  isActive: boolean;
 }
 
 const hdfc_tnc = [
@@ -54,7 +53,7 @@ const hdfc_tnc = [
 
 export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const membershipType = props.navigation.getParam('membershipType');
-  const { currentPatient } = useAllCurrentPatients();
+  const isActivePlan = props.navigation.getParam('isActive');
 
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [selectedTab, setSelectedTab] = useState<string>('Benefits Available');
@@ -64,8 +63,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [isTnCVisible, setIsTnCVisible] = useState<boolean>(false);
   const [showAvailPopup, setshowAvailPopup] = useState<boolean>(false);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
-
-  const isActivePlan = true; // testing purpose
 
   const redeemCardsContent = [
     {
@@ -96,15 +93,15 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         props.navigation.navigate('APPOINTMENTS');
       }
     },
-    {
-      title: 'Free Health Assesment Consultation',
-      description: ['Get a free medical consultation from Top Apollo Doctors'],
-      redeemCall: () => {
-        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-          specialityId: '',
-        });
-      }
-    },
+    // {
+    //   title: 'Free Health Assesment Consultation',
+    //   description: ['Get a free medical consultation from Top Apollo Doctors'],
+    //   redeemCall: () => {
+    //     props.navigation.navigate(AppRoutes.DoctorSearchListing, {
+    //       specialityId: '',
+    //     });
+    //   }
+    // },
     {
       title: 'Covid-19 Care',
       description: [
@@ -113,7 +110,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         'Preferential Access to Home & Hotel Care',
       ],
       redeemCall: () => {
-        Linking.openURL(`whatsapp://send?text=&phone=`);
+        Linking.openURL(`whatsapp://send?text=&phone=+914048218743`);
       }
     },
     {
@@ -199,7 +196,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
               {renderCouponInfo('HDFCGold1', 'Discount of Rs 249 on Virtual Consultations for HDFC customers')}
               {renderCouponInfo('HDFCGold2', 'Discount on Medicines and Apollo Private Label for HDFC customers')}
               {renderCouponInfo('HDFCGold3', 'Discount on Medicines for HDFC customers')}
-              {renderCouponInfo('HDFCGold4', 'Free Health Assessment Consultation for HDFC customers')}
             </View>
           }
         </View>
@@ -637,7 +633,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         showHdfcConnectPopup &&
         <HdfcConnectPopup
           onClose={() => setShowHdfcConnectPopup(false)}
-          onConnect={() => setShowHdfcConnectPopup(false)}
         />
       }
       {showSpinner && <Spinner />}

@@ -6,6 +6,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { getDoctorsBySpecialtyAndFilters } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../graphql/types/getPatientPersonalizedAppointments';
 import { MedicinePageAPiResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { getSubscriptionsOfUserByStatus_getSubscriptionsOfUserByStatus_response_group_plan } from '../graphql/types/getSubscriptionsOfUserByStatus';
 
 export interface LocationData {
   displayName: string;
@@ -20,7 +21,17 @@ export interface LocationData {
   lastUpdated?: number; //timestamp
 }
 
+export interface SubscriptionData {
+  subscriptionName: string | null; 
+  plan_id: string | null; 
+  status: string | null; 
+  is_active: boolean; 
+  name: string | null;
+}
+
 export interface AppCommonDataContextProps {
+  hdfcUserSubscriptions: SubscriptionData | null;
+  setHdfcUserSubscriptions: ((items: SubscriptionData) => void) | null;
   locationDetails: LocationData | null;
   pharmacyLocation: LocationData | null;
   setLocationDetails: ((items: LocationData) => void) | null;
@@ -71,6 +82,8 @@ export interface AppCommonDataContextProps {
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
+  hdfcUserSubscriptions: null,
+  setHdfcUserSubscriptions: null,
   locationDetails: null,
   pharmacyLocation: null,
   setLocationDetails: null,
@@ -119,6 +132,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [locationDetails, _setLocationDetails] = useState<
     AppCommonDataContextProps['locationDetails']
+  >(null);
+
+  const [hdfcUserSubscriptions, _setHdfcUserSubscriptions] = useState<
+    AppCommonDataContextProps['hdfcUserSubscriptions']
   >(null);
 
   const [pharmacyLocation, _setPharmacyLocation] = useState<
@@ -174,6 +191,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AsyncStorage.setItem('locationDetails', JSON.stringify(locationDetails)).catch(() => {
       console.log('Failed to save location in local storage.');
     });
+  };
+
+  const setHdfcUserSubscriptions: AppCommonDataContextProps['setHdfcUserSubscriptions'] = (hdfcUserSubscriptions) => {
+    _setHdfcUserSubscriptions(hdfcUserSubscriptions);
   };
 
   const setPharmacyLocation: AppCommonDataContextProps['setPharmacyLocation'] = (
@@ -238,6 +259,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
       value={{
         isCurrentLocationFetched,
         setCurrentLocationFetched,
+        hdfcUserSubscriptions,
+        setHdfcUserSubscriptions,
         locationDetails,
         setLocationDetails,
         pharmacyLocation,

@@ -228,13 +228,17 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   // const [deliveryError, setdeliveryError] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
-  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, hdfcUserSubscriptions } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastCartItemsReplicaForStorePickup, setLastCartItemsReplicaForStorePickup] = useState('');
   const [lastPincodeReplica, setLastPincodeReplica] = useState('');
   const scrollViewRef = useRef<ScrollView | null>();
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
   const [alertShown, setAlertShown] = useState<boolean>(false);
+
+  const mobileNumber = g(currentPatient, 'mobileNumber');
+  const emailAddress = g(currentPatient, 'emailAddress');
+  const packageId = hdfcUserSubscriptions ? (hdfcUserSubscriptions.plan_id + ':' + hdfcUserSubscriptions.name) : null;
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
@@ -708,7 +712,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         specialPrice: item.specialPrice || item.price,
       })),
     };
-    validateConsultCoupon(data)
+    validateConsultCoupon(data, mobileNumber, emailAddress, packageId)
       .then((resp: any) => {
         if (resp.data.errorCode == 0) {
           if (resp.data.response.valid) {

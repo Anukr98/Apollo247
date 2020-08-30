@@ -24,6 +24,8 @@ import {
 import { fetchConsultCoupons } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useAppCommonData } from '../AppCommonDataProvider';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -113,6 +115,11 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
   const [loading, setLoading] = useState<boolean>(true);
   const [validating, setValidating] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
+  const { currentPatient } = useAllCurrentPatients();
+  const { hdfcUserSubscriptions } = useAppCommonData();
+  const mobileNumber = g(currentPatient, 'mobileNumber');
+  const emailAddress = g(currentPatient, 'emailAddress');
+  const packageId = hdfcUserSubscriptions ? (hdfcUserSubscriptions.plan_id + ':' + hdfcUserSubscriptions.name) : null;
 
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
@@ -121,7 +128,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
     });
 
   useEffect(() => {
-    fetchConsultCoupons()
+    fetchConsultCoupons(mobileNumber, emailAddress, packageId)
       .then((res: any) => {
         console.log(JSON.stringify(res.data), 'objobj');
         setcouponList(res.data.response);
@@ -133,7 +140,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
         props.navigation.goBack();
         renderErrorPopup(`Something went wrong, plaease try again after sometime`);
       });
-  }, []);
+  }, [mobileNumber , emailAddress]);
 
   const applyCoupon = (coupon: string) => {
     setValidating!(true);
