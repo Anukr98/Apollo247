@@ -15,8 +15,8 @@ import {
   LabResultsDownloadResponse,
   PrescriptionDownloadResponse,
   GetAuthTokenResponse,
-  healthChecksResponse,
-  dischargeSummaryResponse
+  HealthChecksResponse,
+  DischargeSummaryResponse
 } from 'types/phrv1';
 import { format } from 'date-fns';
 import { prescriptionSource } from 'profiles-service/resolvers/prescriptionUpload';
@@ -179,8 +179,8 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     hospitalizations: [HospitalizationResult]
     labResults: LabResultsDownloadResponse
     prescriptions: PrescriptionDownloadResponse
-    healthChecksNew: healthChecksDownloadResponse
-    hospitalizationsNew: dischargeSummaryDownloadResponse
+    healthChecksNew: HealthChecksDownloadResponse
+    hospitalizationsNew: DischargeSummaryDownloadResponse
   }
 
   type PrismAuthTokenResponse {
@@ -190,7 +190,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     response: String
   }
 
-  type healthChecksBaseResponse {
+  type HealthChecksBaseResponse {
     authToken: String
     userId: String
     id: String!
@@ -199,13 +199,13 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     healthCheckName: String!
     healthCheckDate: Float
     healthCheckSummary: String
-    healthCheckFiles: [healthCheckFileParameters]
+    healthCheckFiles: [HealthCheckFileParameters]
     source: String
     healthCheckType: String
     followupDate: Float
   }
 
-  type healthCheckFileParameters {
+  type HealthCheckFileParameters {
     id: String
     fileName: String
     mimeType: String
@@ -214,14 +214,14 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     dateCreated: Float
   }
 
-  type healthChecksDownloadResponse {
+  type HealthChecksDownloadResponse {
     errorCode: Int!
     errorMsg: String
     errorType: String
-    response: [healthChecksBaseResponse]
+    response: [HealthChecksBaseResponse]
   }
 
-  type dischargeSummaryBaseResponse {
+  type DischargeSummaryBaseResponse {
     authToken: String,
     userId: String,
     id: String,
@@ -236,11 +236,11 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     dischargeSummary: String,
     doctorInstruction: String,
     dateOfNextVisit: Float,
-    hospitalizationFiles :[hospitalizationFilesParameters]
+    hospitalizationFiles :[HospitalizationFilesParameters]
     source: String
   }
 
-  type hospitalizationFilesParameters {
+  type HospitalizationFilesParameters {
     id: String,
     fileName: String,
     mimeType: String,
@@ -249,11 +249,11 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     dateCreated: Float
   }
 
-  type dischargeSummaryDownloadResponse {
+  type DischargeSummaryDownloadResponse {
     errorCode: Int!
     errorMsg: String
     errorType: String
-    response: [dischargeSummaryBaseResponse]
+    response: [DischargeSummaryBaseResponse]
   }
 
   extend type Query {
@@ -314,8 +314,8 @@ type PrismMedicalRecordsResult = {
   hospitalizations: HospitalizationResult[];
   labResults: LabResultsDownloadResponse;
   prescriptions: PrescriptionDownloadResponse;
-  healthChecksNew: healthChecksResponse;
-  hospitalizationsNew: dischargeSummaryResponse;
+  healthChecksNew: HealthChecksResponse;
+  hospitalizationsNew: DischargeSummaryResponse;
 
 };
 
@@ -354,7 +354,7 @@ const getPatientPrismMedicalRecords: Resolver<
   PrismMedicalRecordsResult
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails: any = await patientsRepo.getPatientDetails(args.patientId);
+  const patientDetails = await patientsRepo.getPatientDetails(args.patientId);
 
   if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 

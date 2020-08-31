@@ -12,8 +12,8 @@ import {
   GetUsersResponse,
   CreateNewUsersResponse,
   GetAuthTokenResponse,
-  healthChecksResponse,
-  dischargeSummaryResponse
+  HealthChecksResponse,
+  DischargeSummaryResponse
 } from 'types/phrv1';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -626,7 +626,7 @@ export async function downloadDocumentAndSaveToBlob(
     });
 }
 
-export async function getHealthCheckRecords(uhid: string): Promise<healthChecksResponse> {
+export async function getHealthCheckRecords(uhid: string): Promise<HealthChecksResponse> {
   if (!process.env.PHR_V1_GET_HEALTHCHECKS || !process.env.PHR_V1_ACCESS_TOKEN)
     throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
 
@@ -675,7 +675,7 @@ export async function getHealthCheckRecords(uhid: string): Promise<healthChecksR
     });
 }
 
-export async function getDischargeSummary(uhid: string): Promise<dischargeSummaryResponse> {
+export async function getDischargeSummary(uhid: string): Promise<DischargeSummaryResponse> {
 
   if (!process.env.PHR_V1_GET_DISCHARGESUMMARY || !process.env.PHR_V1_ACCESS_TOKEN)
     throw new AphError(AphErrorMessages.INVALID_PRISM_URL);

@@ -184,7 +184,7 @@ export interface GetAuthTokenResponse {
   response: string;
 }
 
-export interface healthChecksResponse {
+export interface HealthChecksResponse {
   errorCode: number;
   errorMsg: string;
   errorType: string;
@@ -212,7 +212,7 @@ export interface healthChecksResponse {
   }[];
 }
 
-export interface dischargeSummaryResponse {
+export interface DischargeSummaryResponse {
 
   errorCode: string,
   errorMsg: string,
