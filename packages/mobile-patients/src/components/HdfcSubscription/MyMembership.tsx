@@ -1,13 +1,12 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { HelpIcon, EllipseBulletPoint, HdfcGoldMedal, LockIcon } from '../ui/Icons';
-import { AvailSubscriptionPopup } from './AvailSubscriptionPopup';
 import { useAppCommonData } from '../AppCommonDataProvider';
+import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -20,28 +19,141 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: theme.colors.SHERPA_BLUE,
   },
+  ellipseBullet: {
+    resizeMode: 'contain',
+    width: 10,
+    height: 10,
+    alignSelf: 'center',
+    marginRight: 10,
+  },
+  ellipseBulletContainer: {
+    flexDirection: 'row',
+    marginBottom: 5,
+  },
+  membershipCardContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  planName: {
+    ...theme.viewStyles.text('B', 13, '#00B38E', 1, 20, 0.35), 
+    marginRight: 10
+  },
+  medalIcon: {
+    width: 30,
+    height: 35,
+    position: 'absolute',
+    right: 16,
+    top: 20,
+  },
+  lockIcon: {
+    resizeMode: 'contain',
+    width: 25,
+    height: 25,
+    position: 'absolute',
+    right: 16,
+    top: 20,
+  },
+  subTextContainer: {
+    marginTop: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+  },
+  viewMoreText: {
+    ...theme.viewStyles.text('B', 12, '#00B38E', 1, 20, 0.35),
+    position: 'absolute',
+    bottom: 16,
+    right: 20,
+  },
+  membershipButtons: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    backgroundColor: '#FC9916',
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  helpIconStyle: {
+    resizeMode: 'contain',
+    width: 20,
+    height: 20,
+  },
+  headerContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    borderRadius: 0,
+    marginBottom: 20,
+  }
 });
 
 export interface MyMembershipProps extends NavigationScreenProps {}
 
 export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const { hdfcUserSubscriptions } = useAppCommonData();
-  // const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const showSubscriptions = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.subscriptionName);
   const isActive = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.is_active);
-  const [showAvailPopup, setshowAvailPopup] = useState<boolean>(false);
+  const { GoldPoints } = Hdfc_values;
 
   const getEllipseBulletPoint = (text: string) => {
     return (
-      <View style={{flexDirection: 'row', marginBottom: 5}}>
-        <EllipseBulletPoint style={{
-          resizeMode: 'contain',
-          width: 10,
-          height: 10,
-          alignSelf: 'center',
-          marginRight: 10,
-        }} />
+      <View style={styles.ellipseBulletContainer}>
+        <EllipseBulletPoint style={styles.ellipseBullet} />
         <Text style={theme.viewStyles.text('B', 13, '#007C9D', 1, 20, 0.35)}>{text}</Text>
+      </View>
+    );
+  };
+
+  const renderCardBody = () => {
+    return (
+      <View style={styles.subTextContainer}>
+        <Text style={[theme.viewStyles.text('R', 12, '#000000', 1, 20, 0.35), {marginBottom: 5}]}>
+          'Benefits Available'
+        </Text>
+        {
+          GoldPoints.map(value => {
+            return getEllipseBulletPoint(value)
+          })
+        }
+        <Text 
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.MembershipDetails, {
+              membershipType: 'gold',
+              isActive: isActive,
+            });
+          }}
+          style={styles.viewMoreText}
+        >
+          VIEW MORE
+        </Text>
+      </View>
+    );
+  };
+
+  const renderBottomButtons = () => {
+    return (
+      <View style={styles.membershipButtons}>
+        <TouchableOpacity 
+        style={{ padding: 10 }}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.MembershipDetails, {
+              membershipType: 'gold',
+              isActive: isActive,
+            });
+          }}
+        >
+          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>
+            VIEW DETAILS
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={{ padding: 10 }}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.ConsultRoom, {});
+          }}
+        >
+          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>
+            EXPLORE NOW
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -50,15 +162,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     const isGold = true;
     return (
       <View style={styles.cardStyle}>
-        <View style={{
-          flexDirection: 'row',
-          paddingHorizontal: 16,
-          paddingTop: 16,
-        }}>
-          <Text style={[
-            theme.viewStyles.text('B', 13, '#00B38E', 1, 20, 0.35), 
-            {marginRight: 10}
-          ]}>
+        <View style={styles.membershipCardContainer}>
+          <Text style={styles.planName}>
             {isGold ? 'GOLD+ PLAN' : 'PLATINUM+ PLAN'}
           </Text>
           {
@@ -67,88 +172,13 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               <Text style={theme.viewStyles.text('LI', 12, '#01475B', 1, 20, 0.35)}>
                 Includes all benefits of Silver Plan
               </Text>
-              <HdfcGoldMedal style={{
-                width: 30,
-                height: 35,
-                position: 'absolute',
-                right: 16,
-                top: 20,
-              }} />
+              <HdfcGoldMedal style={styles.medalIcon} />
             </> : 
-            <LockIcon style={{
-              resizeMode: 'contain',
-              width: 25,
-              height: 25,
-              position: 'absolute',
-              right: 16,
-              top: 20,
-            }} />
+            <LockIcon style={styles.lockIcon} />
           }
         </View>
-        <View style={{
-          marginTop: 10,
-          paddingHorizontal: 16,
-          paddingBottom: 10,
-        }}>
-          <Text style={[theme.viewStyles.text('R', 12, '#000000', 1, 20, 0.35), {marginBottom: 5}]}>
-            {isGold ? 'Benefits Available' : 'Key Benefits you get ..'}
-          </Text>
-          {getEllipseBulletPoint('24*7 Doctor on Call')}
-          {getEllipseBulletPoint('Seamless Medicine Delivery')}
-          {getEllipseBulletPoint('Patients Health Record')}
-          <Text 
-            onPress={() => {
-              props.navigation.navigate(AppRoutes.MembershipDetails, {
-                membershipType: planType,
-                isActive: isActive,
-              });
-            }}
-            style={{
-              ...theme.viewStyles.text('B', 12, '#00B38E', 1, 20, 0.35),
-              position: 'absolute',
-              bottom: 16,
-              right: 20,
-            }}
-          >
-            VIEW MORE
-          </Text>
-        </View>
-        <View style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-evenly',
-          backgroundColor: '#FC9916',
-          borderBottomLeftRadius: 10,
-          borderBottomRightRadius: 10,
-        }}>
-          <TouchableOpacity 
-          style={{
-            padding: 10,
-          }}
-            onPress={() => {
-              props.navigation.navigate(AppRoutes.MembershipDetails, {
-                membershipType: planType,
-                isActive: isActive,
-              });
-            }}
-          >
-            <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>
-              VIEW DETAILS
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={{
-              padding: 10,
-            }}
-            onPress={() => {
-              props.navigation.navigate(AppRoutes.ConsultRoom, {});
-            }}
-          >
-            <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>
-              EXPLORE NOW
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {renderCardBody()}
+        {renderBottomButtons()}
       </View>
     );
   };
@@ -158,43 +188,18 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         <Header
           leftIcon="backArrow"
-          rightComponent={<HelpIcon style={{
-            resizeMode: 'contain',
-            width: 20,
-            height: 20,
-          }} />}
+          rightComponent={<HelpIcon style={styles.helpIconStyle} />}
           title={'MY MEMBERSHIP'}
-          container={{
-            ...theme.viewStyles.cardViewStyle,
-            borderRadius: 0,
-            marginBottom: 20,
-          }}
+          container={styles.headerContainer}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
         {
           showSubscriptions && 
           <ScrollView bounces={false}>
           {renderMembershipCard('gold')}
-          {/* <Text style={{
-            ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
-            paddingTop: 20,
-            paddingLeft: 20,
-            paddingBottom: 10,
-          }}>
-            UPGRADE TO PLATINUM PLANS
-          </Text>
-          {renderMembershipCard('platinum')} */}
         </ScrollView>
         }
       </SafeAreaView>
-      {
-        showAvailPopup &&
-        <AvailSubscriptionPopup 
-          onAvailNow={() => {}} 
-          onClose={() => setshowAvailPopup(false)} 
-        />
-      }
-      {/* {showSpinner && <Spinner />} */}
     </View>
   );
 };

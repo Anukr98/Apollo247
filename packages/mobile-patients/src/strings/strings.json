@@ -380,5 +380,56 @@
     "block_Calendar": "Block Calendar",
     "manage_calendar": "Manage Calendar"
   },
-  "ChatRoom_NotRecorded_Value": "Not Recorded"
+  "ChatRoom_NotRecorded_Value": "Not Recorded",
+  "Hdfc_values": {
+    "TnC": [
+      "The Healthy Life offering is the marketing program offered by Apollo 24/7, an app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.",
+      "The validity of the program (“Term”) is till 31st August 2021, unless extended by Apollo 24/7 and HDFC Bank.",
+      "The discounts applicable as per the Healthy Life program shall be applied at the time of payment checkout by the customer.",
+      "This program is designed for select HDFC customers and offerings will vary with the different categories of HDFC customers. However, membership schemes can be upgraded on the basis of the spending on the Apollo 24/7 app as mentioned in the offer grid.",
+      "The Healthy Life Program is open to all HDFC customers with a valid Indian mobile number only.",
+      "The T&C’s of the silver, gold and platinum membership offered in the Healthy Life program shall be governed by the terms & conditions of the website - https://www.oneapollo.com/terms-conditions/",
+      "The Healthy Life offering will be applicable to all HDFC customers, whether they are existing customers of Apollo 24/7 or not. However, all the customers shall adhere to the offerings as mentioned in this marketing program.",
+      "The Healthy Life program is non-transferable.",
+      "The activation of the benefits for the Healthy Life program will be completed 24 hours post the service delivery/fulfillment of the qualifying transaction. For e.g., to unlock benefits, the user is needed to make a qualifying transaction of INR 499, amount subject to change as per different tiers.",
+      "By enrolling for the Healthy Life program, a member consents to allow use and disclosure by Apollo Health centres, along with his/her personal and other information as provided by the member at the time of enrolment and/or subsequently.",
+      "As a prerequisite to becoming a member, a customer will need to provide mandatory information including full name, valid and active Indian mobile number. He/she shall adhere to such terms and conditions as may be prescribed for membership from time to time.",
+      "The Healthy Life membership program will be issued solely at the discretion of the management and the final discretion on all matters relating to the membership shall rest with Apollo 24/7(AHEL).",
+      "Healthy Life program is a corporate offering exclusively for HDFC bank customers and not for individuals.",
+      "Apollo 24/7 reserves the right to add, alter, amend and revise terms and conditions as well as rules and regulations governing the Healthy Life membership program without prior notice.",
+      "Benefits and offers available through the program may change or be withdrawn without prior intimation. Apollo 24/7 will not be responsible for any liability arising from such situations or use of such offers.",
+      "Any disputes arising out of the offer shall be subject to arbitration by a sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the arbitration shall be conducted as per the provisions of Arbitration and Conciliation Act, 1996. The place of  arbitration  shall  be  at  Chennai  and  language  of  arbitration  shall  be  English.  The existence of a dispute, if at all, shall not constitute a claim against Apollo 24/7.",
+    ],
+    "Coupons": [
+      {
+        "couponName": "HDFCGold1",
+        "couponDescription": "Discount of Rs 249 on Virtual Consultations for HDFC customers"
+      },
+      {
+        "couponName": "HDFCGold1",
+        "couponDescription": "Discount of Rs 249 on Virtual Consultations for HDFC customers"
+      },
+      {
+        "couponName": "HDFCGold1",
+        "couponDescription": "Discount of Rs 249 on Virtual Consultations for HDFC customers"
+      }
+    ],
+    "WhatWillYouGetPoints": [
+      "One Apollo Membership",
+      "Preferential access to COVID-19 home testing",
+      "Preffrential access to home and hotel care",
+      "Health essentials hamper gift",
+      "2 Vouchers for Doctor Consultation worth Rs 249 each",
+      "3 Vouchers of Rs 100 each for Apollo Pharmacy",
+      "15% Off on Apollo Labeled Products",
+      "Digital Vault for health records",
+      "Health assesment consultation by apollo Doctor",
+      "Base Diabetes management program"
+    ],
+    "GoldPoints": [
+      "24*7 Doctor on Call",
+      "Seamless Medicine Delivery",
+      "Patients Health Record",
+    ]
+  }
 }

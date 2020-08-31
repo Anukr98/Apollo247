@@ -30,6 +30,48 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 14,
   },
+  containerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  stepsText: {
+    ...theme.viewStyles.text('M', 12, '#00B38E', 1, 20, 0.35),
+    marginTop: 10,
+  },
+  callIcon: {
+    resizeMode: 'contain',
+    width: 40,
+  },
+  stepsContainer: {
+    flexDirection: 'column',
+    width: '50%',
+    alignItems: 'center',
+  },
+  lastStepContainer: {
+    flexDirection: 'column',
+    width: '50%',
+  },
+  noteText: {
+    ...theme.viewStyles.text('M', 12, '#01475B', 1, 20, 0.35),
+    marginTop: 20,
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  cancelButton: {
+    marginTop: 20,
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center'
+  },
+  connectButton: {
+    backgroundColor: '#FC9916',
+    marginTop: 20,
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center'
+  }
 });
 
 export interface HdfcConnectPopupProps {
@@ -67,6 +109,66 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
       });
   };
 
+  const renderConnectSteps = () => {
+    return (
+      <View style={{
+        marginTop: 10,
+      }}>
+        <View style={styles.containerRow}>
+          <View style={styles.stepsContainer}>
+            <CallConnectIcon />
+            <Text style={styles.stepsText}>
+              Answer the call from ‘040-482-17258’ to connect.
+            </Text>
+          </View>
+          <View style={styles.stepsContainer}>
+            <CallRingIcon style={styles.callIcon} />
+            <Text style={styles.stepsText}>
+              The same call will connect to the Doctor.
+            </Text>
+          </View>
+        </View>
+        <View style={[styles.containerRow, { marginTop: 8 }]}>
+          <View style={styles.stepsContainer}>
+            <GroupCallIcon style={styles.callIcon} />
+            <Text style={styles.stepsText}>
+              Wait for the Doctor  to connect over the call.
+            </Text>
+          </View>
+          <View style={styles.lastStepContainer}>
+            <Text style={styles.noteText}>*Note :</Text>
+            <Text style={theme.viewStyles.text('M', 12, '#01475B', 1, 20, 0.35)}>
+              Your personal phone number will not be  shared.
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const renderButtons = () => {
+    return (
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={props.onClose}
+        >
+          <Text style={theme.viewStyles.text('B', 13, '#FC9916', 1, 20, 0.35)}>
+            CANCEL
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.connectButton}
+          onPress={() => fireExotelApi()}
+        >
+          <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0.35)}>
+            PROCEED TO CONNECT
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.blurView}>
       <View style={styles.popupContainerView}>
@@ -76,112 +178,8 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
           <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 20, 0.35)}>
             Please follow the steps to connect to Doctor
           </Text>
-          <View style={{
-            marginTop: 10,
-          }}>
-            <View style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-            }}>
-              <View style={{
-                flexDirection: 'column',
-                width: '50%',
-                alignItems: 'center',
-              }}>
-                <CallConnectIcon />
-                <Text style={{
-                  ...theme.viewStyles.text('M', 12, '#00B38E', 1, 20, 0.35),
-                  marginTop: 10,
-                }}>
-                  Answer the call from ‘040-482-17258’ to connect.
-                </Text>
-              </View>
-              <View style={{
-                flexDirection: 'column',
-                width: '50%',
-                alignItems: 'center',
-              }}>
-                <CallRingIcon style={{
-                  resizeMode: 'contain',
-                  width: 40,
-                }} />
-                <Text style={{
-                  ...theme.viewStyles.text('M', 12, '#00B38E', 1, 20, 0.35),
-                  marginTop: 10,
-                }}>
-                  The same call will connect to the Doctor.
-                </Text>
-              </View>
-            </View>
-            <View style={{
-              flexDirection: 'row',
-              marginTop: 8,
-              justifyContent: 'space-between',
-            }}>
-              <View style={{
-                flexDirection: 'column',
-                width: '50%',
-                alignItems: 'center',
-              }}>
-                <GroupCallIcon style={{
-                  resizeMode: 'contain',
-                  width: 40,
-                }} />
-                <Text style={{
-                  ...theme.viewStyles.text('M', 12, '#00B38E', 1, 20, 0.35),
-                  marginTop: 10,
-                }}>
-                  Wait for the Doctor  to connect over the call.
-                </Text>
-              </View>
-              <View style={{
-                flexDirection: 'column',
-                width: '50%',
-              }}>
-                <Text style={{
-                  ...theme.viewStyles.text('M', 12, '#01475B', 1, 20, 0.35),
-                  marginTop: 20,
-                }}>*Note :</Text>
-                <Text style={{
-                  ...theme.viewStyles.text('M', 12, '#01475B', 1, 20, 0.35),
-                }}>
-                  Your personal phone number will not be  shared.
-                </Text>
-              </View>
-            </View>
-          </View>
-          <View style={{
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-          }}>
-            <TouchableOpacity
-              style={{
-                marginTop: 20,
-                padding: 10,
-                borderRadius: 10,
-                alignItems: 'center'
-              }}
-              onPress={props.onClose}
-            >
-              <Text style={theme.viewStyles.text('B', 13, '#FC9916', 1, 20, 0.35)}>
-                CANCEL
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{
-                backgroundColor: '#FC9916',
-                marginTop: 20,
-                padding: 10,
-                borderRadius: 10,
-                alignItems: 'center'
-              }}
-              onPress={() => fireExotelApi()}
-            >
-              <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0.35)}>
-                PROCEED TO CONNECT
-              </Text>
-            </TouchableOpacity>
-          </View>
+          {renderConnectSteps()}
+          {renderButtons()}
         </View>
       </View>
     </View>

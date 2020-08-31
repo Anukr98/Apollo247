@@ -230,6 +230,22 @@ const styles = StyleSheet.create({
     width: 40,
     resizeMode: 'contain',
   },
+  hdfcConnectContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    elevation: 15,
+    margin: 12,
+    padding: 15,
+  },
+  hdfcLogo: {
+    resizeMode: 'contain',
+    width: 100,
+    height: 30,
+  },
+  hdfcConnectButton: {
+    ...theme.viewStyles.text('B', 15, '#FC9916', 1, 35, 0.35),
+    textAlign: 'right',
+    marginTop: 10,
+  }
 });
 
 type menuOptions = {
@@ -1357,19 +1373,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderHdfcConnect = () => {
     return (
-      <View
-        style={{
-          ...theme.viewStyles.cardViewStyle,
-          elevation: 15,
-          margin: 12,
-          padding: 15,
-        }}
-      >
-        <HdfcBankLogo style={{
-          resizeMode: 'contain',
-          width: 100,
-          height: 30,
-        }} />
+      <View style={styles.hdfcConnectContainer}>
+        <HdfcBankLogo style={styles.hdfcLogo} />
         <Text style={theme.viewStyles.text('LI', 13, '#01475B', 1, 20, 0.35)}>
           As our privellaged customer in partnership with HDFC
         </Text>
@@ -1380,11 +1385,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           Note : You will be connected to a General Physician
         </Text>
         <TouchableOpacity onPress={() => {setShowHdfcConnectPopup(true)}}>
-          <Text style={{
-            ...theme.viewStyles.text('B', 15, '#FC9916', 1, 35, 0.35),
-            textAlign: 'right',
-            marginTop: 10,
-          }}>CONNECT</Text>
+          <Text style={styles.hdfcConnectButton}>CONNECT</Text>
         </TouchableOpacity>
       </View>
     );

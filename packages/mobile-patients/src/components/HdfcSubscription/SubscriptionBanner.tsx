@@ -1,8 +1,26 @@
-import React, { useState } from 'react';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { View, Text } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { OneApolloGold, HdfcGoldMedal, OneApolloPlatinum, HdfcPlatinumMedal } from '../ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+
+const styles = StyleSheet.create({
+  membershipBanner: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'contain',
+  },
+  bannerContent: {
+    position: 'absolute',
+    top: 30,
+    left: 20,
+  },
+  medalStyle: {
+    width: 40,
+    height: 50,
+    position: 'absolute',
+    right: 40,
+  }
+});
 
 export interface SubscriptionBannerProps {
   membershipType: string;
@@ -15,44 +33,16 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = (props) => 
       <View>
         {
           isGoldMembership ? (
-            <OneApolloGold
-              style={{
-                width: '100%',
-                height: 200,
-                resizeMode: 'contain',
-              }}
-            />
+            <OneApolloGold style={styles.membershipBanner}/>
           ) : (
-            <OneApolloPlatinum
-              style={{
-                width: '100%',
-                height: 200,
-                resizeMode: 'contain',
-              }}
-            />
+            <OneApolloPlatinum style={styles.membershipBanner}/>
           )
         }
-        <View
-          style={{
-            position: 'absolute',
-            top: 30,
-            left: 20,
-          }}
-        >
+        <View style={styles.bannerContent}>
           {
             isGoldMembership ? 
-            <HdfcGoldMedal style={{
-              width: 40,
-              height: 50,
-              position: 'absolute',
-              right: 40,
-            }} /> :
-            <HdfcPlatinumMedal style={{
-              width: 40,
-              height: 50,
-              position: 'absolute',
-              right: 40,
-            }} />
+            <HdfcGoldMedal style={styles.medalStyle} /> :
+            <HdfcPlatinumMedal style={styles.medalStyle} />
           }
           <Text style={{
             ...theme.viewStyles.text('B', 20, '#02475B', 1, 20, 0.35),
@@ -72,9 +62,7 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = (props) => 
           }}>
             Rs. 38K+
           </Text>
-          <Text style={{
-            ...theme.viewStyles.text('R', 13, '#02475B', 1, 20, 0.90),
-          }}>
+          <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 20, 0.90)}>
             {
               isGoldMembership ? 
               'A host of benefits await you with our Gold+ Plan curated for HDFC customers' :

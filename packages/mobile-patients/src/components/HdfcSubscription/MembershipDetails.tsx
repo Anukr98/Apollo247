@@ -4,12 +4,12 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { HelpIcon, OneApolloGold, HdfcGoldMedal, DownOrange, UpOrange, EllipseBulletPoint, OneApolloPlatinum, HdfcPlatinumMedal, OneVectorNumber, TwoVectorNumber } from '../ui/Icons';
+import { HelpIcon, DownOrange, UpOrange, EllipseBulletPoint, OneVectorNumber, TwoVectorNumber } from '../ui/Icons';
 import { TabsComponent } from '../ui/TabsComponent';
 import { SubscriptionBanner } from './SubscriptionBanner';
-import { AvailSubscriptionPopup } from './AvailSubscriptionPopup';
 import { AppRoutes } from '../NavigatorContainer';
 import { HdfcConnectPopup } from './HdfcConnectPopup';
+import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -25,31 +25,104 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.CARD_BG,
     borderBottomColor: 'rgba(2, 71, 91, 0.3)',
   },
+  arrowStyle: {
+    resizeMode: 'contain',
+    width: 20,
+    height: 20,
+  },
+  sectionsHeading: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  eligibleText: {
+    ...theme.viewStyles.text('R', 13, '#02475B', 1, 17, 0.35),
+    width: '90%'
+  },
+  horizontalLine: {
+    marginVertical: 20,
+    borderTopColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    borderTopWidth: 1,
+  },
+  tncContainer: {
+    backgroundColor: '#FFFFFF',
+    marginVertical: 20,
+    borderRadius: 0,
+    marginHorizontal: -10,
+  },
+  tncHeading: {
+    ...theme.viewStyles.text('SB', 17, '#02475B', 1, 20, 0.35),
+    paddingLeft: 10,
+  },
+  tncText: {
+    ...theme.viewStyles.text('M', 13, '#02475B', 1, 20, 0.35),
+    marginBottom: 15,
+  },
+  redeemButtonText: {
+    ...theme.viewStyles.text('B', 15, '#FC9916', 1, 20, 0.35),
+    textAlign: 'right',
+  },
+  redeemableCardsHeading: {
+    ...theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35),
+    marginBottom: 10,
+  },
+  redeemableCardsText: {
+    ...theme.viewStyles.text('R', 13, '#02475B', 1, 20, 0.35),
+    width: '75%',
+  },
+  bulletPointsContainer: {
+    width: '75%',
+    marginBottom: 5,
+  },
+  ellipseBulletPointStyle: {
+    resizeMode: 'contain',
+    width: 7,
+    height: 7,
+    alignSelf: 'center',
+    marginRight: 10,
+  },
+  bottomContainer: {
+    backgroundColor: '#FC9916',
+    margin: 10,
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  howToAvail: {
+    flexDirection: 'row',
+    marginTop: 15,
+    width: '80%',
+  },
+  oneVectorStyle: {
+    marginRight: 10,
+    marginTop: 5,
+  },
+  bulletStyle: {
+    resizeMode: 'contain',
+    width: 10,
+    height: 10,
+    alignSelf: 'center',
+    marginRight: 10,
+  },
+  safeAreaStyle: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  inactivePlanText: {
+    ...theme.viewStyles.text('M', 13, '#EA5F65', 1, 17, 0.35),
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  benefitsAvailableHeading: {
+    ...theme.viewStyles.text('B', 17, '#02475B', 1, 20, 0.35),
+    paddingHorizontal: 20,
+  }
 });
 
 export interface MembershipDetailsProps extends NavigationScreenProps {
   membershipType: string;
   isActive: boolean;
 }
-
-const hdfc_tnc = [
-  'The Healthy Life offering is the marketing program offered by Apollo 24/7, an app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.',
-  'The validity of the program (“Term”) is till 31st August 2021, unless extended by Apollo 24/7 and HDFC Bank.',
-  'The discounts applicable as per the Healthy Life program shall be applied at the time of payment checkout by the customer.',
-  'This program is designed for select HDFC customers and offerings will vary with the different categories of HDFC customers. However, membership schemes can be upgraded on the basis of the spending on the Apollo 24/7 app as mentioned in the offer grid.',
-  'The Healthy Life Program is open to all HDFC customers with a valid Indian mobile number only.',
-  'The T&C’s of the silver, gold and platinum membership offered in the Healthy Life program shall be governed by the terms & conditions of the website - https://www.oneapollo.com/terms-conditions/',
-  'The Healthy Life offering will be applicable to all HDFC customers, whether they are existing customers of Apollo 24/7 or not. However, all the customers shall adhere to the offerings as mentioned in this marketing program.',
-  'The Healthy Life program is non-transferable.',
-  'The activation of the benefits for the Healthy Life program will be completed 24 hours post the service delivery/fulfillment of the qualifying transaction. For e.g., to unlock benefits, the user is needed to make a qualifying transaction of INR 499, amount subject to change as per different tiers.',
-  'By enrolling for the Healthy Life program, a member consents to allow use and disclosure by Apollo Health centres, along with his/her personal and other information as provided by the member at the time of enrolment and/or subsequently.',
-  'As a prerequisite to becoming a member, a customer will need to provide mandatory information including full name, valid and active Indian mobile number. He/she shall adhere to such terms and conditions as may be prescribed for membership from time to time.',
-  'The Healthy Life membership program will be issued solely at the discretion of the management and the final discretion on all matters relating to the membership shall rest with Apollo 24/7(AHEL).',
-  'Healthy Life program is a corporate offering exclusively for HDFC bank customers and not for individuals.',
-  'Apollo 24/7 reserves the right to add, alter, amend and revise terms and conditions as well as rules and regulations governing the Healthy Life membership program without prior notice.',
-  'Benefits and offers available through the program may change or be withdrawn without prior intimation. Apollo 24/7 will not be responsible for any liability arising from such situations or use of such offers.',
-  'Any disputes arising out of the offer shall be subject to arbitration by a sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the arbitration shall be conducted as per the provisions of Arbitration and Conciliation Act, 1996. The place of  arbitration  shall  be  at  Chennai  and  language  of  arbitration  shall  be  English.  The existence of a dispute, if at all, shall not constitute a claim against Apollo 24/7.',
-];
 
 export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const membershipType = props.navigation.getParam('membershipType');
@@ -61,8 +134,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [isWhatWillYouGetVisible, setIsWhatWillYouGetVisible] = useState<boolean>(true);
   const [isHowToAvailVisible, setIsHowToAvailVisible] = useState<boolean>(true);
   const [isTnCVisible, setIsTnCVisible] = useState<boolean>(false);
-  const [showAvailPopup, setshowAvailPopup] = useState<boolean>(false);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
+  const { TnC, Coupons, WhatWillYouGetPoints } = Hdfc_values;
 
   const redeemCardsContent = [
     {
@@ -93,15 +166,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         props.navigation.navigate('APPOINTMENTS');
       }
     },
-    // {
-    //   title: 'Free Health Assesment Consultation',
-    //   description: ['Get a free medical consultation from Top Apollo Doctors'],
-    //   redeemCall: () => {
-    //     props.navigation.navigate(AppRoutes.DoctorSearchListing, {
-    //       specialityId: '',
-    //     });
-    //   }
-    // },
     {
       title: 'Covid-19 Care',
       description: [
@@ -138,7 +202,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             setSelectedTab(title);
           }}
           data={
-            [{ title: 'Benefits Available' }] // , { title: 'Benefits Consumed' }
+            [{ title: 'Benefits Available' }]
           }
           selectedTab={selectedTab}
           selectedTitleStyle={theme.viewStyles.text('B', 16, '#02475B')}
@@ -156,29 +220,17 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return (
       <>
         <View style={styles.cardStyle}>
-          <TouchableOpacity onPress={() => {setIsActiveCouponVisible(!isActiveCouponVisible)}} style={{
-            width: '100%',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}>
+          <TouchableOpacity onPress={() => {setIsActiveCouponVisible(!isActiveCouponVisible)}} style={styles.sectionsHeading}>
             <Text style={theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35)}>
               Active Coupons
             </Text>
             {
               isActiveCouponVisible ? 
               <DownOrange
-                style={{
-                  resizeMode: 'contain',
-                  width: 20,
-                  height: 20,
-                }}
+                style={styles.arrowStyle}
               /> :
               <UpOrange
-                style={{
-                  resizeMode: 'contain',
-                  width: 20,
-                  height: 20,
-                }}
+                style={styles.arrowStyle}
               />
             }
           </TouchableOpacity>
@@ -187,15 +239,16 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             <View style={{
               marginTop: 15,
             }}>
-              <Text style={{
-                ...theme.viewStyles.text('R', 13, '#02475B', 1, 17, 0.35),
-                width: '90%'
-              }}>
+              <Text style={styles.eligibleText}>
                 You are eligible for the following coupons on Apollo 24|7
               </Text>
-              {renderCouponInfo('HDFCGold1', 'Discount of Rs 249 on Virtual Consultations for HDFC customers')}
-              {renderCouponInfo('HDFCGold2', 'Discount on Medicines and Apollo Private Label for HDFC customers')}
-              {renderCouponInfo('HDFCGold3', 'Discount on Medicines for HDFC customers')}
+              {
+                Coupons.map(value => {
+                  return (
+                    renderCouponInfo(value.couponName, value.couponDescription)
+                  );
+                })
+              }
             </View>
           }
         </View>
@@ -207,11 +260,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             )
           })
         }
-        {/* {renderRedeemableCards(
-          'Concierge for 24|7 services',
-          ['Priority Chat Support on Whatsapp with our Executives'],
-          () => {console.log('Concierge for 24|7 services')}
-        )} */}
       </>
     );
   };
@@ -227,11 +275,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
                 {renderRedeemableCardsContent(title, description)}
                 {
                   (index + 1 !== redeemCardsContent.length) &&
-                  <View style={{
-                    marginVertical: 20,
-                    borderTopColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-                    borderTopWidth: 1,
-                  }} />
+                  <View style={styles.horizontalLine} />
                 }
               </>
             )
@@ -260,37 +304,16 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const renderTermsAndConditions = () => {
     return (
-      <View style={{
-        backgroundColor: '#FFFFFF',
-        marginVertical: 20,
-        ...styles.cardStyle,
-        borderRadius: 0,
-        marginHorizontal: -10,
-      }}>
-        <TouchableOpacity onPress={() => {setIsTnCVisible(!isTnCVisible)}} style={{
-          width: '100%',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        }}>
-          <Text style={{
-            ...theme.viewStyles.text('SB', 17, '#02475B', 1, 20, 0.35),
-            paddingLeft: 10,
-          }}>Terms and Conditions</Text>
+      <View style={[styles.cardStyle, styles.tncContainer]}>
+        <TouchableOpacity onPress={() => {setIsTnCVisible(!isTnCVisible)}} style={styles.sectionsHeading}>
+          <Text style={styles.tncHeading}>Terms and Conditions</Text>
           {
             isTnCVisible ? 
             <DownOrange
-              style={{
-                resizeMode: 'contain',
-                width: 20,
-                height: 20,
-              }}
+              style={styles.arrowStyle}
             /> :
             <UpOrange
-              style={{
-                resizeMode: 'contain',
-                width: 20,
-                height: 20,
-              }}
+              style={styles.arrowStyle}
             />
           }
         </TouchableOpacity>
@@ -300,12 +323,9 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             padding: 10,
           }}>
             {
-              hdfc_tnc.map((text, index) => {
+              TnC.map((text, index) => {
                 return (
-                  <Text style={{
-                    ...theme.viewStyles.text('M', 13, '#02475B', 1, 20, 0.35),
-                    marginBottom: 15,
-                  }}>{`${index + 1}. ${text}`}</Text>
+                  <Text style={styles.tncText}>{`${index + 1}. ${text}`}</Text>
                 )
               })
             }
@@ -320,10 +340,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       <View style={[styles.cardStyle, { marginVertical: 10 }]}>
         {renderRedeemableCardsContent(heading, bodyText)}
         <TouchableOpacity onPress={() => {onRedeem()}}>
-          <Text style={{
-            ...theme.viewStyles.text('B', 15, '#FC9916', 1, 20, 0.35),
-            textAlign: 'right',
-          }}>
+          <Text style={styles.redeemButtonText}>
             REDEEM
           </Text>
         </TouchableOpacity>
@@ -334,36 +351,21 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderRedeemableCardsContent = (heading: string, bodyText: string[]) => {
     return (
       <>
-      <Text style={{
-        ...theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35),
-        marginBottom: 10,
-      }}>
+      <Text style={styles.redeemableCardsHeading}>
         {heading}
       </Text>
       {
         bodyText.length === 1 ? (
-          <Text style={{
-            ...theme.viewStyles.text('R', 13, '#02475B', 1, 20, 0.35),
-            width: '75%',
-          }}>
+          <Text style={styles.redeemableCardsText}>
             {bodyText[0]}
           </Text>
         ) : (
-          <View style={{
-            width: '75%',
-            marginBottom: 5,
-          }}>
+          <View style={styles.bulletPointsContainer}>
             {
               bodyText.map((text) => {
                 return (
                   <View style={{flexDirection: 'row', marginBottom: 10}}>
-                    <EllipseBulletPoint style={{
-                      resizeMode: 'contain',
-                      width: 7,
-                      height: 7,
-                      alignSelf: 'center',
-                      marginRight: 10,
-                    }} />
+                    <EllipseBulletPoint style={styles.ellipseBulletPointStyle} />
                     <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 20, 0.35)}>{text}</Text>
                   </View>
                 )
@@ -372,14 +374,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           </View>
         )
       }
-      {/* <TouchableOpacity onPress={() => {}}>
-        <Text style={{
-          ...theme.viewStyles.text('B', 15, '#FC9916', 1, 20, 0.35),
-          textAlign: 'right',
-        }}>
-          REDEEM
-        </Text>
-      </TouchableOpacity> */}
       </>
     );
   };
@@ -410,13 +404,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderBottomContainer = () => {
     return (
       <TouchableOpacity
-        style={{
-          backgroundColor: '#FC9916',
-          margin: 10,
-          padding: 10,
-          borderRadius: 10,
-          alignItems: 'center'
-        }}
+        style={styles.bottomContainer}
         onPress={() => {
           props.navigation.navigate(AppRoutes.ConsultRoom, {});
         }}
@@ -447,29 +435,17 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderWhatWillYouGet = () => {
     return (
       <View style={styles.cardStyle}>
-        <TouchableOpacity onPress={() => {setIsWhatWillYouGetVisible(!isWhatWillYouGetVisible)}} style={{
-          width: '100%',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        }}>
+        <TouchableOpacity onPress={() => {setIsWhatWillYouGetVisible(!isWhatWillYouGetVisible)}} style={styles.sectionsHeading}>
           <Text style={theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35)}>
             What Will You Get!
           </Text>
           {
             isWhatWillYouGetVisible ? 
             <DownOrange
-              style={{
-                resizeMode: 'contain',
-                width: 20,
-                height: 20,
-              }}
+              style={styles.arrowStyle}
             /> :
             <UpOrange
-              style={{
-                resizeMode: 'contain',
-                width: 20,
-                height: 20,
-              }}
+              style={styles.arrowStyle}
             />
           }
         </TouchableOpacity>
@@ -478,16 +454,13 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           <View style={{
             marginTop: 15,
           }}>
-            {getEllipseBulletPoint('One Apollo Membership')}
-            {getEllipseBulletPoint('Preferential access to COVID-19 home testing')}
-            {getEllipseBulletPoint('Preffrential access to home and hotel care')}
-            {getEllipseBulletPoint('Health essentials hamper gift')}
-            {getEllipseBulletPoint('2 Vouchers for Doctor Consultation worth Rs 249 each')}
-            {getEllipseBulletPoint('3 Vouchers of Rs 100 each for Apollo Pharmacy')}
-            {getEllipseBulletPoint('15% Off on Apollo Labeled Products')}
-            {getEllipseBulletPoint('Digital Vault for health records')}
-            {getEllipseBulletPoint('Health assesment consultation by apollo Doctor')}
-            {getEllipseBulletPoint('Base Diabetes management program')}
+            {
+              WhatWillYouGetPoints.map(value => {
+                return (
+                  getEllipseBulletPoint(value)
+                )
+              })
+            }
           </View>
         }
       </View>
@@ -497,74 +470,52 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderHowToAvail = () => {
     return (
       <View style={styles.cardStyle}>
-        <TouchableOpacity onPress={() => {setIsHowToAvailVisible(!isHowToAvailVisible)}} style={{
-          width: '100%',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        }}>
+        <TouchableOpacity onPress={() => {setIsHowToAvailVisible(!isHowToAvailVisible)}} style={styles.sectionsHeading}>
           <Text style={theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35)}>
             How To Avail
           </Text>
           {
             isHowToAvailVisible ? 
             <DownOrange
-              style={{
-                resizeMode: 'contain',
-                width: 20,
-                height: 20,
-              }}
+              style={styles.arrowStyle}
             /> :
             <UpOrange
-              style={{
-                resizeMode: 'contain',
-                width: 20,
-                height: 20,
-              }}
+              style={styles.arrowStyle}
             />
           }
         </TouchableOpacity>
         {
           isHowToAvailVisible &&
-          <View style={{
-            marginTop: 15,
-          }}>
-            <Text style={theme.viewStyles.text('SB', 13, '#02475B', 1, 20, 0.35)}>
-              Please Follow These Steps
-            </Text>
-            <View>
-              <View style={{
-                flexDirection: 'row',
-                marginTop: 15,
-                width: '80%'
-              }}>
-                <OneVectorNumber style={{
-                  marginRight: 10,
-                  marginTop: 5,
-                }} />
-                <Text style={{
-                  ...theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35),
-                }}>
-                  Complete transactions worth Rs 25000+ on Apollo 24/7
-                </Text>
-              </View>
-              <View style={{
-                flexDirection: 'row',
-                marginTop: 15,
-                width: '80%'
-              }}>
-                <TwoVectorNumber style={{
-                  marginRight: 10,
-                  marginTop: 5,
-                }} />
-                <Text style={{
-                  ...theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35),
-                }}>
-                  Duration of membership is 1 year. It will be auto renewed if you spend more than Rs 25000 within 1 year on Apollo 24/7
-                </Text>
-              </View>
-            </View>
-          </View>
+          renderHowToAvailContent()
         }
+      </View>
+    );
+  };
+
+  const renderHowToAvailContent = () => {
+    return (
+      <View style={{
+        marginTop: 15,
+      }}>
+        <Text style={theme.viewStyles.text('SB', 13, '#02475B', 1, 20, 0.35)}>
+          Please Follow These Steps
+        </Text>
+        <View>
+          <View style={styles.howToAvail}>
+            <OneVectorNumber style={styles.oneVectorStyle} />
+            <Text style={{
+              ...theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35),
+            }}>
+              Complete transactions worth Rs 25000+ on Apollo 24/7
+            </Text>
+          </View>
+          <View style={styles.howToAvail}>
+            <TwoVectorNumber style={styles.oneVectorStyle} />
+            <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
+              Duration of membership is 1 year. It will be auto renewed if you spend more than Rs 25000 within 1 year on Apollo 24/7
+            </Text>
+          </View>
+        </View>
       </View>
     );
   };
@@ -572,28 +523,17 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const getEllipseBulletPoint = (text: string) => {
     return (
       <View style={{flexDirection: 'row', marginBottom: 15}}>
-        <EllipseBulletPoint style={{
-          resizeMode: 'contain',
-          width: 10,
-          height: 10,
-          alignSelf: 'center',
-          marginRight: 10,
-        }} />
+        <EllipseBulletPoint style={styles.bulletStyle} />
         <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>{text}</Text>
       </View>
     );
   };
 
-  return (
-    <View style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF'}}>
-        <Header
+  const renderHeader = () => {
+    return (
+      <Header
           leftIcon="backArrow"
-          rightComponent={<HelpIcon style={{
-            resizeMode: 'contain',
-            width: 20,
-            height: 20,
-          }} />}
+          rightComponent={<HelpIcon style={styles.arrowStyle} />}
           title={'MEMBERSHIP PLAN DETAIL'}
           container={{
             ...theme.viewStyles.cardViewStyle,
@@ -601,33 +541,31 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
+    );
+  };
+
+  const renderInactivePlansContainer = () => {
+    return (
+      <ScrollView bounces={false}>
+        <Text style={styles.inactivePlanText}>
+          Your Plan is Currently INACTIVE. To activate your plan, make a transaction greater than Rs 499 on Apollo 24/7
+        </Text>
+        <Text style={styles.benefitsAvailableHeading}>Benefits Available</Text>
+        {renderBenefitsAvailable()}
+      </ScrollView>
+    );
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={styles.safeAreaStyle}>
+        {renderHeader()}
         <SubscriptionBanner membershipType={membershipType} />
         {
           isActivePlan ? 
           renderTabComponent() : 
-          <ScrollView bounces={false}>
-            <Text style={{
-              ...theme.viewStyles.text('M', 13, '#EA5F65', 1, 17, 0.35),
-              paddingHorizontal: 20,
-              paddingBottom: 20,
-            }}>
-              Your Plan is Currently INACTIVE. To activate your plan, make a transaction greater than Rs 499 on Apollo 24/7
-            </Text>
-            <Text style={{
-              ...theme.viewStyles.text('B', 17, '#02475B', 1, 20, 0.35),
-              paddingHorizontal: 20,
-            }}>Benefits Available</Text>
-            {renderBenefitsAvailable()}
-          </ScrollView>
+          renderInactivePlansContainer()
         }
-        {/* {isSubscribed ? renderTabComponent() : renderSubscribeContent()} 
-        {
-          showAvailPopup &&
-          <AvailSubscriptionPopup 
-            onAvailNow={() => {}} 
-            onClose={() => setshowAvailPopup(false)} 
-            />
-        } */}
       </SafeAreaView>
       {
         showHdfcConnectPopup &&
