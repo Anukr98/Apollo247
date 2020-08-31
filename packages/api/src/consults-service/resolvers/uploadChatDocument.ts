@@ -289,6 +289,8 @@ export const uploadMediaDocument: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
 
   prescriptionInput.prescriptionName = 'MediaDocument';
+  prescriptionInput.hospitalId = '';
+  prescriptionInput.hospital_name = '';
   prescriptionInput.dateOfPrescription =
     getUnixTime(new Date(prescriptionInput.dateOfPrescription)) * 1000;
   prescriptionInput.startDate = prescriptionInput.startDate
