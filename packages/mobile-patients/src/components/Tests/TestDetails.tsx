@@ -276,10 +276,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               <Text style={styles.personDetailStyles}>
                 FOR{' '}
                 {testInfo.Gender == 'B'
-                  ? 'BOYS AND GIRLS'
+                  ? 'MALE AND FEMALE'
                   : testInfo.Gender == 'M'
-                  ? 'BOYS'
-                  : 'GIRLS'}
+                  ? 'MALE'
+                  : 'FEMALE'}
               </Text>
             </View>
           )}
