@@ -19,10 +19,6 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       paddingTop: 20,
-      width: '50%',
-      [theme.breakpoints.down('sm')]: {
-        width: '100%',
-      },
     },
     card: {
       backgroundColor: '#fff',
@@ -120,16 +116,14 @@ export const PatientsOverview: React.FC = () => {
             </span>
           </div>
         </Grid> */}
-        <Grid>
-          <HdfcCallDoctor patientPhone={currentPatient.mobileNumber} />
-          <Alerts
-            setAlertMessage={setAlertMessage}
-            alertMessage={alertMessage}
-            isAlertOpen={isAlertOpen}
-            setIsAlertOpen={setIsAlertOpen}
-          />
-        </Grid>
       </Grid>
+      <HdfcCallDoctor patientPhone={currentPatient.mobileNumber} />
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };
