@@ -650,6 +650,13 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getMedicineOrderWithStatus(orderAutoId: number) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: ['patient', 'medicineOrdersStatus'],
+    });
+  }
+
   getMedicineOrderWithPaymentAndShipments(orderAutoId: number) {
     return this.findOne({
       where: { orderAutoId },

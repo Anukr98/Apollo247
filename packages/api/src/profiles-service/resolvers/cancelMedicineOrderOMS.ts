@@ -127,7 +127,6 @@ const cancelMedicineOrderOMS: Resolver<
     }
 
     const textRes = await pharmaResp.text();
-    console.log(textRes);
     log(
       'profileServiceLogger',
       'API_CALL_RESPONSE',
@@ -183,13 +182,13 @@ const updateOrderCancelled = async (
     new Date(),
     MEDICINE_ORDER_STATUS.CANCELLED
   );
-  calculateRefund(
-    orderDetails,
-    0,
-    profilesDb,
-    medicineOrdersRepo,
-    medicineOrderCancelOMSInput.cancelReasonCode
-  );
+  // calculateRefund(
+  //   orderDetails,
+  //   0,
+  //   profilesDb,
+  //   medicineOrdersRepo,
+  //   medicineOrderCancelOMSInput.cancelReasonCode
+  // );
 };
 
 export const medicineOrderCancelOMSResolvers = {
