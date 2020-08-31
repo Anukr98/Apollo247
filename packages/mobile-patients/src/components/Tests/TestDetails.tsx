@@ -256,6 +256,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderTestDetails = () => {
+    const gender: any = {
+      B: 'MALE AND FEMALE',
+      M: 'MALE',
+      F: 'FEMALE',
+    };
     return (
       <View style={{ overflow: 'hidden', padding: 20 }}>
         <View>
@@ -270,17 +275,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             </View>
           )}
 
-          {!!testInfo.Gender && (
+          {!!testInfo.Gender && !!gender[testInfo.Gender] && (
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Gender</Text>
-              <Text style={styles.personDetailStyles}>
-                FOR{' '}
-                {testInfo.Gender == 'B'
-                  ? 'MALE AND FEMALE'
-                  : testInfo.Gender == 'M'
-                  ? 'MALE'
-                  : 'FEMALE'}
-              </Text>
+              <Text style={styles.personDetailStyles}>{`FOR ${gender[testInfo.Gender]}`}</Text>
             </View>
           )}
           {!!testInfo.PackageInClussion && (
