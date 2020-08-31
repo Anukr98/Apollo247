@@ -40,11 +40,9 @@ import { GET_APPOINTMENT_DOCTOR_RESCHEDULED_DETAILS } from 'graphql/consult';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      padding: '20px 5px 10px 5px',
+      padding: '15px 0',
     },
     consultationSection: {
-      paddingLeft: 15,
-      paddingRight: 15,
       paddingBottom: 10,
     },
     consultCard: {
