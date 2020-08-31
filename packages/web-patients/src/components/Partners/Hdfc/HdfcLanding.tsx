@@ -1,12 +1,13 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
-import { Theme, Typography, FormControl, Fab } from '@material-ui/core';
+import { Theme, Typography, FormControl, Fab, Modal } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { AphButton, AphDialog, AphTextField, AphRadio } from '@aph/web-ui-components';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import { SignIn } from 'components/SignIn';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
+import { clientRoutes } from 'helpers/clientRoutes';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -14,6 +15,26 @@ import FormLabel from '@material-ui/core/FormLabel';
 import DateFnsUtils from '@date-io/date-fns';
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import { createMuiTheme } from '@material-ui/core';
+import { Route } from 'react-router-dom';
+import _isEmpty from 'lodash/isEmpty';
+import { Formik, FormikProps, Field, FieldProps, Form } from 'formik';
+import { useMutation, useQuery, useApolloClient } from 'react-apollo-hooks';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
+import { UpdatePatient, UpdatePatientVariables } from 'graphql/types/UpdatePatient';
+import {
+  UPDATE_PATIENT,
+  CREATE_SUBSCRIPTION,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+} from 'graphql/profiles';
+import { ProfileSuccess } from 'components/ProfileSuccess';
+import { NewProfile } from 'components/NewProfile';
+
+import { createSubscription, createSubscriptionVariables } from 'graphql/types/createSubscription';
+import {
+  getSubscriptionsOfUserByStatus,
+  getSubscriptionsOfUserByStatusVariables,
+} from 'graphql/types/getSubscriptionsOfUserByStatus';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -312,15 +333,65 @@ const defaultMaterialTheme = createMuiTheme({
   },
 });
 
+type Patient = GetCurrentPatients_getCurrentPatients_patients;
+
+interface FormValues {
+  firstName: Patient['firstName'];
+  lastName: Patient['lastName'];
+  dateOfBirth: Patient['dateOfBirth'];
+  emailAddress: Patient['emailAddress'];
+  gender: Patient['gender'];
+}
+
 export const HdfcLanding: React.FC = (props) => {
   const classes = useStyles({});
+  const avatarRef = useRef(null);
   const { isSigningIn, isSignedIn, setVerifyOtpError, signOut } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [mobileNumber, setMobileNumber] = React.useState('');
   const [otp, setOtp] = React.useState('');
   const [notEligible, setNotEligible] = React.useState<boolean>(false);
+  const updatePatient = useMutation<UpdatePatient, UpdatePatientVariables>(UPDATE_PATIENT);
   const [isProfileUpdate, setisProfileUpdate] = React.useState<boolean>(false);
+  const [showProfileSuccess, setShowProfileSuccess] = React.useState<boolean>(false);
   const [value, setValue] = React.useState('');
+  const [userSubscriptions, setUserSubscriptions] = React.useState([]);
+
+  const createSubscription = useMutation<createSubscription, createSubscriptionVariables>(
+    CREATE_SUBSCRIPTION
+  );
+
+  const apolloClient = useApolloClient();
+
+  //Show signup screen only if defaultNewProfile is present
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
+  const defaultNewProfile = allCurrentPatients ? currentPatient || allCurrentPatients[0] : null;
+  const hasExistingProfile =
+    allCurrentPatients && allCurrentPatients.some((p) => !_isEmpty(p.uhid));
+
+  useEffect(() => {
+    if (hasExistingProfile && currentPatient && userSubscriptions.length == 0) {
+      apolloClient
+        .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
+          query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+          variables: {
+            user: {
+              mobile_number: currentPatient.mobileNumber,
+              patiend_id: currentPatient.id,
+            },
+            status: ['active'],
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          setUserSubscriptions(response.data.getSubscriptionsOfUserByStatus.response);
+        })
+        .catch((error) => {
+          alert('Something went wrong :(');
+        });
+    }
+  }, [isSignedIn]);
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setValue((event.target as HTMLInputElement).value);
   };
@@ -332,6 +403,25 @@ export const HdfcLanding: React.FC = (props) => {
   const handleDateChange = (date: Date | null) => {
     setSelectedDate(date);
   };
+
+  if (showProfileSuccess) {
+    return (
+      <ProfileSuccess
+        onSubmitClick={() => {
+          setisProfileUpdate(false);
+          setShowProfileSuccess(false);
+        }}
+      />
+    );
+  }
+
+  const customSignUp = {
+    heading: 'Final Step',
+    subHeading: 'Enter your details to complete the registration',
+    showMascot: false,
+    referral: 'HDFCBANK',
+  };
+
   return (
     <div className={classes.mainContainer}>
       <header className={` ${classes.header} ${classes.headerFixed}`}>
@@ -361,15 +451,41 @@ export const HdfcLanding: React.FC = (props) => {
               <Typography component="h1">
                 Wide Range of benefits worth 38K+ for all HDFC customers
               </Typography>
-              <AphButton
-                color="primary"
-                variant="contained"
-                onClick={() => {
-                  setIsLoginPopupVisible(true);
-                }}
-              >
-                SignUp Now
-              </AphButton>
+              <Route
+                render={({ history }) => (
+                  <AphButton
+                    color="primary"
+                    variant="contained"
+                    onClick={() => {
+                      if (!isSignedIn) setIsLoginPopupVisible(true);
+                      else {
+                        userSubscriptions.length != 0
+                          ? history.push(clientRoutes.welcome())
+                          : createSubscription({
+                              variables: {
+                                userSubscription: {
+                                  mobile_number: currentPatient.mobileNumber,
+                                },
+                              },
+                            })
+                              .then(() => {
+                                history.push(clientRoutes.membershipHdfc());
+                              })
+                              .catch((error) => {
+                                console.error(error);
+                                alert('Something went wrong :(');
+                              });
+                      }
+                    }}
+                  >
+                    {isSignedIn
+                      ? userSubscriptions.length != 0
+                        ? 'Explore now'
+                        : 'Check Eligibility'
+                      : 'SignUp Now'}
+                  </AphButton>
+                )}
+              />
             </div>
           </div>
         </div>
@@ -437,7 +553,39 @@ export const HdfcLanding: React.FC = (props) => {
                 Register now for Round-the-clock doctor availability, ease of ordering medicines
                 &amp; tests online and much more on Apollo 24/7
               </Typography>
-              <AphButton>Sign Up Now</AphButton>
+              <Route
+                render={({ history }) => (
+                  <AphButton
+                    onClick={() => {
+                      if (!isSignedIn) setIsLoginPopupVisible(true);
+                      else {
+                        userSubscriptions.length != 0
+                          ? history.push(clientRoutes.welcome())
+                          : createSubscription({
+                              variables: {
+                                userSubscription: {
+                                  mobile_number: currentPatient.mobileNumber,
+                                },
+                              },
+                            })
+                              .then(() => {
+                                history.push(clientRoutes.membershipHdfc());
+                              })
+                              .catch((error) => {
+                                console.error(error);
+                                alert('Something went wrong :(');
+                              });
+                      }
+                    }}
+                  >
+                    {isSignedIn
+                      ? userSubscriptions.length != 0
+                        ? 'Explore now'
+                        : 'Check Eligibility'
+                      : 'SignUp Now'}
+                  </AphButton>
+                )}
+              />
             </div>
           </div>
         </div>
@@ -469,40 +617,52 @@ export const HdfcLanding: React.FC = (props) => {
           </div>
         </div>
       </div>
-      <Popover
-        open={isLoginPopupVisible}
-        onClose={() => {
-          const otpAfterCleaning = otp.replace(/,/g, '');
-          if (
-            mobileNumber.length === 0 ||
-            (mobileNumber.length === 10 && otpAfterCleaning.length === 0) ||
-            otpAfterCleaning.length === 6
-          ) {
-            setIsLoginPopupVisible(false);
-            setVerifyOtpError(false);
-          }
-        }}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.topPopover }}
-      >
-        <Paper className={classes.loginForm}>
-          <SignIn
-            setMobileNumber={(mobileNumber: string) => setMobileNumber(mobileNumber)}
-            setOtp={(otp: string) => setOtp(otp)}
-            mobileNumber={mobileNumber}
-            otp={otp}
-          />
-        </Paper>
-      </Popover>
-      <Popover
-        open={isProfileUpdate}
+
+      {/* Login Popover */}
+      {!isSignedIn && (
+        <Popover
+          open={isLoginPopupVisible}
+          anchorEl={avatarRef.current}
+          onClose={() => {
+            const otpAfterCleaning = otp.replace(/,/g, '');
+            if (
+              mobileNumber.length === 0 ||
+              (mobileNumber.length === 10 && otpAfterCleaning.length === 0) ||
+              otpAfterCleaning.length === 6
+            ) {
+              setIsLoginPopupVisible(false);
+              setVerifyOtpError(false);
+            }
+          }}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          classes={{ paper: classes.topPopover }}
+        >
+          <Paper className={classes.loginForm}>
+            <SignIn
+              setMobileNumber={(mobileNumber: string) => setMobileNumber(mobileNumber)}
+              setOtp={(otp: string) => setOtp(otp)}
+              mobileNumber={mobileNumber}
+              otp={otp}
+            />
+          </Paper>
+        </Popover>
+      )}
+
+      {/* SignUp Popover */}
+      {defaultNewProfile && (
+        <AphDialog maxWidth="sm" open={defaultNewProfile && !hasExistingProfile ? true : false}>
+          <NewProfile patient={defaultNewProfile} onClose={() => {}} customSignUp={customSignUp} />
+        </AphDialog>
+      )}
+      {/* <Popover
+        open={defaultNewProfile && !hasExistingProfile ? true : false}
         anchorOrigin={{
           vertical: 'top',
           horizontal: 'right',
@@ -563,14 +723,40 @@ export const HdfcLanding: React.FC = (props) => {
                 type="submit"
                 color="primary"
                 aria-label="Sign in"
-                onClick={() => setisProfileUpdate(false)}
+                onClick={() => {
+                  return updatePatient({
+                    variables: {
+                      patientInput: {
+                        id: defaultNewProfile.id,
+                        firstName: 'values.firstName',
+                        lastName: 'values.lastName',
+                        gender: Gender.MALE,
+                        dateOfBirth: 'convertClientDateToIsoDate(values.dateOfBirth)',
+                        emailAddress: _isEmpty('values.emailAddress')
+                          ? null
+                          : 'values.emailAddress',
+                        relation: Relation.ME,
+                        referralCode: 'HDFCBANK',
+                      },
+                    },
+                  })
+                    .then(() => {
+                      setShowProfileSuccess(true);
+                      setisProfileUpdate(false);
+                    })
+                    .catch((error) => {
+                      console.error(error);
+                      setShowProfileSuccess(true);
+                      alert('Something went wrong :(');
+                    });
+                }}
               >
                 <img src={require('images/ic_arrow_forward.svg')} />
               </Fab>
             </div>
           </form>
         </Paper>
-      </Popover>
+      </Popover> */}
       <AphDialog open={notEligible} maxWidth="sm">
         <div className={classes.dialogcontent}>
           <img src={require('images/hdfc/sorry.svg')} alt="Not Eligible" />

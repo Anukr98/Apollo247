@@ -184,6 +184,12 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [muationLoading, setMuationLoading] = useState<boolean>(false);
 
+  var packageId: string;
+  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
+  if (userSubscriptions) {
+    packageId = `${userSubscriptions[0].group_plan.group.name}:${userSubscriptions[0].group_plan.plan_id}`;
+  }
+
   const verifyCoupon = () => {
     const data = {
       mobile: localStorage.getItem('userMobileNo'),
@@ -203,7 +209,10 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
     };
     if (currentPatient && currentPatient.id) {
       setMuationLoading(true);
-      fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', data, '', false)
+      const fetchCouponUrl = `${process.env.VALIDATE_CONSULT_COUPONS}?mobile=${
+        currentPatient.mobileNumber
+      }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
+      fetchUtil(fetchCouponUrl, 'POST', data, '', false)
         .then((resp: any) => {
           if (resp.errorCode == 0) {
             if (resp.response.valid) {
@@ -244,7 +253,10 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   useEffect(() => {
     setIsLoading(true);
     // Since endpoint is the same for all coupons, this will be changed if searchlight gives a new endpoint
-    fetchUtil(process.env.GET_CONSULT_COUPONS, 'GET', {}, '', false)
+    const fetchCouponUrl = `${process.env.GET_CONSULT_COUPONS}?mobile=${
+      currentPatient.mobileNumber
+    }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
+    fetchUtil(fetchCouponUrl, 'GET', {}, '', false)
       .then((res: any) => {
         if (res && res.response && res.response.length > 0) {
           setAvailableCoupons(res.response);

@@ -727,6 +727,12 @@ export const MedicineCart: React.FC = (props) => {
   const [shopId, setShopId] = useState<string>('');
   const [couponDiscount, setCouponDiscount] = useState<number>(0);
 
+  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
+  var packageId: string;
+  if (userSubscriptions) {
+    packageId = `${userSubscriptions[0].group_plan.group.name}:${userSubscriptions[0].group_plan.plan_id}`;
+  }
+
   const apiDetails = {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     bulk_product_info_url: process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL,
@@ -1002,6 +1008,9 @@ export const MedicineCart: React.FC = (props) => {
           };
         }),
       };
+      const fetchCouponUrl = `${process.env.VALIDATE_CONSULT_COUPONS}?mobile=${
+        currentPatient.mobileNumber
+      }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
       fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', data, '', false)
         .then((resp: any) => {
           if (resp.errorCode == 0) {
@@ -1871,7 +1880,6 @@ export const MedicineCart: React.FC = (props) => {
                     }
                     if (
                       checkForCartChanges(shopId).then((res) => {
-                        
                         if (res) {
                           if (isChennaiZipCode(zipCodeInt)) {
                             // redirect to chennai orders form

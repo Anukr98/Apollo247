@@ -10,6 +10,8 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { HDFC_SUBSCRIPTION_GOLD } from 'helpers/constants';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -109,7 +111,7 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 0,
       background: '#fff',
       padding: '12px 16px',
-      '& button': {
+      '& a, button': {
         boxShadow: 'none',
         position: 'relative',
         background: '#FC9916',
@@ -292,12 +294,13 @@ const useStyles = makeStyles((theme: Theme) => {
           lineHeight: '18px',
           width: '80%',
         },
-        '& button': {
+        '& a, button': {
           fontSize: 13,
           color: '#FC9916',
           margin: '0 0 0 auto',
           boxShadow: 'none',
           display: 'block',
+          textAlign: 'right',
         },
       },
     },
@@ -432,28 +435,20 @@ export const MembershipPlanDetail: React.FC = (props) => {
 
                       <div className={classes.couponContent}>
                         <div className={classes.couponDetails}>
-                          <Typography component="h3">Coupon Name 1</Typography>
+                          <Typography component="h3">HDFCGold1</Typography>
                           <Typography>
-                            Get Rs. 249/- Off on 2 Virtual Consultations Bookings
+                            Discount of Rs 249 on Virtual Consultations for HDFC customers
                           </Typography>
                         </div>
                         <div className={classes.couponDetails}>
-                          <Typography component="h3">Coupon Name 2</Typography>
+                          <Typography component="h3">HDFCGold2</Typography>
                           <Typography>
-                            Get Rs. 249/- Off on 2 Virtual Consultations Bookings
+                            Discount on Medicines and Apollo Private Label for HDFC customers
                           </Typography>
                         </div>
                         <div className={classes.couponDetails}>
-                          <Typography component="h3">Coupon Name 3</Typography>
-                          <Typography>
-                            Get Rs. 249/- Off on 2 Virtual Consultations Bookings
-                          </Typography>
-                        </div>
-                        <div className={classes.couponDetails}>
-                          <Typography component="h3">Coupon Name 4</Typography>
-                          <Typography>
-                            Get Rs. 249/- Off on 2 Virtual Consultations Bookings
-                          </Typography>
+                          <Typography component="h3">HDFCGold3</Typography>
+                          <Typography>Discount on Medicines for HDFC customers</Typography>
                         </div>
                       </div>
                     </div>
@@ -471,12 +466,12 @@ export const MembershipPlanDetail: React.FC = (props) => {
                     <Typography>
                       Round-the-clock doctor availability at a click of a button
                     </Typography>
-                    <AphButton>Redeem</AphButton>
+                    <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
                   </li>
                   <li>
                     <Typography component="h2">Concierge for 24|7 services</Typography>
                     <Typography>Priority Chat Support on Whatsapp with our Executives</Typography>
-                    <AphButton>Redeem</AphButton>
+                    <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
                   </li>
                   <li>
                     <Typography component="h2">Covid-19 Care</Typography>
@@ -485,7 +480,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
                       <li>Preferential Access to COVID Home Testing </li>
                       <li>Preferential Access To Home &amp; Hotel Care </li>
                     </ul>
-                    <AphButton>Redeem</AphButton>
+                    <AphButton href={clientRoutes.covidLanding()}>Redeem</AphButton>
                   </li>
                   <li>
                     <Typography component="h2">
@@ -494,24 +489,24 @@ export const MembershipPlanDetail: React.FC = (props) => {
                     <Typography>
                       Choose a Doctor and Book an Online Consultation instantly on our App
                     </Typography>
-                    <AphButton>Redeem</AphButton>
+                    <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
                   </li>
                   <li>
                     <Typography component="h2">Free Medicine Delivery</Typography>
                     <Typography>No delivery charges for orders greater than Rs 300</Typography>
-                    <AphButton>Redeem</AphButton>
+                    <AphButton href={clientRoutes.medicines()}>Redeem</AphButton>
                   </li>
                   <li>
                     <Typography component="h2">Digital Vault for health records</Typography>
                     <Typography>
                       Store all your medical documents in your personal digital vault
                     </Typography>
-                    <AphButton>Redeem</AphButton>
+                    <AphButton href={clientRoutes.healthRecords()}>Redeem</AphButton>
                   </li>
                   <li>
                     <Typography component="h2">Free Health Assesment Consultation</Typography>
                     <Typography>Get a free medical consultation from Top Apollo Doctors</Typography>
-                    <AphButton>Redeem</AphButton>
+                    <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
                   </li>
                 </ul>
 
@@ -551,13 +546,13 @@ export const MembershipPlanDetail: React.FC = (props) => {
               </div>
             </TabPanel>
             <TabPanel value={value} index={1}>
-              Item two
+              {/* Item two */}
             </TabPanel>
           </div>
         </div>
 
         <div className={classes.btnContainer}>
-          <AphButton color="primary" variant="contained">
+          <AphButton color="primary" variant="contained" href={clientRoutes.welcome()}>
             Explore Now
           </AphButton>
         </div>
