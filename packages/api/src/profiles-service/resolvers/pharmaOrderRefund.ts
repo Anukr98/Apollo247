@@ -67,7 +67,13 @@ const refundInitiate: Resolver<
       throw `${orderId} - is in status ${orderDetails.currentStatus}`;
     }
     try {
-      calculateRefund(orderDetails, totalOrderBilling, profilesDb, medOrderRepo, statusMessage);
+      await calculateRefund(
+        orderDetails,
+        totalOrderBilling,
+        profilesDb,
+        medOrderRepo,
+        statusMessage
+      );
       if (orderDetails.currentStatus !== MEDICINE_ORDER_STATUS.CANCELLED) {
         const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
           orderStatus: MEDICINE_ORDER_STATUS.CANCELLED,
