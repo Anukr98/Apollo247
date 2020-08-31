@@ -4,20 +4,20 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL mutation operation: updateDoctorChatDays
+// GraphQL mutation operation: UpdateDoctorChatDays
 // ====================================================
 
-export interface updateDoctorChatDays_updateDoctorChatDays {
+export interface UpdateDoctorChatDays_updateDoctorChatDays {
   __typename: "chatDaysResult";
   isError: boolean | null;
   response: string | null;
 }
 
-export interface updateDoctorChatDays {
-  updateDoctorChatDays: updateDoctorChatDays_updateDoctorChatDays;
+export interface UpdateDoctorChatDays {
+  updateDoctorChatDays: UpdateDoctorChatDays_updateDoctorChatDays;
 }
 
-export interface updateDoctorChatDaysVariables {
+export interface UpdateDoctorChatDaysVariables {
   doctorId: string;
   chatDays: number;
 }

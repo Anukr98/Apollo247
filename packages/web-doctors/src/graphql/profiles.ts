@@ -1580,7 +1580,7 @@ export const ADD_CHAT_DOCUMENT = gql`
 `;
 
 export const UPDATE_DOCTOR_CHAT_DAYS = gql`
-  mutation updateDoctorChatDays($doctorId: String!, $chatDays: Int!) {
+  mutation UpdateDoctorChatDays($doctorId: String!, $chatDays: Int!) {
     updateDoctorChatDays(doctorId: $doctorId, chatDays: $chatDays) {
       isError
       response
