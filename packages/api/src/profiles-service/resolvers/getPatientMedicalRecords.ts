@@ -515,12 +515,15 @@ const getPatientPrismMedicalRecords: Resolver<
   Modify date to ISO
    */
 
+  if (!process.env.PHR_V1_GET_HEALTHCHECK_DOCUMENT || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
   let healthCheckDocumentUrl = process.env.PHR_V1_GET_HEALTHCHECK_DOCUMENT.toString();
 
   healthCheckDocumentUrl = healthCheckDocumentUrl.replace('{AUTH_KEY}', getToken.response);
   healthCheckDocumentUrl = healthCheckDocumentUrl.replace('{UHID}', patientDetails.uhid);
 
-  healthCheckResults.response.map((healthCheckResult: any) => {
+  healthCheckResults.response.map((healthCheckResult) => {
     healthCheckResult.fileUrl = healthCheckResult.healthCheckFiles.length ? healthCheckDocumentUrl.replace('{RECORDID}', healthCheckResult.id) : ''
 
     if (healthCheckResult.healthCheckDate.toString().length < 11) {
@@ -537,12 +540,15 @@ const getPatientPrismMedicalRecords: Resolver<
   Modify date to ISO
    */
 
+  if (!process.env.PHR_V1_GET_DISCHARGESUMMARY_DOCUMENT || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
   let dischargeSummaryDocumentUrl = process.env.PHR_V1_GET_DISCHARGESUMMARY_DOCUMENT.toString();
 
   dischargeSummaryDocumentUrl = dischargeSummaryDocumentUrl.replace('{AUTH_KEY}', getToken.response);
   dischargeSummaryDocumentUrl = dischargeSummaryDocumentUrl.replace('{UHID}', patientDetails.uhid);
 
-  dischargeSummaryResults.response.map((dischargeSummaryResult: any) => {
+  dischargeSummaryResults.response.map((dischargeSummaryResult) => {
     dischargeSummaryResult.fileUrl = dischargeSummaryResult.hospitalizationFiles.length ? dischargeSummaryDocumentUrl.replace('{RECORDID}', dischargeSummaryResult.id) : ''
 
     if (dischargeSummaryResult.dateOfDischarge.toString().length < 11) {
