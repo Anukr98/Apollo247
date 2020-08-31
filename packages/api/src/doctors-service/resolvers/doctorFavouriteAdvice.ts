@@ -36,7 +36,7 @@ const getDoctorFavouriteAdviceList: Resolver<
   FavouriteAdviceList
 > = async (parent, args, { mobileNumber, doctorsDb, consultsDb }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const favouriteAdviceRepo = doctorsDb.getCustomRepository(DoctorFavouriteAdviceRepository);
@@ -53,7 +53,7 @@ const addDoctorFavouriteAdvice: Resolver<
   if (args.instruction.trim().length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
 
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const favouriteAdviceRepo = doctorsDb.getCustomRepository(DoctorFavouriteAdviceRepository);
@@ -75,7 +75,7 @@ const deleteDoctorFavouriteAdvice: Resolver<
   if (args.instructionId.trim().length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
 
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const favouriteAdviceRepo = doctorsDb.getCustomRepository(DoctorFavouriteAdviceRepository);
@@ -105,7 +105,7 @@ const updateDoctorFavouriteAdvice: Resolver<
     throw new AphError(AphErrorMessages.INVALID_ENTITY);
 
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const favouriteAdviceRepo = doctorsDb.getCustomRepository(DoctorFavouriteAdviceRepository);

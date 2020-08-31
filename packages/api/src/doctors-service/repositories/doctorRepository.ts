@@ -190,7 +190,10 @@ export class DoctorRepository extends Repository<Doctor> {
                   const slotInfo = {
                     slotId: ++slotCount,
                     slot: generatedSlot,
-                    slotThreshold: subMinutes(new Date(generatedSlot), timeSlot.consultBuffer > 0 ? timeSlot.consultBuffer : 5),
+                    slotThreshold: subMinutes(
+                      new Date(generatedSlot),
+                      timeSlot.consultBuffer > 0 ? timeSlot.consultBuffer : 5
+                    ),
                     status: ES_DOCTOR_SLOT_STATUS.OPEN,
                     slotType: timeSlot.consultMode,
                   };
@@ -340,6 +343,13 @@ export class DoctorRepository extends Repository<Doctor> {
   findByMobileNumber(mobileNumber: string, isActive: Boolean) {
     return this.findOne({
       where: [{ mobileNumber, isActive }],
+      relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
+    });
+  }
+
+  findByMobileNumberWithRelations(mobileNumber: string, isActive: Boolean) {
+    return this.findOne({
+      where: [{ mobileNumber, isActive }],
       relations: [
         'specialty',
         'doctorHospital',
@@ -357,6 +367,8 @@ export class DoctorRepository extends Repository<Doctor> {
       ],
     });
   }
+
+  getDoctorDetailswithRelations() {}
 
   updateFirebaseId(id: string, firebaseToken: string) {
     return this.update(id, { firebaseToken: firebaseToken });

@@ -237,7 +237,7 @@ const getDoctorAppointments: Resolver<
   let doctordata;
 
   if (args.doctorId === undefined || args.doctorId == null) {
-    doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+    doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   } else {
     doctordata = await doctorRepository.findById(args.doctorId);
   }
@@ -318,7 +318,7 @@ const getPatientLog: Resolver<
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   let doctordata;
   if (args.doctorId === undefined || args.doctorId == null) {
-    doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+    doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   } else {
     doctordata = await doctorRepository.findById(args.doctorId);
   }
