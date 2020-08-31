@@ -228,7 +228,6 @@ const sendCallNotification: Resolver<
       args.isDev,
       args.numberOfParticipants
     );
-    console.log(notificationResult, 'doctor call appt notification');
   } else {
     const pushNotificationInput = {
       appointmentId: args.appointmentId,
@@ -245,7 +244,6 @@ const sendCallNotification: Resolver<
       args.isDev,
       args.numberOfParticipants
     );
-    console.log(notificationResult, 'doctor call appt notification');
   }
   return { status: true, callDetails: appointmentCallDetails };
 };
@@ -258,7 +256,6 @@ const sendApptNotification: Resolver<
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptsList = await apptRepo.getNextMinuteAppointments();
-  console.log(apptsList);
   if (apptsList.length > 0) {
     apptsList.map((appt) => {
       const pushNotificationInput = {
@@ -271,7 +268,6 @@ const sendApptNotification: Resolver<
         consultsDb,
         doctorsDb
       );
-      console.log(notificationResult, 'doctor call appt notification');
     });
   }
 
@@ -332,7 +328,6 @@ const sendCallDisconnectNotification: Resolver<
       doctorsDb,
       args.callType
     );
-    console.log(notificationResult, 'doctor call appt notification');
   }
   return { status: true };
 };

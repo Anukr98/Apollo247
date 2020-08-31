@@ -422,7 +422,7 @@ export const uploadRxPdf = async (
 
   const blob = await client.uploadFile({ name, filePath });
   const blobUrl = client.getBlobUrl(blob.name);
-  fs.unlink(filePath, (error) => console.log(error));
+  fs.unlink(filePath, (error) => null);
   return blobUrl;
 
   function delay(ms: number) {

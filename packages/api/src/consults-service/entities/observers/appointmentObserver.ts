@@ -6,7 +6,6 @@ import { log } from "customWinstonLogger";
 @EventSubscriber()
 export class AppointmentEntitySubscriber implements EntitySubscriberInterface<Appointment> {
     afterUpdate(event: UpdateEvent<any>): Promise<any> | void {
-        console.log(`After update called`);
         return updateElasticSlotsViaAppointMent(event);
     }
 }

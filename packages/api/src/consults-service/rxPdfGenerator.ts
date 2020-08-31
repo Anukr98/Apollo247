@@ -340,7 +340,6 @@ export const convertCaseSheetToRxPdfData = async (
         specialty: doctordata.specialty.name,
         signature: doctordata.signature,
       };
-      console.log(doctorInfo);
     }
   }
 
@@ -1108,10 +1107,9 @@ export const uploadRxPdf = async (
 
   const blob = await client.uploadFile({ name, filePath });
   const blobUrl = client.getBlobUrl(blob.name);
-  console.log('blobUrl===', blobUrl);
   const base64pdf = await convertPdfUrlToBase64(blobUrl);
 
-  fs.unlink(filePath, (error) => console.log(error));
+  fs.unlink(filePath, (error) => null);
   const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
 
   return uploadData;
@@ -1126,7 +1124,6 @@ const convertPdfUrlToBase64 = async (pdfUrl: string) => {
   util.promisify(pdf2base64);
   try {
     const base64pdf = await pdf2base64(pdfUrl);
-    console.log('pdfData:', base64pdf);
     return base64pdf;
   } catch (e) {
     throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);

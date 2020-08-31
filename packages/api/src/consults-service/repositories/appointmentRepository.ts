@@ -350,7 +350,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
-    console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const startDate = new Date(inputStartDate + 'T18:30');
     /*return this.find({
       where: {
@@ -377,10 +376,8 @@ export class AppointmentRepository extends Repository<Appointment> {
   async getBookedSlots(doctorIds: string[]) {
     const appointmentDate = new Date();
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
-    console.log(inputStartDate, 'inputStartDate find by date doctor id - calls count');
     //const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const inputEndDate = format(appointmentDate, 'yyyy-MM-dd');
-    console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const fromDate = new Date(inputStartDate + 'T18:30');
     const toDate = new Date(inputEndDate + 'T18:29');
     const appointments = await this.find({
@@ -897,7 +894,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       INCONSULTHOURS = 'INCONSULTHOURS',
     }
     const availableSlots: string[] = [];
-    console.log(timeSlots, 'time slots');
     let rowCount = 0;
     let consultFlag = CONSULTFLAG.OUTOFCONSULTHOURS;
     if (timeSlots && timeSlots.length > 0) {
@@ -980,9 +976,6 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCMinutes()
         .toString()
         .padStart(2, '0')}:00.000Z`;
-      console.log(availableSlots, 'availableSlots final list');
-      console.log(availableSlots.indexOf(sl), 'indexof');
-      console.log(checkStart, checkEnd, 'check start end');
       if (availableSlots.indexOf(sl) >= 0) {
         consultFlag = CONSULTFLAG.INCONSULTHOURS;
       }
@@ -1121,11 +1114,9 @@ export class AppointmentRepository extends Repository<Appointment> {
           });
         const lastSlot = new Date(availableSlots[availableSlots.length - 1]);
         const lastMins = Math.abs(differenceInMinutes(lastSlot, consultEndTime));
-        console.log(lastMins, 'last mins', lastSlot);
         if (lastMins < docConsultHr.consultDuration) {
           availableSlots.pop();
         }
-        console.log(availableSlotsReturn, 'availableSlotsReturn');
         rowCount++;
       });
 
@@ -1160,7 +1151,6 @@ export class AppointmentRepository extends Repository<Appointment> {
         }
       }
       let finalSlot = '';
-      console.log(availableSlots, 'slots final list');
       if (availableSlots.length > 0) {
         finalSlot = availableSlots[0];
       }
@@ -1474,7 +1464,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     timeSlot = timeSlot.concat(prevDayTimeSlot);
     const blockedSlots = await bciRepo.getBlockedSlots(availableDate, doctorId);
     const doctorBblockedSlots: string[] = [];
-    console.log(blockedSlots, 'blocked slots');
     if (timeSlot.length > 0) {
       //const duration = Math.floor(60 / timeSlot[0].consultDuration);
       const duration = parseFloat((60 / timeSlot[0].consultDuration).toFixed(1));
@@ -1524,7 +1513,6 @@ export class AppointmentRepository extends Repository<Appointment> {
           //   slot = blockedSlot.start;
           // }
           const blockedSlotsDuration = differenceInMinutes(blockedSlot.end, blockedSlot.start);
-          console.log(slot, 'before start min');
           let counter = 0;
           while (true) {
             if (availableSlots.includes(sl)) {
@@ -1555,13 +1543,7 @@ export class AppointmentRepository extends Repository<Appointment> {
               .toString()
               .padStart(2, '0')}:00.000Z`;
           }
-          console.log('start slot', slot);
 
-          console.log(
-            blockedSlotsCount,
-            'blocked count',
-            differenceInMinutes(blockedSlot.end, blockedSlot.start)
-          );
 
           Array(blockedSlotsCount)
             .fill(0)
@@ -1876,8 +1858,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       ''
     );
 
-    console.log('process.env.UHID_CREATE_AUTH_KEY ==>', process.env.UHID_CREATE_AUTH_KEY);
-
     const bookApptResp = await fetch(medMantraBookApptUrl, {
       method: 'POST',
       body: JSON.stringify(medMantraBookApptInput),
@@ -1887,7 +1867,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       },
     })
       .then((res) => {
-        console.log('API_response==>', res);
         log(
           'consultServiceLogger',
           'API_CALL_RESPONSE',
@@ -1898,7 +1877,6 @@ export class AppointmentRepository extends Repository<Appointment> {
         return res.text();
       })
       .catch((error) => {
-        console.log('bookingError:', error);
         log(
           'consultServiceLogger',
           'API_CALL_ERROR',
@@ -1916,7 +1894,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       bookApptResp,
       ''
     );
-    console.log('medMantraBookApptResp:', bookApptResp);
     const parsedResponse = JSON.parse(bookApptResp);
     return parsedResponse;
   }
@@ -1938,8 +1915,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       JSON.stringify(medMantraCancelApptInput),
       ''
     );
-
-    console.log('process.env.UHID_CREATE_AUTH_KEY ==>', process.env.UHID_CREATE_AUTH_KEY);
 
     const cancelApptResp = await fetch(medMantraCancelApptUrl, {
       method: 'POST',
@@ -1968,7 +1943,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       JSON.stringify(cancelApptResp),
       ''
     );
-    console.log('MedMantraCancelApptResponse:', cancelApptResp);
 
     const status = cancelApptResp.retcode == '0' ? true : false;
 

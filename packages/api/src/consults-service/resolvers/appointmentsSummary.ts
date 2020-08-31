@@ -54,10 +54,8 @@ const appointmentsSummary: Resolver<
   function getAppointments() {
     return new Promise(async (resolve, reject) => {
       if (apptsList.length == 0) {
-        console.log('no recs.....');
         resolve(row1);
       }
-      console.log(apptsList, serialNo, 'list----------');
       await apptsList.map(async (appt) => {
         // console.log('appt=', appt);
         const patientDetails = await patientRepo.getPatientDetails(appt.patientId);
@@ -67,7 +65,6 @@ const appointmentsSummary: Resolver<
 
         const doctorDetails = await doctorRepo.findById(appt.doctorId);
         if (!doctorDetails) {
-          console.log(11111);
           throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
         }
         //new fields
@@ -76,7 +73,6 @@ const appointmentsSummary: Resolver<
         //   console.log(2222);
         //   throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
         // }
-        console.log('JDDetails==', JDDetails);
         let JDPhone;
         if (JDDetails) {
           JDPhone = await doctorRepo.getDoctorProfileData(JDDetails.doctorId);
@@ -91,9 +87,7 @@ const appointmentsSummary: Resolver<
         //   console.log(444444);
         //   throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
         // }
-        console.log('callDetails==', callDetails, _isEmpty(callDetails));
         const rescheduleDetails = await rescheduleDetailsRepo.findByAppointmentId(appt.id);
-        console.log('rescheduleDetails==:::::', rescheduleDetails);
         //end
         const istDateTime = format(
           addMilliseconds(appt.appointmentDateTime, 19800000),
@@ -295,7 +289,6 @@ const appointmentsSummary: Resolver<
         if (serialNo == apptsList.length) {
           resolve(row1);
         }
-        console.log(row1, 'row1');
         serialNo++;
       });
     });
@@ -396,7 +389,7 @@ const appointmentsSummary: Resolver<
     writeStream.write(row1);
     writeStream.close();
   } catch (err) {
-    console.log('file error', err);
+    // console.log('file error', err);
   }
   return { azureFilePath: 'test' };
 
@@ -406,41 +399,35 @@ const appointmentsSummary: Resolver<
   );
 
   if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
-    console.log('deleting container...');
     await client
       .deleteContainer()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error deleting', error));
+      .then((res) => null)
+      .catch((error) => null);
 
-    console.log('setting service properties...');
     await client
       .setServiceProperties()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error setting service properties', error));
+      .then((res) => null)
+      .catch((error) => null);
 
-    console.log('creating container...');
     await client
       .createContainer()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error creating', error));
+      .then((res) => null)
+      .catch((error) => null);
   }
 
-  console.log('testing storage connection...');
   await client
     .testStorageConnection()
-    .then((res) => console.log(res))
-    .catch((error) => console.log('error testing', error));
+    .then((res) => null)
+    .catch((error) => null);
 
   const localFilePath = assetsDir + '/' + fileName;
-  console.log(`uploading ${localFilePath}`);
+
   const readmeBlob = await client
     .uploadFile({ name: fileName, filePath: localFilePath })
     .catch((error) => {
-      console.log('error final', error);
       throw error;
     });
   fs.unlinkSync(localFilePath);
-  console.log(client.getBlobUrl(readmeBlob.name));
   const azureFilePath = client.getBlobUrl(readmeBlob.name);
   //const azureFilePath = fileName;
   return { azureFilePath };
