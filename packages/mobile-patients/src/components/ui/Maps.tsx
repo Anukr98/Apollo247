@@ -253,13 +253,13 @@ export const Maps : React.FC<MapProps> = (props) =>{
       return d * 1000; // meters
   }
   
-  const sendWebEngageEvent = (lat1:number,lon1:number,lat2:number,lon2)=>{
+  const sendWebEngageEvent = (lat1:number,lon1:number,lat2:number,lon2:number)=>{
     const diff = calcuteDiffInMeters(lat1,lon1,lat2,lon2);
     const eventAttributes: WebEngageEvents[WebEngageEventName.CONFIRM_LOCATION] = {
       'isMarkerModified': diff === 0? false : true,
       'changedByInMeters' : diff
     };
-    postWebEngageEvent(WebEngageEventName.CATEGORY_LIST_GRID_VIEW, eventAttributes);
+    postWebEngageEvent(WebEngageEventName.CONFIRM_LOCATION, eventAttributes);
   }
   
   
