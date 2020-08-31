@@ -13,19 +13,8 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       padding: 16,
       margin: '20px 0 0',
-      width: 400,
-      position: 'relative',
-      '&:before': {
-        content: "''",
-        position: 'absolute',
-        top: 20,
-        left: -45,
-        borderLeft: '1px solid #ccc',
-        bottom: 20,
-        [theme.breakpoints.down('sm')]: {
-          display: 'none',
-        },
-      },
+      display: 'none',
+
       '& h2': {
         fontSize: 14,
         fontWeight: 600,
@@ -39,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#FC9916',
       },
       [theme.breakpoints.down('xs')]: {
-        width: '100%',
+        display: 'block',
       },
     },
     hdcContent: {},
