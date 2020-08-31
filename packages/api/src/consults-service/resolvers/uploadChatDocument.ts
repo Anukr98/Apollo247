@@ -231,6 +231,7 @@ const addChatDocument: Resolver<
     documentPath: newDocumentPath.blobUrl,
     prismFileId: args.prismFileId,
     appointment: appointmentData,
+    prismFilePath: args.documentPath,
   };
   const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
   const appointmentDocuments = await appointmentDocumentRepo.saveDocument(documentAttrs);

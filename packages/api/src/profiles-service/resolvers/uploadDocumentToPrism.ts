@@ -104,7 +104,7 @@ export const fetchBlobURLWithPRISMData: Resolver<
   const prismFileId = recordId[0].replace('recordId=', '');
 
   const category =
-    args.fileUrl.indexOf('labresults=') > 0
+    args.fileUrl.indexOf('labresults') > 0
       ? MedicalRecordType.TEST_REPORT
       : MedicalRecordType.PRESCRIPTION;
 
