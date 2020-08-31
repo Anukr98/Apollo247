@@ -50,21 +50,21 @@ const uploadFile: Resolver<
   if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
     await client
       .deleteContainer()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error deleting', error));
+      .then((res) => null)
+      .catch((error) => null);
     await client
       .setServiceProperties()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error setting service properties', error));
+      .then((res) => null)
+      .catch((error) => null);
     await client
       .createContainer()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error creating', error));
+      .then((res) => null)
+      .catch((error) => null);
   }
   await client
     .testStorageConnection()
-    .then((res) => console.log(res))
-    .catch((error) => console.log('error testing', error));
+    .then((res) => null)
+    .catch((error) => null);
 
   const localFilePath = assetsDir + '/' + fileName;
   const readmeBlob = await client
