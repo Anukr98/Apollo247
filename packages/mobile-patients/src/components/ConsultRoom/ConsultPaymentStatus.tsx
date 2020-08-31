@@ -507,7 +507,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         if (status) {
           showAphAlert!({
             title: `Hi ${currentPatient.firstName} :)`,
-            description: 'Please grant overlay permission to receive calls from doctor',
+            description: Payment.askPermission,
             ctaContainerStyle: { justifyContent: 'flex-end' },
             CTAs: [
               {
