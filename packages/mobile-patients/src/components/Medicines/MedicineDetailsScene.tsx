@@ -489,10 +489,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     
     try {
       let longitude, lattitude;
-      if (pharmacyPincode == pincode && locationDetails) {
-        lattitude = locationDetails.latitude;
-        longitude = locationDetails.longitude;
-      } else {
+      if (pharmacyPincode == pincode) {
+        lattitude = pharmacyLocation ? pharmacyLocation.latitude : locationDetails 
+                    ? locationDetails.latitude : null;
+        longitude = pharmacyLocation ? pharmacyLocation.longitude : locationDetails 
+                    ? locationDetails.longitude : null;
+      } 
+      if (!lattitude || !longitude){
         const data = await getPlaceInfoByPincode(pincode);
         const locationData = data.data.results[0].geometry.location;
         lattitude = locationData.lat;
