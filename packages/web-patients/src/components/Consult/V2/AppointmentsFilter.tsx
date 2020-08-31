@@ -378,7 +378,7 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
     selectedDate,
     setSelectedDate,
   } = props;
-  const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(filter);
+  const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(_.cloneDeep(filter));
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
@@ -430,7 +430,6 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
           <AphButton
             onClick={() => {
               setIsFilterOpen(false);
-              setFilter(localFilter);
             }}
           >
             <img src={require('images/ic_cross.svg')} alt="" />
@@ -438,92 +437,96 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
         </div>
         <div className={classes.dialogContent}>
           <div className={classes.filterGroup}>
-            <div className={classes.filterType}>
-              <h4>Appointment Status</h4>
-              <div className={classes.filterBtns}>
-                {appointmentStatus.map((status) => (
-                  <AphButton
-                    key={status}
-                    className={applyClass(localFilter.appointmentStatus, status)}
-                    onClick={() => {
-                      setFilterValues('appointmentStatus', status);
-                    }}
-                  >
-                    {status}
-                  </AphButton>
-                ))}
-              </div>
-            </div>
-            <div className={classes.filterType}>
-              <h4>Date</h4>
-              <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                <ThemeProvider theme={defaultMaterialTheme}>
-                  <KeyboardDatePicker
-                    autoOk={true}
-                    className={classes.keyboardDatepicker}
-                    disableToolbar
-                    variant="inline"
-                    format="MM/dd/yyyy"
-                    value={selectedDate}
-                    KeyboardButtonProps={{
-                      'aria-label': 'change date',
-                    }}
-                    onChange={(date) => handleDateChange((date as unknown) as Date)}
-                    onFocus={() => {}}
-                    onBlur={() => {}}
-                  />
-                </ThemeProvider>
-              </MuiPickersUtilsProvider>
-              <div className={classes.filterBtns}>
-                {availabilityList.map((availability: string) => (
-                  <AphButton
-                    key={availability}
-                    className={applyClass(localFilter.availability, availability)}
-                    onClick={() => {
-                      setFilterValues('availability', availability);
-                    }}
-                  >
-                    {availability}
-                  </AphButton>
-                ))}
-              </div>
-            </div>
-            <div className={classes.filterType}>
-              <h4>Doctor</h4>
-              <div className={classes.filterBtns}>
-                {filterDoctorsList &&
-                  filterDoctorsList.length > 0 &&
-                  _uniq(filterDoctorsList).map((doctorName) => (
-                    <AphButton
-                      key={doctorName}
-                      className={applyClass(localFilter.doctorsList, doctorName)}
-                      onClick={() => {
-                        setFilterValues('doctor', doctorName);
-                      }}
-                    >
-                      {doctorName}
-                    </AphButton>
-                  ))}
-              </div>
-            </div>
-            <div className={classes.filterType}>
-              <h4>Specialties</h4>
-              <div className={classes.filterBtns}>
-                {filterSpecialtyList &&
-                  filterSpecialtyList.length > 0 &&
-                  _uniq(filterSpecialtyList).map((specialtyName) => (
-                    <AphButton
-                      key={specialtyName}
-                      className={applyClass(localFilter.specialtyList, specialtyName)}
-                      onClick={() => {
-                        setFilterValues('specialty', specialtyName);
-                      }}
-                    >
-                      {specialtyName}
-                    </AphButton>
-                  ))}
-              </div>
-            </div>
+            {localFilter && (
+              <>
+                <div className={classes.filterType}>
+                  <h4>Appointment Status</h4>
+                  <div className={classes.filterBtns}>
+                    {appointmentStatus.map((status) => (
+                      <AphButton
+                        key={status}
+                        className={applyClass(localFilter.appointmentStatus, status)}
+                        onClick={() => {
+                          setFilterValues('appointmentStatus', status);
+                        }}
+                      >
+                        {status}
+                      </AphButton>
+                    ))}
+                  </div>
+                </div>
+                <div className={classes.filterType}>
+                  <h4>Date</h4>
+                  <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                    <ThemeProvider theme={defaultMaterialTheme}>
+                      <KeyboardDatePicker
+                        autoOk={true}
+                        className={classes.keyboardDatepicker}
+                        disableToolbar
+                        variant="inline"
+                        format="MM/dd/yyyy"
+                        value={selectedDate}
+                        KeyboardButtonProps={{
+                          'aria-label': 'change date',
+                        }}
+                        onChange={(date) => handleDateChange((date as unknown) as Date)}
+                        onFocus={() => {}}
+                        onBlur={() => {}}
+                      />
+                    </ThemeProvider>
+                  </MuiPickersUtilsProvider>
+                  <div className={classes.filterBtns}>
+                    {availabilityList.map((availability: string) => (
+                      <AphButton
+                        key={availability}
+                        className={applyClass(localFilter.availability, availability)}
+                        onClick={() => {
+                          setFilterValues('availability', availability);
+                        }}
+                      >
+                        {availability}
+                      </AphButton>
+                    ))}
+                  </div>
+                </div>
+                <div className={classes.filterType}>
+                  <h4>Doctor</h4>
+                  <div className={classes.filterBtns}>
+                    {filterDoctorsList &&
+                      filterDoctorsList.length > 0 &&
+                      _uniq(filterDoctorsList).map((doctorName) => (
+                        <AphButton
+                          key={doctorName}
+                          className={applyClass(localFilter.doctorsList, doctorName)}
+                          onClick={() => {
+                            setFilterValues('doctor', doctorName);
+                          }}
+                        >
+                          {doctorName}
+                        </AphButton>
+                      ))}
+                  </div>
+                </div>
+                <div className={classes.filterType}>
+                  <h4>Specialties</h4>
+                  <div className={classes.filterBtns}>
+                    {filterSpecialtyList &&
+                      filterSpecialtyList.length > 0 &&
+                      _uniq(filterSpecialtyList).map((specialtyName) => (
+                        <AphButton
+                          key={specialtyName}
+                          className={applyClass(localFilter.specialtyList, specialtyName)}
+                          onClick={() => {
+                            setFilterValues('specialty', specialtyName);
+                          }}
+                        >
+                          {specialtyName}
+                        </AphButton>
+                      ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
         <div className={classes.dialogActions}>
