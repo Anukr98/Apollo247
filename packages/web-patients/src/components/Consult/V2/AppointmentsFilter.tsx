@@ -422,6 +422,8 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
     selectedDate && setFilterValues('availability', format(selectedDate, 'dd/MM/yyyy'));
   }, [selectedDate]);
 
+  const tabOptions = ['Appointment Status', 'Date', 'Doctor', 'Speciality'];
+
   return (
     <div className={classes.filterWrapper}>
       <div className={classes.dialogPaper}>
@@ -599,34 +601,15 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
                 indicator: classes.tabsIndicator,
               }}
             >
-              <Tab
-                label="Appointment Status"
-                classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
-                }}
-              />
-              <Tab
-                label="Date"
-                classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
-                }}
-              />
-              <Tab
-                label="Doctor"
-                classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
-                }}
-              />
-              <Tab
-                label="Speciality"
-                classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
-                }}
-              />
+              {tabOptions.map((key) => (
+                <Tab
+                  label={key}
+                  classes={{
+                    root: classes.tabRoot,
+                    selected: classes.tabSelected,
+                  }}
+                />
+              ))}
             </Tabs>
             <div className={classes.tabsContent}>
               <TabPanel value={value} index={0}>
