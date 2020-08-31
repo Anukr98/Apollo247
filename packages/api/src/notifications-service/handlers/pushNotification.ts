@@ -1756,7 +1756,7 @@ export async function sendDoctorAppointmentNotification(
         console.log(notificationResponse, 'notificationResponse');
       })
       .catch((error: JSON) => {
-        console.log('PushNotification Failed::' + error);
+        console.log('PushNotification Failed::' + JSON.stringify(error));
         throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
       });
   }
