@@ -6,6 +6,9 @@ import android.content.Context;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.webengage.WebengagePackage;
+import com.webengage.sdk.android.WebEngageConfig;
+import com.webengage.sdk.android.WebEngageActivityLifeCycleCallbacks;
 import com.zxcpoiu.incallmanager.InCallManagerPackage;
 import com.ninty.system.setting.SystemSettingPackage;
 import com.zmxv.RNSound.RNSoundPackage;
@@ -66,6 +69,12 @@ public class MainApplication extends Application implements ReactApplication {
         super.onCreate();
         SoLoader.init(this, /* native exopackage */ false);
         initializeFlipper(this); // Remove this line if you don't want Flipper enabled
+
+        WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
+                .setWebEngageKey("in~~c2ab3529")
+                .setDebugMode(false) // only in development mode
+                .build();
+        registerActivityLifecycleCallbacks(new WebEngageActivityLifeCycleCallbacks(this, webEngageConfig));
 
         ReactNativeExceptionHandlerModule.setNativeExceptionHandler(new NativeExceptionHandlerIfc() {
             @Override
