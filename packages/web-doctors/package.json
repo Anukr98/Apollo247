@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./node_modules/@aph/api-schema/schema.json --target=typescript --queries=./src/graphql/**.ts",
-    "build": "webpack",
+    "build": "npm run apollo:codegen && webpack",
     "format": "prettier --list-different '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "format:fix": "prettier --write '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
