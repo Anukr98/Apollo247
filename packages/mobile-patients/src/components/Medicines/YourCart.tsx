@@ -1682,17 +1682,20 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
   */
 
-  const disableProceedToPay = !(
-    cartItems.length > 0 &&
-    !showDeliverySpinner &&
-    !cartItems.find((item) => !item.isInStock) &&
-    !cartItems.find((item) => item.unserviceable) &&
-    !!(deliveryAddressId || storeId) &&
-    (uploadPrescriptionRequired
-      ? (storeId && showPrescriptionAtStore) ||
-        physicalPrescriptions.length > 0 ||
-        ePrescriptions.length > 0
-      : true)
+  const isPrescriptionRequired = cartItems.find(({ prescriptionRequired }) => prescriptionRequired)
+    ? !(showPrescriptionAtStore || physicalPrescriptions.length > 0 || ePrescriptions.length > 0)
+    : false;
+
+  const isNotInStockOrUnserviceable = cartItems.find(
+    ({ isInStock, unserviceable }) => !isInStock || unserviceable
+  );
+
+  const disableProceedToPay = !!(
+    cartItems.length === 0 ||
+    isNotInStockOrUnserviceable ||
+    (!deliveryAddressId && !storeId) ||
+    isPrescriptionRequired ||
+    (deliveryAddressId ? showDeliverySpinner : false)
   );
 
   const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
