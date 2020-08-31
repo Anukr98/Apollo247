@@ -196,9 +196,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
     '</urlset>';
   const fileName = 'sitemap.xml';
   const uploadPath = assetsDir + '/' + fileName;
-  fs.writeFile(uploadPath, sitemapStr, {}, (err) => {
-    console.log(err, 'err');
-  });
+  fs.writeFile(uploadPath, sitemapStr, {}, (err) => null);
   //return 'Sitemap generated :) ' + uploadPath;
   return {
     sitemapFilePath: uploadPath,
