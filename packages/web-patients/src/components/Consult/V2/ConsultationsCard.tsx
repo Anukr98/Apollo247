@@ -17,7 +17,11 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { AphButton, AphDialogTitle } from '@aph/web-ui-components';
 import moment from 'moment';
-import { readableParam, getAvailableFreeChatDays } from 'helpers/commonHelpers';
+import {
+  readableParam,
+  getAvailableFreeChatDays,
+  removeGraphQLKeyword,
+} from 'helpers/commonHelpers';
 import { Link, Route } from 'react-router-dom';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useMutation } from 'react-apollo-hooks';
@@ -720,7 +724,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         console.log(e);
         setApiLoading(false);
         setIsAlertOpen(true);
-        setAlertMessage(`Error occured while rescheduling the appointment, ${e}`);
+        setAlertMessage(
+          `Error occured while rescheduling the appointment(${removeGraphQLKeyword(e)})`
+        );
       });
   };
 

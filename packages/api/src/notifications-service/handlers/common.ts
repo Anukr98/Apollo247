@@ -120,6 +120,7 @@ const isWhitelisted = async (mobileNumber: string) => {
   const whiteListedContacts = await getCache(`${REDIS_PREFIX_WHITELISTED_KEY}${mobileNumber}`);
   const isWhiteListedBool: boolean = whiteListedContacts && typeof whiteListedContacts == 'string' ? true : false
   log('notificationServiceLogger', `isWhitelisted tracker, isWhiteListed: ${isWhiteListedBool} for number ${mobileNumber}`, 'common.ts/isWhitelisted', '', '');
+  console.log(`isWhitelisted tracker, isWhiteListed: ${isWhiteListedBool} for number ${mobileNumber}`);
   return isWhiteListedBool; //should always retrun boolean
 };
 
