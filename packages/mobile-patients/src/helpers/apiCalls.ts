@@ -708,7 +708,7 @@ export const fetchConsultCoupons = (
   packageId?: string | null,
 ): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  let url = `${baseUrl}/frontend?mobileNumber=${mobileNumber}&emailAddress=${emailAddress}`;
+  let url = `${baseUrl}/frontend?mobile=${mobileNumber}&email=${emailAddress}`;
   if (packageId) url += `&packageId=${packageId}`;
   return Axios.get(url);
 };
@@ -720,7 +720,7 @@ export const validateConsultCoupon = (
   packageId?: string | null,
 ): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  let url = `${baseUrl}/validate`;
+  let url = `${baseUrl}/validate?mobile=${mobileNumber}&email=${emailAddress}`;
   if (packageId) url += `&packageId=${packageId}`;
   return Axios.post(url, data);
 };
