@@ -42,7 +42,7 @@ export const sendNotificationSMS = async (mobileNumber: string, message: string)
       throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
     });
 
-  console.log('smsResponse================', smsResponse);
+  console.log('smsResponse:', JSON.stringify(smsResponse, null, 1));
   return smsResponse;
 };
 
