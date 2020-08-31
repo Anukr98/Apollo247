@@ -2836,7 +2836,6 @@ export const MedicinePrescription: React.FC = () => {
                 />
               </AphButton>,
             ];
-            //console.log(actionButtons);
         const genericName = (
           <span>
             {medicine.includeGenericNameInPrescription! &&
@@ -3042,7 +3041,6 @@ export const MedicinePrescription: React.FC = () => {
                 />
               </AphButton>,
             ];
-            //console.log(actionButtons);
         const genericName = (
           <span>
             {medicine.includeGenericNameInPrescription! &&
