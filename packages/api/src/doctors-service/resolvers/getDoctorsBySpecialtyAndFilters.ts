@@ -246,10 +246,35 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   const pageSize = args.filterInput.pageSize ? args.filterInput.pageSize : 1000;
   const offset = (pageNo - 1) * pageSize;
 
-  elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
-
-  elasticMatch.push({ range: { 'doctorSlots.slots.slot': { gt :'now+15m'} } });
+  const elasticSlotDateAvailability: { [index: string]: any } = [];
  
+  if (args.filterInput.availability && args.filterInput.availability.length > 0){
+    args.filterInput.availability.forEach((availability) => {
+      elasticSlotDateAvailability.push(
+        {bool: {must: [
+          { match: { 'doctorSlots.slotDate': availability } },
+          { match: { 'doctorSlots.slots.slot': availability } },
+          { range: { 'doctorSlots.slots.slotThreshold': { gt :'now', lt: availability+'T18:30:00.000Z' } } }
+        ]}}
+      );
+    }); 
+  }
+
+  elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
+  elasticMatch.push({ range: { 'doctorSlots.slots.slotThreshold': { gt :'now' } } });
+
+  if (elasticSlotDateAvailability.length > 0 && args.filterInput.availableNow) {
+      elasticMatch.push({ bool: { should: [ 
+            { bool: { should: elasticSlotDateAvailability }
+            },
+            { bool: { must: { range: { 'doctorSlots.slots.slotThreshold': { gt : 'now', lte :'now+4h'} } } } }
+          ] } } );
+  } else if (elasticSlotDateAvailability.length > 0) {
+      elasticMatch.push({ bool:{ should: elasticSlotDateAvailability } });
+  } else if (args.filterInput.availableNow ) {
+    elasticMatch.push({ range: { 'doctorSlots.slots.slotThreshold': { gt :'now', lte :'now+4h'} } });
+  }
+
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
     elasticMatch.push({ match: { 'specialty.name': args.filterInput.specialtyName.join(',') } });
   }

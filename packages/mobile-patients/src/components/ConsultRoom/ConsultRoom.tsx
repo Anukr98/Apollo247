@@ -58,7 +58,7 @@ import {
 import {
   GenerateTokenforCM,
   notifcationsApi,
-  pinCodeServiceabilityApi,
+  pinCodeServiceabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import {
@@ -394,9 +394,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   async function isserviceable() {
     if (locationDetails && locationDetails.pincode) {
-      await pinCodeServiceabilityApi(locationDetails.pincode!)
-        .then(({ data: { Availability } }) => {
-          if (Availability) {
+      await pinCodeServiceabilityApi247(locationDetails.pincode!)
+        .then(({ data: { response } }) => {
+          if (response) {
             setserviceable('Yes');
           } else {
             setserviceable('No');
@@ -833,9 +833,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [voipDeviceToken])
 
   const callVoipDeviceTokenAPI = async () => {
-    const asyncVoipToken = await AsyncStorage.getItem(LocalStrings.voipDeviceToken);
-    const parsedToken = asyncVoipToken && JSON.parse(asyncVoipToken);
-    if (voipDeviceToken !== parsedToken) {
       const input = {
         patientId: currentPatient ? currentPatient.id : '',
         voipToken: voipDeviceToken
@@ -847,12 +844,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         },
         fetchPolicy: 'no-cache'
       }).then((data: any) => {
-        AsyncStorage.setItem(LocalStrings.voipDeviceToken, JSON.stringify(voipDeviceToken));
       }).catch((e) => {
         CommonBugFender('ConsultRoom_callDeviceVoipTokenAPI', e);
         console.log('Error occured while sending voip token', e);
       })
-    }
   }
 
   const getTokenforCM = async () => {

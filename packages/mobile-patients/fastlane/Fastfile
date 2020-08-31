@@ -160,15 +160,17 @@ platform :ios do
 		build_app(
 			scheme: "ApolloPatient", 
 			workspace: "./ios/ApolloPatient.xcworkspace", 
-			export_method: "ad-hoc",
 			clean: true,
 			silent: true,
 			output_directory: "./builds",
 			output_name: "Apollo 247.ipa",
 			include_symbols: false,
 			include_bitcode: false,
+			# skip_archive: true,
+			export_method: "ad-hoc",
 			export_options: {
-				compileBitcode: false
+				compileBitcode: false,
+				iCloudContainerEnvironment: 'Development'
 			},
 		)
 	end
@@ -180,15 +182,17 @@ platform :ios do
 		build_app(
 			scheme: "ApolloPatient", 
 			workspace: "./ios/ApolloPatient.xcworkspace", 
-			export_method: "ad-hoc",
 			# clean: true,
 			silent: true,
 			output_directory: "./builds",
 			output_name: "Apollo 247.ipa",
 			include_symbols: false,
 			include_bitcode: false,
+			# skip_archive: true,
+			export_method: "ad-hoc",
 			export_options: {
-				compileBitcode: false
+				compileBitcode: false,
+				iCloudContainerEnvironment: 'Development'
 			},
 		)
 		appcenter_upload(

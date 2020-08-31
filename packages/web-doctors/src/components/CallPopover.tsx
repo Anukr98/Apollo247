@@ -1203,6 +1203,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setUpdatedDate,
   } = useContext(CaseSheetContext);
 
+  const exotelCall = '^^#exotelCall';
   const covertVideoMsg = "^^convert`video^^";
   const covertAudioMsg = "^^convert`audio^^";
   const videoCallMsg = "^^callme`video^^";
@@ -1493,6 +1494,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [textOtherCancel, setTextOtherCancel] = useState(false);
   const [otherTextCancelValue, setOtherTextCancelValue] = useState("");
   const [isResendLoading, setIsResendLoading] = useState(false);
+  const [isNewprescriptionLoading, setIsNewprescriptionLoading] = useState(false);
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
@@ -1960,7 +1962,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         lastMsg.message.message !== cancelConsultInitiated &&
         lastMsg.message.message !== callAbandonment &&
         lastMsg.message.message !== appointmentComplete &&
-        lastMsg.message.message !== doctorAutoResponse
+        lastMsg.message.message !== doctorAutoResponse &&
+        lastMsg.message.message !== exotelCall
       ) {
         setIsNewMsg(true);
       } else {
@@ -2975,7 +2978,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                               }}
                             >
                               {isResendLoading
-                                ? "please wait..."
+                                ? "Please wait..."
                                 : "Resend Prescription"}
                             </li>
                             <li
@@ -2987,10 +2990,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             </li>
                             <li
                               onClick={() => {
-                                props.createSDCasesheetCall(true);
+                                if(!isNewprescriptionLoading){
+                                  console.log(isNewprescriptionLoading, '111111')
+                                  setIsNewprescriptionLoading(true);
+                                  props.createSDCasesheetCall(true);
+                                }
                               }}
                             >
-                              Issue New Prescription
+                              {isNewprescriptionLoading ? 'Please wait...' : 'Issue New Prescription'}
                             </li>
                           </>
                         )}
@@ -3116,6 +3123,22 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         fetchPolicy: "no-cache",
                       });
+                      const text = {	
+                        id: props.doctorId,	
+                        message: exotelCall,	
+                        exotelNumber: process.env.EXOTEL_CALLER_ID,	
+                        isTyping: true,	
+                        messageDate: new Date(),	
+                        sentBy: REQUEST_ROLES.DOCTOR,	
+                      };	
+                      pubnub.publish(	
+                        {	
+                          message: text,	
+                          channel: channel,	
+                          storeInHistory: true,	
+                        },	
+                        (status: any, response: any) => {},	
+                      );
                       setShowToastMessage(true);
                     }}
                   >

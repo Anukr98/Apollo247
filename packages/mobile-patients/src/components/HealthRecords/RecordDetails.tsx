@@ -1,47 +1,38 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  Download,
   FileBig,
   MedicineRxIcon,
   PrescriptionThumbnail,
-  ShareGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
+  PermissionsAndroid,
+  Platform,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Platform,
-  Alert,
-  Linking,
-  ScrollView,
-  CameraRoll,
-  PermissionsAndroid,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import moment from 'moment';
-import RNFetchBlob from 'rn-fetch-blob';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { downloadDocuments } from '../../graphql/types/downloadDocuments';
-import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
-import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
-import { useApolloClient } from 'react-apollo-hooks';
-import { BottomPopUp } from '../ui/BottomPopUp';
-import { string } from '../../strings/string';
-import { MedicalTest } from './AddRecord';
-import { Button } from '../ui/Button';
-import { AppRoutes } from '../NavigatorContainer';
-import { useUIElements } from '../UIElementsProvider';
-import { mimeType } from '../../helpers/mimeType';
 import { Image } from 'react-native-elements';
+import { NavigationScreenProps } from 'react-navigation';
+import RNFetchBlob from 'rn-fetch-blob';
+import { mimeType } from '../../helpers/mimeType';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { string } from '../../strings/string';
+import { AppRoutes } from '../NavigatorContainer';
+import { BottomPopUp } from '../ui/BottomPopUp';
+import { Button } from '../ui/Button';
+import { useUIElements } from '../UIElementsProvider';
+import { MedicalTest } from './AddRecord';
+import { g } from '../../helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -321,11 +312,16 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   };
 
   const renderImage = () => {
-    // const placeImage1 = placeImage.split(',');
-    console.log(!!data.fileUrl, 'placeImage1');
-    // {
-    //   placeImage.map((item: string, i: number) => console.log('hi', item));
-    // }
+    const fileName = g(data, 'testResultFiles', '0', 'fileName')
+      ? ': ' + g(data, 'testResultFiles', '0', 'fileName')
+      : g(data, 'prescriptionFiles', '0', 'fileName')
+      ? ': ' + g(data, 'prescriptionFiles', '0', 'fileName')
+      : '';
+    const file_name = g(data, 'testResultFiles', '0', 'fileName')
+      ? g(data, 'testResultFiles', '0', 'fileName')
+      : g(data, 'prescriptionFiles', '0', 'fileName')
+      ? g(data, 'prescriptionFiles', '0', 'fileName')
+      : '';
     return (
       <View
         style={{
@@ -333,27 +329,29 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         }}
       >
         <ScrollView>
-          {data.fileUrl.includes('.pdf') ? (
-            <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+          {file_name && file_name.toLowerCase().endsWith('.pdf') ? (
+            <View style={{ marginHorizontal: 20, marginBottom: 15, marginTop: 50 }}>
               <Button
-                title={
-                  'Open File' +
-                  (data.fileUrl.includes('fileName=')
-                    ? ': ' + data.fileUrl.split('fileName=').pop()
-                    : '')
-                }
+                title={'Open File' + fileName}
                 onPress={() =>
                   props.navigation.navigate(AppRoutes.RenderPdf, {
                     uri: data.fileUrl,
-                    title: data.fileUrl.includes('fileName=')
-                      ? data.fileUrl.split('fileName=').pop()
-                      : '',
+                    title: file_name,
                   })
                 }
               ></Button>
             </View>
           ) : (
-            <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+                  images: [data.fileUrl],
+                  heading: file_name || 'Image',
+                });
+              }}
+              style={{ marginHorizontal: 20, marginBottom: 15 }}
+            >
               <Image
                 placeholderStyle={{
                   height: 425,
@@ -370,7 +368,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                 }}
                 resizeMode="contain"
               />
-            </View>
+            </TouchableOpacity>
           )}
         </ScrollView>
       </View>
