@@ -98,7 +98,6 @@ export class PatientRepository extends Repository<Patient> {
         const patient: Patient | undefined = await this.getByIdCache(id);
         return resolve(patient);
       } catch (ex) {
-        console.log(`getPatientDetails`, ex);
         return reject(ex);
       }
     });

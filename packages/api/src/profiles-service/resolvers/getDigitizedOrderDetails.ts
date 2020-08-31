@@ -72,7 +72,6 @@ const getDigitizedPrescription: Resolver<
   ProfilesServiceContext,
   MedicineOrderResult
 > = async (parent, { MedicineOrderInput }, { profilesDb, doctorsDb, consultsDb }) => {
-  console.log(MedicineOrderInput, 'input');
   let errorCode = 0,
     errorMessage = '',
     status = 'Accepted';
@@ -91,7 +90,6 @@ const getDigitizedPrescription: Resolver<
         ...item,
       };
       const lineItemOrder = medicineOrdersRepo.saveMedicineOrderLineItem(orderItemAttrs);
-      console.log(lineItemOrder);
     });
     //save in order status table
     const medicineOrderStatusAttrs: Partial<MedicineOrdersStatus> = {
@@ -108,7 +106,6 @@ const getDigitizedPrescription: Resolver<
       notificationType: NotificationType.MEDICINE_CART_READY,
     };
     const notificationResult = sendCartNotification(pushNotificationInput, profilesDb);
-    console.log(notificationResult, 'user cart ready notification');
   } else {
     errorCode = -1;
     errorMessage = 'Invalid order id';

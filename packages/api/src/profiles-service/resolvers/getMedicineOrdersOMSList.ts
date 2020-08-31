@@ -536,7 +536,7 @@ const getMedicineOrderOMSDetails: Resolver<
             reasonCode.statusMessage = '';
           }
         } catch (e) {
-          console.log(e);
+          //console.log(e);
         }
       }
     }
@@ -664,7 +664,6 @@ const updateMedicineDataRedis: Resolver<
   if (process.env.NODE_ENV != 'local') {
     fileDirectory = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
-  console.log(fileDirectory + '/Online_Master.xlsx');
 
   const rowData = excelToJson({
     sourceFile: fileDirectory + '/Online_Master.xlsx',
@@ -911,7 +910,6 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
             reasonCode.statusMessage = '';
           }
         } catch (e) {
-          console.log(e);
         }
       }
     }

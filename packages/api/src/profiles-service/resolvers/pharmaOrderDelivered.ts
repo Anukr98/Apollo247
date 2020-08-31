@@ -172,7 +172,6 @@ const saveOrderDeliveryStatus: Resolver<
     notificationType: NotificationType.MEDICINE_ORDER_DELIVERED,
   };
   const notificationResult = sendCartNotification(pushNotificationInput, profilesDb);
-  console.log(notificationResult, 'medicine order delivered notification');
 
   return { requestStatus: 'true', requestMessage: 'Delivery status updated successfully' };
 };

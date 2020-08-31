@@ -472,7 +472,6 @@ const SaveDiagnosticOrder: Resolver<
         JSON.stringify(preBookingInput),
         ''
       );
-      console.log(preBookingInput, preBookingUrl, 'preBookingInput');
       const preBookingResp = await fetch(preBookingUrl, {
         method: 'POST',
         body: JSON.stringify(preBookingInput),
@@ -490,7 +489,6 @@ const SaveDiagnosticOrder: Resolver<
       );
 
       const preBookResp: DiagnosticPreBookingResult = JSON.parse(textRes);
-      console.log(preBookResp, preBookResp.PreBookingID, 'text response');
       await diagnosticOrdersRepo.updateDiagnosticOrder(
         saveOrder.id,
         preBookResp.PreBookingID,
@@ -832,7 +830,6 @@ const SaveItdoseHomeCollectionDiagnosticOrder: Resolver<
 
     diagnosticOrderInput.items.forEach((element) => {
       orderItemDetails.forEach((item) => {
-        console.log(item)
         if (item.itemId === element.itemId) {
           const itemHomeCollection = {
             'DiscAmt': '0',
@@ -848,8 +845,6 @@ const SaveItdoseHomeCollectionDiagnosticOrder: Resolver<
         }
       })
     })
-
-    console.log(homeCollectionData)
 
     const form = new FormData();
     form.append('HomeCollectionData', JSON.stringify(homeCollectionData))
