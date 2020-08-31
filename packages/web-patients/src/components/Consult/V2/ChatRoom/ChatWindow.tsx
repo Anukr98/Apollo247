@@ -2136,6 +2136,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         setModalOpen={(flag: boolean) => setModalOpen(flag)}
                         setImgPrevUrl={(url: string) => setImgPrevUrl(url)}
                         chatTime={messageDetails.messageDate}
+                        doctorName={
+                          (appointmentDetails &&
+                            appointmentDetails.doctorInfo &&
+                            appointmentDetails.doctorInfo.displayName) ||
+                          ''
+                        }
                       />
                     );
                   } else {

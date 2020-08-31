@@ -11,6 +11,7 @@ import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql
 import { BOOK_APPOINTMENT_RESCHEDULE } from 'graphql/profiles';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
+import { removeGraphQLKeyword } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -286,7 +287,9 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
         console.log(e);
         setApiLoading(false);
         setIsAlertOpen(true);
-        setAlertMessage(`Error occured while rescheduling the appointment, ${e}`);
+        setAlertMessage(
+          `Error occured while rescheduling the appointment(${removeGraphQLKeyword(e)})`
+        );
       });
   };
 
@@ -337,11 +340,11 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
                 {messageDetails.transferInfo &&
                 messageDetails.transferInfo.reschduleCount &&
                 messageDetails.transferInfo.reschduleCount > 2
-                  ? 'Since you have already rescheduled 3 times with ' +
-                      messageDetails.transferInfo.doctorInfo &&
-                    messageDetails.transferInfo.doctorInfo.displayName
-                    ? messageDetails.transferInfo.doctorInfo.displayName
-                    : 'Dr. ' + ', we will consider this a new paid appointment.'
+                  ? `Since you have already rescheduled 3 times with 
+                     Dr. ${
+                       messageDetails.transferInfo.doctorInfo &&
+                       messageDetails.transferInfo.doctorInfo.displayName
+                     }, we will consider this a new paid appointment.`
                   : "We're sorry that you have to reschedule. You can reschedule up to 3 times for free."}
               </div>
               {messageDetails.transferInfo && (
