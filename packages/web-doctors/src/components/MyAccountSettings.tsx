@@ -12,8 +12,8 @@ import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { FollowUp } from 'components/case-sheet/panels';
 import { AphButton } from '@aph/web-ui-components';
 import {
-  updateDoctorChatDays,
-  updateDoctorChatDaysVariables,
+  UpdateDoctorChatDays,
+  UpdateDoctorChatDaysVariables,
 } from 'graphql/types/UpdateDoctorChatDays';
 import { useApolloClient } from 'react-apollo-hooks';
 import { UPDATE_DOCTOR_CHAT_DAYS } from 'graphql/profiles';
@@ -180,7 +180,7 @@ export const MyAccountSettings: React.FC = () => {
           onClick={() => {
             console.log(currentUser);
             apolloClient
-              .mutate<updateDoctorChatDays, updateDoctorChatDaysVariables>({
+              .mutate<UpdateDoctorChatDays, UpdateDoctorChatDaysVariables>({
                 mutation: UPDATE_DOCTOR_CHAT_DAYS,
                 fetchPolicy: 'no-cache',
                 variables: { doctorId: currentUser.id, chatDays: chatDays },
