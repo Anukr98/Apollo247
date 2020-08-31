@@ -91,7 +91,8 @@ services:
     environment:
       - POSTGRES_USER=${PROFILES_DB_USER}
       - POSTGRES_PASSWORD=${PROFILES_DB_PASSWORD}
-    
+    ports:
+      - 5436:5432
   doctors-service:
     image: node:12.6.0
     env_file: .env
@@ -111,7 +112,9 @@ services:
     environment:
       - POSTGRES_USER=${DOCTORS_DB_USER}
       - POSTGRES_PASSWORD=${DOCTORS_DB_PASSWORD}
-    
+    ports:
+      - 5435:5432
+
   consults-service:
     image: node:12.6.0
     env_file: .env
@@ -143,7 +146,8 @@ services:
     environment:
       - POSTGRES_USER=${CONSULTS_DB_USER}
       - POSTGRES_PASSWORD=${CONSULTS_DB_PASSWORD}
-
+    ports:
+      - 5437:5432
   notifications-service:
     image: node:12.6.0
     env_file: .env
