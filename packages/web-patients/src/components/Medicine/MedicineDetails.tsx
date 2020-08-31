@@ -763,9 +763,8 @@ export const MedicineDetails: React.FC = (props) => {
                 title: `${name} Price, Uses, Side Effects - Apollo 247`,
                 description: `Buy ${name}, Pack of ${getPackOfMedicine(
                   data.productdp[0]
-                )} at &#8377;${
-                  special_price || price
-                } in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
+                )} at &#8377;${special_price ||
+                  price} in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
                 canonicalLink:
                   typeof window !== 'undefined' &&
                   window.location &&
@@ -1016,7 +1015,13 @@ export const MedicineDetails: React.FC = (props) => {
             <div className={classes.container}>
               <div className={classes.medicineDetailsPage}>
                 <div className={classes.breadcrumbs}>
-                  <a onClick={() => history.push(clientRoutes.medicines())}>
+                  <a
+                    onClick={() => {
+                      sessionStorage.getItem('categoryClicked')
+                        ? history.goBack()
+                        : history.push(clientRoutes.medicines());
+                    }}
+                  >
                     <div className={classes.backArrow}>
                       <img
                         className={classes.blackArrow}
