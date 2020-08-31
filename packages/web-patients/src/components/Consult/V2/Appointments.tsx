@@ -435,17 +435,19 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     searchInputActive: {
-      display: 'block',
-      background: 'white',
-      position: 'absolute',
-      top: 40,
-      left: 0,
-      right: 0,
-      width: '100%',
-      padding: 16,
-      borderRadius: 5,
-      zIndex: 9,
-      boxShadow: '0 0px 5px 0 rgba(0, 0, 0, 0.3)',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        background: 'white',
+        position: 'absolute',
+        top: 40,
+        left: 0,
+        right: 0,
+        width: '100%',
+        padding: 16,
+        borderRadius: 5,
+        zIndex: 9,
+        boxShadow: '0 0px 5px 0 rgba(0, 0, 0, 0.3)',
+      },
     },
     memberOption: {
       display: 'flex',
@@ -597,6 +599,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [selectCurrentUser, setSelectCurrentUser] = React.useState<boolean>(false);
   const [searchKeyword, setSearchKeyword] = React.useState<string>('');
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
+  const [searchClicked, setSearchClicked] = React.useState<boolean>(false);
 
   useEffect(() => {
     if (searchKeyword.length > 2) {
@@ -1140,12 +1143,23 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                 <p>{filteredAppointmentsList && !mutationLoading && appointmentText()} </p>
                 {filteredAppointmentsList && !mutationLoading && (
                   <FormControl className={classes.formControl}>
-                    <img src={require('images/ic-search.svg')} alt="Search Doctors" />
+                    <img
+                      src={require('images/ic-search.svg')}
+                      alt="Search Doctors"
+                      onClick={() => setSearchClicked(true)}
+                    />
                     <AphInput
-                      className={`${classes.searchInput}`}
+                      className={
+                        searchClicked ? `${classes.searchInputActive}` : `${classes.searchInput}`
+                      }
                       placeholder="Search appointments by Doctor Name or Speciality"
                       onChange={(e) => {
                         setSearchKeyword(e.target.value);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setSearchClicked(false);
+                        }
                       }}
                     />
                   </FormControl>
