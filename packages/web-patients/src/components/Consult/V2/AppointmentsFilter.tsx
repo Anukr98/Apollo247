@@ -465,7 +465,6 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
                     variant="inline"
                     format="MM/dd/yyyy"
                     value={selectedDate}
-                    // onChange={handleDateChange}
                     KeyboardButtonProps={{
                       'aria-label': 'change date',
                     }}
@@ -652,7 +651,6 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
                       variant="inline"
                       format="MM/dd/yyyy"
                       value={selectedDate}
-                      // onChange={handleDateChange}
                       KeyboardButtonProps={{
                         'aria-label': 'change date',
                       }}

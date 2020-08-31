@@ -72,7 +72,6 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
       paddingRight: 20,
       position: 'sticky',
-      // margin: '0 15px',
       top: 88,
       zIndex: 5,
       [theme.breakpoints.down('xs')]: {
@@ -379,7 +378,6 @@ const useStyles = makeStyles((theme: Theme) => {
       outline: 'none',
     },
     cardContainer: {
-      // padding: '0 20px',
       '& h1': {
         color: '#0087BA',
         fontSize: 17,
@@ -394,8 +392,6 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       padding: '10px 0',
       [theme.breakpoints.down('xs')]: {
-        // flexDirection: 'column',
-        // alignItems: 'flex-start',
         position: 'relative',
       },
     },
@@ -473,9 +469,6 @@ const useStyles = makeStyles((theme: Theme) => {
           fontWeight: 500,
         },
       },
-    },
-    afContainer: {
-      // padding: '0 16px',
     },
     appliedFilters: {
       borderRadius: '10px 10px 0 0',
@@ -1075,6 +1068,27 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     filterLength === 0 && setSelectedDate(null);
   }, [filterLength]);
 
+  const selectOtherMember = (view: string) => {
+    return (
+      <div className={view === 'webDisplay' ? classes.memberOption : classes.mobileMemberOption}>
+        <Typography>View appointments of another member?</Typography>
+        <AphButton
+          color="primary"
+          classes={{ root: classes.addMemberBtn }}
+          onClick={() => setSelectCurrentUser(true)}
+        >
+          Select Member
+        </AphButton>
+      </div>
+    );
+  };
+
+  const tabsOptions = [
+    { label: 'Today', value: 'Active appointments' },
+    { label: 'Upcoming', value: 'Upcoming appointments' },
+    { label: 'Past', value: 'Past appointments' },
+  ];
+
   return (
     <div className={classes.root}>
       <Header />
@@ -1106,8 +1120,8 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                       {allCurrentPatients.map((patient) => {
                         const isSelected = patient.id === currentPatient.id;
                         const name = isSelected
-                          ? (patient.firstName || '').toLocaleLowerCase()
-                          : (patient.firstName || '').toLocaleLowerCase();
+                          ? (patient.firstName || '').toLowerCase()
+                          : (patient.firstName || '').toLowerCase();
                         return (
                           <MenuItem
                             selected={isSelected}
@@ -1184,16 +1198,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
               </AphDialog>
 
               <div className={classes.appointmentOptions}>
-                <div className={classes.memberOption}>
-                  <Typography>View appointments of another member?</Typography>
-                  <AphButton
-                    color="primary"
-                    classes={{ root: classes.addMemberBtn }}
-                    onClick={() => setSelectCurrentUser(true)}
-                  >
-                    Select Member
-                  </AphButton>
-                </div>
+                {selectOtherMember('webDisplay')}
                 <div className={classes.filterIcon} onClick={() => setIsFilterOpen(true)}>
                   <img src={require('images/ic_filterblack.svg')} alt="" />
                 </div>
@@ -1201,7 +1206,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
             </div>
             <div className={classes.tabsContent}>
               {filterLength > 0 ? (
-                <div className={classes.afContainer}>
+                <div>
                   <div className={classes.appliedFilters}>
                     <Typography>Filters Applied:</Typography>
                     <ul className={classes.filterList}>
@@ -1296,42 +1301,19 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                     setTabValue(newValue);
                   }}
                 >
-                  <Tab
-                    classes={{
-                      root: classes.tabRoot,
-                      selected: classes.tabSelected,
-                    }}
-                    label="Active"
-                    title="Active appointments"
-                  />
-                  <Tab
-                    classes={{
-                      root: classes.tabRoot,
-                      selected: classes.tabSelected,
-                    }}
-                    label="Upcoming"
-                    title={'Upcoming appointments'}
-                  />
-                  <Tab
-                    classes={{
-                      root: classes.tabRoot,
-                      selected: classes.tabSelected,
-                    }}
-                    label="Past"
-                    title={'Past appointments'}
-                  />
+                  {tabsOptions.map((key) => (
+                    <Tab
+                      classes={{
+                        root: classes.tabRoot,
+                        selected: classes.tabSelected,
+                      }}
+                      label={key.label}
+                      title={key.value}
+                    />
+                  ))}
                 </Tabs>
               )}
-              <div className={classes.mobileMemberOption}>
-                <Typography>View appointments of another member?</Typography>
-                <AphButton
-                  color="primary"
-                  classes={{ root: classes.addMemberBtn }}
-                  onClick={() => setSelectCurrentUser(true)}
-                >
-                  Select Member
-                </AphButton>
-              </div>
+              {selectOtherMember('mobileDisplay')}
               {tabValue === 0 && (
                 <TabContainer>
                   {todaysAppointments && todaysAppointments.length > 0 ? (
