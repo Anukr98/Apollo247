@@ -713,7 +713,7 @@ const useStyles = makeStyles((theme: Theme) =>
         width: 150,
       },
     },
-    selectedDateTab:{
+    selectedDateTab: {
       color: 'red !important',
     },
     addMedicine: {
@@ -773,13 +773,13 @@ const useStyles = makeStyles((theme: Theme) =>
         boxShadow: 'none',
       },
     },
-    addRemove:{
-      position:'absolute',
+    addRemove: {
+      position: 'absolute',
       top: 10,
-      right:10,
-      '& button':{
-        position: 'static !important'
-      }
+      right: 10,
+      '& button': {
+        position: 'static !important',
+      },
     },
     mb10: {
       marginBottom: 10,
@@ -787,7 +787,7 @@ const useStyles = makeStyles((theme: Theme) =>
     selectedList: {
       height: 300,
       overflow: 'auto',
-   
+
       '&::-webkit-scrollbar': {
         width: 2,
       },
@@ -917,7 +917,7 @@ export const MedicinePrescription: React.FC = () => {
     casesheetVersion,
     caseSheetEdit,
     pastAppointments,
-    appointmentInfo
+    appointmentInfo,
   } = useContext(CaseSheetContext);
 
   const [removedMedicinePrescriptionState, setRemovedMedicinePrescriptionState] = useState<any>([]);
@@ -1408,7 +1408,7 @@ export const MedicinePrescription: React.FC = () => {
   );
   const [pastAppointmentsArr, setPastAppointmentsArr] = React.useState<any[]>([]);
   const [selectedPastIndex, setSelectedPastIndex] = useState<number>(0);
-  const [pagesCount, setPagesCount] = useState<number>(0)
+  const [pagesCount, setPagesCount] = useState<number>(0);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [freeTextErr, setFreeTextErr] = useState<boolean>(false);
 
@@ -1521,7 +1521,7 @@ export const MedicinePrescription: React.FC = () => {
     });
     return tobeTakenObjectList;
   };
-  
+
   const fetchMedicines = async (value: any) => {
     const CancelToken = axios.CancelToken;
     let found = false;
@@ -2290,7 +2290,7 @@ export const MedicinePrescription: React.FC = () => {
   });
 
   const getMedicineCopy = (item: any, time: any) => {
-    setSelectedDate(item.appointmentDateTime)
+    setSelectedDate(item.appointmentDateTime);
     const MedicineCopy = item.caseSheet.filter(function(e: any) {
       return e.doctorType !== 'JUNIOR';
     });
@@ -2393,10 +2393,12 @@ export const MedicinePrescription: React.FC = () => {
   };
 
   const handlePastMedicinesTabs = (index: number) => {
-    const pastAppointmentsFilterArr = pastAppointments &&
-    pastAppointments.length > 0 ? pastAppointments.filter(function(e: any) {
-      return e.appointmentDateTime !== appointmentInfo.appointmentDateTime;
-    }) : [];
+    const pastAppointmentsFilterArr =
+      pastAppointments && pastAppointments.length > 0
+        ? pastAppointments.filter(function(e: any) {
+            return e.appointmentDateTime !== appointmentInfo.appointmentDateTime;
+          })
+        : [];
     const chunkArr = chunk(pastAppointmentsFilterArr, 4);
     setPagesCount(chunkArr.length);
     setPastAppointmentsArr(chunkArr.length > 0 ? chunkArr[index] : []);
@@ -2646,7 +2648,13 @@ export const MedicinePrescription: React.FC = () => {
         );
 
         return (
-          <li style={{ position: 'relative' }} className={existedMedicineArr.indexOf(medicine.medicineName) > -1 ? classes.added : null}key={index}>
+          <li
+            style={{ position: 'relative' }}
+            className={
+              existedMedicineArr.indexOf(medicine.medicineName) > -1 ? classes.added : null
+            }
+            key={index}
+          >
             {/* Add className={classes.added} to li above when adding the medicine from  selected list*/}
             {medicine.medicineCustomDetails ? (
               <div className={classes.medicineCard}>
@@ -2798,7 +2806,7 @@ export const MedicinePrescription: React.FC = () => {
         } else {
           dosageHtml = medicine.medicineDosage + ' ' + unitHtmls;
         }
-        
+
         const actionButtons = isPresent
           ? [
               <AphButton
@@ -2922,21 +2930,24 @@ export const MedicinePrescription: React.FC = () => {
                 {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
               </div>
             )}
-            
+
             {caseSheetEdit && <div className={classes.addRemove}>{actionButtons}</div>}
           </li>
         );
       })
     );
   };
-  
+
   const medicineAddedCopyHtml = (type: string) => {
     const isPresent = type === 'present';
     const medicines = isPresent ? selectedMedicinesArr : removedMedicinePrescription;
-    const addedMedicineArr = medicineCopyArr && medicineCopyArr.length > 0 ? medicineCopyArr.map(function(e: any) {
-        return e.medicineName;
-    }) : [];
-    
+    const addedMedicineArr =
+      medicineCopyArr && medicineCopyArr.length > 0
+        ? medicineCopyArr.map(function(e: any) {
+            return e.medicineName;
+          })
+        : [];
+
     return (
       medicines &&
       medicines.length > 0 &&
@@ -3003,7 +3014,7 @@ export const MedicinePrescription: React.FC = () => {
         } else {
           dosageHtml = medicine.medicineDosage + ' ' + unitHtmls;
         }
-        
+
         const actionButtons = isPresent
           ? [
               <AphButton
@@ -3051,7 +3062,7 @@ export const MedicinePrescription: React.FC = () => {
               )}
           </span>
         );
-        if(addedMedicineArr.indexOf(medicine.medicineName) > -1 ){
+        if (addedMedicineArr.indexOf(medicine.medicineName) > -1) {
           return (
             <li style={{ position: 'relative' }} className={classes.added} key={index}>
               {medicine.medicineCustomDetails ? (
@@ -3064,11 +3075,11 @@ export const MedicinePrescription: React.FC = () => {
                     </h5>
                   )}
                   {genericName}
-  
+
                   {!isPresent && (
                     <p className={classes.removed}>This medicine has been discontinued </p>
                   )}
-  
+
                   {medicine.medicineCustomDetails && <h6>{medicine.medicineCustomDetails}</h6>}
                 </div>
               ) : (
@@ -3128,14 +3139,13 @@ export const MedicinePrescription: React.FC = () => {
                   {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
                 </div>
               )}
-              
+
               {caseSheetEdit && <div className={classes.addRemove}>{actionButtons}</div>}
             </li>
           );
-        }else{
+        } else {
           return null;
         }
-        
       })
     );
   };
@@ -3956,83 +3966,130 @@ export const MedicinePrescription: React.FC = () => {
           <div className={classes.shadowHide}>
             <Typography>Select a Casesheet</Typography>
             <ul className={classes.dateList}>
-              <li className={`${classes.arrow} ${classes.prev} ${selectedPastIndex > 0 ? null : classes.none}`}>
-                <span onClick={() => {
-                setSelectedPastIndex(selectedPastIndex - 1);
-                handlePastMedicinesTabs(selectedPastIndex - 1);
-              }}></span>
+              <li
+                className={`${classes.arrow} ${classes.prev} ${
+                  selectedPastIndex > 0 ? null : classes.none
+                }`}
+              >
+                <span
+                  onClick={() => {
+                    setSelectedPastIndex(selectedPastIndex - 1);
+                    handlePastMedicinesTabs(selectedPastIndex - 1);
+                  }}
+                ></span>
               </li>
               {pastAppointmentsArr &&
                 pastAppointmentsArr.length > 0 &&
-                pastAppointmentsArr.map((item: any, idx: any) => (
-                  appointmentInfo.appointmentDateTime !== item.appointmentDateTime && <li
-                    className={`${classes.dateTabs} ${item.appointmentDateTime === selectedDate ? classes.dateTabsActive: ''}`}
-                    onClick={() => {
-                      getMedicineCopy(
-                        item,
-                        format(new Date(item.appointmentDateTime), 'dd  MMMMMMMMMMMM yyyy, h:mm a')
-                      );
-                    }}
-                  >
-                    {`${format(new Date(item.appointmentDateTime), 'dd  MMMMMMMMMMMM')}`}
-                    <span>{`${format(new Date(item.appointmentDateTime), 'h:mm a')}`}</span>
-                  </li>
-                ))}
-              <li className={`${classes.arrow} ${classes.next} ${selectedPastIndex < pagesCount-1 ? null : classes.none}`}>
-                <span onClick={() => {
-                setSelectedPastIndex(selectedPastIndex + 1);
-                handlePastMedicinesTabs(selectedPastIndex + 1);
-              }}></span>
+                pastAppointmentsArr.map(
+                  (item: any, idx: any) =>
+                    appointmentInfo.appointmentDateTime !== item.appointmentDateTime && (
+                      <li
+                        className={`${classes.dateTabs} ${
+                          item.appointmentDateTime === selectedDate ? classes.dateTabsActive : ''
+                        }`}
+                        onClick={() => {
+                          getMedicineCopy(
+                            item,
+                            format(
+                              new Date(item.appointmentDateTime),
+                              'dd  MMMMMMMMMMMM yyyy, h:mm a'
+                            )
+                          );
+                        }}
+                      >
+                        {`${format(new Date(item.appointmentDateTime), 'dd  MMMMMMMMMMMM')}`}
+                        <span>{`${format(new Date(item.appointmentDateTime), 'h:mm a')}`}</span>
+                      </li>
+                    )
+                )}
+              <li
+                className={`${classes.arrow} ${classes.next} ${
+                  selectedPastIndex < pagesCount - 1 ? null : classes.none
+                }`}
+              >
+                <span
+                  onClick={() => {
+                    setSelectedPastIndex(selectedPastIndex + 1);
+                    handlePastMedicinesTabs(selectedPastIndex + 1);
+                  }}
+                ></span>
               </li>
             </ul>
             <div className={classes.ppContainer}>
               <Grid container spacing={2}>
-                {selectedDate !== '' ? <>
-                {medicineCopyArr && medicineCopyArr.length > 0 ? <><Grid item md={7} xs={12}>
-                  <div className={classes.selectedDate} onClick={() => {
-                    const addedMedicineArr = selectedMedicinesArr && selectedMedicinesArr.length > 0 ? selectedMedicinesArr.map(function(e: any) {
-                        return e.medicineName;
-                    }) : [];
-                    medicineCopyArr.forEach((medicine: any, index: number) => {
-                      if(medicine && addedMedicineArr.indexOf(medicine.medicineName) < 0){
-                        saveMedicineAction(medicine);
-                      }
-                    });
-                  }}>
-                    <img src={require('images/selected.svg')} alt="" />
-                    <Typography style={{cursor: 'pointer'}} className="orange">Add all from selected Date</Typography>
-                  </div>
+                {selectedDate !== '' ? (
+                  <>
+                    {medicineCopyArr && medicineCopyArr.length > 0 ? (
+                      <>
+                        <Grid item md={7} xs={12}>
+                          <div
+                            className={classes.selectedDate}
+                            onClick={() => {
+                              const addedMedicineArr =
+                                selectedMedicinesArr && selectedMedicinesArr.length > 0
+                                  ? selectedMedicinesArr.map(function(e: any) {
+                                      return e.medicineName;
+                                    })
+                                  : [];
+                              medicineCopyArr.forEach((medicine: any, index: number) => {
+                                if (
+                                  medicine &&
+                                  addedMedicineArr.indexOf(medicine.medicineName) < 0
+                                ) {
+                                  saveMedicineAction(medicine);
+                                }
+                              });
+                            }}
+                          >
+                            <img src={require('images/selected.svg')} alt="" />
+                            <Typography style={{ cursor: 'pointer' }} className="orange">
+                              Add all from selected Date
+                            </Typography>
+                          </div>
 
-                  <div className={classes.medicineContent}>
-                    <ul className={classes.medicineList}>{medicineCopyHtml('present')}</ul>
-                  </div>
-                </Grid>
-                <Grid item md={5} xs={12}>
-                  <div className={classes.selectedDate}>
-                    <Typography>Added Medicine</Typography>
-                  </div>
-                  <div className={classes.medicineContent}>
-                    <ul className={classes.medicineList}>
-                      {/* Add 'added' class to li of this ul for the color as per design  */}
-                      {medicineAddedCopyHtml('present')}
-                      {/* {medicineHtml('removed')} */}
-                    </ul>
-                  </div>
-                </Grid></>: <Grid item md={7} xs={12}>
-                  <div className={classes.selectedDate}>
-                    <Typography className="orange">Medicines not Provided</Typography>
-                  </div></Grid>}
-                </> : <Grid item md={7} xs={12}>
-                  <div className={classes.selectedDate}>
-                    <Typography className="orange">Please select a casesheet</Typography>
-                  </div></Grid>}
+                          <div className={classes.medicineContent}>
+                            <ul className={classes.medicineList}>{medicineCopyHtml('present')}</ul>
+                          </div>
+                        </Grid>
+                        <Grid item md={5} xs={12}>
+                          <div className={classes.selectedDate}>
+                            <Typography>Added Medicine</Typography>
+                          </div>
+                          <div className={classes.medicineContent}>
+                            <ul className={classes.medicineList}>
+                              {/* Add 'added' class to li of this ul for the color as per design  */}
+                              {medicineAddedCopyHtml('present')}
+                              {/* {medicineHtml('removed')} */}
+                            </ul>
+                          </div>
+                        </Grid>
+                      </>
+                    ) : (
+                      <Grid item md={7} xs={12}>
+                        <div className={classes.selectedDate}>
+                          <Typography className="orange">Medicines not Provided</Typography>
+                        </div>
+                      </Grid>
+                    )}
+                  </>
+                ) : (
+                  <Grid item md={7} xs={12}>
+                    <div className={classes.selectedDate}>
+                      <Typography className="orange">Please select a casesheet</Typography>
+                    </div>
+                  </Grid>
+                )}
               </Grid>
             </div>
           </div>
           <div className={classes.btnContainer}>
-            <AphButton variant="contained" color="primary" onClick={() => {
+            <AphButton
+              variant="contained"
+              color="primary"
+              onClick={() => {
                 setIsPrevMedDialogOpen(false);
-              }}>
+              }}
+            >
               Proceed
             </AphButton>
           </div>
