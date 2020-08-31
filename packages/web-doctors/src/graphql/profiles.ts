@@ -917,7 +917,6 @@ export const GET_CASESHEET = gql`
         status
         unreadMessagesCount
         caseSheet {
-          version
           consultType
           doctorType
           diagnosis {
@@ -937,13 +936,9 @@ export const GET_CASESHEET = gql`
           followUpAfterInDays
           followUp
           medicinePrescription {
-            id
             medicineName
-            medicineDosage
-            medicineToBeTaken
-            medicineInstructions
             medicineTimings
-            medicineUnit
+            medicineInstructions
             medicineConsumptionDurationInDays
             medicineConsumptionDuration
             medicineFormTypes
@@ -951,9 +946,6 @@ export const GET_CASESHEET = gql`
             medicineConsumptionDurationUnit
             routeOfAdministration
             medicineCustomDosage
-            medicineCustomDetails
-            genericName
-            includeGenericNameInPrescription
           }
           otherInstructions {
             instruction
