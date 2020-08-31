@@ -3,21 +3,23 @@ import { Theme, Popover } from '@material-ui/core';
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { useAuth } from 'hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { useParams } from 'hooks/routerHooks';
 import Typography from '@material-ui/core/Typography';
+import { useLocation } from 'react-router';
+import { buyMedicineClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     appNavigation: {
-      marginLeft: 'auto',
+      // marginLeft: 'auto',
       display: 'flex',
       alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
-        marginLeft: 0,
+        // marginLeft: 0,
       },
       '& a': {
         fontSize: 13,
@@ -35,12 +37,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '36px 16px 34px 16px',
       },
     },
-    homePageNav: {
-      marginLeft: 'auto',
-      [theme.breakpoints.down('xs')]: {
-        marginLeft: 'auto',
-      },
-    },
+    homePageNav: {},
     menuTitle: {
       textTransform: 'uppercase',
       borderBottom: '1px solid #01475b',
@@ -78,13 +75,15 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       cursor: 'pointer',
       [theme.breakpoints.down('xs')]: {
-        padding: '25px 16px 23px 16px',
+        padding: '25px 10px 23px 10px',
       },
       '& img': {
         verticalAlign: 'middle',
       },
-      '& >span': {
+      '& >a': {
         position: 'relative',
+        padding: 0,
+        display: 'block',
       },
       '&:focus': {
         outline: 'none',
@@ -219,16 +218,17 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
     clientRoutes.payOnlineClinicConsult(),
     // clientRoutes.payMedicine(params.payType),
   ];
+  const { currentPatient } = useAllCurrentPatients();
 
   return (
     <div
       className={`${classes.appNavigation} ${isSignedIn ? classes.postLoginNavigation : ''} ${
         currentPath === clientRoutes.welcome() ||
-          clientRoutes.termsConditions() ||
-          clientRoutes.aboutUs()
+        clientRoutes.termsConditions() ||
+        clientRoutes.aboutUs()
           ? classes.homePageNav
           : ''
-        }`}
+      }`}
       data-cypress="Navigation"
     >
       {isSignedIn ? (
@@ -251,7 +251,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             className={
               currentPath === clientRoutes.specialityListing() ? classes.menuItemActive : ''
             }
-            title={'Medicines'}
+            title={'Doctors'}
           >
             Book Appointment
           </Link>
@@ -263,6 +263,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
                 : ''
             }
             title={'Medicines'}
+            onClick={() => buyMedicineClickTracking(currentPatient && currentPatient.id)}
           >
             Buy Medicines
           </Link>
@@ -297,45 +298,37 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
           </Link> */}
         </>
       ) : (
-          <>
-            <Link
-              className={
-                doctorRoutes.find((route) => route === currentPath) ||
-                  currentPath.includes('specialties')
-                  ? classes.menuItemActive
-                  : ''
-              }
-              to={clientRoutes.specialityListing()}
-              title={'Doctors'}
-            >
-              <Typography variant="h1" className={classes.menuTitle}>
-                Doctors
-            </Typography>
-              <Typography variant="h1" className={classes.menuInfo}>
-                Consult
-              <br /> Online
-            </Typography>
-            </Link>
-            <Link
-              to={clientRoutes.medicines()}
-              className={
-                props.activeMedicineRoutes.find((route) => route === currentPath)
-                  ? classes.menuItemActive
-                  : ''
-              }
-              title={'Pharmacy'}
-            >
-              <Typography variant="h1" className={classes.menuTitle}>
-                Pharmacy
-            </Typography>
-              <Typography variant="h1" className={classes.menuInfo}>
-                Medicines &<br /> other products
-            </Typography>
-              {/* <span className={classes.menuInfo}>
-                Medicines &<br /> other products
-            </span> */}
-            </Link>
-            {/* <Link
+        <>
+          <Link
+            className={
+              doctorRoutes.find((route) => route === currentPath) ||
+              currentPath.includes('specialties')
+                ? classes.menuItemActive
+                : ''
+            }
+            to={clientRoutes.specialityListing()}
+            title={'Doctors'}
+          >
+            <span className={classes.menuTitle}>Doctors</span>
+            <span className={classes.menuInfo}>
+              Consult <br /> Online
+            </span>
+          </Link>
+          <Link
+            to={clientRoutes.medicines()}
+            className={
+              props.activeMedicineRoutes.find((route) => route === currentPath)
+                ? classes.menuItemActive
+                : ''
+            }
+            title={'Pharmacy'}
+          >
+            <span className={classes.menuTitle}>Pharmacy</span>
+            <span className={classes.menuInfo}>
+              Medicines &<br /> other products
+            </span>
+          </Link>
+          {/* <Link
             to={clientRoutes.tests()}
             className={currentPath === clientRoutes.tests() ? classes.menuItemActive : ''}
             title={'Tests'}
@@ -343,19 +336,19 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             <span className={classes.menuTitle}>Tests</span>
             <span className={classes.menuInfo}>Health<br/> checks</span>
           </Link> */}
-            <Link
-              to={clientRoutes.covidLanding()}
-              className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
-              title={'Covid-19'}
-            >
-              <span className={classes.menuTitle}>Covid-19</span>
-              <span className={classes.menuInfo}>
-                Latest
+          <Link
+            to={clientRoutes.covidLanding()}
+            className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
+            title={'Covid-19'}
+          >
+            <span className={classes.menuTitle}>Covid-19</span>
+            <span className={classes.menuInfo}>
+              Latest
               <br /> updates
             </span>
-            </Link>
-          </>
-        )}
+          </Link>
+        </>
+      )}
       {/* {currentPath === clientRoutes.welcome() ||
       currentPath === clientRoutes.termsConditions() ||
       currentPath === clientRoutes.aboutUs() ? (
@@ -369,21 +362,22 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
       )} */}
       <div
         id="cartId"
-        onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}
-        onKeyPress={() => setIsCartPopoverOpen(true)}
-        ref={cartPopoverRef}
-        tabIndex={0}
-        className={`${classes.notificationBtn} ${
-          currentPath === clientRoutes.medicinesCart() ? classes.menuItemActive : ''
-          }  ${currentPath === clientRoutes.testsCart() ? classes.menuItemActive : ''}`}
-        title={'cart'}
+        className={classes.notificationBtn}
+        // onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}
+        // onKeyPress={() => setIsCartPopoverOpen(true)}
+        // ref={cartPopoverRef}
+        // tabIndex={0}
+        //  ${
+        //   currentPath === clientRoutes.medicinesCart() ? classes.menuItemActive : ''
+        // }  ${currentPath === clientRoutes.testsCart() ? classes.menuItemActive : ''}`}
+        // title={'cart'}
       >
-        <span>
+        <Link to={clientRoutes.medicinesCart()}>
           <img src={require('images/ic_cart.svg')} alt="Cart" title={'cart'} />
           <span className={classes.itemCount}>
             {cartItems.length + diagnosticsCartItems.length || 0}
           </span>
-        </span>
+        </Link>
       </div>
       {/* <div className={`${classes.notificationBtn}`}>
         <img src={require('images/ic_notification.svg')} alt="Notifications" />

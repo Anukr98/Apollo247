@@ -4,6 +4,7 @@ import { Theme, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -248,19 +249,7 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
-    more: {
-      display: 'none',
-      [theme.breakpoints.down('sm')]: {
-        position: 'absolute',
-        bottom: 20,
-        right: 30,
-        fontSize: 12,
-        fontWeight: 700,
-        color: '#00B38E',
-        lineHeight: '20px',
-        display: 'block',
-      },
-    },
+
     availContainer: {
       padding: 16,
       '& p': {
@@ -299,6 +288,20 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    more: {
+      display: 'none',
+      [theme.breakpoints.down('sm')]: {
+        position: 'absolute',
+        bottom: 20,
+        right: 30,
+        fontSize: 12,
+        fontWeight: 700,
+        color: '#00B38E',
+        lineHeight: '20px',
+        display: 'block',
+      },
+    },
+
     dialogclose: {
       top: 16,
       right: 16,

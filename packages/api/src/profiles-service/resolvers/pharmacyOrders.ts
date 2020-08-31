@@ -6,10 +6,18 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import _ from 'lodash';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { MedicineOrderRefunds } from 'profiles-service/entities';
 
 export const pharmaOrdersTypeDefs = gql`
   type PharmacyOrderResult {
+    meta: PaginateMetaDataPharmacyOrders
     pharmaOrders: [PharmaResponse]
+  }
+
+  type PaginateMetaDataPharmacyOrders {
+    total: Int
+    pageSize: Int
+    pageNo: Int
   }
 
   type PharmaResponse {
@@ -33,15 +41,35 @@ export const pharmaOrdersTypeDefs = gql`
     bankTxnId: String
     amountPaid: Float
     paymentDateTime: DateTime
+    healthCreditsRedeemed: Float
+    refundAmount: Float
+    medicineOrderRefunds: [MedicineOrderRefunds]
   }
+
+  type MedicineOrderRefunds {
+    refundId: String
+    refundAmount: Float
+    txnId: String
+    createdDate: DateTime
+    refundStatus: REFUND_STATUS
+  }
+
   extend type Query {
-    pharmacyOrders(patientId: String): PharmacyOrderResult
+    pharmacyOrders(patientId: String, pageNo: Int, pageSize: Int): PharmacyOrderResult
   }
 `;
 
 type PharmacyOrderResult = {
+  meta: PaginateMetaDataPharmacyOrders;
   pharmaOrders: Partial<PharmaResponse[]>;
 };
+
+type PaginateMetaDataPharmacyOrders = {
+  total: number | null;
+  pageSize: number | null;
+  pageNo: number | null;
+};
+
 type PharmaResponse = {
   id: string;
   bookingSource: string;
@@ -53,6 +81,7 @@ type PharmaResponse = {
   orderType: string;
   quoteDateTime: Date;
   orderDateTime: Date;
+  refundAmount: number;
   medicineOrderPayments: PharmacyPayment[];
 };
 type PharmacyPayment = {
@@ -63,36 +92,80 @@ type PharmacyPayment = {
   bankTxnId: string;
   amountPaid: number;
   paymentDateTime: Date;
+  healthCreditsRedeemed: number;
+  medicineOrderRefunds: MedicineOrderRefunds[];
 };
 
 const pharmacyOrders: Resolver<
   null,
-  { patientId: string },
+  { patientId: string; pageNo?: number; pageSize?: number },
   ProfilesServiceContext,
   PharmacyOrderResult
 > = async (parent, args, { profilesDb }) => {
+  const { patientId } = args;
   const medicineOrderRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
 
-  const medicineOrders = await medicineOrderRepo.getMedicineOrdersListWithPayments(
-    primaryPatientIds
+  const patientDetails = await patientRepo.getPatientDetails(args.patientId);
+
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
+
+  // paginated vars
+  const { pageNo, pageSize = 10 } = args; //default pageSize = 10
+  const paginateParams: { take?: number; skip?: number } = {};
+
+  //pageNo should be greater than 0
+  if (pageNo === 0) {
+    throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
+  }
+  if (pageNo) {
+    paginateParams.take = pageSize;
+    paginateParams.skip = pageSize * pageNo - pageSize; //bcoz pageNo. starts from 1 not 0.
+  }
+
+  const [pharmaOrders, totalCount]: any = await Promise.all(
+    medicineOrderRepo.getMedicineOrdersListWithPayments(primaryPatientIds, paginateParams)
   );
-  // console.log('pharmacy Response', JSON.stringify(medicineOrders, null, 2));
-  if (medicineOrders && medicineOrders.length > 0) {
-    const excludeNullPayments = _.filter(medicineOrders, (o) => {
-      return o.medicineOrderPayments.length > 0;
-    });
-    const result = _.filter(excludeNullPayments, (o) => {
-      return (
-        o.medicineOrderPayments[0].paymentType !== 'COD' &&
-        o.currentStatus !== 'QUOTE' &&
-        o.currentStatus !== 'PAYMENT_ABORTED'
-      );
-    });
-    return { pharmaOrders: result };
-  } else if (medicineOrders.length == 0) return { pharmaOrders: [] };
-  else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+
+  const metaResponse = {
+    pageNo: pageNo || null,
+    pageSize: (Number.isInteger(pageNo) && pageSize) || null,
+    total: (Number.isInteger(pageNo) && totalCount) || null,
+  };
+
+  return {
+    pharmaOrders: pharmaOrders,
+    meta: metaResponse,
+  };
+  /**
+   * keeping it for ref as below filters used in getMedicineOrdersListWithPayments
+   * once verified abv fn remove below snippet
+   */
+  // if (medicineOrders && medicineOrders.length > 0) {
+  //   const excludeNullPayments = _.filter(medicineOrders, (o) => {
+  //     return o.medicineOrderPayments.length > 0;
+  //   });
+  //   const result = _.filter(excludeNullPayments, (o) => {
+  //     return (
+  //       o.medicineOrderPayments[0].paymentType !== 'COD' &&
+  //       o.currentStatus !== 'QUOTE' &&
+  //       o.currentStatus !== 'PAYMENT_ABORTED'
+  //     );
+  //   });
+  //   console.log('pharmacy orders after filter--->', medicineOrders, medicineOrders.length)
+  //   return {
+  //     meta: metaResponse,
+  //     pharmaOrders: medicineOrders
+  //   };
+  // } else if (medicineOrders.length == 0) return {
+  //   meta: metaResponse,
+  //   pharmaOrders: []
+  // };
+  // else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 };
 
 export const pharmacyOrdersResolvers = {

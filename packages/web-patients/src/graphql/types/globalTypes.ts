@@ -80,6 +80,7 @@ export enum DEVICETYPE {
 
 export enum DEVICE_TYPE {
   ANDROID = "ANDROID",
+  DESKTOP = "DESKTOP",
   IOS = "IOS",
 }
 
@@ -368,6 +369,19 @@ export enum SpecialtySearchType {
   NAME = "NAME",
 }
 
+export enum Status {
+  active = "active",
+  discontinued = "discontinued",
+  inactive = "inactive",
+}
+
+export enum SubscriptionStatus {
+  active = "active",
+  cancelled = "cancelled",
+  deferred = "deferred",
+  disabled = "disabled",
+}
+
 export enum TEST_COLLECTION_TYPE {
   CENTER = "CENTER",
   HC = "HC",
@@ -437,6 +451,7 @@ export interface AppointmentPaymentInput {
   bankName?: string | null;
   refundAmount?: number | null;
   paymentMode?: PAYMENT_METHODS | null;
+  partnerInfo?: string | null;
 }
 
 export interface BookAppointmentInput {
@@ -470,6 +485,10 @@ export interface CancelAppointmentInput {
   cancelReason?: string | null;
   cancelledBy: REQUEST_ROLES;
   cancelledById: string;
+}
+
+export interface CreateUserSubscriptionInput {
+  mobile_number?: string | null;
 }
 
 export interface DiagnosticLineItem {
@@ -647,6 +666,8 @@ export interface MedicinePaymentMqInput {
   CODCity?: CODCity | null;
   orderId?: string | null;
   paymentMode?: PAYMENT_METHODS | null;
+  healthCredits?: number | null;
+  partnerInfo?: string | null;
 }
 
 export interface OrderCancelInput {
@@ -826,6 +847,11 @@ export interface UploadDocumentInput {
   base64FileInput: string;
   patientId: string;
   category: PRISM_DOCUMENT_CATEGORY;
+}
+
+export interface UserIdentification {
+  mobile_number?: string | null;
+  patiend_id?: string | null;
 }
 
 //==============================================================

@@ -18,10 +18,11 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { postWebEngageEvent, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postShowPrescriptionAtStoreSelected } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -54,6 +55,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   const { isTest } = props;
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const { currentPatient } = useAllCurrentPatients();
 
   const { showAphAlert } = useUIElements();
   const {
@@ -347,7 +349,13 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
                 marginBottom: 24,
               }}
             >
-              <TouchableOpacity activeOpacity={1} style={{}} onPress={() => setShowPopup(true)}>
+              <TouchableOpacity activeOpacity={1} style={{}} onPress={() => {
+                const eventAttributes: WebEngageEvents[WebEngageEventName.CART_UPLOAD_PRESCRIPTION_CLICKED] = {
+                  'Customer ID': g(currentPatient, 'id'),
+                };
+                postWebEngageEvent(WebEngageEventName.CART_UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
+                setShowPopup(true);
+              }}>
                 <Text
                   style={{
                     ...theme.fonts.IBMPlexSansMedium(16),

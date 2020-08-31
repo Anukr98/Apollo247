@@ -1,3 +1,4 @@
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { ConsultOnline } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOnline';
 import { ConsultPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPhysical';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -11,6 +12,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -39,8 +41,8 @@ import {
   APPOINTMENT_TYPE,
   BookAppointmentInput,
   BOOKINGSOURCE,
-  DEVICETYPE,
   ConsultMode,
+  DEVICETYPE,
   DoctorType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -51,51 +53,50 @@ import {
   ValidateConsultCoupon,
   ValidateConsultCouponVariables,
 } from '@aph/mobile-patients/src/graphql/types/ValidateConsultCoupon';
+import { validateConsultCoupon } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   getNextAvailableSlots,
+  saveSearchDoctor,
+  saveSearchSpeciality,
   whatsAppUpdateAPICall,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
-  callPermissions,
+  dataSavedUserID,
   g,
   getNetStatus,
   handleGraphQlError,
   postAppsFlyerEvent,
-  postWebEngageEvent,
   postFirebaseEvent,
+  postWebEngageEvent,
   postWEGWhatsAppEvent,
-  dataSavedUserID,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   Dimensions,
+  Linking,
   Platform,
   StyleSheet,
-  Linking,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
+import { FirebaseEventName } from '../../helpers/firebaseEvents';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
-import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
-import { validateConsultCoupon } from '@aph/mobile-patients/src/helpers/apiCalls';
-import firebase from 'react-native-firebase';
-import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
-import AsyncStorage from '@react-native-community/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -114,6 +115,7 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   externalConnect: boolean | null;
   availableMode: string;
   consultedWithDoctorBefore: boolean;
+  callSaveSearch: string;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const client = useApolloClient();
@@ -221,10 +223,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             onPress={() => {
               hideAphAlert!();
               props.navigation.navigate(AppRoutes.TabBar);
-              CommonLogEvent(
-                AppRoutes.ConsultPayment,
-                'Navigate to consult room after booking payment sucess.'
-              );
             }}
           >
             <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
@@ -443,27 +441,26 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           if (props.consultedWithDoctorBefore) {
             storeAppointmentId(g(apptmt, 'id')!);
           }
-          console.log('apptmt', apptmt);
           // If amount is zero don't redirect to PG
+
+          try {
+            if (props.callSaveSearch !== 'true') {
+              saveSearchDoctor(client, props.doctor ? props.doctor.id : '', props.patientId);
+
+              saveSearchSpeciality(
+                client,
+                props.doctor && props.doctor.specialty && props.doctor.specialty.id,
+                props.patientId
+              );
+            }
+          } catch (error) {}
+
           makePayment(
             g(apptmt, 'id')!,
             Number(price),
             g(apptmt, 'appointmentDateTime'),
             g(apptmt, 'displayId')!
           );
-
-          // props.navigation.navigate(AppRoutes.ConsultPayment, {
-          //   doctorName: `${g(props.doctor, 'fullName')}`,
-          //   appointmentId: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
-          //   price: coupon ? doctorDiscountedFees : Number(doctorFees),
-          //   webEngageEventAttributes: getConsultationBookedEventAttributes(
-          //     g(apptmt, 'appointmentDateTime'),
-          //     g(data, 'data', 'bookAppointment', 'appointment', 'id')!
-          //   ),
-          //   //   tabs[0].title === selectedTab
-          //   //     ? price //1 //props.doctor!.onlineConsultationFees
-          //   //     : props.doctor!.physicalConsultationFees,
-          // });
         })
         .catch((error) => {
           CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
@@ -504,6 +501,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         appointmentInput: appointmentInput,
         couponApplied: coupon == '' ? false : true,
         consultedWithDoctorBefore: props.consultedWithDoctorBefore,
+        patientId: props.patientId,
+        callSaveSearch: props.callSaveSearch,
       });
     }
   };

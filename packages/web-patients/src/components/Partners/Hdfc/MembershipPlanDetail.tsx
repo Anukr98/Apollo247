@@ -10,6 +10,8 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { HDFC_SUBSCRIPTION_GOLD } from 'helpers/constants';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

@@ -11,7 +11,11 @@ import path from 'path';
 import { ApiConstants } from 'ApiConstants';
 
 import { getLabResults, getPrescriptionData, getAuthToken } from 'helpers/phrV1Services';
-import { LabResultsDownloadResponse, PrescriptionDownloadResponse } from 'types/phrv1';
+import {
+  LabResultsDownloadResponse,
+  PrescriptionDownloadResponse,
+  GetAuthTokenResponse,
+} from 'types/phrv1';
 import { format } from 'date-fns';
 import { prescriptionSource } from 'profiles-service/resolvers/prescriptionUpload';
 
@@ -118,6 +122,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     additionalNotes: String
     consultId: String
     tag: String
+    siteDisplayName: String
     labTestResults: [LabTestFileParameters]
     fileUrl: String!
     date: Date!
@@ -171,9 +176,18 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     labResults: LabResultsDownloadResponse
     prescriptions: PrescriptionDownloadResponse
   }
+
+  type PrismAuthTokenResponse {
+    errorCode: Int
+    errorMsg: String
+    errorType: String
+    response: String
+  }
+
   extend type Query {
     getPatientMedicalRecords(patientId: ID!, offset: Int, limit: Int): MedicalRecordsResult
     getPatientPrismMedicalRecords(patientId: ID!): PrismMedicalRecordsResult
+    getPrismAuthToken(uhid: String!): PrismAuthTokenResponse
   }
 `;
 
@@ -282,7 +296,8 @@ const getPatientPrismMedicalRecords: Resolver<
   PrismMedicalRecordsResult
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientsRepo.findById(args.patientId);
+  const patientDetails = await patientsRepo.getPatientDetails(args.patientId);
+
   if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 
   if (!patientDetails.uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
@@ -608,9 +623,19 @@ const getPatientPrismMedicalRecords: Resolver<
   return result;
 };
 
+const getPrismAuthToken: Resolver<
+  null,
+  { uhid: string },
+  ProfilesServiceContext,
+  GetAuthTokenResponse
+> = async (parent, args, {}) => {
+  return await getAuthToken(args.uhid);
+};
+
 export const getPatientMedicalRecordsResolvers = {
   Query: {
     getPatientMedicalRecords,
     getPatientPrismMedicalRecords,
+    getPrismAuthToken,
   },
 };

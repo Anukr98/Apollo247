@@ -132,6 +132,9 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     medicineUnit: MEDICINE_UNIT!
     routeOfAdministration: ROUTE_OF_ADMINISTRATION
     medicineCustomDosage: String
+    medicineCustomDetails: String
+    includeGenericNameInPrescription: Boolean
+    genericName: String
   }
 
   type DoctorFavouriteMedicine {
@@ -150,6 +153,9 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     medicineUnit: MEDICINE_UNIT
     routeOfAdministration: ROUTE_OF_ADMINISTRATION
     medicineCustomDosage: String
+    medicineCustomDetails: String
+    includeGenericNameInPrescription: Boolean
+    genericName: String
   }
 
   input UpdateDoctorsFavouriteMedicineInput {
@@ -168,6 +174,9 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     medicineUnit: MEDICINE_UNIT
     routeOfAdministration: ROUTE_OF_ADMINISTRATION
     medicineCustomDosage: String
+    medicineCustomDetails: String
+    includeGenericNameInPrescription: Boolean
+    genericName: String
   }
 
   type FavouriteMedicineList {
@@ -218,6 +227,9 @@ type SaveDoctorsFavouriteMedicineInput = {
   medicineUnit: MEDICINE_UNIT;
   routeOfAdministration?: ROUTE_OF_ADMINISTRATION;
   medicineCustomDosage?: string;
+  medicineCustomDetails?: string;
+  includeGenericNameInPrescription?: Boolean;
+  genericName?: string;
 };
 
 type SaveDoctorsFavouriteMedicineInputArgs = {
@@ -322,6 +334,9 @@ type UpdateDoctorsFavouriteMedicineInput = {
   medicineUnit: string;
   routeOfAdministration?: ROUTE_OF_ADMINISTRATION;
   medicineCustomDosage?: string;
+  medicineCustomDetails?: string;
+  includeGenericNameInPrescription?: Boolean;
+  genericName?: string;
 };
 
 type UpdateDoctorsFavouriteMedicineInputArgs = {

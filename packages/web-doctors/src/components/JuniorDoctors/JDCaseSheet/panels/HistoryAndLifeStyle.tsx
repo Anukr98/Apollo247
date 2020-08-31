@@ -4,6 +4,12 @@ import { Theme, Grid } from '@material-ui/core';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { AphTextField } from '@aph/web-ui-components';
 import { Gender } from 'graphql/types/globalTypes';
+import { useParams } from 'hooks/routerHooks';
+import { Params } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
+import {
+  getLocalStorageItem,
+  updateLocalStorageItem,
+} from 'components/case-sheet/panels/LocalStorageUtils';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -159,6 +165,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const HistoryAndLifeStyle: React.FC = (props) => {
   const classes = useStyles({});
+  const params = useParams<Params>();
   const {
     caseSheetEdit,
     pastMedicalHistory,
@@ -182,6 +189,41 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
     setOccupationHistory,
   } = useContext(CaseSheetContextJrd);
 
+  const moveCursorToEnd = (element: any) => {
+    if (typeof element.selectionStart == 'number') {
+      element.selectionStart = element.selectionEnd = element.value.length;
+    } else if (typeof element.createTextRange != 'undefined') {
+      element.focus();
+      const range = element.createTextRange();
+      range.collapse(false);
+      range.select();
+    }
+  };
+
+  const getDefaultValue = (type: string) => {
+    const localStorageItem = getLocalStorageItem(params.appointmentId);
+    switch (type) {
+      case 'pastMedicalHistory':
+        return localStorageItem ? localStorageItem.pastMedicalHistory : pastMedicalHistory;
+      case 'pastSurgicalHistory':
+        return localStorageItem ? localStorageItem.pastSurgicalHistory : pastSurgicalHistory;
+      case 'drugAllergies':
+        return localStorageItem ? localStorageItem.drugAllergies : drugAllergies;
+      case 'dietAllergies':
+        return localStorageItem ? localStorageItem.dietAllergies : dietAllergies;
+      case 'lifeStyle':
+        return localStorageItem ? localStorageItem.lifeStyle : lifeStyle;
+      case 'menstrualHistory':
+        return localStorageItem ? localStorageItem.menstrualHistory : menstrualHistory;
+      case 'familyHistory':
+        return localStorageItem ? localStorageItem.familyHistory : familyHistory;
+      case 'medicationHistory':
+        return localStorageItem ? localStorageItem.medicationHistory : medicationHistory;
+      case 'occupationHistory':
+        return localStorageItem ? localStorageItem.occupationHistory : occupationHistory;
+    }
+  };
+
   return (
     <Grid container spacing={1}>
       <Grid item sm={12}>
@@ -190,11 +232,17 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}
         >
           <AphTextField
+            onFocus={(e) => moveCursorToEnd(e.currentTarget)}
             disabled={!caseSheetEdit}
             fullWidth
             multiline
-            value={pastMedicalHistory}
-            onChange={(e) => {
+            defaultValue={getDefaultValue('pastMedicalHistory')}
+            onBlur={(e) => {
+              const storageItem = getLocalStorageItem(params.appointmentId);
+              if (storageItem) {
+                storageItem.pastMedicalHistory = e.target.value;
+                updateLocalStorageItem(params.appointmentId, storageItem);
+              }
               setPastMedicalHistory(e.target.value);
             }}
           />
@@ -207,11 +255,17 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}
         >
           <AphTextField
+            onFocus={(e) => moveCursorToEnd(e.currentTarget)}
             disabled={!caseSheetEdit}
             fullWidth
             multiline
-            value={medicationHistory}
-            onChange={(e) => {
+            defaultValue={getDefaultValue('medicationHistory')}
+            onBlur={(e) => {
+              const storageItem = getLocalStorageItem(params.appointmentId);
+              if (storageItem) {
+                storageItem.medicationHistory = e.target.value;
+                updateLocalStorageItem(params.appointmentId, storageItem);
+              }
               setMedicationHistory(e.target.value);
             }}
           />
@@ -227,8 +281,13 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             disabled={!caseSheetEdit}
             fullWidth
             multiline
-            value={pastSurgicalHistory}
-            onChange={(e) => {
+            defaultValue={getDefaultValue('pastSurgicalHistory')}
+            onBlur={(e) => {
+              const storageItem = getLocalStorageItem(params.appointmentId);
+              if (storageItem) {
+                storageItem.pastSurgicalHistory = e.target.value;
+                updateLocalStorageItem(params.appointmentId, storageItem);
+              }
               setPastSurgicalHistory(e.target.value);
             }}
           />
@@ -240,11 +299,18 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}
         >
           <AphTextField
+            onFocus={(e) => moveCursorToEnd(e.currentTarget)}
             disabled={!caseSheetEdit}
             fullWidth
             multiline
-            value={drugAllergies}
-            onChange={(e) => {
+            id="drugAllergies"
+            defaultValue={getDefaultValue('drugAllergies')}
+            onBlur={(e) => {
+              const storageItem = getLocalStorageItem(params.appointmentId);
+              if (storageItem) {
+                storageItem.drugAllergies = e.target.value;
+                updateLocalStorageItem(params.appointmentId, storageItem);
+              }
               setDrugAllergies(e.target.value);
             }}
           />
@@ -256,11 +322,17 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}
         >
           <AphTextField
+            onFocus={(e) => moveCursorToEnd(e.currentTarget)}
             disabled={!caseSheetEdit}
             fullWidth
             multiline
-            value={dietAllergies}
-            onChange={(e) => {
+            defaultValue={getDefaultValue('dietAllergies')}
+            onBlur={(e) => {
+              const storageItem = getLocalStorageItem(params.appointmentId);
+              if (storageItem) {
+                storageItem.dietAllergies = e.target.value;
+                updateLocalStorageItem(params.appointmentId, storageItem);
+              }
               setDietAllergies(e.target.value);
             }}
           />
@@ -274,11 +346,17 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           }`}
         >
           <AphTextField
+            onFocus={(e) => moveCursorToEnd(e.currentTarget)}
             disabled={!caseSheetEdit}
             fullWidth
             multiline
-            value={lifeStyle}
-            onChange={(e) => {
+            defaultValue={getDefaultValue('lifeStyle')}
+            onBlur={(e) => {
+              const storageItem = getLocalStorageItem(params.appointmentId);
+              if (storageItem) {
+                storageItem.lifeStyle = e.target.value;
+                updateLocalStorageItem(params.appointmentId, storageItem);
+              }
               setLifeStyle(e.target.value);
             }}
           />
@@ -293,11 +371,17 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           }`}
         >
           <AphTextField
+            onFocus={(e) => moveCursorToEnd(e.currentTarget)}
             disabled={!caseSheetEdit}
             fullWidth
             multiline
-            value={occupationHistory}
-            onChange={(e) => {
+            defaultValue={getDefaultValue('occupationHistory')}
+            onBlur={(e) => {
+              const storageItem = getLocalStorageItem(params.appointmentId);
+              if (storageItem) {
+                storageItem.occupationHistory = e.target.value;
+                updateLocalStorageItem(params.appointmentId, storageItem);
+              }
               setOccupationHistory(e.target.value);
             }}
           />
@@ -306,18 +390,24 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
 
       {gender === Gender.FEMALE && (
         <Grid item sm={12}>
-          <div className={classes.sectionTitle}>Menstrual History*</div>
+          <div className={classes.sectionTitle}>Menstrual and Obstetric History*</div>
           <div
             className={`${classes.inputFieldContent} ${
               caseSheetEdit ? classes.inputFieldEdit : ''
             } ${classes.marginNone}`}
           >
             <AphTextField
+              onFocus={(e) => moveCursorToEnd(e.currentTarget)}
               disabled={!caseSheetEdit}
               fullWidth
               multiline
-              value={menstrualHistory}
-              onChange={(e) => {
+              defaultValue={getDefaultValue('menstrualHistory')}
+              onBlur={(e) => {
+                const storageItem = getLocalStorageItem(params.appointmentId);
+                if (storageItem) {
+                  storageItem.menstrualHistory = e.target.value;
+                  updateLocalStorageItem(params.appointmentId, storageItem);
+                }
                 setMenstrualHistory(e.target.value);
               }}
             />
@@ -332,11 +422,17 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           }`}
         >
           <AphTextField
+            onFocus={(e) => moveCursorToEnd(e.currentTarget)}
             disabled={!caseSheetEdit}
             fullWidth
             multiline
-            value={familyHistory}
-            onChange={(e) => {
+            defaultValue={getDefaultValue('familyHistory')}
+            onBlur={(e) => {
+              const storageItem = getLocalStorageItem(params.appointmentId);
+              if (storageItem) {
+                storageItem.familyHistory = e.target.value;
+                updateLocalStorageItem(params.appointmentId, storageItem);
+              }
               setFamilyHistory(e.target.value);
             }}
           />

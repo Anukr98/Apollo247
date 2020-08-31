@@ -384,39 +384,65 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
 
   const renderRow = (item: any, index: number) => {
     const val = JSON.parse(item.notificatio_details.push_notification_content);
-    return (
-      <View
-        style={{
-          backgroundColor: item.isActive ? 'white' : 'transparent',
-          flex: 1,
-        }}
-      >
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => {
-            updateSelectedView(index);
-          }}
-        >
-          <View style={styles.viewRowStyle}>
-            {/* {item.data.type.includes('Order') ? (
+    const event = val.cta;
+    if (event) {
+      const CTAName = ctaNamesMethod(event);
+
+      const actionLink = decodeURIComponent(event.actionLink);
+
+      let routing = actionLink.replace('apollopatients://', '');
+      routing = routing.replace('w://p/open_url_in_browser/', '');
+      const data = routing.split('?');
+      routing = data[0];
+
+      if (
+        routing === 'Consult' ||
+        routing === 'Medicine' ||
+        routing === 'Test' ||
+        routing === 'Speciality' ||
+        routing === 'Doctor' ||
+        routing === 'DoctorSearch' ||
+        routing === 'MedicineSearch' ||
+        routing === 'MedicineDetail'
+      ) {
+        return (
+          <View
+            style={{
+              backgroundColor: item.isActive ? 'white' : 'transparent',
+              flex: 1,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => {
+                updateSelectedView(index);
+                handleOpenURL(event.actionLink);
+              }}
+            >
+              <View style={styles.viewRowStyle}>
+                {/* {item.data.type.includes('Order') ? (
             <NotificationCartIcon style={styles.iconStyle} />
           ) : (
             <NotificationBellIcon style={styles.iconStyle} />
           )} */}
-            <NotificationBellIcon style={styles.iconStyle} />
+                <NotificationBellIcon style={styles.iconStyle} />
 
-            <View>
-              <Text style={styles.titleStyle}>{val.title}</Text>
-              <Text style={styles.textStyle}>{val.message}</Text>
+                <View>
+                  <Text style={styles.titleStyle}>{val.title}</Text>
+                  <Text style={styles.textStyle}>{val.message}</Text>
 
-              <Text style={styles.dateStyle}>{dateCalculate(item.event_time)}</Text>
-            </View>
+                  <Text style={styles.dateStyle}>{dateCalculate(item.event_time)}</Text>
+                </View>
+              </View>
+              <View style={styles.btnViewStyle}>
+                {renderNotificationType(CTAName, event.actionLink, index)}
+              </View>
+              <View style={styles.separatorStyles} />
+            </TouchableOpacity>
           </View>
-          <View style={styles.btnViewStyle}>{renderNotificationType(val.cta, index)}</View>
-          <View style={styles.separatorStyles} />
-        </TouchableOpacity>
-      </View>
-    );
+        );
+      }
+    }
   };
 
   const ctaNamesMethod = (event: any) => {
@@ -464,41 +490,19 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
     return CTAName;
   };
 
-  const renderNotificationType = (event: any, index: number) => {
-    if (event) {
-      const CTAName = ctaNamesMethod(event);
-
-      const actionLink = decodeURIComponent(event.actionLink);
-
-      let routing = actionLink.replace('apollopatients://', '');
-      routing = routing.replace('w://p/open_url_in_browser/', '');
-      const data = routing.split('?');
-      routing = data[0];
-
-      if (
-        routing === 'Consult' ||
-        routing === 'Medicine' ||
-        routing === 'Test' ||
-        routing === 'Speciality' ||
-        routing === 'Doctor' ||
-        routing === 'DoctorSearch' ||
-        routing === 'MedicineSearch' ||
-        routing === 'MedicineDetail'
-      ) {
-        return (
-          <Text
-            onPress={() => {
-              console.log(index, 'index');
-              updateSelectedView(index);
-              handleOpenURL(event.actionLink);
-            }}
-            style={styles.btnStyle}
-          >
-            {`GO TO ${CTAName}`}
-          </Text>
-        );
-      }
-    }
+  const renderNotificationType = (CTAName: any, actionLink: string, index: number) => {
+    return (
+      <Text
+        onPress={() => {
+          console.log(index, 'index');
+          updateSelectedView(index);
+          handleOpenURL(actionLink);
+        }}
+        style={styles.btnStyle}
+      >
+        {`GO TO ${CTAName}`}
+      </Text>
+    );
   };
 
   const handleOpenURL = (event: any) => {

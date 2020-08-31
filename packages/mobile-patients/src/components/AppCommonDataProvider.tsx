@@ -66,6 +66,8 @@ export interface AppCommonDataContextProps {
     | null;
   savePatientDetails: any;
   setSavePatientDetails: ((items: any) => void) | null;
+  doctorJoinedChat: boolean;
+  setDoctorJoinedChat: ((isJoined: boolean) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -106,6 +108,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setisUHID: null,
   savePatientDetails: [],
   setSavePatientDetails: null,
+  doctorJoinedChat: false,
+  setDoctorJoinedChat: null
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -162,6 +166,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [needHelpToContactInMessage, setNeedHelpToContactInMessage] = useState<
     AppCommonDataContextProps['needHelpToContactInMessage']
   >('');
+
+  const [doctorJoinedChat, setDoctorJoinedChat] = useState<boolean>(false);
 
   const setLocationDetails: AppCommonDataContextProps['setLocationDetails'] = (locationDetails) => {
     _setLocationDetails(locationDetails);
@@ -267,6 +273,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setAppointmentsPersonalized,
         savePatientDetails,
         setSavePatientDetails,
+        doctorJoinedChat,
+        setDoctorJoinedChat
       }}
     >
       {props.children}

@@ -72,6 +72,7 @@ export const clientRoutes = {
   myMembership: () => '/partners/hdfc-mymembership',
   membershipPlanLocked: () => '/partners/hdfc-membership-locked',
   membershipPlanDetail: () => '/partners/hdfc-membership-plan-detail',
+  covidProtocol: () => '/medical-condition',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

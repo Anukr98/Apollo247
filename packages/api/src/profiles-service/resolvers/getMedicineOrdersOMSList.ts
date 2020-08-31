@@ -61,8 +61,10 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     bookingSource: BOOKING_SOURCE
     medicineOrderLineItems: [MedicineOrderOMSLineItems]
     medicineOrderPayments: [MedicineOrderOMSPayments]
+    medicineOrderRefunds: [MedicineOrderOMSRefunds]
     medicineOrdersStatus: [MedicineOrdersOMSStatus]
     medicineOrderShipments: [MedicineOrderOMSShipment]
+    medicineOrderAddress: MedicineOrderOMSAddress
     patient: Patient
     customerComment: String
     alertStore: Boolean
@@ -120,6 +122,63 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     responseCode: String
     responseMessage: String
     bankTxnId: String
+    healthCreditsRedeemed: Float
+    healthCreditsRedemptionRequest: BlockUserPointsResponse
+    paymentMode: PAYMENT_METHODS_REVERSE
+    refundAmount: Float
+  }
+
+  type MedicineOrderOMSRefunds {
+    refundAmount: Float
+    refundStatus: REFUND_STATUS
+    refundId: String
+    orderId: String
+    createdDate: DateTime
+  }
+
+  enum REFUND_STATUS {
+    REFUND_REQUEST_RAISED
+    REFUND_FAILED
+    REFUND_SUCCESSFUL
+    REFUND_REQUEST_NOT_RAISED
+  }
+
+  enum PAYMENT_METHODS_REVERSE {
+    DEBIT_CARD
+    CREDIT_CARD
+    NET_BANKING
+    PAYTM_WALLET
+    CREDIT_CARD_EMI
+    UPI
+    PAYTM_POSTPAID
+    COD
+  }
+
+  type BlockUserPointsResponse {
+    Success: Boolean
+    Message: String
+    RequestNumber: String
+    AvailablePoints: Float
+    BalancePoints: Float
+    RedeemedPoints: Float
+    PointsValue: Float
+  }
+
+  type MedicineOrderOMSAddress {
+    id: ID
+    name: String
+    mobileNumber: String
+    addressLine1: String
+    addressLine2: String
+    addressType: PATIENT_ADDRESS_TYPE
+    city: String
+    otherAddressType: String
+    state: String
+    zipcode: String
+    landmark: String
+    latitude: Float
+    longitude: Float
+    stateCode: String
   }
 
   type RecommendedProductsListResult {
@@ -137,6 +196,15 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     status: String
     mou: String
     imageBaseUrl: String
+    id: String
+    is_in_stock: Boolean
+    small_image: String
+    thumbnail: String
+    type_id: String
+    quantity: String
+    isShippable: String
+    MaxOrderQty: Int
+    urlKey: String
   }
 
   type ProductAvailabilityResult {
@@ -161,6 +229,11 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     checkIfProductsOnline(productSkus: [String]): ProductAvailabilityResult!
     updateMedicineDataRedis(limit: Int, offset: Int): getMedicineOrdersListResult
     getLatestMedicineOrder(patientUhid: String!): MedicineOrderOMSDetailsResult!
+    getMedicineOrderOMSDetailsWithAddress(
+      patientId: String
+      orderAutoId: Int
+      billNumber: String
+    ): MedicineOrderOMSDetailsResult!
   }
 `;
 
@@ -191,6 +264,16 @@ type RecommendedProducts = {
   status: string;
   mou: string;
   imageBaseUrl: string;
+  urlKey: string;
+  description: string;
+  id: string;
+  is_in_stock: boolean;
+  small_image: string;
+  thumbnail: string;
+  type_id: string;
+  quantity: string;
+  isShippable: string;
+  MaxOrderQty: number;
 };
 
 type ProductAvailabilityResult = {
@@ -210,7 +293,8 @@ const getMedicineOrdersOMSList: Resolver<
   MedicineOrdersOMSListResult
 > = async (parent, args, { profilesDb, mobileNumber }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(args.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(args.patientId);
+
   log(
     'profileServiceLogger',
     `getMedicineOrdersOMSList:${mobileNumber}`,
@@ -218,6 +302,7 @@ const getMedicineOrdersOMSList: Resolver<
     JSON.stringify(patientDetails),
     ''
   );
+
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -225,14 +310,19 @@ const getMedicineOrdersOMSList: Resolver<
   if (mobileNumber != patientDetails.mobileNumber) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const medicineOrdersList: any = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
+  let medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
     primaryPatientIds
   );
+
+  //to know later if medicineOrderList is updated or not
+  const saveCount = medicineOrdersList.length;
+
   let uhid = patientDetails.uhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
+
   if (uhid) {
     log(
       'profileServiceLogger',
@@ -241,6 +331,7 @@ const getMedicineOrdersOMSList: Resolver<
       mobileNumber,
       ''
     );
+
     const ordersResp = await fetch(
       process.env.PRISM_GET_OFFLINE_ORDERS ? process.env.PRISM_GET_OFFLINE_ORDERS + uhid : '',
       {
@@ -329,11 +420,19 @@ const getMedicineOrdersOMSList: Resolver<
       });
     }
   }
+
   function GetSortOrder(a: MedicineOrders, b: MedicineOrders) {
     return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
   }
-  medicineOrdersList.sort(GetSortOrder);
-  return { medicineOrdersList };
+
+  // needs to sort bcoz of updated medicineOrdersList orders
+  if (saveCount != medicineOrdersList.length) {
+    medicineOrdersList.sort(GetSortOrder);
+  }
+
+  return {
+    medicineOrdersList,
+  };
 };
 
 const getMedicineOrderOMSDetails: Resolver<
@@ -343,101 +442,30 @@ const getMedicineOrderOMSDetails: Resolver<
   MedicineOrderOMSDetailsResult
 > = async (parent, args, { profilesDb }) => {
   let medicineOrderDetails: any = '';
+  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   if (args.billNumber && args.billNumber != '' && args.billNumber != '0' && args.patientId) {
     const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-    const patientDetails = await patientRepo.findById(args.patientId);
+    const patientDetails = await patientRepo.getPatientDetails(args.patientId);
     if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-    let uhid = patientDetails.uhid;
-    if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
-    else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
-    const ordersResp = await fetch(
-      process.env.PRISM_GET_OFFLINE_ORDERS ? process.env.PRISM_GET_OFFLINE_ORDERS + uhid : '',
-      {
-        method: 'GET',
-        headers: {},
-      }
+    const uhid = patientDetails.uhid;
+
+    medicineOrderDetails = await medicineOrdersRepo.getOfflineOrderDetails(
+      args.patientId,
+      uhid,
+      args.billNumber
     );
-    const textRes = await ordersResp.text();
-    const offlineOrdersList = JSON.parse(textRes);
-    console.log(offlineOrdersList.response, offlineOrdersList.response.length, 'offlineOrdersList');
-    if (offlineOrdersList.errorCode == 0) {
-      //const orderDate = fromUnixTime(offlineOrdersList.response[0].billDateTime)
-      offlineOrdersList.response.forEach((order: any) => {
-        if (order.billNo == args.billNumber) {
-          const lineItems: any[] = [];
-          if (order.lineItems) {
-            order.lineItems.forEach((item: any) => {
-              const itemDets = {
-                isMedicine: 1,
-                medicineSKU: item.itemId,
-                medicineName: item.itemName,
-                mrp: item.mrp,
-                mou: 1,
-                price: item.totalMrp,
-                quantity: item.saleQty,
-                isPrescriptionNeeded: 0,
-              };
-              lineItems.push(itemDets);
-            });
-          }
-          const offlineShopAddress = {
-            storename: order.siteName,
-            address: order.address,
-            workinghrs: '24 Hrs',
-            phone: order.mobileNo,
-            city: order.city,
-            state: order.state,
-            zipcode: '500033',
-            stateCode: 'TS',
-          };
-          const offlineList: any = {
-            id: ApiConstants.OFFLINE_ORDERID,
-            orderAutoId: order.id,
-            shopAddress: JSON.stringify(offlineShopAddress),
-            createdDate:
-              format(getUnixTime(order.billDateTime) * 1000, 'yyyy-MM-dd') +
-              'T' +
-              format(getUnixTime(order.billDateTime) * 1000, 'hh:mm:ss') +
-              '.000Z',
-            billNumber: order.billNo,
-            medicineOrderLineItems: lineItems,
-            currentStatus: MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
-            orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
-            patientId: args.patientId,
-            deliveryType: MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-            estimatedAmount: order.mrpTotal,
-            productDiscount: order.discountTotal,
-            redeemedAmount: order.giftTotal,
-            medicineOrdersStatus: [
-              {
-                id: ApiConstants.OFFLINE_ORDERID,
-                statusDate:
-                  format(getUnixTime(order.billDateTime) * 1000, 'yyyy-MM-dd') +
-                  'T' +
-                  format(getUnixTime(order.billDateTime) * 1000, 'hh:mm:ss') +
-                  '.000Z',
-                orderStatus: MEDICINE_ORDER_STATUS.PURCHASED_IN_STORE,
-                hideStatus: true,
-              },
-            ],
-            medicineOrderShipments: [],
-          };
-          medicineOrderDetails = offlineList;
-        }
-      });
-    }
+
     if (medicineOrderDetails == '' || medicineOrderDetails == null) {
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
     }
   } else {
     const patientRepo = profilesDb.getCustomRepository(PatientRepository);
     if (args.patientId) {
-      const patientDetails = await patientRepo.findById(args.patientId);
+      const patientDetails = await patientRepo.getPatientDetails(args.patientId);
       if (!patientDetails) {
         throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
       }
     }
-    const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
     //let medicineOrderDetails;
     if (!args.patientId) {
       medicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsByOderId(
@@ -480,13 +508,15 @@ const getMedicineOrderOMSDetails: Resolver<
 
 const getMedicineOMSPaymentOrder: Resolver<
   null,
-  {},
+  {}, //for consistency response though not mandatory
   ProfilesServiceContext,
   MedicineOrdersOMSListResult
 > = async (parent, args, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const medicineOrdersList = await medicineOrdersRepo.getPaymentMedicineOrders();
-  return { medicineOrdersList };
+  return {
+    medicineOrdersList,
+  };
 };
 
 const getRecommendedProductsList: Resolver<
@@ -517,7 +547,7 @@ const getRecommendedProductsList: Resolver<
       //console.log(productsList.response[k], 'redis keys length');
       const key = 'medicine:sku:' + productsList.response.recommendations[k];
       const skuDets = await hgetAllCache(key);
-      if (skuDets && skuDets.status == 'Enabled') {
+      if (skuDets && (skuDets.status == 'Enabled' || skuDets.status == 'enabled')) {
         const recommendedProducts: RecommendedProducts = {
           productImage: decodeURIComponent(skuDets.gallery_images),
           productPrice: skuDets.price,
@@ -529,6 +559,16 @@ const getRecommendedProductsList: Resolver<
           status: skuDets.status,
           mou: skuDets.mou,
           imageBaseUrl: ApiConstants.REDIS_IMAGE_URL.toString(),
+          urlKey: skuDets.url_key,
+          description: skuDets.description,
+          id: '',
+          is_in_stock: true,
+          small_image: skuDets.base_image,
+          thumbnail: skuDets.base_image,
+          type_id: '',
+          quantity: skuDets.qty,
+          isShippable: skuDets.sell_online,
+          MaxOrderQty: 0,
         };
         recommendedProductsList.push(recommendedProducts);
       }
@@ -677,6 +717,7 @@ const getLatestMedicineOrder: Resolver<
   let uhid = args.patientUhid;
   if (process.env.NODE_ENV == 'local') uhid = ApiConstants.CURRENT_UHID.toString();
   else if (process.env.NODE_ENV == 'dev') uhid = ApiConstants.CURRENT_UHID.toString();
+
   const listResp = await fetch(
     process.env.PRISM_GET_RECOMMENDED_PRODUCTS
       ? process.env.PRISM_GET_RECOMMENDED_PRODUCTS + uhid
@@ -763,6 +804,66 @@ const getLatestMedicineOrder: Resolver<
   return { medicineOrderDetails: offlineList };
 };
 
+const getMedicineOrderOMSDetailsWithAddress: Resolver<
+  null,
+  { patientId: string; orderAutoId: number; billNumber: string },
+  ProfilesServiceContext,
+  MedicineOrderOMSDetailsResult
+> = async (parent, args, { profilesDb }) => {
+  let medicineOrderDetails: any = '';
+  let patientDetails, uhid;
+  if (args.patientId) {
+    const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+    patientDetails = await patientRepo.getPatientDetails(args.patientId);
+    if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+    uhid = patientDetails.uhid;
+  }
+  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  if (args.billNumber && args.billNumber != '0' && uhid) {
+    medicineOrderDetails = await medicineOrdersRepo.getOfflineOrderDetails(
+      args.patientId,
+      uhid,
+      args.billNumber
+    );
+
+    if (medicineOrderDetails == '' || medicineOrderDetails == null) {
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+    }
+  } else {
+    //let medicineOrderDetails;
+    medicineOrderDetails = await medicineOrdersRepo.getMedicineOrderDetailsWithAddressByOrderId(
+      args.orderAutoId
+    );
+    if (!medicineOrderDetails) {
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+    }
+    if (medicineOrderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
+      const reasonCode = medicineOrderDetails.medicineOrdersStatus.find((orderStatusObj: any) => {
+        return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED;
+      });
+      if (reasonCode) {
+        try {
+          const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
+            reasonCode.statusMessage
+          );
+          if (cancellationReasons) {
+            reasonCode.statusMessage = cancellationReasons.displayMessage;
+          } else {
+            reasonCode.statusMessage = '';
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      }
+    }
+    medicineOrderDetails.medicineOrdersStatus.sort((a: any, b: any) => {
+      return getUnixTime(new Date(a.statusDate)) - getUnixTime(new Date(b.statusDate));
+    });
+  }
+  medicineOrderDetails.patient = patientDetails;
+  return { medicineOrderDetails };
+};
+
 export const getMedicineOrdersOMSListResolvers = {
   Query: {
     getMedicineOrdersOMSList,
@@ -772,5 +873,6 @@ export const getMedicineOrdersOMSListResolvers = {
     checkIfProductsOnline,
     updateMedicineDataRedis,
     getLatestMedicineOrder,
+    getMedicineOrderOMSDetailsWithAddress,
   },
 };

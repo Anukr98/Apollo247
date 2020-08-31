@@ -85,11 +85,10 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
 
   getQueueItemsByDoctorIds(ids: string[]) {
     return this.createQueryBuilder('consultQueueItem')
-      .innerJoinAndMapOne(
+      .innerJoinAndSelect(
         'consultQueueItem.appointment',
-        Appointment,
         'appointment',
-        'consultQueueItem.appointmentId = appointment.id::VARCHAR'
+        'consultQueueItem.appointmentId = appointment.id'
       )
       .where('appointment.appointmentState NOT IN (:...appointmentStates)', {
         appointmentStates: [APPOINTMENT_STATE.AWAITING_RESCHEDULE],
@@ -97,6 +96,36 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .andWhere('appointment.appointmentDateTime >= :date', { date: new Date() })
       .andWhere('consultQueueItem.doctorId IN (:...ids)', { ids })
       .andWhere('consultQueueItem.isActive = :isactive', { isactive: true })
+      .getMany();
+  }
+
+  async getConsultQueue(doctorId: string, isActive: boolean = true) {
+    let limit = parseInt(
+      process.env.INACTIVE_CONSULT_QUEUE_LIMT ? process.env.INACTIVE_CONSULT_QUEUE_LIMT : '1',
+      10
+    );
+    if (isActive) {
+      limit = 1000;
+    }
+    return await this.createQueryBuilder('consultQueueItem')
+      .select([
+        'consultQueueItem.id',
+        'consultQueueItem.doctorId',
+        'consultQueueItem.isActive',
+        'appointment',
+      ])
+      .innerJoinAndSelect(
+        'consultQueueItem.appointment',
+        'appointment',
+        'consultQueueItem.appointmentId = appointment.id'
+      )
+      .where('consultQueueItem.doctorId = :doctorId', { doctorId })
+      .andWhere('consultQueueItem.isActive = :isActive', { isActive })
+      .andWhere('appointment.appointmentState NOT IN (:...appointmentStates)', {
+        appointmentStates: [APPOINTMENT_STATE.AWAITING_RESCHEDULE],
+      })
+      .orderBy('consultQueueItem.id')
+      .limit(limit)
       .getMany();
   }
 }

@@ -23,7 +23,6 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -262,14 +261,6 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
           />
         </ErrorBoundary>
       </SafeAreaView>
-      {/* {displayAddProfile && (
-        <AddProfile
-          setdisplayoverlay={setDisplayAddProfile}
-          setProfile={(profile) => {
-            setProfile(profile);
-          }}
-        />
-      )} */}
     </View>
   );
 };

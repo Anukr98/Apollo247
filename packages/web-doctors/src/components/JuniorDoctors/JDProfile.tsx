@@ -124,6 +124,7 @@ export const JDProfile: React.FC = (props) => {
       skip: !currentDoctor,
       variables: {
         doctorId: currentDoctor!.id,
+        isActive: true,
       },
       fetchPolicy: 'no-cache',
     }

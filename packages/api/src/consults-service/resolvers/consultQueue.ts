@@ -46,7 +46,7 @@ export const consultQueueTypeDefs = gql`
   }
 
   extend type Query {
-    getConsultQueue(doctorId: String!): GetConsultQueueResult!
+    getConsultQueue(doctorId: String!, isActive: Boolean): GetConsultQueueResult!
   }
 
   type JuniorDoctorsList {
@@ -132,9 +132,10 @@ const buildGqlConsultQueue = async (doctorId: string, context: ConsultServiceCon
 
   inActiveQueueItems.reverse();
   let dbConsultQueue: ConsultQueueItem[] = [...activeQueueItems, ...inActiveQueueItems];
-
   //Get all the appointments of the queue items
   const appointmentIds = dbConsultQueue.map((queueItem) => queueItem.appointmentId);
+  if (!appointmentIds.length) { return []; }
+
   const appointments = await apptRepo.getAppointmentsByIds(appointmentIds);
 
   //Map the appointments with appointment ids
@@ -180,6 +181,7 @@ type GetConsultQueueResult = {
 };
 type GetConsultQueueInput = {
   doctorId: string;
+  isActive: boolean;
 };
 
 const getConsultQueue: Resolver<
@@ -187,11 +189,36 @@ const getConsultQueue: Resolver<
   GetConsultQueueInput,
   ConsultServiceContext,
   GetConsultQueueResult
-> = async (parent, { doctorId }, context) => {
-  const { docRepo, mobileNumber } = getRepos(context);
+> = async (parent, { doctorId, isActive }, context) => {
+  const { docRepo, cqRepo, mobileNumber, patRepo } = getRepos(context);
   await checkAuth(docRepo, mobileNumber, doctorId);
-  const consultQueue = await buildGqlConsultQueue(doctorId, context);
-  return { consultQueue };
+  const result: GetConsultQueueResult = { consultQueue: [] };
+  let consultQueueItems: ConsultQueueItem[] = [];
+  consultQueueItems = await cqRepo.getConsultQueue(doctorId, isActive);
+  const patientIds = consultQueueItems.map((item) => item.appointment.patientId);
+  let patients: Patient[] = [];
+  if (patientIds && patientIds.length > 0) {
+    patients = await patRepo.getPatientDetailsByIds(patientIds);
+  }
+  let patient: Patient;
+  consultQueueItems.map((item) => {
+    const res: GqlConsultQueueItem = {
+      id: item.id,
+      isActive: item.isActive,
+      patient,
+      appointment: item.appointment,
+    };
+    result.consultQueue.push(res);
+  });
+
+  patients.map((patient) => {
+    result.consultQueue.map((item) => {
+      if (patient.id == item.appointment.patientId) {
+        item.patient = patient;
+      }
+    });
+  });
+  return result;
 };
 
 type AddToConsultQueueInput = { appointmentId: string };
@@ -393,9 +420,9 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
         isJdAllowed === false
           ? ApiConstants.NOT_APPLICABLE
           : ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
-              '{0}',
-              ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
-            ),
+            '{0}',
+            ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+          ),
       isJdConsultStarted: true,
     };
     caseSheetRepo.savecaseSheet(casesheetAttrs);

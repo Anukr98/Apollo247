@@ -18,7 +18,10 @@ import { useMutation } from 'react-apollo-hooks';
 import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
 import { Alerts } from 'components/Alerts/Alerts';
+import { Route } from 'react-router-dom';
 import { webengageUserLoginTracking, webengageUserDetailTracking } from '../webEngageTracking';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { PARTNER_TP_REF_CODES } from 'helpers/constants';
 
 const isoDatePattern = 'yyyy-MM-dd';
 const clientDatePattern = 'dd/MM/yyyy';
@@ -185,6 +188,9 @@ const useStyles = makeStyles((theme: Theme) => {
     labelText: {
       fontSize: 13,
     },
+    required: {
+      color: 'red',
+    },
   });
 });
 
@@ -198,19 +204,25 @@ interface FormValues {
   gender: Patient['gender'];
 }
 
+export interface customSignUp {
+  heading: string | null;
+  subHeading: string | null;
+  showMascot: boolean | null;
+  referral: string | null;
+}
+
 export interface NewProfileProps {
   patient: Patient;
   onClose: () => void;
+  customSignUp?: customSignUp;
 }
 
 export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const classes = useStyles({});
   const { patient } = props;
   const urlParams = new URLSearchParams(window.location.search);
-  const tpRefCode = urlParams.get('tp_ref_code') ? String(urlParams.get('tp_ref_code')) : '';
 
   const [showProfileSuccess, setShowProfileSuccess] = useState<boolean>(false);
-  const [referralCode, setReferralCode] = useState<string>(tpRefCode);
   const [isValidReferralCode, setIsValidReferralCode] = useState<boolean>(true);
   const updatePatient = useMutation<UpdatePatient, UpdatePatientVariables>(UPDATE_PATIENT);
   const [alertMessage, setAlertMessage] = useState<string>('');
@@ -221,309 +233,345 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
     return <ProfileSuccess onSubmitClick={() => props.onClose()} />;
   }
 
+  let signUpObject = {
+    heading: 'Welcome to apollo 24/7',
+    subHeading:
+      'Enter your detailsLet us quickly get to know you so that we can get you the best help :)',
+    showMascot: true,
+    referral: '',
+  };
+
+  signUpObject = props.customSignUp ? props.customSignUp : signUpObject;
+  const tpRefCode = urlParams.get('tp_ref_code')
+    ? String(urlParams.get('tp_ref_code'))
+    : signUpObject.referral;
+  const [referralCode, setReferralCode] = useState<string>(tpRefCode);
+
   return (
     <div className={classes.signUpPop} data-cypress="NewProfile">
-      <Formik
-        initialValues={{
-          firstName: patient.firstName || '',
-          lastName: patient.lastName || '',
-          dateOfBirth: convertIsoDateToClientDate(patient.dateOfBirth) || '',
-          emailAddress: patient.emailAddress || '',
-          gender: patient.gender || null,
-        }}
-        onSubmit={(values) => {
-          return updatePatient({
-            variables: {
-              patientInput: {
-                id: patient.id,
-                firstName: values.firstName,
-                lastName: values.lastName,
-                gender: values.gender,
-                dateOfBirth: convertClientDateToIsoDate(values.dateOfBirth),
-                emailAddress: _isEmpty(values.emailAddress) ? null : values.emailAddress,
-                relation: Relation.ME,
-                referralCode: referralCode.length > 0 ? referralCode : null,
-              },
-            },
-          })
-            .then(() => {
-              /* webengage code start */
-              webengageUserLoginTracking(patient.mobileNumber);
-              webengageUserDetailTracking({
-                firstName: values.firstName,
-                lastName: values.lastName,
-                gender: values.gender,
-                emailAddress: values.emailAddress,
-                dateOfBirth: values.dateOfBirth,
-                mobileNumber: patient.mobileNumber,
-              });
-              /* webengage code end */
-              setShowProfileSuccess(true);
-            })
-            .catch((error) => {
-              console.error(error);
-              setIsAlertOpen(true);
-              setAlertMessage('Something went wrong :(');
-            });
-        }}
-        render={({
-          isSubmitting,
-          dirty,
-          touched,
-          errors,
-          values,
-          setFieldValue,
-        }: // handleSubmit,
-        FormikProps<FormValues>) => {
-          const showError = (fieldName: keyof FormValues) =>
-            !_isEmpty(values[fieldName]) && touched[fieldName] && Boolean(errors[fieldName]);
-          const requiredFields: (keyof FormValues)[] = [
-            'firstName',
-            'lastName',
-            'dateOfBirth',
-            'gender',
-          ];
-          const formIsUntouched = !dirty;
-          const formHasErrors = !_isEmpty(errors);
-          const someRequiredFieldsMissing = requiredFields.some((field) => _isEmpty(values[field]));
-          const submitIsDisabled =
-            formIsUntouched ||
-            formHasErrors ||
-            someRequiredFieldsMissing ||
-            (referralCode.length > 0 && !isValidReferralCode);
-          return (
-            <Form>
-              <div className={classes.mascotIcon}>
-                <img src={require('images/ic-mascot.png')} alt="" />
-              </div>
-              <div className={classes.customScrollBar}>
-                <div className={classes.signinGroup}>
-                  <Typography variant="h2">
-                    welcome <br /> to apollo 24/7
-                  </Typography>
-                  <p>Let us quickly get to know you so that we can get you the best help :)</p>
-                  <div className={classes.formGroup}>
-                    <Field
-                      name="firstName"
-                      validate={(name: string) =>
-                        isNameValid(name) ? undefined : 'Invalid first name'
-                      }
-                      render={({ field }: FieldProps<{ firstName: string }>) => (
-                        <FormControl
-                          className={`${classes.formControl} ${classes.noMargin}`}
-                          fullWidth
-                        >
-                          <AphTextField
-                            {...field}
-                            label="Full Name"
-                            placeholder="First Name"
-                            error={showError('firstName')}
-                            inputProps={{ maxLength: 20 }}
-                          />
-                          {showError('firstName') ? (
-                            <FormHelperText
-                              className={
-                                showError('firstName') ? classes.showMessage : classes.hideMessage
-                              }
-                              component="div"
-                              error={true}
+      <Route
+        render={({ history }) => (
+          <Formik
+            initialValues={{
+              firstName: patient.firstName || '',
+              lastName: patient.lastName || '',
+              dateOfBirth: convertIsoDateToClientDate(patient.dateOfBirth) || '',
+              emailAddress: patient.emailAddress || '',
+              gender: patient.gender || null,
+            }}
+            onSubmit={(values) => {
+              return updatePatient({
+                variables: {
+                  patientInput: {
+                    id: patient.id,
+                    firstName: values.firstName,
+                    lastName: values.lastName,
+                    gender: values.gender,
+                    dateOfBirth: convertClientDateToIsoDate(values.dateOfBirth),
+                    emailAddress: _isEmpty(values.emailAddress) ? null : values.emailAddress,
+                    relation: Relation.ME,
+                    referralCode: referralCode.length > 0 ? referralCode : null,
+                  },
+                },
+              })
+                .then(() => {
+                  /* webengage code start */
+                  webengageUserLoginTracking(patient.mobileNumber);
+                  webengageUserDetailTracking({
+                    firstName: values.firstName,
+                    lastName: values.lastName,
+                    gender: values.gender,
+                    emailAddress: values.emailAddress,
+                    dateOfBirth: values.dateOfBirth,
+                    mobileNumber: patient.mobileNumber,
+                  });
+                  /* webengage code end */
+                  if (props.customSignUp.referral === 'HDFCBANK') {
+                    history.push(clientRoutes.membershipHdfc());
+                  } else {
+                    setShowProfileSuccess(true);
+                  }
+                })
+                .catch((error) => {
+                  console.error(error);
+                  setIsAlertOpen(true);
+                  setAlertMessage('Something went wrong :(');
+                });
+            }}
+            render={({
+              isSubmitting,
+              dirty,
+              touched,
+              errors,
+              values,
+              setFieldValue,
+            }: // handleSubmit,
+            FormikProps<FormValues>) => {
+              const showError = (fieldName: keyof FormValues) =>
+                !_isEmpty(values[fieldName]) && touched[fieldName] && Boolean(errors[fieldName]);
+              const requiredFields: (keyof FormValues)[] = [
+                'firstName',
+                'lastName',
+                'dateOfBirth',
+                'gender',
+              ];
+              const formIsUntouched = !dirty;
+              const formHasErrors = !_isEmpty(errors);
+              const someRequiredFieldsMissing = requiredFields.some((field) =>
+                _isEmpty(values[field])
+              );
+              const submitIsDisabled =
+                formIsUntouched ||
+                formHasErrors ||
+                someRequiredFieldsMissing ||
+                (referralCode.length > 0 && !isValidReferralCode);
+              return (
+                <Form>
+                  {!signUpObject.showMascot ? (
+                    <></>
+                  ) : (
+                    <div className={classes.mascotIcon}>
+                      <img src={require('images/ic-mascot.png')} alt="" />
+                    </div>
+                  )}
+                  <div className={classes.customScrollBar}>
+                    <div className={classes.signinGroup}>
+                      <Typography variant="h2">{signUpObject.heading}</Typography>
+                      <p>{signUpObject.subHeading}</p>
+                      <div className={classes.formGroup}>
+                        <Field
+                          name="firstName"
+                          validate={(name: string) =>
+                            isNameValid(name) ? undefined : 'Invalid first name'
+                          }
+                          render={({ field }: FieldProps<{ firstName: string }>) => (
+                            <FormControl
+                              className={`${classes.formControl} ${classes.noMargin}`}
+                              fullWidth
                             >
-                              {errors.firstName}
-                            </FormHelperText>
-                          ) : (
-                            ''
-                          )}
-                        </FormControl>
-                      )}
-                    />
-
-                    <Field
-                      name="lastName"
-                      validate={(name: string) =>
-                        isNameValid(name) ? undefined : 'Invalid last name'
-                      }
-                      render={({ field }: FieldProps<{ firstName: string }>) => (
-                        <FormControl className={classes.formControl} fullWidth>
-                          <AphTextField
-                            {...field}
-                            placeholder="Last Name"
-                            error={showError('lastName')}
-                            inputProps={{ maxLength: 20 }}
-                          />
-                          {showError('lastName') ? (
-                            <FormHelperText
-                              className={
-                                showError('lastName') ? classes.showMessage : classes.hideMessage
-                              }
-                              component="div"
-                              error={true}
-                            >
-                              {errors.lastName}
-                            </FormHelperText>
-                          ) : (
-                            ''
-                          )}
-                        </FormControl>
-                      )}
-                    />
-
-                    <Field
-                      name="dateOfBirth"
-                      validate={(dob: string) =>
-                        isDobValid(dob) ? undefined : 'Invalid date of birth'
-                      }
-                      render={({ field }: FieldProps<{ firstName: string }>) => (
-                        <FormControl className={classes.formControl} fullWidth>
-                          <AphTextField
-                            {...field}
-                            label="Date Of Birth"
-                            placeholder="dd/mm/yyyy"
-                            error={showError('dateOfBirth')}
-                            inputProps={{ type: 'text', maxLength: 10 }}
-                          />
-                          {showError('dateOfBirth') ? (
-                            <FormHelperText
-                              className={
-                                showError('dateOfBirth') ? classes.showMessage : classes.hideMessage
-                              }
-                              component="div"
-                              error={true}
-                            >
-                              {errors.dateOfBirth}
-                            </FormHelperText>
-                          ) : (
-                            ''
-                          )}
-                        </FormControl>
-                      )}
-                    />
-
-                    <Field
-                      name="gender"
-                      render={({ field }: FieldProps<{ gender: Gender }>) => (
-                        <FormControl className={classes.formControl}>
-                          <label>Gender</label>
-                          <Grid container spacing={2} className={classes.btnGroup}>
-                            {orderedGenders.map((gender) => (
-                              <Grid item xs={4} sm={4} key={gender}>
-                                <AphButton
-                                  color="secondary"
-                                  value={gender}
-                                  className={`${classes.genderBtns} ${
-                                    values.gender === gender ? classes.btnActive : ''
-                                  }`}
-                                  onClick={(e) =>
-                                    setFieldValue('gender', e.currentTarget.value as Gender)
-                                  }
-                                >
-                                  {_upperFirst(_toLower(gender))}
-                                </AphButton>
-                              </Grid>
-                            ))}
-                          </Grid>
-                        </FormControl>
-                      )}
-                    />
-
-                    <Field
-                      name="emailAddress"
-                      validate={(email: string) =>
-                        _isEmpty(email) || isEmailValid(email) ? undefined : 'Invalid email address'
-                      }
-                      render={({ field }: FieldProps<{ emailAddress: string }>) => (
-                        <FormControl className={classes.formControl} fullWidth>
-                          <AphTextField
-                            {...field}
-                            label="Email Address (Optional)"
-                            placeholder="name@email.com"
-                            error={showError('emailAddress')}
-                          />
-                          {showError('emailAddress') ? (
-                            <FormHelperText
-                              className={
-                                showError('emailAddress')
-                                  ? classes.showMessage
-                                  : classes.hideMessage
-                              }
-                              component="div"
-                              error={true}
-                            >
-                              {errors.emailAddress}
-                            </FormHelperText>
-                          ) : (
-                            ''
-                          )}
-                        </FormControl>
-                      )}
-                    />
-
-                    <div className={classes.referralCodeWrapper}>
-                      <img src={require('images/ic_gift.svg')} alt="" />
-                      <div className={classes.enterCode}>
-                        <div className={classes.labelText}>
-                          Do You Have A Referral Code? (Optional)
-                        </div>
-                        <FormControl className={classes.refFormControl} fullWidth>
-                          <AphTextField
-                            className={classes.inputField}
-                            placeholder="Enter Referral Code"
-                            value={referralCode}
-                            onChange={(e) => {
-                              const inputValue = e.target.value;
-                              setReferralCode(inputValue);
-
-                              const isValidReferralCode = inputValue.length > 0;
-                              setIsValidReferralCode(isValidReferralCode);
-                            }}
-                            inputProps={{ type: 'text', maxLength: 25 }}
-                            disabled={
-                              tpRefCode.length > 0 && tpRefCode === 'SBIYONO' ? true : false
-                            }
-                          />
-                          {!isValidReferralCode ? (
-                            <FormHelperText
-                              className={classes.errorMessage}
-                              component="div"
-                              error={true}
-                            >
-                              Referral code should be minimum 1 character.
-                            </FormHelperText>
-                          ) : (
-                            referralCode.length > 0 && (
-                              <img
-                                className={classes.tickIcon}
-                                src={require('images/ic_check_white.svg')}
-                                alt=""
+                              <AphTextField
+                                {...field}
+                                label="Full Name"
+                                placeholder="First Name"
+                                error={showError('firstName')}
+                                inputProps={{ maxLength: 20 }}
                               />
-                            )
+                              {showError('firstName') ? (
+                                <FormHelperText
+                                  className={
+                                    showError('firstName')
+                                      ? classes.showMessage
+                                      : classes.hideMessage
+                                  }
+                                  component="div"
+                                  error={true}
+                                >
+                                  {errors.firstName}
+                                </FormHelperText>
+                              ) : (
+                                ''
+                              )}
+                            </FormControl>
                           )}
-                        </FormControl>
+                        />
+
+                        <Field
+                          name="lastName"
+                          validate={(name: string) =>
+                            isNameValid(name) ? undefined : 'Invalid last name'
+                          }
+                          render={({ field }: FieldProps<{ firstName: string }>) => (
+                            <FormControl className={classes.formControl} fullWidth>
+                              <AphTextField
+                                {...field}
+                                placeholder="Last Name"
+                                error={showError('lastName')}
+                                inputProps={{ maxLength: 20 }}
+                              />
+                              {showError('lastName') ? (
+                                <FormHelperText
+                                  className={
+                                    showError('lastName')
+                                      ? classes.showMessage
+                                      : classes.hideMessage
+                                  }
+                                  component="div"
+                                  error={true}
+                                >
+                                  {errors.lastName}
+                                </FormHelperText>
+                              ) : (
+                                ''
+                              )}
+                            </FormControl>
+                          )}
+                        />
+
+                        <Field
+                          name="dateOfBirth"
+                          validate={(dob: string) =>
+                            isDobValid(dob) ? undefined : 'Invalid date of birth'
+                          }
+                          render={({ field }: FieldProps<{ firstName: string }>) => (
+                            <FormControl className={classes.formControl} fullWidth>
+                              <AphTextField
+                                {...field}
+                                label="Date Of Birth"
+                                placeholder="dd/mm/yyyy"
+                                error={showError('dateOfBirth')}
+                                inputProps={{ type: 'text', maxLength: 10 }}
+                              />
+                              {showError('dateOfBirth') ? (
+                                <FormHelperText
+                                  className={
+                                    showError('dateOfBirth')
+                                      ? classes.showMessage
+                                      : classes.hideMessage
+                                  }
+                                  component="div"
+                                  error={true}
+                                >
+                                  {errors.dateOfBirth}
+                                </FormHelperText>
+                              ) : (
+                                ''
+                              )}
+                            </FormControl>
+                          )}
+                        />
+
+                        <Field
+                          name="gender"
+                          render={({ field }: FieldProps<{ gender: Gender }>) => (
+                            <FormControl className={classes.formControl}>
+                              <label>Gender</label>
+                              <Grid container spacing={2} className={classes.btnGroup}>
+                                {orderedGenders.map((gender) => (
+                                  <Grid item xs={4} sm={4} key={gender}>
+                                    <AphButton
+                                      color="secondary"
+                                      value={gender}
+                                      className={`${classes.genderBtns} ${
+                                        values.gender === gender ? classes.btnActive : ''
+                                      }`}
+                                      onClick={(e) =>
+                                        setFieldValue('gender', e.currentTarget.value as Gender)
+                                      }
+                                    >
+                                      {_upperFirst(_toLower(gender))}
+                                    </AphButton>
+                                  </Grid>
+                                ))}
+                              </Grid>
+                            </FormControl>
+                          )}
+                        />
+
+                        <Field
+                          name="emailAddress"
+                          validate={(email: string) =>
+                            _isEmpty(email) || isEmailValid(email)
+                              ? undefined
+                              : 'Invalid email address'
+                          }
+                          render={({ field }: FieldProps<{ emailAddress: string }>) => (
+                            <FormControl className={classes.formControl} fullWidth>
+                              <AphTextField
+                                {...field}
+                                label="Email Address (Optional)"
+                                placeholder="name@email.com"
+                                error={showError('emailAddress')}
+                              />
+                              {showError('emailAddress') ? (
+                                <FormHelperText
+                                  className={
+                                    showError('emailAddress')
+                                      ? classes.showMessage
+                                      : classes.hideMessage
+                                  }
+                                  component="div"
+                                  error={true}
+                                >
+                                  {errors.emailAddress}
+                                </FormHelperText>
+                              ) : (
+                                ''
+                              )}
+                            </FormControl>
+                          )}
+                        />
+
+                        <div className={classes.referralCodeWrapper}>
+                          <img src={require('images/ic_gift.svg')} alt="" />
+                          <div className={classes.enterCode}>
+                            <div className={classes.labelText}>
+                              Do You Have A Referral Code? (Optional)
+                            </div>
+                            <FormControl className={classes.refFormControl} fullWidth>
+                              <AphTextField
+                                className={classes.inputField}
+                                placeholder="Enter Referral Code"
+                                value={referralCode}
+                                onChange={(e) => {
+                                  const inputValue = e.target.value;
+                                  setReferralCode(inputValue);
+
+                                  const isValidReferralCode = inputValue.length > 0;
+                                  setIsValidReferralCode(isValidReferralCode);
+                                }}
+                                inputProps={{ type: 'text', maxLength: 25 }}
+                                disabled={
+                                  tpRefCode.length > 0 && PARTNER_TP_REF_CODES.includes(tpRefCode)
+                                    ? true
+                                    : false
+                                }
+                              />
+                              {!isValidReferralCode ? (
+                                <FormHelperText
+                                  className={classes.errorMessage}
+                                  component="div"
+                                  error={true}
+                                >
+                                  Referral code should be minimum 1 character.
+                                </FormHelperText>
+                              ) : (
+                                referralCode.length > 0 && (
+                                  <img
+                                    className={classes.tickIcon}
+                                    src={require('images/ic_check_white.svg')}
+                                    alt=""
+                                  />
+                                )
+                              )}
+                            </FormControl>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <div className={classes.actions}>
-                <AphButton
-                  fullWidth
-                  type="submit"
-                  disabled={submitIsDisabled}
-                  variant="contained"
-                  color="primary"
-                >
-                  {isSubmitting ? <CircularProgress size={22} color="secondary" /> : 'Submit'}
-                </AphButton>
-              </div>
-              <Alerts
-                setAlertMessage={setAlertMessage}
-                alertMessage={alertMessage}
-                isAlertOpen={isAlertOpen}
-                setIsAlertOpen={setIsAlertOpen}
-              />
-            </Form>
-          );
-        }}
+                  <div className={classes.actions}>
+                    <AphButton
+                      fullWidth
+                      type="submit"
+                      disabled={submitIsDisabled}
+                      variant="contained"
+                      color="primary"
+                    >
+                      {isSubmitting ? <CircularProgress size={22} color="secondary" /> : 'Submit'}
+                    </AphButton>
+                  </div>
+                  <Alerts
+                    setAlertMessage={setAlertMessage}
+                    alertMessage={alertMessage}
+                    isAlertOpen={isAlertOpen}
+                    setIsAlertOpen={setIsAlertOpen}
+                  />
+                </Form>
+              );
+            }}
+          />
+        )}
       />
     </div>
   );

@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
+import { HdfcCallDoctor } from 'components/HdfcCallDoctor';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -87,28 +88,28 @@ export const PatientsOverview: React.FC = () => {
         })
         .catch((error) => {
           setIsAlertOpen(true);
-          setAlertMessage(error);
+          setAlertMessage('Something went wrong :(');
           setLoading(false);
         });
     }
   }, [currentPatient]);
   return (
     <div className={classes.root}>
-      {/* <Grid spacing={2} container>
-        <Grid item xs={12} sm={6}> */}
-      <Link to={clientRoutes.appointments()}>
-        <div className={classes.card} title={'View upcoming appointments'}>
-          <div className={classes.totalConsults}>
-            {loading ? <CircularProgress size={10} /> : activeAppointments}
-          </div>
-          <span>Upcoming Appointments</span>
-          <span className={classes.rightArrow}>
-            <img src={require('images/ic_arrow_right.svg')} />
-          </span>
-        </div>
-      </Link>
-      {/* </Grid> */}
-      {/* <Grid item xs={12} sm={6}>
+      <Grid spacing={2} container>
+        <Grid item xs={12} sm={6}>
+          <Link to={clientRoutes.appointments()}>
+            <div className={classes.card} title={'View upcoming appointments'}>
+              <div className={classes.totalConsults}>
+                {loading ? <CircularProgress size={10} /> : activeAppointments}
+              </div>
+              <span>Upcoming Appointments</span>
+              <span className={classes.rightArrow}>
+                <img src={require('images/ic_arrow_right.svg')} />
+              </span>
+            </div>
+          </Link>
+        </Grid>
+        {/* <Grid item xs={12} sm={6}>
           <div className={classes.card}>
             <div className={classes.totalConsults}>
               {loading ? <CircularProgress size={10} /> : activeAppointments}
@@ -119,13 +120,16 @@ export const PatientsOverview: React.FC = () => {
             </span>
           </div>
         </Grid> */}
-      {/* </Grid> */}
-      <Alerts
-        setAlertMessage={setAlertMessage}
-        alertMessage={alertMessage}
-        isAlertOpen={isAlertOpen}
-        setIsAlertOpen={setIsAlertOpen}
-      />
+        <Grid>
+          <HdfcCallDoctor patientPhone={currentPatient.mobileNumber} />
+          <Alerts
+            setAlertMessage={setAlertMessage}
+            alertMessage={alertMessage}
+            isAlertOpen={isAlertOpen}
+            setIsAlertOpen={setIsAlertOpen}
+          />
+        </Grid>
+      </Grid>
     </div>
   );
 };

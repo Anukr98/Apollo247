@@ -17,6 +17,25 @@ export const GET_PATIENTS = gql`
   }
 `;
 
+export const GET_PATIENT_BY_MOBILE_NUMBER = gql`
+  query GetPatientByMobileNumber($mobileNumber: String) {
+    getPatientByMobileNumber(mobileNumber: $mobileNumber) {
+      patients {
+        id
+        mobileNumber
+        firstName
+        lastName
+        relation
+        gender
+        uhid
+        dateOfBirth
+        emailAddress
+        photoUrl
+      }
+    }
+  }
+`;
+
 export const GET_CURRENT_PATIENTS = gql`
   query GetCurrentPatients {
     getCurrentPatients {
@@ -155,6 +174,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             medicineConsumptionDurationInDays
             medicineDosage
             id
+            medicineCustomDetails
             medicineConsumptionDurationUnit
             medicineFormTypes
             medicineFrequency
@@ -395,6 +415,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           # labTestDate
           date
           labTestRefferedBy
+          siteDisplayName
           additionalNotes
           observation
           labTestResults {
@@ -428,6 +449,61 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         errorCode
         errorMsg
         errorType
+      }
+    }
+  }
+`;
+export const GET_RECOMMENDED_PRODUCTS_LIST = gql`
+  query getRecommendedProductsList($patientUhid: String!) {
+    getRecommendedProductsList(patientUhid: $patientUhid) {
+      recommendedProducts {
+        productSku
+        productName
+        productImage
+        productPrice
+        productSpecialPrice
+        isPrescriptionNeeded
+        categoryName
+        status
+        mou
+        imageBaseUrl
+        id
+        is_in_stock
+        small_image
+        thumbnail
+        type_id
+        quantity
+        isShippable
+        MaxOrderQty
+        urlKey
+      }
+    }
+  }
+`;
+
+export const GET_LATEST_MEDICINE_ORDER = gql`
+  query getLatestMedicineOrder($patientUhid: String!) {
+    getLatestMedicineOrder(patientUhid: $patientUhid) {
+      medicineOrderDetails {
+        id
+        createdDate
+        orderAutoId
+        billNumber
+        shopAddress
+        prescriptionImageUrl
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          mrp
+          quantity
+        }
+        currentStatus
+        medicineOrderShipments {
+          medicineOrderInvoice {
+            itemDetails
+          }
+        }
       }
     }
   }
@@ -710,6 +786,47 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
       errorMessage
       orderId
       displayId
+    }
+  }
+`;
+
+export const GET_SUBSCRIPTIONS_OF_USER_BY_STATUS = gql`
+  query getSubscriptionsOfUserByStatus($user: UserIdentification, $status: [String]) {
+    getSubscriptionsOfUserByStatus(user: $user, status: $status) {
+      code
+      message
+      success
+      response {
+        _id
+        status
+        coupon_availed
+        group_plan {
+          plan_id
+          name
+          status
+          group {
+            name
+            is_active
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const CREATE_SUBSCRIPTION = gql`
+  mutation createSubscription($userSubscription: CreateUserSubscriptionInput) {
+    createSubscription(userSubscription: $userSubscription) {
+      code
+      success
+      message
+      response {
+        status
+        transaction_date_time
+        group_plan {
+          name
+        }
+      }
     }
   }
 `;
