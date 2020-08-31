@@ -360,7 +360,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
   };
 
   const removeCartItems: MedicineCartContextProps['removeCartItems'] = (arrSku) => {
-    const items = cartItems.filter((item) => !arrSku.includes(item.id || Number(item.sku)));
+    const items = cartItems.filter((item) => !arrSku.includes(item.sku));
     setCartItems(items);
     setIsCartUpdated(true);
   };
