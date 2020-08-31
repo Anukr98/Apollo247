@@ -486,21 +486,20 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             if (deliveryDate) {
               setCartItems!(updatedCartItems)
               const serviceableSkus = updatedCartItems.map((item) => {
-                const serviceItem: any = {};
-                serviceItem.artCode = item.id;
-                serviceItem.deliverydate = deliveryDate;
-                serviceItem.siteId = g(tatRes, 'data', 'response', 'storeCode')
-                return serviceItem;
+                return {
+                  artCode: item.id,
+                  deliverydate: deliveryDate,
+                  siteId: g(tatRes, 'data', 'response', 'storeCode')
+                }
               })
               if (serviceableSkus.length && !unserviceableSkus.length) {
-
                 const inventoryDataRes = g(tatRes, 'data', 'response', 'items') || [];
                 const availableInventory = inventoryDataRes.filter(({ qty }) => qty > 0).map((item) => {
-                  const inventoryItem: any = {};
-                  inventoryItem.itemId = item.sku;
-                  inventoryItem.qty = item.qty;
-                  inventoryItem.mrp = item.qty;
-                  return inventoryItem;
+                  return {
+                    itemId: item.sku,
+                    qty: item.qty,
+                    mrp: item.qty
+                  }
                 })
                 if (availableInventory && availableInventory.length) {
                   fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, availableInventory);
