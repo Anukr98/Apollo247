@@ -132,10 +132,7 @@ const endCallNotification: Resolver<
     doctorName = doctor.displayName;
   }
 
-  if(!args.patientId){
-    args.patientId = callDetails.appointment.patientId;
-  }
-
+  args.patientId = args.patientId || callDetails.appointment.patientId;
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
   const voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
     args.patientId,
