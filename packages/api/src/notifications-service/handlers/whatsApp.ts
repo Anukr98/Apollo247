@@ -56,8 +56,9 @@ export const sendDoctorNotificationWhatsapp = async (
       format(new Date(), 'yyyy-MM-dd hh:mm') + '\n ' + phoneNumber + ' - ' + templateName;
     content +=
       'Scenario key undefined \n------------------------------------------------------------------------------------\n';
-    fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
+    fs.appendFile(assetsDir + '/' + fileName, content, (err) => { });
   } else {
+    console.log(`Scenario key`, process.env.WHATSAPP_SCENARIO_KEY);
     scenarioKey = process.env.WHATSAPP_SCENARIO_KEY;
     const url = process.env.WHATSAPP_SEND_URL ? process.env.WHATSAPP_SEND_URL : '';
     if (templateName == ApiConstants.WHATSAPP_DOC_SUMMARY) {
@@ -117,7 +118,7 @@ export const sendDoctorNotificationWhatsapp = async (
         response.status;
       content +=
         '\n------------------------------------------------------------------------------------\n';
-      fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
+      fs.appendFile(assetsDir + '/' + fileName, content, (err) => { });
       console.log(response, 'response');
     }
   }
