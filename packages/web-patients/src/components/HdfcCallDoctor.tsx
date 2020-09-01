@@ -12,9 +12,20 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: ' 0px 5px 20px rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       padding: 16,
-      margin: '20px 0 0',
-      display: 'none',
-
+      margin: '0px 0 0 auto',
+      width: 400,
+      position: 'relative',
+      '&:before': {
+        content: "''",
+        position: 'absolute',
+        top: 0,
+        left: -50,
+        borderLeft: '1px solid #ccc',
+        bottom: 0,
+        [theme.breakpoints.down('sm')]: {
+          display: 'none',
+        },
+      },
       '& h2': {
         fontSize: 14,
         fontWeight: 600,
@@ -28,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#FC9916',
       },
       [theme.breakpoints.down('xs')]: {
-        display: 'block',
+        width: '100%',
       },
     },
     hdcContent: {},
