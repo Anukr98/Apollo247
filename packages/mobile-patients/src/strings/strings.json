@@ -325,7 +325,8 @@
     "pending": "PAYMENT_PENDING_PG",
     "refund": "PAYMENT_REFUND",
     "aborted": "PAYMENT_ABORTED",
-    "askPermission": "Please grant overlay permission to receive calls from doctor"
+    "askPermission1": "To make sure that you do not miss the call from Dr.",
+    "askPermission2": " for your consultation, Apollo 247 need to have permission to display full screen notifications."
   },
   "PharmaPayment": {
     "success": "TXN_SUCCESS",
