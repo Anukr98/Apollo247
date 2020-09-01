@@ -10,8 +10,6 @@ import {
   MyHealthFocused,
   Person,
   PersonFocused,
-  ShoppingCart,
-  ShoppingCartFocused,
   TestsIconFocused,
   TestsIcon,
   MedicineIcon,
