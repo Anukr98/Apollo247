@@ -10,6 +10,7 @@ import { log } from 'customWinstonLogger';
 import { Connection } from 'typeorm';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { isNotificationAllowed } from 'notifications-service/handlers/common';
+import fetch from 'node-fetch';
 
 type MedicineOrderRefundNotificationInput = {
   refundAmount: number;

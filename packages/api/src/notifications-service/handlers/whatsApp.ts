@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { ApiConstants } from 'ApiConstants';
+import fetch from 'node-fetch';
 
 export const sendNotificationWhatsapp = async (
   mobileNumber: string,
