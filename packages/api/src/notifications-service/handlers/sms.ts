@@ -22,7 +22,8 @@ type MedicineOrderRefundNotificationInput = {
 };
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
-  if (!isNotificationAllowed(mobileNumber)) {
+  const isWhitelisted = await isNotificationAllowed(mobileNumber);
+  if (!isWhitelisted) {
     return;
   }
   //Adding Apollo 247 string at starting of the body
