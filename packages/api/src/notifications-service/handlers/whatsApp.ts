@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { ApiConstants } from 'ApiConstants';
+import fetch from 'node-fetch';
 
 export const sendNotificationWhatsapp = async (
   mobileNumber: string,
@@ -42,7 +43,8 @@ export const sendDoctorNotificationWhatsapp = async (
   phoneNumber: string,
   templateData: string[]
 ) => {
-  if (!isNotificationAllowed(phoneNumber)) {
+  const isWhitelisted = await isNotificationAllowed(phoneNumber);
+  if (!isWhitelisted) {
     return;
   }
   let scenarioKey = '';
@@ -84,6 +86,25 @@ export const sendDoctorNotificationWhatsapp = async (
           Authorization: process.env.WHATSAPP_AUTH_HEADER ? process.env.WHATSAPP_AUTH_HEADER : '',
         },
       });
+      let content =
+        format(new Date(), 'yyyy-MM-dd hh:mm') +
+        '\n ' +
+        templateData[0] +
+        '-' +
+        phoneNumber +
+        ' - ' +
+        templateName +
+        ' - ' +
+        process.env.WHATSAPP_DOCTOR_NUMBER +
+        ' - ' +
+        process.env.WHATSAPP_AUTH_HEADER +
+        ' - ' +
+        scenarioKey +
+        ' - ' +
+        response.status;
+      content +=
+        '\n------------------------------------------------------------------------------------\n';
+      fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
       console.log(JSON.stringify(response, null, 1), 'response');
     } else {
       const response = await fetch(url, {

@@ -2991,7 +2991,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             <li
                               onClick={() => {
                                 if(!isNewprescriptionLoading){
-                                  console.log(isNewprescriptionLoading, '111111')
                                   setIsNewprescriptionLoading(true);
                                   props.createSDCasesheetCall(true);
                                 }

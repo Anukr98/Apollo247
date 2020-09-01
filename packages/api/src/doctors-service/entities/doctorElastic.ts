@@ -5,6 +5,7 @@ import { format, addMinutes, addDays } from "date-fns";
 import { AphError } from "AphError";
 import { AphErrorMessages } from "@aph/universal/dist/AphErrorMessages";
 import { omit } from "lodash";
+import { ApiConstants, elasticConsts } from "ApiConstants";
 
 export async function addDoctorElastic(allDocsInfo: Doctor) {
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
@@ -186,6 +187,7 @@ export async function updateDoctorSlotStatusES(
     const updateDoc: RequestParams.Update = {
         index: process.env.ELASTIC_INDEX_DOCTORS,
         id: doctorId,
+        retry_on_conflict: elasticConsts.ELASTIC_CONFLICT_RETRY_COUNT,
         body: {
             script: {
                 source:
