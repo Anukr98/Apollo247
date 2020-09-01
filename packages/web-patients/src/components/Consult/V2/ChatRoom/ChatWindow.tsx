@@ -2120,7 +2120,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.startConsultMsg ||
                     messageDetails.message === autoMessageStrings.covertVideoMsg ||
                     messageDetails.message === autoMessageStrings.covertAudioMsg ||
-                    messageDetails.message === autoMessageStrings.appointmentComplete
+                    messageDetails.message === autoMessageStrings.appointmentComplete ||
+                    messageDetails.message === autoMessageStrings.jdThankyou ||
+                    messageDetails.message === autoMessageStrings.startConsultjr ||
+                    messageDetails.message === autoMessageStrings.languageQue
                   ) {
                     return null;
                   }
@@ -2136,6 +2139,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         setModalOpen={(flag: boolean) => setModalOpen(flag)}
                         setImgPrevUrl={(url: string) => setImgPrevUrl(url)}
                         chatTime={messageDetails.messageDate}
+                        doctorName={
+                          (appointmentDetails &&
+                            appointmentDetails.doctorInfo &&
+                            appointmentDetails.doctorInfo.displayName) ||
+                          ''
+                        }
                       />
                     );
                   } else {

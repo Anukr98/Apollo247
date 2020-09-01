@@ -483,3 +483,7 @@ export const migrationDir = {
   doctors_db: 'dist/migration/doctors/**/*.js',
   profiles_db: 'dist/migration/profiles/**/*.js',
 };
+
+export const elasticConsts = {
+  ELASTIC_CONFLICT_RETRY_COUNT: 5
+}

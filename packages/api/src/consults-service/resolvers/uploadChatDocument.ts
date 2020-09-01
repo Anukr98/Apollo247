@@ -254,7 +254,7 @@ const removeChatDocument: Resolver<
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
   //access check
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   //check for valid document id

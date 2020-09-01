@@ -716,6 +716,10 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             vertical: 'top',
             horizontal: 'right',
           }}
+          onBlur={() => {
+            setShowCancelPopup(false);
+            setIsCancelPopoverOpen(false);
+          }}
           classes={{ paper: classes.bottomPopover }}
         >
           <div className={classes.successPopoverWindow}>

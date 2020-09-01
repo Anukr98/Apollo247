@@ -1753,10 +1753,10 @@ export async function sendDoctorAppointmentNotification(
           console.log('notification results saved');
         });
         //}
-        console.log(notificationResponse, 'notificationResponse');
+        console.log(JSON.stringify(notificationResponse, null, 1), 'notificationResponse');
       })
       .catch((error: JSON) => {
-        console.log('PushNotification Failed::' + error);
+        console.log('PushNotification Failed::' + JSON.stringify(error));
         throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
       });
   }
