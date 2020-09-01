@@ -1372,6 +1372,8 @@ export async function sendNotification(
 
     prescriptionDeeplink = `${notificationBody} ${ApiConstants.PRESCRIPTION_CLICK_HERE} ${prescriptionDeeplink.replace(ApiConstants.PRESCRIPTION_DEEPLINK_PLACEHOLDER, caseSheetId)}`;
 
+    log(`consultServiceLogger`, `FinalDeeplink: ${prescriptionDeeplink}`, `${NotificationType.PRESCRIPTION_READY}`, '', '');
+    console.log(`FinalDeeplink: ${prescriptionDeeplink}`);
     sendNotificationSMS(patientDetails.mobileNumber, prescriptionDeeplink);
 
     // not sending whatsapp, leaving code here for future implementation purposes
