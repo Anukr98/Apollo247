@@ -263,11 +263,10 @@ interface SearchObject {
 }
 
 interface AppointmentFilterObject {
-  consultType: string[] | null;
   appointmentStatus: string[] | null;
   availability: string[] | null;
-  gender: string[] | null;
   doctorsList: string[] | null;
+  specialtyList: string[] | null;
 }
 
 const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
@@ -284,7 +283,14 @@ const genderList = [
 const languageList = ['English', 'Telugu'];
 const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
 const consultType = ['Online', 'Clinic Visit'];
-const appointmentStatus = ['New', 'Completed', 'Cancelled', 'Rescheduled', 'Follow-Up'];
+const appointmentStatus = [
+  'Active',
+  'Completed',
+  'Cancelled',
+  'Rescheduled',
+  'Follow-Up',
+  'Follow - Up Chat',
+];
 
 // End of doctors list based on specialty related changes
 

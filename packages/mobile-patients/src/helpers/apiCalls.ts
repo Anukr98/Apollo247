@@ -123,21 +123,15 @@ export interface TatApiInput247 {
   pincode: string;
   lat: number;
   lng: number;
-  sku: string;
+  items: {
+    sku: string;
+    qty: number;
+  }[];
 }
 
 export interface ServiceAbilityApiInput {
   pincode: string;
   sku: string;
-}
-
-export interface GetDeliveryTimeResponse {
-  tat: {
-    artCode: string;
-    deliverydate: string;
-    siteId: string;
-  }[];
-  errorMSG?: string;
 }
 
 export interface GetAvailabilityResponse247 {
@@ -150,9 +144,16 @@ export interface GetAvailabilityResponse247 {
 
 export interface GetTatResponse247 {
   response: {
+    items: {
+      sku: string;
+      qty: number;
+      mrp: number;
+      exist: boolean
+    }[];
     storeCode: string;
     tat: string;
     tatU: number;
+    inventoryExist: boolean;
   };
   errorMSG?: string;
 }
@@ -578,8 +579,8 @@ export const getDeliveryTAT247 = (
 ) : Promise<AxiosResponse<GetTatResponse247>> => {
   const CancelToken = Axios.CancelToken;
   cancelGetDeliveryTAT247 && cancelGetDeliveryTAT247();
-  const url = `${config.UATTAT_CONFIG[0]}/tat?sku=${params.sku}&pincode=${params.pincode}&lat=${params.lat}&lng=${params.lng}`
-  return Axios.post(url, {}, {
+  const url = `${config.UATTAT_CONFIG[0]}/tat`
+  return Axios.post(url, params, {
     headers: {
       Authorization: config.UATTAT_CONFIG[1],
     },

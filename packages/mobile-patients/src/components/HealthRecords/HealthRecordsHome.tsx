@@ -97,11 +97,11 @@ const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   filterViewStyle: {
+    height: 60,
     ...theme.viewStyles.lightSeparatorStyle,
     marginHorizontal: 20,
     marginBottom: 20,
     flexDirection: 'row',
-    paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
@@ -135,12 +135,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   notifyUsersTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(11),
+    ...theme.fonts.IBMPlexSansSemiBold(12),
     color: '#0087BA',
     fontWeight: '500',
-    paddingRight: 10,
-    lineHeight: 15,
-    flex: 1,
+    paddingHorizontal: 20,
+    marginBottom: 16,
   },
 });
 
@@ -515,6 +514,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           unsetloaderDisplay={true}
         ></ProfileList>
         <Text style={styles.descriptionTextStyle}>{strings.health_records_home.description}</Text>
+        <Text style={styles.notifyUsersTextStyle}>
+          {strings.health_records_home.add_note_to_notify_users}
+        </Text>
       </View>
     );
   };
@@ -565,9 +567,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderFilter = () => {
     return (
       <View style={styles.filterViewStyle}>
-        <Text style={styles.notifyUsersTextStyle}>
-          {strings.health_records_home.add_note_to_notify_users}
-        </Text>
         <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
           <Filter />
         </TouchableOpacity>

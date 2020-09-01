@@ -1,4 +1,8 @@
 import { isNotificationAllowed } from 'notifications-service/handlers/common';
+import { format } from 'date-fns';
+import path from 'path';
+import fs from 'fs';
+import { ApiConstants } from 'ApiConstants';
 
 export const sendNotificationWhatsapp = async (
   mobileNumber: string,
@@ -41,45 +45,81 @@ export const sendDoctorNotificationWhatsapp = async (
   if (!isNotificationAllowed(phoneNumber)) {
     return;
   }
-  const scenarioUrl = process.env.WHATSAPP_SCENARIO_URL ? process.env.WHATSAPP_SCENARIO_URL : '';
-  const scenarioResponse = await fetch(scenarioUrl, {
-    method: 'POST',
-    body: JSON.stringify({
-      name: 'New Scenario',
-      flow: [
-        {
-          from: process.env.WHATSAPP_DOCTOR_NUMBER ? process.env.WHATSAPP_DOCTOR_NUMBER : '',
-          channel: 'WHATSAPP',
+  let scenarioKey = '';
+  const fileName = process.env.NODE_ENV + '_whatsapp_' + format(new Date(), 'yyyyMMdd') + '.txt';
+  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
+  if (!process.env.WHATSAPP_SCENARIO_KEY || process.env.WHATSAPP_SCENARIO_KEY == '') {
+    let content =
+      format(new Date(), 'yyyy-MM-dd hh:mm') + '\n ' + phoneNumber + ' - ' + templateName;
+    content +=
+      'Scenario key undefined \n------------------------------------------------------------------------------------\n';
+    fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
+  } else {
+    console.log(`Scenario key`, process.env.WHATSAPP_SCENARIO_KEY);
+    scenarioKey = process.env.WHATSAPP_SCENARIO_KEY;
+    const url = process.env.WHATSAPP_SEND_URL ? process.env.WHATSAPP_SEND_URL : '';
+    if (templateName == ApiConstants.WHATSAPP_DOC_SUMMARY) {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          scenarioKey,
+          destinations: [{ to: { phoneNumber } }],
+          whatsApp: {
+            templateName,
+            mediaTemplateData: {
+              header: {
+                documentUrl: templateData[0],
+                documentFilename: templateData[1],
+              },
+              body: { placeholders: [templateData[2], templateData[3]] },
+            },
+            language: 'en',
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: process.env.WHATSAPP_AUTH_HEADER ? process.env.WHATSAPP_AUTH_HEADER : '',
         },
-      ],
-      default: true,
-    }),
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: process.env.WHATSAPP_AUTH_HEADER ? process.env.WHATSAPP_AUTH_HEADER : '',
-    },
-  });
-  const textRes = await scenarioResponse.text();
-  const keyResp = JSON.parse(textRes);
-  console.log(keyResp.key, 'scenario key');
-  const url = process.env.WHATSAPP_SEND_URL ? process.env.WHATSAPP_SEND_URL : '';
-  if (keyResp) {
-    const response = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify({
-        scenarioKey: keyResp.key,
-        destinations: [{ to: { phoneNumber } }],
-        whatsApp: {
-          templateName,
-          templateData,
-          language: 'en',
+      });
+      console.log(JSON.stringify(response, null, 1), 'response');
+    } else {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          scenarioKey,
+          destinations: [{ to: { phoneNumber } }],
+          whatsApp: {
+            templateName,
+            templateData,
+            language: 'en',
+          },
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: process.env.WHATSAPP_AUTH_HEADER ? process.env.WHATSAPP_AUTH_HEADER : '',
         },
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: process.env.WHATSAPP_AUTH_HEADER ? process.env.WHATSAPP_AUTH_HEADER : '',
-      },
-    });
-    console.log(response, 'response');
+      });
+      let content =
+        format(new Date(), 'yyyy-MM-dd hh:mm') +
+        '\n ' +
+        phoneNumber +
+        ' - ' +
+        templateName +
+        ' - ' +
+        process.env.WHATSAPP_DOCTOR_NUMBER +
+        ' - ' +
+        process.env.WHATSAPP_AUTH_HEADER +
+        ' - ' +
+        scenarioKey +
+        ' - ' +
+        response.status;
+      content +=
+        '\n------------------------------------------------------------------------------------\n';
+      fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
+      console.log(JSON.stringify(response, null, 1), 'response');
+    }
   }
 };

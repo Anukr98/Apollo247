@@ -917,6 +917,7 @@ export const GET_CASESHEET = gql`
         status
         unreadMessagesCount
         caseSheet {
+          version
           consultType
           doctorType
           diagnosis {
@@ -936,9 +937,13 @@ export const GET_CASESHEET = gql`
           followUpAfterInDays
           followUp
           medicinePrescription {
+            id
             medicineName
-            medicineTimings
+            medicineDosage
+            medicineToBeTaken
             medicineInstructions
+            medicineTimings
+            medicineUnit
             medicineConsumptionDurationInDays
             medicineConsumptionDuration
             medicineFormTypes
@@ -946,6 +951,9 @@ export const GET_CASESHEET = gql`
             medicineConsumptionDurationUnit
             routeOfAdministration
             medicineCustomDosage
+            medicineCustomDetails
+            genericName
+            includeGenericNameInPrescription
           }
           otherInstructions {
             instruction
@@ -1580,7 +1588,7 @@ export const ADD_CHAT_DOCUMENT = gql`
 `;
 
 export const UPDATE_DOCTOR_CHAT_DAYS = gql`
-  mutation updateDoctorChatDays($doctorId: String!, $chatDays: Int!) {
+  mutation UpdateDoctorChatDays($doctorId: String!, $chatDays: Int!) {
     updateDoctorChatDays(doctorId: $doctorId, chatDays: $chatDays) {
       isError
       response

@@ -511,12 +511,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
 
   const fetchDeliveryTime = async (pinCode: string) => {
     setTatLoading(true);
-    await checkTatAvailability(
-      data.sku,
-      pinCode,
-      pharmaAddressDetails.lat,
-      pharmaAddressDetails.lng
-    )
+    const items = [{ sku: data.sku, qty: medicineQty }];
+    await checkTatAvailability(items, pinCode, pharmaAddressDetails.lat, pharmaAddressDetails.lng)
       .then((res: any) => {
         try {
           if (res && res.data) {

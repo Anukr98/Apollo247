@@ -438,6 +438,14 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             title: 'Husband',
           },
           {
+            key: Relation.BROTHER,
+            title: 'Brother',
+          },
+          {
+            key: Relation.SISTER,
+            title: 'Sister',
+          },
+          {
             key: Relation.GRANDFATHER,
             title: 'Grandfather',
           },
@@ -470,6 +478,14 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           {
             key: Relation.WIFE,
             title: 'Wife',
+          },
+          {
+            key: Relation.BROTHER,
+            title: 'Brother',
+          },
+          {
+            key: Relation.SISTER,
+            title: 'Sister',
           },
           {
             key: Relation.GRANDMOTHER,
