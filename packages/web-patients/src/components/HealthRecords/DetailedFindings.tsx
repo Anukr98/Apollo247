@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     panelHeader: {
       padding: '4px 20px',
-      fontSize: 16,
+      fontSize: 18,
       fontWeight: 500,
       color: '#02475b',
       textTransform: 'uppercase',
@@ -73,6 +73,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     resultGroup: {
+      display: 'flex',
       '& label': {
         fontSize: 12,
         fontWeight: 500,
@@ -85,6 +86,7 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: 1.43,
       letterSpacing: 0.04,
       color: '#0087ba',
+      marginLeft: 'auto',
     },
     resultError: {
       color: '#d10001',
@@ -129,21 +131,7 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
                   <div className={classes.cardTitle}>{detail.parameterName}</div>
                   <div className={classes.cardSection}>
                     <Grid container spacing={2}>
-                      <Grid item xs={6} sm={4}>
-                        <div className={classes.resultGroup}>
-                          <label>Result</label>
-                          <div className={classes.result}>{detail.result || 'N/A'}</div>
-                        </div>
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <div className={classes.resultGroup}>
-                          <label>Units</label>
-                          <div className={classes.result}>
-                            {unit ? unit.value : detail.unit || 'N/A'}
-                          </div>
-                        </div>
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
+                      <Grid item xs={12} sm={12}>
                         <div className={classes.resultGroup}>
                           <label>Normal Range</label>
                           <div className={`${classes.result}`}>
@@ -151,6 +139,20 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
                               ? detail.range
                               : `${detail.minimum || ''} - ${detail.maximum || ''}`}
                           </div>
+                        </div>
+                      </Grid>
+                      <Grid item xs={12} sm={12}>
+                        <div className={classes.resultGroup}>
+                          <label>Units</label>
+                          <div className={classes.result}>
+                            {unit ? unit.value : detail.unit || 'N/A'}
+                          </div>
+                        </div>
+                      </Grid>
+                      <Grid item xs={12} sm={12}>
+                        <div className={classes.resultGroup}>
+                          <label>Result</label>
+                          <div className={classes.result}>{detail.result || 'N/A'}</div>
                         </div>
                       </Grid>
                     </Grid>

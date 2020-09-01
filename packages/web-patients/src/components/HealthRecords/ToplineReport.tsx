@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     panelHeader: {
       padding: '4px 20px',
-      fontSize: 16,
+      fontSize: 18,
       fontWeight: 500,
       color: '#02475b',
       textTransform: 'uppercase',
