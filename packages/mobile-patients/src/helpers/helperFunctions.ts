@@ -1004,16 +1004,20 @@ export const callPermissions = (doRequest?: () => void) => {
       'microphone',
       'Enable microphone from settings for calls during consultation.',
       () => {
-        permissionHandler(
-          'storage',
-          'Enable storage from settings for uploading documents during consultation.',
-          () => {
-            doRequest && doRequest();
-          }
-        );
+        doRequest && doRequest();
       }
     );
   });
+};
+
+export const storagePermissions = (doRequest?: () => void) => {
+  permissionHandler(
+    'storage',
+    'Enable storage from settings for uploading documents during consultation.',
+    () => {
+      doRequest && doRequest();
+    }
+  );
 };
 
 export const InitiateAppsFlyer = (
@@ -1378,13 +1382,9 @@ export const addPharmaItemToCart = (
     ],
   })
     .then((res) => {
-      const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
-      if (deliveryDate) {
-        if (isDeliveryDateWithInXDays(deliveryDate)) {
-          addToCart();
-        } else {
-          navigate();
-        }
+      const availability = g(res, 'data', 'response', '0' as any, 'exist');
+      if (availability) {
+        addToCart();
       } else {
         addToCart();
       }
