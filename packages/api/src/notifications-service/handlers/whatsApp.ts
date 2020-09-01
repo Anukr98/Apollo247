@@ -43,7 +43,8 @@ export const sendDoctorNotificationWhatsapp = async (
   phoneNumber: string,
   templateData: string[]
 ) => {
-  if (!isNotificationAllowed(phoneNumber)) {
+  const isWhitelisted = await isNotificationAllowed(mobileNumber);
+  if (!isWhitelisted) {
     return;
   }
   let scenarioKey = '';
@@ -57,7 +58,7 @@ export const sendDoctorNotificationWhatsapp = async (
       format(new Date(), 'yyyy-MM-dd hh:mm') + '\n ' + phoneNumber + ' - ' + templateName;
     content +=
       'Scenario key undefined \n------------------------------------------------------------------------------------\n';
-    fs.appendFile(assetsDir + '/' + fileName, content, (err) => { });
+    fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
   } else {
     console.log(`Scenario key`, process.env.WHATSAPP_SCENARIO_KEY);
     scenarioKey = process.env.WHATSAPP_SCENARIO_KEY;
@@ -119,7 +120,7 @@ export const sendDoctorNotificationWhatsapp = async (
         response.status;
       content +=
         '\n------------------------------------------------------------------------------------\n';
-      fs.appendFile(assetsDir + '/' + fileName, content, (err) => { });
+      fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
       console.log(JSON.stringify(response, null, 1), 'response');
     }
   }
