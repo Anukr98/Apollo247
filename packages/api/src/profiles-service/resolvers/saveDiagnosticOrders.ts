@@ -549,6 +549,7 @@ const SaveDiagnosticOrder: Resolver<
         'Longitude': '0',
         'SlotID': diagnosticOrderInput.employeeSlotId,
         'ReferedDoctor': 'Self',
+        'DoctorID': 0,
         'TestDetail': new Array()
       }
 
