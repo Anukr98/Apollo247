@@ -3021,7 +3021,7 @@ export const MedicinePrescription: React.FC = () => {
                 variant="contained"
                 color="primary"
                 classes={{ root: classes.updateSymptom }}
-                onClick={() => updateMedicine(index)}
+                onClick={() => deletemedicine(index)}
               >
                 <Typography className="orange">REMOVE</Typography>
               </AphButton>,
