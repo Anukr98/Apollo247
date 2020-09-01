@@ -126,14 +126,24 @@ const sendDailyAppointmentSummary: Resolver<
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const allAppts = await appointmentRepo.getTodaysAppointments(new Date());
-  console.log(allAppts.length, 'all appts count');
-  let pdfDoc: PDFKit.PDFDocument; // = new PDFDocument();
-  let fileName = '',
-    uploadPath = '';
+  const logFileName =
+    process.env.NODE_ENV + '_dailyapptsummary_' + format(new Date(), 'yyyyMMdd') + '.txt';
+  let logContent = '';
   let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
+  logContent =
+    '----------------------------\n' +
+    format(new Date(), 'yyyy-MM-dd hh:mm') +
+    '\n all appts count: ' +
+    allAppts.length +
+    '\n';
+  fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
+  let pdfDoc: PDFKit.PDFDocument; // = new PDFDocument();
+  let fileName = '',
+    uploadPath = '';
+
   let blobNames = '';
   const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
     let doctorsCount = 0;
@@ -192,7 +202,7 @@ const sendDailyAppointmentSummary: Resolver<
       textInRow(pdfDoc, appointment.appointmentType, rowx, 341);
       textInRow(pdfDoc, appointment.displayId.toString(), rowx, 441);
 
-      if (index + 1 == array.length || index == 2) {
+      if (index + 1 == array.length || prevDoc != appointment.doctorId) {
         const doctorDetails = allDoctorDetails.filter((item) => {
           return item.id == prevDoc;
         });
@@ -236,6 +246,8 @@ const sendDailyAppointmentSummary: Resolver<
       if (index + 1 === array.length) {
         fileStream.on('finish', async () => {
           allpdfs.map(async (pdffile) => {
+            logContent = pdffile + '\n';
+            fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
             const docPdfDetails: string[] = pdffile.split('$');
             const client = new AphStorageClient(
               process.env.AZURE_STORAGE_CONNECTION_STRING_API,
@@ -246,20 +258,19 @@ const sendDailyAppointmentSummary: Resolver<
               filePath: docPdfDetails[0],
             });
             const blobUrl = client.getBlobUrl(pdfFile.name);
-
-            //const blobName = await uploadPdfFileToBlobStorage(docPdfDetails[1], docPdfDetails[0]);
             blobNames += blobUrl + ', ';
-
+            logContent = blobUrl + '\n';
+            fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
             const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
             const templateData: string[] = [
-              `${process.env.DOCTORS_BLOB_END_POINT}${docPdfDetails[1]}`,
+              blobUrl,
               todaysDate + ' Appointments List',
               todaysDate,
               docPdfDetails[2],
             ];
             sendDoctorNotificationWhatsapp(
               ApiConstants.WHATSAPP_DOC_SUMMARY,
-              '+918019677178',
+              docPdfDetails[3],
               templateData
             );
           });
