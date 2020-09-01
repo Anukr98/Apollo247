@@ -408,16 +408,13 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
   const fetchUserDisplayDeliveryTime = async (paramObject: {
     postalcode: string;
-    lookup: string[];
     lat: string;
     lng: string;
   }) => {
-    await checkTatAvailability(
-      paramObject.lookup.join(','),
-      paramObject.postalcode,
-      paramObject.lat,
-      paramObject.lng
-    )
+    const items = cartItems.map((item: MedicineCartItem) => {
+      return { sku: item.sku, qty: item.quantity };
+    });
+    await checkTatAvailability(items, paramObject.postalcode, paramObject.lat, paramObject.lng)
       .then((res: any) => {
         if (res && res.data && res.data.response && res.data.response.tat) {
           setDeliveryTime(res.data.response.tat);
@@ -478,7 +475,6 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               } else {
                 fetchUserDisplayDeliveryTime({
                   postalcode: zipCode || '',
-                  lookup: lookUp,
                   lat,
                   lng,
                 });
