@@ -297,11 +297,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   useEffect(() => {
     async function fetchFilter() {
       const retrievedFilterOptions: any = await AsyncStorage.getItem('FilterOptions');
-      if (!retrievedFilterOptions) {
-      } else {
-        console.log('retrievedFilterOptions', JSON.parse(retrievedFilterOptions));
-        setDocFilterOptions(JSON.parse(retrievedFilterOptions));
-      }
+      retrievedFilterOptions && setDocFilterOptions(JSON.parse(retrievedFilterOptions));
     }
     fetchFilter();
   }, []);
