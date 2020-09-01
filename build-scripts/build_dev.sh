@@ -9,14 +9,15 @@ rm -rfv packages/web-doctors/dist/* || exit 2
 rm -rfv packages/web-patients/dist/* || exit 2
 rm -rfv packages/universal/dist/* || exit 2
 
+echo -e "\nrunning bootstrap:web..."
+npm run bootstrap:web || exit 2
+echo "\n Building api-gateway..."
+
 echo -e "\nrunning migration..."
 cd packages/api
 npm run start:migration --if-present 
 cd -
 
-echo -e "\nrunning bootstrap:web..."
-npm run bootstrap:web || exit 2
-echo "\n Building api-gateway..."
 cd packages/api
 npm run start:api-gateway || exit 2
 cd -

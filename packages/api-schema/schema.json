@@ -40085,6 +40085,22 @@
             "deprecationReason": null
           },
           {
+            "name": "staticPageUrls",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "SitemapUrls",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "sitemapFilePath",
             "description": null,
             "args": [],
