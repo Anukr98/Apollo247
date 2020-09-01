@@ -20,6 +20,6 @@ export class APP3739DoctorHelpLineTable1598957231678 implements MigrationInterfa
     ('DOCTOR_CONNECT', '04045208102');`);
   }
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "doctorHelpLine"`);
+    await queryRunner.query(`DROP TABLE doctor_help_line`);
   }
 }
