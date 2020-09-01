@@ -83,6 +83,7 @@ import {
   View,
   ViewStyle,
   Platform,
+  AsyncStorage,
 } from 'react-native';
 import {
   NavigationActions,
@@ -293,6 +294,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   ]);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
 
+  useEffect(() => {
+    async function fetchFilter() {
+      const retrievedFilterOptions: any = await AsyncStorage.getItem('FilterOptions');
+      if (!retrievedFilterOptions) {
+      } else {
+        console.log('retrievedFilterOptions', JSON.parse(retrievedFilterOptions));
+        setDocFilterOptions(JSON.parse(retrievedFilterOptions));
+      }
+    }
+    fetchFilter();
+  }, []);
   useEffect(() => {
     checkLocation();
     setDeepLinkFilter();
@@ -663,6 +675,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         // filterOptions(data.getDoctorsBySpecialtyAndFilters.filters);
         setDocFilterOptions(data.getDoctorsBySpecialtyAndFilters.filters);
         setFilterData(filterOptions(data.getDoctorsBySpecialtyAndFilters.filters));
+        AsyncStorage.setItem(
+          'FilterOptions',
+          JSON.stringify(data.getDoctorsBySpecialtyAndFilters.filters)
+        );
         setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(doctorInfo));
         //end log data
       })
@@ -1508,7 +1524,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               activeOpacity={1}
               onPress={() => {
                 CommonLogEvent(AppRoutes.DoctorSearchListing, 'Filter view opened');
-                fetchSpecialityFilterData(filterMode, FilterData, latlng);
                 setDisplayFilter(true);
               }}
             >
