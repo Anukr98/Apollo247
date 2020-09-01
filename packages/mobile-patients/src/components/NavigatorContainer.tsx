@@ -90,6 +90,8 @@ import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/
 import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
+import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTracker';
+
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
@@ -170,6 +172,7 @@ export enum AppRoutes {
   ConsultTypeScreen = 'ConsultTypeScreen',
   CommonWebView = 'CommonWebView',
   RefundStatus = 'RefundStatus',
+  SymptomTracker = 'SymptomTracker'
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -446,6 +449,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.RefundStatus]: {
     screen: RefundStatus,
   },
+  [AppRoutes.SymptomTracker]: {
+    screen: SymptomTracker,
+  }
 };
 
 const logTabEvents = (routing: any) => {

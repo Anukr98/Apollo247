@@ -384,5 +384,8 @@
     "block_Calendar": "Block Calendar",
     "manage_calendar": "Manage Calendar"
   },
-  "ChatRoom_NotRecorded_Value": "Not Recorded"
+  "ChatRoom_NotRecorded_Value": "Not Recorded",
+  "symptomChecker": {
+    "howItWorks": "HOW IT WORKS?"
+  }
 }
