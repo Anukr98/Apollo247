@@ -501,8 +501,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         lattitude = locationData.lat;
         longitude = locationData.lng;
       }
+
       getDeliveryTAT247({
-        sku: sku,
+        items: [{sku : sku, qty: getItemQuantity(sku)}],
         pincode: pincode,
         lat: lattitude,
         lng: longitude
