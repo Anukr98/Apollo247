@@ -46,19 +46,6 @@ const slotIDScalarType = new GraphQLScalarType({
   },
 });
 
-const slotIDScalarType = new GraphQLScalarType({
-  name: 'slotIDScalar',
-  description: 'String custom scalar type',
-  serialize(value) {
-    // Implement custom behavior by setting the 'result' variable
-    return "" + value;
-  },
-  parseValue(value) {
-    // Implement custom behavior here by setting the 'result' variable
-    return "" + value;
-  },
-});
-
 export const saveDiagnosticOrderTypeDefs = gql`
   scalar slotIDScalar
   enum DIAGNOSTIC_ORDER_STATUS {
