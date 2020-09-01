@@ -558,7 +558,7 @@ export async function downloadDocumentAndSaveToBlob(
       : format(new Date(), 'ddmmyyyy-HHmmss') + '.jpeg';
 
   let apiUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
-  if (fileUrl.indexOf('labresults=') > 0)
+  if (fileUrl.indexOf('labresults') > 0)
     apiUrl = process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT.toString();
   apiUrl = apiUrl.replace('{AUTH_KEY}', getToken.response);
   apiUrl = apiUrl.replace('{UHID}', uhid);

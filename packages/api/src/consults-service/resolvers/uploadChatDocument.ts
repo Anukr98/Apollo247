@@ -17,6 +17,8 @@ import { ApiConstants } from 'ApiConstants';
 import { lowerCase } from 'lodash';
 import { savePrescription } from 'helpers/phrV1Services';
 import { getFileTypeFromMime } from 'helpers/generalFunctions';
+import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
+import { fetchBlobURLWithPRISMData } from 'profiles-service/resolvers/uploadDocumentToPrism';
 
 export const uploadChatDocumentTypeDefs = gql`
   enum PRISM_DOCUMENT_CATEGORY {
@@ -205,16 +207,31 @@ const addChatDocument: Resolver<
   { appointmentId: string; documentPath: string; prismFileId: string },
   ConsultServiceContext,
   UploadedDocumentDetails
-> = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
+> = async (parent, args, { consultsDb, doctorsDb, mobileNumber, patientsDb }) => {
   //check appointment id
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
   if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
+  const context: ProfilesServiceContext = {
+    consultsDb,
+    profilesDb: patientsDb,
+    doctorsDb,
+    currentPatient: null,
+    mobileNumber,
+  };
+
+  const newDocumentPath = (await fetchBlobURLWithPRISMData(
+    null,
+    { patientId: appointmentData.patientId, fileUrl: args.documentPath },
+    context
+  )) as { blobUrl: string };
+
   const documentAttrs: Partial<AppointmentDocuments> = {
-    documentPath: args.documentPath,
+    documentPath: newDocumentPath.blobUrl,
     prismFileId: args.prismFileId,
     appointment: appointmentData,
+    prismFilePath: args.documentPath,
   };
   const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
   const appointmentDocuments = await appointmentDocumentRepo.saveDocument(documentAttrs);
