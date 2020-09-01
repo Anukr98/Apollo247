@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, LinearProgress, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
 import { MedicalCard } from 'components/HealthRecords/MedicalCard';
@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
+import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType } from '../../graphql/types/getPatientPrismMedicalRecords';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -366,10 +367,10 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 type MedicalRecordProps = {
-  allCombinedData: any;
+  allCombinedData: LabResultsType[];
   loading: boolean;
-  setActiveData: (activeData: any) => void;
-  activeData: any;
+  setActiveData: (activeData: LabResultsType) => void;
+  activeData: LabResultsType;
   error: boolean;
   deleteReport: (id: string, type: string) => void;
 };
@@ -382,39 +383,13 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
 
   const { allCombinedData, loading, activeData, setActiveData, error, deleteReport } = props;
 
-  const getFormattedDate = (combinedData: any, type: string, dateFor: string) => {
+  const getFormattedDate = (combinedData: LabResultsType, dateFor: string) => {
     return dateFor === 'title' &&
       moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY') ? (
       <span>Today , {moment(combinedData.date).format('DD MMM YYYY')}</span>
     ) : (
       <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
     );
-  };
-
-  const getName = (combinedData: any, type: string) => {
-    switch (type) {
-      case 'lab':
-        return combinedData.labTestName;
-      case 'prescription':
-        return combinedData.prescriptionName;
-      default:
-        return '';
-    }
-  };
-
-  const getSource = (activeData: any, type: string) => {
-    switch (type) {
-      case 'lab':
-        return activeData && activeData.siteDisplayName
-          ? activeData.siteDisplayName
-          : !!activeData.labTestSource
-          ? activeData.labTestSource
-          : '-';
-      case 'prescription':
-        return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
-      default:
-        return '-';
-    }
   };
 
   if (loading) {
@@ -454,7 +429,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           <div className={classes.consultationsList}>
             {allCombinedData &&
               allCombinedData.length > 0 &&
-              allCombinedData.map((combinedData: any) => (
+              allCombinedData.map((combinedData: LabResultsType) => (
                 <div
                   className={classes.consultGroup}
                   onClick={() => {
@@ -466,15 +441,21 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 >
                   <div className={classes.consultGroupHeader}>
                     <div className={classes.circle}></div>
-                    <span>{getFormattedDate(combinedData.data, combinedData.type, 'title')}</span>
+                    <span>{getFormattedDate(combinedData, 'title')}</span>
                   </div>
                   <MedicalCard
                     deleteReport={deleteReport}
-                    name={getName(combinedData.data, combinedData.type)}
-                    source={getSource(combinedData.data, combinedData.type)}
-                    type={combinedData.type}
-                    id={`${combinedData.type}-${combinedData.data.id}`}
-                    isActiveCard={activeData && activeData.data === combinedData.data}
+                    name={combinedData.labTestName}
+                    source={
+                      combinedData && combinedData.siteDisplayName
+                        ? combinedData.siteDisplayName
+                        : !!combinedData.labTestSource
+                        ? combinedData.labTestSource
+                        : '-'
+                    }
+                    type={'LabResults'}
+                    id={`LabResults-${combinedData.id}`}
+                    isActiveCard={activeData && activeData === combinedData}
                   />
                 </div>
               ))}
@@ -547,19 +528,12 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     </div>
                     <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
                       <div>
-                        {!!activeData.data.prescribedBy
-                          ? activeData.data.prescribedBy
-                          : !!activeData.data.labTestRefferedBy
-                          ? activeData.data.labTestRefferedBy
-                          : '-'}
+                        {!!activeData.labTestRefferedBy ? activeData.labTestRefferedBy : '-'}
                       </div>
                     </div>
                     <div className={classes.reportsDetails}>
-                      {/* <div className={classes.sourceField}>{getSource(activeData.data, activeData.type)}</div> */}
-                      {activeData && activeData.data && activeData.data.siteDisplayName && (
-                        <div className={classes.sitedisplayName}>
-                          {activeData.data.siteDisplayName}
-                        </div>
+                      {activeData && activeData.siteDisplayName && (
+                        <div className={classes.sitedisplayName}>{activeData.siteDisplayName}</div>
                       )}
                     </div>
                     <hr />
@@ -568,23 +542,23 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                       <p>
                         On{' '}
                         <span className={classes.checkDate}>
-                          {getFormattedDate(activeData.data, activeData.type, 'checkUp')}
+                          {getFormattedDate(activeData, 'checkUp')}
                         </span>
                       </p>
                     </div>
                   </div>
-                  {(activeData.data.observations || activeData.data.additionalNotes) && (
+                  {(activeData.observation || activeData.additionalNotes) && (
                     <ToplineReport activeData={activeData} />
                   )}
-                  {activeData.data.labTestResults && activeData.data.labTestResults.length > 0 && (
+                  {activeData.labTestResults && activeData.labTestResults.length > 0 && (
                     <DetailedFindings activeData={activeData} />
                   )}
                   {activeData &&
-                    ((activeData.data.fileUrl && activeData.data.fileUrl.length > 0) ||
-                      (activeData.data.fileUrl && activeData.data.fileUrl.length > 0)) && (
+                    ((activeData.fileUrl && activeData.fileUrl.length > 0) ||
+                      (activeData.fileUrl && activeData.fileUrl.length > 0)) && (
                       <RenderImage
-                        activeData={activeData.data}
-                        type={activeData.data.fileUrl.includes('pdf') ? 'pdf' : 'image'}
+                        activeData={activeData}
+                        type={activeData.fileUrl.includes('pdf') ? 'pdf' : 'image'}
                       />
                     )}
                 </div>
@@ -615,3 +589,29 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
     </div>
   );
 };
+
+// const getName = (combinedData: any, type: string) => {
+//   switch (type) {
+//     case 'lab':
+//       return combinedData.labTestName;
+//     case 'prescription':
+//       return combinedData.prescriptionName;
+//     default:
+//       return '';
+//   }
+// };
+
+// const getSource = (activeData: any, type: string) => {
+//   switch (type) {
+//     case 'lab':
+//       return activeData && activeData.siteDisplayName
+//         ? activeData.siteDisplayName
+//         : !!activeData.labTestSource
+//         ? activeData.labTestSource
+//         : '-';
+//     case 'prescription':
+//       return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
+//     default:
+//       return '-';
+//   }
+// };

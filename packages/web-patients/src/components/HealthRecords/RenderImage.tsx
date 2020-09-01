@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 
@@ -40,7 +40,6 @@ export const RenderImage: React.FC<RenderImageProps> = (props) => {
       <a href={activeData.fileUrl}>Download the file</a>
     </div>
   ) : (
-    //  </div>
     <div className={classes.prescriptionImage}>
       <img src={activeData.fileUrl} alt="Preview is not available" />
     </div>

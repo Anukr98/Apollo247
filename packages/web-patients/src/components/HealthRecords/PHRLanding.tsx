@@ -155,7 +155,6 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
 
   const { isSigningIn } = useAuth();
-  const [allCombinedData, setAllCombinedData] = useState<any | null>();
   const [activeMedicalData, setActiveMedicalData] = useState<any | null>(null);
   const [activeHealthCheckData, setActiveHealthCheckData] = useState<HealthCheckType | null>(null);
   const [
@@ -214,8 +213,8 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   const sortByDateRecords = (array: any) => {
     return array.sort(
       (
-        data1: HealthCheckType | HospitalizationType,
-        data2: HealthCheckType | HospitalizationType
+        data1: HealthCheckType | HospitalizationType | LabResultsType,
+        data2: HealthCheckType | HospitalizationType | LabResultsType
       ) => {
         let date1 = moment(data1.date).toDate().getTime();
         let date2 = moment(data2.date).toDate().getTime();
@@ -237,7 +236,12 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         if (data && data.getPatientPrismMedicalRecords) {
           const prismMedicalRecords = data.getPatientPrismMedicalRecords;
           if (prismMedicalRecords.labResults && prismMedicalRecords.labResults.response) {
-            setLabResults(prismMedicalRecords.labResults.response || []);
+            const sortedData = sortByDateRecords(prismMedicalRecords.labResults.response);
+            if (!isSmallScreen && sortedData && sortedData.length) {
+              setActiveMedicalData(sortedData[0]);
+            }
+            // setAllCombinedData(sortedData);
+            setLabResults(sortedData as LabResultsType[]);
           }
           if (prismMedicalRecords.prescriptions && prismMedicalRecords.prescriptions.response) {
             setPrescriptions(prismMedicalRecords.prescriptions.response);
@@ -297,27 +301,11 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   };
 
   useEffect(() => {
-    if (!isSigningIn && !labResults && !prescriptions) {
+    if (!isSigningIn && !labResults && !prescriptions && !healthChecks && !hospitalizations) {
       setMedicalLoading(true);
       fetchPrismData();
     }
-  }, [labResults, prescriptions, isSigningIn]);
-
-  useEffect(() => {
-    if (labResults) {
-      let mergeArray: { type: string; data: any }[] = [];
-      labResults &&
-        labResults.forEach((item: LabResultsType) => {
-          mergeArray.push({ type: 'lab', data: item });
-        });
-      const sortedData = sortByDate(mergeArray, 'medRecords');
-      if (!isSmallScreen && sortedData && sortedData.length) {
-        setActiveMedicalData(sortedData[0]);
-      }
-      setAllCombinedData(sortedData);
-      setMedicalLoading(false);
-    }
-  }, [labResults]);
+  }, [labResults, prescriptions, healthChecks, hospitalizations, isSigningIn]);
 
   useEffect(() => {
     if (consultsData && prescriptions && medicalRecords) {
@@ -418,7 +406,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
                     <MedicalRecords
                       error={medicalError}
                       loading={medicalLoading}
-                      allCombinedData={allCombinedData}
+                      allCombinedData={labResults}
                       activeData={activeMedicalData}
                       setActiveData={setActiveMedicalData}
                       deleteReport={deleteReport}

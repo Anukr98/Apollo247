@@ -125,9 +125,6 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
         <div className={classes.doctorInfo}>
           <div className={classes.doctorName}>{props.name}</div>
         </div>
-        {/* <div className={classes.moreIcon}>
-          <img src={require('images/ic_more.svg')} alt="" onClick={() => setShowPopup(true)} />
-        </div> */}
       </div>
       {props.source && props.source !== '-' && (
         <div className={classes.consultType}>{props.source}</div>

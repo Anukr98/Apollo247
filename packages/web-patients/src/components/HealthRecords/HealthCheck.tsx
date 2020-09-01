@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, LinearProgress, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
 import { MedicalCard } from 'components/HealthRecords/MedicalCard';
-// import { ToplineReport } from 'components/HealthRecords/ToplineReport';
-// import { DetailedFindings } from 'components/HealthRecords/DetailedFindings';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -456,8 +454,8 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
                   </div>
                   <MedicalCard
                     deleteReport={deleteReport}
-                    name={combinedData.healthCheckName || '-'}
-                    source={combinedData.source || '-'}
+                    name={combinedData.healthCheckName || combinedData.healthCheckType || '-'}
+                    source={combinedData.healthCheckSummary || '-'}
                     type={'HealthCheck'}
                     id={`HealthCheck-${combinedData.id}`}
                     isActiveCard={activeData && activeData.id === combinedData.id}
@@ -524,7 +522,9 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
                 <div className={classes.medicalRecordsDetails}>
                   <div className={classes.cbcDetails}>
                     <div className={classes.reportsDetails}>
-                      <div className={classes.testName}>{activeData.healthCheckType || '-'}</div>
+                      <div className={classes.testName}>
+                        {activeData.healthCheckType || activeData.healthCheckName || '-'}
+                      </div>
                     </div>
                     <hr />
                     <div className={classes.reportsDetails}>
