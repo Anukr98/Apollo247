@@ -205,7 +205,6 @@ let callhandelBack: boolean = true;
 let jdCount: any = 1;
 let isJdAllowed: boolean = true;
 let abondmentStarted = false;
-let showAlertPopUp: boolean = false;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -697,10 +696,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const backDataFunctionality = () => {
     try {
       console.log(callhandelBack, 'is back called');
-
-      if (showAlertPopUp) {
-        return true;
-      }
       if (callhandelBack) {
         // handleCallTheEdSessionAPI();
         props.navigation.dispatch(
@@ -827,7 +822,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           if (noCount && noCount > 0) {
             setShowConnectAlertPopup(false);
           } else {
-            showAlertPopUp = true;
             setShowConnectAlertPopup(true);
           }
         }
@@ -844,7 +838,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE, eventAttributes);
     setLoading(true);
-    showAlertPopUp = false;
 
     updateExternalConnect(client, doctorId, patientId, connected, channel)
       .then((data) => {
@@ -7287,7 +7280,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       )}
       {showConnectAlertPopup && (
         <CustomAlert
-          description={`Have you interacted with ${appointmentData.doctorInfo.displayName} before?`}
+          description={`Have you consulted with ${appointmentData.doctorInfo.displayName} before?`}
           onNoPress={() => {
             setShowConnectAlertPopup(false);
             getUpdateExternalConnect(false);
