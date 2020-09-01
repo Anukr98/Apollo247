@@ -84,7 +84,7 @@ export const sendDoctorNotificationWhatsapp = async (
           Authorization: process.env.WHATSAPP_AUTH_HEADER ? process.env.WHATSAPP_AUTH_HEADER : '',
         },
       });
-      console.log(response, 'response');
+      console.log(JSON.stringify(response, null, 1), 'response');
     } else {
       const response = await fetch(url, {
         method: 'POST',
@@ -119,7 +119,7 @@ export const sendDoctorNotificationWhatsapp = async (
       content +=
         '\n------------------------------------------------------------------------------------\n';
       fs.appendFile(assetsDir + '/' + fileName, content, (err) => { });
-      console.log(response, 'response');
+      console.log(JSON.stringify(response, null, 1), 'response');
     }
   }
 };
