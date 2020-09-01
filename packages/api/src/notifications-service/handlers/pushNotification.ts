@@ -79,10 +79,7 @@ export async function sendCallsNotification(
 
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
 
-  if(!patientId){
-    patientId = patientDetails.id;
-  }
-
+  patientId = patientId || patientDetails.id;
   const voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
     patientId,
     DEVICE_TYPE.IOS
