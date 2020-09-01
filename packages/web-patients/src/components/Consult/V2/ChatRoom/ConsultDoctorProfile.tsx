@@ -647,7 +647,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                     </div>
                   ) : (
                     differenceInMinutes > -16 && // enables only for upcoming and active  appointments
-                    (appointmentDetails.isConsultStarted ? (
+                    (appointmentDetails.isSeniorConsultStarted ? (
                       <div className={`${classes.joinInSection} ${classes.doctorjoinSection}`}>
                         <span>Doctor has joined!</span>
                       </div>
