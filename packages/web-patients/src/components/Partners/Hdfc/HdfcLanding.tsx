@@ -592,15 +592,41 @@ export const HdfcLanding: React.FC = (props) => {
                     Wide Range of benefits worth 38K+ for all HDFC customers
                   </Typography>
                 </div>
-                <AphButton
-                  color="primary"
-                  variant="contained"
-                  onClick={() => {
-                    setIsLoginPopupVisible(true);
-                  }}
-                >
-                  SignUp Now
-                </AphButton>
+                <Route
+                  render={({ history }) => (
+                    <AphButton
+                      color="primary"
+                      variant="contained"
+                      onClick={() => {
+                        if (!isSignedIn) setIsLoginPopupVisible(true);
+                        else {
+                          userSubscriptions.length != 0
+                            ? history.push(clientRoutes.welcome())
+                            : createSubscription({
+                                variables: {
+                                  userSubscription: {
+                                    mobile_number: currentPatient.mobileNumber,
+                                  },
+                                },
+                              })
+                                .then(() => {
+                                  history.push(clientRoutes.membershipHdfc());
+                                })
+                                .catch((error) => {
+                                  console.error(error);
+                                  alert('Something went wrong :(');
+                                });
+                        }
+                      }}
+                    >
+                      {isSignedIn
+                        ? userSubscriptions.length != 0
+                          ? 'Explore now'
+                          : 'Check Eligibility'
+                        : 'SignUp Now'}
+                    </AphButton>
+                  )}
+                />
               </div>
             </div>
           </div>
@@ -668,9 +694,41 @@ export const HdfcLanding: React.FC = (props) => {
                   Register now for Round-the-clock doctor availability, ease of ordering medicines
                   &amp; tests online and much more on Apollo 24/7
                 </Typography>
-                <AphButton color="primary" variant="contained">
-                  Sign Up Now
-                </AphButton>
+
+                <Route
+                  render={({ history }) => (
+                    <AphButton
+                      color="primary"
+                      onClick={() => {
+                        if (!isSignedIn) setIsLoginPopupVisible(true);
+                        else {
+                          userSubscriptions.length != 0
+                            ? history.push(clientRoutes.welcome())
+                            : createSubscription({
+                                variables: {
+                                  userSubscription: {
+                                    mobile_number: currentPatient.mobileNumber,
+                                  },
+                                },
+                              })
+                                .then(() => {
+                                  history.push(clientRoutes.membershipHdfc());
+                                })
+                                .catch((error) => {
+                                  console.error(error);
+                                  alert('Something went wrong :(');
+                                });
+                        }
+                      }}
+                    >
+                      {isSignedIn
+                        ? userSubscriptions.length != 0
+                          ? 'Explore now'
+                          : 'Check Eligibility'
+                        : 'SignUp Now'}
+                    </AphButton>
+                  )}
+                />
               </div>
             </div>
           </div>
@@ -808,102 +866,7 @@ export const HdfcLanding: React.FC = (props) => {
           <NewProfile patient={defaultNewProfile} onClose={() => {}} customSignUp={customSignUp} />
         </AphDialog>
       )}
-      {/* <Popover
-        open={defaultNewProfile && !hasExistingProfile ? true : false}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.topPopover }}
-      >
-        <Paper className={classes.finalStep}>
-          <Typography component="h2">Enter your details to complete the registration</Typography>
-          <form>
-            <FormControl className={classes.formControl}>
-              <AphTextField label="First Name" />
-            </FormControl>
-            <FormControl className={classes.formControl}>
-              <AphTextField label="Last name" />
-            </FormControl>
-            <FormControl className={classes.formControl}>
-              <AphTextField label="Email ID" />
-            </FormControl>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <ThemeProvider theme={defaultMaterialTheme}>
-                <KeyboardDatePicker
-                  className={classes.keyboardDatePicker}
-                  disableToolbar
-                  variant="inline"
-                  format="MM/dd/yyyy"
-                  value={selectedDate}
-                  label="Date of Birth"
-                  // onChange={handleDateChange}
-                  KeyboardButtonProps={{
-                    'aria-label': 'change date',
-                  }}
-                  onChange={(date) => handleDateChange((date as unknown) as Date)}
-                  onFocus={() => {}}
-                  onBlur={() => {}}
-                />
-              </ThemeProvider>
-            </MuiPickersUtilsProvider>
-            <FormControl component="fieldset" className={classes.formControl}>
-              <FormLabel component="label">Select your gender</FormLabel>
-              <RadioGroup
-                className={classes.radioContainer}
-                aria-label="gender"
-                name="gender1"
-                value={value}
-                onChange={handleChange}
-              >
-                <FormControlLabel value="male" control={<AphRadio />} label="Male" />
-                <FormControlLabel value="female" control={<AphRadio />} label="Female" />
-              </RadioGroup>
-            </FormControl>
 
-            <div className={classes.action}>
-              <Fab
-                type="submit"
-                color="primary"
-                aria-label="Sign in"
-                onClick={() => {
-                  return updatePatient({
-                    variables: {
-                      patientInput: {
-                        id: defaultNewProfile.id,
-                        firstName: 'values.firstName',
-                        lastName: 'values.lastName',
-                        gender: Gender.MALE,
-                        dateOfBirth: 'convertClientDateToIsoDate(values.dateOfBirth)',
-                        emailAddress: _isEmpty('values.emailAddress')
-                          ? null
-                          : 'values.emailAddress',
-                        relation: Relation.ME,
-                        referralCode: 'HDFCBANK',
-                      },
-                    },
-                  })
-                    .then(() => {
-                      setShowProfileSuccess(true);
-                      setisProfileUpdate(false);
-                    })
-                    .catch((error) => {
-                      console.error(error);
-                      setShowProfileSuccess(true);
-                      alert('Something went wrong :(');
-                    });
-                }}
-              >
-                <img src={require('images/ic_arrow_forward.svg')} />
-              </Fab>
-            </div>
-          </form>
-        </Paper>
-      </Popover> */}
       <AphDialog open={notEligible} maxWidth="sm">
         <div className={classes.dialogcontent}>
           <img src={require('images/hdfc/sorry.svg')} alt="Not Eligible" />
