@@ -1019,16 +1019,20 @@ export const callPermissions = (doRequest?: () => void) => {
       'microphone',
       'Enable microphone from settings for calls during consultation.',
       () => {
-        permissionHandler(
-          'storage',
-          'Enable storage from settings for uploading documents during consultation.',
-          () => {
-            doRequest && doRequest();
-          }
-        );
+        doRequest && doRequest();
       }
     );
   });
+};
+
+export const storagePermissions = (doRequest?: () => void) => {
+  permissionHandler(
+    'storage',
+    'Enable storage from settings for uploading documents during consultation.',
+    () => {
+      doRequest && doRequest();
+    }
+  );
 };
 
 export const InitiateAppsFlyer = (
@@ -1325,7 +1329,7 @@ export const addPharmaItemToCart = (
     section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'];
     categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
   },
-  onComplete?: () => void,
+  onComplete?: () => void
 ) => {
   const unServiceableMsg = 'Sorry, not serviceable in your area.';
 
@@ -1377,7 +1381,7 @@ export const addPharmaItemToCart = (
   setLoading && setLoading(true);
   availabilityApi247(pincode, cartItem.id)
     .then((res) => {
-      const availability = g(res, 'data', 'response', '0' as any, 'exist')
+      const availability = g(res, 'data', 'response', '0' as any, 'exist');
       if (availability) {
         addToCart();
       } else {
