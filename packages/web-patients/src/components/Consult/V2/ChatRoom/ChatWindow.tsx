@@ -1757,7 +1757,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               className={`${classes.quesButton}  ${smokes === '10' ? classes.btnActive : ''}`}
               onClick={() => setSmokes('10')}
             >
-              &gt; 10
+              &lt; 10
             </AphButton>
             <AphButton
               className={`${classes.quesButton}  ${smokes === '10-20' ? classes.btnActive : ''}`}
