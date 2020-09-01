@@ -238,11 +238,14 @@ const saveOrderShipmentInvoice: Resolver<
 
   if (!unBilledShipments) {
     const invoices = await medicineOrdersRepo.getInvoiceDetailsByOrderId(orderDetails.orderAutoId);
-
+    let deliveryCharges = 0;
     const totalOrderBilling = invoices.reduce(
       (acc: number, curValue: Partial<MedicineOrderInvoice>) => {
         if (curValue.billDetails) {
-          const invoiceValue: number = JSON.parse(curValue.billDetails).invoiceValue;
+          const billDetails = JSON.parse(curValue.billDetails);
+          const invoiceValue = billDetails.invoiceValue;
+
+          deliveryCharges = +new Decimal(deliveryCharges).plus(billDetails.deliveryCharges);
           return +new Decimal(acc).plus(invoiceValue);
         }
         return acc;
@@ -273,7 +276,14 @@ const saveOrderShipmentInvoice: Resolver<
         profilesDb
       );
     }
-    calculateRefund(orderDetails, totalOrderBilling, profilesDb, medicineOrdersRepo);
+    calculateRefund(
+      orderDetails,
+      totalOrderBilling,
+      profilesDb,
+      medicineOrdersRepo,
+      '',
+      deliveryCharges
+    );
   }
 
   //post order billed and packed event event to webEngage
