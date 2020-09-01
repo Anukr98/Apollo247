@@ -22,6 +22,7 @@ import {
 } from 'notifications-service/handlers';
 import PDFDocument from 'pdfkit';
 import { uploadPdfFileToBlobStorage, textInRow, writeRow } from 'helpers/uploadFileToBlob';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 
 type PushNotificationMessage = {
   messageId: string;
@@ -235,9 +236,19 @@ const sendDailyAppointmentSummary: Resolver<
       if (index + 1 === array.length) {
         fileStream.on('finish', async () => {
           allpdfs.map(async (pdffile) => {
-            const docPdfDetails = pdffile.split('$');
-            const blobName = await uploadPdfFileToBlobStorage(docPdfDetails[1], docPdfDetails[0]);
-            blobNames += blobName + ', ';
+            const docPdfDetails: string[] = pdffile.split('$');
+            const client = new AphStorageClient(
+              process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+              process.env.AZURE_STORAGE_CONTAINER_NAME
+            );
+            const pdfFile = await client.uploadFile({
+              name: docPdfDetails[1],
+              filePath: docPdfDetails[0],
+            });
+            const blobUrl = client.getBlobUrl(pdfFile.name);
+
+            //const blobName = await uploadPdfFileToBlobStorage(docPdfDetails[1], docPdfDetails[0]);
+            blobNames += blobUrl + ', ';
 
             const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
             const templateData: string[] = [
