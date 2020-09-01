@@ -878,7 +878,7 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult &&
     validateCouponResult.discount &&
     validateCouponResult.discount >= productDiscount
-      ? Number(cartTotal) - Number(validateCouponResult.discount)
+      ? Number(cartTotal) - couponDiscount
       : Number(cartTotal);
   const deliveryCharges =
     modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
@@ -891,8 +891,7 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult &&
     validateCouponResult.discount &&
     Number(validateCouponResult.discount.toFixed(2)) > Number(productDiscount.toFixed(2))
-      ? Number(totalAmount) -
-        (Number(validateCouponResult.discount.toFixed(2)) - Number(productDiscount.toFixed(2)))
+      ? Number(totalAmount) - couponDiscount
       : Number(totalAmount);
 
   const disableSubmit =
@@ -931,7 +930,9 @@ export const MedicineCart: React.FC = (props) => {
   const getDiscountedLineItemPrice = (sku: string) => {
     if (couponCode.length > 0 && validateCouponResult && validateCouponResult.products) {
       const item: any = validateCouponResult.products.find((item: any) => item.sku === sku);
-      return item.specialPrice.toFixed(2);
+      return item.onMrp
+        ? (item.mrp - item.discountAmt).toFixed(2)
+        : (item.specialPrice - item.discountAmt).toFixed(2);
     }
   };
 
@@ -1857,9 +1858,7 @@ export const MedicineCart: React.FC = (props) => {
                                   couponValue: couponDiscount,
                                   totalWithCouponDiscount:
                                     validateCouponResult && validateCouponResult.discount
-                                      ? Number(totalAmount) -
-                                        (Number(validateCouponResult.discount.toFixed(2)) -
-                                          Number(productDiscount.toFixed(2)))
+                                      ? totalWithCouponDiscount
                                       : Number(totalAmount),
                                   deliveryTime: deliveryTime,
                                   validateCouponResult: validateCouponResult,
@@ -1973,9 +1972,7 @@ export const MedicineCart: React.FC = (props) => {
                               couponValue: couponDiscount,
                               totalWithCouponDiscount:
                                 validateCouponResult && validateCouponResult.discount
-                                  ? Number(totalAmount) -
-                                    (Number(validateCouponResult.discount.toFixed(2)) -
-                                      Number(productDiscount.toFixed(2)))
+                                  ? totalWithCouponDiscount
                                   : Number(totalAmount),
                               deliveryTime: deliveryTime,
                               validateCouponResult: validateCouponResult,

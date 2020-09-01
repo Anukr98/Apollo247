@@ -5576,9 +5576,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             width: width - 116,
           }}
         >
-          {/* <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-            <SpeakerOn style={{ width: 60, height: 60 }} />
-          </TouchableOpacity> */}
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {

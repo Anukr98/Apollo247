@@ -533,7 +533,9 @@ export const PayMedicine: React.FC = (props) => {
   const getDiscountedLineItemPrice = (sku: string) => {
     if (couponCode.length > 0 && validateCouponResult && validateCouponResult.products) {
       const item: any = validateCouponResult.products.find((item: any) => item.sku === sku);
-      return item.specialPrice.toFixed(2);
+      return item.onMrp
+        ? (item.mrp - item.discountAmt).toFixed(2)
+        : (item.specialPrice - item.discountAmt).toFixed(2);
     }
   };
 
@@ -753,8 +755,8 @@ export const PayMedicine: React.FC = (props) => {
         console.log(e);
         setMutationLoading(false);
         setIsLoading(false);
-        localStorage.removeItem(`${currentPatient && currentPatient.id}`);
-        sessionStorage.setItem('cartValues', '');
+        // localStorage.removeItem(`${currentPatient && currentPatient.id}`);
+        // sessionStorage.setItem('cartValues', '');
         setIsAlertOpen(true);
         setAlertMessage('Something went wrong, please try later.');
       });
@@ -1013,9 +1015,8 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${
-                          totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)
-                        } on delivery`
+                        `Pay Rs.${totalWithCouponDiscount &&
+                          totalWithCouponDiscount.toFixed(2)} on delivery`
                       )}
                     </AphButton>
                   )}
