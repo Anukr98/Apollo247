@@ -780,10 +780,10 @@ export const MedicineCart: React.FC = (props) => {
     return result;
   };
   const checkForCartChanges = async (pincode: string, lat: string, lng: string) => {
-    const lookUp = cartItems.map((item: MedicineCartItem) => {
-      return item.sku;
+    const items = cartItems.map((item: MedicineCartItem) => {
+      return { sku: item.sku, qty: item.quantity };
     });
-    return await checkTatAvailability(lookUp.join(','), pincode, lat, lng)
+    return await checkTatAvailability(items, pincode, lat, lng)
       .then((res: any) => {
         const updatedCartItems = res && res.data && res.data.response && res.data.response.items;
         cartItems.map((item, index) => {
