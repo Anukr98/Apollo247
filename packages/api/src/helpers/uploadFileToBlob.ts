@@ -2,7 +2,7 @@ import path from 'path';
 import { format } from 'date-fns';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import fs from 'fs';
-import PDFDocument from 'pdfkit';
+import { BlobServiceClient } from '@azure/storage-blob';
 
 export async function uploadFileToBlobStorage(
   fileType: string,
@@ -60,17 +60,23 @@ export async function uploadPdfFileToBlobStorage(
   fileName: string,
   filePath: string
 ): Promise<string> {
-  const client = new AphStorageClient(
-    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
-    process.env.AZURE_STORAGE_CONTAINER_NAME
-  );
   console.log(filePath, fileName, 'file details');
-  const readmeBlob = await client.uploadFile({ name: fileName, filePath }).catch((error) => {
-    console.log(error, 'file error');
-    throw error;
+  const blobServiceClient = BlobServiceClient.fromConnectionString(
+    process.env.DOCTORS_AZURE_STORAGE_CONNECTION_STRING_API
+      ? process.env.DOCTORS_AZURE_STORAGE_CONNECTION_STRING_API
+      : ''
+  );
+  const containerName = process.env.DOCTORS_AZURE_STORAGE_CONTAINER_NAME
+    ? process.env.DOCTORS_AZURE_STORAGE_CONTAINER_NAME
+    : '';
+  console.log('referencing the container ', containerName);
+  const containerClient = blobServiceClient.getContainerClient(containerName);
+  const blockBlobClient = containerClient.getBlockBlobClient(fileName);
+  console.log('\nUploading to Azure storage as blob:\n', fileName);
+  const uploadBlobResponse = await blockBlobClient.uploadFile(filePath, {
+    blobHTTPHeaders: { blobContentType: 'application/pdf' },
   });
-  fs.unlinkSync(filePath);
-  return client.getBlobUrl(readmeBlob.name);
+  return uploadBlobResponse._response.status.toString();
 }
 
 export function textInRow(doc: PDFKit.PDFDocument, text: string, heigth: number, st: number) {
