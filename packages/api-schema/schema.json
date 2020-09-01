@@ -2974,6 +2974,16 @@
                 "defaultValue": null
               },
               {
+                "name": "patientId",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
                 "name": "isDev",
                 "description": null,
                 "type": {
@@ -3016,6 +3026,16 @@
                 "type": {
                   "kind": "SCALAR",
                   "name": "Boolean",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "patientId",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
                   "ofType": null
                 },
                 "defaultValue": null
@@ -26344,6 +26364,12 @@
           },
           {
             "name": "FMCG",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "PL",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
