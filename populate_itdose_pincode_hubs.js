@@ -60,7 +60,10 @@ const insertPincodes = async (client, pincodeMaster) => {
 
 
 const getPincodeMaster = async (token) => {
-    const apiUrl = "http://uatlims.apollohl.in/homecollection/api/HomeAPI/GetAreaPincode"
+    const apiUrl = process.env.DIAGNOSTIC_ITDOSE_GETPINCODE_URL
+    if (!apiUrl) {
+        throw new Error("add env DIAGNOSTIC_ITDOSE_GETPINCODE_URL")
+    }
     let options = {
         method: 'POST',
         headers: { authorization: `Bearer ${token}` }
