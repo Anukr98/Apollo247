@@ -37,6 +37,7 @@ export type callType = 'Telephonic' | 'Video' | 'Audio' | 'Join Acceptance';
 
 export enum WebEngageEventName {
   MOBILE_NUMBER_ENTERED = 'Doctor Mobile Number entered',
+  NOT_REGISTERED = 'Non Registered Number Login',
   OTP_ENTERED = 'Doctor OTP Entered',
   OTP_VERIFIED = 'Doctor OTP Verification',
   OTP_RESEND = 'Doctor OTP Resend',
@@ -53,12 +54,14 @@ export enum WebEngageEventName {
   DOCTOR_START_AUDIO_CALL = 'Doctor Started the Audio call',
   DOCTOR_STOP_AUDIO_CALL = 'Doctor Stoped the Audio call',
   DOCTOR_ACCEPTED_JOIN = 'Doctor Accepted to Join the session',
+  DOCTOR_ACCEPTED_JOIN_END = 'Doctor Ended Join the session call',
   DOCTOR_STOP_CONSULT = 'Doctor Ended the consult',
   DOCTOR_SEND_MSG = 'Doctor Sent a message to the patient after End consult',
   DOCTOR_SEND_PRESCRIPTION = 'Doctor Send Prescription (Front-end)',
   DOCTOR_RESEND_PRESCRIPTION = 'Doctor resent Prescription',
   DOCTOR_ISSUE_NEW_PRESCRIPTION = 'Doctor re-issued new Prescription',
   DOCTOR_CLICKED_PATIENT_LOG = 'Doctor Clicked on the Patient Log',
+  DOCTOR_CLICKED_PATIENT_LOG_CHAT = 'Doctor Clicked on the Patient Log Chat',
   DOCTOR_CLICKED_NOTIFICATION = 'Doctor Clicked on the Notification',
   DOCTOR_CLICKED_HELP = 'Doctor Clicked on the help',
   DOCTOR_STARTED_TEST = 'Doctor started test',
@@ -70,8 +73,11 @@ export interface WebEngageEvents {
     'Doctor mobile Number': string;
   };
   [WebEngageEventName.OTP_ENTERED]: {};
+  [WebEngageEventName.NOT_REGISTERED]: {
+    mobileNumber: string;
+  };
   [WebEngageEventName.OTP_VERIFIED]: {
-    Successful: 'YES/NO';
+    Successful: 'YES' | 'NO';
   };
   [WebEngageEventName.OTP_RESEND]: {
     'Doctor mobile Number': string;
@@ -193,6 +199,16 @@ export interface WebEngageEvents {
     'Type of call': 'Join Acceptance';
     'Appointment ID': string;
   };
+  [WebEngageEventName.DOCTOR_ACCEPTED_JOIN_END]: {
+    'Doctor name': string;
+    'Patient name': string;
+    'Patient mobile number': string;
+    'Doctor Mobile number': string;
+    'Appointment Date time': string;
+    'Appointment display ID': string;
+    'Type of call': 'Join Acceptance';
+    'Appointment ID': string;
+  };
   [WebEngageEventName.DOCTOR_STOP_CONSULT]: {
     'Doctor name': string;
     'Patient name': string;
@@ -247,6 +263,13 @@ export interface WebEngageEvents {
     'Patient mobile number': string;
     'Doctor Mobile number': string;
   };
+  [WebEngageEventName.DOCTOR_CLICKED_PATIENT_LOG_CHAT]: {
+    'Doctor name': string;
+    'Patient name': string;
+    'Patient mobile number': string;
+    'Doctor Mobile number': string;
+    'Button Type': 'chat' | 'reply';
+  };
   [WebEngageEventName.DOCTOR_CLICKED_NOTIFICATION]: {};
   [WebEngageEventName.DOCTOR_CLICKED_HELP]: {
     'Doctor name': string;
@@ -262,7 +285,7 @@ export interface WebEngageEvents {
   };
 }
 
-export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: WebEngageEvents) => {
+export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
     webengage.track(eventName, attributes);
   } catch (e) {}
@@ -279,5 +302,15 @@ export const setWebEngageData = (
     webengage.user.setFirstName(firstName);
     webengage.user.setLastName(lastName);
     webengage.user.setEmail(email);
+  } catch (e) {}
+};
+
+export const webEngageLogin = (id?: string) => {
+  try {
+    if (id) {
+      webengage.user.login(id);
+    } else {
+      webengage.user.logout();
+    }
   } catch (e) {}
 };

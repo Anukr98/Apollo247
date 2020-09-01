@@ -45,6 +45,12 @@ import {
   SubmitJdCasesheetVariables,
   SubmitJdCasesheet,
 } from '@aph/mobile-doctors/src/graphql/types/SubmitJdCasesheet';
+import {
+  postWebEngageEvent,
+  WebEngageEventName,
+  WebEngageType,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 const styles = AppointmentsListStyles;
 
@@ -157,6 +163,10 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       {
         text: 'NO, WAIT',
         onPress: () => {
+          postWebEngageEvent(WebEngageEventName.DOCTOR_APPOINTMENT_FORCE_START_DECLINE, {
+            'Appointment Date time': g(apointmentData, 'appointmentDateTime') || '',
+            'Appointment ID': g(apointmentData, 'id') || '',
+          } as WebEngageEvents[WebEngageEventName.DOCTOR_APPOINTMENT_FORCE_START_DECLINE]);
           AsyncStorage.setItem('AppointmentSelect', 'false');
           hideAphAlert!();
         },
@@ -165,6 +175,19 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
       {
         text: 'YES, START CONSULT',
         onPress: () => {
+          postWebEngageEvent(WebEngageEventName.DOCTOR_APPOINTMENT_FORCE_START_ACCEPT, {
+            'Doctor name': g(apointmentData, 'doctorInfo', 'fullName') || '',
+            'Patient name': `${g(apointmentData, 'patientInfo', 'firstName')} ${g(
+              apointmentData,
+              'patientInfo',
+              'lastName'
+            )}`,
+            'Patient mobile number': g(apointmentData, 'patientInfo', 'mobileNumber') || '',
+            'Doctor Mobile number': g(apointmentData, 'doctorInfo', 'mobileNumber') || '',
+            'Appointment Date time': g(apointmentData, 'appointmentDateTime') || '',
+            'Appointment display ID': g(apointmentData, 'displayId') || '',
+            'Appointment ID': g(apointmentData, 'id') || '',
+          } as WebEngageEvents[WebEngageEventName.DOCTOR_APPOINTMENT_FORCE_START_ACCEPT]);
           setLoading && setLoading(true);
           client
             .mutate<SubmitJdCasesheet, SubmitJdCasesheetVariables>({
@@ -196,7 +219,7 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
               showAphAlert &&
                 showAphAlert({
                   title: 'Alert!',
-                  description: 'Error occured in case-sheet creation tyr again',
+                  description: 'Error occured in case-sheet creation try again',
                 });
             });
         },
@@ -529,6 +552,19 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                   photoUrl={i.patientInfo ? i.patientInfo.photoUrl || '' : ''}
                   isNewPatient={isNewPatient(i.patientInfo!.id)}
                   onPress={(doctorId, patientId, PatientInfo, appointmentTime, appId) => {
+                    postWebEngageEvent(WebEngageEventName.DOCTOR_APPOINTMENT_CLICKED, {
+                      'Doctor name': g(i, 'doctorInfo', 'fullName') || '',
+                      'Patient name': `${g(i, 'patientInfo', 'firstName')} ${g(
+                        i,
+                        'patientInfo',
+                        'lastName'
+                      )}`,
+                      'Patient mobile number': g(i, 'patientInfo', 'mobileNumber') || '',
+                      'Doctor Mobile number': g(i, 'doctorInfo', 'mobileNumber') || '',
+                      'Appointment Date time': g(i, 'appointmentDateTime') || '',
+                      'Appointment display ID': g(i, 'displayId') || '',
+                      'Appointment ID': g(i, 'id') || '',
+                    } as WebEngageEvents[WebEngageEventName.DOCTOR_APPOINTMENT_CLICKED]);
                     onAppointmentSelect(i);
                   }}
                   appointmentStatus={i.appointmentState || ''}

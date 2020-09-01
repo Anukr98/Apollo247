@@ -13,6 +13,7 @@ import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
 import moment from 'moment';
+import { webEngageLogin } from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 const styles = SplashScreenStyles;
 
@@ -135,11 +136,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const isOnboardingDone = await AsyncStorage.getItem('isOnboardingDone');
       const isProfileFlowDone = await AsyncStorage.getItem('isProfileFlowDone');
       const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
+      const mobileNumber = await AsyncStorage.getItem('phoneNumber');
+
       setTimeout(() => {
         console.log(firebaseUser);
         console.log('isLoggedIn', isLoggedIn, isOnboardingDone, isProfileFlowDone);
 
         if (isLoggedIn === 'true') {
+          if (mobileNumber) {
+            webEngageLogin(`+91${mobileNumber}`);
+          }
           if (isProfileFlowDone === 'true') {
             props.navigation.replace(AppRoutes.TabBar);
           } else {

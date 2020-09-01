@@ -161,6 +161,11 @@ import {
   saveAppointmentCallFeedback,
   saveAppointmentCallFeedbackVariables,
 } from '@aph/mobile-doctors/src/graphql/types/saveAppointmentCallFeedback';
+import {
+  postWebEngageEvent,
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 const { width } = Dimensions.get('window');
 // let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
@@ -282,6 +287,24 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     // favTestLoading,
     // favTestError,
   } = CaseSheetAPI();
+
+  const basicAppointmentData = {
+    'Doctor name': g(doctorDetails, 'fullName') || '',
+    'Patient name': `${g(caseSheet, 'caseSheetDetails', 'patientDetails', 'firstName')} ${g(
+      caseSheet,
+      'caseSheetDetails',
+      'patientDetails',
+      'lastName'
+    )}`.trim(),
+    'Patient mobile number':
+      g(caseSheet, 'caseSheetDetails', 'patientDetails', 'mobileNumber') || '',
+    'Doctor Mobile number': g(doctorDetails, 'mobileNumber') || '',
+    'Appointment Date time':
+      g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || '',
+    'Appointment display ID': g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') || '',
+    'Appointment ID': AppId || g(caseSheet, 'caseSheetDetails', 'appointment', 'id') || '',
+  };
+
   const { setOpenTokKeys, setCallBacks, callData, callOptions, errorPopup } = useAudioVideo();
   useEffect(() => {
     getSpecialties();
@@ -1802,6 +1825,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       (status, response) => {
         if (g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED) {
           postBackendWebEngage(WebEngageEvent.DOCTOR_SENT_MESSAGE);
+          postWebEngageEvent(WebEngageEventName.DOCTOR_SEND_MSG, {
+            ...basicAppointmentData,
+          } as WebEngageEvents[WebEngageEventName.DOCTOR_SEND_MSG]);
         }
         console.log(response, 'response');
       }
@@ -1868,6 +1894,22 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 caseSheet: caseSheet,
                 callDuration: callDuration,
               });
+            postWebEngageEvent(
+              !isJoin
+                ? callType === 'V'
+                  ? WebEngageEventName.DOCTOR_STOP_VIDEO_CALL
+                  : WebEngageEventName.DOCTOR_STOP_AUDIO_CALL
+                : WebEngageEventName.DOCTOR_ACCEPTED_JOIN_END,
+              {
+                ...basicAppointmentData,
+                'Type of call': !isJoin
+                  ? callType === 'V'
+                    ? 'Video'
+                    : 'Audio'
+                  : 'Join Acceptance',
+                'Call Duration': callDuration,
+              }
+            );
             AsyncStorage.setItem('callDataSend', 'true');
             pubnub.publish(
               {
@@ -1900,6 +1942,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         });
         Keyboard.dismiss();
         AsyncStorage.setItem('callDisconnected', 'false');
+        postWebEngageEvent(
+          !isJoin
+            ? callType === 'V'
+              ? WebEngageEventName.DOCTOR_START_VIDEO_CALL
+              : WebEngageEventName.DOCTOR_START_AUDIO_CALL
+            : WebEngageEventName.DOCTOR_ACCEPTED_JOIN,
+          {
+            ...basicAppointmentData,
+            'Type of call': !isJoin ? (callType === 'V' ? 'Video' : 'Audio') : 'Join Acceptance',
+          }
+        );
         firebase
           .analytics()
           .logEvent(
@@ -2075,6 +2128,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const onEndConsult = () => {
     stopAllCalls();
     endCallNotificationAPI(false);
+    postWebEngageEvent(WebEngageEventName.DOCTOR_STOP_CONSULT, {
+      ...basicAppointmentData,
+    } as WebEngageEvents[WebEngageEventName.DOCTOR_STOP_CONSULT]);
     firebase.analytics().logEvent('Doctor_end_consult', {
       doctorName: doctorDetails ? doctorDetails.fullName : doctorId,
       patientName: patientDetails
@@ -2289,6 +2345,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const onStartConsult = (successCallback?: () => void) => {
     getNetStatus().then((connected) => {
+      postWebEngageEvent(WebEngageEventName.DOCTOR_START_CONSULT, {
+        ...basicAppointmentData,
+      } as WebEngageEvents[WebEngageEventName.DOCTOR_START_CONSULT]);
       if (connected) {
         setShowLoading(true);
         client
@@ -2487,7 +2546,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               },
             })
               .then((response) => {
-                console.log(response, 'cancel response');
+                postWebEngageEvent(WebEngageEventName.DOCTOR_APPOINTMETNT_CANCELLED, {
+                  ...basicAppointmentData,
+                  'Cancel reason': selectedReason === 'Other' ? otherReason : selectedReason,
+                } as WebEngageEvents[WebEngageEventName.DOCTOR_APPOINTMETNT_CANCELLED]);
                 const text = {
                   id: doctorDetails ? doctorDetails.id : '',
                   message: messageCodes.cancelConsultInitiated,
@@ -2600,6 +2662,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   'Try again',
               });
           } else {
+            postWebEngageEvent(WebEngageEventName.DOCTOR_START_EXOTEL_CALL, {
+              ...basicAppointmentData,
+              'Type of call': 'Telephonic',
+              'Exotel number': string.exoTel.exotelNumber,
+            } as WebEngageEvents[WebEngageEventName.DOCTOR_START_EXOTEL_CALL]);
             pubnub.publish(
               {
                 message: {
@@ -3091,6 +3158,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             date={Appintmentdatetime}
             loading={(val) => setLoading && setLoading(val)}
             onDone={(reschduleObject) => {
+              postWebEngageEvent(WebEngageEventName.DOCTOR_APPOINTMENT_RESCHEDULED, {
+                ...basicAppointmentData,
+                'Reschedule date ': moment(reschduleObject.transferDateTime).format('DD-MM-YYYY'),
+                'Reschedule time': moment(reschduleObject.transferDateTime).format('hh:mm A'),
+                'Reschedule reason ': reschduleObject.reason,
+              } as WebEngageEvents[WebEngageEventName.DOCTOR_APPOINTMENT_RESCHEDULED]);
               console.log(reschduleObject, 'reschduleObject');
               pubnub.publish(
                 {

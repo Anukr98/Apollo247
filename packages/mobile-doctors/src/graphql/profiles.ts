@@ -137,6 +137,15 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
         isFollowUp
         followUpParentId
         isJdQuestionsComplete
+        doctorInfo {
+          id
+          displayName
+          mobileNumber
+          firstName
+          lastName
+          fullName
+          doctorType
+        }
         caseSheet {
           id
           blobName
@@ -261,6 +270,7 @@ export const GET_PATIENT_LOG = gql`
         appointmentdatetime
         patientInfo {
           firstName
+          lastName
           dateOfBirth
           id
           emailAddress
