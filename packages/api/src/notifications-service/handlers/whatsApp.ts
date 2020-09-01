@@ -58,7 +58,7 @@ export const sendDoctorNotificationWhatsapp = async (
       format(new Date(), 'yyyy-MM-dd hh:mm') + '\n ' + phoneNumber + ' - ' + templateName;
     content +=
       'Scenario key undefined \n------------------------------------------------------------------------------------\n';
-    fs.appendFile(assetsDir + '/' + fileName, content, (err) => { });
+    fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
   } else {
     console.log(`Scenario key`, process.env.WHATSAPP_SCENARIO_KEY);
     scenarioKey = process.env.WHATSAPP_SCENARIO_KEY;
@@ -86,6 +86,25 @@ export const sendDoctorNotificationWhatsapp = async (
           Authorization: process.env.WHATSAPP_AUTH_HEADER ? process.env.WHATSAPP_AUTH_HEADER : '',
         },
       });
+      let content =
+        format(new Date(), 'yyyy-MM-dd hh:mm') +
+        '\n ' +
+        templateData[0] +
+        '-' +
+        phoneNumber +
+        ' - ' +
+        templateName +
+        ' - ' +
+        process.env.WHATSAPP_DOCTOR_NUMBER +
+        ' - ' +
+        process.env.WHATSAPP_AUTH_HEADER +
+        ' - ' +
+        scenarioKey +
+        ' - ' +
+        response.status;
+      content +=
+        '\n------------------------------------------------------------------------------------\n';
+      fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
       console.log(JSON.stringify(response, null, 1), 'response');
     } else {
       const response = await fetch(url, {
@@ -120,7 +139,7 @@ export const sendDoctorNotificationWhatsapp = async (
         response.status;
       content +=
         '\n------------------------------------------------------------------------------------\n';
-      fs.appendFile(assetsDir + '/' + fileName, content, (err) => { });
+      fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
       console.log(JSON.stringify(response, null, 1), 'response');
     }
   }
