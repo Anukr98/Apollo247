@@ -940,7 +940,9 @@ export const MedicineCart: React.FC = (props) => {
   const getDiscountedLineItemPrice = (sku: string) => {
     if (couponCode.length > 0 && validateCouponResult && validateCouponResult.products) {
       const item: any = validateCouponResult.products.find((item: any) => item.sku === sku);
-      return item.specialPrice.toFixed(2);
+      return item.onMrp
+        ? (item.mrp - item.discountAmt).toFixed(2)
+        : (item.specialPrice - item.discountAmt).toFixed(2);
     }
   };
 
@@ -1756,7 +1758,6 @@ export const MedicineCart: React.FC = (props) => {
                         validateCouponResult.discount > 0 &&
                         Number(validateCouponResult.discount.toFixed(2)) >
                           Number(productDiscount.toFixed(2)) && (
-
                           <div className={classes.discountTotal}>
                             {`Savings of Rs.
                           ${couponDiscount}
