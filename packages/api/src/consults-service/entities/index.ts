@@ -677,8 +677,8 @@ export class AppointmentCallDetails extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
-  @OneToOne(() => AppointmentCallFeedback, (appointmentCallFeedbackk) => appointmentCallFeedbackk.appointmentCallDetails)
-  appointmentCallFeedback: AppointmentCallFeedback[];
+  @OneToOne(() => AppointmentCallFeedback, (appointmentCallFeedback) => appointmentCallFeedback.appointmentCallDetails)
+  appointmentCallFeedback: AppointmentCallFeedback
 
   @BeforeInsert()
   updateDateCreation() {
@@ -894,7 +894,7 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true, default: false })
   followUp: Boolean;
 
-  @Column({ default: 7, type: 'float8' })
+  @Column({ nullable: true })
   followUpAfterInDays: number;
 
   @Column({ nullable: true })
@@ -988,8 +988,9 @@ export class CaseSheet extends BaseEntity {
 ///////////////////////////////////////////////////////////
 @Entity()
 export class ConsultQueueItem extends BaseEntity {
+
   @Index('ConsultQueueItem_appointmentId')
-  @Column()
+  @Column({ nullable: false })
   appointmentId: string;
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.consultQueueItem)

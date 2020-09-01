@@ -1,6 +1,9 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Avatar } from '@material-ui/core';
+import { Theme, Avatar, Button } from '@material-ui/core';
 import React from 'react';
+import { ViewPrescriptionCard } from 'components/Consult/V2/ChatRoom/ViewPrescriptionCard';
+import format from 'date-fns/format';
+import isToday from 'date-fns/isToday';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -97,11 +100,16 @@ interface DoctorCardProps {
   messageDetails: any;
   setModalOpen: (flag: boolean) => void;
   setImgPrevUrl: (url: string) => void;
+  chatTime: string;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles({});
   const message = props.message.replace(/\n/g, '<br />');
+  const chatDate = new Date(props.chatTime);
+  const chatTime = isToday(chatDate)
+    ? format(chatDate, 'hh:mm a')
+    : format(chatDate, 'do MMMM yyyy, hh:mm a');
   return (
     <div className={classes.doctorCardMain}>
       <div className={classes.doctorAvatar}>
@@ -123,7 +131,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             }}
           ></div>
         </>
-
       ) : props.duration ? (
         <div>
           <img src={require('images/ic_round_call.svg')} />
@@ -134,7 +141,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             }}
           ></div>
           <span className={classes.durationMsg}>Duration- {props.duration}</span>
-        </div >
+        </div>
       ) : props.messageDetails.message === '^^#DocumentUpload' ? (
         <div className={classes.chatImgBubble}>
           <div
@@ -149,16 +156,31 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 <img src={require('images/pdf_thumbnail.png')} />
               </a>
             ) : (
-                <img src={props.messageDetails.url} alt={props.messageDetails.url} />
-              )}
+              <img src={props.messageDetails.url} alt={props.messageDetails.url} />
+            )}
           </div>
         </div>
+      ) : props.messageDetails.message === '^^#followupconsult' ? (
+        // <div className={`${classes.blueBubble} ${classes.petient} `}>
+        //   <Link
+        //     to={clientRoutes.prescription(props.messageDetails.transferInfo.appointmentId)}
+        //   ></Link>
+        //   <Button>Download</Button>
+        // </div>
+        <ViewPrescriptionCard
+          message={props.message}
+          duration={props.duration}
+          messageDetails={props.messageDetails}
+          chatTime={chatTime}
+        />
       ) : (
-              <div
-                className={`${classes.blueBubble} ${classes.petient} `}
-                dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}
-              ></div>
-            )}
-    </div >
+        <>
+          <div
+            className={`${classes.blueBubble} ${classes.petient} `}
+            dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}
+          ></div>
+        </>
+      )}
+    </div>
   );
 };

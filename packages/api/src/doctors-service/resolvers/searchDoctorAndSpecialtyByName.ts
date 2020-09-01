@@ -134,8 +134,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
           must: [
             { match: { 'doctorSlots.slots.status': 'OPEN' } },
             { match: { isSearchable: true } },
-            {
-              multi_match: {
+            { query_string: {
+              fuzziness: 'AUTO',
+              query: `*${searchTextLowerCase}*`,
                 fields: [
                   `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
                   `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
@@ -143,9 +144,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                   `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                 ],
-                type: 'phrase_prefix',
-                query: searchTextLowerCase,
-              },
+              }
             },
           ],
         },
@@ -164,8 +163,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
               { match: { 'doctorSlots.slots.status': 'OPEN' } },
               { match: { 'facility.city': args.city } },
               { match: { isSearchable: true } },
-              {
-                multi_match: {
+              { query_string: {
+                fuzziness: 'AUTO',
+                query: `*${searchTextLowerCase}*`,
                   fields: [
                     `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
                     `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
@@ -173,9 +173,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                     `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                     `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                   ],
-                  type: 'phrase_prefix',
-                  query: searchTextLowerCase,
-                },
+                }
               },
             ],
           },
@@ -300,8 +298,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
           must: [
             { match: { 'doctorSlots.slots.status': 'OPEN' } },
             { match: { isSearchable: true } },
-            {
-              multi_match: {
+            { query_string: {
+              fuzziness: 'AUTO',
+              query: `*${searchTextLowerCase}*`,
                 fields: [
                   `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
                   `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
@@ -309,9 +308,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                   `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                 ],
-                fuzziness: 'AUTO',
-                query: searchTextLowerCase,
-              },
+              }
             },
           ],
           must_not: [

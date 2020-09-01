@@ -1,4 +1,5 @@
 JS_APP_CONFIG_FILE_PATH = "../src/strings/AppConfig.ts"
+APP_ENVIRONMENT = File.read(JS_APP_CONFIG_FILE_PATH).scan(/AppEnv.\b([A-Za-z]+)\b as AppEnv/)[0][0]
 APP_CONFIG_CODEPUSH_MAPPING = {
 	"Production" => "PROD",
 	"Staging" => "QA",
@@ -22,10 +23,11 @@ APPCENTER_APP_NAME_IOS = "Apollo"
 APPCENTER_APP_NAME_ANDROID = "Apollo-1"
 APPCENTER_DISTRIBUTE_DESTINATIONS = "Internal Testers,Apollo247_Internal"
 # Edit Release Notes Here
+# Update $release_version below else it'll ask at the time of build generation
 APPCENTER_DISTRIBUTE_RELEASE_NOTES = "
 | Key | | Value |
 | :--- | :----: | :--- |
-| Environment | | $environment |
+| Environment | | #{APP_ENVIRONMENT} |
 | Release | | $release_version |
 "
 # Set to false if you don't want to notify testers of your new release
@@ -40,16 +42,16 @@ private_lane :do_codepush do |options|
 	appcenter_app_name = "#{APPCENTER_OWNER_NAME}/#{is_android ? APPCENTER_APP_NAME_ANDROID: APPCENTER_APP_NAME_IOS}"
 	puts(platform)
 	if !environment
-		UI.message "Fetching Codepush environments for Android: #{appcenter_app_name}" 
+		UI.message "Fetching Codepush environments for #{platform} - #{appcenter_app_name}"
 		fetch_command = "appcenter codepush deployment list -a #{appcenter_app_name} --output json"
 		sh(fetch_command) do |status, result, command|
 			environment_labels = JSON.parse(result).map{|e| e.first}
-			environment = UI.select("\nWhat environment do you want to target?", environment_labels);
+			environment = UI.select("\nWhich environment do you want to target?", environment_labels);
 		end
 	end
 	matches = File.read(JS_APP_CONFIG_FILE_PATH).scan("AppEnv.#{APP_CONFIG_CODEPUSH_MAPPING[environment]} as AppEnv")
 	if matches.length == 0
-		UI.error "Error! The codepush deployment target (#{environment}) does not match with appconfig (path: #{JS_APP_CONFIG_FILE_PATH}) environment."
+		UI.error "Error! The codepush deployment target `#{environment}` does not match with app environment `#{APP_ENVIRONMENT}` (path: #{JS_APP_CONFIG_FILE_PATH.gsub('../', '')})."
 		next # terminate the execution here
 	end
 	if !target_version
@@ -76,6 +78,13 @@ private_lane :validate_webengage_key do |options|
 			new_contents = file_text.gsub(WEBENGAGE_KEY[replace_weg_key], WEBENGAGE_KEY[weg_key])
 			File.open(path_to_check, "w") {|file| file.puts new_contents }
 		end
+	end
+end
+
+private_lane :update_release_notes do |options|
+	if APPCENTER_DISTRIBUTE_RELEASE_NOTES.include? "$release_version"
+		release_version = UI.input("\nPlease enter the exact Jira release title to mention in appcenter release notes.\n[Note: If you don't want this to be asked everytime, please update `$release_version` placeholder in \"fastlane/Fastfile\" => \"APPCENTER_DISTRIBUTE_RELEASE_NOTES\".]");
+		APPCENTER_DISTRIBUTE_RELEASE_NOTES = APPCENTER_DISTRIBUTE_RELEASE_NOTES.gsub("$release_version", release_version)
 	end
 end
 
@@ -121,6 +130,7 @@ platform :android do
 	desc 'Upload Android apk to appcenter'
 	lane :appcenter_apk do
 		validate_webengage_key({platform: "android"})
+		update_release_notes()
 		gradle(task: 'clean', project_dir: './android/')
 		gradle(task: 'assemble', build_type: 'Release', project_dir: './android')
 		appcenter_upload(
@@ -150,15 +160,17 @@ platform :ios do
 		build_app(
 			scheme: "ApolloPatient", 
 			workspace: "./ios/ApolloPatient.xcworkspace", 
-			export_method: "ad-hoc",
 			clean: true,
 			silent: true,
 			output_directory: "./builds",
 			output_name: "Apollo 247.ipa",
 			include_symbols: false,
 			include_bitcode: false,
+			# skip_archive: true,
+			export_method: "ad-hoc",
 			export_options: {
-				compileBitcode: false
+				compileBitcode: false,
+				iCloudContainerEnvironment: 'Development'
 			},
 		)
 	end
@@ -166,18 +178,21 @@ platform :ios do
 	desc 'Upload iOS ipa to appcenter'
 	lane :appcenter_ipa do
 		validate_webengage_key({platform: "ios"})
+		update_release_notes()
 		build_app(
 			scheme: "ApolloPatient", 
 			workspace: "./ios/ApolloPatient.xcworkspace", 
-			export_method: "ad-hoc",
-			clean: true,
+			# clean: true,
 			silent: true,
 			output_directory: "./builds",
 			output_name: "Apollo 247.ipa",
 			include_symbols: false,
 			include_bitcode: false,
+			# skip_archive: true,
+			export_method: "ad-hoc",
 			export_options: {
-				compileBitcode: false
+				compileBitcode: false,
+				iCloudContainerEnvironment: 'Development'
 			},
 		)
 		appcenter_upload(

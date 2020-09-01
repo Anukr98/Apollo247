@@ -804,7 +804,7 @@ export const MedicineDetails: React.FC = (props) => {
 
   const renderComposition = () => {
     const generics = medicinePharmacyDetails[0].generic.split('+ ');
-    const strength = medicinePharmacyDetails[0].Strengh.split('+ ');
+    const strength = medicinePharmacyDetails[0].Strength.split('+ ');
     const units = medicinePharmacyDetails[0].Unit.split('+ ');
     const compositionArray = generics.map((key, ind) => `${key}-${strength[ind]}${units[ind]}`);
     return compositionArray.join(' + ');
@@ -1015,7 +1015,13 @@ export const MedicineDetails: React.FC = (props) => {
             <div className={classes.container}>
               <div className={classes.medicineDetailsPage}>
                 <div className={classes.breadcrumbs}>
-                  <a onClick={() => history.push(clientRoutes.medicines())}>
+                  <a
+                    onClick={() => {
+                      sessionStorage.getItem('categoryClicked')
+                        ? history.goBack()
+                        : history.push(clientRoutes.medicines());
+                    }}
+                  >
                     <div className={classes.backArrow}>
                       <img
                         className={classes.blackArrow}

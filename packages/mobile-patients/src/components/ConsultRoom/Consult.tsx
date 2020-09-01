@@ -25,6 +25,7 @@ import {
   getNetStatus,
   postWebEngageEvent,
   g,
+  followUpChatDaysCaseSheet,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -181,7 +182,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [consultations, setconsultations] = useState<
     getPatientAllAppointments_getPatientAllAppointments_appointments[]
   >([]);
-
+  const [activeConsultations, setActiveConsultations] = useState<
+    getPatientAllAppointments_getPatientAllAppointments_appointments[]
+  >([]);
+  const [pastConsultations, setPastConsultations] = useState<
+    getPatientAllAppointments_getPatientAllAppointments_appointments[]
+  >([]);
   const { loading, setLoading } = useUIElements();
 
   const [showSchdulesView, setShowSchdulesView] = useState<boolean>(false);
@@ -328,10 +334,35 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 data.getPatientAllAppointments.appointments &&
                 consultations !== data.getPatientAllAppointments.appointments
               ) {
-                setconsultations(
-                  data.getPatientAllAppointments.appointments
-                  // data.getPatientAllAppointments.appointments.filter((item) => item.doctorInfo !== null)
-                );
+                let pastAppointments:
+                  | getPatientAllAppointments_getPatientAllAppointments_appointments
+                  | any = [];
+                let activeAppointments:
+                  | getPatientAllAppointments_getPatientAllAppointments_appointments
+                  | any = [];
+                data.getPatientAllAppointments.appointments.forEach((item) => {
+                  const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
+                  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+                  const followUpAfterInDays =
+                    caseSheetChatDays || caseSheetChatDays === '0'
+                      ? caseSheetChatDays === '0'
+                        ? 0
+                        : Number(caseSheetChatDays) - 1
+                      : 6;
+                  if (
+                    moment(new Date(item.appointmentDateTime))
+                      .add(followUpAfterInDays, 'days')
+                      .startOf('day')
+                      .isSameOrAfter(moment(new Date()).startOf('day'))
+                  ) {
+                    activeAppointments.push(item);
+                  } else {
+                    pastAppointments.push(item);
+                  }
+                });
+                setconsultations(data.getPatientAllAppointments.appointments);
+                setActiveConsultations(activeAppointments);
+                setPastConsultations(pastAppointments);
               } else {
                 setconsultations([]);
               }
@@ -339,7 +370,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             })
             .catch((e) => {
               CommonBugFender('Consult_fetchAppointments', e);
-              console.log('Error occured in GET_PATIENT_APPOINTMENTS', e);
+              console.log('Error occured in GET_PATIENT_ALL_APPOINTMENTS', e);
             })
             .finally(() => {
               console.log('finally');
@@ -471,21 +502,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         keyExtractor={(_, index) => index.toString()}
         contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
         // horizontal={true}
-        data={
-          selectedTab === tabs[0].title
-            ? consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime))
-                  .add(6, 'days')
-                  .startOf('day')
-                  .isSameOrAfter(moment(new Date()).startOf('day'))
-              )
-            : consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime))
-                  .add(6, 'days')
-                  .startOf('day')
-                  .isBefore(moment(new Date()).startOf('day'))
-              )
-        }
+        data={selectedTab === tabs[0].title ? activeConsultations : pastConsultations}
         bounces={false}
         removeClippedSubviews={true}
         showsHorizontalScrollIndicator={false}
@@ -497,7 +514,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           // console.log(tomorrow, 'tomorrow');
           let appointmentDateTomarrow = moment(item.appointmentDateTime).format('DD MMM');
           // console.log(appointmentDateTomarrow, 'apptomorrow', tomorrowDate);
-
+          const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
+          const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+          const followUpAfterInDays =
+            caseSheetChatDays || caseSheetChatDays === '0'
+              ? caseSheetChatDays === '0'
+                ? 2
+                : Number(caseSheetChatDays) + 1
+              : 8;
           const appointmentDateTime = moment
             .utc(item.appointmentDateTime)
             .local()
@@ -520,7 +544,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             // .set('hour', 0)
             // .set('minute', 0)
             .startOf('day')
-            .add(8, 'days'); // since we're calculating as EOD
+            .add(followUpAfterInDays, 'days'); // since we're calculating as EOD
           const day2 = moment(new Date());
           day1.diff(day2, 'days'); // 1
 
@@ -955,25 +979,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           unsetloaderDisplay={true}
         ></ProfileList>
         <Text style={styles.descriptionTextStyle}>
-          {consultations.filter((item) =>
-            moment(new Date(item.appointmentDateTime), 'DD-MM-YYYY').add(6, 'days')
-          ).length > -1 && selectedTab === tabs[0].title
-            ? 'You have ' +
-              (consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime))
-                  .add(6, 'days')
-                  .startOf('day')
-                  .isSameOrAfter(moment(new Date()).startOf('day'))
-              ).length || 'no') +
-              ' active appointment(s)!'
-            : 'You have ' +
-              (consultations.filter((item) =>
-                moment(new Date(item.appointmentDateTime))
-                  .add(6, 'days')
-                  .startOf('day')
-                  .isBefore(moment(new Date()).startOf('day'))
-              ).length || 'no') +
-              ' past appointment(s)!'}
+          {selectedTab === tabs[0].title
+            ? 'You have ' + (activeConsultations.length || 'no') + ' active appointment(s)!'
+            : 'You have ' + (pastConsultations.length || 'no') + ' past appointment(s)!'}
         </Text>
       </View>
     );

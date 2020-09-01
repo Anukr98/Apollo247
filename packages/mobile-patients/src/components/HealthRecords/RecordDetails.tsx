@@ -312,16 +312,15 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   };
 
   const renderImage = () => {
-    // const placeImage1 = placeImage.split(',');
-    console.log(!!data.fileUrl, g(data, 'prescriptionFiles', '0', 'fileName'), 'placeImage1');
-    // {
-    //   placeImage.map((item: string, i: number) => console.log('hi', item));
-    // }
-
     const fileName = g(data, 'testResultFiles', '0', 'fileName')
       ? ': ' + g(data, 'testResultFiles', '0', 'fileName')
       : g(data, 'prescriptionFiles', '0', 'fileName')
       ? ': ' + g(data, 'prescriptionFiles', '0', 'fileName')
+      : '';
+    const file_name = g(data, 'testResultFiles', '0', 'fileName')
+      ? g(data, 'testResultFiles', '0', 'fileName')
+      : g(data, 'prescriptionFiles', '0', 'fileName')
+      ? g(data, 'prescriptionFiles', '0', 'fileName')
       : '';
     return (
       <View
@@ -330,25 +329,29 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         }}
       >
         <ScrollView>
-          {g(data, 'testResultFiles', '0', 'mimeType') === 'application/pdf' ||
-          g(data, 'prescriptionFiles', '0', 'mimeType') === 'application/pdf' ? (
+          {file_name && file_name.toLowerCase().endsWith('.pdf') ? (
             <View style={{ marginHorizontal: 20, marginBottom: 15, marginTop: 50 }}>
               <Button
                 title={'Open File' + fileName}
                 onPress={() =>
                   props.navigation.navigate(AppRoutes.RenderPdf, {
                     uri: data.fileUrl,
-                    title: g(data, 'testResultFiles', '0', 'fileName')
-                      ? g(data, 'testResultFiles', '0', 'fileName')
-                      : g(data, 'prescriptionFiles', '0', 'fileName')
-                      ? g(data, 'prescriptionFiles', '0', 'fileName')
-                      : '',
+                    title: file_name,
                   })
                 }
               ></Button>
             </View>
           ) : (
-            <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+                  images: [data.fileUrl],
+                  heading: file_name || 'Image',
+                });
+              }}
+              style={{ marginHorizontal: 20, marginBottom: 15 }}
+            >
               <Image
                 placeholderStyle={{
                   height: 425,
@@ -365,7 +368,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                 }}
                 resizeMode="contain"
               />
-            </View>
+            </TouchableOpacity>
           )}
         </ScrollView>
       </View>

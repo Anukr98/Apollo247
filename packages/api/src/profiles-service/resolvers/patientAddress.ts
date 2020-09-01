@@ -10,6 +10,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 export const addPatientAddressTypeDefs = gql`
   input PatientAddressInput {
     patientId: ID!
+    name: String
     addressLine1: String!
     addressLine2: String
     city: String
@@ -32,6 +33,7 @@ export const addPatientAddressTypeDefs = gql`
 
   input UpdatePatientAddressInput {
     id: ID!
+    name: String
     addressLine1: String!
     addressLine2: String
     city: String
@@ -48,6 +50,7 @@ export const addPatientAddressTypeDefs = gql`
 
   type PatientAddress {
     id: ID!
+    name: String
     addressLine1: String
     addressLine2: String
     city: String
@@ -91,6 +94,7 @@ export const addPatientAddressTypeDefs = gql`
 `;
 type PatientAddressInput = {
   patientId: string;
+  name: string;
   addressLine1: string;
   addressLine2: string;
   city: string;
@@ -107,6 +111,7 @@ type PatientAddressInput = {
 
 type UpdatePatientAddressInput = {
   id: string;
+  name: string;
   addressLine1: string;
   addressLine2: string;
   city: string;

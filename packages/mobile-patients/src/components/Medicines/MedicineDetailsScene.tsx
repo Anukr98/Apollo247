@@ -21,13 +21,16 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  getDeliveryTime,
   getMedicineDetailsApi,
   getSubstitutes,
   MedicineProduct,
   MedicineProductDetails,
-  pinCodeServiceabilityApi,
   trackTagalysEvent,
+  getDeliveryTAT247,
+  TatApiInput247,
+  getPlaceInfoByPincode,
+  pinCodeServiceabilityApi247,
+  availabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
@@ -36,7 +39,6 @@ import {
   postwebEngageAddToCartEvent,
   postAppsFlyerAddToCartEvent,
   g,
-  isDeliveryDateWithInXDays,
   productsThumbnailUrl,
   getDiscountPercentage,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -461,29 +463,52 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
     // To handle deeplink scenario and
     // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
-    const pinCodeNotServiceable =
+   
+    let pinCodeNotServiceable =
       isPharmacyLocationServiceable == undefined
-        ? !(await pinCodeServiceabilityApi(pincode)).data.Availability
+        ? !(await pinCodeServiceabilityApi247(pincode)).data.response
         : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
+
+    const checkAvailabilityRes = await availabilityApi247(pincode, sku)
+    const availabilityRes = g(checkAvailabilityRes, 'data', 'response')
+    if (availabilityRes) {
+      pinCodeNotServiceable = !availabilityRes[0].exist
+    } else {
+      setdeliveryTime('');
+      setdeliveryError(pincodeServiceableItemOutOfStockMsg);
+      setshowDeliverySpinner(false);
+      return;
+    }
+
     if (pinCodeNotServiceable) {
       setdeliveryTime('');
       setdeliveryError(unServiceableMsg);
       setshowDeliverySpinner(false);
       return;
     }
+    
+    try {
+      let longitude, lattitude;
+      if (pharmacyPincode == pincode) {
+        lattitude = pharmacyLocation ? pharmacyLocation.latitude : locationDetails 
+                    ? locationDetails.latitude : null;
+        longitude = pharmacyLocation ? pharmacyLocation.longitude : locationDetails 
+                    ? locationDetails.longitude : null;
+      } 
+      if (!lattitude || !longitude){
+        const data = await getPlaceInfoByPincode(pincode);
+        const locationData = data.data.results[0].geometry.location;
+        lattitude = locationData.lat;
+        longitude = locationData.lng;
+      }
 
-    getDeliveryTime({
-      postalcode: pincode,
-      ordertype: (medicineDetails.type_id || '').toLowerCase() == 'pharma' ? 'pharma' : 'fmcg',
-      lookup: [
-        {
-          sku: sku,
-          qty: getItemQuantity(sku),
-        },
-      ],
-    })
-      .then((res) => {
-        const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
+      getDeliveryTAT247({
+        items: [{sku : sku, qty: getItemQuantity(sku)}],
+        pincode: pincode,
+        lat: lattitude,
+        lng: longitude
+      } as TatApiInput247).then((res) => {
+        const deliveryDate = g(res, 'data', 'response', 'tat')
         const currentDate = moment();
         if (deliveryDate) {
           if (checkButtonClicked) {
@@ -497,25 +522,27 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             };
             postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
           }
-          if (isDeliveryDateWithInXDays(deliveryDate)) {
-            setdeliveryTime(deliveryDate);
-            setdeliveryError('');
-          } else {
-            setdeliveryError(pincodeServiceableItemOutOfStockMsg);
-            setdeliveryTime('');
-          }
-        } else {
-          setdeliveryTime(genericServiceableDate);
+          setdeliveryTime(moment(deliveryDate, "DD-MM-YYYY hh:mm:ss a").format(AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT));
           setdeliveryError('');
+        } else {
+          setdeliveryError(pincodeServiceableItemOutOfStockMsg);
+          setdeliveryTime('');
         }
       })
-      .catch(() => {
-        // Intentionally show T+2 days as Delivery Date
-        setdeliveryTime(genericServiceableDate);
-        setdeliveryError('');
-      })
-      .finally(() => setshowDeliverySpinner(false));
+        .catch(() => {
+          // Intentionally show T+2 days as Delivery Date
+          setdeliveryTime(genericServiceableDate);
+          setdeliveryError('');
+        })
+        .finally(() => setshowDeliverySpinner(false));
+    } catch (error) {
+      // in case user entered wrong pincode, not able to get lat lng. showing out of stock to user
+      setdeliveryError(pincodeServiceableItemOutOfStockMsg);
+      setdeliveryTime('');
+      setshowDeliverySpinner(false)
+    }
   };
+
 
   const fetchSubstitutes = () => {
     getSubstitutes(sku)

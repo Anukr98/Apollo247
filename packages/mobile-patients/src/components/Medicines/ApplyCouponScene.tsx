@@ -115,7 +115,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const [couponError, setCouponError] = useState<string>('');
   const [couponList, setcouponList] = useState<pharma_coupon[]>([]);
   const { currentPatient } = useAllCurrentPatients();
-  const { setCoupon, coupon: cartCoupon, cartItems, cartTotal } = useShoppingCart();
+  const { setCoupon, coupon: cartCoupon, cartItems, cartTotal, setCouponProducts } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
@@ -164,6 +164,11 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
             props.navigation.goBack();
           } else {
             setCouponError(g(resp.data, 'response', 'reason'));
+          }
+
+          const products = g(resp.data, 'response', 'products');
+          if(products && products.length) {
+            setCouponProducts!(products);
           }
 
           const eventAttributes: WebEngageEvents[WebEngageEventName.CART_COUPON_APPLIED] = {
