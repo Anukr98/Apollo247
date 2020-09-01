@@ -2,7 +2,7 @@ import path from 'path';
 import { format } from 'date-fns';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import fs from 'fs';
-import { BlobServiceClient } from '@azure/storage-blob';
+//import { BlobServiceClient } from '@azure/storage-blob';
 
 export async function uploadFileToBlobStorage(
   fileType: string,
@@ -60,23 +60,24 @@ export async function uploadPdfFileToBlobStorage(
   fileName: string,
   filePath: string
 ): Promise<string> {
-  console.log(filePath, fileName, 'file details');
-  const blobServiceClient = BlobServiceClient.fromConnectionString(
-    process.env.DOCTORS_AZURE_STORAGE_CONNECTION_STRING_API
-      ? process.env.DOCTORS_AZURE_STORAGE_CONNECTION_STRING_API
-      : ''
-  );
-  const containerName = process.env.DOCTORS_AZURE_STORAGE_CONTAINER_NAME
-    ? process.env.DOCTORS_AZURE_STORAGE_CONTAINER_NAME
-    : '';
-  console.log('referencing the container ', containerName);
-  const containerClient = blobServiceClient.getContainerClient(containerName);
-  const blockBlobClient = containerClient.getBlockBlobClient(fileName);
-  console.log('\nUploading to Azure storage as blob:\n', fileName);
-  const uploadBlobResponse = await blockBlobClient.uploadFile(filePath, {
-    blobHTTPHeaders: { blobContentType: 'application/pdf' },
-  });
-  return uploadBlobResponse._response.status.toString();
+  // console.log(filePath, fileName, 'file details');
+  // const blobServiceClient = BlobServiceClient.fromConnectionString(
+  //   process.env.DOCTORS_AZURE_STORAGE_CONNECTION_STRING_API
+  //     ? process.env.DOCTORS_AZURE_STORAGE_CONNECTION_STRING_API
+  //     : ''
+  // );
+  // const containerName = process.env.DOCTORS_AZURE_STORAGE_CONTAINER_NAME
+  //   ? process.env.DOCTORS_AZURE_STORAGE_CONTAINER_NAME
+  //   : '';
+  // console.log('referencing the container ', containerName);
+  // const containerClient = blobServiceClient.getContainerClient(containerName);
+  // const blockBlobClient = containerClient.getBlockBlobClient(fileName);
+  // console.log('\nUploading to Azure storage as blob:\n', fileName);
+  // const uploadBlobResponse = await blockBlobClient.uploadFile(filePath, {
+  //   blobHTTPHeaders: { blobContentType: 'application/pdf' },
+  // });
+  // return uploadBlobResponse._response.status.toString();
+  return filePath;
 }
 
 export function textInRow(doc: PDFKit.PDFDocument, text: string, heigth: number, st: number) {

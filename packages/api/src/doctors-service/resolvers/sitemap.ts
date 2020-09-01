@@ -21,6 +21,7 @@ export const sitemapTypeDefs = gql`
     healthAreasUrls: [SitemapUrls]
     shopByCategoryUrls: [SitemapUrls]
     medicinesUrls: [SitemapUrls]
+    staticPageUrls: [SitemapUrls]
     sitemapFilePath: String
   }
   extend type Mutation {
@@ -40,6 +41,7 @@ type SitemapResult = {
   healthAreasUrls: SitemapUrls[];
   shopByCategoryUrls: SitemapUrls[];
   medicinesUrls: SitemapUrls[];
+  staticPageUrls: SitemapUrls[];
   sitemapFilePath: string;
 };
 
@@ -65,6 +67,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
   args,
   { doctorsDb }
 ) => {
+  console.log(await hgetAllCache('apollo247:staticpages:*'), 'static pages');
   const specialtyRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const specialityUrls: SitemapUrls[] = [],
@@ -72,7 +75,9 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
     articleUrls: SitemapUrls[] = [],
     healthAreasUrls: SitemapUrls[] = [],
     shopByCategoryUrls: SitemapUrls[] = [],
-    medicinesUrls: SitemapUrls[] = [];
+    medicinesUrls: SitemapUrls[] = [],
+    staticPageUrls: SitemapUrls[] = [];
+
   const specialitiesList = await specialtyRepo.findAll();
   let sitemapStr =
     '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">\n<!-- Doctor Specilaities -->\n';
@@ -109,7 +114,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
       doctorsStr += docStr;
     });
   }
-
+  //const fetch = require('node-fetch');
   let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
@@ -223,6 +228,23 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
     }
   }
 
+  //read static page urls from redis cache
+  const staticPages = await keyCache('apollo247:staticpages:*');
+  console.log(staticPages, 'staticPages');
+  if (staticPages && staticPages.length > 0) {
+    for (let k = 0; k < staticPages.length; k++) {
+      const pageDets = await hgetAllCache(staticPages[k]);
+      console.log(pageDets, 'page dets');
+      if (pageDets) {
+        const urlInfo: SitemapUrls = {
+          url: pageDets.pageUrl,
+          urlName: pageDets.pageName,
+        };
+        staticPageUrls.push(urlInfo);
+      }
+    }
+  }
+
   sitemapStr +=
     doctorsStr +
     brandsPage +
@@ -245,6 +267,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
     healthAreasUrls,
     shopByCategoryUrls,
     medicinesUrls,
+    staticPageUrls,
   };
 };
 
