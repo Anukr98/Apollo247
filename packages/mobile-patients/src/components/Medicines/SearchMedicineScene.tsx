@@ -70,6 +70,7 @@ import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/component
 import Axios from 'axios';
 import { StickyBottomComponent } from '../ui/StickyBottomComponent';
 import { Button } from '../ui/Button';
+import _ from 'lodash';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -190,11 +191,11 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   useEffect(() => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_LIST_GRID_VIEW] = {
-      'Source': 'Search',
-      'Type': showListView ? 'List' : 'Grid',
+      Source: 'Search',
+      Type: showListView ? 'List' : 'Grid',
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_LIST_GRID_VIEW, eventAttributes);
-  },[showListView]);
+  }, [showListView]);
 
   useEffect(() => {
     searchTextFromProp && onSearchProduct(searchTextFromProp);
@@ -508,7 +509,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           value={searchText}
           onSubmitEditing={startFullSearch}
           onChangeText={(value) => {
-            onSearchMedicine(value);
+            const search = _.debounce(onSearchMedicine, 300);
+            search(value);
           }}
           _isSearchFocused={isSearchFocused}
           onFocus={() => setSearchFocused(true)}

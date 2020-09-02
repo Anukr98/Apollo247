@@ -93,6 +93,7 @@ import {
 } from 'react-navigation';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
+import _ from 'lodash';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -1319,7 +1320,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onChangeText={(value) => {
             if (isValidSearch(value)) {
               setDoctorSearch(value);
-              filterDoctors(doctorsList, doctorsType, value);
+              const search = _.debounce(filterDoctors, 300);
+              search(doctorsList, doctorsType, value);
             }
           }}
         />
