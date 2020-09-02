@@ -16,12 +16,16 @@ const dotEnvConfig = dotenv.config({ path: envFile });
 if (dotEnvConfig.error) throw dotEnvConfig.error;
 Object.values(dotEnvConfig).forEach((val, KEY) => (process.env[KEY] = val));
 const isLocal = process.env.NODE_ENV === 'local';
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = process.env.NODE_ENV === 'dev';
 const isStaging = process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'vapt';
 const isProduction = process.env.NODE_ENV === 'production';
 const imageCdnBaseUrl = process.env.IMAGE_BASE_URL;
 const distDir = path.resolve(__dirname, 'dist');
-
+const srcDir = path.resolve(__dirname, 'src');
+const PWA_IMG_URL =
+  isStaging || isProduction
+    ? `${imageCdnBaseUrl}/apollo_logo.png`
+    : `${srcDir}/images/apollo_logo.png`;
 const plugins = [
   new DotenvWebpack({ path: envFile }),
   new CircularDependencyPlugin({
@@ -62,28 +66,31 @@ const plugins = [
     ios: true,
     icons: [
       {
-        src: path.resolve('src/images/apollo_logo.png'),
+        src: PWA_IMG_URL,
         sizes: [96, 128, 192, 256, 384, 512], // multiple sizes
       },
       {
-        src: path.resolve('src/images/apollo_logo.jpg'),
+        src:
+          isStaging || isProduction
+            ? `${imageCdnBaseUrl}/apollo_logo.jpg`
+            : `${srcDir}/images/apollo_logo.jpg`,
         size: '1024x1024',
         purpose: 'maskable',
       },
       {
-        src: path.resolve('src/images/apollo_logo.png'),
+        src: PWA_IMG_URL,
         sizes: [120, 152, 167, 180, 1024],
         destination: path.join('icons', 'ios'),
         ios: true,
       },
       {
-        src: path.resolve('src/images/apollo_logo.png'),
+        src: PWA_IMG_URL,
         size: 1024,
         destination: path.join('icons', 'ios'),
         ios: 'startup',
       },
       {
-        src: path.resolve('src/images/apollo_logo.png'),
+        src: PWA_IMG_URL,
         sizes: [36, 48, 72, 96, 144, 192, 512],
         destination: path.join('icons', 'android'),
       },
@@ -157,19 +164,18 @@ module.exports = {
         loader: 'file-loader',
         options: {
           publicPath: (url, resourcePath, context) => {
-            const imageName = resourcePath.split('/').pop()         
-            if(isProduction || isStaging) {
-              console.log('resourcePath', resourcePath.split('/').pop())   
+            const imageName = resourcePath.split('/').pop();
+            if (isProduction || isStaging) {
+              console.log('resourcePath', resourcePath.split('/').pop());
               return `${imageCdnBaseUrl}/${imageName}`;
             }
-            return `/images/${imageName}`
+            return `/images/${imageName}`;
           },
-          name: (isProduction || isStaging) ? '' : '[path][name].[ext]',
-          outputPath: (isProduction || isStaging) ? 'images': '',
+          name: isProduction || isStaging ? '' : '[path][name].[ext]',
+          outputPath: isProduction || isStaging ? 'images' : '',
         },
       },
     ],
-    
   },
 
   resolve: {
@@ -209,7 +215,7 @@ module.exports = {
           maxAsyncRequests: 30,
           maxInitialRequests: 30,
           automaticNameDelimiter: '~',
-          enforceSizeThreshold: 50000,
+          // enforceSizeThreshold: 50000,
           cacheGroups: {
             defaultVendors: {
               test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,

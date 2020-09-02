@@ -17,7 +17,11 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { AphButton, AphDialogTitle } from '@aph/web-ui-components';
 import moment from 'moment';
-import { readableParam, getAvailableFreeChatDays } from 'helpers/commonHelpers';
+import {
+  readableParam,
+  getAvailableFreeChatDays,
+  removeGraphQLKeyword,
+} from 'helpers/commonHelpers';
 import { Link, Route } from 'react-router-dom';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useMutation } from 'react-apollo-hooks';
@@ -40,11 +44,9 @@ import { GET_APPOINTMENT_DOCTOR_RESCHEDULED_DETAILS } from 'graphql/consult';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      padding: '20px 5px 10px 5px',
+      padding: '15px 0',
     },
     consultationSection: {
-      paddingLeft: 15,
-      paddingRight: 15,
       paddingBottom: 10,
     },
     consultCard: {
@@ -720,7 +722,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         console.log(e);
         setApiLoading(false);
         setIsAlertOpen(true);
-        setAlertMessage(`Error occured while rescheduling the appointment, ${e}`);
+        setAlertMessage(
+          `Error occured while rescheduling the appointment(${removeGraphQLKeyword(e)})`
+        );
       });
   };
 
@@ -1153,11 +1157,11 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   <p>You have {reschedulesRemaining} free reschedueles left</p>
                 )}
               </div>
-              <div className={classes.actions}>
-                <AphButton onClick={() => (window.location.href = clientRoutes.appointments())}>
-                  OK, GOT IT
-                </AphButton>
-              </div>
+              <Link to={clientRoutes.appointments()}>
+                <div className={classes.actions}>
+                  <AphButton>OK, GOT IT</AphButton>
+                </div>
+              </Link>
             </div>
           </div>
         </Popover>

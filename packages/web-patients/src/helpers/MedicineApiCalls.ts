@@ -3,6 +3,7 @@ import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAdd
 import { MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
 import moment from 'moment';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as LatestOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
+import fetchUtil from 'helpers/fetch';
 
 const apiDetails = {
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -48,11 +49,11 @@ export interface PharmaOverview {
   Strength: string;
   Strengh: string;
   Overview:
-    | {
-        Caption: string;
-        CaptionDesc: string;
-      }[]
-    | string;
+  | {
+    Caption: string;
+    CaptionDesc: string;
+  }[]
+  | string;
 }
 
 export interface MedicineProductDetails extends MedicineProduct {
@@ -125,14 +126,14 @@ interface InventoryCheckApiResponse {
     Message: string; //"Data Founds" | "Authentication Failure-Invalid Token" | "No Items to Check Inventory"
     Status: boolean;
     item:
-      | {
-          artCode: string;
-          batch: string;
-          expDate: string; //'2024-05-30 00:00:00.0'
-          mrp: number;
-          qoh: number;
-        }[]
-      | null;
+    | {
+      artCode: string;
+      batch: string;
+      expDate: string; //'2024-05-30 00:00:00.0'
+      mrp: number;
+      qoh: number;
+    }[]
+    | null;
   };
 }
 
@@ -251,23 +252,45 @@ export interface GetPackageDataResponse {
 }
 
 export const checkServiceAvailability = (zipCode: string) => {
+  return axios.get(`${process.env.TAT_BASE_URL}/serviceable?pincode=${zipCode}`, {
+    headers: {
+      Authorization: 'GWjKtviqHa4r4kiQmcVH',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const checkSkuAvailability = (sku: string, pincode: string) => {
+  return axios.get(`${process.env.TAT_BASE_URL}/availability?sku=${sku}&pincode=${pincode}`, {
+    headers: {
+      Authorization: 'GWjKtviqHa4r4kiQmcVH',
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const checkTatAvailability = (items: Items[], pincode: string, lat: string, lng: string) => {
   return axios.post(
-    apiDetails.service_url || '',
+    `${process.env.TAT_BASE_URL}/tat`,
     {
-      postalcode: zipCode || '',
-      skucategory: [
-        {
-          SKU: 'PHARMA',
-        },
-      ],
+      pincode,
+      lat,
+      lng,
+      items,
     },
     {
       headers: {
-        Authorization: apiDetails.authToken,
+        Authorization: 'GWjKtviqHa4r4kiQmcVH',
+        'Content-Type': 'application/json',
       },
     }
   );
 };
+
+export interface Items {
+  sku: string;
+  qty: number;
+}
 
 export interface MedicineOrderBilledItem {
   itemId: string;
@@ -321,8 +344,8 @@ export const reOrderItems = async (
     const lineItems = orderDetails.medicineOrderLineItems || [];
     const lineItemsSkus = billedLineItems
       ? billedLineItems
-          .filter((item: MedicineOrderBilledItem) => item.itemId)
-          .map((item) => item.itemId)
+        .filter((item: MedicineOrderBilledItem) => item.itemId)
+        .map((item) => item.itemId)
       : lineItems.filter((item) => item.medicineSKU).map((item) => item.medicineSKU!);
 
     const lineItemsDetails = (await medCartItemsDetailsApi(lineItemsSkus)).data.productdp.filter(
@@ -348,11 +371,11 @@ export const reOrderItems = async (
     const unAvailableItems =
       availableLineItemsSkus && billedLineItems
         ? billedLineItems
-            .filter((item) => !availableLineItemsSkus.includes(item.itemId))
-            .map((item) => item.itemName)
+          .filter((item) => !availableLineItemsSkus.includes(item.itemId))
+          .map((item) => item.itemName)
         : lineItems
-            .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU))
-            .map((item) => item.medicineName);
+          .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU))
+          .map((item) => item.medicineName);
 
     // Prescriptions
     const prescriptionUrls = (orderDetails.prescriptionImageUrl || '')
@@ -368,9 +391,9 @@ export const reOrderItems = async (
         ({
           id: item,
           date: moment().format('DD MMM YYYY'),
-          doctorName: `Meds Rx ${
-            (orderDetails.id && orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) || ''
-          }`,
+          doctorName: `Meds Rx ${(orderDetails.id &&
+            orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) ||
+            ''}`,
           forPatient: patientName,
           medicines: medicineNames,
           uploadedUrl: item,

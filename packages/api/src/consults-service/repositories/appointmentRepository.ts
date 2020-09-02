@@ -581,11 +581,8 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getTodaysAppointments(startDate: Date) {
-    //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + '18:30');
-    //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
-    //const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
-    const newStartDate = new Date('2020-08-01T18:30');
-    const newEndDate = new Date('2020-08-30T18:30');
+    const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
 
     return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')

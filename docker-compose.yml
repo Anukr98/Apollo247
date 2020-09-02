@@ -91,7 +91,7 @@ services:
     environment:
       - POSTGRES_USER=${PROFILES_DB_USER}
       - POSTGRES_PASSWORD=${PROFILES_DB_PASSWORD}
-    
+
   doctors-service:
     image: node:12.6.0
     env_file: .env
@@ -111,7 +111,7 @@ services:
     environment:
       - POSTGRES_USER=${DOCTORS_DB_USER}
       - POSTGRES_PASSWORD=${DOCTORS_DB_PASSWORD}
-    
+
   consults-service:
     image: node:12.6.0
     env_file: .env

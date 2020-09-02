@@ -181,7 +181,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrderLineItemByOrderId(id: MedicineOrders['id']) {
     return MedicineOrderLineItems.find({
       where: { medicineOrders: id },
-      select: ['medicineSKU', 'quantity'],
+      select: ['medicineSKU', 'quantity', 'mou'],
     });
   }
 
@@ -670,6 +670,13 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrdersStatus',
       ],
+    });
+  }
+
+  getMedicineOrderWithStatus(orderAutoId: number) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: ['patient', 'medicineOrdersStatus'],
     });
   }
 

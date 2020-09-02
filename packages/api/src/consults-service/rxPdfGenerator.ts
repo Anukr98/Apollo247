@@ -204,7 +204,9 @@ export const convertCaseSheetToRxPdfData = async (
         frequency += '.';
       }
       const instructions = csRx.medicineInstructions;
-      const routeOfAdministration = csRx.medicineCustomDetails ? null : _capitalize(csRx.routeOfAdministration)
+      const routeOfAdministration = csRx.medicineCustomDetails
+        ? null
+        : _capitalize(csRx.routeOfAdministration);
       if (csRx.includeGenericNameInPrescription) {
         genericName = csRx.genericName;
       }

@@ -47,20 +47,19 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import {
-  getDeliveryTime,
   getPlaceInfoByPincode,
   getStoreInventoryApi,
   GetStoreInventoryResponse,
-  pinCodeServiceabilityApi,
+  pinCodeServiceabilityApi247,
   searchPickupStoresApi,
   Store,
   MedicineProduct,
-  GetDeliveryTimeResponse,
-  TatApiInput,
-  getDeliveryTimeHeaderTat,
   validateConsultCoupon,
   userSpecificCoupon,
   getMedicineDetailsApi,
+  TatApiInput247,
+  getDeliveryTAT247,
+  availabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -175,7 +174,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface YourCartProps extends NavigationScreenProps {}
+export interface YourCartProps extends NavigationScreenProps { }
 
 export const YourCart: React.FC<YourCartProps> = (props) => {
   const {
@@ -446,55 +445,85 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       setshowDeliverySpinner(true);
       setLoading!(true);
       const lookUp = cartItems.map((item) => ({ sku: item.id, qty: item.quantity }));
+      const skus = cartItems.map((item) => (item.id));
+
       try {
-        const tatApiInput: TatApiInput = {
-          postalcode: selectedAddress.zipcode || '',
-          ordertype: getTatOrderType(cartItems),
-          lookup: lookUp,
-        };
-        const res = await getDeliveryTime(tatApiInput);
-        // setdeliveryTime('');
-        const tatItemsCount = g(res, 'data', 'tat', 'length');
+        const checkAvailabilityRes = await availabilityApi247(selectedAddress.zipcode || '', skus.join(','))
+        const tatItemsCount = g(checkAvailabilityRes, 'data', 'response')
         if (tatItemsCount) {
-          const tatItems = g(res, 'data', 'tat') || [];
-          // filter out the sku's which has deliverydate > X days from the current date
+          const tatItems = g(checkAvailabilityRes, 'data', 'response') || [];
           const unserviceableSkus = tatItems
-            .filter(
-              ({ deliverydate }) =>
-                moment(deliverydate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') >
-                AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
-            )
-            .map(({ artCode }) => artCode);
+            .filter(({ exist }) => exist == false)
+            .map(({ sku }) => sku);
 
           // update cart items to unserviceable/serviceable
           const updatedCartItems = cartItems.map((item) => ({
             ...item,
             unserviceable: !!unserviceableSkus.find((sku) => item.id == sku),
           }));
+
           setCartItems!(updatedCartItems);
 
           if (unserviceableSkus.length) {
             showUnServiceableItemsAlert(updatedCartItems);
           }
 
-          const serviceableItems = tatItems.filter(
-            ({ artCode }) => !unserviceableSkus.find((sku) => artCode == sku)
-          );
-          const serviceableTats = serviceableItems.map(({ deliverydate }) => deliverydate);
+          const availableItems = updatedCartItems.filter(
+            ({ id }) => !unserviceableSkus.find((item) => id === item)
+          ).map((item) => { return { sku: item.id, qty: item.quantity } });
 
-          // If all the SKUs are serviceable, call getStoreInventoryApi to check cart item prices
-          // if discrepancy, update cart items and show alert
-          // Call getHeaderTAT API to display tatDate
-          if (serviceableTats.length && !unserviceableSkus.length) {
-            fetchInventoryAndUpdateCartPricesAfterTat(serviceableItems, updatedCartItems);
-            updateserviceableItemsTat(tatApiInput);
+          const tatApiInput247: TatApiInput247 = {
+            pincode: selectedAddress.zipcode || '',
+            lat: selectedAddress?.latitude!,
+            lng: selectedAddress?.longitude!,
+            items: availableItems
+          }
+          const tatRes = await getDeliveryTAT247(tatApiInput247)
+
+          const tatTimeStamp = g(tatRes, 'data', 'response', 'tatU')
+          if (tatTimeStamp && tatTimeStamp !== -1) {
+            const deliveryDate = g(tatRes, 'data', 'response', 'tat')
+            if (deliveryDate) {
+              setCartItems!(updatedCartItems)
+              const serviceableSkus = updatedCartItems.map((item) => {
+                return {
+                  artCode: item.id,
+                  deliverydate: deliveryDate,
+                  siteId: g(tatRes, 'data', 'response', 'storeCode')
+                }
+              })
+              if (serviceableSkus.length && !unserviceableSkus.length) {
+                const inventoryDataRes = g(tatRes, 'data', 'response', 'items') || [];
+                const availableInventory = inventoryDataRes.filter(({ qty }) => qty > 0).map((item) => {
+                  return {
+                    itemId: item.sku,
+                    qty: item.qty,
+                    mrp: item.qty
+                  }
+                })
+                if (availableInventory && availableInventory.length) {
+                  fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, availableInventory);
+                  updateserviceableItemsTat(moment(deliveryDate, "DD-MM-YYYY hh:mm:ss a").format(AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT), lookUp);  
+                } else {
+                  showUnserviceableAlert(updatedCartItems)
+                }
+              } else {
+                setdeliveryTime('...');
+                setshowDeliverySpinner(false);
+                setLoading!(false);
+              }
+            } else {
+              showUnserviceableAlert(updatedCartItems)
+            }
           } else {
-            setdeliveryTime('...');
+            showGenericTatDate(lookUp)
             setshowDeliverySpinner(false);
             setLoading!(false);
           }
         } else {
-          showGenericTatDate(lookUp);
+          showGenericTatDate(lookUp)
+          setshowDeliverySpinner(false);
+          setLoading!(false);
         }
       } catch (err) {
         CommonBugFender('YourCart_getDeliveryTime', err);
@@ -509,10 +538,17 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   };
 
-  const updateserviceableItemsTat = async (tatApiInput: TatApiInput) => {
+  const showUnserviceableAlert = (cartItems: ShoppingCartItem[]) => {
+    showUnServiceableItemsAlert(cartItems)
+    setdeliveryTime('...');
+    setshowDeliverySpinner(false);
+    setLoading!(false);
+  }
+
+  const updateserviceableItemsTat = async (deliverydate: string, 
+    lookUp: { sku: string; qty: number }[]) => {
     try {
-      const res = await getDeliveryTimeHeaderTat(tatApiInput);
-      const tatDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
+      const tatDate = deliverydate;
       const currentDate = moment();
       if (tatDate) {
         setdeliveryTime(tatDate);
@@ -538,10 +574,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           setNewAddressAdded && setNewAddressAdded('');
         }
       } else {
-        showGenericTatDate(tatApiInput.lookup);
+        showGenericTatDate(lookUp);
       }
     } catch (error) {
-      showGenericTatDate(tatApiInput.lookup, error);
+      showGenericTatDate(lookUp, error);
     }
   };
 
@@ -577,32 +613,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const fetchInventoryAndUpdateCartPricesAfterTat = async (
-    tatResponse: GetDeliveryTimeResponse['tat'],
-    cartItems: ShoppingCartItem[]
+    cartItems: ShoppingCartItem[],
+    inventoryData: GetStoreInventoryResponse['itemDetails']
   ) => {
     try {
-      const storeIdAndItemsMapping = tatResponse.reduce(
-        (prevVal, currentVal) => ({
-          ...prevVal,
-          [currentVal.siteId]: [...(prevVal[currentVal.siteId] || []), currentVal.artCode],
-        }),
-        {} as { [key: string]: string[] }
-      );
-      const storesInventory = await Promise.all(
-        Object.keys(storeIdAndItemsMapping).map((storeId) =>
-          getStoreInventoryApi(storeId, storeIdAndItemsMapping[storeId])
-        )
-      );
-      const storeItems = storesInventory.filter(
-        (item) => item.data.itemDetails && item.data.shopId
-      );
-      if (!storeItems.length) {
-        setLoading!(false);
-        return;
-      }
-
-      const filteredStoreItems = storeItems
-        .map((storeItem) => storeItem.data.itemDetails)
+      const filteredStoreItems = [inventoryData]
         .reduce((prevVal, currentVal) => [...prevVal, ...currentVal], [])
         .map((storeItem) => {
           const cartItem = cartItems.find((cartItem) => cartItem.id == storeItem.itemId)!;
@@ -1083,9 +1098,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setshowDeliverySpinner(false);
     // setCheckingServicability(true);
     setLoading!(true);
-    pinCodeServiceabilityApi(address.zipcode!)
+    pinCodeServiceabilityApi247(address.zipcode!)
       .then(({ data }) => {
-        if (g(data, 'Availability')) {
+        if (g(data, 'response')) {
           // Not stopping checkingServicability spinner here, it'll be stopped in useEffect that triggers when change in DeliveryAddressId
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
@@ -1667,17 +1682,20 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
   */
 
-  const disableProceedToPay = !(
-    cartItems.length > 0 &&
-    !showDeliverySpinner &&
-    !cartItems.find((item) => !item.isInStock) &&
-    !cartItems.find((item) => item.unserviceable) &&
-    !!(deliveryAddressId || storeId) &&
-    (uploadPrescriptionRequired
-      ? (storeId && showPrescriptionAtStore) ||
-        physicalPrescriptions.length > 0 ||
-        ePrescriptions.length > 0
-      : true)
+  const isPrescriptionRequired = cartItems.find(({ prescriptionRequired }) => prescriptionRequired)
+    ? !(showPrescriptionAtStore || physicalPrescriptions.length > 0 || ePrescriptions.length > 0)
+    : false;
+
+  const isNotInStockOrUnserviceable = cartItems.find(
+    ({ isInStock, unserviceable }) => !isInStock || unserviceable
+  );
+
+  const disableProceedToPay = !!(
+    cartItems.length === 0 ||
+    isNotInStockOrUnserviceable ||
+    (!deliveryAddressId && !storeId) ||
+    isPrescriptionRequired ||
+    (deliveryAddressId ? showDeliverySpinner : false)
   );
 
   const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {

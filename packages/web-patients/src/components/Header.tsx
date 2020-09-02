@@ -418,7 +418,11 @@ export const Header: React.FC<HeaderProps> = (props) => {
                       <CircularProgress />
                     ) : (
                       <>
-                        <img src={require('images/ic_account.svg')} alt="Profile" title="Profile" />
+                        <img
+                          src={require('images/ic_account_white.svg')}
+                          alt="Profile"
+                          title="Profile"
+                        />
                         {profileVisible && (
                           <Paper
                             className={`${classes.userOptions} ${
@@ -554,7 +558,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
                             <CircularProgress />
                           ) : (
                             <img
-                              src={require('images/ic_account.svg')}
+                              src={require('images/ic_account_white.svg')}
                               title={'Login/SignUp'}
                               alt="Login/SignUp"
                             />

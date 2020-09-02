@@ -120,11 +120,7 @@ export const NavigationBottom: React.FC = (props) => {
                 component={Link}
                 to={clientRoutes.medicines()}
                 icon={
-                  <img
-                    src={require('images/ic_medicines.svg')}
-                    alt="Medicines"
-                    title="Medicines"
-                  />
+                  <img src={require('images/ic_medicines.svg')} alt="Medicines" title="Medicines" />
                 }
                 className={currentPath === clientRoutes.medicines() ? classes.activeMenu : ''}
                 classes={{
@@ -170,11 +166,7 @@ export const NavigationBottom: React.FC = (props) => {
                 component={Link}
                 to={clientRoutes.myAccount()}
                 icon={
-                  <img
-                    src={require('images/bottom-nav/ic_account.svg')}
-                    alt="My Account"
-                    title="My Account"
-                  />
+                  <img src={require('images/ic_account.svg')} alt="My Account" title="My Account" />
                 }
                 className={currentPath === clientRoutes.myAccount() ? classes.activeMenu : ''}
                 classes={{
@@ -206,13 +198,7 @@ export const NavigationBottom: React.FC = (props) => {
                 label="Doctors"
                 component={Link}
                 to={clientRoutes.specialityListing()}
-                icon={
-                  <img
-                    src={require('images/ic_doctors.svg')}
-                    alt="Doctors"
-                    title="Doctors"
-                  />
-                }
+                icon={<img src={require('images/ic_doctors.svg')} alt="Doctors" title="Doctors" />}
                 className={
                   currentPath === clientRoutes.specialityListing() ? classes.activeMenu : ''
                 }
@@ -227,11 +213,7 @@ export const NavigationBottom: React.FC = (props) => {
                 component={Link}
                 to={clientRoutes.medicines()}
                 icon={
-                  <img
-                    src={require('images/ic_medicines.svg')}
-                    alt="Medicines"
-                    title="Medicines"
-                  />
+                  <img src={require('images/ic_medicines.svg')} alt="Medicines" title="Medicines" />
                 }
                 className={currentPath === clientRoutes.medicines() ? classes.activeMenu : ''}
                 classes={{
@@ -258,13 +240,7 @@ export const NavigationBottom: React.FC = (props) => {
                 label="Covid-19"
                 component={Link}
                 to={clientRoutes.covidLanding()}
-                icon={
-                  <img
-                    src={require('images/ic_covid.svg')}
-                    alt="Covid19"
-                    title="Covid19"
-                  />
-                }
+                icon={<img src={require('images/ic_covid.svg')} alt="Covid19" title="Covid19" />}
                 className={currentPath === clientRoutes.covidLanding() ? classes.activeMenu : ''}
                 classes={{
                   root: classes.labelRoot,
