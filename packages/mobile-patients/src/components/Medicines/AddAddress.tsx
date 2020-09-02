@@ -123,8 +123,20 @@ const styles = StyleSheet.create({
     marginTop: 5, 
     marginBottom: 10 
   },
-  pincodeView:{justifyContent:'space-between',flex:0.45,marginRight:'12%'},
-  addressLabel:{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) },
+  pincodeView:{
+    justifyContent:'space-between',
+    flex:0.45,
+    marginRight:'12%'
+  },
+  addressLabel:{ 
+    color: '#02475b', 
+    ...fonts.IBMPlexSansMedium(14) ,
+    opacity: 0.7 
+  },
+  textInputContainerStyle:{
+    flex:1, 
+    top:  Platform.OS == 'ios' ? -6  : -11
+  },
 });
 
 export type AddressSource = 'My Account' | 'Upload Prescription' | 'Cart' | 'Diagnostics Cart';
@@ -469,7 +481,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     );
   };
  
-
   const _validateAndSetPhoneNumber = (value : string) =>{
     if (/^\d+$/.test(value) || value == '') {
       setphoneNumber(value)
@@ -482,7 +493,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     if(!userName || !/^[A-Za-z]/.test(userName)){
       validationMessage = 'Enter Valid Name'
     }
-    else if(!phoneNumberIsValid){
+    else if(!phoneNumberIsValid || phoneNumber.length!==10){
       validationMessage = 'Enter Valid Mobile Number'
     }
     if (validationMessage) {
@@ -490,13 +501,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     } else {
         saveEditDetails();
     }
-  }
-
-  const navigateToMaps = (data: object) =>{
-    //add address:-
-    props.navigation.navigate(AppRoutes.Maps,{
-      addressDetails: data
-    })
   }
 
   const onUpdateDetails = () =>{
@@ -575,28 +579,38 @@ const renderUserDetails = () => {
     return (
       <View style={styles.userDetailsOuterView}>
         <View style={styles.viewRowStyle}>
-          <View style={{flex: editProfile ? 0.9 : 1,height:60}}>
+          <View style={{flex: editProfile ? 0.9 : 1, height:60}}>
             <View style={styles.viewRowStyle}>
-              <Text style={{color: editProfile ? theme.colors.placeholderTextColor :'#02475b', ...fonts.IBMPlexSansMedium(16)}}>Name : </Text>
+              <Text style={{
+                color: editProfile ? theme.colors.LIGHT_BLUE :'#02475b',
+                opacity: editProfile ? 0.6 : 1,
+                 ...fonts.IBMPlexSansMedium(14)
+                 }}>Name : </Text>
               <TextInputComponent 
-                conatinerstyles={{flex:1,top: editProfile ?-9 :-6}}
+                conatinerstyles={styles.textInputContainerStyle}
                 onChangeText={(userName) => (userName.startsWith(' ') ?  null : setuserName(userName))}
                 value={userName} 
                 editable={editProfile} 
                 placeholder={'Full Name'} 
+                
                 inputStyle={{
                   borderBottomWidth: editProfile ? 1 : 2,
-                  paddingBottom: editProfile ?1 :3, 
-                  color: editProfile ? theme.colors.placeholderTextColor : theme.colors.SHERPA_BLUE , 
-                  ...theme.fonts.IBMPlexSansMedium(16),
+                  paddingBottom: editProfile ? 0 : 3, 
+                  color: editProfile ? theme.colors.SHERPA_BLUE : theme.colors.SHERPA_BLUE , 
+                  opacity: editProfile ? (Platform.OS == 'ios' ? 0.5 :0.4) : 1,
+                  ...theme.fonts.IBMPlexSansMedium(14),
                   borderColor: editProfile ? theme.colors.INPUT_BORDER_SUCCESS : 'transparent'
                 }}/>
             </View>
 
-            <View style={{flexDirection:'row',marginTop:editProfile ? -11 : -16}}>
-              <Text style={{color: editProfile ? theme.colors.placeholderTextColor :'#02475b', ...fonts.IBMPlexSansMedium(15)}}>Phone number : </Text>
+            <View style={{flexDirection:'row',top: Platform.OS == 'ios' ? -8 : -15}}>
+              <Text style={{
+                color: editProfile ? theme.colors.LIGHT_BLUE :'#02475b', 
+                opacity: editProfile ? 0.6 : 1,
+                ...fonts.IBMPlexSansMedium(14)
+                }}>Phone number : </Text>
               <TextInputComponent 
-                conatinerstyles={{flex:1,top: editProfile ?-9 :-6}}
+                conatinerstyles={styles.textInputContainerStyle}
                 maxLength={10}
                 keyboardType="numeric"
                 //add validations
@@ -608,9 +622,10 @@ const renderUserDetails = () => {
                 placeholder={'Mobile Number'} 
                 inputStyle={{
                   borderBottomWidth: editProfile ? 1 : 2,
-                  paddingBottom: editProfile ? 1 :3, 
-                  color: editProfile ? theme.colors.placeholderTextColor : theme.colors.SHERPA_BLUE,
-                  ...theme.fonts.IBMPlexSansMedium(16),
+                  paddingBottom: editProfile ? 0 : 3, 
+                  color: editProfile ? theme.colors.SHERPA_BLUE : theme.colors.SHERPA_BLUE,
+                  opacity: editProfile ? (Platform.OS == 'ios' ? 0.5 :0.4) : 1,
+                  ...theme.fonts.IBMPlexSansMedium(14),
                   borderColor: editProfile ? theme.colors.INPUT_BORDER_SUCCESS : 'transparent'
                 }}/>
             </View>
@@ -1006,7 +1021,7 @@ const renderAddressText = () =>{
           >
             <Button
               title={
-                props.navigation.getParam('KeyName') == 'Update' || addOnly ? 'SAVE' : 'SAVE & USE'
+                props.navigation.getParam('KeyName') == 'Update' || addOnly ? 'SAVE ADDRESS' : 'SAVE & USE'
               }
               style={{ marginHorizontal: 40, width: '70%' }}
               onPress={onSavePress}
