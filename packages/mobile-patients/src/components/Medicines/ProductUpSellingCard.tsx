@@ -21,8 +21,10 @@ export interface Props extends Omit<AddToCartButtonsProps, 'containerStyle'> {
   imageUrl: string;
   price: number;
   specialPrice?: number | string;
+  isInStock: boolean;
   onPress: () => void;
   onAddToCart: () => void;
+  onNotify: () => void;
   containerStyle?: StyleProp<ViewStyle>;
   addToCartButtonContainerStyle?: StyleProp<ViewStyle>;
 }
@@ -32,8 +34,10 @@ export const ProductUpSellingCard: React.FC<Props> = ({
   imageUrl,
   price,
   specialPrice,
+  isInStock,
   onPress,
   onAddToCart,
+  onNotify,
   containerStyle,
   numberOfItemsInCart,
   addToCartButtonContainerStyle,
@@ -65,7 +69,7 @@ export const ProductUpSellingCard: React.FC<Props> = ({
         )}
         <View style={[styles.priceAndAddToCartButton, { marginTop: !!discount ? 0 : 12 }]}>
           <Text style={styles.price}>{`Rs. ${discount ? specialPrice : price}`}</Text>
-          {renderAddToCartButton()}
+          {isInStock ? renderAddToCartButton() : renderNotifyButton()}
         </View>
       </View>
     );
@@ -83,6 +87,12 @@ export const ProductUpSellingCard: React.FC<Props> = ({
         {...restOfProps}
       />
     );
+
+  const renderNotifyButton = () => (
+    <Text onPress={onNotify} style={styles.addToCart}>
+      {'NOTIFY ME'}
+    </Text>
+  );
 
   return (
     <TouchableOpacity activeOpacity={1} style={[styles.card, containerStyle]} onPress={onPress}>
