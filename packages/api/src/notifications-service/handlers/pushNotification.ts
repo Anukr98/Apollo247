@@ -88,6 +88,7 @@ export async function sendCallsNotification(
     voipPushtoken.length &&
     voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
     callType != APPT_CALL_TYPE.CHAT
+    && (!numberOfParticipants || (numberOfParticipants && numberOfParticipants < 2))
   ) {
     hitCallKitCurl(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
