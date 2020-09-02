@@ -376,7 +376,7 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
 
               <div>
                 <button
-                  disabled={appointmentDetails.appointmentState !== APPOINTMENT_STATE.RESCHEDULE}
+                  disabled={appointmentDetails.appointmentState === APPOINTMENT_STATE.RESCHEDULE}
                   className={classes.downloadBtn}
                   onClick={() => setIsModalOpen(true)}
                 >
@@ -384,7 +384,7 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
                 </button>
 
                 <button
-                  disabled={appointmentDetails.appointmentState !== APPOINTMENT_STATE.RESCHEDULE}
+                  disabled={appointmentDetails.appointmentState === APPOINTMENT_STATE.RESCHEDULE}
                   className={classes.viewBtn}
                   onClick={() => handleAcceptReschedule()}
                 >
