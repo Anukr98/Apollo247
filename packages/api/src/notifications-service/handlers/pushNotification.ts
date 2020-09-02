@@ -60,7 +60,8 @@ export async function sendCallsNotification(
   doctorType: DOCTOR_CALL_TYPE,
   appointmentCallId: string,
   isDev: boolean,
-  numberOfParticipants: number
+  numberOfParticipants: number,
+  patientId: string,
 ) {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
@@ -78,10 +79,20 @@ export async function sendCallsNotification(
 
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
 
-  const voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
-    patientDetails.id,
+  patientId = patientId || patientDetails.id;
+  let voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
+    patientId,
     DEVICE_TYPE.IOS
   );
+
+  if(patientId != patientDetails.id && (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])){
+    patientId = patientDetails.id;
+    voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
+      patientId,
+      DEVICE_TYPE.IOS
+    );
+  }
+
   if (
     voipPushtoken.length &&
     voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
@@ -92,7 +103,7 @@ export async function sendCallsNotification(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
       doctorDetails.displayName,
       appointment.id,
-      patientDetails.id,
+      patientId,
       true,
       callType,
       isDev
