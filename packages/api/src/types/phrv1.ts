@@ -224,6 +224,7 @@ export interface DischargeSummaryResponse {
       id: string,
       fileUrl: string; //this is not given by PHR. Added for internal purpose
       date: Date; //this is not given by PHR. Added for internal purpose
+      hospitalizationDate: Date;
       dateOfHospitalization: number,
       hospitalName: string,
       doctorName: string,
