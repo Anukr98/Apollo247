@@ -550,19 +550,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const getAppointmentStatus = (status: STATUS, isConsultStarted: boolean | null) => {
     switch (status) {
       case STATUS.PENDING:
-        return isConsultStarted
-          ? props.pastOrCurrent === 'past'
-            ? 'BOOK FOLLOWUP'
-            : 'CONTINUE CONSULT'
-          : props.pastOrCurrent === 'past'
-          ? 'BOOK FOLLOWUP'
-          : 'FILL MEDICAL DETAILS';
+        return isConsultStarted ? 'CONTINUE CONSULT' : 'FILL MEDICAL DETAILS';
       case STATUS.NO_SHOW || STATUS.CALL_ABANDON:
         return 'PICK ANOTHER SLOT';
       case STATUS.COMPLETED:
         return props.pastOrCurrent === 'past' ? 'BOOK FOLLOWUP' : 'CHAT WITH DOCTOR';
       case STATUS.IN_PROGRESS:
-        return props.pastOrCurrent === 'past' ? 'BOOK FOLLOWUP' : 'CHAT WITH DOCTOR';
+        return 'CHAT WITH DOCTOR';
       case STATUS.CANCELLED:
         return 'BOOK AGAIN';
     }
@@ -580,13 +574,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         case APPOINTMENT_STATE.AWAITING_RESCHEDULE:
           return 'PICK ANOTHER SLOT';
         case APPOINTMENT_STATE.RESCHEDULE:
-          return isConsultStarted
-            ? props.pastOrCurrent === 'past'
-              ? 'BOOK FOLLOWUP'
-              : 'CONTINUE CONSULT'
-            : props.pastOrCurrent === 'past'
-            ? 'BOOK FOLLOWUP'
-            : 'FILL MEDICAL DETAILS';
+          return isConsultStarted ? 'CONTINUE CONSULT' : 'FILL MEDICAL DETAILS';
       }
     }
     // need to add one more condition for view prescription for this have to query casesheet
@@ -958,9 +946,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           <img src={require('images/ic_arrow_right_white.svg')} alt="" />
                         </AphButton> */}
                           {(appointmentDetails.status === STATUS.COMPLETED ||
-                            ((appointmentDetails.status === STATUS.PENDING ||
-                              appointmentDetails.status === STATUS.IN_PROGRESS) &&
-                              props.pastOrCurrent === 'past')) &&
+                            props.pastOrCurrent === 'past') &&
                             appointmentDetails.isFollowUp === 'false' && (
                               <div className={classes.bookFollowup}>
                                 <Route
@@ -1011,7 +997,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                       appointmentState,
                                       status,
                                       isConsultStarted
-                                    ) === 'BOOK FOLLOWUP'
+                                    ) === 'BOOK FOLLOWUP' ||
+                                    props.pastOrCurrent === 'past'
                                   ) {
                                     bookFollowup(appointmentDetails);
                                   } else {
@@ -1032,11 +1019,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                               >
                                 <h3>
                                   {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-                                    ? showAppointmentAction(
-                                        appointmentState,
-                                        status,
-                                        isConsultStarted
-                                      )
+                                    ? props.pastOrCurrent === 'past'
+                                      ? 'BOOK FOLLOWUP'
+                                      : showAppointmentAction(
+                                          appointmentState,
+                                          status,
+                                          isConsultStarted
+                                        )
                                     : 'VIEW DETAILS'}
                                 </h3>
                               </div>
