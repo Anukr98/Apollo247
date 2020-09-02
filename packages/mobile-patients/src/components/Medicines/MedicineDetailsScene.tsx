@@ -342,6 +342,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         source: movedFrom,
         ProductId: sku,
         ProductName: medicineName,
+        "Stock availability": isOutOfStock ? "No" : "Yes",
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
     }

@@ -1288,6 +1288,7 @@ export interface WebEngageEvents {
     source: 'deeplink' | 'widget' | 'search';
     ProductId: string;
     ProductName: string;
+    "Stock availability": YesOrNo;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink';
