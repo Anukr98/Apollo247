@@ -1,4 +1,3 @@
-// @generated
 /**
  * This component is being used for adding as well as updating addresses.
  * Being utilized by Address Book, Medicine Cart, Diagnostics Cart & Upload Prescription Order

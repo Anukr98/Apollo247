@@ -14,14 +14,14 @@ PODS:
   - AFNetworking/Serialization (3.2.1)
   - AFNetworking/UIKit (3.2.1):
     - AFNetworking/NSURLSession
-  - AppsFlyerFramework (5.4.4)
+  - AppsFlyerFramework (5.2.0)
   - Base64 (1.1.2)
   - boost-for-react-native (1.63.0)
   - BugfenderSDK/ObjC (1.7.0)
-  - BugsnagReactNative (2.23.10):
-    - BugsnagReactNative/Core (= 2.23.10)
+  - BugsnagReactNative (2.23.4):
+    - BugsnagReactNative/Core (= 2.23.4)
     - React
-  - BugsnagReactNative/Core (2.23.10):
+  - BugsnagReactNative/Core (2.23.4):
     - React
   - Charts (3.0.5):
     - Charts/Core (= 3.0.5)
@@ -148,27 +148,27 @@ PODS:
   - GoogleMaps/Base (3.9.0)
   - GoogleMaps/Maps (3.9.0):
     - GoogleMaps/Base
-  - GoogleUtilities/AppDelegateSwizzler (6.7.2):
+  - GoogleUtilities/AppDelegateSwizzler (6.6.0):
     - GoogleUtilities/Environment
     - GoogleUtilities/Logger
     - GoogleUtilities/Network
-  - GoogleUtilities/Environment (6.7.2):
+  - GoogleUtilities/Environment (6.6.0):
     - PromisesObjC (~> 1.2)
-  - GoogleUtilities/Logger (6.7.2):
+  - GoogleUtilities/Logger (6.6.0):
     - GoogleUtilities/Environment
-  - GoogleUtilities/MethodSwizzler (6.7.2):
+  - GoogleUtilities/MethodSwizzler (6.6.0):
     - GoogleUtilities/Logger
-  - GoogleUtilities/Network (6.7.2):
+  - GoogleUtilities/Network (6.6.0):
     - GoogleUtilities/Logger
     - "GoogleUtilities/NSData+zlib"
     - GoogleUtilities/Reachability
-  - "GoogleUtilities/NSData+zlib (6.7.2)"
-  - GoogleUtilities/Reachability (6.7.2):
+  - "GoogleUtilities/NSData+zlib (6.6.0)"
+  - GoogleUtilities/Reachability (6.6.0):
     - GoogleUtilities/Logger
-  - GoogleUtilities/UserDefaults (6.7.2):
+  - GoogleUtilities/UserDefaults (6.6.0):
     - GoogleUtilities/Logger
   - GTMSessionFetcher/Core (1.4.0)
-  - IQKeyboardManager (6.5.6)
+  - IQKeyboardManager (6.5.5)
   - JWT (3.0.0-beta.12):
     - Base64 (~> 1.1.2)
   - JWTDecode (2.4.1)
@@ -182,8 +182,8 @@ PODS:
   - opentok-react-native (0.14.0):
     - OpenTok
     - React
-  - PromisesObjC (1.2.10)
-  - Protobuf (3.13.0)
+  - PromisesObjC (1.2.8)
+  - Protobuf (3.12.0)
   - QBImagePickerController (3.4.0)
   - RCTRequired (0.61.3)
   - RCTSystemSetting (1.7.4):
@@ -350,10 +350,10 @@ PODS:
     - React-cxxreact (= 0.61.3)
     - React-jsi (= 0.61.3)
   - React-jsinspector (0.61.3)
-  - react-native-appsflyer (5.4.1):
-    - AppsFlyerFramework (~> 5.4.1)
+  - react-native-appsflyer (5.2.0):
+    - AppsFlyerFramework (~> 5.2.0)
     - React
-  - react-native-background-timer (2.3.1):
+  - react-native-background-timer (2.2.0):
     - React
   - react-native-document-picker (3.5.4):
     - React
@@ -373,7 +373,7 @@ PODS:
     - React
   - react-native-geolocation (2.0.2):
     - React
-  - react-native-image-picker (2.3.3):
+  - react-native-image-picker (2.0.0):
     - React
   - react-native-image-resizer (1.2.6):
     - React
@@ -381,9 +381,9 @@ PODS:
     - React
   - react-native-maps (0.27.1):
     - React
-  - react-native-netinfo (5.9.6):
+  - react-native-netinfo (5.3.2):
     - React
-  - react-native-pdf (6.2.0):
+  - react-native-pdf (6.0.1):
     - React
   - react-native-splash-screen (3.2.0):
     - React
@@ -392,10 +392,10 @@ PODS:
     - react-native-video/Video (= 4.4.5)
   - react-native-video/Video (4.4.5):
     - React
-  - react-native-webengage (1.2.1):
+  - react-native-webengage (1.1.1):
     - React
     - WebEngage
-  - react-native-webview (8.2.1):
+  - react-native-webview (8.0.3):
     - React
   - React-RCTActionSheet (0.61.3):
     - React-Core/RCTActionSheetHeaders (= 0.61.3)
@@ -434,7 +434,7 @@ PODS:
     - ReactCommon/jscallinvoker (= 0.61.3)
   - ReactNativeExceptionHandler (2.10.8):
     - React
-  - ReactNativeIncallManager (3.3.0):
+  - ReactNativeIncallManager (3.2.7):
     - React
   - ReactNativePermissions (1.2.1):
     - React
@@ -446,17 +446,17 @@ PODS:
     - React
   - RNCallKeep (3.1.1):
     - React
-  - RNCAsyncStorage (1.12.0):
+  - RNCAsyncStorage (1.11.0):
     - React
-  - RNDateTimePicker (2.6.2):
+  - RNDateTimePicker (2.6.1):
     - React
-  - RNDeviceInfo (5.6.5):
+  - RNDeviceInfo (5.4.1):
     - React
-  - RNFirebase (5.6.0):
+  - RNFirebase (5.5.6):
     - Firebase/Core
     - React
-    - RNFirebase/Crashlytics (= 5.6.0)
-  - RNFirebase/Crashlytics (5.6.0):
+    - RNFirebase/Crashlytics (= 5.5.6)
+  - RNFirebase/Crashlytics (5.5.6):
     - Crashlytics
     - Fabric
     - Firebase/Core
@@ -473,14 +473,14 @@ PODS:
     - RNSound/Core (= 0.11.0)
   - RNSound/Core (0.11.0):
     - React
-  - RNVectorIcons (6.7.0):
+  - RNVectorIcons (6.6.0):
     - React
   - RNVoipPushNotification (2.1.0):
     - React-Core
   - RSKImageCropper (2.2.3)
-  - SDWebImage (5.9.0):
-    - SDWebImage/Core (= 5.9.0)
-  - SDWebImage/Core (5.9.0)
+  - SDWebImage (5.8.0):
+    - SDWebImage/Core (= 5.8.0)
+  - SDWebImage/Core (5.8.0)
   - SSZipArchive (2.2.3)
   - Stylish (1.0.2)
   - TGFoursquareLocationDetail (1.0.1)
@@ -488,10 +488,10 @@ PODS:
   - WebEngage (5.0.2):
     - WebEngage/Xcode11 (= 5.0.2)
   - WebEngage/Xcode11 (5.0.2)
-  - WebEngageAppEx/ContentExtension (0.9.0):
+  - WebEngageAppEx/ContentExtension (0.8.0):
     - WebEngageAppEx/CoreApi
-  - WebEngageAppEx/CoreApi (0.9.0)
-  - WebEngageBannerPush (0.9.0)
+  - WebEngageAppEx/CoreApi (0.8.0)
+  - WebEngageBannerPush (0.8.0)
   - Yoga (1.14.0)
   - youtube-ios-player-helper (0.1.6)
 
@@ -584,7 +584,7 @@ DEPENDENCIES:
   - youtube-ios-player-helper (~> 0.1.4)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  https://github.com/cocoapods/specs.git:
     - AFNetworking
     - AppsFlyerFramework
     - Base64
@@ -687,7 +687,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-image-resizer"
   react-native-keep-awake:
     :path: "../node_modules/react-native-keep-awake"
-  react-native-maps:
+  react-native-maps:	
     :path: "../node_modules/react-native-maps"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
@@ -756,11 +756,11 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   AFNetworking: b6f891fdfaed196b46c7a83cf209e09697b94057
-  AppsFlyerFramework: a511099f7bedbb1d5804d733c6152d6f8092c4fa
+  AppsFlyerFramework: 9b2a932d826a278413dab7d59ffbe104a972132b
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   BugfenderSDK: cc587f83e8cec9ae1567ec1d837969a6df7dcbca
-  BugsnagReactNative: 98fb350df4bb0c94cce903023531a1a5cc11fa51
+  BugsnagReactNative: bfa11ce45f7ee311962ecda93f190b6ea74329fe
   Charts: 45cdc985b764c838b35ee47eb1365d15735f6d1a
   CodePush: 18dd72e6176d261832d036f22c70f910370d6b64
   Crashlytics: 540b7e5f5da5a042647227a5e3ac51d85eed06df
@@ -788,17 +788,17 @@ SPEC CHECKSUMS:
   GoogleAppMeasurement: 51d8d9ea48f0ca44484d29cfbdef976fbd4fc336
   GoogleIDFASupport: aaf8c10bd429abb1c15349d5252244f5eda8ead1
   GoogleMaps: 4b5346bddfe6911bb89155d43c903020170523ac
-  GoogleUtilities: 7f2f5a07f888cdb145101d6042bc4422f57e70b3
+  GoogleUtilities: 39530bc0ad980530298e9c4af8549e991fd033b1
   GTMSessionFetcher: 6f5c8abbab8a9bce4bb3f057e317728ec6182b10
-  IQKeyboardManager: 2a6e97afdafc7becf0cb17a9a8d795e3a980717f
+  IQKeyboardManager: 3a8b9e603f8b0eeaf5f096a1f2b2cfcf121992ef
   JWT: 9b5c05abbcc1a0e69c3c91e1655b3387fc7e581d
   JWTDecode: 4bd4da0cdf0f8154fd467fa48499f34ec057fb88
   leveldb-library: 55d93ee664b4007aac644a782d11da33fba316f7
   nanopb: 18003b5e52dab79db540fe93fe9579f399bd1ccd
   OpenTok: 8335775f5556f2b96945b485c00f13eee03daf92
-  opentok-react-native: 0e36ded10834f4ae29ad07833bccd6c808a06e05
-  PromisesObjC: b14b1c6b68e306650688599de8a45e49fae81151
-  Protobuf: 3dac39b34a08151c6d949560efe3f86134a3f748
+  opentok-react-native: d0f4f1bc784e80f62ffce64bda152f54e76120c2
+  PromisesObjC: c119f3cd559f50b7ae681fa59dc1acd19173b7e6
+  Protobuf: 2793fcd0622a00b546c60e7cbbcc493e043e9bb9
   QBImagePickerController: d54cf93db6decf26baf6ed3472f336ef35cae022
   RCTRequired: a72523286ea3381f97b28d87529c265baad3ad7d
   RCTSystemSetting: f3123e7de51bf918bc4243167ba2885a72bf09ec
@@ -810,21 +810,21 @@ SPEC CHECKSUMS:
   React-jsi: 8bcf5836caa8a759c135ab9ef97f3e023a7b94af
   React-jsiexecutor: ae078e9df9c65bcdcf68f9a17656657932d95528
   React-jsinspector: a8939cc6909607eb5e8a5ecfff7c6226984e174d
-  react-native-appsflyer: da2b86284e71d8285e68e353a4e2ed68348ed3c7
-  react-native-background-timer: fce82e42cc2b82e53c03780aefc87178a7c15028
+  react-native-appsflyer: 106d4167da049f7e9d0cab09236f4e53b7142ff3
+  react-native-background-timer: 53c0e028a95d58b1f4498ef7ce152b6c6b337595
   react-native-document-picker: c5752781fbc0c126c627c1549b037c139444a4cf
   react-native-fbsdk: c35d42169e64aaf66f01713c1e18d0674f7f6519
   react-native-geolocation: cbd9d6bd06bac411eed2671810f454d4908484a8
-  react-native-image-picker: a6c3d644751a388b0fc8b56822ff7cbd398a3008
+  react-native-image-picker: ba7fe85b3373ff33d4827210d989dfcbbd68f7f9
   react-native-image-resizer: f9fd7a61ffb3683987a6528e15e32bc32eb9dee3
   react-native-keep-awake: eba3137546b10003361b37c761f6c429b59814ae
   react-native-maps: f4b89da81626ad7f151a8bfcb79733295d31ce5c
-  react-native-netinfo: d2c312fa4b151214e1d5c8456ddb5f28ff24a576
-  react-native-pdf: 909cd849e6a806731b2135263189fea39494b55e
+  react-native-netinfo: 7baf6d0436122ea5d98dc3f17a60fe56c8048046
+  react-native-pdf: 29a09815e99c92743aa8459a90564aaddd4065e0
   react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
   react-native-video: aa527b0acb37f94c4491e70df0274cb26979405d
-  react-native-webengage: 972e6bc1f72a4c1d4b16548cf4f1b3788c60cbc9
-  react-native-webview: d3cf75764f98fd433f1222f5a7ca8e355ada2a15
+  react-native-webengage: 51514f7e981d81bc525bf827c939bfb8bd886673
+  react-native-webview: de308e0b614039e483eef19a3cf6a9b6b166cff0
   React-RCTActionSheet: 94671eef55b01a93be735605822ef712d5ea208e
   React-RCTAnimation: 524ae33e73de9c0fe6501a7a4bda8e01d26499d9
   React-RCTBlob: 5481c2db702f57207af7e7a9b32d90524b821b72
@@ -836,33 +836,33 @@ SPEC CHECKSUMS:
   React-RCTVibration: 262588c97551b0b1c675468cda857466ba5af18f
   ReactCommon: c2c63d9290b422ca6ad5b3663073a015dd892ae9
   ReactNativeExceptionHandler: 8025d98049c25f186835a3af732dd7c9974d6dce
-  ReactNativeIncallManager: db7d5f5ae281a43d7179ba24875ff477dc47f229
+  ReactNativeIncallManager: 35e387f58d3fc6e8cc042f47a2256b5f50134a67
   ReactNativePermissions: e7db6c38a2f3fb8f26dbfdcaeb5c5e9364657a6d
   ReverseExtension: 21c8dd4e767f93b56fb97d873686d24160f83945
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNBugfender: 5b5792c8b7d1b4e70ce29d730859650c9efce618
   RNCallKeep: ea9f0cec0e5d30de94eb571f37f7423c445d14f9
-  RNCAsyncStorage: 3eea36d9460c5159b592f9ecbe5a77f8aca98006
-  RNDateTimePicker: dc9dab744823a2c734dbc7362cdf57a3adba3c43
-  RNDeviceInfo: e841619c3dac5495a095c5455473579ff04908d4
-  RNFirebase: 37daa9a346d070f9f6ee1f3b4aaf4c8e3b1d5d1c
+  RNCAsyncStorage: db711e29e5e0500d9bd21aa0c2e397efa45302b1
+  RNDateTimePicker: f13c2d8c4cd1ea6d1a1f9ea7ddcdd24e82060770
+  RNDeviceInfo: 54556486cd02538dbef727f39292d096abe0cf0e
+  RNFirebase: ac0de8b24c6f91ae9459575491ed6a77327619c6
   RNGestureHandler: a4ddde1ffc6e590c8127b8b7eabfdade45475c74
   RNImageCropPicker: 9d1a7eea4f8368fc479cbd2bf26459bd3c74d9aa
   RNSound: c980916b596cc15c8dcd2f6ecd3b13c4881dbe20
-  RNVectorIcons: 368d6d8b8301224e5ffb6254191f4f8876c2be0d
+  RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
   RNVoipPushNotification: be6f70cac9d1fd73e020063093f635f64d97c9c6
   RSKImageCropper: a446db0e8444a036b34f3c43db01b2373baa4b2a
-  SDWebImage: 62ae4a18473520c67b79e9724c31a63599cc9423
+  SDWebImage: 84000f962cbfa70c07f19d2234cbfcf5d779b5dc
   SSZipArchive: 62d4947b08730e4cda640473b0066d209ff033c9
   Stylish: 28b6e4f177bfb94fae32fd8e6b31a31b38035318
   TGFoursquareLocationDetail: e2255e26b6c12d97b34fb95d88b67ab84cba1128
   TwilioChatClient: 23168c2df8e306da1cedcad1d60ba69862235358
   WebEngage: b8f322ebfdd08c9cd56aec038f9d3c29c018335d
-  WebEngageAppEx: c36609d1bc25f78dc820fa6a75b4084d243c3d15
-  WebEngageBannerPush: 12b84f74718a2806ac6cc0c643574f6cd2f9f3fe
+  WebEngageAppEx: c13cb8b7050a4a8b39e15623d041e54c3120b8a2
+  WebEngageBannerPush: 4450a63b42f893ec01dd36981d5c90964b5087f8
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
   youtube-ios-player-helper: 21ab92db027c7ff86cb17a3843a3f6eafc8158d2
 
-PODFILE CHECKSUM: 4125c48205c351123f726b5c740d8747b42e34b9
+PODFILE CHECKSUM: b24d9935851e18d8f3849b5b37ab8e289fbf25c4
 
 COCOAPODS: 1.7.2
