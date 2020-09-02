@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     panelHeader: {
       padding: '4px 20px',
-      fontSize: 18,
+      fontSize: 14,
       fontWeight: 500,
       color: '#02475b',
       textTransform: 'uppercase',
@@ -46,15 +46,14 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     cardTitle: {
       fontSize: 14,
-      fontWeight: 500,
-      color: '#01475b',
+      fontWeight: 600,
+      color: '#02475b',
       letterSpacing: 0.02,
       paddingBottom: 8,
-      opacity: 0.8,
     },
     cardSection: {
       padding: 16,
-      backgroundColor: '#f7f8f5',
+      backgroundColor: 'transparent',
       borderRadius: 5,
       fontSize: 14,
       fontWeight: 500,
@@ -95,6 +94,11 @@ const useStyles = makeStyles((theme: Theme) => {
     resultError: {
       color: '#d10001',
     },
+    labtest: {
+      marginRight: 10,
+      position: 'relative',
+      top: 6,
+    },
   };
 });
 
@@ -134,7 +138,7 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
               return (
                 <Grid item xs={12} sm={12}>
                   {/* icon should come here */}
-                  <div className={classes.cardTitle}>Impressions</div>
+                  <div className={classes.cardTitle}><img className={classes.labtest} src={require('images/ic_labtest.svg')} alt="" /> Impressions</div>
                   <div className={classes.cardSection}>
                     <Grid container spacing={2}>
                       <Grid item xs={12} sm={12}>

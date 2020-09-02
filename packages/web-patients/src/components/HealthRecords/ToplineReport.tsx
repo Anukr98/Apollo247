@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     panelHeader: {
       padding: '4px 20px',
-      fontSize: 18,
+      fontSize: 16,
       fontWeight: 500,
       color: '#02475b',
       textTransform: 'uppercase',
