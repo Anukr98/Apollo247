@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sourceField: {
       maxWidth: 70,
-       [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down('xs')]: {
         maxWidth: '100%',
       },
     },
@@ -315,6 +315,11 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    noteText: {
+      fontSize: 12,
+      padding: 10,
+      color: '#0087ba',
+    },
   };
 });
 
@@ -385,6 +390,10 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
+        <div className={classes.noteText}>
+          Please note that you can share these health records with the doctor during a consult by
+          uploading them in the consult chat room!
+        </div>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
@@ -493,7 +502,9 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     </div>
                     <div className={classes.reportsDetails}>
                       <label>Source</label>
-                      <p className={classes.sourceField}>{getSource(activeData.data, activeData.type)}</p>
+                      <p className={classes.sourceField}>
+                        {getSource(activeData.data, activeData.type)}
+                      </p>
                     </div>
                     <div className={classes.reportsDetails}>
                       <label>Referring Doctor</label>
