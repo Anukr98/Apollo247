@@ -413,8 +413,11 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
               ) : (
                 <div>
                   <div className={classes.dialogContent}>
-                    Dr.{messageDetails.doctorInfo && messageDetails.doctorInfo.fullName} has
-                    suggested the below slot for rescheduling this appointment —
+                    Dr.
+                    {messageDetails.transferInfo &&
+                      messageDetails.transferInfo.doctorInfo &&
+                      messageDetails.transferInfo.doctorInfo.fullName}{' '}
+                    has suggested the below slot for rescheduling this appointment —
                     {moment(messageDetails.transferInfo.transferDateTime).format(
                       'Do MMMM, dddd \nhh:mm a'
                     )}
