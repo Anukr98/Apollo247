@@ -481,7 +481,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         id && clearInterval(id);
         if (
           differenceInMinutes >= -15 &&
-          (differenceInMinutes <= 30 || appointmentDetails.isConsultStarted)
+          (differenceInMinutes <= 30 || appointmentDetails.isSeniorConsultStarted)
         ) {
           setRefreshTimer(!refreshTimer);
         }
