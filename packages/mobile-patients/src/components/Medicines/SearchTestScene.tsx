@@ -62,6 +62,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { getPackageData, PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import _ from 'lodash';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -442,7 +443,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           placeholder="Search tests &amp; packages"
           underlineColorAndroid="transparent"
           onChangeText={(value) => {
-            onSearchTest(value);
+            const search = _.debounce(onSearchTest, 300);
+            search(value);
           }}
         />
         {renderSorryMessage}

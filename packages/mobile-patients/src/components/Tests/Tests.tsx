@@ -98,6 +98,7 @@ import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEven
 import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import _ from 'lodash';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -543,7 +544,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   onChangeText={(value) => {
                     setcurrentLocation(value);
                     if (value.length > 2) {
-                      autoSearch(value);
+                      const locSearch = _.debounce(autoSearch, 300);
+                      locSearch(value);
                       setshowLocations(true);
                     } else {
                       setshowLocations(false);
@@ -1458,7 +1460,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setsearchSate('success');
           }}
           onChangeText={(value) => {
-            onSearchMedicine(value);
+            const search = _.debounce(onSearchMedicine, 300);
+            search(value);
           }}
           autoCorrect={false}
           rightIcon={isSearchFocused ? rigthIconView : <View />}

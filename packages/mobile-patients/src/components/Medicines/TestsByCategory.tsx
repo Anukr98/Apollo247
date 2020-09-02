@@ -49,6 +49,7 @@ import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import _ from 'lodash';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -424,7 +425,8 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
           value={searchText}
           onSubmitEditing={goToSearchPage}
           onChangeText={(value) => {
-            onSearchTest(value);
+            const search = _.debounce(onSearchTest, 300);
+            search(value);
           }}
           autoCorrect={false}
           rightIcon={rigthIconView}

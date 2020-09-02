@@ -103,6 +103,7 @@ import { useUIElements } from '../UIElementsProvider';
 import { ProfileList } from '../ui/ProfileList';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Video from 'react-native-video';
+import _ from 'lodash';
 
 const { width } = Dimensions.get('window');
 
@@ -886,11 +887,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             onChangeText={(value) => {
               if (isValidSearch(value)) {
                 setSearchText(value);
-                console.log(timeout, 'timeout');
-                if (timeout) clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                  fetchSearchData(value);
-                }, 300);
+                const search = _.debounce(fetchSearchData, 300);
+                search(value);
                 if (value.length > 2) {
                   // fetchSearchData(value);
                   // setDoctorName(true);

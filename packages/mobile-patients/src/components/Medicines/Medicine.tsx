@@ -116,6 +116,7 @@ import {
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
 import { AddToCartButtons } from './AddToCartButtons';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '../../graphql/types/getMedicineOrderOMSDetailsWithAddress';
+import _ from 'lodash';
 
 const styles = StyleSheet.create({
   sliderDotStyle: {
@@ -1480,7 +1481,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           props.navigation,
           currentPatient,
           !!isPharmacyLocationServiceable,
-          { source: 'Pharmacy Home', section: title, categoryId: category_id },
+          { source: 'Pharmacy Home', section: title, categoryId: category_id }
         );
       }
     };
@@ -1717,7 +1718,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setsearchSate('success');
           }}
           onChangeText={(value) => {
-            onSearchMedicine(value);
+            const search = _.debounce(onSearchMedicine, 300);
+            search(value);
           }}
           _rigthIconView={rigthIconView}
           placeholder="Search meds, brands &amp; more"
