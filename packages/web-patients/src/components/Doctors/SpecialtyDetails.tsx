@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Theme, Grid, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
@@ -23,6 +23,7 @@ import { GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as 
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
 import _upperFirst from 'lodash/upperFirst';
+import _merge from 'lodash/merge';
 import {
   GetDoctorsBySpecialtyAndFilters,
   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors as DoctorDetails,
@@ -44,7 +45,10 @@ import { SpecialtySearch } from 'components/SpecialtySearch';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
-
+let currentPage = 1;
+const PAGE_SIZE = 50;
+let apolloDoctorCount = 0;
+let partnerDoctorCount = 0;
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -389,6 +393,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [structuredJSON, setStructuredJSON] = useState(null);
   const [breadcrumbJSON, setBreadcrumbJSON] = useState(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [intialLoad, setInitalLoad] = useState<boolean>(true);
   const [filter, setFilter] = useState<SearchObject>(searchObject);
   const [filteredDoctorData, setFilteredDoctorData] = useState<any>(null);
   const [doctorData, setDoctorData] = useState<DoctorDetails[] | null>(null);
@@ -396,6 +401,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [isPhysicalSelected, setIsPhysicalSelected] = useState<boolean>(false);
   const [doctorType, setDoctorType] = useState<DOCTOR_CATEGORY>(DOCTOR_CATEGORY.APOLLO);
   const [onlyFilteredCount, setOnlyFilteredCount] = useState<number>(0);
+  const [pageNo, setPageNo] = useState<number>(1);
   const [specialtyId, setSpecialtyId] = useState<string>('');
   const [specialtyName, setSpecialtyName] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
@@ -406,8 +412,135 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [searchDoctors, setSearchDoctors] = useState<DoctorsType[] | null>(null);
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const [isFetching, setIsFetching] = useState<boolean>(false);
   const [slugName, setSlugName] = useState<string>('');
   const [faqData, setFaqData] = useState<any>();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!intialLoad) {
+      setIsFetching(true);
+      apolloClient
+        .query({
+          query: GET_DOCTORS_BY_SPECIALITY_AND_FILTERS,
+          variables: { filterInput: _merge(apiVariables, { pageNo, pageSize: PAGE_SIZE }) },
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          let potentialActionSchema: any[] = [];
+          setStructuredJSON({
+            '@context': 'https://schema.org/',
+            '@type': 'MedicalSpecialty',
+            name: specialtyName,
+            description: `Find the best ${specialtyName} doctors & specialists and consult with them instantly on Apollo24|7`,
+            potentialAction: {
+              '@type': 'ViewAction',
+              target: potentialActionSchema,
+            },
+          });
+          setBreadcrumbJSON({
+            '@context': 'https://schema.org/',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'HOME',
+                item: 'https://www.apollo247.com/',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'SPECIALTIES',
+                item: 'https://www.apollo247.com/specialties',
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: specialtyName,
+                item: `https://www.apollo247.com/specialties/${readableParam(specialtyName)}`,
+              },
+            ],
+          });
+          if (
+            response &&
+            response.data &&
+            response.data.getDoctorsBySpecialtyAndFilters &&
+            response.data.getDoctorsBySpecialtyAndFilters.doctors
+          ) {
+            const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
+            const finalList = getFilteredDoctorList(doctors || []);
+            doctors.map((doctorDetails: docDetails) => {
+              doctorDetails &&
+                doctorDetails.fullName &&
+                potentialActionSchema.push({
+                  '@type': 'EntryPoint',
+                  name: doctorDetails.fullName,
+                  url: params.specialty
+                    ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
+                        params.specialty,
+                        readableParam(doctorDetails.fullName),
+                        doctorDetails.id
+                      )}`
+                    : `${window.location.origin}${clientRoutes.doctorDetails(
+                        readableParam(doctorDetails.fullName),
+                        doctorDetails.id
+                      )}`,
+                });
+            });
+            setDoctorData(doctorData.concat(doctors) || []);
+            setOnlyFilteredCount(onlyFilteredCount + doctors.length || 0);
+            setFilteredDoctorData(filteredDoctorData.concat(finalList));
+          }
+          currentPage = currentPage + 1;
+          const newData: any = {
+            getDoctorsBySpecialtyAndFilters: {
+              doctors: data['getDoctorsBySpecialtyAndFilters'].doctors.concat(
+                response.data['getDoctorsBySpecialtyAndFilters'].doctors
+              ),
+              doctorsAvailability: data[
+                'getDoctorsBySpecialtyAndFilters'
+              ].doctorsAvailability.concat(
+                response.data['getDoctorsBySpecialtyAndFilters'].doctorsAvailability
+              ),
+              doctorsNextAvailability: data[
+                'getDoctorsBySpecialtyAndFilters'
+              ].doctorsNextAvailability.concat(
+                response.data['getDoctorsBySpecialtyAndFilters'].doctorsNextAvailability
+              ),
+            },
+          };
+          setData(newData);
+        })
+        .catch((e) => console.log(e))
+        .finally(() => {
+          // setLoading(false);
+          setIsFetching(false);
+        });
+    }
+  }, [pageNo]);
+
+  const incrementState = () => setPageNo(currentPage);
+
+  const handleOnScroll = useCallback(() => {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight * 0.5) {
+      if (!isFetching) {
+        if (
+          doctorType === DOCTOR_CATEGORY.APOLLO &&
+          (currentPage - 1) * PAGE_SIZE < apolloDoctorCount + partnerDoctorCount
+        ) {
+          incrementState();
+        }
+      }
+      //show loading spinner and make fetch request to api
+      // setFetchMoreDoctors(true)
+    }
+  }, []);
+  useEffect(() => {
+    if (scrollRef && scrollRef.current) {
+      window.addEventListener('scroll', handleOnScroll);
+    }
+  }, [scrollRef]);
 
   /* Gtm code start */
   useEffect(() => {
@@ -553,7 +686,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       apolloClient
         .query({
           query: GET_DOCTORS_BY_SPECIALITY_AND_FILTERS,
-          variables: { filterInput: apiVariables },
+          variables: { filterInput: _merge(apiVariables, { pageNo: 1, pageSize: PAGE_SIZE }) },
           fetchPolicy: 'no-cache',
         })
         .then((response) => {
@@ -598,6 +731,8 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             response.data.getDoctorsBySpecialtyAndFilters &&
             response.data.getDoctorsBySpecialtyAndFilters.doctors
           ) {
+            apolloDoctorCount = response.data.getDoctorsBySpecialtyAndFilters.apolloDoctorCount;
+            partnerDoctorCount = response.data.getDoctorsBySpecialtyAndFilters.partnerDoctorCount;
             const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
             const finalList = getFilteredDoctorList(doctors || []);
             doctors.map((doctorDetails: docDetails) => {
@@ -627,6 +762,8 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
         .catch((e) => console.log(e))
         .finally(() => {
           setLoading(false);
+          currentPage = 2;
+          setInitalLoad(false);
         });
     }
   }, [currentLat, currentLong, filter, specialtyId, specialtyName]);
@@ -713,7 +850,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       <div className={classes.mHide}>
         <Header />
       </div>
-      <div className={classes.container}>
+      <div className={classes.container} ref={scrollRef}>
         <div className={classes.doctorListingPage}>
           <div className={classes.breadcrumbs} ref={scrollToRef}>
             <Link to={clientRoutes.specialityListing()}>
@@ -754,28 +891,20 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   <AphButton
                     onClick={() => {
                       setDoctorType(DOCTOR_CATEGORY.APOLLO);
+                      // setPageNo(1);
                     }}
                     className={doctorType === DOCTOR_CATEGORY.APOLLO ? classes.buttonActive : ''}
                   >
-                    Apollo Doctors (
-                    {getDoctorsCount(
-                      searchKeyword.length > 1 ? searchDoctors : doctorData || [],
-                      DOCTOR_CATEGORY.APOLLO
-                    )}
-                    )
+                    Apollo Doctors ({apolloDoctorCount})
                   </AphButton>
                   <AphButton
                     className={doctorType === DOCTOR_CATEGORY.PARTNER ? classes.buttonActive : ''}
                     onClick={() => {
                       setDoctorType(DOCTOR_CATEGORY.PARTNER);
+                      // setPageNo(1);
                     }}
                   >
-                    Doctor Partners (
-                    {getDoctorsCount(
-                      searchKeyword.length > 1 ? searchDoctors : doctorData || [],
-                      DOCTOR_CATEGORY.PARTNER
-                    )}
-                    )
+                    Doctor Partners ({partnerDoctorCount})
                   </AphButton>
                 </div>
               </div>
