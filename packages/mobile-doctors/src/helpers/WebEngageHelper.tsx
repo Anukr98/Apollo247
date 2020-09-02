@@ -1,4 +1,5 @@
 import WebEngage from 'react-native-webengage';
+import { AppConfig, AppEnv } from '@aph/mobile-doctors/src/helpers/AppConfig';
 
 export interface WebEngageType {
   init: (autoRegister: boolean) => void;
@@ -287,7 +288,9 @@ export interface WebEngageEvents {
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    webengage.track(eventName, attributes);
+    if (AppConfig.APP_ENV !== AppEnv.DEV) {
+      webengage.track(eventName, attributes);
+    }
   } catch (e) {}
 };
 
@@ -298,19 +301,23 @@ export const setWebEngageData = (
   email: string
 ) => {
   try {
-    webengage.user.setPhone(mobileNumber);
-    webengage.user.setFirstName(firstName);
-    webengage.user.setLastName(lastName);
-    webengage.user.setEmail(email);
+    if (AppConfig.APP_ENV !== AppEnv.DEV) {
+      webengage.user.setPhone(mobileNumber);
+      webengage.user.setFirstName(firstName);
+      webengage.user.setLastName(lastName);
+      webengage.user.setEmail(email);
+    }
   } catch (e) {}
 };
 
 export const webEngageLogin = (id?: string) => {
   try {
-    if (id) {
-      webengage.user.login(id);
-    } else {
-      webengage.user.logout();
+    if (AppConfig.APP_ENV !== AppEnv.DEV) {
+      if (id) {
+        webengage.user.login(id);
+      } else {
+        webengage.user.logout();
+      }
     }
   } catch (e) {}
 };
