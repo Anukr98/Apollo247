@@ -8,7 +8,7 @@ import {
   GetDoctorDetails_getDoctorDetails,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { apiRoutes } from '@aph/mobile-doctors/src/helpers/apiRoutes';
-import { getNetStatus } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { getNetStatus, g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory';
 import { ApolloClient } from 'apollo-client';
 import { setContext } from 'apollo-link-context';
@@ -29,6 +29,7 @@ import {
   getDoctorHelpline,
   getDoctorHelpline_getDoctorHelpline,
 } from '@aph/mobile-doctors/src/graphql/types/getDoctorHelpline';
+import { webEngageLogin, setWebEngageData } from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 /*eslint-disable */
 function wait<R, E>(promise: Promise<R>): [R, E] {
@@ -248,6 +249,15 @@ export const AuthProvider: React.FC = (props) => {
         .then(({ data }) => {
           console.log('GetDoctorDetails', data);
           if (data) {
+            webEngageLogin(g(data, 'getDoctorDetails', 'mobileNumber'));
+            setTimeout(() => {
+              setWebEngageData(
+                g(data, 'getDoctorDetails', 'mobileNumber') || '',
+                g(data, 'getDoctorDetails', 'firstName') || '',
+                g(data, 'getDoctorDetails', 'lastName') || '',
+                g(data, 'getDoctorDetails', 'emailAddress') || ''
+              );
+            }, 2000);
             setDoctorDetails(data.getDoctorDetails);
             setDoctorDetailsError(false);
             resolve(true);

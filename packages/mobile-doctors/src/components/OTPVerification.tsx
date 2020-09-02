@@ -37,6 +37,11 @@ import { resendOTP, verifyOTP } from '../helpers/loginCalls';
 import SmsRetriever from 'react-native-sms-retriever';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import {
+  postWebEngageEvent,
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 const styles = OTPVerificationStyles;
 
@@ -139,6 +144,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
       if (isOtpVerified) {
         setTimeout(() => {
+          postWebEngageEvent(WebEngageEventName.DOCTOR_LOGIN, {});
           if (isProfileFlowDone === 'true') {
             props.navigation.dispatch(
               StackActions.reset({

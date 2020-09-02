@@ -37,7 +37,7 @@ import {
 } from 'react-navigation';
 import { apiRoutes } from '@aph/mobile-doctors/src/helpers/apiRoutes';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
-import { getBuildEnvironment } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { getBuildEnvironment, g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
@@ -48,6 +48,11 @@ import {
 } from '@aph/mobile-doctors/src/graphql/types/deleteDoctorDeviceToken';
 import { DELETE_DOCTOR_DEVICE_TOKEN } from '@aph/mobile-doctors/src/graphql/profiles';
 import { clearUserData } from '@aph/mobile-doctors/src/helpers/localStorage';
+import {
+  postWebEngageEvent,
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 const { width } = Dimensions.get('window');
 const styles = BasicAccountStyles;
@@ -200,6 +205,12 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                   return;
                 }
                 if (item.navigation) {
+                  if (item.label === strings.account.settings) {
+                    postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED_SETTINGS, {
+                      'Doctor Mobile number': g(doctorDetails, 'mobileNumber') || '',
+                      'Doctor name': g(doctorDetails, 'fullName') || '',
+                    } as WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED_SETTINGS]);
+                  }
                   props.navigation.navigate(item.navigation, item.navigationParams);
                 } else if (item.onPress) {
                   item.onPress();

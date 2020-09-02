@@ -328,6 +328,9 @@ PODS:
     - React
   - react-native-splash-screen (3.2.0):
     - React
+  - react-native-webengage (1.2.1):
+    - React
+    - WebEngage
   - React-RCTActionSheet (0.61.3):
     - React-Core/RCTActionSheetHeaders (= 0.61.3)
   - React-RCTAnimation (0.61.3):
@@ -403,6 +406,9 @@ PODS:
   - RNVectorIcons (6.6.0):
     - React
   - RSKImageCropper (2.2.3)
+  - WebEngage (5.0.2):
+    - WebEngage/Xcode11 (= 5.0.2)
+  - WebEngage/Xcode11 (5.0.2)
   - Yoga (1.14.0)
 
 DEPENDENCIES:
@@ -447,6 +453,7 @@ DEPENDENCIES:
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pdf (from `../node_modules/react-native-pdf`)
   - react-native-splash-screen (from `../node_modules/react-native-splash-screen`)
+  - react-native-webengage (from `../node_modules/react-native-webengage`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
   - React-RCTAnimation (from `../node_modules/react-native/Libraries/NativeAnimation`)
   - React-RCTBlob (from `../node_modules/react-native/Libraries/Blob`)
@@ -471,6 +478,7 @@ DEPENDENCIES:
   - RNSound (from `../node_modules/react-native-sound`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
+  - WebEngage
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -504,6 +512,7 @@ SPEC REPOS:
     - PromisesObjC
     - Protobuf
     - RSKImageCropper
+    - WebEngage
 
 EXTERNAL SOURCES:
   BugsnagReactNative:
@@ -566,6 +575,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-pdf"
   react-native-splash-screen:
     :path: "../node_modules/react-native-splash-screen"
+  react-native-webengage:
+    :path: "../node_modules/react-native-webengage"
   React-RCTActionSheet:
     :path: "../node_modules/react-native/Libraries/ActionSheetIOS"
   React-RCTAnimation:
@@ -674,6 +685,7 @@ SPEC CHECKSUMS:
   react-native-netinfo: 7f3f3ed9e8f0e7ab3e7cac00cbfdc6997e25ecaf
   react-native-pdf: 29a09815e99c92743aa8459a90564aaddd4065e0
   react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
+  react-native-webengage: 972e6bc1f72a4c1d4b16548cf4f1b3788c60cbc9
   React-RCTActionSheet: 94671eef55b01a93be735605822ef712d5ea208e
   React-RCTAnimation: 524ae33e73de9c0fe6501a7a4bda8e01d26499d9
   React-RCTBlob: 5481c2db702f57207af7e7a9b32d90524b821b72
@@ -698,8 +710,9 @@ SPEC CHECKSUMS:
   RNSVG: 67f1f12dae2cef6ed59a42cae74a6b8f5a9e7b46
   RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
   RSKImageCropper: a446db0e8444a036b34f3c43db01b2373baa4b2a
+  WebEngage: b8f322ebfdd08c9cd56aec038f9d3c29c018335d
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
 
-PODFILE CHECKSUM: da80a8c2226e94049b7a8fbb3d13e247a67caeb7
+PODFILE CHECKSUM: 3f60a91b8c8226a65556950fa73861a0d0e47b24
 
-COCOAPODS: 1.8.4
+COCOAPODS: 1.9.3
