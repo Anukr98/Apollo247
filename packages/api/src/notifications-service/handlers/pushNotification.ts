@@ -43,7 +43,7 @@ type PushNotificationInput = {
   appointmentId: string;
   doctorNotification?: boolean;
   blobName?: string;
-  data?: any
+  data?: any;
 };
 
 type CartPushNotificationInput = {
@@ -61,7 +61,7 @@ export async function sendCallsNotification(
   appointmentCallId: string,
   isDev: boolean,
   numberOfParticipants: number,
-  patientId: string,
+  patientId: string
 ) {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
@@ -80,24 +80,21 @@ export async function sendCallsNotification(
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
 
   patientId = patientId || patientDetails.id;
-  let voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
-    patientId,
-    DEVICE_TYPE.IOS
-  );
+  let voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(patientId, DEVICE_TYPE.IOS);
 
-  if (patientId != patientDetails.id && (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])) {
+  if (
+    patientId != patientDetails.id &&
+    (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])
+  ) {
     patientId = patientDetails.id;
-    voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
-      patientId,
-      DEVICE_TYPE.IOS
-    );
+    voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(patientId, DEVICE_TYPE.IOS);
   }
 
   if (
     voipPushtoken.length &&
     voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
-    callType != APPT_CALL_TYPE.CHAT
-    && (!numberOfParticipants || (numberOfParticipants && numberOfParticipants < 2))
+    callType != APPT_CALL_TYPE.CHAT &&
+    (!numberOfParticipants || (numberOfParticipants && numberOfParticipants < 2))
   ) {
     hitCallKitCurl(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
@@ -654,7 +651,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -935,6 +932,13 @@ export async function sendNotification(
   consultsDb: Connection,
   doctorsDb: Connection
 ) {
+  log(
+    'notificationServiceLogger',
+    `NOTIFICATION INPUTs: ${JSON.stringify(pushNotificationInput)}`,
+    '',
+    '',
+    ''
+  );
   const { appointmentId } = pushNotificationInput;
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const {
@@ -1136,6 +1140,13 @@ export async function sendNotification(
 
   //book appointment
   else if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
+    log(
+      'notificationServiceLogger',
+      `NOTIFICATION TYPE: ${NotificationType.BOOK_APPOINTMENT}`,
+      '',
+      '',
+      ''
+    );
     let content = ApiConstants.BOOK_APPOINTMENT_BODY_WITH_CLICK.replace(
       '{0}',
       patientDetails.firstName
@@ -1190,10 +1201,7 @@ export async function sendNotification(
           const chatroom_sms_link = process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM.replace(
             '{0}',
             appointment.id.toString()
-          ).replace(
-            '{1}',
-            appointment.doctorId.toString()
-          );
+          ).replace('{1}', appointment.doctorId.toString());
           smsLink = smsLink.replace('{5}', chatroom_sms_link);
         } else {
           throw new AphError(AphErrorMessages.SMS_WEBLINK_APPOINTMENT_CHATROOM_MISSING);
@@ -1370,9 +1378,14 @@ export async function sendNotification(
       .replace('{2}', appointment.displayId.toString())
       .replace('{3}', format(appointment.appointmentDateTime, 'yyyy-MM-dd'));
 
-
     if (!process.env.DEEPLINK_PRESCRIPTION) {
-      log('notificationServiceLogger', AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING, 'pushNotifications.ts/sendNotification', '', AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING);
+      log(
+        'notificationServiceLogger',
+        AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING,
+        'pushNotifications.ts/sendNotification',
+        '',
+        AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING
+      );
       throw new AphError(AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING, undefined, undefined);
     }
 
@@ -1383,9 +1396,17 @@ export async function sendNotification(
       throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined, undefined);
     }
 
-    prescriptionDeeplink = `${notificationBody} ${ApiConstants.PRESCRIPTION_CLICK_HERE} ${prescriptionDeeplink.replace(ApiConstants.PRESCRIPTION_DEEPLINK_PLACEHOLDER, caseSheetId)}`;
+    prescriptionDeeplink = `${notificationBody} ${
+      ApiConstants.PRESCRIPTION_CLICK_HERE
+    } ${prescriptionDeeplink.replace(ApiConstants.PRESCRIPTION_DEEPLINK_PLACEHOLDER, caseSheetId)}`;
 
-    log(`consultServiceLogger`, `FinalDeeplink: ${prescriptionDeeplink}`, `${NotificationType.PRESCRIPTION_READY}`, '', '');
+    log(
+      `consultServiceLogger`,
+      `FinalDeeplink: ${prescriptionDeeplink}`,
+      `${NotificationType.PRESCRIPTION_READY}`,
+      '',
+      ''
+    );
     console.log(`FinalDeeplink: ${prescriptionDeeplink}`);
     sendNotificationSMS(patientDetails.mobileNumber, prescriptionDeeplink);
 
