@@ -935,9 +935,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 onBlur={() => {
                   setHideSend(true);
                 }}
-                onSubmitEditing={() => {
-                  Keyboard.dismiss();
-                }}
                 underlineColorAndroid={theme.colors.TRANSPARENT}
                 selectionColor={theme.colors.APP_GREEN}
               />
