@@ -41,6 +41,7 @@ import {
   g,
   productsThumbnailUrl,
   getDiscountPercentage,
+  addPharmaItemToCart,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -236,7 +237,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineError, setMedicineError] = useState<string>('Product Details Not Available!');
   const [popupHeight, setpopupHeight] = useState<number>(60);
 
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
 
   const formatTabData = (
     index: number,
@@ -1251,6 +1252,42 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           sku: sku,
           title: name,
         });
+      const addItemToCart = ({
+        sku,
+        mou,
+        name,
+        price,
+        special_price,
+        is_prescription_required,
+        type_id,
+        thumbnail,
+        MaxOrderQty,
+        category_id,
+      }: MedicineProduct) => {
+        addPharmaItemToCart(
+          {
+            id: sku,
+            mou,
+            name,
+            price: Number(price),
+            specialPrice: Number(special_price) || undefined,
+            prescriptionRequired: is_prescription_required == '1',
+            isMedicine: (type_id || '').toLowerCase() == 'pharma',
+            quantity: 1,
+            thumbnail: productsThumbnailUrl(thumbnail),
+            isInStock: true,
+            maxOrderQty: MaxOrderQty,
+            productType: type_id,
+          },
+          pharmacyPincode!,
+          addCartItem,
+          setGlobalLoading,
+          props.navigation,
+          currentPatient,
+          !!isPharmacyLocationServiceable,
+          { source: 'Pharmacy PDP', categoryId: category_id }
+        );
+      };
 
       return (
         <ProductUpSellingCard
@@ -1259,7 +1296,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           price={price}
           specialPrice={special_price}
           imageUrl={productsThumbnailUrl(image)}
-          onAddToCart={() => onAddCartItem(item)}
+          onAddToCart={() => addItemToCart(item)}
           onPress={onPress}
           numberOfItemsInCart={itemQty}
           maxOrderQty={medicineDetails.MaxOrderQty}
