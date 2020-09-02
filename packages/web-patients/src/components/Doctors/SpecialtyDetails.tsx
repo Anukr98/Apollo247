@@ -17,7 +17,12 @@ import { AddedFilters } from 'components/Doctors/AddedFilters';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
 import { GET_DOCTORS_BY_SPECIALITY_AND_FILTERS } from 'graphql/doctors';
-import { readableParam, DOCTOR_CATEGORY, SearchObject } from 'helpers/commonHelpers';
+import {
+  readableParam,
+  DOCTOR_CATEGORY,
+  SearchObject,
+  SPECIALTY_DETAIL_LISTING_PAGE_SIZE as PAGE_SIZE,
+} from 'helpers/commonHelpers';
 import { useLocationDetails } from 'components/LocationProvider';
 import { GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as docDetails } from 'graphql/types/GetDoctorDetailsById';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -46,7 +51,6 @@ import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 let currentPage = 1;
-const PAGE_SIZE = 50;
 let apolloDoctorCount = 0;
 let partnerDoctorCount = 0;
 const useStyles = makeStyles((theme: Theme) => {
