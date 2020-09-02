@@ -1437,6 +1437,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               ? AppConfig.Configuration.iOS_Version
               : AppConfig.Configuration.Android_Version,
           numberOfParticipants: count,
+          patientId: g(caseSheet, 'patientDetails', 'id')
         },
       })
       .then((_data) => {
@@ -1459,6 +1460,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           fetchPolicy: 'no-cache',
           variables: {
             appointmentCallId: isCall ? callId : chatId,
+            patientId: g(caseSheet, 'patientDetails', 'id')
           },
         })
         .catch((error) => {});

@@ -1561,6 +1561,7 @@ export const SEND_CALL_NOTIFICATION = gql`
     $callSource: BOOKINGSOURCE
     $appVersion: String
     $numberOfParticipants: Int
+    $patientId: String
   ) {
     sendCallNotification(
       appointmentId: $appointmentId
@@ -1570,6 +1571,7 @@ export const SEND_CALL_NOTIFICATION = gql`
       callSource: $callSource
       appVersion: $appVersion
       numberOfParticipants: $numberOfParticipants
+      patientId: $patientId
     ) {
       status
       callDetails {
@@ -1580,8 +1582,14 @@ export const SEND_CALL_NOTIFICATION = gql`
 `;
 
 export const END_CALL_NOTIFICATION = gql`
-  query EndCallNotification($appointmentCallId: String) {
-    endCallNotification(appointmentCallId: $appointmentCallId) {
+  query EndCallNotification(
+    $appointmentCallId: String
+    $patientId: String
+    ) {
+    endCallNotification(
+      appointmentCallId: $appointmentCallId
+      patientId: $patientId
+      ) {
       status
     }
   }
