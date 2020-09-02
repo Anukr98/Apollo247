@@ -477,7 +477,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
                 >
                   <img src={require('images/ic_back.svg')} />
                 </AphButton>
-                <span>Test Results</span>
+                <span>HOSPITALIZATION DETAILS</span>
               </div>
             </div>
             <Scrollbars

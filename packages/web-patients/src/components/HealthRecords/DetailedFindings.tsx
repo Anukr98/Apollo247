@@ -8,6 +8,10 @@ import {
   Grid,
 } from '@material-ui/core';
 import { MedicalTestUnit } from 'graphql/types/globalTypes';
+import {
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_labTestResults as LabTestResultsType,
+} from '../../graphql/types/getPatientPrismMedicalRecords';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -95,7 +99,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 type DetailedFindingsProps = {
-  activeData: any;
+  activeData: LabResultsType;
 };
 
 export const MedicalTest = [
@@ -112,7 +116,7 @@ export const MedicalTest = [
 
 export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
   const classes = useStyles({});
-  const { data } = props.activeData;
+  const { activeData } = props;
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
@@ -123,21 +127,21 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
-          {data &&
-            (data.labTestResults && data.labTestResults).map((detail: any) => {
+          {activeData &&
+            activeData.labTestResults &&
+            activeData.labTestResults.map((detail: LabTestResultsType) => {
               const unit = MedicalTest.find((item) => item.key === detail.unit);
               return (
                 <Grid item xs={12} sm={12}>
-                  <div className={classes.cardTitle}>{detail.parameterName}</div>
+                  {/* icon should come here */}
+                  <div className={classes.cardTitle}>Impressions</div>
                   <div className={classes.cardSection}>
                     <Grid container spacing={2}>
                       <Grid item xs={12} sm={12}>
                         <div className={classes.resultGroup}>
                           <label>Normal Range</label>
                           <div className={`${classes.result}`}>
-                            {detail.range
-                              ? detail.range
-                              : `${detail.minimum || ''} - ${detail.maximum || ''}`}
+                            {detail.range ? detail.range : '-'}
                           </div>
                         </div>
                       </Grid>

@@ -407,10 +407,6 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
-        {/* <div className={classes.noteText}>
-          Please note that you can share these health records with the doctor during a consult by
-          uploading them in the consult chat room!
-        </div> */}
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
@@ -504,12 +500,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 >
                   <img src={require('images/ic_back.svg')} />
                 </AphButton>
-                <span>REPORT Details</span>
-              </div>
-              <div className={classes.headerActions}>
-                <div className={classes.downloadIcon}>
-                  <img src={require('images/ic_download.svg')} alt="" />
-                </div>
+                <span>TEST Details</span>
               </div>
             </div>
             <Scrollbars
@@ -528,11 +519,13 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 <div className={classes.medicalRecordsDetails}>
                   <div className={classes.cbcDetails}>
                     <div className={classes.reportsDetails}>
-                      <div className={classes.testName}>Ultrasound Screening Whole Abdomen</div>
+                      <div className={classes.testName}>{activeData.labTestName}</div>
                     </div>
                     <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
                       <div>
-                        {!!activeData.labTestRefferedBy ? activeData.labTestRefferedBy : '-'}
+                        {!!activeData.labTestRefferedBy
+                          ? `Dr. ${activeData.labTestRefferedBy}`
+                          : '-'}
                       </div>
                     </div>
                     <div className={classes.reportsDetails}>
@@ -551,20 +544,27 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                       </p>
                     </div>
                   </div>
-                  {(activeData.observation || activeData.additionalNotes) && (
+                  {/* {(activeData.observation || activeData.additionalNotes) && (
                     <ToplineReport activeData={activeData} />
-                  )}
+                  )} */}
                   {activeData.labTestResults && activeData.labTestResults.length > 0 && (
                     <DetailedFindings activeData={activeData} />
                   )}
-                  {activeData &&
-                    ((activeData.fileUrl && activeData.fileUrl.length > 0) ||
-                      (activeData.fileUrl && activeData.fileUrl.length > 0)) && (
-                      <RenderImage
-                        activeData={activeData}
-                        type={activeData.fileUrl.includes('pdf') ? 'pdf' : 'image'}
-                      />
-                    )}
+                  {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
+                    <RenderImage
+                      activeData={activeData}
+                      type={
+                        activeData.testResultFiles &&
+                        activeData.testResultFiles.length &&
+                        activeData.testResultFiles[0].fileName &&
+                        activeData.testResultFiles[0].fileName.includes('pdf')
+                          ? 'pdf'
+                          : activeData.fileUrl.includes('pdf')
+                          ? 'pdf'
+                          : 'image'
+                      }
+                    />
+                  )}
                 </div>
               )}
             </Scrollbars>
