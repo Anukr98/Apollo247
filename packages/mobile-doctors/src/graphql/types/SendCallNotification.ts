@@ -31,4 +31,5 @@ export interface SendCallNotificationVariables {
   callSource?: BOOKINGSOURCE | null;
   appVersion?: string | null;
   numberOfParticipants?: number | null;
+  patientId?: string | null;
 }
