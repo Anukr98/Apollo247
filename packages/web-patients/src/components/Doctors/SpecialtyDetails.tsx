@@ -524,7 +524,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     }
   }, [pageNo]);
 
-  const incrementState = () => setPageNo(currentPage);
+  const incrementPageNo = () => setPageNo(currentPage);
 
   const handleOnScroll = useCallback(() => {
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight * 0.5) {
@@ -533,7 +533,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
           doctorType === DOCTOR_CATEGORY.APOLLO &&
           (currentPage - 1) * PAGE_SIZE < apolloDoctorCount + partnerDoctorCount
         ) {
-          incrementState();
+          incrementPageNo();
         }
       }
       //show loading spinner and make fetch request to api
