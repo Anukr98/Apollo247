@@ -967,7 +967,7 @@ export async function sendNotification(
   let notificationTitle: string = '';
   let notificationBody: string = '';
   const notificationSound: string = ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString();
-  const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+  const istDateTime = addMilliseconds(new Date(appointment.appointmentDateTime), 19800000);
   const apptDate = format(
     addMinutes(new Date(appointment.appointmentDateTime), +330),
     'yyyy-MM-dd HH:mm:ss'
@@ -1225,7 +1225,7 @@ export async function sendNotification(
       'check dates for todays date appt',
       appointment.appointmentDateTime,
       new Date(),
-      differenceInHours(appointment.appointmentDateTime, new Date()),
+      differenceInHours(new Date(appointment.appointmentDateTime), new Date()),
       todaysDate,
       'todays date'
     );
@@ -1364,7 +1364,7 @@ export async function sendNotification(
       '{2}',
       patientDetails.firstName + ' ' + patientDetails.lastName
     );
-    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+    const istDateTime = addMilliseconds(new Date(appointment.appointmentDateTime), 19800000);
     notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
     //sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
 
@@ -1736,7 +1736,10 @@ export async function sendDoctorAppointmentNotification(
   const payload = {
     notification: {
       title: 'A New Appointment is scheduled with ' + patientName,
-      body: `at ${format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss')}`,
+      body: `at ${format(
+        addMilliseconds(new Date(appointmentDateTime), 19800000),
+        'yyyy-MM-dd HH:mm:ss'
+      )}`,
       sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
@@ -1744,8 +1747,11 @@ export async function sendDoctorAppointmentNotification(
       type: 'doctor_new_appointment_booked',
       appointmentId: apptId,
       patientName: patientName,
-      date: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
-      body: `at ${format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss')}`,
+      date: format(addMilliseconds(new Date(appointmentDateTime), 19800000), 'yyyy-MM-dd HH:mm:ss'),
+      body: `at ${format(
+        addMilliseconds(new Date(appointmentDateTime), 19800000),
+        'yyyy-MM-dd HH:mm:ss'
+      )}`,
     },
   };
   const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
