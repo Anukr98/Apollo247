@@ -73,6 +73,7 @@ export enum WebEngageEventName {
   DOCTOR_CONNECT_CARD_CLICK = 'Doctor Connect Card Click',
   CONSULTED_WITH_DOCTOR_BEFORE = 'Chat Window Consulted with doctor before alert',
   DOCTOR_SPECIALITY_SEARCH_NO_RESULT = 'Doctor Speciality Fuzzy Search No Result',
+  CONFIRM_LOCATION = 'Confirm Location',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
@@ -1292,5 +1293,9 @@ export interface WebEngageEvents {
     source: 'home' | 'deeplink';
     CategoryId: string;
     CategoryName: string;
+  };
+  [WebEngageEventName.CONFIRM_LOCATION]: {
+    isMarkerModified: boolean;
+    changedByInMeters: number;
   };
 }
