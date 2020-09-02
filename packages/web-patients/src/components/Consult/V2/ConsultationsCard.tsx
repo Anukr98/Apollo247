@@ -990,17 +990,17 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                     appointmentDetails.doctorInfo.fullName
                                       ? readableParam(appointmentDetails.doctorInfo.fullName)
                                       : '';
-                                  if (pickAnotherSlot) {
-                                    getAppointmentNextSlotInitiatedByDoctor(appointmentDetails);
-                                  } else if (
+                                  if (
+                                    props.pastOrCurrent === 'past' ||
                                     showAppointmentAction(
                                       appointmentState,
                                       status,
                                       isConsultStarted
-                                    ) === 'BOOK FOLLOWUP' ||
-                                    props.pastOrCurrent === 'past'
+                                    ) === 'BOOK FOLLOWUP'
                                   ) {
                                     bookFollowup(appointmentDetails);
+                                  } else if (pickAnotherSlot) {
+                                    getAppointmentNextSlotInitiatedByDoctor(appointmentDetails);
                                   } else {
                                     appointmentDetails.status === STATUS.CANCELLED ||
                                     (appointmentDetails.status === STATUS.COMPLETED &&
