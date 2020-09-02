@@ -1163,11 +1163,15 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   <p>You have {reschedulesRemaining} free reschedueles left</p>
                 )}
               </div>
-              <Link to={clientRoutes.appointments()}>
-                <div className={classes.actions}>
-                  <AphButton>OK, GOT IT</AphButton>
-                </div>
-              </Link>
+              <div className={classes.actions}>
+                <AphButton
+                  onClick={() => {
+                    window.location.href = clientRoutes.appointments();
+                  }}
+                >
+                  OK, GOT IT
+                </AphButton>
+              </div>
             </div>
           </div>
         </Popover>
