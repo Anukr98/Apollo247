@@ -1124,3 +1124,11 @@ export const MinusIconWhite: React.FC<IconProps> = (props) => (
 export const MinusIconOrange: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/minus-icon-orange.png')} />
 );
+
+export const DeleteIcon: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 13, height: 19 }} {...props} source={require('./icons/delete.png')} />
+);
+
+export const Cross: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 15, height: 15 }} {...props} source={require('./icons/cross.png')} />
+);

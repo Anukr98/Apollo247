@@ -246,7 +246,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
     ShoppingCartContextProps['showPrescriptionAtStore']
   >(false);
 
-  const [couponProducts, _setCouponProducts] = useState<ShoppingCartContextProps['couponProducts']>([]);
+  const [couponProducts, _setCouponProducts] = useState<ShoppingCartContextProps['couponProducts']>(
+    []
+  );
 
   const [physicalPrescriptions, _setPhysicalPrescriptions] = useState<
     ShoppingCartContextProps['physicalPrescriptions']
@@ -363,13 +365,20 @@ export const ShoppingCartProvider: React.FC = (props) => {
       .toFixed(2)
   );
 
+  // const deliveryCharges =
+  //   !deliveryType || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+  //     ? 0
+  //     : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
+  //       cartTotal > 0 &&
+  //       cartTotal - productDiscount - couponDiscount <
+  //         AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
+  //     ? AppConfig.Configuration.DELIVERY_CHARGES
+  //     : 0;
+
   const deliveryCharges =
-    !deliveryType || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-      ? 0
-      : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
-        cartTotal > 0 &&
-        cartTotal - productDiscount - couponDiscount <
-          AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
+    cartTotal > 0 &&
+    cartTotal - productDiscount - couponDiscount <
+      AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
       ? AppConfig.Configuration.DELIVERY_CHARGES
       : 0;
 
