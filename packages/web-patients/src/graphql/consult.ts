@@ -35,6 +35,8 @@ export const GET_APPOINTMENT_DATA = gql`
         appointmentState
         isJdQuestionsComplete
         isSeniorConsultStarted
+        isConsultStarted
+        symptoms
         doctorInfo {
           id
           salutation
@@ -158,5 +160,196 @@ export const GET_CONSULT_PAYMENTS = gql`
 export const GET_CONSULT_INVOICE = gql`
   query GetOrderInvoice($patientId: String!, $appointmentId: String!) {
     getOrderInvoice(patientId: $patientId, appointmentId: $appointmentId)
+  }
+`;
+
+export const UPLOAD_MEDIA_DOCUMENT_PRISM = gql`
+  mutation uploadMediaDocument(
+    $MediaPrescriptionUploadRequest: MediaPrescriptionUploadRequest
+    $uhid: String!
+    $appointmentId: ID!
+  ) {
+    uploadMediaDocument(
+      prescriptionInput: $MediaPrescriptionUploadRequest
+      uhid: $uhid
+      appointmentId: $appointmentId
+    ) {
+      recordId
+      fileUrl
+    }
+  }
+`;
+
+export const ADD_CHAT_DOCUMENTS = gql`
+  mutation addChatDocument($appointmentId: ID!, $documentPath: String, $prismFileId: String) {
+    addChatDocument(
+      appointmentId: $appointmentId
+      documentPath: $documentPath
+      prismFileId: $prismFileId
+    ) {
+      id
+      documentPath
+      prismFileId
+    }
+  }
+`;
+
+export const JOIN_JDQ_WITH_AUTOMATED_QUESTIONS = gql`
+  mutation AddToConsultQueueWithAutomatedQuestions($ConsultQueueInput: ConsultQueueInput) {
+    addToConsultQueueWithAutomatedQuestions(consultQueueInput: $ConsultQueueInput) {
+      id
+      doctorId
+      totalJuniorDoctorsOnline
+      juniorDoctorsList {
+        juniorDoctorId
+        doctorName
+        # queueCount
+      }
+      totalJuniorDoctors
+      isJdAllowed
+    }
+  }
+`;
+
+export const GET_CASESHEET_DETAILS = gql`
+  query getCaseSheet($appointmentId: String) {
+    getCaseSheet(appointmentId: $appointmentId) {
+      caseSheetDetails {
+        appointment {
+          id
+          appointmentDateTime
+          appointmentState
+          appointmentType
+          doctorId
+          hospitalId
+          patientId
+          parentId
+          status
+          displayId
+          isFollowUp
+          doctorInfo {
+            id
+            fullName
+            gender
+            photoUrl
+            displayName
+          }
+        }
+        consultType
+        diagnosis {
+          name
+        }
+        diagnosticPrescription {
+          itemname
+          testInstruction
+        }
+        blobName
+        doctorId
+        followUp
+        followUpAfterInDays
+        followUpDate
+        followUpConsultType
+        doctorType
+        id
+        medicinePrescription {
+          id
+          externalId
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineUnit
+          medicineConsumptionDurationInDays
+          medicineConsumptionDuration
+          medicineFormTypes
+          medicineFrequency
+          medicineConsumptionDurationUnit
+          routeOfAdministration
+          medicineCustomDosage
+          medicineCustomDetails
+          includeGenericNameInPrescription
+          genericName
+        }
+        notes
+        otherInstructions {
+          instruction
+        }
+        patientId
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+        }
+      }
+      patientDetails {
+        id
+      }
+      juniorDoctorNotes
+    }
+  }
+`;
+
+export const PAST_APPOINTMENTS_COUNT = gql`
+  query GetPastAppointmentsCount($doctorId: String!, $patientId: String!, $appointmentId: String!) {
+    getPastAppointmentsCount(
+      doctorId: $doctorId
+      patientId: $patientId
+      appointmentId: $appointmentId
+    ) {
+      count
+      completedCount
+      yesCount
+      noCount
+    }
+  }
+`;
+
+export const UPDATE_SAVE_EXTERNAL_CONNECT = gql`
+  mutation UpdateSaveExternalConnect(
+    $doctorId: String!
+    $patientId: String!
+    $externalConnect: Boolean
+    $appointmentId: String!
+  ) {
+    updateSaveExternalConnect(
+      doctorId: $doctorId
+      patientId: $patientId
+      externalConnect: $externalConnect
+      appointmentId: $appointmentId
+    ) {
+      status
+    }
+  }
+`;
+
+export const BOOK_FOLLOWUP_APPOINTMENT = gql`
+  mutation BookFollowUpAppointment($followUpAppointmentInput: BookFollowUpAppointmentInput!) {
+    bookFollowUpAppointment(followUpAppointmentInput: $followUpAppointmentInput) {
+      appointment {
+        id
+        isFollowUp
+        doctorId
+        appointmentType
+        appointmentState
+        appointmentDateTime
+        patientId
+        status
+      }
+    }
+  }
+`;
+
+export const GET_APPOINTMENT_DOCTOR_RESCHEDULED_DETAILS = gql`
+  query getAppointmentRescheduleDetails($appointmentId: String!) {
+    getAppointmentRescheduleDetails(appointmentId: $appointmentId) {
+      id
+      rescheduleReason
+      rescheduledDateTime
+      rescheduleInitiatedBy
+      rescheduleInitiatedId
+      rescheduleStatus
+    }
   }
 `;

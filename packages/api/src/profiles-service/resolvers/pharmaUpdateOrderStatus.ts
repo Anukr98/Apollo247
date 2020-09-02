@@ -22,10 +22,8 @@ import { ONE_APOLLO_STORE_CODE, ItemDetails, UnblockPointsRequest } from 'types/
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import {
-  NotificationType,
-  sendMedicineOrderStatusNotification,
-} from 'notifications-service/resolvers/notifications';
+import { sendMedicineOrderStatusNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { PharmaItemsResponse } from 'types/medicineOrderTypes';
@@ -33,6 +31,7 @@ import { OneApollo } from 'helpers/oneApollo';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
+
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
     orderId: Int!
@@ -290,11 +289,17 @@ const updateOrderStatus: Resolver<
       };
       await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
       if (status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
-        sendMedicineOrderStatusNotification(
-          NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY,
-          orderDetails,
-          profilesDb
-        );
+        if (updateOrderStatusInput.trackingProvider) {
+          const trackingProvider = updateOrderStatusInput.trackingProvider.toLowerCase();
+          if (trackingProvider != 'apollo fleet')
+            sendMedicineOrderStatusNotification(
+              trackingProvider == 'ap internal fleet'
+                ? NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY
+                : NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY_EXTERNAL,
+              orderDetails,
+              profilesDb
+            );
+        }
 
         //post order out for delivery event to webEngage
         const postBody: Partial<WebEngageInput> = {

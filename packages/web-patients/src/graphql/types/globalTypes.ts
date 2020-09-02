@@ -322,6 +322,28 @@ export enum REQUEST_ROLES {
   SYSTEM = "SYSTEM",
 }
 
+export enum ROUTE_OF_ADMINISTRATION {
+  EAR_DROPS = "EAR_DROPS",
+  EYE_DROPS = "EYE_DROPS",
+  EYE_OINTMENT = "EYE_OINTMENT",
+  GARGLE = "GARGLE",
+  INHALE = "INHALE",
+  INTRAMUSCULAR = "INTRAMUSCULAR",
+  INTRANASAL_SPRAY = "INTRANASAL_SPRAY",
+  INTRAVAGINAL = "INTRAVAGINAL",
+  INTRAVENOUS = "INTRAVENOUS",
+  INTRA_ARTICULAR = "INTRA_ARTICULAR",
+  LOCAL_APPLICATION = "LOCAL_APPLICATION",
+  NASALLY = "NASALLY",
+  NASAL_DROPS = "NASAL_DROPS",
+  ORALLY = "ORALLY",
+  ORAL_DROPS = "ORAL_DROPS",
+  PER_RECTAL = "PER_RECTAL",
+  SUBCUTANEOUS = "SUBCUTANEOUS",
+  SUBLINGUAL = "SUBLINGUAL",
+  TRIGGER_POINT_INJECTION = "TRIGGER_POINT_INJECTION",
+}
+
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
@@ -379,6 +401,12 @@ export enum TRANSFER_INITIATED_TYPE {
   PATIENT = "PATIENT",
 }
 
+export enum TRANSFER_STATUS {
+  COMPLETED = "COMPLETED",
+  INITIATED = "INITIATED",
+  REJECTED = "REJECTED",
+}
+
 export enum UPLOAD_FILE_TYPES {
   JPEG = "JPEG",
   JPG = "JPG",
@@ -394,6 +422,11 @@ export enum WeekDay {
   THURSDAY = "THURSDAY",
   TUESDAY = "TUESDAY",
   WEDNESDAY = "WEDNESDAY",
+}
+
+export enum mediaPrescriptionSource {
+  EPRESCRIPTION = "EPRESCRIPTION",
+  SELF = "SELF",
 }
 
 export interface AddMedicalRecordInput {
@@ -457,6 +490,15 @@ export interface BookAppointmentInput {
   discountedAmount?: number | null;
 }
 
+export interface BookFollowUpAppointmentInput {
+  patientId: string;
+  doctorId: string;
+  appointmentDateTime: any;
+  appointmentType: APPOINTMENT_TYPE;
+  hospitalId?: string | null;
+  followUpParentId: string;
+}
+
 export interface BookRescheduleAppointmentInput {
   appointmentId: string;
   doctorId: string;
@@ -474,6 +516,20 @@ export interface CancelAppointmentInput {
   cancelledById: string;
 }
 
+export interface ConsultQueueInput {
+  appointmentId: string;
+  height?: string | null;
+  weight?: string | null;
+  temperature?: string | null;
+  bp?: string | null;
+  lifeStyle?: string | null;
+  familyHistory?: string | null;
+  dietAllergies?: string | null;
+  drugAllergies?: string | null;
+  age?: number | null;
+  gender?: Gender | null;
+}
+
 export interface DiagnosticLineItem {
   itemId?: number | null;
   price?: number | null;
@@ -488,7 +544,7 @@ export interface DiagnosticOrderInput {
   state: string;
   stateId: string;
   slotTimings: string;
-  employeeSlotId: number;
+  employeeSlotId?: any | null;
   diagnosticEmployeeCode: string;
   diagnosticBranchCode: string;
   totalPrice: number;
@@ -503,6 +559,7 @@ export interface DiagnosticOrderInput {
   deviceType?: DEVICETYPE | null;
   paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
+  slotId?: string | null;
 }
 
 export interface DoctorAvailabilityInput {
@@ -556,6 +613,8 @@ export interface FilterDoctorInput {
   pincode?: string | null;
   doctorType?: (string | null)[] | null;
   sort?: string | null;
+  pageNo?: number | null;
+  pageSize?: number | null;
 }
 
 export interface Geolocation {
@@ -575,6 +634,22 @@ export interface LabResultFileProperties {
   fileName: string;
   mimeType: string;
   content: string;
+}
+
+export interface MediaPrescriptionFileProperties {
+  fileName: string;
+  mimeType: string;
+  content: string;
+}
+
+export interface MediaPrescriptionUploadRequest {
+  prescribedBy: string;
+  dateOfPrescription: any;
+  startDate?: any | null;
+  endDate?: any | null;
+  notes?: string | null;
+  prescriptionSource: mediaPrescriptionSource;
+  prescriptionFiles?: (MediaPrescriptionFileProperties | null)[] | null;
 }
 
 export interface MedicineCartOMSInput {

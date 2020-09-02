@@ -63,6 +63,8 @@ export const getAppointmentHistoryTypeDefs = gql`
     actualAmount: Float
     discountedAmount: Float
     appointmentPayments: [AppointmentPayment]
+    isConsultStarted: Boolean
+    symptoms: String
   }
 
   input AppointmentHistoryInput {
@@ -216,10 +218,10 @@ const getAppointmentStatus: Resolver<
   console.log('args', args);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
-  try { 
+  try {
     const appointment: Appointment | undefined = await appointmentRepo.findById(args.id);
     if (appointment == null) throw new AphUserInputError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
-    return { status: appointment.status, state: appointment.appointmentState }; 
+    return { status: appointment.status, state: appointment.appointmentState };
   } catch (invalidGrant) {
     throw new AphError(AphErrorMessages.GET_APPOINTMENT_STATUS_ERROR, undefined, { invalidGrant });
   }
@@ -235,7 +237,7 @@ const getDoctorAppointments: Resolver<
   let doctordata;
 
   if (args.doctorId === undefined || args.doctorId == null) {
-    doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+    doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   } else {
     doctordata = await doctorRepository.findById(args.doctorId);
   }
@@ -316,7 +318,7 @@ const getPatientLog: Resolver<
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   let doctordata;
   if (args.doctorId === undefined || args.doctorId == null) {
-    doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+    doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   } else {
     doctordata = await doctorRepository.findById(args.doctorId);
   }

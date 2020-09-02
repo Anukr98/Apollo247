@@ -182,13 +182,13 @@ const updateOrderCancelled = async (
     new Date(),
     MEDICINE_ORDER_STATUS.CANCELLED
   );
-  // calculateRefund(
-  //   orderDetails,
-  //   0,
-  //   profilesDb,
-  //   medicineOrdersRepo,
-  //   medicineOrderCancelOMSInput.cancelReasonCode
-  // );
+  calculateRefund(
+    orderDetails,
+    0,
+    profilesDb,
+    medicineOrdersRepo,
+    medicineOrderCancelOMSInput.cancelReasonCode
+  );
 };
 
 export const medicineOrderCancelOMSResolvers = {

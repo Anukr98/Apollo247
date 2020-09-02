@@ -19,13 +19,10 @@ import {
   pharmacyPaymentInitiateTracking,
 } from 'webEngageTracking';
 import { useMutation } from 'react-apollo-hooks';
-import { getDeviceType } from 'helpers/commonHelpers';
+import { getDeviceType, getCouponByUserMobileNumber } from 'helpers/commonHelpers';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
 import _lowerCase from 'lodash/lowerCase';
 
-import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
-
-// import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
 import {
   saveMedicineOrderOMS,
   saveMedicineOrderOMSVariables,
@@ -495,6 +492,28 @@ export const PayMedicine: React.FC = (props) => {
     }
   });
 
+  const getCouponByMobileNumber = () => {
+    getCouponByUserMobileNumber()
+      .then((resp: any) => {
+        if (resp.errorCode == 0 && resp.response && resp.response.length > 0) {
+          const couponCode = resp.response[0].coupon;
+          setConsultCouponCode(couponCode || '');
+        } else {
+          setConsultCouponCode('');
+        }
+      })
+      .catch((e: any) => {
+        console.log(e);
+        setConsultCouponCode('');
+      });
+  };
+
+  useEffect(() => {
+    if (params.payType === 'consults' && !consultCouponCode) {
+      getCouponByMobileNumber();
+    }
+  }, []);
+
   useEffect(() => {
     if (validateConsultCouponResult && validateConsultCouponResult.valid) {
       setRevisedAmount(
@@ -514,7 +533,9 @@ export const PayMedicine: React.FC = (props) => {
   const getDiscountedLineItemPrice = (sku: string) => {
     if (couponCode.length > 0 && validateCouponResult && validateCouponResult.products) {
       const item: any = validateCouponResult.products.find((item: any) => item.sku === sku);
-      return item.specialPrice.toFixed(2);
+      return item.onMrp
+        ? (item.mrp - item.discountAmt).toFixed(2)
+        : (item.specialPrice - item.discountAmt).toFixed(2);
     }
   };
 
@@ -734,8 +755,8 @@ export const PayMedicine: React.FC = (props) => {
         console.log(e);
         setMutationLoading(false);
         setIsLoading(false);
-        localStorage.removeItem(`${currentPatient && currentPatient.id}`);
-        sessionStorage.setItem('cartValues', '');
+        // localStorage.removeItem(`${currentPatient && currentPatient.id}`);
+        // sessionStorage.setItem('cartValues', '');
         setIsAlertOpen(true);
         setAlertMessage('Something went wrong, please try later.');
       });

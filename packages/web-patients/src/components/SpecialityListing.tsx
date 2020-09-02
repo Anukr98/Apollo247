@@ -619,7 +619,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const SpecialityListing: React.FC = (props) => {
+const SpecialityListing: React.FC = (props) => {
   const classes = useStyles({});
   const scrollToRef = useRef<HTMLDivElement>(null);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -884,3 +884,5 @@ export const SpecialityListing: React.FC = (props) => {
     </div>
   );
 };
+
+export default SpecialityListing;

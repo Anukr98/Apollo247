@@ -23,13 +23,13 @@ import {
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { JuniorAppointmentsSessionRepository } from 'consults-service/repositories/juniorAppointmentsSessionRepository';
+import { sendNotification, sendNotificationSMS } from 'notifications-service/handlers';
+
 import {
   NotificationType,
-  sendNotification,
-  sendNotificationSMS,
   APPT_CALL_TYPE,
   DOCTOR_CALL_TYPE,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/constants';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { AppointmentNoShowRepository } from 'consults-service/repositories/appointmentNoShowRepository';
@@ -588,19 +588,7 @@ const endAppointmentSession: Resolver<
           facilityDets.state;
       }
     }
-    const istDateTime = addMilliseconds(apptDetails.appointmentDateTime, 19800000);
 
-    const apptDate = format(istDateTime, 'dd/MM/yyyy');
-    const apptTime = format(istDateTime, 'hh:mm aa');
-    const mailSubject = ApiConstants.CANCEL_APPOINTMENT_SUBJECT;
-
-    const mailContent = cancellationEmailTemplate({
-      Title: ApiConstants.CANCEL_APPOINTMENT_BODY,
-      PatientName: apptDetails.patientName,
-      AppointmentDateTime: apptDate + ',  ' + apptTime,
-      DoctorName: docName,
-      HospitalName: hospitalName,
-    });
     // const ccEmailIds =
     //   process.env.NODE_ENV == 'dev' ||
     //   process.env.NODE_ENV == 'development' ||
@@ -612,27 +600,6 @@ const endAppointmentSession: Resolver<
       isDoctorNoShow = 1;
       rescheduleAppointmentAttrs.rescheduleInitiatedBy = TRANSFER_INITIATED_TYPE.DOCTOR;
       rescheduleAppointmentAttrs.rescheduleInitiatedId = apptDetails.doctorId;
-      const adminRepo = doctorsDb.getCustomRepository(AdminDoctorMap);
-      const adminDetails = await adminRepo.findByadminId(apptDetails.doctorId);
-      //console.log(adminDetails, 'adminDetails');
-      if (adminDetails == null) throw new AphError(AphErrorMessages.GET_ADMIN_USER_ERROR);
-
-      const listOfEmails: string[] = [];
-
-      adminDetails.length > 0 &&
-        adminDetails.map((value) => listOfEmails.push(value.adminuser.email));
-      //console.log('listOfEmails', listOfEmails);
-      listOfEmails.forEach(async (adminemail) => {
-        const adminEmailContent: EmailMessage = {
-          // ccEmail: ccEmailIds.toString(),
-          toEmail: adminemail.toString(),
-          subject: mailSubject.toString(),
-          fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
-          fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
-          messageContent: mailContent,
-        };
-        sendMail(adminEmailContent);
-      });
     }
     await rescheduleRepo.saveReschedule(rescheduleAppointmentAttrs);
     await apptRepo.updateTransferState(
@@ -652,13 +619,7 @@ const endAppointmentSession: Resolver<
         notificationType: NotificationType.DOCTOR_NO_SHOW_INITIATE_RESCHEDULE,
       };
     }
-    const notificationResult = sendNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
-    console.log(notificationResult, 'notificationResult');
+    sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
   }
 
   return true;

@@ -112,6 +112,7 @@ export const getDoctorDetailsTypeDefs = gql`
     gender: Gender
     isActive: Boolean!
     id: ID!
+    chatDays: Int
     languages: String
     lastName: String!
     mobileNumber: String!
@@ -311,7 +312,7 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
   let doctordata;
   try {
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-    doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+    doctordata = await doctorRepository.findByMobileNumberWithRelations(mobileNumber, true);
     if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
     if (!doctordata.firebaseToken)
       await doctorRepository.updateFirebaseId(doctordata.id, format(new Date(), 'yyyyMMddHHmm'));
@@ -351,7 +352,7 @@ const findLoggedinUserDetails: Resolver<
 > = async (parent, args, { mobileNumber, doctorsDb, consultsDb }) => {
   //check if doctor
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
 
   const adminRepository = doctorsDb.getCustomRepository(AdminUser);
   const adminData = await adminRepository.checkValidAccess(mobileNumber, true);

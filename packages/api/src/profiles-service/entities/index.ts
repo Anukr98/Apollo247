@@ -1369,6 +1369,9 @@ export class PatientAddress extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true })
+  name: string;
+
   @Column()
   addressLine1: string;
 
@@ -2175,6 +2178,9 @@ export class DiagnosticOrders extends BaseEntity {
 
   @Column({ nullable: true })
   centerState: string;
+
+  @Column({ nullable: true })
+  slotId: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;

@@ -3,14 +3,13 @@ import { Resolver } from 'api-gateway';
 import { ApiConstants } from 'ApiConstants';
 import {
   sendNotification,
-  NotificationType,
   sendCallsNotification,
-  DOCTOR_CALL_TYPE,
-  APPT_CALL_TYPE,
   sendDoctorNotificationWhatsapp,
   hitCallKitCurl,
   sendCallsDisconnectNotification,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
+import { DOCTOR_CALL_TYPE, APPT_CALL_TYPE } from 'notifications-service/constants';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -19,7 +18,6 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { format } from 'date-fns';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { DEVICE_TYPE } from 'profiles-service/entities';
 import path from 'path';
@@ -81,9 +79,10 @@ export const doctorCallNotificationTypeDefs = gql`
       deviceType: DEVICETYPE
       callSource: BOOKINGSOURCE
       appVersion: String
+      patientId: String
       isDev: Boolean
     ): NotificationResult!
-    endCallNotification(appointmentCallId: String, isDev: Boolean): EndCallResult!
+    endCallNotification(appointmentCallId: String, isDev: Boolean, patientId: String): EndCallResult!
     sendApptNotification: ApptNotificationResult!
     getCallDetails(appointmentCallId: String): CallDetailsResult!
     sendPatientWaitNotification(appointmentId: String): sendPatientWaitNotificationResult
@@ -113,7 +112,7 @@ type CallDetailsResult = {
 
 const endCallNotification: Resolver<
   null,
-  { appointmentCallId: string; isDev: boolean },
+  { appointmentCallId: string; isDev: boolean, patientId: string },
   ConsultServiceContext,
   EndCallResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
@@ -133,11 +132,20 @@ const endCallNotification: Resolver<
     doctorName = doctor.displayName;
   }
 
+  args.patientId = args.patientId || callDetails.appointment.patientId;
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
-  const voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
-    callDetails.appointment.patientId,
+  let voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
+    args.patientId,
     DEVICE_TYPE.IOS
   );
+
+  if(args.patientId != callDetails.appointment.patientId && (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])){
+    args.patientId = callDetails.appointment.patientId;
+    voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
+      args.patientId,
+      DEVICE_TYPE.IOS
+    );
+  }
 
   if (!args.isDev) {
     args.isDev = false;
@@ -148,7 +156,7 @@ const endCallNotification: Resolver<
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
       doctorName,
       callDetails.appointment.id,
-      callDetails.appointment.patientId,
+      args.patientId,
       false,
       APPT_CALL_TYPE.AUDIO,
       args.isDev
@@ -186,6 +194,7 @@ const sendCallNotification: Resolver<
     deviceType: DEVICETYPE;
     callSource: BOOKINGSOURCE;
     appVersion: string;
+    patientId: string;
     isDev: boolean;
   },
   ConsultServiceContext,
@@ -228,7 +237,8 @@ const sendCallNotification: Resolver<
       args.doctorType,
       appointmentCallDetails.id,
       args.isDev,
-      args.numberOfParticipants
+      args.numberOfParticipants,
+      args.patientId,
     );
     console.log(notificationResult, 'doctor call appt notification');
   } else {
@@ -245,7 +255,8 @@ const sendCallNotification: Resolver<
       args.doctorType,
       appointmentCallDetails.id,
       args.isDev,
-      args.numberOfParticipants
+      args.numberOfParticipants,
+      args.patientId,
     );
     console.log(notificationResult, 'doctor call appt notification');
   }

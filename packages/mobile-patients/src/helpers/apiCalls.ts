@@ -26,6 +26,7 @@ export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
   image: string[];
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
+  similar_products: MedicineProduct[];
 }
 
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
@@ -712,4 +713,10 @@ export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> =>
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
   const url = `${baseUrl}/validate`;
   return Axios.post(url, data);
+};
+
+export const userSpecificCoupon = (mobileNumber: string): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  const url = `${baseUrl}/availableCoupons?mobile=${mobileNumber}`;
+  return Axios.get(url);
 };
