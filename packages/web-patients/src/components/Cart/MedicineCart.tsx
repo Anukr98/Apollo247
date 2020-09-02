@@ -1004,6 +1004,17 @@ export const MedicineCart: React.FC = (props) => {
         .then((resp: any) => {
           if (resp.errorCode == 0) {
             if (resp.response.valid) {
+              const freeProductsSet = new Set(
+                resp.response.products && resp.response.products.length
+                  ? resp.response.products.filter((cartItem: any) => cartItem.mrp === 0)
+                  : []
+              );
+              if (freeProductsSet.size) {
+                addDiscountedProducts(resp.response);
+                setValidateCouponResult(resp.response);
+                setErrorMessage('');
+                return;
+              }
               if (Number(resp.response.discount.toFixed(2)) <= Number(productDiscount.toFixed(2))) {
                 setErrorMessage(
                   'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
@@ -1029,9 +1040,6 @@ export const MedicineCart: React.FC = (props) => {
             localStorage.removeItem('pharmaCoupon');
             setCouponCode && setCouponCode('');
           }
-        })
-        .then((resp: any) => {
-          addDiscountedProducts(resp.response);
         })
         .catch((e: any) => {
           console.log(e);
@@ -1736,11 +1744,15 @@ export const MedicineCart: React.FC = (props) => {
                             <>
                               <div className={classes.appliedCoupon}>
                                 {Number(validateCouponResult.discount.toFixed(2)) >
-                                  Number(productDiscount.toFixed(2)) && (
-                                  <span className={classes.linkText}>
-                                    <span>{couponCode}</span> applied
-                                  </span>
-                                )}
+                                  Number(productDiscount.toFixed(2)) ||
+                                  (validateCouponResult.products &&
+                                    validateCouponResult.products.length &&
+                                    validateCouponResult.products.filter(({ mrp }) => mrp === 0)
+                                      .length && (
+                                      <span className={classes.linkText}>
+                                        <span>{couponCode}</span> applied
+                                      </span>
+                                    ))}
                                 <span className={classes.rightArrow}>
                                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                                 </span>
@@ -1754,7 +1766,7 @@ export const MedicineCart: React.FC = (props) => {
                       </div>
                       {couponCode.length > 0 &&
                         validateCouponResult &&
-                        validateCouponResult.discount &&
+                        !!validateCouponResult.discount &&
                         validateCouponResult.discount > 0 &&
                         Number(validateCouponResult.discount.toFixed(2)) >
                           Number(productDiscount.toFixed(2)) && (
