@@ -290,6 +290,19 @@ export enum patientLogType {
   REGULAR = 'REGULAR',
 }
 
+export enum CALL_FEEDBACK_RESPONSES_TYPES {
+  AUDIO = 'AUDIO',
+  AUDIOVIDEO = 'AUDIOVIDEO',
+  VIDEO = 'VIDEO',
+}
+
+export interface SaveAppointmentCallFeedbackInput {
+  appointmentCallDetailsId: string;
+  ratingValue: number;
+  feedbackResponseType?: CALL_FEEDBACK_RESPONSES_TYPES | null;
+  feedbackResponses?: string | null;
+}
+
 export interface BlockMultipleItems {
   doctorId: string;
   reason?: string | null;
