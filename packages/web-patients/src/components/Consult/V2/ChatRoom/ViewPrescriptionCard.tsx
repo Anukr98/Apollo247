@@ -352,22 +352,19 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
             <>
               <div>
                 {messageDetails.transferInfo &&
-                  messageDetails.transferInfo.reschduleCount &&
-                  messageDetails.transferInfo.reschduleCount > 2
+                messageDetails.transferInfo.reschduleCount &&
+                messageDetails.transferInfo.reschduleCount > 2
                   ? `Since you have already rescheduled 3 times with 
-                     Dr. ${
-                  messageDetails.transferInfo.doctorInfo &&
-                  messageDetails.transferInfo.doctorInfo.displayName
-                  }, we will consider this a new paid appointment.`
+                     Dr. ${messageDetails.transferInfo.doctorInfo &&
+                       messageDetails.transferInfo.doctorInfo
+                         .displayName}, we will consider this a new paid appointment.`
                   : "We're sorry that you have to reschedule. You can reschedule up to 3 times for free."}
               </div>
               {messageDetails.transferInfo && (
                 <>
                   <div>
-                    {`Next slot for ${
-                      messageDetails.transferInfo.doctorInfo &&
-                      messageDetails.transferInfo.doctorInfo.displayName
-                      } is available on- `}
+                    {`Next slot for ${messageDetails.transferInfo.doctorInfo &&
+                      messageDetails.transferInfo.doctorInfo.displayName} is available on- `}
                   </div>
                   <div>
                     {moment(messageDetails.transferInfo.transferDateTime).format(
@@ -379,9 +376,7 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
 
               <div>
                 <button
-                  disabled={
-                    appointmentDetails.appointmentState !== APPOINTMENT_STATE.AWAITING_RESCHEDULE
-                  }
+                  disabled={appointmentDetails.appointmentState === APPOINTMENT_STATE.RESCHEDULE}
                   className={classes.downloadBtn}
                   onClick={() => setIsModalOpen(true)}
                 >
@@ -389,17 +384,15 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
                 </button>
 
                 <button
-                  disabled={
-                    appointmentDetails.appointmentState !== APPOINTMENT_STATE.AWAITING_RESCHEDULE
-                  }
+                  disabled={appointmentDetails.appointmentState === APPOINTMENT_STATE.RESCHEDULE}
                   className={classes.viewBtn}
                   onClick={() => handleAcceptReschedule()}
                 >
                   {apiLoading ? (
                     <CircularProgress size={22} color="secondary" />
                   ) : (
-                      <span>ACCEPT</span>
-                    )}
+                    <span>ACCEPT</span>
+                  )}
                 </button>
               </div>
             </>
@@ -435,44 +428,44 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
                   rescheduleAPI={rescheduleAPI}
                 />
               ) : (
-                  <div>
-                    <div className={classes.dialogContent}>
-                      Dr.
+                <div>
+                  <div className={classes.dialogContent}>
+                    Dr.
                     {messageDetails.transferInfo &&
-                        messageDetails.transferInfo.doctorInfo &&
-                        messageDetails.transferInfo.doctorInfo.fullName}{' '}
+                      messageDetails.transferInfo.doctorInfo &&
+                      messageDetails.transferInfo.doctorInfo.fullName}{' '}
                     has suggested the below slot for rescheduling this appointment —
                     {moment(messageDetails.transferInfo.transferDateTime).format(
-                          'Do MMMM, dddd \nhh:mm a'
-                        )}
-                    </div>
-                    <div className={classes.dialogActions}>
-                      <>
-                        <AphButton
-                          className={classes.secondaryBtn}
-                          color="primary"
-                          onClick={() => setIsChangeSlot(true)}
-                        >
-                          {'CHANGE SLOT'}
-                        </AphButton>
-
-                        <AphButton
-                          className={classes.primaryBtn}
-                          color="primary"
-                          onClick={() => {
-                            handleAcceptReschedule();
-                          }}
-                        >
-                          {apiLoading ? (
-                            <CircularProgress size={22} color="secondary" />
-                          ) : (
-                              <span>ACCEPT</span>
-                            )}
-                        </AphButton>
-                      </>
-                    </div>
+                      'Do MMMM, dddd \nhh:mm a'
+                    )}
                   </div>
-                )}
+                  <div className={classes.dialogActions}>
+                    <>
+                      <AphButton
+                        className={classes.secondaryBtn}
+                        color="primary"
+                        onClick={() => setIsChangeSlot(true)}
+                      >
+                        {'CHANGE SLOT'}
+                      </AphButton>
+
+                      <AphButton
+                        className={classes.primaryBtn}
+                        color="primary"
+                        onClick={() => {
+                          handleAcceptReschedule();
+                        }}
+                      >
+                        {apiLoading ? (
+                          <CircularProgress size={22} color="secondary" />
+                        ) : (
+                          <span>ACCEPT</span>
+                        )}
+                      </AphButton>
+                    </>
+                  </div>
+                </div>
+              )}
             </div>
           </Paper>
         </Modal>
@@ -500,11 +493,9 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
                 <p>Hi! :)</p>
                 <p>
                   Your appointment with Dr.
-                  {` ${
-                    messageDetails.transferInfo &&
+                  {` ${messageDetails.transferInfo &&
                     messageDetails.transferInfo.doctorInfo &&
-                    messageDetails.transferInfo.doctorInfo.firstName
-                    } `}
+                    messageDetails.transferInfo.doctorInfo.firstName} `}
                   has been rescheduled for -{' '}
                   {rescheduledSlot && moment(rescheduledSlot).format('Do MMMM, dddd \nhh:mm a')}
                 </p>
