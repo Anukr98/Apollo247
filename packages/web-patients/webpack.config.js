@@ -216,7 +216,7 @@ module.exports = {
           maxAsyncRequests: 30,
           maxInitialRequests: 30,
           automaticNameDelimiter: '~',
-          enforceSizeThreshold: 50000,
+          //enforceSizeThreshold: 50000,
           cacheGroups: {
             defaultVendors: {
               test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
