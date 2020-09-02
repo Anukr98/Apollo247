@@ -85,7 +85,7 @@ export async function sendCallsNotification(
     DEVICE_TYPE.IOS
   );
 
-  if(patientId != patientDetails.id && (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])){
+  if (patientId != patientDetails.id && (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])) {
     patientId = patientDetails.id;
     voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
       patientId,
@@ -1198,6 +1198,7 @@ export async function sendNotification(
         } else {
           throw new AphError(AphErrorMessages.SMS_WEBLINK_APPOINTMENT_CHATROOM_MISSING);
         }
+        break;
       default:
         return;
     }
