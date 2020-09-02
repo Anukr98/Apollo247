@@ -5,7 +5,6 @@ import {
   CommonLogEvent,
   DeviceHelper,
   CommonBugFender,
-  CommonSetUserBugsnag,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   SAVE_PATIENT_ADDRESS,
@@ -50,6 +49,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Location } from './Icons';
 import Geolocation from '@react-native-community/geolocation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { colors } from 'react-native-elements';
 
 
 const FakeMarker = require('../ui/icons/ic-marker.png');
@@ -62,8 +62,8 @@ const { isIphoneX } = DeviceHelper();
 
 const styles = StyleSheet.create({
   bannerOuterView:{
-    height:300,
-    backgroundColor:'white'
+    height: 300,
+    backgroundColor:'white',
   },
   changeButton:{
     top:'5%',
@@ -72,11 +72,12 @@ const styles = StyleSheet.create({
     height:23,
     backgroundColor:theme.colors.LIGHT_YELLOW,
     shadowColor: 'transparent',
-    elevation:0
+    elevation:0,
+    borderRadius:16,
   },
   changeButtonText:{
     color:theme.colors.SHERPA_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(13)
+    ...theme.fonts.IBMPlexSansSemiBold(11)
   },
   addressView:{
     marginHorizontal:'4%',
@@ -84,24 +85,24 @@ const styles = StyleSheet.create({
     marginTop:'5%'
   },
   locationIcon:{
-    height:32,
-    width:30,
+    height:24,
+    width:24,
     resizeMode:'contain'
   },
   addressHeading:{
     marginTop:2,
     textAlign:'center',
-    ...theme.fonts.IBMPlexSansBold(16.5),
+    ...theme.fonts.IBMPlexSansBold(16),
     color:theme.colors.SHERPA_BLUE
   },
   addressText: {
     color: theme.colors.SHERPA_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(14.5),
+    ...theme.fonts.IBMPlexSansRegular(13),
   },
   confirmButton: { 
     alignSelf: 'center', 
     width: '70%', 
-    marginTop: '2%' 
+    marginTop: '4%' ,
   },
   markerView: { 
     left: '50%', 
@@ -135,6 +136,21 @@ const styles = StyleSheet.create({
     height: 25, 
     alignSelf: 'center', 
     justifyContent: 'center' 
+  },
+  markerTitleView:{
+    backgroundColor: theme.colors.SHERPA_BLUE,
+    borderRadius:10,
+    height:37,
+    justifyContent: 'center', 
+    left: -50,
+    alignItems: 'center',
+    paddingLeft:7,
+    paddingRight:8,
+    marginBottom:'2%'
+  },
+  markerText:{
+    color:'white',
+    ...theme.fonts.IBMPlexSansSemiBold(12),
   }
 });
 
@@ -283,6 +299,7 @@ export const Maps : React.FC<MapProps> = (props) =>{
         latitude: latitude,
         longitude: longitude,
         stateCode: addressObject?.stateCode,
+        name: addressObject?.name
       };
       console.log(updateaddressInput, 'updateaddressInput');
       setshowSpinner(true);
@@ -295,8 +312,8 @@ export const Maps : React.FC<MapProps> = (props) =>{
           try {
             setshowSpinner(false);
             console.log('updateapicalled', _data);
-            props.navigation.pop(2, { immediate: true });
-            // props.navigation.push(AppRoutes.AddressBook);
+            props.navigation.pop(3, { immediate: true });
+            props.navigation.push(AppRoutes.AddressBook);
           } catch (error) {
             CommonBugFender('AddAddress_onConfirmLocation_try', error);
           }
@@ -323,6 +340,7 @@ export const Maps : React.FC<MapProps> = (props) =>{
         latitude: latitude,
         longitude: longitude,
         stateCode: addressObject?.stateCode,
+        name: addressObject?.name
       };
 
       try {
@@ -351,8 +369,8 @@ export const Maps : React.FC<MapProps> = (props) =>{
           setNewAddressAdded!(address.id || '');
           setDiagnosticAddressId!(address.id || '');
           if(isComingFrom == 'My Account'){
-            props.navigation.pop(2, { immediate: true });
-            // props.navigation.push(AppRoutes.AddressBook);
+            props.navigation.pop(3, { immediate: true });
+            props.navigation.push(AppRoutes.AddressBook);
           }
           else{
             props.navigation.pop(2, { immediate: true });
@@ -378,11 +396,11 @@ export const Maps : React.FC<MapProps> = (props) =>{
 
   const onAlertError = (source:string) =>{
     if(source == 'My Account'){
-      props.navigation.pop(2, { immediate: true });
-      // props.navigation.push(AppRoutes.AddressBook);
+      props.navigation.pop(3, { immediate: true });
+      props.navigation.push(AppRoutes.AddressBook);
     }
     else{
-      props.navigation.pop(2, { immediate: true });
+      props.navigation.pop(3, { immediate: true });
     }
     hideAphAlert!();
   }
@@ -401,7 +419,7 @@ export const Maps : React.FC<MapProps> = (props) =>{
                <Text style={styles.addressHeading}> Help us locate your address</Text>
           </View>
           <View style={{margin:'5%',marginTop:'3%'}}>
-               <Text style={styles.addressText}>{address}</Text>
+               <Text numberOfLines={4} style={styles.addressText}>{address}</Text>
           </View>
           <Button
             title={'CONFIRM LOCATION'}
@@ -417,8 +435,10 @@ export const Maps : React.FC<MapProps> = (props) =>{
   //   setLongitude(coordinates?.longitude);
   // }
 
-  /**to drag the map */
-  const onRegionChange =(region: RegionObject)=>{
+
+  /** to drag the map */
+  /** set lat-long when drag has been stopped */
+  const _onRegionChangeComplete =(region: RegionObject)=>{
     setRegion(region);
     setLatitude(region.latitude);
     setLongitude(region.longitude);
@@ -502,13 +522,13 @@ export const Maps : React.FC<MapProps> = (props) =>{
     return (
       <MapView
         provider={PROVIDER_GOOGLE}
-        style={{height: screenHeight/1.75}}
+        style={{height: screenHeight > 600 ? screenHeight/1.60 : screenHeight/1.80}}
         region={region}
         ref={_map}
         zoomEnabled={true}
         minZoomLevel={9}
         onMapReady={()=>console.log("ready")}
-        onRegionChangeComplete={(region)=>onRegionChange(region)}
+        onRegionChangeComplete={(region)=>_onRegionChangeComplete(region)}
         // initialRegion={{latitude:latitude,longitude:longitude,latitudeDelta:latitudeDelta,longitudeDelta:longitudeDelta}}
       >
        {/**drag the marker */}
@@ -527,9 +547,12 @@ export const Maps : React.FC<MapProps> = (props) =>{
   /**drag the map to adjust */
   const renderMarker = () =>{
     return (
-      <View style={styles.markerView}>
-            <Image style={styles.markerIcon} source={FakeMarker} />
-        </View>
+      <View style={styles.markerView}> 
+          <View style={styles.markerTitleView}>
+            <Text style={styles.markerText}>MOVE MAP TO ADJUST</Text>
+          </View>
+          <Image style={styles.markerIcon} source={FakeMarker} />
+      </View>
     )
   }
 
