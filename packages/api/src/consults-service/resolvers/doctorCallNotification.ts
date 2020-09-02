@@ -139,7 +139,7 @@ const endCallNotification: Resolver<
     DEVICE_TYPE.IOS
   );
 
-  if(!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']){
+  if(args.patientId != callDetails.appointment.patientId && (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])){
     args.patientId = callDetails.appointment.patientId;
     voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
       args.patientId,

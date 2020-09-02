@@ -85,7 +85,7 @@ export async function sendCallsNotification(
     DEVICE_TYPE.IOS
   );
 
-  if(!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']){
+  if(patientId != patientDetails.id && (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])){
     patientId = patientDetails.id;
     voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
       patientId,
