@@ -267,6 +267,9 @@ export const GET_CASESHEET_DETAILS = gql`
           medicineConsumptionDurationUnit
           routeOfAdministration
           medicineCustomDosage
+          medicineCustomDetails
+          includeGenericNameInPrescription
+          genericName
         }
         notes
         otherInstructions {

@@ -10,11 +10,13 @@ import winston from 'winston';
 import path from 'path';
 import { ApiConstants } from 'ApiConstants';
 
-import { getLabResults, getPrescriptionData, getAuthToken } from 'helpers/phrV1Services';
+import { getLabResults, getPrescriptionData, getAuthToken, getHealthCheckRecords, getDischargeSummary } from 'helpers/phrV1Services';
 import {
   LabResultsDownloadResponse,
   PrescriptionDownloadResponse,
   GetAuthTokenResponse,
+  HealthChecksResponse,
+  DischargeSummaryResponse
 } from 'types/phrv1';
 import { format } from 'date-fns';
 import { prescriptionSource } from 'profiles-service/resolvers/prescriptionUpload';
@@ -177,6 +179,8 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     hospitalizations: [HospitalizationResult]
     labResults: LabResultsDownloadResponse
     prescriptions: PrescriptionDownloadResponse
+    healthChecksNew: HealthChecksDownloadResponse
+    hospitalizationsNew: DischargeSummaryDownloadResponse
   }
 
   type PrismAuthTokenResponse {
@@ -184,6 +188,72 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     errorMsg: String
     errorType: String
     response: String
+  }
+
+  type HealthChecksBaseResponse {
+    authToken: String
+    userId: String
+    id: String!
+    fileUrl: String!
+    date: Date!
+    healthCheckName: String!
+    healthCheckDate: Float
+    healthCheckSummary: String
+    healthCheckFiles: [HealthCheckFileParameters]
+    source: String
+    healthCheckType: String
+    followupDate: Float
+  }
+
+  type HealthCheckFileParameters {
+    id: String
+    fileName: String
+    mimeType: String
+    content: String
+    byteContent: String
+    dateCreated: Float
+  }
+
+  type HealthChecksDownloadResponse {
+    errorCode: Int!
+    errorMsg: String
+    errorType: String
+    response: [HealthChecksBaseResponse]
+  }
+
+  type DischargeSummaryBaseResponse {
+    authToken: String,
+    userId: String,
+    id: String,
+    fileUrl: String!
+    date: Date!
+    dateOfHospitalization: Float,
+    hospitalName: String,
+    doctorName: String,
+    reasonForAdmission: String,
+    diagnosisNotes: String,
+    dateOfDischarge: Float,
+    dischargeSummary: String,
+    doctorInstruction: String,
+    dateOfNextVisit: Float,
+    hospitalizationFiles :[HospitalizationFilesParameters]
+    source: String
+  }
+
+  type HospitalizationFilesParameters {
+    id: String,
+    fileName: String,
+    mimeType: String,
+    content: String,
+    byteContent: String,
+    dateCreated: Float
+  }
+
+  type DischargeSummaryDownloadResponse {
+    errorCode: Int!
+    errorMsg: String
+    errorType: String
+    response: [DischargeSummaryBaseResponse]
   }
 
   extend type Query {
@@ -244,6 +314,9 @@ type PrismMedicalRecordsResult = {
   hospitalizations: HospitalizationResult[];
   labResults: LabResultsDownloadResponse;
   prescriptions: PrescriptionDownloadResponse;
+  healthChecksNew: HealthChecksResponse;
+  hospitalizationsNew: DischargeSummaryResponse;
+
 };
 
 //Not in use, to support backward compatability
@@ -434,12 +507,66 @@ const getPatientPrismMedicalRecords: Resolver<
     formattedLabResults.push(labResult);
   });
 
+  /* Fetch patient health check records from prism */
+
+  const healthCheckResults = await getHealthCheckRecords(patientDetails.uhid)
+
+  /* Add document urls to the response objects,
+  Modify date to ISO
+   */
+
+  if (!process.env.PHR_V1_GET_HEALTHCHECK_DOCUMENT || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let healthCheckDocumentUrl = process.env.PHR_V1_GET_HEALTHCHECK_DOCUMENT.toString();
+
+  healthCheckDocumentUrl = healthCheckDocumentUrl.replace('{AUTH_KEY}', getToken.response);
+  healthCheckDocumentUrl = healthCheckDocumentUrl.replace('{UHID}', patientDetails.uhid);
+
+  healthCheckResults.response.map((healthCheckResult) => {
+    healthCheckResult.fileUrl = healthCheckResult.healthCheckFiles.length ? healthCheckDocumentUrl.replace('{RECORDID}', healthCheckResult.id) : ''
+
+    if (healthCheckResult.healthCheckDate.toString().length < 11) {
+      healthCheckResult.healthCheckDate = healthCheckResult.healthCheckDate * 1000;
+    }
+    healthCheckResult.date = new Date(format(new Date(healthCheckResult.healthCheckDate), 'yyyy-MM-dd'));
+  });
+
+  /* Fetch patient discharge summary from prism */
+
+  const dischargeSummaryResults = await getDischargeSummary(patientDetails.uhid)
+
+  /* Add document urls to the response objects,
+  Modify date to ISO
+   */
+
+  if (!process.env.PHR_V1_GET_DISCHARGESUMMARY_DOCUMENT || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let dischargeSummaryDocumentUrl = process.env.PHR_V1_GET_DISCHARGESUMMARY_DOCUMENT.toString();
+
+  dischargeSummaryDocumentUrl = dischargeSummaryDocumentUrl.replace('{AUTH_KEY}', getToken.response);
+  dischargeSummaryDocumentUrl = dischargeSummaryDocumentUrl.replace('{UHID}', patientDetails.uhid);
+
+  dischargeSummaryResults.response.map((dischargeSummaryResult) => {
+    dischargeSummaryResult.fileUrl = dischargeSummaryResult.hospitalizationFiles.length ? dischargeSummaryDocumentUrl.replace('{RECORDID}', dischargeSummaryResult.id) : ''
+
+    if (dischargeSummaryResult.dateOfDischarge.toString().length < 11) {
+      dischargeSummaryResult.dateOfDischarge = dischargeSummaryResult.dateOfDischarge * 1000;
+    }
+    dischargeSummaryResult.date = new Date(format(new Date(dischargeSummaryResult.dateOfDischarge), 'yyyy-MM-dd'));
+
+  });
+
+
   const result = {
     labTests: formattedLabResults,
     healthChecks: [],
     hospitalizations: [],
     labResults: labResults,
     prescriptions: prescriptions,
+    healthChecksNew: healthCheckResults,
+    hospitalizationsNew: dischargeSummaryResults
   };
 
   return result;
@@ -450,7 +577,7 @@ const getPrismAuthToken: Resolver<
   { uhid: string },
   ProfilesServiceContext,
   GetAuthTokenResponse
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   return await getAuthToken(args.uhid);
 };
 

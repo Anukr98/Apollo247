@@ -594,8 +594,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     modalClose: {
       position: 'absolute',
-      right: 16,
-      top: 16,
+      right: 10,
+      top: 10,
       width: 24,
       height: 24,
       cursor: 'pointer',
@@ -1757,7 +1757,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               className={`${classes.quesButton}  ${smokes === '10' ? classes.btnActive : ''}`}
               onClick={() => setSmokes('10')}
             >
-              &gt; 10
+              &lt; 10
             </AphButton>
             <AphButton
               className={`${classes.quesButton}  ${smokes === '10-20' ? classes.btnActive : ''}`}
@@ -2120,7 +2120,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.startConsultMsg ||
                     messageDetails.message === autoMessageStrings.covertVideoMsg ||
                     messageDetails.message === autoMessageStrings.covertAudioMsg ||
-                    messageDetails.message === autoMessageStrings.appointmentComplete
+                    messageDetails.message === autoMessageStrings.appointmentComplete ||
+                    messageDetails.message === autoMessageStrings.jdThankyou ||
+                    messageDetails.message === autoMessageStrings.startConsultjr ||
+                    messageDetails.message === autoMessageStrings.languageQue
                   ) {
                     return null;
                   }
@@ -2136,6 +2139,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         setModalOpen={(flag: boolean) => setModalOpen(flag)}
                         setImgPrevUrl={(url: string) => setImgPrevUrl(url)}
                         chatTime={messageDetails.messageDate}
+                        doctorName={
+                          (appointmentDetails &&
+                            appointmentDetails.doctorInfo &&
+                            appointmentDetails.doctorInfo.displayName) ||
+                          ''
+                        }
                       />
                     );
                   } else {
@@ -2293,7 +2302,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               <div className={classes.modalWindow}>
                 <div className={classes.modalHeader}>
                   <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
-                    <img src={require('images/ic_round_clear.svg')} alt="" />
+                    <img src={require('images/ic_cross.svg')} alt="" />
                   </div>
                 </div>
                 <div className={classes.modalContent}>
