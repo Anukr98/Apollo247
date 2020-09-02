@@ -407,10 +407,10 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
-        <div className={classes.noteText}>
+        {/* <div className={classes.noteText}>
           Please note that you can share these health records with the doctor during a consult by
           uploading them in the consult chat room!
-        </div>
+        </div> */}
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
