@@ -91,6 +91,7 @@ import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
 import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTracker';
+import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSelection';
 
 export enum AppRoutes {
   Login = 'Login',
@@ -172,7 +173,8 @@ export enum AppRoutes {
   ConsultTypeScreen = 'ConsultTypeScreen',
   CommonWebView = 'CommonWebView',
   RefundStatus = 'RefundStatus',
-  SymptomTracker = 'SymptomTracker'
+  SymptomTracker = 'SymptomTracker',
+  SymptomSelection = 'SymptomSelection'
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -451,6 +453,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SymptomTracker]: {
     screen: SymptomTracker,
+  },
+  [AppRoutes.SymptomSelection]: {
+    screen: SymptomSelection,
   }
 };
 

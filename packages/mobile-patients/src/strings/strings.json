@@ -391,6 +391,8 @@
     "name": "Name",
     "age": "Age",
     "gender": "Gender",
-    "selectAnotherMember": "Select Another Member"
+    "selectAnotherMember": "Select Another Member",
+    "typeSymptomOrChooseFromList": "Type symptom here or choose from the list",
+    "addSelectedSymptom": "ADD SELECTED SYMPTOMS"
   }
 }

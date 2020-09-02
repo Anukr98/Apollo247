@@ -84,7 +84,8 @@ const Common = {
   BORDER_BOTTOM_COLOR: '#979797',
   APP_RED: red,
   TURQUOISE_BLUE: '#0589BB',
-  EXTREME_LIGHT_BLUE: '#2096C2'
+  EXTREME_LIGHT_BLUE: '#2096C2',
+  OFF_WHITE: '#F7F7F7'
 };
 
 const Header = {

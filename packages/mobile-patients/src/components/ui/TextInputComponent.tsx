@@ -69,6 +69,7 @@ export interface TextInputComponentProps {
   keyboardType?: TextInputProps['keyboardType'];
   icon?: ReactNode;
   autoCapitalize?: TextInputProps['autoCapitalize'];
+  autoFocus?: boolean
 }
 
 export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => {
@@ -93,6 +94,7 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
         {...props.textInputprops}
         returnKeyType={props.keyboardType === 'numeric' ? 'done' : 'default'}
         autoCapitalize={props.autoCapitalize}
+        autoFocus={props.autoFocus}
       />
     );
   };
