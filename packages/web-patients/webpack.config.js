@@ -49,13 +49,6 @@ const plugins = [
   new MomentLocalesPlugin(),
   // new BundleAnalyzerPlugin(),
 
-  new WorkboxPlugin.GenerateSW({
-    // these options encourage the ServiceWorkers to get in there fast
-    // and not allow any straggling "old" SWs to hang around
-    clientsClaim: true,
-    skipWaiting: true,
-    maximumFileSizeToCacheInBytes: 50000000,
-  }),
   new WebpackPwaManifest({
     name: 'Apollo 247',
     short_name: 'Apollo 247',
@@ -95,6 +88,14 @@ const plugins = [
         destination: path.join('icons', 'android'),
       },
     ],
+  }),
+  new WorkboxPlugin.GenerateSW({
+    // these options encourage the ServiceWorkers to get in there fast
+    // and not allow any straggling "old" SWs to hang around
+    cleanupOutdatedCaches: true,
+    clientsClaim: true,
+    skipWaiting: true,
+    maximumFileSizeToCacheInBytes: 50000000,
   }),
 ];
 if (isLocal) {
