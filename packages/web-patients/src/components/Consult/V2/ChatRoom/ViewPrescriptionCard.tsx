@@ -7,11 +7,16 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { AphButton, AphDialogTitle } from '@aph/web-ui-components';
 import { OnlineConsult } from 'components/OnlineConsult';
-import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
+import {
+  TRANSFER_INITIATED_TYPE,
+  BookRescheduleAppointmentInput,
+  APPOINTMENT_STATE,
+} from 'graphql/types/globalTypes';
 import { BOOK_APPOINTMENT_RESCHEDULE } from 'graphql/profiles';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
 import { removeGraphQLKeyword } from 'helpers/commonHelpers';
+import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -241,6 +246,7 @@ interface ViewPrescriptionCardProps {
   duration: string;
   messageDetails: any;
   chatTime: string;
+  appointmentDetails: AppointmentHistory;
 }
 
 export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props) => {
@@ -255,7 +261,7 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
 
-  const { messageDetails, chatTime } = props;
+  const { messageDetails, chatTime, appointmentDetails } = props;
 
   const { currentPatient } = useAllCurrentPatients();
 
@@ -364,13 +370,23 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
               )}
 
               <div>
-                {messageDetails && messageDetails.transferInfo && (
-                  <button className={classes.downloadBtn} onClick={() => setIsModalOpen(true)}>
-                    CHANGE SLOT
-                  </button>
-                )}
+                <button
+                  disabled={
+                    appointmentDetails.appointmentState !== APPOINTMENT_STATE.AWAITING_RESCHEDULE
+                  }
+                  className={classes.downloadBtn}
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  CHANGE SLOT
+                </button>
 
-                <button className={classes.viewBtn} onClick={() => handleAcceptReschedule()}>
+                <button
+                  disabled={
+                    appointmentDetails.appointmentState !== APPOINTMENT_STATE.AWAITING_RESCHEDULE
+                  }
+                  className={classes.viewBtn}
+                  onClick={() => handleAcceptReschedule()}
+                >
                   {apiLoading ? (
                     <CircularProgress size={22} color="secondary" />
                   ) : (
