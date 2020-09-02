@@ -376,6 +376,22 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
               title: 'RESEND PRESCRIPTION',
               onPress: () => {
                 if (caseSheetId) {
+                  postWebEngageEvent(WebEngageEventName.DOCTOR_RESEND_PRESCRIPTION, {
+                    'Doctor name': g(appointmentsHistory, 'doctorInfo', 'fullName') || '',
+                    'Patient name': `${g(appointmentsHistory, 'patientInfo', 'firstName')} ${g(
+                      appointmentsHistory,
+                      'patientInfo',
+                      'lastName'
+                    )}`,
+                    'Patient mobile number':
+                      g(appointmentsHistory, 'patientInfo', 'mobileNumber') || '',
+                    'Doctor Mobile number':
+                      g(appointmentsHistory, 'doctorInfo', 'mobileNumber') || '',
+                    'Appointment Date time': g(appointmentsHistory, 'appointmentDateTime') || '',
+                    'Appointment display ID': g(appointmentsHistory, 'displayId') || '',
+                    'Appointment ID': g(appointmentsHistory, 'id') || '',
+                    'Blob URL': `${AppConfig.Configuration.DOCUMENT_BASE_URL}${blobName}`,
+                  } as WebEngageEvents[WebEngageEventName.DOCTOR_SEND_PRESCRIPTION]);
                   setLoading && setLoading(true);
                   const config: Pubnub.PubnubConfig = {
                     origin: 'apollo.pubnubapi.com',
