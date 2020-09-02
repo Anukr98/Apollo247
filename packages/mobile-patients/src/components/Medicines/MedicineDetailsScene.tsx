@@ -1242,7 +1242,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const renderSimilarProducts = (products: MedicineProduct[]) => {
     const renderItem = ({ item, index }: ListRenderItemInfo<MedicineProduct>) => {
-      const { sku, name, image, price, special_price } = item;
+      const { sku, name, image, price, special_price, is_in_stock } = item;
       const itemQty = getItemQuantity(sku);
       const addToCart = () => updateQuantityCartItem({ sku }, itemQty + 1);
       const removeItemFromCart = () => updateQuantityCartItem({ sku }, itemQty - 1);
@@ -1288,6 +1288,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           { source: 'Pharmacy PDP', categoryId: category_id }
         );
       };
+      const onNotify = () => {
+        showAphAlert!({
+          title: 'Okay! :)',
+          description: `You will be notified when ${name} is back in stock.`,
+        });
+        postwebEngageNotifyMeEvent(item);
+      };
 
       return (
         <ProductUpSellingCard
@@ -1296,7 +1303,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           price={price}
           specialPrice={special_price}
           imageUrl={productsThumbnailUrl(image)}
+          isInStock={!!is_in_stock}
           onAddToCart={() => addItemToCart(item)}
+          onNotify={onNotify}
           onPress={onPress}
           numberOfItemsInCart={itemQty}
           maxOrderQty={medicineDetails.MaxOrderQty}
