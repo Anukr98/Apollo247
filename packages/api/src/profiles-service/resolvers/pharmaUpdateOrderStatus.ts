@@ -293,7 +293,7 @@ const updateOrderStatus: Resolver<
           const trackingProvider = updateOrderStatusInput.trackingProvider.toLowerCase();
           if (trackingProvider != 'apollo fleet')
             sendMedicineOrderStatusNotification(
-              trackingProvider == 'apollo internal fleet'
+              trackingProvider == 'ap internal fleet'
                 ? NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY
                 : NotificationType.MEDICINE_ORDER_OUT_FOR_DELIVERY_EXTERNAL,
               orderDetails,
