@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, SafeAreaView, BackHandler, StyleSheet, Text, Modal, Platform, TouchableOpacity } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -13,6 +13,7 @@ import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppRoutes } from './NavigatorContainer';
 import AsyncStorage from '@react-native-community/async-storage';
 import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import moment from 'moment';
 
 const roundCountViewDimension = 30;
 const howItWorksArrData = [
@@ -23,12 +24,19 @@ const howItWorksArrData = [
 ];
 
 interface SymptomTrackerProps extends NavigationScreenProps { }
+interface Patient {
+    name: string;
+    gender: string;
+    age: number;
+}
 
 export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
 
     const [showProfilePopUp, setShowProfilePopUp] = useState<boolean>(false);
     const [showList, setShowList] = useState<boolean>(false);
     const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+    const [selectedPatient, setSelectedPatient] = useState<Patient>();
+    const [showHowItWorks, setShowHowItWorks] = useState<boolean>(true);
 
     const backDataFunctionality = async () => {
         try {
@@ -109,9 +117,11 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                 visible={showProfilePopUp}
                 onRequestClose={() => {
                     setShowProfilePopUp(false);
+                    setShowHowItWorks(false);
                 }}
                 onDismiss={() => {
                     setShowProfilePopUp(false);
+                    setShowHowItWorks(false);
                 }}
             >
                 <View style={styles.mainView}>
@@ -127,6 +137,18 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
             </Modal>
         );
     };
+
+    useEffect(() => {
+        if(currentPatient && currentPatient.firstName){
+            setSelectedPatient({
+                name: currentPatient.firstName + currentPatient.lastName,
+                gender: currentPatient.gender,
+                age: Math.round(
+                    moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+                  )
+            })
+        }
+    }, [currentPatient])
 
     const renderProfileDrop = () => {
         return (
@@ -182,6 +204,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         setShowList(false);
         setTimeout(() => {
             setShowProfilePopUp(false);
+            setShowHowItWorks(false);
         }, 1000);
     };
 
@@ -198,7 +221,15 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
 
     const onSelectedProfile = (item: any) => {
         selectUser(item);
+        setSelectedPatient({
+            name: item.firstName + item.lastName,
+            gender: item.gender,
+            age: Math.round(
+                moment().diff(g(item, 'dateOfBirth') || 0, 'years', true)
+              )
+        })
         setShowProfilePopUp(false);
+        setShowHowItWorks(false);
     }
 
     const selectUser = (selectedUser: any) => {
@@ -230,6 +261,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                             setShowList(true);
                         } else {
                             setShowProfilePopUp(false);
+                            setShowHowItWorks(false);
                             props.navigation.navigate(AppRoutes.EditProfile, {
                                 isEdit: false,
                                 isPoptype: true,
@@ -245,10 +277,44 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         </View>
     );
 
+    const renderPatientDetails = () => {
+        return(
+            <View style={styles.patientDetailContainer}>
+                <View style={styles.seperatorLine}>
+                    <Text style={styles.patientDetailsTitle}>{string.symptomChecker.patientDetails}</Text>
+                </View>
+                <View style={[styles.itemRowStyle, styles.patientDetailsMargin]}>
+                <Text style={styles.patientDetailsText}>
+                    {string.symptomChecker.name} - {selectedPatient!.name}</Text>
+                </View>
+                <View style={[styles.itemRowStyle, styles.patientDetailsMargin]}>
+                    <Text style={styles.patientDetailsText}>
+                        {string.symptomChecker.age} - {selectedPatient!.gender}
+                    </Text>
+                </View>
+                <View style={[styles.itemRowStyle, styles.patientDetailsMargin]}>
+                    <Text style={styles.patientDetailsText}>
+                        {string.symptomChecker.gender} - {selectedPatient!.age}
+                    </Text>
+                </View>
+                <TouchableOpacity 
+                    style={styles.selectMemberBtn} 
+                    onPress={() => {
+                        setShowProfilePopUp(true);
+                    }}>
+                    <Text style={[styles.patientDetailsText,{
+                        color: colors.EXTREME_LIGHT_BLUE
+                    }]}>{string.symptomChecker.selectAnotherMember}</Text>
+                </TouchableOpacity>
+            </View>
+        )
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             {renderHeader()}
-            {renderHowItWorks()}
+            {showHowItWorks && renderHowItWorks()}
+            {!showHowItWorks && renderPatientDetails()}
             {showProfilePopUp && renderProfileListView()}
         </SafeAreaView>
     )
@@ -395,5 +461,37 @@ const styles = StyleSheet.create({
         padding: 8,
         marginRight: 15,
         marginVertical: 5,
+    },
+    patientDetailContainer: {
+        backgroundColor: 'rgba(252, 183, 22, 0.2)',
+        paddingRight: 20,
+        paddingLeft: 25,
+        paddingTop: 13,
+        paddingBottom: 3,
+        borderRadius: 10,
+        marginLeft: 43,
+        marginRight: 20,
+        marginTop: 30
+    },
+    patientDetailsTitle: {
+        ...theme.fonts.IBMPlexSansMedium(18),
+        color: colors.LIGHT_BLUE,    
+    },
+    seperatorLine: {
+        borderBottomWidth: 0.5,
+        borderBottomColor: colors.LIGHT_BLUE,
+        paddingBottom: 8
+    },
+    patientDetailsMargin: {
+        marginTop: 12
+    },
+    patientDetailsText: {
+        ...theme.fonts.IBMPlexSansRegular(14),
+        color: colors.LIGHT_BLUE,    
+    },
+    selectMemberBtn: {
+        marginTop: 20,
+        alignSelf: 'flex-end',
+        height: 30
     }
 })

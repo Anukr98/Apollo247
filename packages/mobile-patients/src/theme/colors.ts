@@ -27,7 +27,6 @@ const paleLightGray = '#F1F1F1';
 const platinumGrey = '#525252';
 const bondi_blue = '#0187ba';
 const lightGray2 = '#cccccc';
-const turquoiseBlue = '#0589BB';
 
 const platinumWhiteGrey = '#E6E6E6';
 const red = '#e50000';
@@ -84,7 +83,8 @@ const Common = {
   LIGHT_GRAY_2: lightGray2,
   BORDER_BOTTOM_COLOR: '#979797',
   APP_RED: red,
-  TURQUOISE_BLUE: turquoiseBlue
+  TURQUOISE_BLUE: '#0589BB',
+  EXTREME_LIGHT_BLUE: '#2096C2'
 };
 
 const Header = {

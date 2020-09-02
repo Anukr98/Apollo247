@@ -386,6 +386,11 @@
   },
   "ChatRoom_NotRecorded_Value": "Not Recorded",
   "symptomChecker": {
-    "howItWorks": "HOW IT WORKS?"
+    "howItWorks": "HOW IT WORKS?",
+    "patientDetails": "Patient Details",
+    "name": "Name",
+    "age": "Age",
+    "gender": "Gender",
+    "selectAnotherMember": "Select Another Member"
   }
 }
