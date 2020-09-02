@@ -2146,6 +2146,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                             appointmentDetails.doctorInfo.displayName) ||
                           ''
                         }
+                        appointmentDetails={appointmentDetails}
                       />
                     );
                   } else {
