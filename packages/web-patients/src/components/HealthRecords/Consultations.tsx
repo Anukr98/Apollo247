@@ -83,6 +83,9 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
         padding: '10px 15px',
+        position: 'absolute',
+        top: 5,
+        right: 0,
       },
       '& button': {
         boxShadow: 'none',
@@ -268,7 +271,7 @@ const useStyles = makeStyles((theme: Theme) => {
         left: 0,
         width: '100%',
         backgroundColor: '#f0f1ec',
-        zIndex: 991,
+        zIndex: 999,
       },
     },
     headerBackArrow: {
@@ -344,11 +347,6 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
         wordBreak: 'break-word',
       },
-    },
-    noteText: {
-      fontSize: 12,
-      padding: 10,
-      color: '#0087ba',
     },
   };
 });
@@ -445,10 +443,6 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
-        <div className={classes.noteText}>
-          Please note that you can share these health records with the doctor during a consult by
-          uploading them in the consult chat room!
-        </div>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />

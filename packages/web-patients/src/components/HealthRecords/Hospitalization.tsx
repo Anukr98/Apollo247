@@ -4,14 +4,12 @@ import { Theme, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
 import { MedicalCard } from 'components/HealthRecords/MedicalCard';
-import { ToplineReport } from 'components/HealthRecords/ToplineReport';
-import { DetailedFindings } from 'components/HealthRecords/DetailedFindings';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
-import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType } from '../../graphql/types/getPatientPrismMedicalRecords';
+import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response as HospitalizationType } from '../../graphql/types/getPatientPrismMedicalRecords';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -51,7 +49,6 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#f0f1ec',
         padding: 0,
         borderRadius: 0,
-        position: 'relative',
       },
     },
     rightSection: {
@@ -352,30 +349,19 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#67909C',
       fontWeight: 'normal',
     },
-    filterIcon: {
-      borderBottom: '1px solid #bfbfbf',
-      padding: '5px 10px 0 0',
-      textAlign: 'right',
-      [theme.breakpoints.down('xs')]: {
-        position: 'absolute',
-        right: 10,
-        top: 5,
-        borderBottom: 'none',
-      },
-    },
   };
 });
 
 type MedicalRecordProps = {
-  allCombinedData: LabResultsType[];
+  allCombinedData: HospitalizationType[];
   loading: boolean;
-  setActiveData: (activeData: LabResultsType) => void;
-  activeData: LabResultsType;
+  setActiveData: (activeData: HospitalizationType) => void;
+  activeData: HospitalizationType;
   error: boolean;
   deleteReport: (id: string, type: string) => void;
 };
 
-export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
+export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
   const classes = useStyles({});
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
@@ -383,7 +369,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
 
   const { allCombinedData, loading, activeData, setActiveData, error, deleteReport } = props;
 
-  const getFormattedDate = (combinedData: LabResultsType, dateFor: string) => {
+  const getFormattedDate = (combinedData: HospitalizationType, dateFor: string) => {
     return dateFor === 'title' &&
       moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY') ? (
       <span>Today , {moment(combinedData.date).format('DD MMM YYYY')}</span>
@@ -407,17 +393,10 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
-        {/* <div className={classes.noteText}>
-          Please note that you can share these health records with the doctor during a consult by
-          uploading them in the consult chat room!
-        </div> */}
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
           </Link>
-        </div>
-        <div className={classes.filterIcon}>
-          <img src={require('images/ic_filter.svg')} alt="" />
         </div>
         <Scrollbars
           autoHide={true}
@@ -433,7 +412,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           <div className={classes.consultationsList}>
             {allCombinedData &&
               allCombinedData.length > 0 &&
-              allCombinedData.map((combinedData: LabResultsType) => (
+              allCombinedData.map((combinedData: HospitalizationType) => (
                 <div
                   className={classes.consultGroup}
                   onClick={() => {
@@ -449,17 +428,11 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                   </div>
                   <MedicalCard
                     deleteReport={deleteReport}
-                    name={combinedData.labTestName}
-                    source={
-                      combinedData && combinedData.siteDisplayName
-                        ? combinedData.siteDisplayName
-                        : !!combinedData.labTestSource
-                        ? combinedData.labTestSource
-                        : '-'
-                    }
-                    type={'LabResults'}
-                    id={`LabResults-${combinedData.id}`}
-                    isActiveCard={activeData && activeData === combinedData}
+                    name={`Dr. ${combinedData.doctorName}` || '-'}
+                    source={combinedData.hospitalName || '-'}
+                    type={'Hospitalization'}
+                    id={`Hospitalization-${combinedData.id}`}
+                    isActiveCard={activeData && activeData.id === combinedData.id}
                   />
                 </div>
               ))}
@@ -504,12 +477,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 >
                   <img src={require('images/ic_back.svg')} />
                 </AphButton>
-                <span>REPORT Details</span>
-              </div>
-              <div className={classes.headerActions}>
-                <div className={classes.downloadIcon}>
-                  <img src={require('images/ic_download.svg')} alt="" />
-                </div>
+                <span>Test Results</span>
               </div>
             </div>
             <Scrollbars
@@ -528,21 +496,16 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 <div className={classes.medicalRecordsDetails}>
                   <div className={classes.cbcDetails}>
                     <div className={classes.reportsDetails}>
-                      <div className={classes.testName}>Ultrasound Screening Whole Abdomen</div>
+                      <div className={classes.testName}>Dr. {activeData.doctorName || '-'}</div>
                     </div>
-                    <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
-                      <div>
-                        {!!activeData.labTestRefferedBy ? activeData.labTestRefferedBy : '-'}
+                    {activeData.hospitalName && (
+                      <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
+                        <div>{activeData.hospitalName}</div>
                       </div>
-                    </div>
-                    <div className={classes.reportsDetails}>
-                      {activeData && activeData.siteDisplayName && (
-                        <div className={classes.sitedisplayName}>{activeData.siteDisplayName}</div>
-                      )}
-                    </div>
+                    )}
                     <hr />
                     <div className={classes.reportsDetails}>
-                      <label>CheckUp Date</label>
+                      <label>Uploaded Date</label>
                       <p>
                         On{' '}
                         <span className={classes.checkDate}>
@@ -551,34 +514,35 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                       </p>
                     </div>
                   </div>
-                  {(activeData.observation || activeData.additionalNotes) && (
-                    <ToplineReport activeData={activeData} />
-                  )}
-                  {activeData.labTestResults && activeData.labTestResults.length > 0 && (
-                    <DetailedFindings activeData={activeData} />
-                  )}
                   {activeData &&
                     ((activeData.fileUrl && activeData.fileUrl.length > 0) ||
                       (activeData.fileUrl && activeData.fileUrl.length > 0)) && (
                       <RenderImage
                         activeData={activeData}
-                        type={activeData.fileUrl.includes('pdf') ? 'pdf' : 'image'}
+                        type={
+                          activeData.hospitalizationFiles &&
+                          activeData.hospitalizationFiles.length &&
+                          activeData.hospitalizationFiles[0].fileName &&
+                          activeData.hospitalizationFiles[0].fileName.includes('pdf')
+                            ? 'pdf'
+                            : activeData.fileUrl.includes('pdf')
+                            ? 'pdf'
+                            : 'image'
+                        }
                       />
                     )}
                 </div>
               )}
             </Scrollbars>
-            <div className={classes.addReportActions}>
-              <AphButton
-                color="primary"
-                onClick={() => {
-                  window.location.href = clientRoutes.addRecords();
-                }}
-                fullWidth
-              >
-                DOWNLOAD TEST REPORT
-              </AphButton>
-            </div>
+            {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
+              <a href={activeData.fileUrl}>
+                <div className={classes.addReportActions}>
+                  <AphButton color="primary" fullWidth>
+                    DOWNLOAD DISCHARGE SUMMARY
+                  </AphButton>
+                </div>
+              </a>
+            )}
           </>
         ) : (
           <div className={classes.noRecordFoundWrapper}>
@@ -593,29 +557,3 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
     </div>
   );
 };
-
-// const getName = (combinedData: any, type: string) => {
-//   switch (type) {
-//     case 'lab':
-//       return combinedData.labTestName;
-//     case 'prescription':
-//       return combinedData.prescriptionName;
-//     default:
-//       return '';
-//   }
-// };
-
-// const getSource = (activeData: any, type: string) => {
-//   switch (type) {
-//     case 'lab':
-//       return activeData && activeData.siteDisplayName
-//         ? activeData.siteDisplayName
-//         : !!activeData.labTestSource
-//         ? activeData.labTestSource
-//         : '-';
-//     case 'prescription':
-//       return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
-//     default:
-//       return '-';
-//   }
-// };

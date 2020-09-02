@@ -450,6 +450,62 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         errorMsg
         errorType
       }
+      healthChecksNew {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          healthCheckName
+          healthCheckDate
+          healthCheckSummary
+          healthCheckFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+          source
+          healthCheckType
+          followupDate
+        }
+      }
+      hospitalizationsNew {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          dateOfHospitalization
+          hospitalName
+          doctorName
+          reasonForAdmission
+          diagnosisNotes
+          dateOfDischarge
+          dischargeSummary
+          doctorInstruction
+          dateOfNextVisit
+          hospitalizationFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+          source
+        }
+      }
     }
   }
 `;

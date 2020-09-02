@@ -36,6 +36,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       wordBreak: 'break-word',
     },
+    consultType: {
+      fontSize: 12,
+      color: 'rgba(2,71,91,0.6)',
+      fontWeight: 500,
+    },
     doctorService: {
       paddingTop: 8,
       paddingBottom: 8,
@@ -120,11 +125,10 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
         <div className={classes.doctorInfo}>
           <div className={classes.doctorName}>{props.name}</div>
         </div>
-        {/* <div className={classes.moreIcon}>
-          <img src={require('images/ic_more.svg')} alt="" onClick={() => setShowPopup(true)} />
-        </div> */}
       </div>
-      {props.source && props.source !== '-' && <div>{props.source}</div>}
+      {props.source && props.source !== '-' && (
+        <div className={classes.consultType}>{props.source}</div>
+      )}
       <AphDialog
         open={showPopup}
         disableBackdropClick
