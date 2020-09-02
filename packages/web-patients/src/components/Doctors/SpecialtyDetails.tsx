@@ -518,7 +518,6 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
         })
         .catch((e) => console.log(e))
         .finally(() => {
-          // setLoading(false);
           setIsFetching(false);
         });
     }
@@ -536,8 +535,6 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
           incrementPageNo();
         }
       }
-      //show loading spinner and make fetch request to api
-      // setFetchMoreDoctors(true)
     }
   }, []);
   useEffect(() => {
@@ -895,7 +892,6 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   <AphButton
                     onClick={() => {
                       setDoctorType(DOCTOR_CATEGORY.APOLLO);
-                      // setPageNo(1);
                     }}
                     className={doctorType === DOCTOR_CATEGORY.APOLLO ? classes.buttonActive : ''}
                   >
@@ -905,7 +901,6 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                     className={doctorType === DOCTOR_CATEGORY.PARTNER ? classes.buttonActive : ''}
                     onClick={() => {
                       setDoctorType(DOCTOR_CATEGORY.PARTNER);
-                      // setPageNo(1);
                     }}
                   >
                     Doctor Partners ({partnerDoctorCount})
