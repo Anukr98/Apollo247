@@ -80,10 +80,19 @@ export async function sendCallsNotification(
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
 
   patientId = patientId || patientDetails.id;
-  const voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
+  let voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
     patientId,
     DEVICE_TYPE.IOS
   );
+
+  if(!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']){
+    patientId = patientDetails.id;
+    voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
+      patientId,
+      DEVICE_TYPE.IOS
+    );
+  }
+
   if (
     voipPushtoken.length &&
     voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&

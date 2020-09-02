@@ -134,10 +134,18 @@ const endCallNotification: Resolver<
 
   args.patientId = args.patientId || callDetails.appointment.patientId;
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
-  const voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
+  let voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
     args.patientId,
     DEVICE_TYPE.IOS
   );
+
+  if(!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']){
+    args.patientId = callDetails.appointment.patientId;
+    voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
+      args.patientId,
+      DEVICE_TYPE.IOS
+    );
+  }
 
   if (!args.isDev) {
     args.isDev = false;
