@@ -1644,6 +1644,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const disableProceedToPay = !(
     cartItems.length > 0 &&
+    cartTotal != 0 &&
     !showDeliverySpinner &&
     !cartItems.find((item) => !item.isInStock) &&
     !cartItems.find((item) => item.unserviceable) &&
