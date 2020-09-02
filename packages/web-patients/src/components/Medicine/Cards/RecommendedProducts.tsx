@@ -244,7 +244,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
       {recommendedProductsList && recommendedProductsList.length >= 5 ? (
         <>
           <div className={classes.sectionTitle}>
-            <span>RECOMMENDED FOR YOU</span>
+            <span>RECOMMENDED PRODUCTS</span>
             <div className={classes.viewAllLink}>
               <Link to={clientRoutes.searchByMedicine('shop-by-category', 'recommended-products')}>
                 View All
