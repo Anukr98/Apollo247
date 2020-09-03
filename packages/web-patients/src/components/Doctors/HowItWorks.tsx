@@ -473,7 +473,7 @@ export const HowItWorks: React.FC = (props) => {
         </div>
       </div>
       <div className={classes.appDetails}>
-        <Typography component="h6">Consultation works only on our mobile app</Typography>
+        {/* <Typography component="h6">Consultation works only on our mobile app</Typography> */}
         <Typography>To enjoy enhanced consultation experience download our mobile app</Typography>
         <a href={getAppStoreLink()} target={'_blank'}>
           <div className={classes.appDownload}>
