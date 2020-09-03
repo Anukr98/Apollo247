@@ -139,8 +139,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     modalBoxCancel: {
-      maxWidth: 480,
-      minHeight: 280,
+      maxWidth: 436,
+      minHeight: 220,
       margin: "auto",
       marginTop: 88,
       backgroundColor: "white",
@@ -149,7 +149,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     tabHeader: {
       background: "white",
-      height: 50,
+      height: 35,
       borderTopLeftRadius: "10px",
       borderTopRightRadius: "10px",
       "& h4": {
@@ -190,6 +190,11 @@ const useStyles = makeStyles((theme: Theme) => {
       top: '10px',
       fontSize: '16px',
       color: '#02475b',
+    },
+    blueBubble: {
+      //backgroundColor: '#0087ba',
+      color: '#0087ba',
+      marginBottom: 5,
     },
   };
 });
@@ -548,7 +553,8 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             </div>
             <div className={classes.tabBody}>
               <p>Seems like the mobile no. you entered is either not registered with us or your account has been disabled. If you are a doctor and wish to enroll with us, please contact admin@apollo247.com. If you are a patient, please 
-              <a href="https://www.apollo247.com"> click here</a></p>
+              <a className={classes.blueBubble}
+            href="https://www.apollo247.com"> Click here</a></p>
             </div>
           </Paper>
         </Modal>
