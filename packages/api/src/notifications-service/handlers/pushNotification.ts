@@ -1365,12 +1365,12 @@ export async function sendNotification(
 
     let prescriptionDeeplink: string = process.env.DEEPLINK_PRESCRIPTION;
 
-    const { caseSheetId = null } = pushNotificationInput.data;
-    if (!caseSheetId) {
-      throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined, undefined);
+    const { appointmentId } = pushNotificationInput;
+    if (!appointmentId) {
+      throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND, undefined, undefined);
     }
 
-    prescriptionDeeplink = `${notificationBody} ${ApiConstants.PRESCRIPTION_CLICK_HERE} ${prescriptionDeeplink.replace(ApiConstants.PRESCRIPTION_DEEPLINK_PLACEHOLDER, caseSheetId)}`;
+    prescriptionDeeplink = `${notificationBody} ${ApiConstants.PRESCRIPTION_CLICK_HERE} ${prescriptionDeeplink.replace(ApiConstants.PRESCRIPTION_DEEPLINK_PLACEHOLDER, appointmentId)}`;
 
     sendNotificationSMS(patientDetails.mobileNumber, prescriptionDeeplink);
 
