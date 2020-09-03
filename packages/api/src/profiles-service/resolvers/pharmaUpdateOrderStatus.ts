@@ -2,6 +2,8 @@ import gql from 'graphql-tag';
 import { Decimal } from 'decimal.js';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import AbortController from 'abort-controller';
+
 import {
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
@@ -35,7 +37,7 @@ import { PharmaItemsResponse } from 'types/medicineOrderTypes';
 import { OneApollo } from 'helpers/oneApollo';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
-import { ApiConstants } from 'ApiConstants';
+import { ApiConstants, PharmaProductTypes } from 'ApiConstants';
 
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
@@ -494,7 +496,7 @@ const generateTransactions = async (
     let RequestNumber: BlockUserPointsResponse['RequestNumber'] = '';
     let healthCreditsRedeemed: number = 0;
 
-    const itemTypemap = await getSkuMap(itemSku);
+    const itemTypemap = await getSkuMap(itemSku, order.orderAutoId);
     if (order.medicineOrderPayments.length) {
       const paymentInfo = order.medicineOrderPayments[0];
       if (
@@ -655,40 +657,62 @@ const addProductNameAndCat = (
   return [totalCreditsRedeemed, transactionLineItemsComplete];
 };
 
-const getSkuMap = async (itemSku: string[]) => {
-  const itemTypemap: ItemsSkuTypeMap = {};
-
+const getSkuMap = async (itemSku: string[], orderId: MedicineOrders['orderAutoId']) => {
+  let itemTypemap: ItemsSkuTypeMap = {};
+  itemSku.forEach((val) => {
+    itemTypemap[val] = PharmaProductTypes.FMCG;
+  });
   const skusInfoUrl = process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL || '';
   const authToken = process.env.PHARMACY_MED_AUTH_TOKEN || '';
-  const pharmaResp = await fetch(skusInfoUrl, {
-    method: 'POST',
-    body: JSON.stringify({
-      params: itemSku.join(','),
-    }),
-    headers: { 'Content-Type': 'application/json', authorization: authToken },
-  });
-  const pharmaResponse = (await pharmaResp.json()) as PharmaItemsResponse;
-  log(
-    'profileServiceLogger',
-    `EXTERNAL_API_CALL_PHARMACY: ${skusInfoUrl}`,
-    'createOneApolloTransaction()->API_CALL_STARTING',
-    JSON.stringify(pharmaResponse),
-    ''
-  );
-  if (!pharmaResponse) {
-    throw new AphError(AphErrorMessages.PHARMACY_SKU_FETCH_FAILED, undefined, {});
-  }
-  if (!pharmaResponse.productdp)
-    throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});
-  pharmaResponse.productdp.forEach((val) => {
-    if (val.type_id) {
-      itemTypemap[val.sku] = val.type_id;
+  const controller = new AbortController();
+  const oneApolloTimeout = process.env.ONEAPOLLO_REQUEST_TIMEOUT || 10000;
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, +oneApolloTimeout);
+  try {
+    const pharmaResp = await fetch(skusInfoUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        params: itemSku.join(','),
+      }),
+      headers: { 'Content-Type': 'application/json', authorization: authToken },
+      signal: controller.signal,
+    });
+    const pharmaResponse = (await pharmaResp.json()) as PharmaItemsResponse;
+    log(
+      'profileServiceLogger',
+      `EXTERNAL_API_CALL_PHARMACY: ${skusInfoUrl} - ${orderId}`,
+      'createOneApolloTransaction()->API_CALL_STARTING',
+      JSON.stringify(pharmaResponse),
+      ''
+    );
+    if (!pharmaResponse || !pharmaResponse.productdp) {
+      log(
+        'profileServiceLogger',
+        `EXTERNAL_API_CALL_PHARMACY_FAILED: ${skusInfoUrl} - ${orderId}`,
+        'createOneApolloTransaction()->API_CALL_STARTING',
+        JSON.stringify(pharmaResponse),
+        'true'
+      );
     } else {
-      throw new AphError(AphErrorMessages.PHARMACY_SKU_NOT_FOUND, undefined, {});
+      pharmaResponse.productdp.forEach((val) => {
+        if (val.type_id && itemTypemap[val.sku]) {
+          itemTypemap[val.sku] = val.type_id;
+        }
+      });
     }
-  });
-
-  return itemTypemap;
+  } catch (e) {
+    log(
+      'profileServiceLogger',
+      `EXTERNAL_API_CALL_PHARMACY_FAILED_WITH_EXCEPTION: ${skusInfoUrl} - ${orderId}`,
+      'createOneApolloTransaction()->API_CALL_STARTING',
+      e.stack,
+      'true'
+    );
+  } finally {
+    clearTimeout(timeout);
+    return itemTypemap;
+  }
 };
 
 const createLineItems = (itemDetails: Array<ItemDetails>) => {
