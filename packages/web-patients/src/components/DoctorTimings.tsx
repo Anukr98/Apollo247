@@ -105,9 +105,11 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
               {doctorTimings.map((item: any) => {
                 const actualDay = item.actualDay;
                 const weeDaysStartTime = moment(`${today} ${item.startTime}`)
+                  .add(5.5, 'hours')
                   .local()
                   .format('hh:mm a');
                 const weeDaysEndTime = moment(`${today} ${item.endTime}`)
+                  .add(5.5, 'hours')
                   .local()
                   .format('hh:mm a');
                 return (
@@ -128,9 +130,11 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
             {doctorTimings.map((item: any) => {
               const actualDay = item.actualDay;
               const weeDaysStartTime = moment(`${today} ${item.startTime}`)
+                .add(5.5, 'hours')
                 .local()
                 .format('hh:mm a');
               const weeDaysEndTime = moment(`${today} ${item.endTime}`)
+                .add(5.5, 'hours')
                 .local()
                 .format('hh:mm a');
               return (
