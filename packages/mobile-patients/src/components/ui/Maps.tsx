@@ -18,7 +18,7 @@ import {
 import {
   savePatientAddress,
   savePatientAddressVariables,
-  savePatientAddress_savePatientAddress
+  savePatientAddress_savePatientAddress,
 } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   updatePatientAddress,
@@ -27,7 +27,7 @@ import {
 import {
   g,
   handleGraphQlError,
-  postWebEngageEvent
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   getLatLongFromAddress,
@@ -36,21 +36,28 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import React, { useEffect, useState,useRef } from 'react';
-import {Dimensions,View, SafeAreaView, Text,StyleSheet, Image,TouchableOpacity} from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import {
+  Dimensions,
+  View,
+  SafeAreaView,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
 import { useApolloClient } from 'react-apollo-hooks';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import MapView,{Marker,PROVIDER_GOOGLE, Coordinate, MapEvent } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, Coordinate, MapEvent } from 'react-native-maps';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Location } from './Icons';
 import Geolocation from '@react-native-community/geolocation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from 'react-native-elements';
-
 
 const FakeMarker = require('../ui/icons/ic-marker.png');
 const icon_gps = require('../ui/icons/ic_gps_fixed.png');
@@ -61,172 +68,191 @@ const screenWidth = Dimensions.get('window').width;
 const { isIphoneX } = DeviceHelper();
 
 const styles = StyleSheet.create({
-  bannerOuterView:{
+  bannerOuterView: {
     height: 300,
-    backgroundColor:'white',
+    backgroundColor: 'white',
   },
-  changeButton:{
-    top:'5%',
-    marginHorizontal:screenWidth-110,
+  changeButton: {
+    top: '5%',
+    marginHorizontal: screenWidth - 110,
     width: '23%',
-    height:23,
-    backgroundColor:theme.colors.LIGHT_YELLOW,
+    height: 23,
+    backgroundColor: theme.colors.LIGHT_YELLOW,
     shadowColor: 'transparent',
-    elevation:0,
-    borderRadius:16,
+    elevation: 0,
+    borderRadius: 16,
   },
-  changeButtonText:{
-    color:theme.colors.SHERPA_BLUE,
-    ...theme.fonts.IBMPlexSansSemiBold(11)
+  changeButtonText: {
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansSemiBold(11),
   },
-  addressView:{
-    marginHorizontal:'4%',
-    flexDirection:'row',
-    marginTop:'5%'
+  addressView: {
+    marginHorizontal: '4%',
+    flexDirection: 'row',
+    marginTop: '5%',
   },
-  locationIcon:{
-    height:24,
-    width:24,
-    resizeMode:'contain'
+  locationIcon: {
+    height: 24,
+    width: 24,
+    resizeMode: 'contain',
   },
-  addressHeading:{
-    marginTop:2,
-    textAlign:'center',
+  addressHeading: {
+    marginTop: 2,
+    textAlign: 'center',
     ...theme.fonts.IBMPlexSansBold(16),
-    color:theme.colors.SHERPA_BLUE
+    color: theme.colors.SHERPA_BLUE,
   },
   addressText: {
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansRegular(13),
   },
-  confirmButton: { 
-    alignSelf: 'center', 
-    width: '70%', 
-    marginTop: '4%' ,
+  confirmButton: {
+    alignSelf: 'center',
+    width: '70%',
+    marginTop: '4%',
   },
-  markerView: { 
-    left: '50%', 
-    marginLeft: -24, 
-    marginTop: -48, 
-    position: 'absolute', 
-    top: screenHeight / 3 
+  markerView: {
+    left: '50%',
+    marginLeft: -24,
+    marginTop: -48,
+    position: 'absolute',
+    top: screenHeight / 3,
   },
-  markerIcon: { 
-    height: 35, 
-    width: 35, 
-    resizeMode: 'contain' 
+  markerIcon: {
+    height: 35,
+    width: 35,
+    resizeMode: 'contain',
   },
   currentLocationView: {
-    backgroundColor: 'white', 
-    height: 40, 
-    width: 40, 
-    position: 'absolute', 
-    bottom: '45%', 
-    right: "3%", 
-    borderRadius: 40 / 2, 
+    backgroundColor: 'white',
+    height: 40,
+    width: 40,
+    position: 'absolute',
+    bottom: '45%',
+    right: '3%',
+    borderRadius: 40 / 2,
     shadowColor: 'rgba(0,0,0,0.2)',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 3,
   },
-  currentLocationIcon: { 
-    marginTop: 6, 
-    width: 25, 
-    height: 25, 
-    alignSelf: 'center', 
-    justifyContent: 'center' 
+  currentLocationIcon: {
+    marginTop: 6,
+    width: 25,
+    height: 25,
+    alignSelf: 'center',
+    justifyContent: 'center',
   },
-  markerTitleView:{
+  markerTitleView: {
     backgroundColor: theme.colors.SHERPA_BLUE,
-    borderRadius:10,
-    height:37,
-    justifyContent: 'center', 
+    borderRadius: 10,
+    height: 37,
+    justifyContent: 'center',
     left: -50,
     alignItems: 'center',
-    paddingLeft:7,
-    paddingRight:8,
-    marginBottom:'2%'
+    paddingLeft: 7,
+    paddingRight: 8,
+    marginBottom: '2%',
   },
-  markerText:{
-    color:'white',
+  markerText: {
+    color: 'white',
     ...theme.fonts.IBMPlexSansSemiBold(12),
-  }
+  },
 });
 
-
-export interface RegionObject{
-  latitude: number,
-  longitude: number,
-  latitudeDelta: number,
-  longitudeDelta: number
+export interface RegionObject {
+  latitude: number;
+  longitude: number;
+  latitudeDelta: number;
+  longitudeDelta: number;
 }
 
-export interface MapProps extends NavigationScreenProps<{
-  KeyName?: string;
-  addressDetails?:getPatientAddressList_getPatientAddressList_addressList,
-  isChanged?: boolean;
-  addOnly?: boolean;
-  source: string;
-}> {}
+export interface MapProps
+  extends NavigationScreenProps<{
+    KeyName?: string;
+    addressDetails?: getPatientAddressList_getPatientAddressList_addressList;
+    isChanged?: boolean;
+    addOnly?: boolean;
+    source: string;
+  }> {}
 
+export const Maps: React.FC<MapProps> = (props) => {
+  const addressObject = props.navigation.getParam('addressDetails');
+  const [latitude, setLatitude] = useState<number>(0);
+  const [longitude, setLongitude] = useState<number>(0);
+  const [latitudeDelta, setLatitudeDelta] = useState<number>(1);
+  const [longitudeDelta, setLongitudeDelta] = useState<number>(1);
 
-export const Maps : React.FC<MapProps> = (props) =>{
-  const addressObject =props.navigation.getParam('addressDetails');
-  const [latitude,setLatitude] = useState<number>(0);
-  const [longitude,setLongitude] = useState<number>(0);
-  const [latitudeDelta,setLatitudeDelta] = useState<number>(1);
-  const [longitudeDelta,setLongitudeDelta] = useState<number>(1);
-  
   const [stateCode, setStateCode] = useState<string>(addressObject?.stateCode!);
   const [state, setstate] = useState<string>(addressObject?.state!);
-  const [city,setCity] = useState<string>(addressObject?.city!);
-  const [addressLine1,setaddressLine1] = useState<string>(addressObject?.addressLine1!)
-  const [addressLine2,setaddressLine2] = useState<string>(addressObject?.addressLine2!)
-  const [pincode,setpincode] = useState<string>(addressObject?.zipcode!);
-  const [phoneNumber,setPhoneNumber] = useState<string>(addressObject?.mobileNumber!)
-  
+  const [city, setCity] = useState<string>(addressObject?.city!);
+  const [addressLine1, setaddressLine1] = useState<string>(addressObject?.addressLine1!);
+  const [addressLine2, setaddressLine2] = useState<string>(addressObject?.addressLine2!);
+  const [pincode, setpincode] = useState<string>(addressObject?.zipcode!);
+  const [phoneNumber, setPhoneNumber] = useState<string>(addressObject?.mobileNumber!);
+
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const { addAddress, setDeliveryAddressId, setNewAddressAdded } = useShoppingCart();
-  const { addAddress: addDiagnosticAddress,
-  setDeliveryAddressId: setDiagnosticAddressId,
+  const {
+    addAddress: addDiagnosticAddress,
+    setDeliveryAddressId: setDiagnosticAddressId,
   } = useDiagnosticsCart();
   const { locationDetails, pharmacyLocation } = useAppCommonData();
   const _map = useRef(null);
-
 
   const [region, setRegion] = useState({
     latitude: addressObject?.latitude,
     longitude: addressObject?.longitude,
     latitudeDelta: 0.01,
-    longitudeDelta: 0.01
+    longitudeDelta: 0.01,
   });
-  
+
   const client = useApolloClient();
-  const [address,setAddress] = useState<string>('');
+  const [address, setAddress] = useState<string>('');
 
   /**
    *  call the google api service, which finds lat-long from address
    */
-  useEffect(()=>{
+  useEffect(() => {
     const getLatitude = addressObject?.latitude;
     const getLongtitude = addressObject?.longitude;
     const getLandmark = addressObject?.landmark || '';
     let address;
-    if(getLandmark!=""){
-      address = addressObject?.addressLine1+', '+addressObject?.addressLine2+ ', '+getLandmark+ ', '+addressObject?.city+ ', '+addressObject?.state + ', '+addressObject?.zipcode;
+    if (getLandmark != '') {
+      address =
+        addressObject?.addressLine1 +
+        ', ' +
+        addressObject?.addressLine2 +
+        ', ' +
+        getLandmark +
+        ', ' +
+        addressObject?.city +
+        ', ' +
+        addressObject?.state +
+        ', ' +
+        addressObject?.zipcode;
+    } else {
+      address =
+        addressObject?.addressLine1 +
+        ', ' +
+        addressObject?.addressLine2 +
+        ', ' +
+        addressObject?.city +
+        ', ' +
+        addressObject?.state +
+        ', ' +
+        addressObject?.zipcode;
     }
-    else{
-      address = addressObject?.addressLine1+', '+addressObject?.addressLine2+ ', '+addressObject?.city+ ', '+addressObject?.state + ', '+addressObject?.zipcode;
-    }
-    
+
     setAddress(address);
     //check this condition for initial cases
-      getLatLongFromAddress(address).then(({ data }) =>{
-        try{
+    getLatLongFromAddress(address)
+      .then(({ data }) => {
+        try {
           const latLang = data.results[0].geometry.location || {};
           setLatitude(latLang.lat);
           setLongitude(latLang.lng);
@@ -237,18 +263,17 @@ export const Maps : React.FC<MapProps> = (props) =>{
           //   longitude: latLang.lng,
           //   latitudeDelta: 0.01,
           //   longitudeDelta: 0.01})
-        }
-        catch(e){
+        } catch (e) {
           //show current location
           showCurrentLocation();
         }
       })
-      .catch()    
-  },[]);
+      .catch();
+  }, []);
 
-  const onChangePress = () =>{
+  const onChangePress = () => {
     props.navigation.goBack();
-  }
+  };
 
   const saveAddress = (addressInput: PatientAddressInput) =>
     client.mutate<savePatientAddress, savePatientAddressVariables>({
@@ -257,32 +282,33 @@ export const Maps : React.FC<MapProps> = (props) =>{
     });
 
   /** haversine formula */
-  const calcuteDiffInMeters = (lat1: number, lon1: number, lat2:number, lon2:number) => {  
-      var R = 6378.137; // Radius of earth in KM
-      var dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
-      var dLon = lon2 * Math.PI / 180 - lon1 * Math.PI / 180;
-      var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      var d = R * c;
-      return d * 1000; // meters
-  }
-  
-  const sendWebEngageEvent = (lat1:number,lon1:number,lat2:number,lon2:number)=>{
-    const diff = calcuteDiffInMeters(lat1,lon1,lat2,lon2);
+  const calcuteDiffInMeters = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    var R = 6378.137; // Radius of earth in KM
+    var dLat = (lat2 * Math.PI) / 180 - (lat1 * Math.PI) / 180;
+    var dLon = (lon2 * Math.PI) / 180 - (lon1 * Math.PI) / 180;
+    var a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    var d = R * c;
+    return d * 1000; // meters
+  };
+
+  const sendWebEngageEvent = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const diff = calcuteDiffInMeters(lat1, lon1, lat2, lon2);
     const eventAttributes: WebEngageEvents[WebEngageEventName.CONFIRM_LOCATION] = {
-      'isMarkerModified': diff === 0? false : true,
-      'changedByInMeters' : diff
+      isMarkerModified: diff === 0 ? false : true,
+      changedByInMeters: diff,
     };
     postWebEngageEvent(WebEngageEventName.CONFIRM_LOCATION, eventAttributes);
-  }
-  
-  
+  };
 
   const onConfirmLocation = async () => {
     setshowSpinner(true);
-    sendWebEngageEvent(addressObject.latitude,addressObject.longitude,latitude,longitude);
+    sendWebEngageEvent(addressObject.latitude, addressObject.longitude, latitude, longitude);
     CommonLogEvent(AppRoutes.Maps, 'On Confirm Location Clicked');
     if (props.navigation.getParam('KeyName') == 'Update' && addressObject) {
       const updateaddressInput: UpdatePatientAddressInput = {
@@ -299,7 +325,7 @@ export const Maps : React.FC<MapProps> = (props) =>{
         latitude: latitude,
         longitude: longitude,
         stateCode: addressObject?.stateCode,
-        name: addressObject?.name
+        name: addressObject?.name,
       };
       console.log(updateaddressInput, 'updateaddressInput');
       setshowSpinner(true);
@@ -324,7 +350,7 @@ export const Maps : React.FC<MapProps> = (props) =>{
           handleGraphQlError(e);
         });
     }
-    //if added new 
+    //if added new
     else {
       const addressInput: PatientAddressInput = {
         patientId: addressObject!.id!,
@@ -340,7 +366,7 @@ export const Maps : React.FC<MapProps> = (props) =>{
         latitude: latitude,
         longitude: longitude,
         stateCode: addressObject?.stateCode,
-        name: addressObject?.name
+        name: addressObject?.name,
       };
 
       try {
@@ -351,8 +377,7 @@ export const Maps : React.FC<MapProps> = (props) =>{
 
         setshowSpinner(false);
         const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
-        const isAddressServiceable =
-        pinAvailabilityResult && pinAvailabilityResult.data.response;
+        const isAddressServiceable = pinAvailabilityResult && pinAvailabilityResult.data.response;
         let isComingFrom = props.navigation.getParam('source');
         addAddress!(address);
         addDiagnosticAddress!(address);
@@ -361,18 +386,20 @@ export const Maps : React.FC<MapProps> = (props) =>{
           const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED] = {
             Serviceable: isAddressServiceable ? 'Yes' : 'No',
           };
-          postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED, eventAttributes);
+          postWebEngageEvent(
+            WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED,
+            eventAttributes
+          );
         }
 
         if (isAddressServiceable || addOnly) {
           setDeliveryAddressId!(address.id || '');
           setNewAddressAdded!(address.id || '');
           setDiagnosticAddressId!(address.id || '');
-          if(isComingFrom == 'My Account'){
+          if (isComingFrom == 'My Account') {
             props.navigation.pop(3, { immediate: true });
             props.navigation.push(AppRoutes.AddressBook);
-          }
-          else{
+          } else {
             props.navigation.pop(2, { immediate: true });
           }
         } else {
@@ -383,7 +410,9 @@ export const Maps : React.FC<MapProps> = (props) =>{
           showAphAlert!({
             title: 'Uh oh.. :(',
             description: string.medicine_cart.pharmaAddressUnServiceableAlert,
-            onPressOk: () => {onAlertError(isComingFrom)},
+            onPressOk: () => {
+              onAlertError(isComingFrom);
+            },
           });
         }
       } catch (error) {
@@ -392,42 +421,45 @@ export const Maps : React.FC<MapProps> = (props) =>{
         handleGraphQlError(error);
       }
     }
-  }
+  };
 
-  const onAlertError = (source:string) =>{
-    if(source == 'My Account'){
+  const onAlertError = (source: string) => {
+    if (source == 'My Account') {
       props.navigation.pop(3, { immediate: true });
       props.navigation.push(AppRoutes.AddressBook);
-    }
-    else{
+    } else {
       props.navigation.pop(3, { immediate: true });
     }
     hideAphAlert!();
-  }
+  };
 
-  const renderAddressBanner = () =>{
-    return ( 
+  const renderAddressBanner = () => {
+    return (
       //screenHeight/3
       <View style={styles.bannerOuterView}>
-          <Button
-               title={'CHANGE'}
-              style={styles.changeButton}
-              titleTextStyle={styles.changeButtonText}
-              onPress={onChangePress}/>
-          <View style={styles.addressView}>
-               <Location style={styles.locationIcon}/>
-               <Text style={styles.addressHeading}> Help us locate your address</Text>
-          </View>
-          <View style={{margin:'5%',marginTop:'3%'}}>
-               <Text numberOfLines={3} style={styles.addressText}>{address}</Text>
-          </View>
-          <Button
-            title={'CONFIRM LOCATION'}
-            style={styles.confirmButton}
-            onPress={onConfirmLocation}/>
+        <Button
+          title={'CHANGE'}
+          style={styles.changeButton}
+          titleTextStyle={styles.changeButtonText}
+          onPress={onChangePress}
+        />
+        <View style={styles.addressView}>
+          <Location style={styles.locationIcon} />
+          <Text style={styles.addressHeading}> Help us locate your address</Text>
+        </View>
+        <View style={{ margin: '5%', marginTop: '3%' }}>
+          <Text numberOfLines={3} style={styles.addressText}>
+            {address}
+          </Text>
+        </View>
+        <Button
+          title={'CONFIRM LOCATION'}
+          style={styles.confirmButton}
+          onPress={onConfirmLocation}
+        />
       </View>
-    )
-  }
+    );
+  };
 
   // const onMarkerDragEnd = (event: MapEvent) =>{
   //   const coordinates = event.nativeEvent.coordinate;
@@ -435,103 +467,104 @@ export const Maps : React.FC<MapProps> = (props) =>{
   //   setLongitude(coordinates?.longitude);
   // }
 
-
   /** to drag the map */
   /** set lat-long when drag has been stopped */
-  const _onRegionChangeComplete =(region: RegionObject)=>{
+  const _onRegionChangeComplete = (region: RegionObject) => {
     setRegion(region);
     setLatitude(region.latitude);
     setLongitude(region.longitude);
-    console.log(region.latitude, region.longitude)
-  }
-  
+    console.log(region.latitude, region.longitude);
+  };
+
   /** for getting current position */
-  const showCurrentLocation =  ()=>{
-      Geolocation.getCurrentPosition(
-        ({coords}) => {
-          const {latitude, longitude} = coords
-           const  currentRegion = {
-              latitude,
-              longitude,
-              latitudeDelta: 0.005,
-              longitudeDelta: 0.001,
-            }
-            setRegion(currentRegion);
-            //create the address from latlong
-            createAddressFromCurrentPos(coords.latitude,coords.longitude);
-        },
-        (error) =>  console.log(error.code, error.message, 'getCurrentPosition error')),
-        {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
-  }
+  const showCurrentLocation = () => {
+    Geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const { latitude, longitude } = coords;
+        const currentRegion = {
+          latitude,
+          longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.001,
+        };
+        setRegion(currentRegion);
+        //create the address from latlong
+        createAddressFromCurrentPos(coords.latitude, coords.longitude);
+      },
+      (error) => console.log(error.code, error.message, 'getCurrentPosition error')
+    ),
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 };
+  };
 
-  const createAddressFromCurrentPos = (lat: number, long:number) =>{
-      getPlaceInfoByLatLng(lat, long)
-              .then((obj) => {
-                try {
-                  if (
-                    obj.data.results.length > 0 &&
-                    obj.data.results[0].address_components.length > 0
-                  ) {
-                    const addrComponents = obj.data.results[0].address_components || [];
-                    const _pincode = (
-                      addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) ||
-                      {}
-                    ).long_name ;
-                    const currPinCode = _pincode!=undefined ? _pincode :''
-                    const _areaDetail1 = (
-                      addrComponents.find((item: any) => item.types.indexOf('street') > -1 ||  item.types.indexOf('sublocality_level_2') > -1 || (item.types.indexOf("route") > -1)) ||
-                      {}
-                    ).long_name;
-                    const currAreaDetail1 = _areaDetail1!=undefined ? _areaDetail1 :''
-                    const _areaDetail2 = (
-                      addrComponents.find((item: any) => item.types.indexOf('sublocality_level_1') > -1 ||  item.types.indexOf('administrative_area_level_2') > -1) ||
-                      {}
-                    ).long_name;
-                    const currAreaDetail2 = _areaDetail2!=undefined ? _areaDetail2 :''
-                    const _city = (
-                      addrComponents.find((item: any) => item.types.indexOf('locality') > -1) ||
-                      {}
-                    ).long_name;
-                    const currCity =  _city!=undefined ? _city :''
-                    const _state = (
-                      addrComponents.find((item: any) => item.types.indexOf('administrative_area_level_1') > -1) ||
-                      {}
-                    ).long_name;
-                    const currState = _state!=undefined ? _state : ''
+  const createAddressFromCurrentPos = (lat: number, long: number) => {
+    getPlaceInfoByLatLng(lat, long)
+      .then((obj) => {
+        try {
+          if (obj.data.results.length > 0 && obj.data.results[0].address_components.length > 0) {
+            const addrComponents = obj.data.results[0].address_components || [];
+            const _pincode = (
+              addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
+            ).long_name;
+            const currPinCode = _pincode != undefined ? _pincode : '';
+            const _areaDetail1 = (
+              addrComponents.find(
+                (item: any) =>
+                  item.types.indexOf('street') > -1 ||
+                  item.types.indexOf('sublocality_level_2') > -1 ||
+                  item.types.indexOf('route') > -1
+              ) || {}
+            ).long_name;
+            const currAreaDetail1 = _areaDetail1 != undefined ? _areaDetail1 : '';
+            const _areaDetail2 = (
+              addrComponents.find(
+                (item: any) =>
+                  item.types.indexOf('sublocality_level_1') > -1 ||
+                  item.types.indexOf('administrative_area_level_2') > -1
+              ) || {}
+            ).long_name;
+            const currAreaDetail2 = _areaDetail2 != undefined ? _areaDetail2 : '';
+            const _city = (
+              addrComponents.find((item: any) => item.types.indexOf('locality') > -1) || {}
+            ).long_name;
+            const currCity = _city != undefined ? _city : '';
+            const _state = (
+              addrComponents.find(
+                (item: any) => item.types.indexOf('administrative_area_level_1') > -1
+              ) || {}
+            ).long_name;
+            const currState = _state != undefined ? _state : '';
 
-                    //set the new address frm the current location
-                    setAddress(obj.data.results[0].formatted_address);
-                    setpincode(currPinCode)
-                    setstate(currState);
-                    setCity(currCity);
-                    setaddressLine2(currAreaDetail2);
-                    setaddressLine1(currAreaDetail1);
-                    
-                    
-                  }
-                } catch (e) {
-                  CommonBugFender('Maps_createAddressFromLatLong', e);
-                }
-              })
-              .catch((error) => {
-                CommonBugFender('Maps_createAddressFromLatLong', error);
-              });
-  }
+            //set the new address frm the current location
+            setAddress(obj.data.results[0].formatted_address);
+            setpincode(currPinCode);
+            setstate(currState);
+            setCity(currCity);
+            setaddressLine2(currAreaDetail2);
+            setaddressLine1(currAreaDetail1);
+          }
+        } catch (e) {
+          CommonBugFender('Maps_createAddressFromLatLong', e);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('Maps_createAddressFromLatLong', error);
+      });
+  };
 
-  const renderMap = () =>{
+  const renderMap = () => {
     return (
       <MapView
         provider={PROVIDER_GOOGLE}
-        style={{height: screenHeight > 600 ? screenHeight/1.60 : screenHeight/1.80}}
+        style={{ height: screenHeight > 600 ? screenHeight / 1.6 : screenHeight / 1.8 }}
         region={region}
         ref={_map}
         zoomEnabled={true}
         minZoomLevel={9}
-        onMapReady={()=>console.log("ready")}
-        onRegionChangeComplete={(region)=>_onRegionChangeComplete(region)}
+        onMapReady={() => console.log('ready')}
+        onRegionChangeComplete={(region) => _onRegionChangeComplete(region)}
         // initialRegion={{latitude:latitude,longitude:longitude,latitudeDelta:latitudeDelta,longitudeDelta:longitudeDelta}}
       >
-       {/**drag the marker */}
+        {/**drag the marker */}
         {/* <Marker
           coordinate={{
             latitude: latitude,
@@ -541,34 +574,34 @@ export const Maps : React.FC<MapProps> = (props) =>{
           onDragEnd={(e) => onMarkerDragEnd(e)}
         /> */}
       </MapView>
-    )
-  }
+    );
+  };
 
   /**drag the map to adjust */
-  const renderMarker = () =>{
+  const renderMarker = () => {
     return (
-      <View style={styles.markerView}> 
-          <View style={styles.markerTitleView}>
-            <Text style={styles.markerText}>MOVE MAP TO ADJUST</Text>
-          </View>
-          <Image style={styles.markerIcon} source={FakeMarker} />
+      <View style={styles.markerView}>
+        <View style={styles.markerTitleView}>
+          <Text style={styles.markerText}>MOVE MAP TO ADJUST</Text>
+        </View>
+        <Image style={styles.markerIcon} source={FakeMarker} />
       </View>
-    )
-  }
+    );
+  };
 
   /**show the current location item */
-  const renderCurrentLocation = ()=>{
-    return(
-        <View style={styles.currentLocationView}>
-          <TouchableOpacity onPress={showCurrentLocation} style={{height:"100%",width:"100%"}}>
-            <Image source={icon_gps} style={styles.currentLocationIcon}/>
-          </TouchableOpacity>
-        </View> 
-    )
-  }
+  const renderCurrentLocation = () => {
+    return (
+      <View style={styles.currentLocationView}>
+        <TouchableOpacity onPress={showCurrentLocation} style={{ height: '100%', width: '100%' }}>
+          <Image source={icon_gps} style={styles.currentLocationIcon} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
-    <View style={{flex:1,backgroundColor:'white'}}>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderMap()}
         {renderCurrentLocation()}
@@ -577,5 +610,5 @@ export const Maps : React.FC<MapProps> = (props) =>{
         {showSpinner && <Spinner />}
       </SafeAreaView>
     </View>
-  )
-}
+  );
+};
