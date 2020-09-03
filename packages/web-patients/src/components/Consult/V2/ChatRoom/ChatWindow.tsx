@@ -2124,7 +2124,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.jdThankyou ||
                     messageDetails.message === autoMessageStrings.startConsultjr ||
                     messageDetails.message === autoMessageStrings.stopConsultJr ||
-                    messageDetails.message === autoMessageStrings.languageQue
+                    messageDetails.message === autoMessageStrings.languageQue ||
+                    messageDetails.message === autoMessageStrings.consultPatientStartedMsg
                   ) {
                     return null;
                   }
