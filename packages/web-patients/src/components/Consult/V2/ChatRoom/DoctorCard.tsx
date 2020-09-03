@@ -7,6 +7,7 @@ import isToday from 'date-fns/isToday';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { AphButton } from '@aph/web-ui-components';
+import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -177,6 +178,7 @@ interface DoctorCardProps {
   setImgPrevUrl: (url: string) => void;
   chatTime: string;
   doctorName: string;
+  appointmentDetails: AppointmentHistory;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -187,6 +189,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const chatTime = isToday(chatDate)
     ? format(chatDate, 'hh:mm a')
     : format(chatDate, 'do MMMM yyyy, hh:mm a');
+  const { appointmentDetails } = props;
 
   const isCancelledByDoctor =
     props.messageDetails && props.messageDetails.message === '^^#cancelConsultInitiated';
@@ -248,6 +251,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           duration={props.duration}
           messageDetails={props.messageDetails}
           chatTime={chatTime}
+          appointmentDetails={appointmentDetails}
         />
       ) : (
         !isCancelledByDoctor && (

@@ -271,7 +271,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                 >
                   <div className={classes.pdHeader}>
                     <div className={classes.bigAvatar}>
-                      <img src={`${apiDetails.imageUrl}${product.image}`} alt="" />
+                      <img src={`${apiDetails.imageUrl}${product.thumbnail}`} alt="" />
                     </div>
                     <div className={classes.productName}>{product.name}</div>
                   </div>

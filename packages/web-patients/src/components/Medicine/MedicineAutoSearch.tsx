@@ -378,7 +378,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                         {medicine.is_prescription_required ? (
                           <img src={require('images/ic_tablets_rx.svg')} alt="" />
                         ) : (
-                          <img src={`${apiDetails.imageUrl}${medicine.image}`} alt="" />
+                          <img src={`${apiDetails.imageUrl}${medicine.thumbnail}`} alt="" />
                         )}
                       </div>
                       <div className={classes.medicineInfo}>
