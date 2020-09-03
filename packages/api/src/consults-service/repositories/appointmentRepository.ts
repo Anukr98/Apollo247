@@ -1433,8 +1433,8 @@ export class AppointmentRepository extends Repository<Appointment> {
         .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
         .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
         .where('appointment.patientId IN (:...ids)', { ids })
-        .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
-        .andWhere('appointment.status not in(:status1)', {
+        .andWhere('appointment.discountedAmount != :discountedAmount', { discountedAmount: 0 })
+        .andWhere('appointment.status != :status1', {
           status1: STATUS.PAYMENT_ABORTED,
         })
         .orderBy('appointment.bookingDate', order.bookingDate)
@@ -1447,10 +1447,10 @@ export class AppointmentRepository extends Repository<Appointment> {
         ? this.createQueryBuilder('appointment')
             .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
             .where('appointment.patientId IN (:...ids)', { ids })
-            .andWhere('appointment.discountedAmount not in(:discountedAmount)', {
+            .andWhere('appointment.discountedAmount != :discountedAmount', {
               discountedAmount: 0,
             })
-            .andWhere('appointment.status not in(:status1)', {
+            .andWhere('appointment.status != :status1', {
               status1: STATUS.PAYMENT_ABORTED,
             })
             .getCount()
