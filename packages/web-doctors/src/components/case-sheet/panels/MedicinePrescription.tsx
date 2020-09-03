@@ -2427,7 +2427,7 @@ export const MedicinePrescription: React.FC = () => {
           })
         : [];
         //console.log(pastAppointmentsFilterArr);
-    const chunkArr = chunk(pastAppointmentsFilterArr, 4);
+    const chunkArr = chunk(sortBy(pastAppointmentsFilterArr, 'appointmentDateTime').reverse(), 4);
     setPagesCount(chunkArr.length);
     setPastAppointmentsArr(chunkArr.length > 0 ? chunkArr[index] : []);
     setSelectedPastIndex(index);
