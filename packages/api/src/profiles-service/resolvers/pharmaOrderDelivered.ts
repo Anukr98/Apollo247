@@ -35,6 +35,7 @@ import { NotificationType } from 'notifications-service/constants';
 import { log } from 'customWinstonLogger';
 import { OneApollo } from 'helpers/oneApollo';
 import { PharmaItemsResponse } from 'types/medicineOrderTypes';
+import { PharmaProductTypes } from 'ApiConstants';
 
 export const pharmaOrderDeliveredTypeDefs = gql`
   input OrderDeliveryInput {
@@ -467,7 +468,7 @@ const addProductNameAndCat = (
 const getSkuMap = async (itemSku: string[], orderId: MedicineOrders['orderAutoId']) => {
   let itemTypemap: ItemsSkuTypeMap = {};
   itemSku.forEach((val) => {
-    itemTypemap[val] = 'FMCG';
+    itemTypemap[val] = PharmaProductTypes.FMCG;
   });
   const skusInfoUrl = process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL || '';
   const authToken = process.env.PHARMACY_MED_AUTH_TOKEN || '';

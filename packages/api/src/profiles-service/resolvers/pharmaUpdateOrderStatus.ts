@@ -37,7 +37,7 @@ import { PharmaItemsResponse } from 'types/medicineOrderTypes';
 import { OneApollo } from 'helpers/oneApollo';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
-import { ApiConstants } from 'ApiConstants';
+import { ApiConstants, PharmaProductTypes } from 'ApiConstants';
 
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
@@ -660,7 +660,7 @@ const addProductNameAndCat = (
 const getSkuMap = async (itemSku: string[], orderId: MedicineOrders['orderAutoId']) => {
   let itemTypemap: ItemsSkuTypeMap = {};
   itemSku.forEach((val) => {
-    itemTypemap[val] = 'Pharma';
+    itemTypemap[val] = PharmaProductTypes.FMCG;
   });
   const skusInfoUrl = process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL || '';
   const authToken = process.env.PHARMACY_MED_AUTH_TOKEN || '';
