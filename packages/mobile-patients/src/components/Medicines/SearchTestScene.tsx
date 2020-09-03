@@ -161,6 +161,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const [pastSearches, setPastSearches] = useState<
     (getPatientPastMedicineSearches_getPatientPastMedicineSearches | null)[]
   >([]);
+  const [searchQuery, setSearchQuery] = useState({});
 
   const { locationForDiagnostics, locationDetails } = useAppCommonData();
 
@@ -285,40 +286,29 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   const onSearchTest = (_searchText: string) => {
-    if (isValidSearch(_searchText)) {
-      if (!g(locationForDiagnostics, 'cityId')) {
-        renderLocationNotServingPopup();
-        return;
-      }
-      setSearchText(_searchText);
-      if (!(_searchText && _searchText.length > 2)) {
-        setMedicineList([]);
-        return;
-      }
-      setShowMatchingMedicines(true);
-      setIsLoading(true);
+    setShowMatchingMedicines(true);
+    setIsLoading(true);
 
-      client
-        .query<searchDiagnostics, searchDiagnosticsVariables>({
-          query: SEARCH_DIAGNOSTICS,
-          variables: {
-            searchText: _searchText,
-            city: locationForDiagnostics && locationForDiagnostics.city,
-            patientId: (currentPatient && currentPatient.id) || '',
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data }) => {
-          const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
-          setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
-          setIsLoading(false);
-        })
-        .catch((e) => {
-          CommonBugFender('SearchTestScene_onSearchTest', e);
-          setIsLoading(false);
-          showGenericALert(e);
-        });
-    }
+    client
+      .query<searchDiagnostics, searchDiagnosticsVariables>({
+        query: SEARCH_DIAGNOSTICS,
+        variables: {
+          searchText: _searchText,
+          city: locationForDiagnostics && locationForDiagnostics.city,
+          patientId: (currentPatient && currentPatient.id) || '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
+        setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
+        setIsLoading(false);
+      })
+      .catch((e) => {
+        CommonBugFender('SearchTestScene_onSearchTest', e);
+        setIsLoading(false);
+        showGenericALert(e);
+      });
   };
 
   const savePastSeacrh = (sku: string, name: string) =>
@@ -443,8 +433,25 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           placeholder="Search tests &amp; packages"
           underlineColorAndroid="transparent"
           onChangeText={(value) => {
-            const search = _.debounce(onSearchTest, 300);
-            search(value);
+            if (isValidSearch(value)) {
+              if (!g(locationForDiagnostics, 'cityId')) {
+                renderLocationNotServingPopup();
+                return;
+              }
+              setSearchText(value);
+              if (!(value && value.length > 2)) {
+                setMedicineList([]);
+                return;
+              }
+              const search = _.debounce(onSearchTest, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
+              search(value);
+            }
           }}
         />
         {renderSorryMessage}

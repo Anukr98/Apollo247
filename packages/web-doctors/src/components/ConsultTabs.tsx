@@ -1346,6 +1346,7 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
         variables: {
           appointmentId: appointmentId,
+          patientId: patientId,
           callType: callType,
           doctorType: DOCTOR_CALL_TYPE.SENIOR,
           deviceType: DEVICETYPE.DESKTOP,
@@ -1378,6 +1379,7 @@ export const ConsultTabs: React.FC = () => {
           api: 'SendCallNotification',
           inputParam: JSON.stringify({
             appointmentId: appointmentId,
+            patientId: patientId,
             callType: callType,
             doctorType: DOCTOR_CALL_TYPE.SENIOR,
             deviceType: DEVICETYPE.DESKTOP,
@@ -1797,6 +1799,7 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
         variables: {
           appointmentCallId: isCall ? callId : chatRecordId,
+          patientId: params.patientId,
         },
       })
       .catch((error: ApolloError) => {

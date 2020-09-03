@@ -465,39 +465,38 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
     // To handle deeplink scenario and
     // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
-   
-    let pinCodeNotServiceable =
-      isPharmacyLocationServiceable == undefined
-        ? !(await pinCodeServiceabilityApi247(pincode)).data.response
-        : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
-
-    const checkAvailabilityRes = await availabilityApi247(pincode, sku)
-    const availabilityRes = g(checkAvailabilityRes, 'data', 'response')
-    if (availabilityRes) {
-      pinCodeNotServiceable = !availabilityRes[0].exist
-    } else {
-      setdeliveryTime('');
-      setdeliveryError(pincodeServiceableItemOutOfStockMsg);
-      setshowDeliverySpinner(false);
-      return;
-    }
-
-    if (pinCodeNotServiceable) {
-      setdeliveryTime('');
-      setdeliveryError(unServiceableMsg);
-      setshowDeliverySpinner(false);
-      return;
-    }
-    
     try {
+      let pinCodeNotServiceable =
+        isPharmacyLocationServiceable == undefined
+          ? !(await pinCodeServiceabilityApi247(pincode)).data.response
+          : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
+
+      const checkAvailabilityRes = await availabilityApi247(pincode, sku)
+      const availabilityRes = g(checkAvailabilityRes, 'data', 'response')
+      if (availabilityRes) {
+        pinCodeNotServiceable = !availabilityRes[0].exist
+      } else {
+        setdeliveryTime('');
+        setdeliveryError(pincodeServiceableItemOutOfStockMsg);
+        setshowDeliverySpinner(false);
+        return;
+      }
+
+      if (pinCodeNotServiceable) {
+        setdeliveryTime('');
+        setdeliveryError(unServiceableMsg);
+        setshowDeliverySpinner(false);
+        return;
+      }
+
       let longitude, lattitude;
       if (pharmacyPincode == pincode) {
-        lattitude = pharmacyLocation ? pharmacyLocation.latitude : locationDetails 
-                    ? locationDetails.latitude : null;
-        longitude = pharmacyLocation ? pharmacyLocation.longitude : locationDetails 
-                    ? locationDetails.longitude : null;
-      } 
-      if (!lattitude || !longitude){
+        lattitude = pharmacyLocation ? pharmacyLocation.latitude : locationDetails
+          ? locationDetails.latitude : null;
+        longitude = pharmacyLocation ? pharmacyLocation.longitude : locationDetails
+          ? locationDetails.longitude : null;
+      }
+      if (!lattitude || !longitude) {
         const data = await getPlaceInfoByPincode(pincode);
         const locationData = data.data.results[0].geometry.location;
         lattitude = locationData.lat;
@@ -505,7 +504,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       }
 
       getDeliveryTAT247({
-        items: [{sku : sku, qty: getItemQuantity(sku)}],
+        items: [{ sku: sku, qty: getItemQuantity(sku) }],
         pincode: pincode,
         lat: lattitude,
         lng: longitude
@@ -519,12 +518,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               'product name': medicineDetails.name,
               pincode: Number(pincode),
               'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
-              'Delivery TAT': moment(deliveryDate).diff(currentDate, 'd'),
+              'Delivery TAT': moment(deliveryDate, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT).diff(currentDate, 'd'),
               Serviceable: pinCodeNotServiceable ? 'No' : 'Yes',
             };
             postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
           }
-          setdeliveryTime(moment(deliveryDate, "DD-MM-YYYY hh:mm:ss a").format(AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT));
+          setdeliveryTime(moment(deliveryDate, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT)
+            .format(AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT));
           setdeliveryError('');
         } else {
           setdeliveryError(pincodeServiceableItemOutOfStockMsg);
@@ -544,7 +544,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       setshowDeliverySpinner(false)
     }
   };
-
 
   const fetchSubstitutes = () => {
     getSubstitutes(sku)
@@ -1044,7 +1043,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   By{' '}
                   {moment(
                     deliveryTime,
-                    AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
+                    AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT
                   ).format(AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT)}
                 </Text>
               </View>
