@@ -1743,10 +1743,12 @@ export const MedicineCart: React.FC = (props) => {
                           ) : (
                             <>
                               <div className={classes.appliedCoupon}>
-                                {validateCouponResult.products &&
-                                validateCouponResult.products.length &&
-                                validateCouponResult.products.filter(({ mrp }) => mrp === 0)
-                                  .length ? (
+                                {Number(validateCouponResult.discount.toFixed(2)) >
+                                  Number(productDiscount.toFixed(2)) ||
+                                (validateCouponResult.products &&
+                                  validateCouponResult.products.length &&
+                                  validateCouponResult.products.filter(({ mrp }) => mrp === 0)
+                                    .length) ? (
                                   <span className={classes.linkText}>
                                     <span>{couponCode}</span> applied
                                   </span>
