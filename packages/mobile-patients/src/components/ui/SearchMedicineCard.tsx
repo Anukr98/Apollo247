@@ -10,6 +10,7 @@ import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
 import { AddToCartButtons } from '../Medicines/AddToCartButtons';
+import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -32,6 +33,10 @@ const styles = StyleSheet.create({
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(12),
     lineHeight: 24,
+  },
+  offTextStyle: {
+    ...theme.viewStyles.text('M', 11, '#00B38E', 1, 20, 0),
+    marginTop: 4,
   },
   personNameTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(14),
@@ -197,6 +202,9 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
   };
 
   const renderOutOfStock = () => {
+    const off_text = getDiscountPercentage(price, specialPrice)
+      ? ' ' + getDiscountPercentage(price, specialPrice) + '%off'
+      : '';
     return unserviceable || !isInStock ? (
       <Text style={styles.outOfStockStyle}>
         {unserviceable ? 'Not serviceable in your area.' : 'Out Of Stock'}
@@ -205,11 +213,14 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
       <View style={{ flexDirection: 'row' }}>
         <Text style={styles.priceTextCollapseStyle}>Rs. {specialPrice || price}</Text>
         {specialPrice && (
-          <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4, letterSpacing: 0 }]}>
-            {'('}
-            <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
-            {')'}
-          </Text>
+          <>
+            <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4, letterSpacing: 0 }]}>
+              {'('}
+              <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
+              {')'}
+            </Text>
+            <Text style={styles.offTextStyle}>{off_text}</Text>
+          </>
         )}
       </View>
     );
