@@ -22,6 +22,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
     shadowColor: 'rgba(0, 0, 0, 0.2)',
     shadowOpacity: 1,
+    height: 'auto',
   },
   textStyle: {
     ...theme.viewStyles.text('M', 12, '#fff', 1),
