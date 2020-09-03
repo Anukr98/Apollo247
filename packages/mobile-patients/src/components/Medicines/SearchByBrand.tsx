@@ -419,8 +419,15 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           value={searchText}
           onSubmitEditing={goToSearchPage}
           onChangeText={(value) => {
-            const search = _.debounce(onSearchMedicine, 300);
-            search(value);
+            if (isValidSearch(value)) {
+              setSearchText(value);
+              if (!(value && value.length > 2)) {
+                setMedicineList([]);
+                return;
+              }
+              const search = _.debounce(onSearchMedicine, 300);
+              search(value);
+            }
           }}
           onFocus={() => setSearchFocused(true)}
           onBlur={() => {
@@ -898,33 +905,25 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   };
 
   const onSearchMedicine = (_searchText: string) => {
-    if (isValidSearch(_searchText)) {
-      setSearchText(_searchText);
-      if (!(_searchText && _searchText.length > 2)) {
-        setMedicineList([]);
-        return;
-      }
-
-      setsearchSate('load');
-      getMedicineSearchSuggestionsApi(_searchText)
-        .then(({ data }) => {
-          const products = data.products || [];
-          setMedicineList(products);
-          setsearchSate('success');
-          const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
-            keyword: _searchText,
-            Source: 'Pharmacy Home',
-            resultsdisplayed: products.length,
-          };
-          postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
-        })
-        .catch((e) => {
-          CommonBugFender('SearchByBrand_onSearchMedicine', e);
-          if (!Axios.isCancel(e)) {
-            setsearchSate('fail');
-          }
-        });
-    }
+    setsearchSate('load');
+    getMedicineSearchSuggestionsApi(_searchText)
+      .then(({ data }) => {
+        const products = data.products || [];
+        setMedicineList(products);
+        setsearchSate('success');
+        const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
+          keyword: _searchText,
+          Source: 'Pharmacy Home',
+          resultsdisplayed: products.length,
+        };
+        postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+      })
+      .catch((e) => {
+        CommonBugFender('SearchByBrand_onSearchMedicine', e);
+        if (!Axios.isCancel(e)) {
+          setsearchSate('fail');
+        }
+      });
   };
 
   const renderSearchResults = () => {
