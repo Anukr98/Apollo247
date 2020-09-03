@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   nameText:{
     color:theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(14),
-    flex:1,
+    flex:0.95,
     marginBottom:Platform.OS == 'android' ? '9%' : '7%'
   }
 });

@@ -419,7 +419,7 @@ export const Maps : React.FC<MapProps> = (props) =>{
                <Text style={styles.addressHeading}> Help us locate your address</Text>
           </View>
           <View style={{margin:'5%',marginTop:'3%'}}>
-               <Text numberOfLines={4} style={styles.addressText}>{address}</Text>
+               <Text numberOfLines={3} style={styles.addressText}>{address}</Text>
           </View>
           <Button
             title={'CONFIRM LOCATION'}
