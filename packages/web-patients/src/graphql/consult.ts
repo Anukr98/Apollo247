@@ -282,6 +282,8 @@ export const GET_CASESHEET_DETAILS = gql`
           howOften
           severity
         }
+        referralSpecialtyName
+        referralDescription
       }
       patientDetails {
         id

@@ -1126,7 +1126,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         >
           <BookFollowupConsult
             setIsPopoverOpen={setOpenSlotPopup}
-            doctorDetails={getDoctorDetails(appointmentData)}
+            doctorId={appointmentData.doctorId}
             setSelectedSlot={setSelectedSlot}
             setFollwupAppoitnmentType={setFollwupAppoitnmentType}
           />
