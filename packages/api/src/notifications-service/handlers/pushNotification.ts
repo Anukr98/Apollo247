@@ -1391,13 +1391,10 @@ export async function sendNotification(
     if (!appointmentId) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND, undefined, undefined);
     }
-
-    prescriptionDeeplink = `${notificationBody} ${
-      ApiConstants.PRESCRIPTION_CLICK_HERE
-    } ${prescriptionDeeplink.replace(
-      ApiConstants.PRESCRIPTION_DEEPLINK_PLACEHOLDER,
-      appointmentId
-    )}`;
+    const appLink = await getPatientDeeplink(
+      ApiConstants.PATIENT_PRESCRIPTION_DEEPLINK + appointmentId
+    );
+    prescriptionDeeplink = `${notificationBody} ${ApiConstants.PRESCRIPTION_CLICK_HERE} ${appLink}`;
 
     log(
       `consultServiceLogger`,
