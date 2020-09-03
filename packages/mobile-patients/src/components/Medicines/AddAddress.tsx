@@ -593,10 +593,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   /**view added for the patient's details */
   const renderUserDetails = () => {
     let beforeFocus =
-      Platform.OS == 'android'
-        ? userName.length > 32
-          ? userName.slice(0, 30).concat('...')
-          : userName
+      Platform.OS == 'android' && userName.length > 32
+        ? userName.slice(0, 30).concat('...')
         : userName;
     return (
       <View style={styles.userDetailsOuterView}>
