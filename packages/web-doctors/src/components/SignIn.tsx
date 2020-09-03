@@ -13,7 +13,6 @@ import {
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphInput } from '@aph/web-ui-components';
-import { Link } from "react-router-dom";
 import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
@@ -549,8 +548,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             </div>
             <div className={classes.tabBody}>
               <p>Seems like the mobile no. you entered is either not registered with us or your account has been disabled. If you are a doctor and wish to enroll with us, please contact admin@apollo247.com. If you are a patient, please 
-              <Link
-            to="https://www.apollo247.com"> click here</Link></p>
+              <a href="https://www.apollo247.com"> click here</a></p>
             </div>
           </Paper>
         </Modal>
