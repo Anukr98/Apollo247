@@ -365,7 +365,7 @@ export enum ApiConstants {
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
   FREE_CHAT_DAYS = 7,
   CHAT_DAYS_LIMIT = 30,
-  AUTO_SUBMIT_BY_SD_SMS_TEXT = 'Hi {0}, Dr. {1} has fast-tracked your consultation, to join the consultation, please click here {2}.',
+  AUTO_SUBMIT_BY_SD_SMS_TEXT = 'Hi {0}, Dr. {1} has fast-tracked your consultation. To join the consultation, please click here {2}.',
   DOCTOR_CHAT_SMS_TEXT = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply.',
   DOCTOR_CHAT_SMS_LAST_DAY = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',
   CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
@@ -457,7 +457,7 @@ export enum ApiConstants {
 
   PARTNER_SBI = 'SBIYONO',
 
-  PRESCRIPTION_DEEPLINK_PLACEHOLDER = '<caseSheetId>',
+  PRESCRIPTION_DEEPLINK_PLACEHOLDER = '<appointmentId>',
   PRESCRIPTION_CLICK_HERE = 'Click here:',
 }
 

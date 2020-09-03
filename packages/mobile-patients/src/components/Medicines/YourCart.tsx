@@ -503,7 +503,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 })
                 if (availableInventory && availableInventory.length) {
                   fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, availableInventory);
-                  updateserviceableItemsTat(moment(deliveryDate, "DD-MM-YYYY hh:mm:ss a").format(AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT), lookUp);  
+                  const formattedDate = moment(deliveryDate, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT)
+                    .format("DD-MMM-YYYY HH:mm")
+                  updateserviceableItemsTat(formattedDate, lookUp);  
                 } else {
                   showUnserviceableAlert(updatedCartItems)
                 }
@@ -1692,6 +1694,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const disableProceedToPay = !!(
     cartItems.length === 0 ||
+    cartTotal === 0 ||
     isNotInStockOrUnserviceable ||
     (!deliveryAddressId && !storeId) ||
     isPrescriptionRequired ||

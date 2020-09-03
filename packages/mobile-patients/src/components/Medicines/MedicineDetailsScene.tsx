@@ -73,6 +73,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
+import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 
 const { width, height } = Dimensions.get('window');
 
@@ -204,6 +205,17 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(9),
     color: theme.colors.WHITE,
   },
+  visitPharmacyText: {
+    ...theme.viewStyles.text('M', 17, '#0087BA'),
+    paddingBottom: 10,
+  },
+  notForSaleContainer: { alignSelf: 'center' },
+  notForSaleText: {
+    ...theme.viewStyles.text('B', 14, '#fff', 1),
+    marginVertical: 6,
+    marginHorizontal: 12,
+  },
+  stickyBottomComponent: { height: 'auto', flexDirection: 'column' },
 });
 
 export interface MedicineDetailsSceneProps
@@ -465,39 +477,38 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
     // To handle deeplink scenario and
     // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
-   
-    let pinCodeNotServiceable =
-      isPharmacyLocationServiceable == undefined
-        ? !(await pinCodeServiceabilityApi247(pincode)).data.response
-        : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
-
-    const checkAvailabilityRes = await availabilityApi247(pincode, sku)
-    const availabilityRes = g(checkAvailabilityRes, 'data', 'response')
-    if (availabilityRes) {
-      pinCodeNotServiceable = !availabilityRes[0].exist
-    } else {
-      setdeliveryTime('');
-      setdeliveryError(pincodeServiceableItemOutOfStockMsg);
-      setshowDeliverySpinner(false);
-      return;
-    }
-
-    if (pinCodeNotServiceable) {
-      setdeliveryTime('');
-      setdeliveryError(unServiceableMsg);
-      setshowDeliverySpinner(false);
-      return;
-    }
-    
     try {
+      let pinCodeNotServiceable =
+        isPharmacyLocationServiceable == undefined
+          ? !(await pinCodeServiceabilityApi247(pincode)).data.response
+          : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
+
+      const checkAvailabilityRes = await availabilityApi247(pincode, sku)
+      const availabilityRes = g(checkAvailabilityRes, 'data', 'response')
+      if (availabilityRes) {
+        pinCodeNotServiceable = !availabilityRes[0].exist
+      } else {
+        setdeliveryTime('');
+        setdeliveryError(pincodeServiceableItemOutOfStockMsg);
+        setshowDeliverySpinner(false);
+        return;
+      }
+
+      if (pinCodeNotServiceable) {
+        setdeliveryTime('');
+        setdeliveryError(unServiceableMsg);
+        setshowDeliverySpinner(false);
+        return;
+      }
+
       let longitude, lattitude;
       if (pharmacyPincode == pincode) {
-        lattitude = pharmacyLocation ? pharmacyLocation.latitude : locationDetails 
-                    ? locationDetails.latitude : null;
-        longitude = pharmacyLocation ? pharmacyLocation.longitude : locationDetails 
-                    ? locationDetails.longitude : null;
-      } 
-      if (!lattitude || !longitude){
+        lattitude = pharmacyLocation ? pharmacyLocation.latitude : locationDetails
+          ? locationDetails.latitude : null;
+        longitude = pharmacyLocation ? pharmacyLocation.longitude : locationDetails
+          ? locationDetails.longitude : null;
+      }
+      if (!lattitude || !longitude) {
         const data = await getPlaceInfoByPincode(pincode);
         const locationData = data.data.results[0].geometry.location;
         lattitude = locationData.lat;
@@ -505,7 +516,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       }
 
       getDeliveryTAT247({
-        items: [{sku : sku, qty: getItemQuantity(sku)}],
+        items: [{ sku: sku, qty: getItemQuantity(sku) }],
         pincode: pincode,
         lat: lattitude,
         lng: longitude
@@ -519,12 +530,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               'product name': medicineDetails.name,
               pincode: Number(pincode),
               'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
-              'Delivery TAT': moment(deliveryDate).diff(currentDate, 'd'),
+              'Delivery TAT': moment(deliveryDate, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT).diff(currentDate, 'd'),
               Serviceable: pinCodeNotServiceable ? 'No' : 'Yes',
             };
             postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
           }
-          setdeliveryTime(moment(deliveryDate, "DD-MM-YYYY hh:mm:ss a").format(AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT));
+          setdeliveryTime(moment(deliveryDate, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT)
+            .format(AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT));
           setdeliveryError('');
         } else {
           setdeliveryError(pincodeServiceableItemOutOfStockMsg);
@@ -544,7 +556,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       setshowDeliverySpinner(false)
     }
   };
-
 
   const fetchSubstitutes = () => {
     getSubstitutes(sku)
@@ -587,6 +598,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     postWebEngageEvent(WebEngageEventName.NOTIFY_ME, eventAttributes);
   };
 
+  const renderVisitPharmacyText = () => (
+    <Text style={styles.visitPharmacyText}>{'Visit nearest pharmacy with valid prescription'}</Text>
+  );
+
+  const renderNotForSaleTag = () => (
+    <NotForSaleBadge
+      textStyle={styles.notForSaleText}
+      containerStyle={styles.notForSaleContainer}
+    />
+  );
+
   const renderBottomButtons = () => {
     const itemQty = getItemQuantity(sku);
     const addToCart = () => updateQuantityCartItem(medicineDetails, itemQty + 1);
@@ -596,7 +618,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const discountPercent = getDiscountPercentage(price, special_price);
 
     return (
-      <StickyBottomComponent style={{ height: 'auto' }}>
+      <StickyBottomComponent style={styles.stickyBottomComponent}>
+        {!medicineDetails.sell_online && renderVisitPharmacyText()}
         {(!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock ? (
           <View
             style={{
@@ -673,7 +696,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   </View>
                 )}
               </View>
-              {isMedicineAddedToCart ? (
+              {!medicineDetails.sell_online ? (
+                renderNotForSaleTag()
+              ) : isMedicineAddedToCart ? (
                 <AddToCartButtons
                   numberOfItemsInCart={itemQty}
                   maxOrderQty={medicineDetails.MaxOrderQty}
@@ -1044,7 +1069,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   By{' '}
                   {moment(
                     deliveryTime,
-                    AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
+                    AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT
                   ).format(AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT)}
                 </Text>
               </View>
@@ -1243,7 +1268,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const renderSimilarProducts = (products: MedicineProduct[]) => {
     const renderItem = ({ item, index }: ListRenderItemInfo<MedicineProduct>) => {
-      const { sku, name, image, price, special_price, is_in_stock } = item;
+      const { sku, name, image, price, special_price, is_in_stock, sell_online } = item;
       const itemQty = getItemQuantity(sku);
       const addToCart = () => updateQuantityCartItem({ sku }, itemQty + 1);
       const removeItemFromCart = () => updateQuantityCartItem({ sku }, itemQty - 1);
@@ -1301,6 +1326,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         <ProductUpSellingCard
           key={sku}
           title={name}
+          isSellOnline={!!sell_online}
           price={price}
           specialPrice={special_price}
           imageUrl={productsThumbnailUrl(image)}
@@ -1389,7 +1415,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             {Substitutes.length ? renderSubstitutes() : null}
             {!!g(medicineDetails, 'similar_products', 'length') &&
               renderSimilarProducts(medicineDetails.similar_products)}
-            {!isOutOfStock && renderDeliveryView()}
+            {!isOutOfStock && !!medicineDetails.sell_online && renderDeliveryView()}
             <View style={{ height: 130 }} />
           </KeyboardAwareScrollView>
         ) : (
