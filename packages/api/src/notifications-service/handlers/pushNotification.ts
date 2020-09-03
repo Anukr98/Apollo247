@@ -43,7 +43,7 @@ type PushNotificationInput = {
   appointmentId: string;
   doctorNotification?: boolean;
   blobName?: string;
-  data?: any
+  data?: any;
 };
 
 type CartPushNotificationInput = {
@@ -654,7 +654,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -935,6 +935,13 @@ export async function sendNotification(
   consultsDb: Connection,
   doctorsDb: Connection
 ) {
+  log(
+    'notificationServiceLogger',
+    `NOTIFICATION INPUTs: ${JSON.stringify(pushNotificationInput)}`,
+    '',
+    '',
+    ''
+  );
   const { appointmentId } = pushNotificationInput;
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const {
@@ -963,7 +970,7 @@ export async function sendNotification(
   let notificationTitle: string = '';
   let notificationBody: string = '';
   const notificationSound: string = ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString();
-  const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+  const istDateTime = addMilliseconds(new Date(appointment.appointmentDateTime), 19800000);
   const apptDate = format(
     addMinutes(new Date(appointment.appointmentDateTime), +330),
     'yyyy-MM-dd HH:mm:ss'
@@ -1136,6 +1143,13 @@ export async function sendNotification(
 
   //book appointment
   else if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
+    log(
+      'notificationServiceLogger',
+      `NOTIFICATION TYPE: ${NotificationType.BOOK_APPOINTMENT}`,
+      '',
+      '',
+      ''
+    );
     let content = ApiConstants.BOOK_APPOINTMENT_BODY_WITH_CLICK.replace(
       '{0}',
       patientDetails.firstName
@@ -1190,14 +1204,12 @@ export async function sendNotification(
           const chatroom_sms_link = process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM.replace(
             '{0}',
             appointment.id.toString()
-          ).replace(
-            '{1}',
-            appointment.doctorId.toString()
-          );
+          ).replace('{1}', appointment.doctorId.toString());
           smsLink = smsLink.replace('{5}', chatroom_sms_link);
         } else {
           throw new AphError(AphErrorMessages.SMS_WEBLINK_APPOINTMENT_CHATROOM_MISSING);
         }
+        break;
       default:
         return;
     }
@@ -1216,7 +1228,7 @@ export async function sendNotification(
       'check dates for todays date appt',
       appointment.appointmentDateTime,
       new Date(),
-      differenceInHours(appointment.appointmentDateTime, new Date()),
+      differenceInHours(new Date(appointment.appointmentDateTime), new Date()),
       todaysDate,
       'todays date'
     );
@@ -1355,7 +1367,7 @@ export async function sendNotification(
       '{2}',
       patientDetails.firstName + ' ' + patientDetails.lastName
     );
-    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+    const istDateTime = addMilliseconds(new Date(appointment.appointmentDateTime), 19800000);
     notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
     //sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
 
@@ -1369,9 +1381,14 @@ export async function sendNotification(
       .replace('{2}', appointment.displayId.toString())
       .replace('{3}', format(appointment.appointmentDateTime, 'yyyy-MM-dd'));
 
-
     if (!process.env.DEEPLINK_PRESCRIPTION) {
-      log('notificationServiceLogger', AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING, 'pushNotifications.ts/sendNotification', '', AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING);
+      log(
+        'notificationServiceLogger',
+        AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING,
+        'pushNotifications.ts/sendNotification',
+        '',
+        AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING
+      );
       throw new AphError(AphErrorMessages.DEEPLINK_PRESCRIPTION_MISSING, undefined, undefined);
     }
 
@@ -1382,8 +1399,18 @@ export async function sendNotification(
       throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined, undefined);
     }
 
-    prescriptionDeeplink = `${notificationBody} ${ApiConstants.PRESCRIPTION_CLICK_HERE} ${prescriptionDeeplink.replace(ApiConstants.PRESCRIPTION_DEEPLINK_PLACEHOLDER, caseSheetId)}`;
+    prescriptionDeeplink = `${notificationBody} ${
+      ApiConstants.PRESCRIPTION_CLICK_HERE
+    } ${prescriptionDeeplink.replace(ApiConstants.PRESCRIPTION_DEEPLINK_PLACEHOLDER, caseSheetId)}`;
 
+    log(
+      `consultServiceLogger`,
+      `FinalDeeplink: ${prescriptionDeeplink}`,
+      `${NotificationType.PRESCRIPTION_READY}`,
+      '',
+      ''
+    );
+    console.log(`FinalDeeplink: ${prescriptionDeeplink}`);
     sendNotificationSMS(patientDetails.mobileNumber, prescriptionDeeplink);
 
     // not sending whatsapp, leaving code here for future implementation purposes
@@ -1712,7 +1739,10 @@ export async function sendDoctorAppointmentNotification(
   const payload = {
     notification: {
       title: 'A New Appointment is scheduled with ' + patientName,
-      body: `at ${format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss')}`,
+      body: `at ${format(
+        addMilliseconds(new Date(appointmentDateTime), 19800000),
+        'yyyy-MM-dd HH:mm:ss'
+      )}`,
       sound: ApiConstants.NOTIFICATION_DEFAULT_SOUND.toString(),
     },
     data: {
@@ -1720,8 +1750,11 @@ export async function sendDoctorAppointmentNotification(
       type: 'doctor_new_appointment_booked',
       appointmentId: apptId,
       patientName: patientName,
-      date: format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss'),
-      body: `at ${format(addMilliseconds(appointmentDateTime, 19800000), 'yyyy-MM-dd HH:mm:ss')}`,
+      date: format(addMilliseconds(new Date(appointmentDateTime), 19800000), 'yyyy-MM-dd HH:mm:ss'),
+      body: `at ${format(
+        addMilliseconds(new Date(appointmentDateTime), 19800000),
+        'yyyy-MM-dd HH:mm:ss'
+      )}`,
     },
   };
   const doctorTokenRepo = doctorsDb.getCustomRepository(DoctorDeviceTokenRepository);
