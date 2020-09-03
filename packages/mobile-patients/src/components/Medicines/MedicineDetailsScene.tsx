@@ -215,6 +215,7 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     marginHorizontal: 12,
   },
+  stickyBottomComponent: { height: 'auto', flexDirection: 'column' },
 });
 
 export interface MedicineDetailsSceneProps
@@ -617,7 +618,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const discountPercent = getDiscountPercentage(price, special_price);
 
     return (
-      <StickyBottomComponent style={{ height: 'auto', flexDirection: 'column' }}>
+      <StickyBottomComponent style={styles.stickyBottomComponent}>
         {!medicineDetails.sell_online && renderVisitPharmacyText()}
         {(!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock ? (
           <View
@@ -1415,7 +1416,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             {!!g(medicineDetails, 'similar_products', 'length') &&
               renderSimilarProducts(medicineDetails.similar_products)}
             {!isOutOfStock && !!medicineDetails.sell_online && renderDeliveryView()}
-            <View style={{ height: 100 }} />
+            <View style={{ height: 130 }} />
           </KeyboardAwareScrollView>
         ) : (
           renderEmptyData()
