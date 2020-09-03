@@ -342,16 +342,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   | any = [];
                 data.getPatientAllAppointments.appointments.forEach((item) => {
                   const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
-                  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpChatDays');
-                  const followUpChatDays =
-                    caseSheetChatDays || caseSheetChatDays === 0
-                      ? caseSheetChatDays === 0
+                  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+                  const followUpAfterInDays =
+                    caseSheetChatDays || caseSheetChatDays === '0'
+                      ? caseSheetChatDays === '0'
                         ? 0
-                        : caseSheetChatDays - 1
+                        : Number(caseSheetChatDays) - 1
                       : 6;
                   if (
                     moment(new Date(item.appointmentDateTime))
-                      .add(followUpChatDays, 'days')
+                      .add(followUpAfterInDays, 'days')
                       .startOf('day')
                       .isSameOrAfter(moment(new Date()).startOf('day'))
                   ) {
@@ -515,12 +515,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           let appointmentDateTomarrow = moment(item.appointmentDateTime).format('DD MMM');
           // console.log(appointmentDateTomarrow, 'apptomorrow', tomorrowDate);
           const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
-          const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpChatDays');
-          const followUpChatDays =
-            caseSheetChatDays || caseSheetChatDays === 0
-              ? caseSheetChatDays === 0
+          const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+          const followUpAfterInDays =
+            caseSheetChatDays || caseSheetChatDays === '0'
+              ? caseSheetChatDays === '0'
                 ? 2
-                : caseSheetChatDays + 1
+                : Number(caseSheetChatDays) + 1
               : 8;
           const appointmentDateTime = moment
             .utc(item.appointmentDateTime)
@@ -544,7 +544,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             // .set('hour', 0)
             // .set('minute', 0)
             .startOf('day')
-            .add(followUpChatDays, 'days'); // since we're calculating as EOD
+            .add(followUpAfterInDays, 'days'); // since we're calculating as EOD
           const day2 = moment(new Date());
           day1.diff(day2, 'days'); // 1
 

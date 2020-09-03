@@ -50,7 +50,7 @@ import {
   getMedicineSearchSuggestionsApi,
   MedicinePageAPiResponse,
   MedicineProduct,
-  pinCodeServiceabilityApi,
+  pinCodeServiceabilityApi247,
   MedicinePageSection,
   getNearByStoreDetailsApi,
   callToExotelApi,
@@ -116,6 +116,7 @@ import {
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
 import { AddToCartButtons } from './AddToCartButtons';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '../../graphql/types/getMedicineOrderOMSDetailsWithAddress';
+import _ from 'lodash';
 
 const styles = StyleSheet.create({
   sliderDotStyle: {
@@ -297,12 +298,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         });
     };
 
-    pinCodeServiceabilityApi(pincode)
-      .then(({ data: { Availability } }) => {
-        setServiceabilityMsg(Availability ? '' : 'Services unavailable. Change delivery location.');
-        setPharmacyLocationServiceable!(Availability ? true : false);
-        WebEngageEventAutoDetectLocation(pincode, Availability ? true : false);
-        if (!Availability) {
+    pinCodeServiceabilityApi247(pincode)
+      .then(({ data: { response } }) => {
+        setServiceabilityMsg(response ? '' : 'Services unavailable. Change delivery location.');
+        setPharmacyLocationServiceable!(response ? true : false);
+        WebEngageEventAutoDetectLocation(pincode, response ? true : false);
+        if (!response) {
           getNearByStoreDetailsApi(pincode)
             .then((response: any) => {
               showAphAlert!({
@@ -1717,7 +1718,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setsearchSate('success');
           }}
           onChangeText={(value) => {
-            onSearchMedicine(value);
+            const search = _.debounce(onSearchMedicine, 300);
+            search(value);
           }}
           _rigthIconView={rigthIconView}
           placeholder="Search meds, brands &amp; more"

@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { getToken } from 'profiles-service/helpers/itdoseHelper'
+import { getToken, updateToken } from 'profiles-service/helpers/itdoseHelper'
 import {
   DIAGNOSTICS_TYPE,
   TEST_COLLECTION_TYPE,
@@ -12,7 +12,7 @@ import { DiagnosticsRepository } from 'profiles-service/repositories/diagnostics
 import { DiagnosticOrgansRepository } from 'profiles-service/repositories/diagnosticOrgansRepository';
 import fetch from 'node-fetch';
 import FormData from 'form-data'
-import { format } from 'date-fns';
+import { format, compareAsc, set, parse, add } from 'date-fns';
 import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
@@ -272,8 +272,22 @@ const getDiagnosticSlots: Resolver<
     body: form,
     headers: { authorization: `Bearer ${token}`, ...form.getHeaders() }
   }
+
+  function checkStatus(res: any) {
+    if (res.ok) {
+      return res
+    }
+    if (res.status == 401) { // res.status >= 200 && res.status < 300
+      console.log('updating token value')
+      updateToken()
+      throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, { "cause": "cache is being updated" })
+    }
+    throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, { "cause": "cache is being updated" })
+  }
+
   const diagnosticSlot = await fetch(`${diagnosticSlotURL}`, options)
-    .then((res) => res.json())
+    .then(checkStatus)
+    .then(res => res.json())
     .catch((error) => {
       log(
         'profileServiceLogger',
@@ -284,7 +298,8 @@ const getDiagnosticSlots: Resolver<
       );
       throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, { "cause": error.toString() });
     });
-  if (diagnosticSlot.status != true || !diagnosticSlot.data || !Array.isArray(diagnosticSlot.data)) {
+
+  if (diagnosticSlot.status != true || !Array.isArray(diagnosticSlot.data)) {
     throw new AphError(AphErrorMessages.ITDOSE_GET_SLOTS_ERROR, undefined, { "response": diagnosticSlot });
   }
   const employeeSlot = [
@@ -295,12 +310,20 @@ const getDiagnosticSlots: Resolver<
     }
   ]
   diagnosticSlot.data.forEach((element: ItdoseSlotInfo) => {
-    employeeSlot[0].slotInfo.push({
-      status: "empty",
-      startTime: element.Timeslot,
-      endTime: element.Timeslot,
-      slot: element.TimeslotID
-    })
+    let skip = false
+    const timeSlotDate = parse(element.Timeslot, 'HH:mm', new Date())
+    const selectedTimeSlot = set(args.selectedDate, { hours: timeSlotDate.getHours(), minutes: timeSlotDate.getMinutes() })
+    if (compareAsc(selectedTimeSlot, add(new Date(), { hours: 5, minutes: 30 })) == -1) {
+      skip = true
+    }
+    if (!skip) {
+      employeeSlot[0].slotInfo.push({
+        status: "empty",
+        startTime: element.Timeslot,
+        endTime: element.Timeslot,
+        slot: element.TimeslotID
+      })
+    }
   });
   return {
     diagnosticBranchCode: "apollo_route", diagnosticSlot: employeeSlot
@@ -333,8 +356,21 @@ const getDiagnosticItDoseSlots: Resolver<
     body: form,
     headers: { authorization: `Bearer ${token}`, ...form.getHeaders() }
   }
+  function checkStatus(res: any) {
+    if (res.ok) {
+      return res
+    }
+    if (res.status == 401) { // res.status >= 200 && res.status < 300
+      console.log('updating token value')
+      updateToken()
+      throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, { "cause": "cache is being updated" })
+    }
+    throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, { "cause": "cache is being updated" })
+  }
+
   const diagnosticSlot = await fetch(`${diagnosticSlotURL}`, options)
-    .then((res) => res.json())
+    .then(checkStatus)
+    .then(res => res.json())
     .catch((error) => {
       log(
         'profileServiceLogger',
@@ -345,7 +381,8 @@ const getDiagnosticItDoseSlots: Resolver<
       );
       throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, { "cause": error.toString() });
     });
-  if (diagnosticSlot.status != true || !diagnosticSlot.data) {
+
+  if (diagnosticSlot.status != true || !Array.isArray(diagnosticSlot.data)) {
     throw new AphError(AphErrorMessages.ITDOSE_GET_SLOTS_ERROR, undefined, { "response": diagnosticSlot });
   }
 

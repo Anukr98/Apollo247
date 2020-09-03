@@ -12,6 +12,7 @@ import {
   CircularProgress,
   FormControlLabel,
   RadioGroup,
+  Typography,
 } from '@material-ui/core';
 import {
   AphTextField,
@@ -32,7 +33,7 @@ import {
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
-import { findIndex } from 'lodash';
+import { findIndex, sortBy, chunk } from 'lodash';
 import axios from 'axios';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import Scrollbars from 'react-custom-scrollbars';
@@ -46,6 +47,7 @@ import { useParams } from 'hooks/routerHooks';
 import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
 import { Compare } from 'helpers/Utils';
 import { GenericMedicineName } from 'components/GenericMedicineName';
+import { format } from 'date-fns';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_PARTIAL_SEARCH_URL,
@@ -130,13 +132,12 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'rgba(0,0,0,0.02)',
       border: '1px solid rgba(2,71,91,0.1)',
       borderRadius: 5,
-      padding: '0px 5px',
+      padding: '0 10px',
       position: 'relative',
     },
     paper: {
       textAlign: 'left',
       color: theme.palette.text.secondary,
-      padding: '12px 25px 12px 5px',
       borderRadius: 0,
       maxWidth: '100%',
       position: 'relative',
@@ -179,6 +180,15 @@ const useStyles = makeStyles((theme: Theme) =>
       '& img': {
         marginRight: 8,
       },
+    },
+    noPrevPresc: {
+      backgroundColor: 'transparent',
+      //boxShadow: 'none',
+      color: '#02475B',
+      textTransform: 'uppercase',
+      fontSize: 13,
+      fontWeight: 500,
+      paddingLeft: 4,
     },
     darkGreenaddBtn: {
       backgroundColor: 'transparent',
@@ -267,6 +277,48 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     shadowHide: {
       overflow: 'hidden',
+      padding: 20,
+      '& >p': {
+        fontSize: 12,
+        color: 'rgba(2, 71, 91, 0.6)',
+        lineHeight: '16px',
+      },
+    },
+    dateList: {
+      margin: 0,
+      padding: '20px 10px',
+      listStyle: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      width: '100%',
+      overflow: 'hidden',
+      position: 'relative',
+      '& li': {
+        fontSize: 14,
+        color: '#02475B',
+        fontWeight: 500,
+        textAlign: 'center',
+        cursor: 'pointer',
+        padding: '0 10px',
+        minWidth: 100,
+        '&:first-child': {
+          minWidth: 'auto',
+          padding: '20px 0',
+        },
+        '&:last-child': {
+          minWidth: 'auto',
+          padding: '20px  0',
+        },
+        '& span': {
+          display: 'block',
+          fontSize: 12,
+          fontWeight: 300,
+        },
+      },
+    },
+    dateTabsActive: {
+      color: '#00B38E !important',
     },
     dialogContent: {
       minHeight: 400,
@@ -289,6 +341,16 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#01475b',
         fontWeight: 600,
       },
+      '& h2': {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        '& button': {
+          position: 'static',
+          minWidth: 'auto',
+          padding: 0,
+        },
+      },
     },
     popupHeadingCenter: {
       padding: '20px 10px',
@@ -298,6 +360,16 @@ const useStyles = makeStyles((theme: Theme) =>
         fontWeight: 600,
         textAlign: 'center',
         padding: '0 50px',
+      },
+      '& h2': {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        '& button': {
+          position: 'static',
+          minWidth: 'auto',
+          padding: 0,
+        },
       },
     },
     numberTablets: {
@@ -482,30 +554,7 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
-    medicineCard: {
-      color: 'rgba(0, 0, 0, 0.54)',
-      border: '1px solid rgba(2,71,91,0.1)',
-      padding: '12px 64px 12px 12px',
-      position: 'relative',
-      maxWidth: '100%',
-      boxShadow: 'none',
-      textAlign: 'left',
-      borderRadius: 5,
-      marginBottom: 12,
-      backgroundColor: 'rgba(0,0,0,0.02)',
-      '& h5': {
-        color: '#02475b',
-        margin: 0,
-        fontSize: 14,
-        fontWeight: 600,
-      },
-      '& h6': {
-        color: '#02475b',
-        margin: 0,
-        fontSize: 12,
-        fontWeight: 'normal',
-      },
-    },
+    medicineCard: {},
     inputField: {
       padding: '0 20px 0 20px',
     },
@@ -584,6 +633,190 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     freeText: {
       display: 'none',
+    },
+    dateTabs: {
+      // padding: 20,
+      // color: '#fc9916',
+    },
+
+    prescriptionPopup: {
+      width: 650,
+      margin: '40px auto 0 auto',
+      boxShadow: 'none',
+      outline: 'none',
+    },
+    arrow: {
+      position: 'absolute',
+      top: 10,
+      background: '#fff',
+    },
+    prev: {
+      left: -10,
+      '& span': {
+        display: 'block',
+        border: '10px solid transparent',
+        borderRightColor: '#07AE8B',
+      },
+    },
+    next: {
+      right: -10,
+      '& span': {
+        display: 'block',
+        border: '10px solid transparent',
+        borderLeftColor: '#07AE8B',
+      },
+    },
+    ppContainer: {},
+    medicineContent: {
+      padding: '0 10px',
+      background: 'rgba(0,0,0,0.02)',
+      borderRadius: 5,
+      border: ' 1px solid rgba(2, 71, 91, 0.15)',
+      height: 260,
+      overflow: 'auto',
+      '&::-webkit-scrollbar': {
+        width: 2,
+      },
+      '&::-webkit-scrollbar-track': {
+        background: 'transparent',
+        margin: '0 10px 0 0',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#888',
+      },
+    },
+    selectedDate: {
+      display: 'flex',
+      alignItems: 'center',
+      margin: '0 0 10px',
+      '& img': {
+        margin: '0 10px 0 0',
+      },
+      '& p': {
+        fontSize: 12,
+        lineHeight: '16px',
+        color: '#555555',
+        fontWeight: 300,
+        textTransform: 'uppercase',
+        '&.orange': {
+          color: '#FC9916',
+          fontWeight: 600,
+        },
+      },
+    },
+    added: {
+      color: '#07AE8B !important',
+      '& h5': {
+        color: '#07AE8B !important',
+      },
+      '& h6': {
+        color: '#07AE8B !important',
+      },
+    },
+    btnContainer: {
+      padding: '0 20px 16px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      '& button': {
+        width: 150,
+      },
+    },
+    selectedDateTab: {
+      color: 'red !important',
+    },
+    addMedicine: {
+      padding: 0,
+      position: 'absolute',
+      top: 10,
+      right: 0,
+      minWidth: 'auto',
+      boxShadow: 'none',
+      background: 'transparent',
+    },
+    medicineList: {
+      margin: 0,
+      padding: 0,
+      listStyle: 'none',
+      '& li': {
+        padding: '10px 30px 10px 0',
+        borderBottom: '1px solid rgba(2, 71, 91, 0.15)',
+        position: 'relative',
+        '&:last-child': {
+          border: 'none',
+        },
+        '& h5': {
+          fontSize: 14,
+          fontWeight: 600,
+          color: '#02475B',
+          lineHeight: '18px',
+          margin: '0 0 10px',
+        },
+        '& h6': {
+          fontSize: 12,
+          fontWeight: 300,
+          color: '#02475B',
+          margin: 0,
+          lineHeight: '16px',
+        },
+        '& button': {
+          position: 'absolute',
+          top: 10,
+          right: 0,
+          padding: 0,
+        },
+      },
+    },
+    addedBtn: {
+      fontSize: 12,
+      fontWeight: 600,
+      color: '#07AE8B',
+      textTransform: 'uppercase',
+      fontStyle: 'italic',
+      padding: 0,
+      minWidth: 'auto',
+      background: 'transparent',
+      boxShadow: 'none',
+      '&:hover': {
+        background: 'transparent',
+        boxShadow: 'none',
+      },
+    },
+    addRemove: {
+      position: 'absolute',
+      top: 10,
+      right: 10,
+      '& button': {
+        position: 'static !important',
+      },
+    },
+    mb10: {
+      marginBottom: 10,
+    },
+    selectedList: {
+      height: 300,
+      overflow: 'auto',
+
+      '&::-webkit-scrollbar': {
+        width: 2,
+      },
+      '&::-webkit-scrollbar-track': {
+        background: 'transparent',
+        margin: '0 10px 0 0',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#888',
+      },
+      '& li': {
+        padding: '10px 40px 10px 10px !important',
+        background: 'rgba(0,0,0,0.02)',
+        borderRadius: 5,
+        border: ' 1px solid rgba(2, 71, 91, 0.15) !important',
+        margin: '0 0 10px',
+        '& button': {
+          right: '10px !important',
+        },
+      },
     },
   })
 );
@@ -691,7 +924,11 @@ export const MedicinePrescription: React.FC = () => {
     removedMedicinePrescription,
     setRemovedMedicinePrescription,
     casesheetVersion,
+    caseSheetEdit,
+    pastAppointments,
+    appointmentInfo,
   } = useContext(CaseSheetContext);
+
   const [removedMedicinePrescriptionState, setRemovedMedicinePrescriptionState] = useState<any>([]);
   const [medicinePrescriptionState, setMedicinePrescriptionState] = useState<any>([]);
   const [dosageList, setDosageList] = useState<any>([]);
@@ -700,6 +937,7 @@ export const MedicinePrescription: React.FC = () => {
   const [customDosageEvening, setCustomDosageEvening] = React.useState<string>('');
   const [customDosageNight, setCustomDosageNight] = React.useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
+  const [isPrevMedDialogOpen, setIsPrevMedDialogOpen] = React.useState<boolean>(false);
   const [isEditFavMedicine, setIsEditFavMedicine] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
   const [idx, setIdx] = React.useState();
@@ -708,9 +946,12 @@ export const MedicinePrescription: React.FC = () => {
   const [favouriteMedicine, setFavouriteMedicine] = React.useState<
     (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null
   >([]);
+  const [medicineCopyArr, setMedicineCopyArr] = React.useState<
+    (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null
+  >([]);
+
   const [favMedicineName, setFavMedicineName] = React.useState<string>('');
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
-  const { caseSheetEdit } = useContext(CaseSheetContext);
 
   const client = useApolloClient();
   useEffect(() => {
@@ -1174,6 +1415,10 @@ export const MedicinePrescription: React.FC = () => {
   const [includeGenericNameInPrescription, setIncludeGenericNameInPrescription] = useState<boolean>(
     false
   );
+  const [pastAppointmentsArr, setPastAppointmentsArr] = React.useState<any[]>([]);
+  const [selectedPastIndex, setSelectedPastIndex] = useState<number>(0);
+  const [pagesCount, setPagesCount] = useState<number>(0);
+  const [selectedDate, setSelectedDate] = useState<string>('');
   const [freeTextErr, setFreeTextErr] = useState<boolean>(false);
 
   useEffect(() => {
@@ -1973,7 +2218,58 @@ export const MedicinePrescription: React.FC = () => {
       setFreeTextSwitch(false);
     }
   };
+  const saveMedicineAction = (medicineCopyObject: any) => {
+    const inputParamsArr: any = medicineCopyObject;
+    const inputParams: any = {
+      id: medicineCopyObject.id,
+      value: medicineCopyObject.medicineName,
+      name: medicineCopyObject.medicineName,
+      times: medicineCopyObject.medicineTimings.length,
+      daySlots: `${medicineCopyObject.medicineTimings.join(',').toLowerCase()}`,
+      duration: `${medicineCopyObject.medicineConsumptionDurationInDays} day(s) ${toBeTaken(
+        medicineCopyObject.medicineToBeTaken
+      ).join(',')}`,
+      selected: true,
+      medicineUnit: medicineCopyObject.medicineUnit,
+      medicineFrequency: medicineCopyObject.medicineFrequency,
+      medicineConsumptionDurationUnit: medicineCopyObject.medicineConsumptionDurationUnit,
+      medicineFormTypes: medicineCopyObject.medicineFormTypes,
+      routeOfAdministration: medicineCopyObject.routeOfAdministration,
+      medicineCustomDosage: medicineCopyObject.medicineCustomDosage,
+      medicineCustomDetails: medicineCopyObject.medicineCustomDetails,
+      genericName: medicineCopyObject.genericName,
+      includeGenericNameInPrescription: medicineCopyObject.includeGenericNameInPrescription,
+    };
+    removedMedicinePrescriptionFn('delete', null);
+    const storageItem = getLocalStorageItem(params.id);
+    const medicineArray = selectedMedicinesArr;
+    medicineArray!.push(inputParamsArr);
 
+    if (storageItem) {
+      storageItem.medicinePrescription = medicineArray;
+      updateLocalStorageItem(params.id, storageItem);
+    }
+
+    setSelectedMedicinesArr(medicineArray);
+    const medicineObj = selectedMedicines;
+    medicineObj.push(inputParams);
+    setSelectedMedicines(medicineObj);
+    setIsDialogOpen(false);
+    setIsEditFavMedicine(false);
+    setIsUpdate(false);
+    setShowDosage(false);
+    resetOptions();
+    setMedicineInstruction('');
+    setConsumptionDuration('');
+    setTabletsCount('1');
+    setMedicineUnit('OTHERS');
+    setSelectedValue('');
+    setSelectedId('');
+    setGenericName('');
+    setMedicineCustomDetails(null);
+    setIncludeGenericNameInPrescription(false);
+    setFreeTextSwitch(false);
+  };
   const setInTheTime = (slotId: string, selected: boolean) => {
     const slots = daySlots.map((slot: SlotsObject) => {
       if (slot.id === slotId && selected) {
@@ -2002,6 +2298,15 @@ export const MedicinePrescription: React.FC = () => {
     );
   });
 
+  const getMedicineCopy = (item: any, time: any) => {
+    setSelectedDate(item.appointmentDateTime);
+    const MedicineCopy = item.caseSheet.filter(function(e: any) {
+      return e.doctorType !== 'JUNIOR';
+    });
+    const sortedArr = sortBy(MedicineCopy, 'version');
+    const lastMedCopy = sortedArr[sortedArr.length - 1];
+    setMedicineCopyArr(lastMedCopy.medicinePrescription);
+  };
   const [state, setState] = React.useState({
     single: '',
     popper: '',
@@ -2094,6 +2399,38 @@ export const MedicinePrescription: React.FC = () => {
     setMedicineCustomDetails(null);
     setTabletsCount('1');
     setMedicineUnit('OTHERS');
+  };
+
+  const handlePastMedicinesTabs = (index: number) => {
+    const pastAppointmentsFilterArr =
+      pastAppointments && pastAppointments.length > 0
+        ? pastAppointments.filter(function(item: any) {
+          //return item.appointmentDateTime !== appointmentInfo.appointmentDateTime;
+            if(item.appointmentDateTime !== appointmentInfo.appointmentDateTime){
+              const MedicineCopy = item.caseSheet.filter(function(e: any) {
+                return e.doctorType !== 'JUNIOR' && e.sentToPatient;
+              });
+              if(MedicineCopy.length > 0){
+                const sortedArr = sortBy(MedicineCopy, 'version');
+                const lastMedCopy = sortedArr[sortedArr.length - 1];
+                if(lastMedCopy.medicinePrescription && lastMedCopy.medicinePrescription.length > 0){
+                  return item;
+                }else{
+                  return null;
+                }
+              }else{
+                return null;
+              }
+            }else{
+              return null;
+            };
+          })
+        : [];
+        //console.log(pastAppointmentsFilterArr);
+    const chunkArr = chunk(sortBy(pastAppointmentsFilterArr, 'appointmentDateTime').reverse(), 4);
+    setPagesCount(chunkArr.length);
+    setPastAppointmentsArr(chunkArr.length > 0 ? chunkArr[index] : []);
+    setSelectedPastIndex(index);
   };
 
   const handleSaveFreeText = () => {
@@ -2235,6 +2572,198 @@ export const MedicinePrescription: React.FC = () => {
   };
   const horizontal = medicineForm ? 'right' : 'left';
 
+  const medicineCopyHtml = (type: string) => {
+    const isPresent = type === 'present';
+    const existedMedicineArr =
+      selectedMedicinesArr && selectedMedicinesArr.length > 0
+        ? selectedMedicinesArr.map(function(e: any) {
+            return e.medicineName;
+          })
+        : [];
+    return (
+      medicineCopyArr &&
+      medicineCopyArr.length > 0 &&
+      medicineCopyArr!.map((_medicine: any, index: number) => {
+        const medicine = _medicine!;
+        const forHtml = medicine.medicineConsumptionDurationInDays
+          ? ` for ${Number(medicine.medicineConsumptionDurationInDays)}`
+          : ' ';
+        const duration = `${forHtml} ${
+          medicine.medicineConsumptionDurationUnit &&
+          medicine.medicineConsumptionDurationUnit !==
+            MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+            ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
+            : medicine.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
+        } `;
+
+        const whenString =
+          medicine.medicineToBeTaken.length > 0
+            ? toBeTaken(medicine.medicineToBeTaken)
+                .join(', ')
+                .toLowerCase()
+            : '';
+
+        const unitHtmls =
+          medUnitObject && medUnitObject[medicine.medicineUnit]
+            ? medUnitObject[medicine.medicineUnit].value
+            : medicine.medicineUnit.toLowerCase();
+
+        const isInDuration =
+          (medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED') ||
+          (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '')
+            ? ''
+            : 'in the ';
+        let timesString =
+          medicine.medicineTimings.length > 0
+            ? isInDuration +
+              medicine.medicineTimings
+                .join(' , ')
+                .toLowerCase()
+                .replace('_', ' ')
+            : '';
+        if (timesString && timesString !== '') {
+          timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
+        }
+        if (
+          medicine.medicineTimings.length === 1 &&
+          medicine.medicineTimings[0] === 'NOT_SPECIFIC'
+        ) {
+          timesString = '';
+        }
+        let dosageHtml = '';
+        if (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '') {
+          const dosageTimingArray = medicine.medicineCustomDosage!.split('-');
+          const customTimingArray = [];
+          if (dosageTimingArray && dosageTimingArray[0] && dosageTimingArray[0] !== '0')
+            customTimingArray.push(dosageTimingArray[0] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[1] && dosageTimingArray[1] !== '0')
+            customTimingArray.push(dosageTimingArray[1] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[2] && dosageTimingArray[2] !== '0')
+            customTimingArray.push(dosageTimingArray[2] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[3] && dosageTimingArray[3] !== '0')
+            customTimingArray.push(dosageTimingArray[3] + unitHtmls);
+          dosageHtml = customTimingArray.join(' - ');
+        } else {
+          dosageHtml = medicine.medicineDosage + ' ' + unitHtmls;
+        }
+
+        const actionButtons =
+          existedMedicineArr.indexOf(medicine.medicineName) > -1
+            ? [
+                <AphButton variant="contained" color="primary" classes={{ root: classes.addedBtn }}>
+                  Added
+                </AphButton>,
+              ]
+            : [
+                <AphButton
+                  variant="contained"
+                  color="primary"
+                  classes={{ root: classes.updateSymptom }}
+                  onClick={() => {
+                    saveMedicineAction(medicine);
+                  }}
+                >
+                  <img src={require('images/add_doctor_white.svg')} alt="" />
+                </AphButton>,
+              ];
+        const genericName = (
+          <span>
+            {medicine.includeGenericNameInPrescription! &&
+              medicine.genericName!.trim().length > 0 && (
+                <h6>{`Contains ${medicine.genericName}`}</h6>
+              )}
+          </span>
+        );
+
+        return (
+          <li
+            style={{ position: 'relative' }}
+            className={
+              existedMedicineArr.indexOf(medicine.medicineName) > -1 ? classes.added : null
+            }
+            key={index}
+          >
+            {/* Add className={classes.added} to li above when adding the medicine from  selected list*/}
+            {medicine.medicineCustomDetails ? (
+              <div className={classes.medicineCard}>
+                {isPresent ? (
+                  <h5>{medicine.medicineName}</h5>
+                ) : (
+                  <h5>
+                    <s>{medicine.medicineName}</s>
+                  </h5>
+                )}
+                {genericName}
+
+                {!isPresent && (
+                  <p className={classes.removed}>This medicine has been discontinued </p>
+                )}
+
+                {medicine.medicineCustomDetails && <h6>{medicine.medicineCustomDetails}</h6>}
+              </div>
+            ) : (
+              <div className={classes.medicineCard}>
+                {isPresent ? (
+                  <h5>{medicine.medicineName}</h5>
+                ) : (
+                  <h5>
+                    <s>{medicine.medicineName}</s>
+                  </h5>
+                )}
+                {genericName}
+                {!isPresent && (
+                  <p className={classes.removed}>This medicine has been discontinued </p>
+                )}
+                <h6>
+                  {`${
+                    medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
+                  } ${dosageHtml.toLowerCase()}${
+                    timesString.length > 0 &&
+                    medicine.medicineCustomDosage &&
+                    medicine.medicineCustomDosage !== ''
+                      ? ' (' + timesString + ') '
+                      : ' '
+                  }${
+                    medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
+                      ? ''
+                      : medicine.medicineFrequency
+                      ? medicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                        ? 'STAT (Immediately)'
+                        : medicine.medicineFrequency
+                            .split('_')
+                            .join(' ')
+                            .toLowerCase()
+                      : dosageFrequency[0].id
+                          .split('_')
+                          .join(' ')
+                          .toLowerCase()
+                  }
+              ${duration} ${whenString.length > 0 ? whenString : ''} ${
+                    timesString.length > 0 &&
+                    medicine.medicineCustomDosage &&
+                    medicine.medicineCustomDosage !== ''
+                      ? ''
+                      : timesString
+                  }
+              `}
+                </h6>
+                {medicine.routeOfAdministration && (
+                  <h6>{`${
+                    medicine.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'
+                  }: ${medicine.routeOfAdministration
+                    .split('_')
+                    .join(' ')
+                    .toLowerCase()}`}</h6>
+                )}
+                {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
+              </div>
+            )}
+            {caseSheetEdit && actionButtons}
+          </li>
+        );
+      })
+    );
+  };
   const medicineHtml = (type: string) => {
     const isPresent = type === 'present';
     const medicines = isPresent ? selectedMedicinesArr : removedMedicinePrescription;
@@ -2354,9 +2883,9 @@ export const MedicinePrescription: React.FC = () => {
           </span>
         );
         return (
-          <div style={{ position: 'relative' }} key={index}>
+          <li style={{ position: 'relative' }} key={index}>
             {medicine.medicineCustomDetails ? (
-              <Paper className={classes.medicineCard}>
+              <div className={classes.medicineCard}>
                 {isPresent ? (
                   <h5>{medicine.medicineName}</h5>
                 ) : (
@@ -2371,9 +2900,9 @@ export const MedicinePrescription: React.FC = () => {
                 )}
 
                 {medicine.medicineCustomDetails && <h6>{medicine.medicineCustomDetails}</h6>}
-              </Paper>
+              </div>
             ) : (
-              <Paper className={classes.medicineCard}>
+              <div className={classes.medicineCard}>
                 {isPresent ? (
                   <h5>{medicine.medicineName}</h5>
                 ) : (
@@ -2427,212 +2956,458 @@ export const MedicinePrescription: React.FC = () => {
                     .toLowerCase()}`}</h6>
                 )}
                 {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
-              </Paper>
+              </div>
             )}
-            {caseSheetEdit && actionButtons}
-          </div>
+
+            {caseSheetEdit && <div className={classes.addRemove}>{actionButtons}</div>}
+          </li>
         );
       })
     );
   };
+
+  const medicineAddedCopyHtml = (type: string) => {
+    const isPresent = type === 'present';
+    const medicines = isPresent ? selectedMedicinesArr : removedMedicinePrescription;
+    const addedMedicineArr =
+      medicineCopyArr && medicineCopyArr.length > 0
+        ? medicineCopyArr.map(function(e: any) {
+            return e.medicineName;
+          })
+        : [];
+
+    return (
+      medicines &&
+      medicines.length > 0 &&
+      medicines!.map((_medicine: any, index: number) => {
+        const medicine = _medicine!;
+        const forHtml = medicine.medicineConsumptionDurationInDays
+          ? ` for ${Number(medicine.medicineConsumptionDurationInDays)}`
+          : ' ';
+        const duration = `${forHtml} ${
+          medicine.medicineConsumptionDurationUnit &&
+          medicine.medicineConsumptionDurationUnit !==
+            MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+            ? term(medicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
+            : medicine.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
+        } `;
+
+        const whenString =
+          medicine.medicineToBeTaken.length > 0
+            ? toBeTaken(medicine.medicineToBeTaken)
+                .join(', ')
+                .toLowerCase()
+            : '';
+
+        const unitHtmls =
+          medUnitObject && medUnitObject[medicine.medicineUnit]
+            ? medUnitObject[medicine.medicineUnit].value
+            : medicine.medicineUnit.toLowerCase();
+
+        const isInDuration =
+          (medicine.medicineTimings.length === 1 && medicine.medicineTimings[0] === 'AS_NEEDED') ||
+          (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '')
+            ? ''
+            : 'in the ';
+        let timesString =
+          medicine.medicineTimings.length > 0
+            ? isInDuration +
+              medicine.medicineTimings
+                .join(' , ')
+                .toLowerCase()
+                .replace('_', ' ')
+            : '';
+        if (timesString && timesString !== '') {
+          timesString = timesString.replace(/,(?=[^,]*$)/, 'and');
+        }
+        if (
+          medicine.medicineTimings.length === 1 &&
+          medicine.medicineTimings[0] === 'NOT_SPECIFIC'
+        ) {
+          timesString = '';
+        }
+        let dosageHtml = '';
+        if (medicine.medicineCustomDosage && medicine.medicineCustomDosage !== '') {
+          const dosageTimingArray = medicine.medicineCustomDosage!.split('-');
+          const customTimingArray = [];
+          if (dosageTimingArray && dosageTimingArray[0] && dosageTimingArray[0] !== '0')
+            customTimingArray.push(dosageTimingArray[0] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[1] && dosageTimingArray[1] !== '0')
+            customTimingArray.push(dosageTimingArray[1] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[2] && dosageTimingArray[2] !== '0')
+            customTimingArray.push(dosageTimingArray[2] + unitHtmls);
+          if (dosageTimingArray && dosageTimingArray[3] && dosageTimingArray[3] !== '0')
+            customTimingArray.push(dosageTimingArray[3] + unitHtmls);
+          dosageHtml = customTimingArray.join(' - ');
+        } else {
+          dosageHtml = medicine.medicineDosage + ' ' + unitHtmls;
+        }
+
+        const actionButtons = isPresent
+          ? [
+              <AphButton
+                variant="contained"
+                color="primary"
+                classes={{ root: classes.updateSymptom }}
+                onClick={() => deletemedicine(index)}
+              >
+                <Typography className="orange">REMOVE</Typography>
+              </AphButton>,
+              // <AphButton
+              //   variant="contained"
+              //   color="primary"
+              //   classes={{ root: classes.deleteSymptom }}
+              //   onClick={() => deletemedicine(index)}
+              // >
+              //   <img src={require('images/ic_cancel_green.svg')} alt="" />
+              // </AphButton>,
+            ]
+          : [
+              <AphButton
+                variant="contained"
+                color="primary"
+                classes={{ root: classes.updateSymptom }}
+                onClick={(id) => {
+                  setIsEditFavMedicine(true);
+                  updateFavMedicine(medicine);
+                }}
+                style={{ right: 10 }}
+              >
+                <img
+                  src={favouriteMedicine && require('images/add_doctor_white.svg')}
+                  alt=""
+                  className={classes.addMedicineIcon}
+                />
+              </AphButton>,
+            ];
+        const genericName = (
+          <span>
+            {medicine.includeGenericNameInPrescription! &&
+              medicine.genericName &&
+              medicine.genericName !== null &&
+              medicine.genericName.trim().length > 0 && (
+                <h6>{`Contains ${medicine.genericName}`}</h6>
+              )}
+          </span>
+        );
+        if (addedMedicineArr.indexOf(medicine.medicineName) > -1) {
+          return (
+            <li style={{ position: 'relative' }} className={classes.added} key={index}>
+              {medicine.medicineCustomDetails ? (
+                <div className={classes.medicineCard}>
+                  {isPresent ? (
+                    <h5>{medicine.medicineName}</h5>
+                  ) : (
+                    <h5>
+                      <s>{medicine.medicineName}</s>
+                    </h5>
+                  )}
+                  {genericName}
+
+                  {!isPresent && (
+                    <p className={classes.removed}>This medicine has been discontinued </p>
+                  )}
+
+                  {medicine.medicineCustomDetails && <h6>{medicine.medicineCustomDetails}</h6>}
+                </div>
+              ) : (
+                <div className={classes.medicineCard}>
+                  {isPresent ? (
+                    <h5>{medicine.medicineName}</h5>
+                  ) : (
+                    <h5>
+                      <s>{medicine.medicineName}</s>
+                    </h5>
+                  )}
+                  {genericName}
+                  {!isPresent && (
+                    <p className={classes.removed}>This medicine has been discontinued </p>
+                  )}
+                  <h6>
+                    {`${
+                      medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
+                    } ${dosageHtml.toLowerCase()}${
+                      timesString.length > 0 &&
+                      medicine.medicineCustomDosage &&
+                      medicine.medicineCustomDosage !== ''
+                        ? ' (' + timesString + ') '
+                        : ' '
+                    }${
+                      medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
+                        ? ''
+                        : medicine.medicineFrequency
+                        ? medicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                          ? 'STAT (Immediately)'
+                          : medicine.medicineFrequency
+                              .split('_')
+                              .join(' ')
+                              .toLowerCase()
+                        : dosageFrequency[0].id
+                            .split('_')
+                            .join(' ')
+                            .toLowerCase()
+                    }
+                ${duration} ${whenString.length > 0 ? whenString : ''} ${
+                      timesString.length > 0 &&
+                      medicine.medicineCustomDosage &&
+                      medicine.medicineCustomDosage !== ''
+                        ? ''
+                        : timesString
+                    }
+                `}
+                  </h6>
+                  {medicine.routeOfAdministration && (
+                    <h6>{`${
+                      medicine.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'
+                    }: ${medicine.routeOfAdministration
+                      .split('_')
+                      .join(' ')
+                      .toLowerCase()}`}</h6>
+                  )}
+                  {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
+                </div>
+              )}
+
+              {caseSheetEdit && <div className={classes.addRemove}>{actionButtons}</div>}
+            </li>
+          );
+        } else {
+          return null;
+        }
+      })
+    );
+  };
+
+  useEffect(() => {
+    if (caseSheetEdit) {
+     handlePastMedicinesTabs(0);
+    }
+  }, [caseSheetEdit]);
 
   return (
     <div className={classes.root}>
       <Grid container spacing={1}>
         <Grid item lg={6} xs={12}>
           <div className={classes.medicineHeading}>Medicines</div>
-          {medicineHtml('present')}
-          {medicineHtml('removed')}
-          {caseSheetEdit && (
-            <AphButton
-              variant="contained"
-              color="primary"
-              classes={{ root: classes.btnAddDoctor }}
-              onClick={() => setIsDialogOpen(true)}
-            >
-              <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
-            </AphButton>
-          )}
+          <ul className={`${classes.medicineList} ${classes.selectedList}`}>
+            {medicineHtml('present')}
+            {medicineHtml('removed')}
+          </ul>
         </Grid>
         {!showAddCondition && caseSheetEdit && favouriteMedicine && favouriteMedicine.length > 0 && (
           <Grid item lg={6} xs={12}>
             <div className={classes.favmedicineHeading}>Favourite Medicines</div>
             <div className={classes.mediceneContainer}>
-              {favouriteMedicine
-                .sort((a: any, b: any) => Compare(a, b, 'medicineName'))
-                .map((_favMedicine: any, id, index) => {
-                  const favMedicine = _favMedicine!;
-                  const forFavHtml =
-                    favMedicine.medicineConsumptionDurationInDays &&
-                    favMedicine.medicineConsumptionDurationInDays !== '0'
-                      ? ` for ${Number(favMedicine.medicineConsumptionDurationInDays)}`
-                      : ' ';
-                  const favDurations = `${forFavHtml} ${
-                    favMedicine.medicineConsumptionDurationUnit &&
-                    favMedicine.medicineConsumptionDurationUnit !==
-                      MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
-                      ? term(favMedicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
-                      : favMedicine.medicineConsumptionDurationUnit.toLowerCase().replace(/_/g, ' ')
-                  } `;
-                  const favWhenString =
-                    favMedicine.medicineToBeTaken.length > 0
-                      ? toBeTaken(favMedicine.medicineToBeTaken)
-                          .join(', ')
-                          .toLowerCase()
-                      : '';
-                  const favUnitHtmls =
-                    medUnitObject && medUnitObject[favMedicine.medicineUnit]
-                      ? medUnitObject[favMedicine.medicineUnit].value
-                      : favMedicine.medicineUnit.toLowerCase();
-                  const isInDuration =
-                    (favMedicine.medicineTimings.length === 1 &&
-                      favMedicine.medicineTimings[0] === 'AS_NEEDED') ||
-                    (favMedicine.medicineCustomDosage && favMedicine.medicineCustomDosage !== '')
-                      ? ''
-                      : 'in the ';
-                  let favTimesString =
-                    favMedicine.medicineTimings.length > 0
-                      ? isInDuration +
-                        favMedicine.medicineTimings
-                          .join(' , ')
-                          .toLowerCase()
-                          .replace('_', ' ')
-                      : '';
+              <ul className={classes.medicineList}>
+                {favouriteMedicine
+                  .sort((a: any, b: any) => Compare(a, b, 'medicineName'))
+                  .map((_favMedicine: any, id, index) => {
+                    const favMedicine = _favMedicine!;
+                    const forFavHtml =
+                      favMedicine.medicineConsumptionDurationInDays &&
+                      favMedicine.medicineConsumptionDurationInDays !== '0'
+                        ? ` for ${Number(favMedicine.medicineConsumptionDurationInDays)}`
+                        : ' ';
+                    const favDurations = `${forFavHtml} ${
+                      favMedicine.medicineConsumptionDurationUnit &&
+                      favMedicine.medicineConsumptionDurationUnit !==
+                        MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+                        ? term(favMedicine.medicineConsumptionDurationUnit.toLowerCase(), '(s)')
+                        : favMedicine.medicineConsumptionDurationUnit
+                            .toLowerCase()
+                            .replace(/_/g, ' ')
+                    } `;
+                    const favWhenString =
+                      favMedicine.medicineToBeTaken.length > 0
+                        ? toBeTaken(favMedicine.medicineToBeTaken)
+                            .join(', ')
+                            .toLowerCase()
+                        : '';
+                    const favUnitHtmls =
+                      medUnitObject && medUnitObject[favMedicine.medicineUnit]
+                        ? medUnitObject[favMedicine.medicineUnit].value
+                        : favMedicine.medicineUnit.toLowerCase();
+                    const isInDuration =
+                      (favMedicine.medicineTimings.length === 1 &&
+                        favMedicine.medicineTimings[0] === 'AS_NEEDED') ||
+                      (favMedicine.medicineCustomDosage && favMedicine.medicineCustomDosage !== '')
+                        ? ''
+                        : 'in the ';
+                    let favTimesString =
+                      favMedicine.medicineTimings.length > 0
+                        ? isInDuration +
+                          favMedicine.medicineTimings
+                            .join(' , ')
+                            .toLowerCase()
+                            .replace('_', ' ')
+                        : '';
 
-                  if (favTimesString && favTimesString !== '') {
-                    favTimesString = favTimesString.replace(/,(?=[^,]*$)/, 'and');
-                  }
-                  if (
-                    favMedicine.medicineTimings.length === 1 &&
-                    favMedicine.medicineTimings[0] === 'NOT_SPECIFIC'
-                  ) {
-                    favTimesString = '';
-                  }
-                  const favDosageCount = favMedicine.medicineDosage;
-                  let favDosageHtml = '';
-                  if (favMedicine.medicineCustomDosage && favMedicine.medicineCustomDosage !== '') {
-                    const favdosageTimingArray = favMedicine.medicineCustomDosage!.split('-');
-                    const favCustomTimingArray = [];
+                    if (favTimesString && favTimesString !== '') {
+                      favTimesString = favTimesString.replace(/,(?=[^,]*$)/, 'and');
+                    }
                     if (
-                      favdosageTimingArray &&
-                      favdosageTimingArray[0] &&
-                      favdosageTimingArray[0] !== '0'
-                    )
-                      favCustomTimingArray.push(favdosageTimingArray[0] + favUnitHtmls);
+                      favMedicine.medicineTimings.length === 1 &&
+                      favMedicine.medicineTimings[0] === 'NOT_SPECIFIC'
+                    ) {
+                      favTimesString = '';
+                    }
+                    const favDosageCount = favMedicine.medicineDosage;
+                    let favDosageHtml = '';
                     if (
-                      favdosageTimingArray &&
-                      favdosageTimingArray[1] &&
-                      favdosageTimingArray[1] !== '0'
-                    )
-                      favCustomTimingArray.push(favdosageTimingArray[1] + favUnitHtmls);
-                    if (
-                      favdosageTimingArray &&
-                      favdosageTimingArray[2] &&
-                      favdosageTimingArray[2] !== '0'
-                    )
-                      favCustomTimingArray.push(favdosageTimingArray[2] + favUnitHtmls);
-                    if (
-                      favdosageTimingArray &&
-                      favdosageTimingArray[3] &&
-                      favdosageTimingArray[3] !== '0'
-                    )
-                      favCustomTimingArray.push(favdosageTimingArray[3] + favUnitHtmls);
-                    favDosageHtml = favCustomTimingArray.join(' - ');
-                  } else {
-                    favDosageHtml = favDosageCount + ' ' + favUnitHtmls;
-                  }
-                  const genericName = (
-                    <span>
-                      {favMedicine.includeGenericNameInPrescription! &&
-                        favMedicine.genericName &&
-                        favMedicine.genericName !== null &&
-                        favMedicine.genericName.trim().length > 0 && (
-                          <h6>{`Contains ${favMedicine.genericName}`}</h6>
-                        )}
-                    </span>
-                  );
-                  return (
-                    <div className={classes.paper} key={id}>
-                      {favMedicine.medicineCustomDetails ? (
-                        <Paper className={classes.favMedBg}>
-                          <h5>{favMedicine.medicineName}</h5>
-
-                          {favMedicine.medicineCustomDetails && (
-                            <h6>{favMedicine.medicineCustomDetails}</h6>
+                      favMedicine.medicineCustomDosage &&
+                      favMedicine.medicineCustomDosage !== ''
+                    ) {
+                      const favdosageTimingArray = favMedicine.medicineCustomDosage!.split('-');
+                      const favCustomTimingArray = [];
+                      if (
+                        favdosageTimingArray &&
+                        favdosageTimingArray[0] &&
+                        favdosageTimingArray[0] !== '0'
+                      )
+                        favCustomTimingArray.push(favdosageTimingArray[0] + favUnitHtmls);
+                      if (
+                        favdosageTimingArray &&
+                        favdosageTimingArray[1] &&
+                        favdosageTimingArray[1] !== '0'
+                      )
+                        favCustomTimingArray.push(favdosageTimingArray[1] + favUnitHtmls);
+                      if (
+                        favdosageTimingArray &&
+                        favdosageTimingArray[2] &&
+                        favdosageTimingArray[2] !== '0'
+                      )
+                        favCustomTimingArray.push(favdosageTimingArray[2] + favUnitHtmls);
+                      if (
+                        favdosageTimingArray &&
+                        favdosageTimingArray[3] &&
+                        favdosageTimingArray[3] !== '0'
+                      )
+                        favCustomTimingArray.push(favdosageTimingArray[3] + favUnitHtmls);
+                      favDosageHtml = favCustomTimingArray.join(' - ');
+                    } else {
+                      favDosageHtml = favDosageCount + ' ' + favUnitHtmls;
+                    }
+                    const genericName = (
+                      <span>
+                        {favMedicine.includeGenericNameInPrescription! &&
+                          favMedicine.genericName &&
+                          favMedicine.genericName !== null &&
+                          favMedicine.genericName.trim().length > 0 && (
+                            <h6>{`Contains ${favMedicine.genericName}`}</h6>
                           )}
-                          {genericName}
-                        </Paper>
-                      ) : (
-                        <Paper className={classes.favMedBg}>
-                          <h5>{favMedicine.medicineName}</h5>
-                          {genericName}
-                          <h6>
-                            {`${
-                              favMedicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
-                            } ${favDosageHtml.toLowerCase()}${
-                              favTimesString.length > 0 &&
-                              favMedicine.medicineCustomDosage &&
-                              favMedicine.medicineCustomDosage !== ''
-                                ? ' (' + favTimesString + ') '
-                                : ' '
-                            } ${
-                              favMedicine.medicineCustomDosage &&
-                              favMedicine.medicineCustomDosage !== ''
-                                ? ''
-                                : favMedicine.medicineFrequency
-                                ? favMedicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
-                                  ? 'STAT (Immediately)'
+                      </span>
+                    );
+                    return (
+                      <li key={id}>
+                        {favMedicine.medicineCustomDetails ? (
+                          <div className={classes.favMedBg}>
+                            <h5>{favMedicine.medicineName}</h5>
+
+                            {favMedicine.medicineCustomDetails && (
+                              <h6>{favMedicine.medicineCustomDetails}</h6>
+                            )}
+                            {genericName}
+                          </div>
+                        ) : (
+                          <div className={classes.favMedBg}>
+                            <h5>{favMedicine.medicineName}</h5>
+                            {genericName}
+                            <h6>
+                              {`${
+                                favMedicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
+                              } ${favDosageHtml.toLowerCase()}${
+                                favTimesString.length > 0 &&
+                                favMedicine.medicineCustomDosage &&
+                                favMedicine.medicineCustomDosage !== ''
+                                  ? ' (' + favTimesString + ') '
+                                  : ' '
+                              } ${
+                                favMedicine.medicineCustomDosage &&
+                                favMedicine.medicineCustomDosage !== ''
+                                  ? ''
                                   : favMedicine.medicineFrequency
+                                  ? favMedicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                                    ? 'STAT (Immediately)'
+                                    : favMedicine.medicineFrequency
+                                        .split('_')
+                                        .join(' ')
+                                        .toLowerCase()
+                                  : dosageFrequency[0].id
                                       .split('_')
                                       .join(' ')
                                       .toLowerCase()
-                                : dosageFrequency[0].id
-                                    .split('_')
-                                    .join(' ')
-                                    .toLowerCase()
-                            } ${favDurations} ${favWhenString.length > 0 ? favWhenString : ''} ${
-                              favTimesString.length > 0 &&
-                              favMedicine.medicineCustomDosage &&
-                              favMedicine.medicineCustomDosage !== ''
-                                ? ''
-                                : favTimesString
-                            }
+                              } ${favDurations} ${favWhenString.length > 0 ? favWhenString : ''} ${
+                                favTimesString.length > 0 &&
+                                favMedicine.medicineCustomDosage &&
+                                favMedicine.medicineCustomDosage !== ''
+                                  ? ''
+                                  : favTimesString
+                              }
                     `}
-                          </h6>
-                          {favMedicine.routeOfAdministration && (
-                            <h6>{`${
-                              favMedicine.medicineFormTypes === 'OTHERS'
-                                ? 'To be taken'
-                                : 'To be Applied'
-                            }: ${favMedicine.routeOfAdministration
-                              .split('_')
-                              .join(' ')
-                              .toLowerCase()}`}</h6>
-                          )}
-                        </Paper>
-                      )}
-                      <AphButton
-                        variant="contained"
-                        color="primary"
-                        classes={{ root: classes.updateSymptom }}
-                        onClick={(id) => {
-                          setIsEditFavMedicine(true);
-                          updateFavMedicine(favMedicine);
-                        }}
-                      >
-                        <img
-                          src={favouriteMedicine && require('images/add_doctor_white.svg')}
-                          alt=""
-                          className={classes.addMedicineIcon}
-                        />
-                      </AphButton>
-                    </div>
-                  );
-                })}
+                            </h6>
+                            {favMedicine.routeOfAdministration && (
+                              <h6>{`${
+                                favMedicine.medicineFormTypes === 'OTHERS'
+                                  ? 'To be taken'
+                                  : 'To be Applied'
+                              }: ${favMedicine.routeOfAdministration
+                                .split('_')
+                                .join(' ')
+                                .toLowerCase()}`}</h6>
+                            )}
+                          </div>
+                        )}
+                        <AphButton
+                          variant="contained"
+                          color="primary"
+                          classes={{ root: classes.addMedicine }}
+                          onClick={(id) => {
+                            setIsEditFavMedicine(true);
+                            updateFavMedicine(favMedicine);
+                          }}
+                        >
+                          <img
+                            src={favouriteMedicine && require('images/add_doctor_white.svg')}
+                            alt=""
+                            className={classes.addMedicineIcon}
+                          />
+                        </AphButton>
+                      </li>
+                    );
+                  })}
+              </ul>
             </div>
           </Grid>
         )}
       </Grid>
+      {caseSheetEdit && (
+        <>
+          <AphButton
+            variant="contained"
+            color="primary"
+            classes={{ root: classes.btnAddDoctor }}
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
+          </AphButton>
+          {pastAppointmentsArr && pastAppointmentsArr.length > 0 ? <AphButton
+            variant="contained"
+            color="primary"
+            classes={{ root: classes.btnAddDoctor }}
+            onClick={() => {
+              handlePastMedicinesTabs(0);
+              setIsPrevMedDialogOpen(true);
+            }}
+          >
+            <img src={require('images/ic_dark_plus.svg')} alt="" /> PREVIOUS Rx
+          </AphButton>: <span
+          className={classes.noPrevPresc}
+            // variant="contained"
+            //color="primary"
+            //classes={{ root: classes.noPrevPresc }}
+          >No previous prescriptions</span>}
+        </>
+      )}
       {isEditFavMedicine && (
         <Modal
           open={isEditFavMedicine}
@@ -2673,7 +3448,6 @@ export const MedicinePrescription: React.FC = () => {
                         }}
                         row
                       >
-                        {' '}
                         <FormControlLabel
                           value={MEDICINE_FORM_TYPES.OTHERS}
                           label="Take"
@@ -3193,22 +3967,173 @@ export const MedicinePrescription: React.FC = () => {
                 >
                   Cancel
                 </AphButton>
-                {
-                  <AphButton
-                    color="primary"
-                    className={classes.updateBtn}
-                    onClick={() => {
-                      addUpdateMedicines();
-                    }}
-                  >
-                    Add Medicine
-                  </AphButton>
-                }
+
+                <AphButton
+                  color="primary"
+                  id="addFavMed"
+                  className={classes.updateBtn}
+                  onClick={() => {
+                    addUpdateMedicines();
+                  }}
+                >
+                  Add Medicine
+                </AphButton>
               </div>
             </div>
           </Paper>
         </Modal>
       )}
+      <Modal
+        open={isPrevMedDialogOpen}
+        onClose={() => setIsPrevMedDialogOpen(false)}
+        disableBackdropClick
+      >
+        <Paper className={classes.prescriptionPopup}>
+          <AphDialogTitle
+            className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
+          >
+            Previous Prescriptions
+            <Button
+              className={classes.cross}
+              onClick={() => {
+                setIsPrevMedDialogOpen(false);
+              }}
+            >
+              <img src={require('images/ic_cross.svg')} alt="" />
+            </Button>
+          </AphDialogTitle>
+          <div className={classes.shadowHide}>
+            <Typography>Select a Casesheet</Typography>
+            <ul className={classes.dateList}>
+              <li
+                className={`${classes.arrow} ${classes.prev} ${
+                  selectedPastIndex > 0 ? null : classes.none
+                }`}
+              >
+                <span
+                  onClick={() => {
+                    setSelectedPastIndex(selectedPastIndex - 1);
+                    handlePastMedicinesTabs(selectedPastIndex - 1);
+                  }}
+                ></span>
+              </li>
+              {pastAppointmentsArr &&
+                pastAppointmentsArr.length > 0 &&
+                pastAppointmentsArr.map(
+                  (item: any, idx: any) =>
+                    appointmentInfo.appointmentDateTime !== item.appointmentDateTime && (
+                      <li
+                        className={`${classes.dateTabs} ${
+                          item.appointmentDateTime === selectedDate ? classes.dateTabsActive : ''
+                        }`}
+                        onClick={() => {
+                          getMedicineCopy(
+                            item,
+                            format(
+                              new Date(item.appointmentDateTime),
+                              'dd  MMMMMMMMMMMM yyyy, h:mm a'
+                            )
+                          );
+                        }}
+                      >
+                        {`${format(new Date(item.appointmentDateTime), 'dd  MMMMMMMMMMMM')}`}
+                        <span>{`${format(new Date(item.appointmentDateTime), 'h:mm a')}`}</span>
+                      </li>
+                    )
+                )}
+              <li
+                className={`${classes.arrow} ${classes.next} ${
+                  selectedPastIndex < pagesCount - 1 ? null : classes.none
+                }`}
+              >
+                <span
+                  onClick={() => {
+                    setSelectedPastIndex(selectedPastIndex + 1);
+                    handlePastMedicinesTabs(selectedPastIndex + 1);
+                  }}
+                ></span>
+              </li>
+            </ul>
+            <div className={classes.ppContainer}>
+              <Grid container spacing={2}>
+                {selectedDate !== '' ? (
+                  <>
+                    {medicineCopyArr && medicineCopyArr.length > 0 ? (
+                      <>
+                        <Grid item md={7} xs={12}>
+                          <div
+                            className={classes.selectedDate}
+                            onClick={() => {
+                              const addedMedicineArr =
+                                selectedMedicinesArr && selectedMedicinesArr.length > 0
+                                  ? selectedMedicinesArr.map(function(e: any) {
+                                      return e.medicineName;
+                                    })
+                                  : [];
+                              medicineCopyArr.forEach((medicine: any, index: number) => {
+                                if (
+                                  medicine &&
+                                  addedMedicineArr.indexOf(medicine.medicineName) < 0
+                                ) {
+                                  saveMedicineAction(medicine);
+                                }
+                              });
+                            }}
+                          >
+                            <img src={require('images/selected.svg')} alt="" />
+                            <Typography style={{ cursor: 'pointer' }} className="orange">
+                              Add all from selected Date
+                            </Typography>
+                          </div>
+
+                          <div className={classes.medicineContent}>
+                            <ul className={classes.medicineList}>{medicineCopyHtml('present')}</ul>
+                          </div>
+                        </Grid>
+                        <Grid item md={5} xs={12}>
+                          <div className={classes.selectedDate}>
+                            <Typography>Added Medicine</Typography>
+                          </div>
+                          <div className={classes.medicineContent}>
+                            <ul className={classes.medicineList}>
+                              {/* Add 'added' class to li of this ul for the color as per design  */}
+                              {medicineAddedCopyHtml('present')}
+                              {/* {medicineHtml('removed')} */}
+                            </ul>
+                          </div>
+                        </Grid>
+                      </>
+                    ) : (
+                      <Grid item md={7} xs={12}>
+                        <div className={classes.selectedDate}>
+                          <Typography className="orange">Medicines not Provided</Typography>
+                        </div>
+                      </Grid>
+                    )}
+                  </>
+                ) : (
+                  <Grid item md={7} xs={12}>
+                    <div className={classes.selectedDate}>
+                      <Typography className="orange">Please select a casesheet</Typography>
+                    </div>
+                  </Grid>
+                )}
+              </Grid>
+            </div>
+          </div>
+          <div className={classes.btnContainer}>
+            <AphButton
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                setIsPrevMedDialogOpen(false);
+              }}
+            >
+              Proceed
+            </AphButton>
+          </div>
+        </Paper>
+      </Modal>
       <Modal
         open={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}

@@ -5,8 +5,8 @@ import { log } from "customWinstonLogger";
 
 @EventSubscriber()
 export class AppointmentEntitySubscriber implements EntitySubscriberInterface<Appointment> {
+    //updatePatientType in BookAppoitment may call appointment update event multiple times
     afterUpdate(event: UpdateEvent<any>): Promise<any> | void {
-        console.log(`After update called`);
         return updateElasticSlotsViaAppointMent(event);
     }
 }
@@ -21,13 +21,15 @@ function updateElasticSlotsViaAppointMent(event: UpdateEvent<any>) {
             let isAppointmentCanceled: boolean = false;
             let isAppointmentRescheduled: boolean = false;
 
-            //for some reasons the after update is being called multiple times
             if (!(oldAppointment && newAppointment && oldAppointment.appointmentDateTime && newAppointment.appointmentDateTime)) {
                 return resolve();
             }
 
+            const oldApptEpoch = oldAppointment.appointmentDateTime && oldAppointment.appointmentDateTime.getTime && oldAppointment.appointmentDateTime.getTime();
+            const newApptEpoch = newAppointment.appointmentDateTime && newAppointment.appointmentDateTime.getTime && newAppointment.appointmentDateTime.getTime();
+
             isAppointmentCanceled = oldAppointment.status != newAppointment.status && newAppointment.status == STATUS.CANCELLED ? true : false;
-            isAppointmentRescheduled = newAppointment.appointmentState == APPOINTMENT_STATE.RESCHEDULE;
+            isAppointmentRescheduled = newApptEpoch != oldApptEpoch ? true : false;
 
             if (isAppointmentCanceled) {
                 const response = await updateDoctorSlotStatusES(

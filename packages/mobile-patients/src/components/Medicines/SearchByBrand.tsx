@@ -62,6 +62,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
+import _ from 'lodash';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -157,11 +158,11 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_LIST_GRID_VIEW] = {
       'Category id': category_id,
       'Category name': pageTitle,
-      'Source': 'Category',
-      'Type': showListView ? 'List' : 'Grid',
+      Source: 'Category',
+      Type: showListView ? 'List' : 'Grid',
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_LIST_GRID_VIEW, eventAttributes);
-  },[showListView]);
+  }, [showListView]);
 
   useEffect(() => {
     if (products) {
@@ -418,7 +419,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           value={searchText}
           onSubmitEditing={goToSearchPage}
           onChangeText={(value) => {
-            onSearchMedicine(value);
+            const search = _.debounce(onSearchMedicine, 300);
+            search(value);
           }}
           onFocus={() => setSearchFocused(true)}
           onBlur={() => {
