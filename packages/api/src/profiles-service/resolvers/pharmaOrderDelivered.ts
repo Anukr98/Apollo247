@@ -7,16 +7,21 @@ import {
   MedicineOrderInvoice,
   MedicineOrdersStatus,
   MedicineOrders,
-  TransactionLineItems,
-  TransactionLineItemsPartial,
-  OneApollTransaction,
-  ONE_APOLLO_PRODUCT_CATEGORY,
   Patient,
   BOOKING_SOURCE,
   DEVICE_TYPE,
   MedicineOrderShipments,
 } from 'profiles-service/entities';
-import { ONE_APOLLO_STORE_CODE, UnblockPointsRequest, ItemDetails } from 'types/oneApolloTypes';
+import {
+  ONE_APOLLO_STORE_CODE,
+  UnblockPointsRequest,
+  ItemDetails,
+  BlockUserPointsResponse,
+  TransactionLineItems,
+  TransactionLineItemsPartial,
+  OneApollTransaction,
+  ONE_APOLLO_PRODUCT_CATEGORY,
+} from 'types/oneApolloTypes';
 
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -264,11 +269,28 @@ const generateTransactions = async (
     let { transactionLineItemsPartial, totalDiscount, netAmount, itemSku } = createLineItems(
       itemDetails
     );
-    const { RequestNumber } = order.medicineOrderPayments[0].healthCreditsRedemptionRequest;
+
+    /**
+     * For prescription orders, payments info would be missing
+     * Assume empty request number and health credits = 0 initially
+     */
+    let RequestNumber: BlockUserPointsResponse['RequestNumber'] = '';
+    let healthCreditsRedeemed: number = 0;
+
     const itemTypemap = await getSkuMap(itemSku);
-    const healthCreditsRedeemed = +new Decimal(
-      order.medicineOrderPayments[0].healthCreditsRedeemed
-    ).toDecimalPlaces(2, Decimal.ROUND_DOWN);
+    if (order.medicineOrderPayments.length) {
+      const paymentInfo = order.medicineOrderPayments[0];
+      if (
+        paymentInfo.healthCreditsRedemptionRequest &&
+        paymentInfo.healthCreditsRedemptionRequest.RequestNumber
+      )
+        RequestNumber = paymentInfo.healthCreditsRedemptionRequest.RequestNumber;
+      healthCreditsRedeemed = +new Decimal(paymentInfo.healthCreditsRedeemed).toDecimalPlaces(
+        2,
+        Decimal.ROUND_DOWN
+      );
+    }
+
     let [actualCreditsRedeemed, transactionLineItems] = addProductNameAndCat(
       transactionLineItemsPartial,
       itemTypemap,
@@ -279,7 +301,7 @@ const generateTransactions = async (
 
     if (healthCreditsToRefund > 0) {
       const unblockHCRequest: UnblockPointsRequest = {
-        RedemptionRequestNumber: RequestNumber || '',
+        RedemptionRequestNumber: RequestNumber,
         BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
         MobileNumber: mobileNumber,
         PointsToRelease: '' + healthCreditsToRefund,
