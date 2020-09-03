@@ -161,6 +161,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const [pastSearches, setPastSearches] = useState<
     (getPatientPastMedicineSearches_getPatientPastMedicineSearches | null)[]
   >([]);
+  const [searchQuery, setSearchQuery] = useState({});
 
   const { locationForDiagnostics, locationDetails } = useAppCommonData();
 
@@ -443,6 +444,12 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                 return;
               }
               const search = _.debounce(onSearchTest, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
               search(value);
             }
           }}

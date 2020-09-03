@@ -171,6 +171,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
+  const [searchQuery, setSearchQuery] = useState({});
+
   const { data: diagnosticsData, error: hError, loading: hLoading, refetch: hRefetch } = useQuery<
     getDiagnosticsData
   >(GET_DIAGNOSTIC_DATA, {
@@ -545,6 +547,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     setcurrentLocation(value);
                     if (value.length > 2) {
                       const locSearch = _.debounce(autoSearch, 300);
+                      setSearchQuery((prevSearch: any) => {
+                        if (prevSearch.cancel) {
+                          prevSearch.cancel();
+                        }
+                        return locSearch;
+                      });
                       locSearch(value);
                       setshowLocations(true);
                     } else {
@@ -1460,6 +1468,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 return;
               }
               const search = _.debounce(onSearchMedicine, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
               search(value);
             }
           }}

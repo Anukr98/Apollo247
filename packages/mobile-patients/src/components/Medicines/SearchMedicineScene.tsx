@@ -166,7 +166,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
   const medicineListRef = useRef<FlatList<MedicineProduct> | null>();
-
+  const [searchQuery, setSearchQuery] = useState({});
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
@@ -509,6 +509,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                 return;
               }
               const search = _.debounce(onSearchMedicine, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
               search(value);
             }
           }}

@@ -388,6 +388,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [isSearching, setisSearching] = useState<boolean>(false);
   const [showPastSearchSpinner, setshowPastSearchSpinner] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState({});
 
   const {
     currentPatient,
@@ -888,6 +889,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               if (isValidSearch(value)) {
                 setSearchText(value);
                 const search = _.debounce(fetchSearchData, 300);
+                setSearchQuery((prevSearch: any) => {
+                  if (prevSearch.cancel) {
+                    prevSearch.cancel();
+                  }
+                  return search;
+                });
                 search(value);
                 if (value.length > 2) {
                   // fetchSearchData(value);
