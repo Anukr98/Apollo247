@@ -484,6 +484,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
 
     return (
       <SearchMedicineCard
+        isSellOnline={!!medicine.sell_online}
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           CommonLogEvent('SEARCH_BY_BRAND', 'Save past Search');
@@ -574,6 +575,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
 
     return (
       <SearchMedicineGridCard
+        isSellOnline={!!medicine.sell_online}
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           CommonLogEvent('SEARCH_BY_BRAND', 'Save past Search');

@@ -610,6 +610,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
     return (
       <SearchMedicineCard
+        isSellOnline={!!medicine.sell_online}
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
@@ -709,6 +710,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
     return (
       <SearchMedicineGridCard
+        isSellOnline={!!medicine.sell_online}
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
