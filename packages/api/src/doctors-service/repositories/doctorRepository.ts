@@ -586,9 +586,9 @@ export class DoctorRepository extends Repository<Doctor> {
     if (a.doctorType != DoctorType.STAR_APOLLO && b.doctorType == DoctorType.STAR_APOLLO) return 1;
 
     //Previously consulted non-payroll doctors on next
-    if (docIds.includes(a.id) && a.doctorType != DoctorType.PAYROLL && !docIds.includes(b.id))
+    if (docIds.includes(a.id) && a.doctorType != DoctorType.APOLLO && !docIds.includes(b.id))
       return -1;
-    if (!docIds.includes(a.id) && docIds.includes(b.id) && b.doctorType != DoctorType.PAYROLL)
+    if (!docIds.includes(a.id) && docIds.includes(b.id) && b.doctorType != DoctorType.APOLLO)
       return 1;
 
     //close/same city apollo doctors on next, prior to far/other city apollo doctors
@@ -608,8 +608,8 @@ export class DoctorRepository extends Repository<Doctor> {
     }
 
     //payroll doctors at last
-    if (a.doctorType != DoctorType.PAYROLL && b.doctorType == DoctorType.PAYROLL) return -1;
-    if (a.doctorType == DoctorType.PAYROLL && b.doctorType != DoctorType.PAYROLL) return 1;
+    if (a.doctorType != DoctorType.APOLLO && b.doctorType == DoctorType.APOLLO) return -1;
+    if (a.doctorType == DoctorType.APOLLO && b.doctorType != DoctorType.APOLLO) return 1;
 
     //Experienced doctor on top
     if (a.experience > b.experience) return -1;

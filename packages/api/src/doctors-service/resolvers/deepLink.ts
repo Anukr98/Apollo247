@@ -168,7 +168,7 @@ const insertBulkDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> = a
     const doctorType =
       element.templateId == ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO
         ? DoctorType.DOCTOR_CONNECT
-        : DoctorType.APOLLO;
+        : DoctorType.APOLLO_HOSPITALS;
     await refreshLink(element, doctorType);
   });
 
@@ -195,7 +195,7 @@ const refreshDoctorDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> 
     const doctorType =
       element.templateId == ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO
         ? DoctorType.DOCTOR_CONNECT
-        : DoctorType.APOLLO;
+        : DoctorType.APOLLO_HOSPITALS;
     await refreshLink(element, doctorType);
   });
 
