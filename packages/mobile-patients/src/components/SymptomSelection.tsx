@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, SafeAreaView, StyleSheet, BackHandler, FlatList, Text, TouchableOpacity } from 'react-native';
+import {
+  View,
+  SafeAreaView,
+  StyleSheet,
+  BackHandler,
+  FlatList,
+  Text,
+  TouchableOpacity,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -8,28 +16,33 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '../theme/colors';
 import { CheckUnselectedIcon, CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import _ from 'lodash';
+import { autocompleteSymptoms } from '../helpers/apiCalls';
+import { CommonBugFender } from '../FunctionHelpers/DeviceHelper';
+import { Spinner } from './ui/Spinner';
 
-interface SymptomSelectionProps extends NavigationScreenProps {}
+interface SymptomSelectionProps extends NavigationScreenProps {
+  chatId: string;
+}
 
-const defaultSymptoms = [
-  { text: 'Vomiting', description: 'Lorem ipsum dolor sit amet, consectetur' },
-  { text: 'Fever', description: 'Lorem ipsum dolor sit amet, consectetur' },
-  { text: 'Cold', description: 'Lorem ipsum dolor sit amet, consectetur' },
-  { text: 'Cough', description: 'Lorem ipsum dolor sit amet, consectetur' },
-  { text: 'Wheezing', description: 'Lorem ipsum dolor sit amet, consectetur' },
-];
 var selectedSymtomsArr: string[] = [];
 
 export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
-  const [symptoms, setSymptoms] = useState<string>('');
+  const chatId = props.navigation.getParam('chatId');
+  const defaultSymptoms = props.navigation.getParam('defaultSymptoms');
+
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [refreshFlatList, setRefreshFlatList] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<any>({});
+  const [symptomTextString, setSymptomTextString] = useState<any>({});
+  const [symptoms, setSymptoms] = useState<{}[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     return function cleanup() {
-        selectedSymtomsArr = [];
-    }
-}, [])
+      selectedSymtomsArr = [];
+    };
+  }, []);
 
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
@@ -53,7 +66,17 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
   const renderSearchInput = () => {
     return (
       <TextInputComponent
-        onChangeText={(symptoms) => setSymptoms(symptoms)}
+        onChangeText={(symptoms) => {
+          setSymptomTextString(symptoms);
+          const search = _.debounce(fetchSymptoms, 500);
+          setSearchQuery((prevSearch: any) => {
+            if (prevSearch.cancel) {
+              prevSearch.cancel();
+            }
+            return search;
+          });
+          search(symptoms);
+        }}
         placeholder={string.symptomChecker.typeSymptomOrChooseFromList}
         inputStyle={styles.inputStyle}
         autoFocus={true}
@@ -61,11 +84,31 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
     );
   };
 
+  const fetchSymptoms = async (searchString: string) => {
+    setLoading(true);
+    const queryParams = {
+      text: searchString,
+      filter: 'symptoms',
+    };
+    console.log('queryParams', queryParams);
+    try {
+      const res = await autocompleteSymptoms(chatId, queryParams);
+      if (res && res.data && res.data.results) {
+        setSymptoms(res.data.results);
+        setLoading(false);
+      }
+      console.log('res', res);
+    } catch (error) {
+      setLoading(false);
+      CommonBugFender('AutoCompleteSymptomsApi', error);
+    }
+  };
+
   const renderSymptomsList = () => {
     return (
       <FlatList
         style={{ marginTop: 24 }}
-        data={defaultSymptoms}
+        data={symptoms.length > 0 ? symptoms : defaultSymptoms}
         keyExtractor={(_, index) => `${index}`}
         renderItem={({ item, index }) => renderSymptoms(item, index)}
         extraData={refreshFlatList}
@@ -74,21 +117,24 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
     );
   };
 
-  const renderSymptoms = (
-      item: any, 
-      index: number
-      ) => {
+  const renderSymptoms = (item: any, index: number) => {
     return (
-      <TouchableOpacity 
-        key={index} 
+      <TouchableOpacity
+        key={index}
         style={styles.symptomsContainer}
         onPress={() => {
-            symptomSelectionHandler(item);
+          symptomSelectionHandler(item);
         }}
-        >
-        {!symptoms && selectedSymtomsArr.includes(item.text) ? <CheckedIcon/> : !symptoms ? <CheckUnselectedIcon/> : <View/>}
-        <View style={{ marginLeft: 15, flex: 1 }}>
-          <Text style={styles.itemTxt}>{item.text}</Text>
+      >
+        {symptoms.length === 0 && selectedSymptoms.includes(item.text) ? (
+          <CheckedIcon style={{ marginRight: 15 }} />
+        ) : symptoms.length === 0 ? (
+          <CheckUnselectedIcon style={{ marginRight: 15 }} />
+        ) : (
+          <View />
+        )}
+        <View style={{ flex: 1 }}>
+          <Text style={styles.itemTxt}>{item.name}</Text>
           <Text style={styles.itemDescription}>{item.description}</Text>
         </View>
       </TouchableOpacity>
@@ -96,26 +142,30 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
   };
 
   const symptomSelectionHandler = (item: any) => {
-        if(symptoms){
-            // single symptom selection
-            props.navigation.goBack();
-        } else {
-            if(selectedSymtomsArr.includes(item.text)){
-                selectedSymtomsArr.splice(selectedSymtomsArr.indexOf(item.text), 1);
-            } else {
-                selectedSymtomsArr = selectedSymtomsArr.concat(item.text)
-            }
-            setSelectedSymptoms(selectedSymtomsArr);
-            setRefreshFlatList(!refreshFlatList);
-        }
-  }
+    if (symptomTextString) {
+      // single symptom selection
+      const { navigation } = props;
+      navigation.goBack();
+      navigation.state.params!.goBackCallback(item.id);
+    } else {
+      if (selectedSymtomsArr.includes(item.text)) {
+        selectedSymtomsArr.splice(selectedSymtomsArr.indexOf(item.text), 1);
+      } else {
+        selectedSymtomsArr = selectedSymtomsArr.concat(item.text);
+      }
+      setSelectedSymptoms(selectedSymtomsArr);
+      setRefreshFlatList(!refreshFlatList);
+    }
+  };
 
   const renderBottomButton = () => {
     return (
       <Button
         title={string.symptomChecker.addSelectedSymptom}
         style={styles.bottomBtn}
+        disabledStyle={styles.bottomBtn}
         titleTextStyle={styles.bottomBtnTxt}
+        disabled={selectedSymptoms.length === 0}
         onPress={() => {}}
       />
     );
@@ -124,6 +174,7 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
   return (
     <SafeAreaView style={styles.container}>
       {renderHeader()}
+      {loading && <Spinner />}
       {renderSymptomsList()}
       {renderBottomButton()}
     </SafeAreaView>
@@ -165,7 +216,8 @@ const styles = StyleSheet.create({
   },
   bottomBtn: {
     backgroundColor: colors.OFF_WHITE,
-    height: 50,
+    height: 62,
+    borderRadius: 0,
   },
   bottomBtnTxt: {
     color: colors.APP_YELLOW,

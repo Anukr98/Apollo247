@@ -9,7 +9,7 @@ import {
   Platform,
   TouchableOpacity,
   TextInput,
-  ScrollView,
+  FlatList,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -28,8 +28,10 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppRoutes } from './NavigatorContainer';
 import AsyncStorage from '@react-native-community/async-storage';
-import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent, CommonBugFender } from '../FunctionHelpers/DeviceHelper';
 import moment from 'moment';
+import { startSymptomTrackerChat, updateSymptomTrackerChat } from '../helpers/apiCalls';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const roundCountViewDimension = 30;
 const howItWorksArrData = [
@@ -38,6 +40,8 @@ const howItWorksArrData = [
   'Choose doctor',
   'Book Appointment',
 ];
+const symptoms = ['Headache', 'Vomiting', 'Cold'];
+let insertMessage: object[] = [];
 
 interface SymptomTrackerProps extends NavigationScreenProps {}
 interface Patient {
@@ -47,12 +51,21 @@ interface Patient {
 }
 
 export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
-  
   const [showProfilePopUp, setShowProfilePopUp] = useState<boolean>(false);
   const [showList, setShowList] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [selectedPatient, setSelectedPatient] = useState<Patient>();
   const [showHowItWorks, setShowHowItWorks] = useState<boolean>(true);
+  const [messages, setMessages] = useState<any>([]);
+  const [chatId, setChatId] = useState<string>('');
+  const [defaultSymptoms, setDefaultSymptoms] = useState([]);
+
+  useEffect(() => {
+    return function cleanup() {
+      insertMessage = [];
+    };
+  }, []);
 
   const backDataFunctionality = async () => {
     try {
@@ -165,15 +178,38 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     );
   };
 
-  useEffect(() => {
-    if (currentPatient && currentPatient.firstName) {
-      setSelectedPatient({
-        name: currentPatient.firstName + currentPatient.lastName,
-        gender: currentPatient.gender,
-        age: Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-      });
+  const initializeChat = async (patient: any) => {
+    setLoading(true);
+    const { uhid, id, relation, gender } = patient;
+    const body = {
+      userID: uhid,
+      profileID: id,
+      userProfile: {
+        alias: relation,
+        age: Math.round(moment().diff(g(patient, 'dateOfBirth') || 0, 'years', true)),
+        gender: gender,
+        demographics: 'Others',
+      },
+    };
+    console.log('body', body);
+    try {
+      const res = await startSymptomTrackerChat(body);
+      console.log('res', res);
+      if (res && res.data && res.data.dialogue) {
+        if (insertMessage.length === 0) {
+          insertMessage = [{ text: res.data.dialogue.text }];
+        } else {
+          insertMessage = insertMessage.concat({ text: res.data.dialogue.text });
+        }
+        setMessages(insertMessage);
+        setChatId(res.data.id);
+        setDefaultSymptoms(res.data.dialogue.options);
+      }
+    } catch (error) {
+      CommonBugFender('StartSymptomTrackerChatApi', error);
     }
-  }, [currentPatient]);
+    setLoading(false);
+  };
 
   const renderProfileDrop = () => {
     return (
@@ -225,7 +261,16 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     );
   };
 
-  const onProfileChange = () => {
+  const onProfileChange = (profile: any) => {
+    if (profile && profile.firstName) {
+      setSelectedPatient({
+        name: profile.firstName + profile.lastName,
+        gender: profile.gender,
+        age: Math.round(moment().diff(g(profile, 'dateOfBirth') || 0, 'years', true)),
+      });
+      // start chat
+      initializeChat(profile);
+    }
     setShowList(false);
     setTimeout(() => {
       setShowProfilePopUp(false);
@@ -253,6 +298,8 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     });
     setShowProfilePopUp(false);
     setShowHowItWorks(false);
+    // start chat
+    initializeChat(item);
   };
 
   const selectUser = (selectedUser: any) => {
@@ -344,15 +391,30 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
 
   const renderChatBot = () => {
     return (
-      <View>
+      <FlatList
+        data={messages}
+        keyExtractor={(_, index) => `${index}`}
+        renderItem={({ item, index }) => renderChats(item, index)}
+        ListHeaderComponent={renderPatientDetails}
+        // ListFooterComponent={renderSymptoms}
+        showsVerticalScrollIndicator={false}
+      />
+    );
+  };
+
+  const renderChats = (item: any, index: number) => {
+    return (
+      <View key={index}>
         <BotIcon style={styles.botIcon} />
         <View style={styles.chatViewContainer}>
-          <Text style={styles.botTextTitle}>
-            Let’s start with the symptom that is troubling you the most...
-          </Text>
+          <Text style={styles.botTextTitle}>{item.text}</Text>
           <TextInput
             onFocus={() => {
-                props.navigation.navigate(AppRoutes.SymptomSelection);
+              props.navigation.navigate(AppRoutes.SymptomSelection, {
+                chatId: chatId,
+                goBackCallback: goBackCallback,
+                defaultSymptoms: defaultSymptoms,
+              });
             }}
             placeholder={'e.g. Headache'}
             style={styles.inputStyle}
@@ -365,14 +427,74 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     );
   };
 
+  const goBackCallback = async (symptomId: string) => {
+    setLoading(true);
+    const body = {
+      dialogue: {
+        text: symptomId,
+        options: [],
+        status: 'reporting',
+        sender: 'user',
+      },
+    };
+    console.log('body', body);
+    try {
+      const res = await updateSymptomTrackerChat(chatId, body);
+      console.log('res', res);
+    } catch (error) {
+      CommonBugFender('UpdateSymptomTrackerChatApi', error);
+    }
+    setLoading(false);
+  };
+
+  const renderSymptoms = () => {
+    return (
+      <View style={styles.symptomsContainer}>
+        <View style={styles.seperatorLine}>
+          <Text style={styles.patientDetailsTitle}>{string.symptomChecker.symptoms}</Text>
+        </View>
+        {symptoms &&
+          symptoms.length > 0 &&
+          symptoms.map((item, index) => {
+            return (
+              <View key={index} style={[styles.itemRowStyle, { marginTop: 14 }]}>
+                <View style={styles.bullet} />
+                <Text style={styles.patientDetailsText}>{item}</Text>
+              </View>
+            );
+          })}
+      </View>
+    );
+  };
+
+  const renderBottomButtons = () => {
+    return (
+      <View style={styles.bottomView}>
+        <Button
+          title="Proceed"
+          style={styles.proceedBtn}
+          onPress={() => {
+            setShowProfilePopUp(true);
+          }}
+        />
+        <Button
+          title="Proceed"
+          style={styles.proceedBtn}
+          onPress={() => {
+            setShowProfilePopUp(true);
+          }}
+        />
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
+      {loading && <Spinner />}
       {renderHeader()}
       {showHowItWorks && renderHowItWorks()}
-      <ScrollView bounces={false}>
-        {!showHowItWorks && renderPatientDetails()}
-        {!showHowItWorks && renderChatBot()}
-      </ScrollView>
+      {messages && messages.length > 0 && renderChatBot()}
+      {/* {renderBottomButtons()} */}
       {showProfilePopUp && renderProfileListView()}
     </SafeAreaView>
   );
@@ -529,7 +651,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginLeft: 43,
     marginRight: 20,
-    marginTop: 30,
+    marginTop: 24,
+  },
+  symptomsContainer: {
+    backgroundColor: 'rgba(252, 183, 22, 0.2)',
+    paddingRight: 20,
+    paddingLeft: 25,
+    paddingVertical: 13,
+    borderRadius: 10,
+    marginRight: 20,
+    marginTop: 20,
+    marginLeft: 40,
   },
   patientDetailsTitle: {
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -577,5 +709,16 @@ const styles = StyleSheet.create({
     borderColor: colors.LIGHT_BLUE,
     padding: 10,
     borderRadius: 8,
+  },
+  bullet: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.LIGHT_BLUE,
+    marginRight: 11,
+  },
+  bottomView: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

@@ -393,6 +393,7 @@
     "gender": "Gender",
     "selectAnotherMember": "Select Another Member",
     "typeSymptomOrChooseFromList": "Type symptom here or choose from the list",
-    "addSelectedSymptom": "ADD SELECTED SYMPTOMS"
+    "addSelectedSymptom": "ADD SELECTED SYMPTOMS",
+    "symptoms": "Symptoms"
   }
 }

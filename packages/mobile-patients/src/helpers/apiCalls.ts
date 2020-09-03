@@ -416,25 +416,35 @@ export const getStoreInventoryApi = (
   );
 };
 
-export const pinCodeServiceabilityApi247 = (pincode: string): Promise<AxiosResponse<{ response: boolean }>> => {
-  const url = `${config.UATTAT_CONFIG[0]}/serviceable?pincode=${pincode}`
-  return Axios.post(url, {}, {
-    headers: {
-      Authorization: config.UATTAT_CONFIG[1],
-    },
-  });
+export const pinCodeServiceabilityApi247 = (
+  pincode: string
+): Promise<AxiosResponse<{ response: boolean }>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/serviceable?pincode=${pincode}`;
+  return Axios.post(
+    url,
+    {},
+    {
+      headers: {
+        Authorization: config.UATTAT_CONFIG[1],
+      },
+    }
+  );
 };
 
 export const availabilityApi247 = (
   pincode: string,
   sku: string
 ): Promise<AxiosResponse<GetAvailabilityResponse247>> => {
-  const url = `${config.UATTAT_CONFIG[0]}/availability?sku=${sku}&pincode=${pincode}`
-  return Axios.post(url, {}, {
-    headers: {
-      Authorization: config.UATTAT_CONFIG[1],
-    },
-  });
+  const url = `${config.UATTAT_CONFIG[0]}/availability?sku=${sku}&pincode=${pincode}`;
+  return Axios.post(
+    url,
+    {},
+    {
+      headers: {
+        Authorization: config.UATTAT_CONFIG[1],
+      },
+    }
+  );
 };
 
 export const medCartItemsDetailsApi = (
@@ -562,23 +572,27 @@ export const autoCompletePlaceSearch = (
   });
 };
 
-let cancelGetDeliveryTAT247 : Canceler | undefined;
+let cancelGetDeliveryTAT247: Canceler | undefined;
 
 export const getDeliveryTAT247 = (
-  params : TatApiInput247
-) : Promise<AxiosResponse<GetTatResponse247>> => {
+  params: TatApiInput247
+): Promise<AxiosResponse<GetTatResponse247>> => {
   const CancelToken = Axios.CancelToken;
   cancelGetDeliveryTAT247 && cancelGetDeliveryTAT247();
-  const url = `${config.UATTAT_CONFIG[0]}/tat?sku=${params.sku}&pincode=${params.pincode}&lat=${params.lat}&lng=${params.lng}`
-  return Axios.post(url, {}, {
-    headers: {
-      Authorization: config.UATTAT_CONFIG[1],
-    },
-    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
-    cancelToken: new CancelToken((c) => {
-      cancelGetDeliveryTAT247 = c;
-    }),
-  });
+  const url = `${config.UATTAT_CONFIG[0]}/tat?sku=${params.sku}&pincode=${params.pincode}&lat=${params.lat}&lng=${params.lng}`;
+  return Axios.post(
+    url,
+    {},
+    {
+      headers: {
+        Authorization: config.UATTAT_CONFIG[1],
+      },
+      timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
+      cancelToken: new CancelToken((c) => {
+        cancelGetDeliveryTAT247 = c;
+      }),
+    }
+  );
 };
 
 export const getSubstitutes = async (
@@ -710,4 +724,24 @@ export const userSpecificCoupon = (mobileNumber: string): Promise<AxiosResponse<
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
   const url = `${baseUrl}/availableCoupons?mobile=${mobileNumber}`;
   return Axios.get(url);
+};
+
+export const startSymptomTrackerChat = async (data: any): Promise<AxiosResponse<any>> => {
+  const url = 'https://sympai.apollo247.com/api/v1/chatbot';
+  return Axios.post(url, data);
+};
+
+export const autocompleteSymptoms = (chatId: string, params: any): Promise<AxiosResponse<any>> => {
+  const url = `https://sympai.apollo247.com/api/v1/chatbot/${chatId}/autosuggest`;
+  return Axios.get(url, {
+    params: params,
+  });
+};
+
+export const updateSymptomTrackerChat = async (
+  chatId: string,
+  data: any
+): Promise<AxiosResponse<any>> => {
+  const url = `https://sympai.apollo247.com/api/v1/chatbot/${chatId}`;
+  return Axios.patch(url, data);
 };
