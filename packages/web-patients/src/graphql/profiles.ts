@@ -408,14 +408,22 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         source
       }
       labResults {
+        errorCode
+        errorMsg
+        errorType
         response {
+          authToken
           id
           labTestName
           labTestSource
+          packageId
+          packageName
           # labTestDate
           date
           labTestRefferedBy
           siteDisplayName
+          tag
+          consultId
           additionalNotes
           observation
           labTestResults {
@@ -427,6 +435,13 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             # resultDate
           }
           fileUrl
+          testResultFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+          }
         }
         errorCode
         errorMsg
@@ -486,6 +501,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           id
           fileUrl
           date
+          # hospitalizationDate
           dateOfHospitalization
           hospitalName
           doctorName

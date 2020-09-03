@@ -327,16 +327,17 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 'calc(100% - 24px)',
     },
     doctorName: {
-      fontSize: 17,
+      fontSize: 16,
       color: '#0087BA',
-      fontWeight: 600,
+      fontWeight: 500,
       marginBottom: 5,
     },
     testName: {
-      fontSize: 23,
-      color: '#02475b',
+      fontSize: 16,
+      color: '#01475b',
       fontWeight: 500,
       marginBottom: 12,
+      lineHeight: '21px',
     },
     checkDate: {
       fontSize: 14,
@@ -372,10 +373,10 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
   const getFormattedDate = (combinedData: HealthCheckType, dateFor: string) => {
     return dateFor === 'title' &&
       moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY') ? (
-      <span>Today , {moment(combinedData.date).format('DD MMM YYYY')}</span>
-    ) : (
-      <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
-    );
+        <span>Today , {moment(combinedData.date).format('DD MMM YYYY')}</span>
+      ) : (
+        <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
+      );
   };
 
   const getName = (combinedData: any, type: string) => {
@@ -395,8 +396,8 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
         return activeData && activeData.siteDisplayName
           ? activeData.siteDisplayName
           : !!activeData.labTestSource
-          ? activeData.labTestSource
-          : '-';
+            ? activeData.labTestSource
+            : '-';
       case 'prescription':
         return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
       default:
@@ -431,8 +432,8 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 240px)'
               : isSmallScreen
-              ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 270px)'
+                ? 'calc(100vh - 230px)'
+                : 'calc(100vh - 270px)'
           }
         >
           <div className={classes.consultationsList}>
@@ -488,7 +489,7 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
       <div
         className={`${classes.rightSection} ${
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
-        }`}
+          }`}
       >
         {allCombinedData && allCombinedData.length > 0 ? (
           <>
@@ -513,47 +514,47 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 287px)'
                   : isSmallScreen
-                  ? 'calc(100vh - 55px)'
-                  : 'calc(100vh - 322px)'
+                    ? 'calc(100vh - 55px)'
+                    : 'calc(100vh - 322px)'
               }
             >
               {((!isSmallScreen && activeData) ||
                 (isSmallScreen && showMobileDetails && activeData)) && (
-                <div className={classes.medicalRecordsDetails}>
-                  <div className={classes.cbcDetails}>
-                    <div className={classes.reportsDetails}>
-                      <div className={classes.testName}>
-                        {activeData.healthCheckType || activeData.healthCheckName || '-'}
+                  <div className={classes.medicalRecordsDetails}>
+                    <div className={classes.cbcDetails}>
+                      <div className={classes.reportsDetails}>
+                        <div className={classes.testName}>
+                          {activeData.healthCheckType || activeData.healthCheckName || '-'}
+                        </div>
+                      </div>
+                      <hr />
+                      <div className={classes.reportsDetails}>
+                        <label>Uploaded Date</label>
+                        <p>
+                          On{' '}
+                          <span className={classes.checkDate}>
+                            {getFormattedDate(activeData, 'checkUp')}
+                          </span>
+                        </p>
                       </div>
                     </div>
-                    <hr />
-                    <div className={classes.reportsDetails}>
-                      <label>Uploaded Date</label>
-                      <p>
-                        On{' '}
-                        <span className={classes.checkDate}>
-                          {getFormattedDate(activeData, 'checkUp')}
-                        </span>
-                      </p>
-                    </div>
+                    {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
+                      <RenderImage
+                        activeData={activeData}
+                        type={
+                          activeData.healthCheckFiles &&
+                            activeData.healthCheckFiles.length &&
+                            activeData.healthCheckFiles[0].fileName &&
+                            activeData.healthCheckFiles[0].fileName.includes('pdf')
+                            ? 'pdf'
+                            : activeData.fileUrl.includes('pdf')
+                              ? 'pdf'
+                              : 'image'
+                        }
+                      />
+                    )}
                   </div>
-                  {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
-                    <RenderImage
-                      activeData={activeData}
-                      type={
-                        activeData.healthCheckFiles &&
-                        activeData.healthCheckFiles.length &&
-                        activeData.healthCheckFiles[0].fileName &&
-                        activeData.healthCheckFiles[0].fileName.includes('pdf')
-                          ? 'pdf'
-                          : activeData.fileUrl.includes('pdf')
-                          ? 'pdf'
-                          : 'image'
-                      }
-                    />
-                  )}
-                </div>
-              )}
+                )}
             </Scrollbars>
             {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
               <a href={activeData.fileUrl}>
@@ -566,14 +567,14 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
             )}
           </>
         ) : (
-          <div className={classes.noRecordFoundWrapper}>
-            <img src={require('images/ic_records.svg')} />
-            <p>
-              You don’t have any records with us right now. Add a record to keep everything handy in
-              one place!
+            <div className={classes.noRecordFoundWrapper}>
+              <img src={require('images/ic_records.svg')} />
+              <p>
+                You don’t have any records with us right now. Add a record to keep everything handy in
+                one place!
             </p>
-          </div>
-        )}
+            </div>
+          )}
       </div>
     </div>
   );

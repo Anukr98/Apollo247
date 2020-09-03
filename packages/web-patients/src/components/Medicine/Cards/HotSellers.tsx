@@ -231,7 +231,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         }}
                       >
                         <div className={classes.productIcon}>
-                          <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
+                          <img src={`${apiDetails.url}${hotSeller.thumbnail}`} alt="" />
                         </div>
                         <div className={classes.productTitle}>{hotSeller.name}</div>
                       </a>

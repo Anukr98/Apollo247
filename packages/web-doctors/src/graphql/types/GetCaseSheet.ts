@@ -267,6 +267,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstr
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
   __typename: "CaseSheet";
   version: number | null;
+  sentToPatient: boolean | null;
   consultType: string | null;
   doctorType: DoctorType | null;
   diagnosis: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis | null)[] | null;

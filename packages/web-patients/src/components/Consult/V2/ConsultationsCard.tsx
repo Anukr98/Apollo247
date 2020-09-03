@@ -943,7 +943,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           <span className={classes.btnContent}>Cytoplam, Metformin, Insulin…</span>
                           <img src={require('images/ic_arrow_right_white.svg')} alt="" />
                         </AphButton> */}
-                          {appointmentDetails.status === STATUS.COMPLETED &&
+                          {(appointmentDetails.status === STATUS.COMPLETED ||
+                            props.pastOrCurrent === 'past') &&
                             appointmentDetails.isFollowUp === 'false' && (
                               <div className={classes.bookFollowup}>
                                 <Route
@@ -987,9 +988,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                     appointmentDetails.doctorInfo.fullName
                                       ? readableParam(appointmentDetails.doctorInfo.fullName)
                                       : '';
-                                  if (pickAnotherSlot) {
-                                    getAppointmentNextSlotInitiatedByDoctor(appointmentDetails);
-                                  } else if (
+                                  if (
+                                    props.pastOrCurrent === 'past' ||
                                     showAppointmentAction(
                                       appointmentState,
                                       status,
@@ -997,6 +997,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                     ) === 'BOOK FOLLOWUP'
                                   ) {
                                     bookFollowup(appointmentDetails);
+                                  } else if (pickAnotherSlot) {
+                                    getAppointmentNextSlotInitiatedByDoctor(appointmentDetails);
                                   } else {
                                     appointmentDetails.status === STATUS.CANCELLED ||
                                     (appointmentDetails.status === STATUS.COMPLETED &&
@@ -1015,11 +1017,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                               >
                                 <h3>
                                   {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-                                    ? showAppointmentAction(
-                                        appointmentState,
-                                        status,
-                                        isConsultStarted
-                                      )
+                                    ? props.pastOrCurrent === 'past'
+                                      ? 'BOOK FOLLOWUP'
+                                      : showAppointmentAction(
+                                          appointmentState,
+                                          status,
+                                          isConsultStarted
+                                        )
                                     : 'VIEW DETAILS'}
                                 </h3>
                               </div>
