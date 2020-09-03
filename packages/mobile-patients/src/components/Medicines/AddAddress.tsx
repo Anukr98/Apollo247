@@ -201,6 +201,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [addressType, setAddressType] = useState<PATIENT_ADDRESS_TYPE>();
   const [optionalAddress, setOptionalAddress] = useState<string>('');
   const [editProfile, setEditProfile] = useState<boolean>(false);
+  const [isFocus, setIsFocus] = useState<boolean>(false);
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
@@ -581,8 +582,20 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     }
   };
 
+  const _onFocus = () => {
+    setIsFocus(true);
+  };
+
+  const _onBlur = () => {
+    setIsFocus(false);
+  };
+
   /**view added for the patient's details */
   const renderUserDetails = () => {
+    let beforeFocus =
+      Platform.OS == 'android' && userName.length > 32
+        ? userName.slice(0, 30).concat('...')
+        : userName;
     return (
       <View style={styles.userDetailsOuterView}>
         <View style={styles.viewRowStyle}>
@@ -607,7 +620,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   onChangeText={(userName) =>
                     userName.startsWith(' ') ? null : setuserName(userName)
                   }
-                  value={userName}
+                  onFocus={() => _onFocus()}
+                  onBlur={() => _onBlur()}
+                  value={isFocus ? userName : beforeFocus}
                   editable={editProfile}
                   placeholder={'Full Name'}
                   inputStyle={styles.textInputName}
