@@ -85,7 +85,7 @@ export async function sendCallsNotification(
     DEVICE_TYPE.IOS
   );
 
-  if(patientId != patientDetails.id && (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])){
+  if (patientId != patientDetails.id && (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])) {
     patientId = patientDetails.id;
     voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
       patientId,
@@ -654,7 +654,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -1394,14 +1394,12 @@ export async function sendNotification(
 
     let prescriptionDeeplink: string = process.env.DEEPLINK_PRESCRIPTION;
 
-    const { caseSheetId = null } = pushNotificationInput.data;
-    if (!caseSheetId) {
-      throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined, undefined);
+    const { appointmentId } = pushNotificationInput;
+    if (!appointmentId) {
+      throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND, undefined, undefined);
     }
 
-    prescriptionDeeplink = `${notificationBody} ${
-      ApiConstants.PRESCRIPTION_CLICK_HERE
-    } ${prescriptionDeeplink.replace(ApiConstants.PRESCRIPTION_DEEPLINK_PLACEHOLDER, caseSheetId)}`;
+    prescriptionDeeplink = `${notificationBody} ${ApiConstants.PRESCRIPTION_CLICK_HERE} ${prescriptionDeeplink.replace(ApiConstants.PRESCRIPTION_DEEPLINK_PLACEHOLDER, appointmentId)}`;
 
     log(
       `consultServiceLogger`,
