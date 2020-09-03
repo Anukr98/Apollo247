@@ -879,12 +879,12 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
     // getCaseSheetData.followUp = true;
 
-    if (getCaseSheetData.appointment.sdConsultationDate) {
-      getCaseSheetData.followUpDate = addDays(
-        getCaseSheetData.appointment.sdConsultationDate,
-        getCaseSheetData.followUpAfterInDays
-      );
-    }
+    // if (getCaseSheetData.appointment.sdConsultationDate) {
+    //   getCaseSheetData.followUpDate = addDays(
+    //     getCaseSheetData.appointment.sdConsultationDate,
+    //     getCaseSheetData.followUpAfterInDays
+    //   );
+    // }
   }
 
   if (!(inputArguments.status === undefined)) {
