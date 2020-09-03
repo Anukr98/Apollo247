@@ -67,7 +67,6 @@ const tokenFailed = () => {
 
 export const loginAPI = (mobileNumber: string, appSign?: string) => {
   return new Promise<Login_login>((res, rej) => {
-    webEngageLogin(mobileNumber);
     const inputData = {
       mobileNumber: mobileNumber,
       loginType: LOGIN_TYPE.DOCTOR,

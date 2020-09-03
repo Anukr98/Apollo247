@@ -249,7 +249,7 @@ export const AuthProvider: React.FC = (props) => {
         .then(({ data }) => {
           console.log('GetDoctorDetails', data);
           if (data) {
-            webEngageLogin(g(data, 'getDoctorDetails', 'mobileNumber'));
+            webEngageLogin(g(data, 'getDoctorDetails', 'id'));
             setTimeout(() => {
               setWebEngageData(
                 g(data, 'getDoctorDetails', 'mobileNumber') || '',
