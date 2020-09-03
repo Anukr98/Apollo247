@@ -880,12 +880,12 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
     // getCaseSheetData.followUp = true;
 
-    if (getCaseSheetData.appointment.sdConsultationDate) {
-      getCaseSheetData.followUpDate = addDays(
-        getCaseSheetData.appointment.sdConsultationDate,
-        getCaseSheetData.followUpAfterInDays
-      );
-    }
+    // if (getCaseSheetData.appointment.sdConsultationDate) {
+    //   getCaseSheetData.followUpDate = addDays(
+    //     getCaseSheetData.appointment.sdConsultationDate,
+    //     getCaseSheetData.followUpAfterInDays
+    //   );
+    // }
   }
 
   if (!(inputArguments.status === undefined)) {
@@ -1421,13 +1421,11 @@ const updatePatientPrescriptionSentStatus: Resolver<
       getCaseSheetData
     );
 
+
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
-      data: {
-        caseSheetId: getCaseSheetData.id,
-      },
     };
 
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
@@ -1555,9 +1553,6 @@ const generatePrescriptionTemp: Resolver<
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
-      data: {
-        caseSheetId: getCaseSheetData.id,
-      },
     };
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
     caseSheetAttrs = {
