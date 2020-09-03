@@ -288,23 +288,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     // favTestError,
   } = CaseSheetAPI();
 
-  const basicAppointmentData = {
-    'Doctor name': g(doctorDetails, 'fullName') || '',
-    'Patient name': `${g(caseSheet, 'caseSheetDetails', 'patientDetails', 'firstName')} ${g(
-      caseSheet,
-      'caseSheetDetails',
-      'patientDetails',
-      'lastName'
-    )}`.trim(),
-    'Patient mobile number':
-      g(caseSheet, 'caseSheetDetails', 'patientDetails', 'mobileNumber') || '',
-    'Doctor Mobile number': g(doctorDetails, 'mobileNumber') || '',
-    'Appointment Date time':
-      g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || '',
-    'Appointment display ID': g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') || '',
-    'Appointment ID': AppId || g(caseSheet, 'caseSheetDetails', 'appointment', 'id') || '',
-  };
-
   const { setOpenTokKeys, setCallBacks, callData, callOptions, errorPopup } = useAudioVideo();
   useEffect(() => {
     getSpecialties();
@@ -343,6 +326,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       AsyncStorage.removeItem('callDataSend');
       AsyncStorage.removeItem('patientName');
       AsyncStorage.removeItem('postWebEngageData');
+      AsyncStorage.removeItem('basicAppointmentData');
       AsyncStorage.setItem('AppointmentSelect', 'false');
       KeepAwake.deactivate();
       pubnub.unsubscribeAll();
@@ -599,6 +583,33 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     value: string.case_sheet.select_Speciality,
   });
   const [referralReason, setReferralReason] = useState<string>('');
+
+  const basicAppointmentData = {
+    'Doctor name': g(doctorDetails, 'fullName') || '',
+    'Patient name': `${g(caseSheet, 'caseSheetDetails', 'patientDetails', 'firstName') ||
+      g(patientDetails, 'firstName')} ${g(
+      caseSheet,
+      'caseSheetDetails',
+      'patientDetails',
+      'lastName'
+    ) || g(patientDetails, 'lastName')}`.trim(),
+    'Patient mobile number':
+      g(caseSheet, 'caseSheetDetails', 'patientDetails', 'mobileNumber') ||
+      g(patientDetails, 'mobileNumber') ||
+      '',
+    'Doctor Mobile number': g(doctorDetails, 'mobileNumber') || '',
+    'Appointment Date time':
+      g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || '',
+    'Appointment display ID':
+      g(appointmentData, 'displayId') ||
+      g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') ||
+      '',
+    'Appointment ID': AppId || g(caseSheet, 'caseSheetDetails', 'appointment', 'id') || '',
+  };
+
+  useEffect(() => {
+    AsyncStorage.setItem('basicAppointmentData', JSON.stringify(basicAppointmentData));
+  }, [basicAppointmentData]);
 
   const getFamilyHistoryText = (
     familyValues:
@@ -1437,7 +1448,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               ? AppConfig.Configuration.iOS_Version
               : AppConfig.Configuration.Android_Version,
           numberOfParticipants: count,
-          patientId: g(caseSheet, 'patientDetails', 'id')
+          patientId: g(caseSheet, 'patientDetails', 'id'),
         },
       })
       .then((_data) => {
@@ -1460,7 +1471,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           fetchPolicy: 'no-cache',
           variables: {
             appointmentCallId: isCall ? callId : chatId,
-            patientId: g(caseSheet, 'patientDetails', 'id')
+            patientId: g(caseSheet, 'patientDetails', 'id'),
           },
         })
         .catch((error) => {});
@@ -1863,7 +1874,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         const startConsultStorage = JSON.parse(
           (await AsyncStorage.getItem('showInAppNotification')) || 'false'
         );
-
+        const storedBasicAppointmentData = JSON.parse(
+          (await AsyncStorage.getItem('basicAppointmentData')) || 'false'
+        );
         if (!startConsult && startConsultStorage) {
           Alert.alert(string.common.apollo, string.consult_room.please_start_consultation);
           return;
@@ -1903,7 +1916,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   : WebEngageEventName.DOCTOR_STOP_AUDIO_CALL
                 : WebEngageEventName.DOCTOR_ACCEPTED_JOIN_END,
               {
-                ...basicAppointmentData,
+                ...(storedBasicAppointmentData || basicAppointmentData),
                 'Type of call': !isJoin
                   ? callType === 'V'
                     ? 'Video'
@@ -1951,7 +1964,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               : WebEngageEventName.DOCTOR_START_AUDIO_CALL
             : WebEngageEventName.DOCTOR_ACCEPTED_JOIN,
           {
-            ...basicAppointmentData,
+            ...(storedBasicAppointmentData || basicAppointmentData),
             'Type of call': !isJoin ? (callType === 'V' ? 'Video' : 'Audio') : 'Join Acceptance',
           }
         );

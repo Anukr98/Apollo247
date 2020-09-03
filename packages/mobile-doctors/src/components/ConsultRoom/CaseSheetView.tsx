@@ -454,14 +454,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const followUpMessage = (pdf?: string) => {
     const followupObj = {
       appointmentId: AppId,
-      folloupDateTime: followup
-        ? moment(
-            g(props.caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') ||
-              new Date()
-          )
-            .add(Number(followupChatDays.key), 'd')
-            .format('YYYY-MM-DD')
-        : '',
+      folloupDateTime: '',
       doctorId: g(props.caseSheet, 'caseSheetDetails', 'doctorId'),
       caseSheetId: g(props.caseSheet, 'caseSheetDetails', 'id'),
       doctorInfo: doctorDetails,
