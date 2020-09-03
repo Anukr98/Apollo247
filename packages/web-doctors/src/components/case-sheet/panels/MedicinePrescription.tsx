@@ -181,6 +181,15 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
+    noPrevPresc: {
+      backgroundColor: 'transparent',
+      //boxShadow: 'none',
+      color: '#02475B',
+      textTransform: 'uppercase',
+      fontSize: 13,
+      fontWeight: 500,
+      paddingLeft: 4,
+    },
     darkGreenaddBtn: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
@@ -2395,11 +2404,30 @@ export const MedicinePrescription: React.FC = () => {
   const handlePastMedicinesTabs = (index: number) => {
     const pastAppointmentsFilterArr =
       pastAppointments && pastAppointments.length > 0
-        ? pastAppointments.filter(function(e: any) {
-            return e.appointmentDateTime !== appointmentInfo.appointmentDateTime;
+        ? pastAppointments.filter(function(item: any) {
+          //return item.appointmentDateTime !== appointmentInfo.appointmentDateTime;
+            if(item.appointmentDateTime !== appointmentInfo.appointmentDateTime){
+              const MedicineCopy = item.caseSheet.filter(function(e: any) {
+                return e.doctorType !== 'JUNIOR' && e.sentToPatient;
+              });
+              if(MedicineCopy.length > 0){
+                const sortedArr = sortBy(MedicineCopy, 'version');
+                const lastMedCopy = sortedArr[sortedArr.length - 1];
+                if(lastMedCopy.medicinePrescription && lastMedCopy.medicinePrescription.length > 0){
+                  return item;
+                }else{
+                  return null;
+                }
+              }else{
+                return null;
+              }
+            }else{
+              return null;
+            };
           })
         : [];
-    const chunkArr = chunk(pastAppointmentsFilterArr, 4);
+        //console.log(pastAppointmentsFilterArr);
+    const chunkArr = chunk(sortBy(pastAppointmentsFilterArr, 'appointmentDateTime').reverse(), 4);
     setPagesCount(chunkArr.length);
     setPastAppointmentsArr(chunkArr.length > 0 ? chunkArr[index] : []);
     setSelectedPastIndex(index);
@@ -3150,6 +3178,12 @@ export const MedicinePrescription: React.FC = () => {
     );
   };
 
+  useEffect(() => {
+    if (caseSheetEdit) {
+     handlePastMedicinesTabs(0);
+    }
+  }, [caseSheetEdit]);
+
   return (
     <div className={classes.root}>
       <Grid container spacing={1}>
@@ -3356,7 +3390,7 @@ export const MedicinePrescription: React.FC = () => {
           >
             <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
           </AphButton>
-          <AphButton
+          {pastAppointmentsArr && pastAppointmentsArr.length > 0 ? <AphButton
             variant="contained"
             color="primary"
             classes={{ root: classes.btnAddDoctor }}
@@ -3366,7 +3400,12 @@ export const MedicinePrescription: React.FC = () => {
             }}
           >
             <img src={require('images/ic_dark_plus.svg')} alt="" /> PREVIOUS Rx
-          </AphButton>
+          </AphButton>: <span
+          className={classes.noPrevPresc}
+            // variant="contained"
+            //color="primary"
+            //classes={{ root: classes.noPrevPresc }}
+          >No previous prescriptions</span>}
         </>
       )}
       {isEditFavMedicine && (

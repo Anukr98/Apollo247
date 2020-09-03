@@ -918,6 +918,7 @@ export const GET_CASESHEET = gql`
         unreadMessagesCount
         caseSheet {
           version
+          sentToPatient
           consultType
           doctorType
           diagnosis {
