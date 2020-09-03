@@ -1124,7 +1124,7 @@ export class DoctorRepository extends Repository<Doctor> {
     if (doctorId == '0') {
       return this.find({
         where: {
-          doctorType: Not('JUNIOR'),
+          doctorType: Not(DoctorType.JUNIOR),
         },
         relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
         take: limit,
@@ -1135,7 +1135,7 @@ export class DoctorRepository extends Repository<Doctor> {
       return this.find({
         where: {
           id: doctorId,
-          doctorType: Not('JUNIOR'),
+          doctorType: Not(DoctorType.JUNIOR),
         },
         relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
         take: limit,
@@ -1149,7 +1149,7 @@ export class DoctorRepository extends Repository<Doctor> {
     return this.find({
       select: ['id', 'mobileNumber', 'displayName'],
       where: {
-        doctorType: Not('JUNIOR'),
+        doctorType: Not(DoctorType.JUNIOR),
         isActive: true,
       },
     });
@@ -1157,7 +1157,7 @@ export class DoctorRepository extends Repository<Doctor> {
   getSeniorDoctorCount() {
     return this.count({
       where: {
-        doctorType: Not('JUNIOR'),
+        doctorType: Not(DoctorType.JUNIOR),
       },
     });
   }
@@ -1165,7 +1165,7 @@ export class DoctorRepository extends Repository<Doctor> {
   getJuniorDoctorCount() {
     return this.count({
       where: {
-        doctorType: 'JUNIOR',
+        doctorType: DoctorType.JUNIOR,
       },
     });
   }
