@@ -201,7 +201,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [addressType, setAddressType] = useState<PATIENT_ADDRESS_TYPE>();
   const [optionalAddress, setOptionalAddress] = useState<string>('');
   const [editProfile, setEditProfile] = useState<boolean>(false);
-  // const [selectionProp, setSelectionProp] = useState<object>({selection:{start:0,end:0}});
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
@@ -589,19 +588,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     }
   }
 
-// const _onFocus = ()=>{
-//   if(Platform.OS == 'android'){
-//     setSelectionProp({selection:{start:userName.length,end:userName.length}})
-//   }
-// }
-
-// const _onBlur = () =>{
-//   if(Platform.OS == 'android'){
-//     setSelectionProp({selection:{start:0,end:0}})
-//   }
-// }
-
-  /**view added for the patient's details */
+/**view added for the patient's details */
 const renderUserDetails = () => {
     return (
       <View style={styles.userDetailsOuterView}>
@@ -624,9 +611,6 @@ const renderUserDetails = () => {
                 value={userName} 
                 editable={editProfile} 
                 placeholder={'Full Name'} 
-                // onFocus = {()=>_onFocus()}
-                // onBlur = {()=>_onBlur()}
-                // selection={Platform.OS == 'ios' ? null : selectionProp }
                 inputStyle={styles.textInputName}
                 />
               }
