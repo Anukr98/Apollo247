@@ -104,12 +104,10 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
             <ul className={classes.timingList}>
               {doctorTimings.map((item: any) => {
                 const actualDay = item.actualDay;
-                const weeDaysStartTime = moment
-                  .utc(`${today} ${item.startTime}`)
+                const weeDaysStartTime = moment(`${today} ${item.startTime}`)
                   .local()
                   .format('hh:mm a');
-                const weeDaysEndTime = moment
-                  .utc(`${today} ${item.endTime}`)
+                const weeDaysEndTime = moment(`${today} ${item.endTime}`)
                   .local()
                   .format('hh:mm a');
                 return (
@@ -129,12 +127,10 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
           <div className={classes.rightGroup}>
             {doctorTimings.map((item: any) => {
               const actualDay = item.actualDay;
-              const weeDaysStartTime = moment
-                .utc(`${today} ${item.startTime}`)
+              const weeDaysStartTime = moment(`${today} ${item.startTime}`)
                 .local()
                 .format('hh:mm a');
-              const weeDaysEndTime = moment
-                .utc(`${today} ${item.endTime}`)
+              const weeDaysEndTime = moment(`${today} ${item.endTime}`)
                 .local()
                 .format('hh:mm a');
               return (
