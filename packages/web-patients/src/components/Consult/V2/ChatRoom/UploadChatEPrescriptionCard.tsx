@@ -295,6 +295,9 @@ export const UploadChatEPrescriptionCard: React.FC<EPrescriptionCardProps> = (pr
         item!.doctorType == DoctorType.PAYROLL
     )!;
 
+  const getBlobName = (caseSheet: CaseSheet[]) =>
+    caseSheet.length > 0 && caseSheet.filter((item) => item.blobName);
+
   const formattedEPrescriptions =
     pastMedicalOrders &&
     pastMedicalOrders
@@ -315,14 +318,13 @@ export const UploadChatEPrescriptionCard: React.FC<EPrescriptionCardProps> = (pr
         pastPrescriptions &&
           pastPrescriptions.map(
             (item: any) =>
-              item && {
+              item &&
+              getBlobName(item.caseSheet).length > 0 && {
                 id: item.id,
                 date: moment(item.appointmentDateTime).format(DATE_FORMAT),
-                uploadedUrl: item.caseSheet
-                  ? client.getBlobUrl(
-                      (getCaseSheet(item.caseSheet) || { blobName: '' }).blobName || ''
-                    )
-                  : '',
+                uploadedUrl: `${process.env.AZURE_PDF_BASE_URL}${
+                  getBlobName(item.caseSheet)[0].blobName
+                }`,
                 doctorName: item.doctorInfo ? `${item.doctorInfo.fullName}` : '',
                 forPatient: (currentPatient && currentPatient.firstName) || '',
                 medicines: (

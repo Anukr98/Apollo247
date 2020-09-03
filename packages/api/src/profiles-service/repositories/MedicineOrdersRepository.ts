@@ -208,6 +208,13 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getMedicineOrderDetailsByOrderAutoId(orderAutoId: MedicineOrders['orderAutoId']) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: ['patient', 'medicineOrderShipments', 'medicineOrderPayments'],
+    });
+  }
+
   saveMedicineOrderStatus(orderStatusAttrs: Partial<MedicineOrdersStatus>, orderAutoId: number) {
     return MedicineOrdersStatus.create(orderStatusAttrs)
       .save()
