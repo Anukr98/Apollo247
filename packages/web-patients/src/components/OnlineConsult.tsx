@@ -626,22 +626,22 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 Schedule For Later
               </AphButton>
             </div>
-            {showCalendar || scheduleLater || !consultNowAvailable ? (
+            {/* {showCalendar || scheduleLater || !consultNowAvailable ? (
               ''
             ) : (
               <p className={classes.consultNowInfo}>
                 Please note that after booking, you will need to download the Apollo 247 app to
                 continue with your consultation.
               </p>
-            )}
+            )} */}
           </div>
 
           {(!consultNow || showCalendar || scheduleLater || !consultNowAvailable) && (
             <>
-              <p className={classes.consultGroup}>
+              {/* <p className={classes.consultGroup}>
                 Please note that after booking, you will need to download the Apollo 247 app to
                 continue with your consultation.
-              </p>
+              </p> */}
 
               <Grid container spacing={2}>
                 <Grid item sm={6} xs={12}>
