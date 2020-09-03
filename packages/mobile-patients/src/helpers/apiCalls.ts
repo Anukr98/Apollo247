@@ -13,6 +13,7 @@ export interface MedicineProduct {
   mou: string; // minimum order unit
   name: string;
   price: number;
+  sell_online: 0 | 1;
   sku: string;
   small_image: string;
   special_price?: string | number;
@@ -148,7 +149,7 @@ export interface GetTatResponse247 {
       sku: string;
       qty: number;
       mrp: number;
-      exist: boolean
+      exist: boolean;
     }[];
     storeCode: string;
     tat: string;
