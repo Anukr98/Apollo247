@@ -425,8 +425,19 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
           value={searchText}
           onSubmitEditing={goToSearchPage}
           onChangeText={(value) => {
-            const search = _.debounce(onSearchTest, 300);
-            search(value);
+            if (isValidSearch(value)) {
+              if (!g(locationForDiagnostics, 'cityId')) {
+                renderLocationNotServingPopup();
+                return;
+              }
+              setSearchText(value);
+              if (!(value && value.length > 2)) {
+                setMedicineList([]);
+                return;
+              }
+              const search = _.debounce(onSearchTest, 300);
+              search(value);
+            }
           }}
           autoCorrect={false}
           rightIcon={rigthIconView}
@@ -585,41 +596,30 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   };
 
   const onSearchTest = (_searchText: string) => {
-    if (isValidSearch(_searchText)) {
-      if (!g(locationForDiagnostics, 'cityId')) {
-        renderLocationNotServingPopup();
-        return;
-      }
-      setSearchText(_searchText);
-      if (!(_searchText && _searchText.length > 2)) {
-        setMedicineList([]);
-        return;
-      }
-      setsearchSate('load');
-      client
-        .query<searchDiagnostics, searchDiagnosticsVariables>({
-          query: SEARCH_DIAGNOSTICS,
-          variables: {
-            searchText: _searchText,
-            city: locationForDiagnostics && locationForDiagnostics.city,
-            patientId: (currentPatient && currentPatient.id) || '',
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data }) => {
-          // aphConsole.log({ data });
-          const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
-          setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
-          setsearchSate('success');
-        })
-        .catch((e) => {
-          CommonBugFender('TestsByCategory_onSearchTest', e);
-          // aphConsole.log({ e });
-          if (!Axios.isCancel(e)) {
-            setsearchSate('fail');
-          }
-        });
-    }
+    setsearchSate('load');
+    client
+      .query<searchDiagnostics, searchDiagnosticsVariables>({
+        query: SEARCH_DIAGNOSTICS,
+        variables: {
+          searchText: _searchText,
+          city: locationForDiagnostics && locationForDiagnostics.city,
+          patientId: (currentPatient && currentPatient.id) || '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        // aphConsole.log({ data });
+        const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
+        setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
+        setsearchSate('success');
+      })
+      .catch((e) => {
+        CommonBugFender('TestsByCategory_onSearchTest', e);
+        // aphConsole.log({ e });
+        if (!Axios.isCancel(e)) {
+          setsearchSate('fail');
+        }
+      });
   };
 
   const renderSearchResults = () => {
