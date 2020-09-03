@@ -1446,7 +1446,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       Number.isInteger(paginate.take || paginate.skip)
         ? this.createQueryBuilder('appointment')
             .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-            .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
             .where('appointment.patientId IN (:...ids)', { ids })
             .andWhere('appointment.discountedAmount not in(:discountedAmount)', {
               discountedAmount: 0,
