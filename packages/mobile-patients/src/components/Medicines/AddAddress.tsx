@@ -137,6 +137,20 @@ const styles = StyleSheet.create({
     flex:1, 
     top:  Platform.OS == 'ios' ? -6  : -11
   },
+  textInputName:{
+    borderBottomWidth: 1,
+    paddingBottom: 0, 
+    color: theme.colors.SHERPA_BLUE,
+    opacity: Platform.OS == 'ios' ? 0.5 :0.4,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS
+  },
+  nameText:{
+    color:theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    flex:1,
+    marginBottom:Platform.OS == 'android' ? '9%' : '7%'
+  }
 });
 
 export type AddressSource = 'My Account' | 'Upload Prescription' | 'Cart' | 'Diagnostics Cart';
@@ -187,6 +201,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [addressType, setAddressType] = useState<PATIENT_ADDRESS_TYPE>();
   const [optionalAddress, setOptionalAddress] = useState<string>('');
   const [editProfile, setEditProfile] = useState<boolean>(false);
+  // const [selectionProp, setSelectionProp] = useState<object>({selection:{start:0,end:0}});
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
@@ -574,6 +589,18 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     }
   }
 
+// const _onFocus = ()=>{
+//   if(Platform.OS == 'android'){
+//     setSelectionProp({selection:{start:userName.length,end:userName.length}})
+//   }
+// }
+
+// const _onBlur = () =>{
+//   if(Platform.OS == 'android'){
+//     setSelectionProp({selection:{start:0,end:0}})
+//   }
+// }
+
   /**view added for the patient's details */
 const renderUserDetails = () => {
     return (
@@ -586,21 +613,23 @@ const renderUserDetails = () => {
                 opacity: editProfile ? 0.6 : 1,
                  ...fonts.IBMPlexSansMedium(14)
                  }}>Name : </Text>
+                {!editProfile ? 
+                    <Text numberOfLines={1} ellipsizeMode='tail'
+                        style={styles.nameText}>
+                    {userName}
+                </Text> : 
               <TextInputComponent 
                 conatinerstyles={styles.textInputContainerStyle}
                 onChangeText={(userName) => (userName.startsWith(' ') ?  null : setuserName(userName))}
                 value={userName} 
                 editable={editProfile} 
                 placeholder={'Full Name'} 
-                
-                inputStyle={{
-                  borderBottomWidth: editProfile ? 1 : 2,
-                  paddingBottom: editProfile ? 0 : 3, 
-                  color: editProfile ? theme.colors.SHERPA_BLUE : theme.colors.SHERPA_BLUE , 
-                  opacity: editProfile ? (Platform.OS == 'ios' ? 0.5 :0.4) : 1,
-                  ...theme.fonts.IBMPlexSansMedium(14),
-                  borderColor: editProfile ? theme.colors.INPUT_BORDER_SUCCESS : 'transparent'
-                }}/>
+                // onFocus = {()=>_onFocus()}
+                // onBlur = {()=>_onBlur()}
+                // selection={Platform.OS == 'ios' ? null : selectionProp }
+                inputStyle={styles.textInputName}
+                />
+              }
             </View>
 
             <View style={{flexDirection:'row',top: Platform.OS == 'ios' ? -8 : -15}}>
@@ -613,7 +642,6 @@ const renderUserDetails = () => {
                 conatinerstyles={styles.textInputContainerStyle}
                 maxLength={10}
                 keyboardType="numeric"
-                //add validations
                   onChangeText={(phoneNumber) => {
                     _validateAndSetPhoneNumber(phoneNumber)
                 }}
@@ -623,7 +651,7 @@ const renderUserDetails = () => {
                 inputStyle={{
                   borderBottomWidth: editProfile ? 1 : 2,
                   paddingBottom: editProfile ? 0 : 3, 
-                  color: editProfile ? theme.colors.SHERPA_BLUE : theme.colors.SHERPA_BLUE,
+                  color:theme.colors.SHERPA_BLUE,
                   opacity: editProfile ? (Platform.OS == 'ios' ? 0.5 :0.4) : 1,
                   ...theme.fonts.IBMPlexSansMedium(14),
                   borderColor: editProfile ? theme.colors.INPUT_BORDER_SUCCESS : 'transparent'
