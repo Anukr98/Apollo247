@@ -110,6 +110,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
+  const [searchQuery, setSearchQuery] = useState({});
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -436,6 +437,12 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
                 return;
               }
               const search = _.debounce(onSearchTest, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
               search(value);
             }
           }}

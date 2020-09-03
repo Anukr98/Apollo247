@@ -139,6 +139,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const [endReached, setEndReached] = useState<boolean>(products ? true : false);
   const [prevData, setPrevData] = useState<MedicineProduct[]>();
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
+  const [searchQuery, setSearchQuery] = useState({});
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
@@ -426,6 +427,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
                 return;
               }
               const search = _.debounce(onSearchMedicine, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
               search(value);
             }
           }}

@@ -1631,6 +1631,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const [isSearchFocused, setSearchFocused] = useState(false);
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
+  const [searchQuery, setSearchQuery] = useState({});
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
@@ -1718,6 +1719,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 return;
               }
               const search = _.debounce(onSearchMedicine, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
               search(value);
             }
           }}
