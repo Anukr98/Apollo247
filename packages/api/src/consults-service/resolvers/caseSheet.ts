@@ -1426,12 +1426,6 @@ const updatePatientPrescriptionSentStatus: Resolver<
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
-<<<<<<< HEAD
-=======
-      data: {
-        caseSheetId: getCaseSheetData.id,
-      },
->>>>>>> ddd48f13aff4d508b7992ab669590373c37ad02c
     };
 
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
@@ -1559,12 +1553,6 @@ const generatePrescriptionTemp: Resolver<
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
-<<<<<<< HEAD
-=======
-      data: {
-        caseSheetId: getCaseSheetData.id,
-      },
->>>>>>> ddd48f13aff4d508b7992ab669590373c37ad02c
     };
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
     caseSheetAttrs = {
