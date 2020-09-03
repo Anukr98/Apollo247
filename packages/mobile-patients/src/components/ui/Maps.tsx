@@ -555,7 +555,7 @@ export const Maps: React.FC<MapProps> = (props) => {
     return (
       <MapView
         provider={PROVIDER_GOOGLE}
-        style={{ height: screenHeight > 600 ? screenHeight / 1.6 : screenHeight / 1.8 }}
+        style={{ height: screenHeight > 650 ? screenHeight / 1.63 : screenHeight / 1.8 }}
         region={region}
         ref={_map}
         zoomEnabled={true}
