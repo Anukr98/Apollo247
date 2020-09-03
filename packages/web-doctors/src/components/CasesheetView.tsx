@@ -893,7 +893,6 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
             <>
               {!loader &&
               ((otherInstructions && otherInstructions.length > 0) ||
-                (followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0) ||
                 !isEmpty(referralSpecialtyName) ||
                 !isEmpty(referralDescription)) ? (
                 <div className={classes.prescriptionSection}>
@@ -912,12 +911,12 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                         </div>
                       </div>
                     )}
-                    {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
+                    {/* {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
                       <div className={classes.advice}>
                         <span>Follow Up</span>
                         <div className={classes.followContent}>{getFollowUpData()}</div>
                       </div>
-                    ) : null}
+                    ) : null} */}
                     {(!isEmpty(referralSpecialtyName) || !isEmpty(referralDescription)) && (
                       <div className={classes.advice}>
                         <span>Referral</span>
