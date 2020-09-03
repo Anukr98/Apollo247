@@ -868,7 +868,7 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
   }
 
-  if (!(inputArguments.followUpAfterInDays === undefined)) {
+  if (inputArguments && inputArguments.followUpAfterInDays) {
     if (
       inputArguments.followUpAfterInDays > ApiConstants.CHAT_DAYS_LIMIT ||
       inputArguments.followUpAfterInDays < 0
@@ -877,14 +877,14 @@ const modifyCaseSheet: Resolver<
     }
 
     getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
-    getCaseSheetData.followUp = true;
+    // getCaseSheetData.followUp = true;
 
-    if (getCaseSheetData.appointment.sdConsultationDate) {
-      getCaseSheetData.followUpDate = addDays(
-        getCaseSheetData.appointment.sdConsultationDate,
-        getCaseSheetData.followUpAfterInDays
-      );
-    }
+    // if (getCaseSheetData.appointment.sdConsultationDate) {
+    //   getCaseSheetData.followUpDate = addDays(
+    //     getCaseSheetData.appointment.sdConsultationDate,
+    //     getCaseSheetData.followUpAfterInDays
+    //   );
+    // }
   }
 
   if (!(inputArguments.status === undefined)) {

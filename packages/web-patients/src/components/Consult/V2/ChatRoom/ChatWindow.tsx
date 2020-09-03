@@ -278,7 +278,7 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: '75px',
         marginBottom: 15,
         borderLeft: '1px solid #00B38E',
-        padding: '0px 0 0px 10px !important',
+        padding: '0px 45px 0px 10px !important',
       },
     },
     consultRoom: {
@@ -687,7 +687,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     quesSubmitBtn: {
-      marginTop: 40,
+      marginTop: 50,
       background: 'transparent',
       border: 'none',
       cursor: 'pointer',
@@ -2124,7 +2124,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.jdThankyou ||
                     messageDetails.message === autoMessageStrings.startConsultjr ||
                     messageDetails.message === autoMessageStrings.stopConsultJr ||
-                    messageDetails.message === autoMessageStrings.languageQue
+                    messageDetails.message === autoMessageStrings.languageQue ||
+                    messageDetails.message === autoMessageStrings.consultPatientStartedMsg ||
+                    messageDetails.message === autoMessageStrings.patientJoinedMeetingRoom
                   ) {
                     return null;
                   }

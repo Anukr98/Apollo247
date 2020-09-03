@@ -26,7 +26,7 @@ import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescri
 import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
 import {
   uploadPrescriptionTracking,
-  // pharmacyUploadPresClickTracking,
+  pharmacyUploadPresClickTracking,
   uploadPhotoTracking,
 } from '../../webEngageTracking';
 import moment from 'moment';
@@ -638,7 +638,7 @@ const MedicineLanding: React.FC = (props: any) => {
 
   const handleUploadPrescription = () => {
     uploadPrescriptionTracking({ ...patient, age });
-    // pharmacyUploadPresClickTracking('Home');
+    pharmacyUploadPresClickTracking('Home');
     setIsUploadPreDialogOpen(true);
   };
   const metaTagProps = {

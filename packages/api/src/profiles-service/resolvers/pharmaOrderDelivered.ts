@@ -1,4 +1,5 @@
 import gql from 'graphql-tag';
+import AbortController from 'abort-controller';
 import { Decimal } from 'decimal.js';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
@@ -7,16 +8,21 @@ import {
   MedicineOrderInvoice,
   MedicineOrdersStatus,
   MedicineOrders,
-  TransactionLineItems,
-  TransactionLineItemsPartial,
-  OneApollTransaction,
-  ONE_APOLLO_PRODUCT_CATEGORY,
   Patient,
   BOOKING_SOURCE,
   DEVICE_TYPE,
   MedicineOrderShipments,
 } from 'profiles-service/entities';
-import { ONE_APOLLO_STORE_CODE, UnblockPointsRequest, ItemDetails } from 'types/oneApolloTypes';
+import {
+  ONE_APOLLO_STORE_CODE,
+  UnblockPointsRequest,
+  ItemDetails,
+  BlockUserPointsResponse,
+  TransactionLineItems,
+  TransactionLineItemsPartial,
+  OneApollTransaction,
+  ONE_APOLLO_PRODUCT_CATEGORY,
+} from 'types/oneApolloTypes';
 
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -29,6 +35,7 @@ import { NotificationType } from 'notifications-service/constants';
 import { log } from 'customWinstonLogger';
 import { OneApollo } from 'helpers/oneApollo';
 import { PharmaItemsResponse } from 'types/medicineOrderTypes';
+import { PharmaProductTypes } from 'ApiConstants';
 
 export const pharmaOrderDeliveredTypeDefs = gql`
   input OrderDeliveryInput {
@@ -58,6 +65,9 @@ export const pharmaOrderDeliveredTypeDefs = gql`
   extend type Mutation {
     saveOrderDeliveryStatus(orderDeliveryInput: OrderDeliveryInput): OrderDeliveryResult!
     saveOrderOutForDeliveryStatus(outForDeliveryInput: OutForDeliveryInput): OrderDeliveryResult!
+  }
+  extend type Query {
+    pushOneApolloTransaction(orderId: Int!): Boolean!
   }
 `;
 
@@ -177,6 +187,28 @@ const saveOrderDeliveryStatus: Resolver<
   return { requestStatus: 'true', requestMessage: 'Delivery status updated successfully' };
 };
 
+const pushOneApolloTransaction: Resolver<
+  null,
+  { orderId: number },
+  ProfilesServiceContext,
+  boolean
+> = async (parent, { orderId }, { profilesDb }) => {
+  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetailsByOrderAutoId(orderId);
+  if (orderDetails && orderDetails.patient) {
+    const mobileNumberIn = orderDetails.patient.mobileNumber.slice(3);
+    const apOrderNo = orderDetails.medicineOrderShipments[0].apOrderNo;
+    return await createOneApolloTransaction(
+      medicineOrdersRepo,
+      orderDetails,
+      orderDetails.patient,
+      mobileNumberIn,
+      apOrderNo
+    );
+  }
+  return true;
+};
+
 const createOneApolloTransaction = async (
   medicineOrdersRepo: MedicineOrdersRepository,
   order: MedicineOrders,
@@ -264,11 +296,28 @@ const generateTransactions = async (
     let { transactionLineItemsPartial, totalDiscount, netAmount, itemSku } = createLineItems(
       itemDetails
     );
-    const { RequestNumber } = order.medicineOrderPayments[0].healthCreditsRedemptionRequest;
-    const itemTypemap = await getSkuMap(itemSku);
-    const healthCreditsRedeemed = +new Decimal(
-      order.medicineOrderPayments[0].healthCreditsRedeemed
-    ).toDecimalPlaces(2, Decimal.ROUND_DOWN);
+
+    /**
+     * For prescription orders, payments info would be missing
+     * Assume empty request number and health credits = 0 initially
+     */
+    let RequestNumber: BlockUserPointsResponse['RequestNumber'] = '';
+    let healthCreditsRedeemed: number = 0;
+
+    const itemTypemap = await getSkuMap(itemSku, order.orderAutoId);
+    if (order.medicineOrderPayments.length) {
+      const paymentInfo = order.medicineOrderPayments[0];
+      if (
+        paymentInfo.healthCreditsRedemptionRequest &&
+        paymentInfo.healthCreditsRedemptionRequest.RequestNumber
+      )
+        RequestNumber = paymentInfo.healthCreditsRedemptionRequest.RequestNumber;
+      healthCreditsRedeemed = +new Decimal(paymentInfo.healthCreditsRedeemed).toDecimalPlaces(
+        2,
+        Decimal.ROUND_DOWN
+      );
+    }
+
     let [actualCreditsRedeemed, transactionLineItems] = addProductNameAndCat(
       transactionLineItemsPartial,
       itemTypemap,
@@ -279,7 +328,7 @@ const generateTransactions = async (
 
     if (healthCreditsToRefund > 0) {
       const unblockHCRequest: UnblockPointsRequest = {
-        RedemptionRequestNumber: RequestNumber || '',
+        RedemptionRequestNumber: RequestNumber,
         BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
         MobileNumber: mobileNumber,
         PointsToRelease: '' + healthCreditsToRefund,
@@ -416,40 +465,62 @@ const addProductNameAndCat = (
   return [totalCreditsRedeemed, transactionLineItemsComplete];
 };
 
-const getSkuMap = async (itemSku: string[]) => {
-  const itemTypemap: ItemsSkuTypeMap = {};
-
+const getSkuMap = async (itemSku: string[], orderId: MedicineOrders['orderAutoId']) => {
+  let itemTypemap: ItemsSkuTypeMap = {};
+  itemSku.forEach((val) => {
+    itemTypemap[val] = PharmaProductTypes.FMCG;
+  });
   const skusInfoUrl = process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL || '';
   const authToken = process.env.PHARMACY_MED_AUTH_TOKEN || '';
-  const pharmaResp = await fetch(skusInfoUrl, {
-    method: 'POST',
-    body: JSON.stringify({
-      params: itemSku.join(','),
-    }),
-    headers: { 'Content-Type': 'application/json', authorization: authToken },
-  });
-  const pharmaResponse = (await pharmaResp.json()) as PharmaItemsResponse;
-  log(
-    'profileServiceLogger',
-    `EXTERNAL_API_CALL_PHARMACY: ${skusInfoUrl}`,
-    'createOneApolloTransaction()->API_CALL_STARTING',
-    JSON.stringify(pharmaResponse),
-    ''
-  );
-  if (!pharmaResponse) {
-    throw new AphError(AphErrorMessages.PHARMACY_SKU_FETCH_FAILED, undefined, {});
-  }
-  if (!pharmaResponse.productdp)
-    throw new AphError(AphErrorMessages.INVALID_RESPONSE_FOR_SKU_PHARMACY, undefined, {});
-  pharmaResponse.productdp.forEach((val) => {
-    if (val.type_id) {
-      itemTypemap[val.sku] = val.type_id;
+  const controller = new AbortController();
+  const oneApolloTimeout = process.env.ONEAPOLLO_REQUEST_TIMEOUT || 10000;
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, +oneApolloTimeout);
+  try {
+    const pharmaResp = await fetch(skusInfoUrl, {
+      method: 'POST',
+      body: JSON.stringify({
+        params: itemSku.join(','),
+      }),
+      headers: { 'Content-Type': 'application/json', authorization: authToken },
+      signal: controller.signal,
+    });
+    const pharmaResponse = (await pharmaResp.json()) as PharmaItemsResponse;
+    log(
+      'profileServiceLogger',
+      `EXTERNAL_API_CALL_PHARMACY: ${skusInfoUrl} - ${orderId}`,
+      'createOneApolloTransaction()->API_CALL_STARTING',
+      JSON.stringify(pharmaResponse),
+      ''
+    );
+    if (!pharmaResponse || !pharmaResponse.productdp) {
+      log(
+        'profileServiceLogger',
+        `EXTERNAL_API_CALL_PHARMACY_FAILED: ${skusInfoUrl} - ${orderId}`,
+        'createOneApolloTransaction()->API_CALL_STARTING',
+        JSON.stringify(pharmaResponse),
+        'true'
+      );
     } else {
-      throw new AphError(AphErrorMessages.PHARMACY_SKU_NOT_FOUND, undefined, {});
+      pharmaResponse.productdp.forEach((val) => {
+        if (val.type_id && itemTypemap[val.sku]) {
+          itemTypemap[val.sku] = val.type_id;
+        }
+      });
     }
-  });
-
-  return itemTypemap;
+  } catch (e) {
+    log(
+      'profileServiceLogger',
+      `EXTERNAL_API_CALL_PHARMACY_FAILED_WITH_EXCEPTION: ${skusInfoUrl} - ${orderId}`,
+      'createOneApolloTransaction()->API_CALL_STARTING',
+      e.stack,
+      'true'
+    );
+  } finally {
+    clearTimeout(timeout);
+    return itemTypemap;
+  }
 };
 
 const createLineItems = (itemDetails: Array<ItemDetails>) => {
@@ -525,5 +596,8 @@ export const pharmaOrderDeliveryResolvers = {
   Mutation: {
     saveOrderDeliveryStatus,
     saveOrderOutForDeliveryStatus,
+  },
+  Query: {
+    pushOneApolloTransaction,
   },
 };
