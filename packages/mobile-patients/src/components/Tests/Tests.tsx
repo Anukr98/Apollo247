@@ -171,6 +171,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
+  const [searchQuery, setSearchQuery] = useState({});
+
   const { data: diagnosticsData, error: hError, loading: hLoading, refetch: hRefetch } = useQuery<
     getDiagnosticsData
   >(GET_DIAGNOSTIC_DATA, {
@@ -545,6 +547,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     setcurrentLocation(value);
                     if (value.length > 2) {
                       const locSearch = _.debounce(autoSearch, 300);
+                      setSearchQuery((prevSearch: any) => {
+                        if (prevSearch.cancel) {
+                          prevSearch.cancel();
+                        }
+                        return locSearch;
+                      });
                       locSearch(value);
                       setshowLocations(true);
                     } else {
@@ -1248,37 +1256,26 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const client = useApolloClient();
 
   const onSearchMedicine = (_searchText: string) => {
-    if (isValidSearch(_searchText)) {
-      if (!g(locationForDiagnostics, 'cityId')) {
-        renderLocationNotServingPopup();
-        return;
-      }
-      setSearchText(_searchText);
-      if (!(_searchText && _searchText.length > 2)) {
-        setMedicineList([]);
-        return;
-      }
-      setsearchSate('load');
-      client
-        .query<searchDiagnostics, searchDiagnosticsVariables>({
-          query: SEARCH_DIAGNOSTICS,
-          variables: {
-            searchText: _searchText,
-            city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
-            patientId: (currentPatient && currentPatient.id) || '',
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data }) => {
-          const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
-          setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
-          setsearchSate('success');
-        })
-        .catch((e) => {
-          CommonBugFender('Tests_onSearchMedicine', e);
-          setsearchSate('fail');
-        });
-    }
+    setsearchSate('load');
+    client
+      .query<searchDiagnostics, searchDiagnosticsVariables>({
+        query: SEARCH_DIAGNOSTICS,
+        variables: {
+          searchText: _searchText,
+          city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
+          patientId: (currentPatient && currentPatient.id) || '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
+        setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
+        setsearchSate('success');
+      })
+      .catch((e) => {
+        CommonBugFender('Tests_onSearchMedicine', e);
+        setsearchSate('fail');
+      });
   };
 
   interface SuggestionType {
@@ -1460,8 +1457,25 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setsearchSate('success');
           }}
           onChangeText={(value) => {
-            const search = _.debounce(onSearchMedicine, 300);
-            search(value);
+            if (isValidSearch(value)) {
+              if (!g(locationForDiagnostics, 'cityId')) {
+                renderLocationNotServingPopup();
+                return;
+              }
+              setSearchText(value);
+              if (!(value && value.length > 2)) {
+                setMedicineList([]);
+                return;
+              }
+              const search = _.debounce(onSearchMedicine, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
+              search(value);
+            }
           }}
           autoCorrect={false}
           rightIcon={isSearchFocused ? rigthIconView : <View />}
