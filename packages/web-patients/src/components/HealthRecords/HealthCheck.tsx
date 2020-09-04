@@ -10,6 +10,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response as HealthCheckType } from '../../graphql/types/getPatientPrismMedicalRecords';
+import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -350,6 +351,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#67909C',
       fontWeight: 'normal',
     },
+    noteText: {
+      fontSize: 12,
+      padding: 10,
+      color: '#0087ba',
+    },
   };
 });
 
@@ -373,36 +379,10 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
   const getFormattedDate = (combinedData: HealthCheckType, dateFor: string) => {
     return dateFor === 'title' &&
       moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY') ? (
-        <span>Today , {moment(combinedData.date).format('DD MMM YYYY')}</span>
-      ) : (
-        <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
-      );
-  };
-
-  const getName = (combinedData: any, type: string) => {
-    switch (type) {
-      case 'lab':
-        return combinedData.labTestName;
-      case 'prescription':
-        return combinedData.prescriptionName;
-      default:
-        return '';
-    }
-  };
-
-  const getSource = (activeData: any, type: string) => {
-    switch (type) {
-      case 'lab':
-        return activeData && activeData.siteDisplayName
-          ? activeData.siteDisplayName
-          : !!activeData.labTestSource
-            ? activeData.labTestSource
-            : '-';
-      case 'prescription':
-        return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
-      default:
-        return '-';
-    }
+      <span>Today , {moment(combinedData.date).format('DD MMM YYYY')}</span>
+    ) : (
+      <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
+    );
   };
 
   if (loading) {
@@ -420,6 +400,7 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
+        <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
@@ -432,8 +413,8 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 240px)'
               : isSmallScreen
-                ? 'calc(100vh - 230px)'
-                : 'calc(100vh - 270px)'
+              ? 'calc(100vh - 230px)'
+              : 'calc(100vh - 310px)'
           }
         >
           <div className={classes.consultationsList}>
@@ -489,7 +470,7 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
       <div
         className={`${classes.rightSection} ${
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
-          }`}
+        }`}
       >
         {allCombinedData && allCombinedData.length > 0 ? (
           <>
@@ -514,47 +495,47 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 287px)'
                   : isSmallScreen
-                    ? 'calc(100vh - 55px)'
-                    : 'calc(100vh - 322px)'
+                  ? 'calc(100vh - 55px)'
+                  : 'calc(100vh - 322px)'
               }
             >
               {((!isSmallScreen && activeData) ||
                 (isSmallScreen && showMobileDetails && activeData)) && (
-                  <div className={classes.medicalRecordsDetails}>
-                    <div className={classes.cbcDetails}>
-                      <div className={classes.reportsDetails}>
-                        <div className={classes.testName}>
-                          {activeData.healthCheckType || activeData.healthCheckName || '-'}
-                        </div>
-                      </div>
-                      <hr />
-                      <div className={classes.reportsDetails}>
-                        <label>Uploaded Date</label>
-                        <p>
-                          On{' '}
-                          <span className={classes.checkDate}>
-                            {getFormattedDate(activeData, 'checkUp')}
-                          </span>
-                        </p>
+                <div className={classes.medicalRecordsDetails}>
+                  <div className={classes.cbcDetails}>
+                    <div className={classes.reportsDetails}>
+                      <div className={classes.testName}>
+                        {activeData.healthCheckType || activeData.healthCheckName || '-'}
                       </div>
                     </div>
-                    {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
-                      <RenderImage
-                        activeData={activeData}
-                        type={
-                          activeData.healthCheckFiles &&
-                            activeData.healthCheckFiles.length &&
-                            activeData.healthCheckFiles[0].fileName &&
-                            activeData.healthCheckFiles[0].fileName.includes('pdf')
-                            ? 'pdf'
-                            : activeData.fileUrl.includes('pdf')
-                              ? 'pdf'
-                              : 'image'
-                        }
-                      />
-                    )}
+                    <hr />
+                    <div className={classes.reportsDetails}>
+                      <label>Uploaded Date</label>
+                      <p>
+                        On{' '}
+                        <span className={classes.checkDate}>
+                          {getFormattedDate(activeData, 'checkUp')}
+                        </span>
+                      </p>
+                    </div>
                   </div>
-                )}
+                  {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
+                    <RenderImage
+                      activeData={activeData}
+                      type={
+                        activeData.healthCheckFiles &&
+                        activeData.healthCheckFiles.length &&
+                        activeData.healthCheckFiles[0].fileName &&
+                        activeData.healthCheckFiles[0].fileName.includes('pdf')
+                          ? 'pdf'
+                          : activeData.fileUrl.includes('pdf')
+                          ? 'pdf'
+                          : 'image'
+                      }
+                    />
+                  )}
+                </div>
+              )}
             </Scrollbars>
             {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
               <a href={activeData.fileUrl}>
@@ -567,14 +548,11 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
             )}
           </>
         ) : (
-            <div className={classes.noRecordFoundWrapper}>
-              <img src={require('images/ic_records.svg')} />
-              <p>
-                You don’t have any records with us right now. Add a record to keep everything handy in
-                one place!
-            </p>
-            </div>
-          )}
+          <div className={classes.noRecordFoundWrapper}>
+            <img src={require('images/ic_records.svg')} />
+            <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
+          </div>
+        )}
       </div>
     </div>
   );

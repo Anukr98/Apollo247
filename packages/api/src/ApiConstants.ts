@@ -390,7 +390,9 @@ export enum ApiConstants {
   DOCTOR_DEEPLINK_CONSTANT = 'apollopatients://Doctor?',
   DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO = 'AEkA',
   DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO = 'MGY5',
-
+  PATIENT_APPT_DEEPLINK = 'apollopatients://Consult',
+  PATIENT_CHATROOM_DEEPLINK = 'apollopatients://ChatRoom?',
+  PATIENT_PRESCRIPTION_DEEPLINK = 'apollopatients://ConsultDetails?',
   // whatsapp constants
   WEB_ENGAGE_AUTHORIZATION = 'fe30a7fd-5dd7-48a8-9ce0-be85b5eb4de7',
 
@@ -485,5 +487,5 @@ export const migrationDir = {
 };
 
 export const elasticConsts = {
-  ELASTIC_CONFLICT_RETRY_COUNT: 5
-}
+  ELASTIC_CONFLICT_RETRY_COUNT: 5,
+};

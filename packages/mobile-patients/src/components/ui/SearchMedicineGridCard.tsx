@@ -17,7 +17,8 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Image } from 'react-native-elements';
-import { AddToCartButtons } from '../Medicines/AddToCartButtons';
+import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
+import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -125,6 +126,7 @@ const styles = StyleSheet.create({
 });
 
 export interface SearchMedicineGridCardProps {
+  isSellOnline: boolean;
   isTest?: boolean;
   medicineName: string;
   personName?: string;
@@ -159,6 +161,7 @@ export interface SearchMedicineGridCardProps {
 
 export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (props) => {
   const {
+    isSellOnline,
     isTest,
     medicineName,
     specialPrice,
@@ -190,6 +193,8 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
       </View>
     );
   };
+
+  const renderNotForSaleTag = () => <NotForSaleBadge containerStyle={{ alignSelf: 'center' }} />;
 
   const renderAddToCartView = () => {
     return (
@@ -294,7 +299,11 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
       {renderSpecialPrice()}
       <View style={styles.priceAndAddToCartViewStyle}>
         {renderOutOfStock()}
-        {!isMedicineAddedToCart ? renderAddToCartView() : renderQuantityView()}
+        {!isSellOnline
+          ? renderNotForSaleTag()
+          : !isMedicineAddedToCart
+          ? renderAddToCartView()
+          : renderQuantityView()}
       </View>
     </TouchableOpacity>
   );

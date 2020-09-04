@@ -73,6 +73,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
+import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 
 const { width, height } = Dimensions.get('window');
 
@@ -204,6 +205,17 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(9),
     color: theme.colors.WHITE,
   },
+  visitPharmacyText: {
+    ...theme.viewStyles.text('M', 17, '#0087BA'),
+    paddingBottom: 10,
+  },
+  notForSaleContainer: { alignSelf: 'center' },
+  notForSaleText: {
+    ...theme.viewStyles.text('B', 14, '#fff', 1),
+    marginVertical: 6,
+    marginHorizontal: 12,
+  },
+  stickyBottomComponent: { height: 'auto', flexDirection: 'column' },
 });
 
 export interface MedicineDetailsSceneProps
@@ -586,6 +598,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     postWebEngageEvent(WebEngageEventName.NOTIFY_ME, eventAttributes);
   };
 
+  const renderVisitPharmacyText = () => (
+    <Text style={styles.visitPharmacyText}>{'Visit nearest pharmacy with valid prescription'}</Text>
+  );
+
+  const renderNotForSaleTag = () => (
+    <NotForSaleBadge
+      textStyle={styles.notForSaleText}
+      containerStyle={styles.notForSaleContainer}
+    />
+  );
+
   const renderBottomButtons = () => {
     const itemQty = getItemQuantity(sku);
     const addToCart = () => updateQuantityCartItem(medicineDetails, itemQty + 1);
@@ -595,7 +618,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const discountPercent = getDiscountPercentage(price, special_price);
 
     return (
-      <StickyBottomComponent style={{ height: 'auto' }}>
+      <StickyBottomComponent style={styles.stickyBottomComponent}>
+        {!medicineDetails.sell_online && renderVisitPharmacyText()}
         {(!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock ? (
           <View
             style={{
@@ -672,7 +696,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   </View>
                 )}
               </View>
-              {isMedicineAddedToCart ? (
+              {!medicineDetails.sell_online ? (
+                renderNotForSaleTag()
+              ) : isMedicineAddedToCart ? (
                 <AddToCartButtons
                   numberOfItemsInCart={itemQty}
                   maxOrderQty={medicineDetails.MaxOrderQty}
@@ -1242,7 +1268,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const renderSimilarProducts = (products: MedicineProduct[]) => {
     const renderItem = ({ item, index }: ListRenderItemInfo<MedicineProduct>) => {
-      const { sku, name, image, price, special_price, is_in_stock } = item;
+      const { sku, name, image, price, special_price, is_in_stock, sell_online } = item;
       const itemQty = getItemQuantity(sku);
       const addToCart = () => updateQuantityCartItem({ sku }, itemQty + 1);
       const removeItemFromCart = () => updateQuantityCartItem({ sku }, itemQty - 1);
@@ -1300,6 +1326,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         <ProductUpSellingCard
           key={sku}
           title={name}
+          isSellOnline={!!sell_online}
           price={price}
           specialPrice={special_price}
           imageUrl={productsThumbnailUrl(image)}
@@ -1388,7 +1415,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             {Substitutes.length ? renderSubstitutes() : null}
             {!!g(medicineDetails, 'similar_products', 'length') &&
               renderSimilarProducts(medicineDetails.similar_products)}
-            {!isOutOfStock && renderDeliveryView()}
+            {!isOutOfStock && !!medicineDetails.sell_online && renderDeliveryView()}
             <View style={{ height: 130 }} />
           </KeyboardAwareScrollView>
         ) : (
