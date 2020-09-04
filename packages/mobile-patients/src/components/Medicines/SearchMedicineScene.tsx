@@ -70,6 +70,7 @@ import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/component
 import Axios from 'axios';
 import { StickyBottomComponent } from '../ui/StickyBottomComponent';
 import { Button } from '../ui/Button';
+import _ from 'lodash';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -165,7 +166,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
   const medicineListRef = useRef<FlatList<MedicineProduct> | null>();
-
+  const [searchQuery, setSearchQuery] = useState({});
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
@@ -190,11 +191,11 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   useEffect(() => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_LIST_GRID_VIEW] = {
-      'Source': 'Search',
-      'Type': showListView ? 'List' : 'Grid',
+      Source: 'Search',
+      Type: showListView ? 'List' : 'Grid',
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_LIST_GRID_VIEW, eventAttributes);
-  },[showListView]);
+  }, [showListView]);
 
   useEffect(() => {
     searchTextFromProp && onSearchProduct(searchTextFromProp);
@@ -229,32 +230,25 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   };
 
   const onSearchMedicine = (_searchText: string) => {
-    if (isValidSearch(_searchText)) {
-      setSearchText(_searchText);
-      if (!(_searchText && _searchText.length > 2)) {
-        setMedicineList([]);
-        return;
-      }
-      setsearchSate('load');
-      getMedicineSearchSuggestionsApi(_searchText)
-        .then(({ data }) => {
-          const products = data.products || [];
-          setMedicineList(products);
-          setsearchSate('success');
-          const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
-            keyword: _searchText,
-            Source: 'Pharmacy Home',
-            resultsdisplayed: products.length,
-          };
-          postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
-        })
-        .catch((e) => {
-          CommonBugFender('SearchByBrand_onSearchMedicine', e);
-          if (!Axios.isCancel(e)) {
-            setsearchSate('fail');
-          }
-        });
-    }
+    setsearchSate('load');
+    getMedicineSearchSuggestionsApi(_searchText)
+      .then(({ data }) => {
+        const products = data.products || [];
+        setMedicineList(products);
+        setsearchSate('success');
+        const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
+          keyword: _searchText,
+          Source: 'Pharmacy Home',
+          resultsdisplayed: products.length,
+        };
+        postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+      })
+      .catch((e) => {
+        CommonBugFender('SearchByBrand_onSearchMedicine', e);
+        if (!Axios.isCancel(e)) {
+          setsearchSate('fail');
+        }
+      });
   };
 
   const onSearchProduct = (_searchText: string) => {
@@ -508,7 +502,21 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           value={searchText}
           onSubmitEditing={startFullSearch}
           onChangeText={(value) => {
-            onSearchMedicine(value);
+            if (isValidSearch(value)) {
+              setSearchText(value);
+              if (!(value && value.length > 2)) {
+                setMedicineList([]);
+                return;
+              }
+              const search = _.debounce(onSearchMedicine, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
+              search(value);
+            }
           }}
           _isSearchFocused={isSearchFocused}
           onFocus={() => setSearchFocused(true)}
@@ -608,6 +616,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
     return (
       <SearchMedicineCard
+        isSellOnline={!!medicine.sell_online}
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
@@ -707,6 +716,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
     return (
       <SearchMedicineGridCard
+        isSellOnline={!!medicine.sell_online}
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});

@@ -116,6 +116,7 @@ import {
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
 import { AddToCartButtons } from './AddToCartButtons';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '../../graphql/types/getMedicineOrderOMSDetailsWithAddress';
+import _ from 'lodash';
 
 const styles = StyleSheet.create({
   sliderDotStyle: {
@@ -1480,7 +1481,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           props.navigation,
           currentPatient,
           !!isPharmacyLocationServiceable,
-          { source: 'Pharmacy Home', section: title, categoryId: category_id },
+          { source: 'Pharmacy Home', section: title, categoryId: category_id }
         );
       }
     };
@@ -1630,34 +1631,28 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const [isSearchFocused, setSearchFocused] = useState(false);
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
+  const [searchQuery, setSearchQuery] = useState({});
 
   const onSearchMedicine = (_searchText: string) => {
-    if (isValidSearch(_searchText)) {
-      setSearchText(_searchText);
-      if (!(_searchText && _searchText.length > 2)) {
-        setMedicineList([]);
-        return;
-      }
-      setsearchSate('load');
-      getMedicineSearchSuggestionsApi(_searchText)
-        .then(({ data }) => {
-          const products = data.products || [];
-          setMedicineList(products);
-          setsearchSate('success');
-          const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
-            keyword: _searchText,
-            Source: 'Pharmacy Home',
-            resultsdisplayed: products.length,
-          };
-          postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
-        })
-        .catch((e) => {
-          CommonBugFender('Medicine_onSearchMedicine', e);
-          if (!Axios.isCancel(e)) {
-            setsearchSate('fail');
-          }
-        });
-    }
+    setsearchSate('load');
+    getMedicineSearchSuggestionsApi(_searchText)
+      .then(({ data }) => {
+        const products = data.products || [];
+        setMedicineList(products);
+        setsearchSate('success');
+        const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
+          keyword: _searchText,
+          Source: 'Pharmacy Home',
+          resultsdisplayed: products.length,
+        };
+        postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+      })
+      .catch((e) => {
+        CommonBugFender('Medicine_onSearchMedicine', e);
+        if (!Axios.isCancel(e)) {
+          setsearchSate('fail');
+        }
+      });
   };
 
   const renderSearchInput = () => {
@@ -1717,7 +1712,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setsearchSate('success');
           }}
           onChangeText={(value) => {
-            onSearchMedicine(value);
+            if (isValidSearch(value)) {
+              setSearchText(value);
+              if (!(value && value.length > 2)) {
+                setMedicineList([]);
+                return;
+              }
+              const search = _.debounce(onSearchMedicine, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
+              search(value);
+            }
           }}
           _rigthIconView={rigthIconView}
           placeholder="Search meds, brands &amp; more"

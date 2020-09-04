@@ -54,7 +54,7 @@ import { NotificationBinRepository } from 'notifications-service/repositories/no
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
-import { addDays } from 'date-fns';
+
 
 export type DiagnosisJson = {
   name: string;
@@ -869,7 +869,7 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
   }
 
-  if (!(inputArguments.followUpAfterInDays === undefined)) {
+  if (inputArguments && inputArguments.followUpAfterInDays) {
     if (
       inputArguments.followUpAfterInDays > ApiConstants.CHAT_DAYS_LIMIT ||
       inputArguments.followUpAfterInDays < 0
@@ -878,14 +878,14 @@ const modifyCaseSheet: Resolver<
     }
 
     getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
-    getCaseSheetData.followUp = true;
+    // getCaseSheetData.followUp = true;
 
-    if (getCaseSheetData.appointment.sdConsultationDate) {
-      getCaseSheetData.followUpDate = addDays(
-        getCaseSheetData.appointment.sdConsultationDate,
-        getCaseSheetData.followUpAfterInDays
-      );
-    }
+    // if (getCaseSheetData.appointment.sdConsultationDate) {
+    //   getCaseSheetData.followUpDate = addDays(
+    //     getCaseSheetData.appointment.sdConsultationDate,
+    //     getCaseSheetData.followUpAfterInDays
+    //   );
+    // }
   }
 
   if (!(inputArguments.status === undefined)) {
@@ -1421,13 +1421,11 @@ const updatePatientPrescriptionSentStatus: Resolver<
       getCaseSheetData
     );
 
+
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
-      data: {
-        caseSheetId: getCaseSheetData.id,
-      },
     };
 
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
@@ -1555,9 +1553,6 @@ const generatePrescriptionTemp: Resolver<
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
-      data: {
-        caseSheetId: getCaseSheetData.id,
-      },
     };
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
     caseSheetAttrs = {

@@ -611,10 +611,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     }
   };
 
-  const disableAddCartItem = (cartItem: MedicineCartItem) => {
-    const index = getItemIndexInCart(cartItem);
-    return !isQtyUpdated(cartItem, index);
-  };
+  // const disableAddCartItem = (cartItem: MedicineCartItem) => {
+  //   const index = getItemIndexInCart(cartItem);
+  //   return !isQtyUpdated(cartItem, index);
+  // };
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const options = Array.from(
@@ -888,13 +888,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             {is_in_stock && sell_online ? (
               <div className={classes.bottomActions}>
                 <AphButton
-                  disabled={
-                    addMutationLoading || updateMutationLoading || disableAddCartItem(cartItem)
-                  }
+                  disabled={addMutationLoading || updateMutationLoading}
                   className={
-                    addMutationLoading || updateMutationLoading || disableAddCartItem(cartItem)
-                      ? classes.disableButton
-                      : ''
+                    addMutationLoading || updateMutationLoading ? classes.disableButton : ''
                   }
                   onClick={() => {
                     setIsUpdateQuantity(false);

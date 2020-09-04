@@ -26,6 +26,7 @@ import { getPatientDeviceTokens, logNotificationResponse } from './common';
 import { sendNotificationSMS } from './sms';
 import { sendDoctorNotificationWhatsapp } from './whatsApp';
 import { admin } from 'firebase';
+import { getPatientDeeplink } from 'helpers/appsflyer';
 
 export async function sendPatientRegistrationNotification(
   patient: Patient,
@@ -343,7 +344,9 @@ export async function sendChatMessageNotification(
   doctorsDb: Connection,
   chatMessage: string
 ) {
-  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
+  const devLink = await getPatientDeeplink(
+    ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString()
+  );
   const templateData: string[] = [
     doctorDetails.salutation + ' ' + doctorDetails.firstName,
     patientDetails.firstName + ' ' + patientDetails.lastName,

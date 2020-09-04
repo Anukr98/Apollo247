@@ -208,6 +208,14 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         .then((resp: any) => {
           if (resp.errorCode == 0) {
             if (resp.response.valid) {
+              const freeProductsSet = new Set(
+                resp.response.products && resp.response.products.length
+                  ? resp.response.products.filter((cartItem: any) => cartItem.mrp === 0)
+                  : []
+              );
+              if (freeProductsSet.size) {
+                addDiscountedProducts(resp.response);
+              }
               props.setValidateCouponResult(resp.response);
               setCouponCode && setCouponCode(selectCouponCode);
               props.close(false);
@@ -229,9 +237,6 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
             setErrorMessage(resp.errorMsg);
             localStorage.removeItem('pharmaCoupon');
           }
-        })
-        .then((resp: any) => {
-          addDiscountedProducts(resp.response);
         })
         .catch((e) => {
           console.log(e);

@@ -918,6 +918,7 @@ export const GET_CASESHEET = gql`
         unreadMessagesCount
         caseSheet {
           version
+          sentToPatient
           consultType
           doctorType
           diagnosis {
@@ -1592,6 +1593,20 @@ export const UPDATE_DOCTOR_CHAT_DAYS = gql`
     updateDoctorChatDays(doctorId: $doctorId, chatDays: $chatDays) {
       isError
       response
+    }
+  }
+`;
+
+export const SAVE_APPOINTMENT_CALL_FEEDBACK = gql`
+  mutation saveAppointmentCallFeedback(
+    $saveAppointmentCallFeedback: SaveAppointmentCallFeedbackInput
+  ) {
+    saveAppointmentCallFeedback(saveAppointmentCallFeedbackInput: $saveAppointmentCallFeedback) {
+      id
+      appointmentCallDetailsId
+      ratingValue
+      feedbackResponseType
+      feedbackResponses
     }
   }
 `;

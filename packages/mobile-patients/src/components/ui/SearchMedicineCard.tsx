@@ -9,7 +9,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
-import { AddToCartButtons } from '../Medicines/AddToCartButtons';
+import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
+import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -60,6 +61,7 @@ const styles = StyleSheet.create({
 });
 
 export interface SearchMedicineCardProps {
+  isSellOnline: boolean;
   isTest?: boolean;
   medicineName: string;
   personName?: string;
@@ -94,6 +96,7 @@ export interface SearchMedicineCardProps {
 
 export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => {
   const {
+    isSellOnline,
     isTest,
     medicineName,
     personName,
@@ -139,6 +142,8 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
       </TouchableOpacity>
     );
   };
+
+  const renderNotForSaleTag = () => <NotForSaleBadge containerStyle={{ alignSelf: 'center' }} />;
 
   const renderQuantityView = () => {
     return (
@@ -226,7 +231,11 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
         {renderMedicineIcon()}
         <View style={styles.flexStyle}>{renderTitleAndIcon()}</View>
         <View style={{ width: 20 }}></View>
-        {!isMedicineAddedToCart ? renderAddToCartView() : renderQuantityView()}
+        {!isSellOnline
+          ? renderNotForSaleTag()
+          : !isMedicineAddedToCart
+          ? renderAddToCartView()
+          : renderQuantityView()}
       </View>
     </TouchableOpacity>
   );

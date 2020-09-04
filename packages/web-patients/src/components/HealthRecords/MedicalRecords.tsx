@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, LinearProgress, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
 import { MedicalCard } from 'components/HealthRecords/MedicalCard';
@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
+import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType } from '../../graphql/types/getPatientPrismMedicalRecords';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -33,7 +34,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sourceField: {
       maxWidth: 70,
-       [theme.breakpoints.down('xs')]: {
+      fontSize: 14,
+      color: '#67909C',
+      fontWeight: 'normal',
+      [theme.breakpoints.down('xs')]: {
         maxWidth: '100%',
       },
     },
@@ -47,6 +51,7 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#f0f1ec',
         padding: 0,
         borderRadius: 0,
+        position: 'relative',
       },
     },
     rightSection: {
@@ -66,7 +71,7 @@ const useStyles = makeStyles((theme: Theme) => {
         left: 0,
         width: '100%',
         backgroundColor: '#f0f1ec',
-        zIndex: 991,
+        zIndex: 999,
       },
     },
     sectionHeader: {
@@ -94,6 +99,9 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
         padding: '10px 15px',
+        position: 'absolute',
+        top: 5,
+        right: 0,
       },
       '& button': {
         boxShadow: 'none',
@@ -256,7 +264,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       marginBottom: 12,
       padding: 14,
-      display: 'flex',
+      '& hr': {
+        opacity: '0.2',
+      },
       '&:before': {
         display: 'none',
       },
@@ -278,9 +288,9 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 5,
       },
       '& label': {
-        fontSize: 12,
+        fontSize: 16,
         fontWeight: 500,
-        color: '#01475b',
+        color: '#02475b',
         paddingBottom: 3,
       },
       '& p': {
@@ -315,14 +325,53 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    doctorInfo: {
+      paddingRight: 16,
+      width: 'calc(100% - 24px)',
+    },
+    doctorName: {
+      fontSize: 16,
+      color: '#0087BA',
+      fontWeight: 500,
+      marginBottom: 5,
+    },
+    testName: {
+      fontSize: 16,
+      color: '#01475b',
+      fontWeight: 500,
+      marginBottom: 12,
+      lineHeight: '21px',
+    },
+    checkDate: {
+      fontSize: 14,
+      color: '#02475b',
+      lineHeight: '21px',
+      fontWeight: 500,
+    },
+    sitedisplayName: {
+      fontSize: 14,
+      color: '#67909C',
+      fontWeight: 'normal',
+    },
+    filterIcon: {
+      borderBottom: '1px solid #bfbfbf',
+      padding: '5px 10px 0 0',
+      textAlign: 'right',
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        right: 10,
+        top: 5,
+        borderBottom: 'none',
+      },
+    },
   };
 });
 
 type MedicalRecordProps = {
-  allCombinedData: any;
+  allCombinedData: LabResultsType[];
   loading: boolean;
-  setActiveData: (activeData: any) => void;
-  activeData: any;
+  setActiveData: (activeData: LabResultsType) => void;
+  activeData: LabResultsType;
   error: boolean;
   deleteReport: (id: string, type: string) => void;
 };
@@ -335,39 +384,13 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
 
   const { allCombinedData, loading, activeData, setActiveData, error, deleteReport } = props;
 
-  const getFormattedDate = (combinedData: any, type: string, dateFor: string) => {
+  const getFormattedDate = (combinedData: LabResultsType, dateFor: string) => {
     return dateFor === 'title' &&
       moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY') ? (
-      <span>Today , {moment(combinedData.date).format('DD MMM YYYY')}</span>
-    ) : (
-      <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
-    );
-  };
-
-  const getName = (combinedData: any, type: string) => {
-    switch (type) {
-      case 'lab':
-        return combinedData.labTestName;
-      case 'prescription':
-        return combinedData.prescriptionName;
-      default:
-        return '';
-    }
-  };
-
-  const getSource = (activeData: any, type: string) => {
-    switch (type) {
-      case 'lab':
-        return activeData && activeData.siteDisplayName
-          ? activeData.siteDisplayName
-          : !!activeData.labTestSource
-          ? activeData.labTestSource
-          : '-';
-      case 'prescription':
-        return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
-      default:
-        return '-';
-    }
+        <span>Today , {moment(combinedData.date).format('DD MMM YYYY')}</span>
+      ) : (
+        <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
+      );
   };
 
   if (loading) {
@@ -390,6 +413,9 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
             <img src={require('images/ic_addfile.svg')} />
           </Link>
         </div>
+        <div className={classes.filterIcon}>
+          <img src={require('images/ic_filter.svg')} alt="" />
+        </div>
         <Scrollbars
           autoHide={true}
           autoHeight
@@ -397,14 +423,14 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 240px)'
               : isSmallScreen
-              ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 270px)'
+                ? 'calc(100vh - 230px)'
+                : 'calc(100vh - 270px)'
           }
         >
           <div className={classes.consultationsList}>
             {allCombinedData &&
               allCombinedData.length > 0 &&
-              allCombinedData.map((combinedData: any) => (
+              allCombinedData.map((combinedData: LabResultsType) => (
                 <div
                   className={classes.consultGroup}
                   onClick={() => {
@@ -416,15 +442,21 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 >
                   <div className={classes.consultGroupHeader}>
                     <div className={classes.circle}></div>
-                    <span>{getFormattedDate(combinedData.data, combinedData.type, 'title')}</span>
+                    <span>{getFormattedDate(combinedData, 'title')}</span>
                   </div>
                   <MedicalCard
                     deleteReport={deleteReport}
-                    name={getName(combinedData.data, combinedData.type)}
-                    source={getSource(combinedData.data, combinedData.type)}
-                    type={combinedData.type}
-                    id={`${combinedData.type}-${combinedData.data.id}`}
-                    isActiveCard={activeData && activeData.data === combinedData.data}
+                    name={combinedData.labTestName}
+                    source={
+                      combinedData && combinedData.siteDisplayName
+                        ? combinedData.siteDisplayName
+                        : !!combinedData.labTestSource
+                          ? combinedData.labTestSource
+                          : '-'
+                    }
+                    type={'LabResults'}
+                    id={`LabResults-${combinedData.id}`}
+                    isActiveCard={activeData && activeData === combinedData}
                   />
                 </div>
               ))}
@@ -454,7 +486,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
       <div
         className={`${classes.rightSection} ${
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
-        }`}
+          }`}
       >
         {allCombinedData && allCombinedData.length > 0 ? (
           <>
@@ -469,7 +501,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 >
                   <img src={require('images/ic_back.svg')} />
                 </AphButton>
-                <span>REPORT Details</span>
+                <span>TEST Details</span>
               </div>
             </div>
             <Scrollbars
@@ -479,63 +511,112 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 287px)'
                   : isSmallScreen
-                  ? 'calc(100vh - 55px)'
-                  : 'calc(100vh - 245px)'
+                    ? 'calc(100vh - 55px)'
+                    : 'calc(100vh - 322px)'
               }
             >
               {((!isSmallScreen && activeData) ||
                 (isSmallScreen && showMobileDetails && activeData)) && (
-                <div className={classes.medicalRecordsDetails}>
-                  <div className={classes.cbcDetails}>
-                    <div className={classes.reportsDetails}>
-                      <label>Check-up Date</label>
-                      <p>{getFormattedDate(activeData.data, activeData.type, 'checkUp')}</p>
-                    </div>
-                    <div className={classes.reportsDetails}>
-                      <label>Source</label>
-                      <p className={classes.sourceField}>{getSource(activeData.data, activeData.type)}</p>
-                    </div>
-                    <div className={classes.reportsDetails}>
-                      <label>Referring Doctor</label>
-                      <p>
-                        {!!activeData.data.prescribedBy
-                          ? activeData.data.prescribedBy
-                          : !!activeData.data.labTestRefferedBy
-                          ? activeData.data.labTestRefferedBy
-                          : '-'}
-                      </p>
-                    </div>
-                    {activeData && activeData.data && activeData.data.siteDisplayName && (
+                  <div className={classes.medicalRecordsDetails}>
+                    <div className={classes.cbcDetails}>
                       <div className={classes.reportsDetails}>
-                        <label>{activeData.data.siteDisplayName}</label>
+                        <div className={classes.testName}>{activeData.labTestName}</div>
                       </div>
+                      <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
+                        <div>
+                          {!!activeData.labTestRefferedBy
+                            ? `Dr. ${activeData.labTestRefferedBy}`
+                            : '-'}
+                        </div>
+                      </div>
+                      <div className={classes.reportsDetails}>
+                        {activeData && activeData.siteDisplayName && (
+                          <div className={classes.sitedisplayName}>{activeData.siteDisplayName}</div>
+                        )}
+                      </div>
+                      <hr />
+                      <div className={classes.reportsDetails}>
+                        <label>CheckUp Date</label>
+                        <p>
+                          On{' '}
+                          <span className={classes.checkDate}>
+                            {getFormattedDate(activeData, 'checkUp')}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                    {/* {(activeData.observation || activeData.additionalNotes) && (
+                    <ToplineReport activeData={activeData} />
+                  )} */}
+                    {activeData.labTestResults && activeData.labTestResults.length > 0 && (
+                      <DetailedFindings activeData={activeData} />
+                    )}
+                    {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
+                      <RenderImage
+                        activeData={activeData}
+                        type={
+                          activeData.testResultFiles &&
+                            activeData.testResultFiles.length &&
+                            activeData.testResultFiles[0].fileName &&
+                            activeData.testResultFiles[0].fileName.includes('pdf')
+                            ? 'pdf'
+                            : activeData.fileUrl.includes('pdf')
+                              ? 'pdf'
+                              : 'image'
+                        }
+                      />
                     )}
                   </div>
-                  {(activeData.data.observations || activeData.data.additionalNotes) && (
-                    <ToplineReport activeData={activeData} />
-                  )}
-                  {activeData.data.labTestResults && activeData.data.labTestResults.length > 0 && (
-                    <DetailedFindings activeData={activeData} />
-                  )}
-                  {activeData &&
-                    ((activeData.data.fileUrl && activeData.data.fileUrl.length > 0) ||
-                      (activeData.data.fileUrl && activeData.data.fileUrl.length > 0)) && (
-                      <RenderImage activeData={activeData} />
-                    )}
-                </div>
-              )}
+                )}
             </Scrollbars>
+            <div className={classes.addReportActions}>
+              <AphButton
+                color="primary"
+                onClick={() => {
+                  window.location.href = clientRoutes.addRecords();
+                }}
+                fullWidth
+              >
+                DOWNLOAD TEST REPORT
+              </AphButton>
+            </div>
           </>
         ) : (
-          <div className={classes.noRecordFoundWrapper}>
-            <img src={require('images/ic_records.svg')} />
-            <p>
-              You don’t have any records with us right now. Add a record to keep everything handy in
-              one place!
+            <div className={classes.noRecordFoundWrapper}>
+              <img src={require('images/ic_records.svg')} />
+              <p>
+                You don’t have any records with us right now. Add a record to keep everything handy in
+                one place!
             </p>
-          </div>
-        )}
+            </div>
+          )}
       </div>
     </div>
   );
 };
+
+// const getName = (combinedData: any, type: string) => {
+//   switch (type) {
+//     case 'lab':
+//       return combinedData.labTestName;
+//     case 'prescription':
+//       return combinedData.prescriptionName;
+//     default:
+//       return '';
+//   }
+// };
+
+// const getSource = (activeData: any, type: string) => {
+//   switch (type) {
+//     case 'lab':
+//       return activeData && activeData.siteDisplayName
+//         ? activeData.siteDisplayName
+//         : !!activeData.labTestSource
+//         ? activeData.labTestSource
+//         : '-';
+//     case 'prescription':
+//       return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
+//     default:
+//       return '-';
+//   }
+// };

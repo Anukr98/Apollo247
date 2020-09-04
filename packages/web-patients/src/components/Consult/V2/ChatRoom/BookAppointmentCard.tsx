@@ -60,8 +60,8 @@ export const BookAppointmentCard: React.FC<bookappointmentCardProps> = (props) =
     <div className={classes.BookAppointentCard}>
       <div className={classes.BookAppointentCardSection}>
         <span>
-          You can no longer send a message to the doctor. Book a new appointment for consulting with
-          Dr. {doctorName} again.
+          <div>Free follow up chat days with the doctor are over.</div>
+          <div> Please book a new appointment for consulting with Dr. {doctorName} again!</div>
         </span>
         <Link to={clientRoutes.doctorDetails(readableParam(doctorName || ''), doctorId)}>
           <AphButton className={classes.bookAppointmentBtn}>BOOK APPOINTMENT</AphButton>

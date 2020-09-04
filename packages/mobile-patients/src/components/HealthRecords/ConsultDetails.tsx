@@ -1076,10 +1076,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         '_' +
         props.navigation.state.params!.DoctorInfo.displayName +
         '_Apollo 247' +
+        new Date().getTime() +
         '.pdf'
       );
     } else {
-      return 'Prescription_Apollo 247.pdf';
+      return 'Prescription_Apollo 247' + new Date().getTime() + '.pdf';
     }
   };
 
@@ -1131,9 +1132,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                           ? (dirs.DocumentDir || dirs.MainBundleDir) +
                             '/' +
                             (fileName || 'Apollo_Prescription.pdf')
-                          : dirs.DownloadDir +
-                            '/' +
-                            (fileName + new Date().getTime() || 'Apollo_Prescription.pdf');
+                          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
                       setLoading && setLoading(true);
                       RNFetchBlob.config({
                         fileCache: true,
