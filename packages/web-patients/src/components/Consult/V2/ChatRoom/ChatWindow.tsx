@@ -2123,6 +2123,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.appointmentComplete ||
                     messageDetails.message === autoMessageStrings.jdThankyou ||
                     messageDetails.message === autoMessageStrings.startConsultjr ||
+                    messageDetails.message === autoMessageStrings.stopConsultJr ||
                     messageDetails.message === autoMessageStrings.languageQue
                   ) {
                     return null;
@@ -2145,6 +2146,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                             appointmentDetails.doctorInfo.displayName) ||
                           ''
                         }
+                        appointmentDetails={appointmentDetails}
                       />
                     );
                   } else {

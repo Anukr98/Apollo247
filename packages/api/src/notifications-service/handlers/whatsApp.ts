@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { ApiConstants } from 'ApiConstants';
 import fetch from 'node-fetch';
+import { log } from 'customWinstonLogger';
 
 export const sendNotificationWhatsapp = async (
   mobileNumber: string,
@@ -59,6 +60,13 @@ export const sendDoctorNotificationWhatsapp = async (
     content +=
       'Scenario key undefined \n------------------------------------------------------------------------------------\n';
     fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
+    log(
+      'notificationServiceLogger',
+      content,
+      `without WHATSAPP_SCENARIO_KEY ${templateName}`,
+      '',
+      ''
+    );
   } else {
     console.log(`Scenario key`, process.env.WHATSAPP_SCENARIO_KEY);
     scenarioKey = process.env.WHATSAPP_SCENARIO_KEY;
@@ -105,6 +113,13 @@ export const sendDoctorNotificationWhatsapp = async (
       content +=
         '\n------------------------------------------------------------------------------------\n';
       fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
+      log(
+        'notificationServiceLogger',
+        content,
+        `with WHATSAPP_SCENARIO_KEY ${templateName}---Response - ${response}`,
+        '',
+        ''
+      );
       console.log(JSON.stringify(response, null, 1), 'response');
     } else {
       const response = await fetch(url, {
@@ -141,6 +156,13 @@ export const sendDoctorNotificationWhatsapp = async (
         '\n------------------------------------------------------------------------------------\n';
       fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
       console.log(JSON.stringify(response, null, 1), 'response');
+      log(
+        'notificationServiceLogger',
+        content,
+        `with WHATSAPP_SCENARIO_KEY ${templateName}---Response - ${response}`,
+        '',
+        ''
+      );
     }
   }
 };

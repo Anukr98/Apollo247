@@ -114,10 +114,15 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     productName: {
-      minHeight: 45,
+      minHeight: 65,
+      overflow: 'hidden',
+      display: '-webkit-box',
+      '-webkit-line-clamp': '3',
+      '-webkit-box-orient': 'vertical',
       [theme.breakpoints.down(500)]: {
         textAlign: 'left',
         fontSize: 12,
+        minHeight: 54,
       },
     },
     addQty: {
@@ -266,7 +271,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                 >
                   <div className={classes.pdHeader}>
                     <div className={classes.bigAvatar}>
-                      <img src={`${apiDetails.imageUrl}${product.image}`} alt="" />
+                      <img src={`${apiDetails.imageUrl}${product.thumbnail}`} alt="" />
                     </div>
                     <div className={classes.productName}>{product.name}</div>
                   </div>

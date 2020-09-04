@@ -7,11 +7,16 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { AphButton, AphDialogTitle } from '@aph/web-ui-components';
 import { OnlineConsult } from 'components/OnlineConsult';
-import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
+import {
+  TRANSFER_INITIATED_TYPE,
+  BookRescheduleAppointmentInput,
+  APPOINTMENT_STATE,
+} from 'graphql/types/globalTypes';
 import { BOOK_APPOINTMENT_RESCHEDULE } from 'graphql/profiles';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
 import { removeGraphQLKeyword } from 'helpers/commonHelpers';
+import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -75,6 +80,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:focus': {
         outline: 'none',
       },
+      '&:disabled': {
+        opacity: 0.5,
+        pointerEvents: 'none',
+      },
     },
     viewBtn: {
       cursor: 'pointer',
@@ -91,6 +100,10 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       '&:focus': {
         outline: 'none',
+      },
+      '&:disabled': {
+        opacity: 0.5,
+        pointerEvents: 'none',
       },
     },
     modalBox: {
@@ -241,6 +254,7 @@ interface ViewPrescriptionCardProps {
   duration: string;
   messageDetails: any;
   chatTime: string;
+  appointmentDetails: AppointmentHistory;
 }
 
 export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props) => {
@@ -255,7 +269,7 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
 
-  const { messageDetails, chatTime } = props;
+  const { messageDetails, chatTime, appointmentDetails } = props;
 
   const { currentPatient } = useAllCurrentPatients();
 
@@ -341,19 +355,16 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
                 messageDetails.transferInfo.reschduleCount &&
                 messageDetails.transferInfo.reschduleCount > 2
                   ? `Since you have already rescheduled 3 times with 
-                     Dr. ${
-                       messageDetails.transferInfo.doctorInfo &&
-                       messageDetails.transferInfo.doctorInfo.displayName
-                     }, we will consider this a new paid appointment.`
+                     Dr. ${messageDetails.transferInfo.doctorInfo &&
+                       messageDetails.transferInfo.doctorInfo
+                         .displayName}, we will consider this a new paid appointment.`
                   : "We're sorry that you have to reschedule. You can reschedule up to 3 times for free."}
               </div>
               {messageDetails.transferInfo && (
                 <>
                   <div>
-                    {`Next slot for ${
-                      messageDetails.transferInfo.doctorInfo &&
-                      messageDetails.transferInfo.doctorInfo.displayName
-                    } is available on- `}
+                    {`Next slot for ${messageDetails.transferInfo.doctorInfo &&
+                      messageDetails.transferInfo.doctorInfo.displayName} is available on- `}
                   </div>
                   <div>
                     {moment(messageDetails.transferInfo.transferDateTime).format(
@@ -364,13 +375,19 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
               )}
 
               <div>
-                {messageDetails && messageDetails.transferInfo && (
-                  <button className={classes.downloadBtn} onClick={() => setIsModalOpen(true)}>
-                    CHANGE SLOT
-                  </button>
-                )}
+                <button
+                  disabled={appointmentDetails.appointmentState === APPOINTMENT_STATE.RESCHEDULE}
+                  className={classes.downloadBtn}
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  CHANGE SLOT
+                </button>
 
-                <button className={classes.viewBtn} onClick={() => handleAcceptReschedule()}>
+                <button
+                  disabled={appointmentDetails.appointmentState === APPOINTMENT_STATE.RESCHEDULE}
+                  className={classes.viewBtn}
+                  onClick={() => handleAcceptReschedule()}
+                >
                   {apiLoading ? (
                     <CircularProgress size={22} color="secondary" />
                   ) : (
@@ -413,8 +430,11 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
               ) : (
                 <div>
                   <div className={classes.dialogContent}>
-                    Dr.{messageDetails.doctorInfo && messageDetails.doctorInfo.fullName} has
-                    suggested the below slot for rescheduling this appointment —
+                    Dr.
+                    {messageDetails.transferInfo &&
+                      messageDetails.transferInfo.doctorInfo &&
+                      messageDetails.transferInfo.doctorInfo.fullName}{' '}
+                    has suggested the below slot for rescheduling this appointment —
                     {moment(messageDetails.transferInfo.transferDateTime).format(
                       'Do MMMM, dddd \nhh:mm a'
                     )}
@@ -473,11 +493,9 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
                 <p>Hi! :)</p>
                 <p>
                   Your appointment with Dr.
-                  {` ${
-                    messageDetails.transferInfo &&
+                  {` ${messageDetails.transferInfo &&
                     messageDetails.transferInfo.doctorInfo &&
-                    messageDetails.transferInfo.doctorInfo.firstName
-                  } `}
+                    messageDetails.transferInfo.doctorInfo.firstName} `}
                   has been rescheduled for -{' '}
                   {rescheduledSlot && moment(rescheduledSlot).format('Do MMMM, dddd \nhh:mm a')}
                 </p>
