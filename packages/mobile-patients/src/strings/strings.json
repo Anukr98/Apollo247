@@ -316,7 +316,15 @@
         "count": "0"
       },
       {
-        "title": "Medical Records",
+        "title": "Tests",
+        "count": "0"
+      },
+      {
+        "title": "Health Check",
+        "count": "0"
+      },
+      {
+        "title": "Hospitalization",
         "count": "0"
       }
     ]

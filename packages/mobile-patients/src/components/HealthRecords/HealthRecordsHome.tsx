@@ -17,6 +17,7 @@ import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsCompon
 import {
   CommonBugFender,
   CommonLogEvent,
+  isIphone5s,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   CHECK_IF_FOLLOWUP_BOOKED,
@@ -530,6 +531,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           //marginTop: Platform.OS === 'ios' ? 205 : 216, //226,
           backgroundColor: theme.colors.CARD_BG,
           shadowRadius: 2,
+        }}
+        titleStyle={{
+          fontSize: isIphone5s() ? 10 : 12,
+        }}
+        selectedTitleStyle={{
+          fontSize: isIphone5s() ? 10 : 12,
         }}
         height={44}
         data={tabs}
