@@ -2,6 +2,7 @@ import { AudioVideoStyles } from '@aph/mobile-doctors/src/components/Chat/AudioV
 import {
   BackCameraIcon,
   ChatIcon,
+  CloseWhite,
   EndCallIcon,
   FrontCameraIcon,
   FullScreenIcon,
@@ -10,24 +11,23 @@ import {
   UserPlaceHolder,
   VideoOffIcon,
   VideoOnIcon,
-  CloseWhite,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { StatusBar, Text, TouchableOpacity, View, AppState, AppStateStatus } from 'react-native';
-import { Image } from 'react-native-elements';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
-import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
-import CallDetectorManager from 'react-native-call-detection';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import RNSound from 'react-native-sound';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import SystemSetting from 'react-native-system-setting';
-import AsyncStorage from '@react-native-community/async-storage';
 // import InCallManager from 'react-native-incall-manager';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
+import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { AppState, AppStateStatus, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import CallDetectorManager from 'react-native-call-detection';
+import { Image } from 'react-native-elements';
+import RNSound from 'react-native-sound';
+import SystemSetting from 'react-native-system-setting';
 
 export type OpenTokKeys = {
   sessionId: string;
@@ -357,7 +357,12 @@ export const AudioVideoProvider: React.FC = (props) => {
             placeholderStyle={
               isMinimized ? styles.placeHolderLoaderMinimizedStyle : styles.placeHolderLoaderStyle
             }
-            PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+            PlaceholderContent={
+              <Spinner
+                style={{ backgroundColor: 'transparent' }}
+                message={strings.common.imageLoading}
+              />
+            }
           />
         ) : (
           <UserPlaceHolder
