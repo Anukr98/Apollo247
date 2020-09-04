@@ -9,7 +9,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DropDown, DropDownProps } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { More, EditIconNewOrange } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -17,6 +17,7 @@ import {
   CommonLogEvent,
   DeviceHelper,
   CommonBugFender,
+  CommonSetUserBugsnag,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   DELETE_PATIENT_ADDRESS,
@@ -42,7 +43,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
 import {
   getPlaceInfoByPincode,
-  pinCodeServiceabilityApi,
+  pinCodeServiceabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   g,
@@ -50,7 +51,7 @@ import {
   doRequestAndAccessLocationModified,
   formatAddress,
   getFormattedLocation,
-  postWebEngageEvent,
+  isValidPhoneNumber,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -72,6 +73,7 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getPatientAddressList_getPatientAddressList_addressList } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
+import { useFirstInstallTime } from 'react-native-device-info';
 
 const { height, width } = Dimensions.get('window');
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -90,6 +92,64 @@ const styles = StyleSheet.create({
   },
   selectedButtonTitleStyle: {
     color: theme.colors.WHITE,
+  },
+  userDetailsOuterView: {
+    ...theme.viewStyles.cardViewStyle,
+    margin: 20,
+    padding: 16,
+  },
+  viewRowStyle: { flexDirection: 'row' },
+  userSave: {
+    flex: 0.2,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  userSaveText: {
+    ...theme.viewStyles.yellowTextStyle,
+    ...fonts.IBMPlexSansBold(15),
+    textAlign: 'right',
+  },
+  addressHeadingText: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.SHERPA_BLUE,
+  },
+  dropDownContainer: {
+    position: 'absolute',
+    top: 10,
+    zIndex: 1,
+    width: '100%',
+  },
+  addressFieldsText: {
+    marginTop: 5,
+    marginBottom: 10,
+  },
+  pincodeView: {
+    justifyContent: 'space-between',
+    flex: 0.45,
+    marginRight: '12%',
+  },
+  addressLabel: {
+    color: '#02475b',
+    ...fonts.IBMPlexSansMedium(14),
+    opacity: 0.7,
+  },
+  textInputContainerStyle: {
+    flex: 1,
+    top: Platform.OS == 'ios' ? -6 : -11,
+  },
+  textInputName: {
+    borderBottomWidth: 1,
+    paddingBottom: 0,
+    color: theme.colors.SHERPA_BLUE,
+    opacity: Platform.OS == 'ios' ? 0.5 : 0.4,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  nameText: {
+    color: theme.colors.SHERPA_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    flex: 0.95,
+    marginBottom: Platform.OS == 'android' ? '9%' : '7%',
   },
 });
 
@@ -126,7 +186,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [userName, setuserName] = useState<string>('');
   const [userId, setuserId] = useState<string>('');
   const [phoneNumber, setphoneNumber] = useState<string>('');
+  const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(true);
   const [addressLine1, setaddressLine1] = useState<string>('');
+  const [areaDetails, setareaDetails] = useState<string>('');
   const [pincode, setpincode] = useState<string>('');
   const [city, setcity] = useState<string>('');
   const [landMark, setlandMark] = useState<string>('');
@@ -138,6 +200,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [addressType, setAddressType] = useState<PATIENT_ADDRESS_TYPE>();
   const [optionalAddress, setOptionalAddress] = useState<string>('');
+  const [editProfile, setEditProfile] = useState<boolean>(false);
+  const [isFocus, setIsFocus] = useState<boolean>(false);
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
@@ -155,8 +219,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     state === addressData.state &&
     pincode === addressData.zipcode &&
     addressLine1 === addressData.addressLine1 &&
+    areaDetails === addressData.addressLine2 &&
+    landMark === addressData.landmark &&
     addressType === addressData.addressType &&
     optionalAddress === addressData.otherAddressType;
+
+  /** different on what case take it to map  */
+  const areFieldsSame =
+    isChanged && phoneNumber === addressData?.mobileNumber && userName === addressData?.name;
 
   const formatCityStateDisplay = (city: string, state: string) => [city, state].join(', ');
 
@@ -172,22 +242,27 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         .filter((v, i, a) => a.findIndex((t) => t === v) === i)
         .toString()
         .replace(',', ', ');
-      setcity(cityState);
+      // setcity(cityState); //when need to show [city,state] format
+      setcity(addressData.city!);
       setstate(addressData.state!);
       setpincode(addressData.zipcode!);
       setaddressLine1(addressData.addressLine1!);
+      setareaDetails(addressData.addressLine2!);
+      setlandMark(addressData.landmark!);
       setAddressType(addressData.addressType!);
       setOptionalAddress(addressData.otherAddressType!);
       setLatitude(addressData.latitude!);
       setLongitude(addressData.longitude!);
       setStateCode(addressData.stateCode || '');
+      setuserName(addressData.name!);
     } else {
       if (!(locationDetails && locationDetails.pincode)) {
         doRequestAndAccessLocationModified()
           .then((response) => {
             if (response) {
               setstate(response.state || '');
-              setcity(`${response.city}, ${response.state}` || '');
+              // setcity(`${response.city}, ${response.state}` || ''); //[city,state] format
+              setcity(response.city || '');
               setpincode(response.pincode || '');
               setLatitude(response.latitude || 0);
               setLongitude(response.longitude || 0);
@@ -201,7 +276,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         const _locationDetails =
           pharmacyLocation && source == 'Cart' ? pharmacyLocation : locationDetails;
         setstate(_locationDetails.state || '');
-        setcity(formatCityStateDisplay(_locationDetails.city, _locationDetails.state));
+        // setcity(formatCityStateDisplay(_locationDetails.city, _locationDetails.state)); //[city,state] format
+        setcity(_locationDetails.city || '');
         setpincode(_locationDetails.pincode || '');
         setLatitude(_locationDetails.latitude || 0);
         setLongitude(_locationDetails.longitude || 0);
@@ -216,6 +292,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     phoneNumber &&
     phoneNumber.length == 10 &&
     addressLine1 &&
+    areaDetails &&
     // addressLine1.length > 1 &&
     pincode &&
     pincode.length === 6 &&
@@ -232,21 +309,22 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     });
 
   const onSavePress = async () => {
-    setshowSpinner(true);
     CommonLogEvent(AppRoutes.AddAddress, 'On Save Press clicked');
     if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
+      //from update and all fields are filled (check for lat-long)
+      setEditProfile(false);
+      //update any value ~ change the lat-long
       if (!isChanged) {
         const finalStateCode =
           AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
             state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
           ] || stateCode;
-        const cityState = city.split(',').map((item) => (item || '').trim());
         const updateaddressInput: UpdatePatientAddressInput = {
           id: addressData.id,
           addressLine1: addressLine1,
-          addressLine2: '',
-          city: cityState[0] || '',
-          state: cityState[1] || '',
+          addressLine2: areaDetails,
+          city: city || '',
+          state: state || '',
           zipcode: pincode,
           landmark: landMark,
           mobileNumber: phoneNumber,
@@ -255,107 +333,62 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           latitude: latitude,
           longitude: longitude,
           stateCode: finalStateCode,
+          name: userName,
         };
-        console.log(updateaddressInput, 'updateaddressInput');
-        setshowSpinner(true);
-        client
-          .mutate<updatePatientAddress, updatePatientAddressVariables>({
-            mutation: UPDATE_PATIENT_ADDRESS,
-            variables: { UpdatePatientAddressInput: updateaddressInput },
-          })
-          .then((_data: any) => {
-            try {
-              setshowSpinner(false);
-              console.log('updateapicalled', _data);
-              props.navigation.pop(2, { immediate: true });
-              props.navigation.push(AppRoutes.AddressBook);
-            } catch (error) {
-              CommonBugFender('AddAddress_onSavePress_try', error);
-            }
-          })
-          .catch((e) => {
-            CommonBugFender('AddAddress_onSavePress', e);
-            setshowSpinner(false);
-            handleGraphQlError(e);
-          });
-        //props.navigation.goBack();
+        props.navigation.navigate(AppRoutes.Maps, {
+          addressDetails: updateaddressInput,
+          KeyName: props.navigation.getParam('KeyName'),
+          isChanged: !isChanged,
+          addOnly: addOnly,
+          source: props.navigation.getParam('source'),
+        });
       } else {
+        /**since for each address, we already have the lat-long */
         props.navigation.goBack();
       }
     } else {
+      //from new address (add, pharmacy...,diagnostics)
       const finalStateCode =
         AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
           state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
         ] || stateCode;
-      const cityState = city.split(',').map((item) => (item || '').trim());
-      const addressInput: PatientAddressInput = {
-        patientId: userId,
+      const addressInput: Object = {
+        id: userId,
         addressLine1: addressLine1,
-        addressLine2: '',
-        city: cityState[0] || '',
-        state: cityState[1] || '',
+        addressLine2: areaDetails,
+        city: city || '',
+        state: state || '',
+        /** look for the area details, attribute & name and phone number  ~ mobileNumber*/
         zipcode: pincode,
-        landmark: landMark,
-        mobileNumber: phoneNumber,
+        landmark: landMark || '',
+        mobileNumber: phoneNumber, //with respect to address
         addressType: addressType,
         otherAddressType: optionalAddress,
-        latitude: latitude,
-        longitude: longitude,
+        latitude: latitude, //from the pincode
+        longitude: longitude, //from the pincode
         stateCode: finalStateCode,
+        name: userName,
       };
-      try {
-        const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
-          saveAddress(addressInput),
-          addOnly ? null : pinCodeServiceabilityApi(pincode),
-        ]);
-
-        setshowSpinner(false);
-        // const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
-        const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
-        const isAddressServiceable =
-          pinAvailabilityResult && pinAvailabilityResult.data.Availability;
-        addAddress!(address);
-        addDiagnosticAddress!(address);
-
-        if (source === 'Upload Prescription') {
-          const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED] = {
-            Serviceable: isAddressServiceable ? 'Yes' : 'No',
-          };
-          postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED, eventAttributes);
-        }
-
-        if (isAddressServiceable || addOnly) {
-          setDeliveryAddressId!(address.id || '');
-          setNewAddressAdded!(address.id || '');
-          setDiagnosticAddressId!(address.id || '');
-          props.navigation.goBack();
-        } else {
-          setDeliveryAddressId!('');
-          setNewAddressAdded!('');
-          setDiagnosticAddressId!(address.id || '');
-
-          showAphAlert!({
-            title: 'Uh oh.. :(',
-            description: string.medicine_cart.pharmaAddressUnServiceableAlert,
-            onPressOk: () => {
-              props.navigation.goBack();
-              hideAphAlert!();
-            },
-          });
-        }
-      } catch (error) {
-        CommonBugFender('AddAddress_SetOnSave_try', error);
-        setshowSpinner(false);
-        handleGraphQlError(error);
-      }
+      props.navigation.navigate(AppRoutes.Maps, {
+        addressDetails: addressInput,
+        KeyName: props.navigation.getParam('KeyName'),
+        isChanged: !isChanged,
+        addOnly: addOnly,
+        source: props.navigation.getParam('source'),
+      });
     }
   };
 
   useEffect(() => {
     if (currentPatient) {
-      setuserName(currentPatient.firstName!);
+      const _setUserName = addressData?.name! ? addressData?.name : currentPatient.firstName!;
+      setuserName(_setUserName);
       setuserId(currentPatient.id);
-      setphoneNumber(currentPatient.mobileNumber.replace('+91', '') || '');
+      if (addressData?.mobileNumber) {
+        setphoneNumber(addressData.mobileNumber);
+      } else {
+        setphoneNumber(currentPatient.mobileNumber.replace('+91', '') || '');
+      }
     }
   }, [currentPatient]);
 
@@ -418,7 +451,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
             ] || stateCode;
 
-          setcity(formatCityStateDisplay(city, state));
+          // setcity(formatCityStateDisplay(city, state)); //[city,state] format
+          setcity(city || '');
           setstate(state || '');
           setStateCode(finalStateCode);
           setLatitude(response.latitude!);
@@ -458,15 +492,211 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       </View>
     );
   };
+
+  const _validateAndSetPhoneNumber = (value: string) => {
+    if (/^\d+$/.test(value) || value == '') {
+      setphoneNumber(value);
+      setPhoneNumberIsValid(isValidPhoneNumber(value));
+    }
+  };
+
+  const validateUserDetails = () => {
+    let validationMessage = '';
+    if (!userName || !/^[A-Za-z]/.test(userName)) {
+      validationMessage = 'Enter Valid Name';
+    } else if (!phoneNumberIsValid || phoneNumber.length !== 10) {
+      validationMessage = 'Enter Valid Mobile Number';
+    }
+    if (validationMessage) {
+      showAphAlert && showAphAlert({ title: 'Alert!', description: validationMessage });
+    } else {
+      saveEditDetails();
+    }
+  };
+
+  const onUpdateDetails = () => {
+    //will save the details in db, only we are coming from edit + all fields are filled
+    if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
+      setshowSpinner(true);
+      CommonLogEvent(AppRoutes.AddAddress, 'On Save Edit clicked');
+      if (!areFieldsSame) {
+        const finalStateCode =
+          AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
+            state as keyof typeof AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING
+          ] || stateCode;
+        const updateaddressInputForEdit: UpdatePatientAddressInput = {
+          id: addressData.id,
+          addressLine1: addressLine1,
+          addressLine2: areaDetails,
+          city: city || '',
+          state: state || '',
+          zipcode: pincode,
+          landmark: landMark,
+          mobileNumber: phoneNumber,
+          addressType: addressType,
+          otherAddressType: optionalAddress,
+          latitude: latitude,
+          longitude: longitude,
+          stateCode: finalStateCode,
+          name: userName,
+        };
+        console.log(updateaddressInputForEdit, 'updateaddressInputForEdit');
+        setshowSpinner(true);
+        client
+          .mutate<updatePatientAddress, updatePatientAddressVariables>({
+            mutation: UPDATE_PATIENT_ADDRESS,
+            variables: { UpdatePatientAddressInput: updateaddressInputForEdit },
+          })
+          .then((_data: any) => {
+            try {
+              setshowSpinner(false);
+              console.log('updateapicalled', _data);
+              props.navigation.pop(2, { immediate: true });
+              props.navigation.push(AppRoutes.AddressBook);
+            } catch (error) {
+              CommonBugFender('AddAddress_onSavePress_try', error);
+            }
+          })
+          .catch((e) => {
+            CommonBugFender('AddAddress_onSavePress', e);
+            setshowSpinner(false);
+            handleGraphQlError(e);
+          });
+        //props.navigation.goBack();
+      } else {
+        props.navigation.goBack();
+      }
+    }
+  };
+
+  /** this will save the details */
+  const saveEditDetails = () => {
+    //if coming from the add section no details would be there
+    const noLatLong = latitude == 0 || longitude == 0 ? true : false;
+    if (isEdit) {
+      //now if mandate fields are empty or not + lat-long
+      isAddressValid ? onUpdateDetails() : setEditProfile(false);
+    } else {
+      //save it locally
+      setEditProfile(false);
+    }
+  };
+
+  const _onFocus = () => {
+    setIsFocus(true);
+  };
+
+  const _onBlur = () => {
+    setIsFocus(false);
+  };
+
+  /**view added for the patient's details */
+  const renderUserDetails = () => {
+    let beforeFocus =
+      Platform.OS == 'android' && userName.length > 32
+        ? userName.slice(0, 30).concat('...')
+        : userName;
+    return (
+      <View style={styles.userDetailsOuterView}>
+        <View style={styles.viewRowStyle}>
+          <View style={{ flex: editProfile ? 0.9 : 1, height: 60 }}>
+            <View style={styles.viewRowStyle}>
+              <Text
+                style={{
+                  color: editProfile ? theme.colors.LIGHT_BLUE : '#02475b',
+                  opacity: editProfile ? 0.6 : 1,
+                  ...fonts.IBMPlexSansMedium(14),
+                }}
+              >
+                Name :{' '}
+              </Text>
+              {!editProfile ? (
+                <Text numberOfLines={1} ellipsizeMode="tail" style={styles.nameText}>
+                  {userName}
+                </Text>
+              ) : (
+                <TextInputComponent
+                  conatinerstyles={styles.textInputContainerStyle}
+                  onChangeText={(userName) =>
+                    userName.startsWith(' ') ? null : setuserName(userName)
+                  }
+                  onFocus={() => _onFocus()}
+                  onBlur={() => _onBlur()}
+                  value={isFocus ? userName : beforeFocus}
+                  editable={editProfile}
+                  placeholder={'Full Name'}
+                  inputStyle={styles.textInputName}
+                />
+              )}
+            </View>
+
+            <View style={{ flexDirection: 'row', top: Platform.OS == 'ios' ? -8 : -15 }}>
+              <Text
+                style={{
+                  color: editProfile ? theme.colors.LIGHT_BLUE : '#02475b',
+                  opacity: editProfile ? 0.6 : 1,
+                  ...fonts.IBMPlexSansMedium(14),
+                }}
+              >
+                Phone number :{' '}
+              </Text>
+              <TextInputComponent
+                conatinerstyles={styles.textInputContainerStyle}
+                maxLength={10}
+                keyboardType="numeric"
+                onChangeText={(phoneNumber) => {
+                  _validateAndSetPhoneNumber(phoneNumber);
+                }}
+                value={phoneNumber}
+                editable={editProfile}
+                placeholder={'Mobile Number'}
+                inputStyle={{
+                  borderBottomWidth: editProfile ? 1 : 2,
+                  paddingBottom: editProfile ? 0 : 3,
+                  color: theme.colors.SHERPA_BLUE,
+                  opacity: editProfile ? (Platform.OS == 'ios' ? 0.5 : 0.4) : 1,
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                  borderColor: editProfile ? theme.colors.INPUT_BORDER_SUCCESS : 'transparent',
+                }}
+              />
+            </View>
+          </View>
+          {!editProfile ? (
+            <TouchableOpacity
+              onPress={() => {
+                setEditProfile(true);
+              }}
+            >
+              <EditIconNewOrange />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.userSave}>
+              <TouchableOpacity
+                style={{ width: '100%' }}
+                onPress={() => {
+                  validateUserDetails();
+                }}
+              >
+                <Text style={styles.userSaveText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  const renderAddressText = () => {
+    return (
+      <View style={{ marginLeft: 16 }}>
+        <Text style={styles.addressHeadingText}>ADDRESS DETAILS</Text>
+      </View>
+    );
+  };
+
   const renderAddress = () => {
     return (
-      <View
-        style={{
-          ...theme.viewStyles.cardViewStyle,
-          margin: 20,
-          padding: 16,
-        }}
-      >
+      <View style={styles.userDetailsOuterView}>
         {/* <TouchableOpacity
           activeOpacity={1}
           // onPress={() => {
@@ -481,7 +711,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         </TouchableOpacity> */}
         {showPopup && (
           <DropDown
-            cardContainer={{ position: 'absolute', top: 10, zIndex: 1, width: '100%' }}
+            cardContainer={styles.dropDownContainer}
             options={(allCurrentPatients || []).map(
               (item) =>
                 ({
@@ -551,69 +781,125 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             maxLength={10}
           />
         </View> */}
-        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14), marginTop: 20 }}>
+        {/**
+         * 1. code commented for APP-3922 from here
+         */}
+        {/* <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14), marginTop: 20 }}>
           Address
-        </Text>
+        </Text> */}
+        {/** 1. House # */}
         <TextInputComponent
           value={addressLine1}
           onChangeText={(addressLine1) => {
             if (addressLine1 == '') {
               setaddressLine1(addressLine1);
             }
-            if (
-              addressLine1.startsWith(' ') ||
-              addressLine1.startsWith('.') ||
-              addressLine1.startsWith(',') ||
-              addressLine1.startsWith('/') ||
-              addressLine1.startsWith('-')
-            ) {
+            // if (
+            //   addressLine1.startsWith(' ') ||
+            //   addressLine1.startsWith('.') ||
+            //   addressLine1.startsWith(',') ||
+            //   addressLine1.startsWith('/') ||
+            //   addressLine1.startsWith('-')
+            // ) {
+            //   return;
+            // }!/^[A-Za-z0-9]/
+
+            if (!/^[A-Za-z0-9]/.test(addressLine1)) {
               return;
             }
             if (/^([a-zA-Z0-9/,.-\s])+$/.test(addressLine1)) {
               setaddressLine1(addressLine1);
             }
           }}
-          placeholder={'Flat / Door / Plot Number, Building'}
-          inputStyle={{ marginTop: 5, marginBottom: 10 }}
+          placeholder={'*House no | Apartment name'}
+          inputStyle={styles.addressFieldsText}
         />
-        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Pin Code</Text>
         <TextInputComponent
-          value={pincode}
-          onChangeText={
-            (pincode) => validateAndSetPincode(pincode)
-            // (pincode == '' || /^[1-9]{1}\d{0,9}$/.test(pincode)) && setpincode(pincode)
-          }
-          placeholder={'Enter pin code'}
-          maxLength={6}
-          // textInputprops={{
-          //   onSubmitEditing: () => {
-          //     if (isAddressValid) {
-          //       onSavePress();
-          //     }
-          //   },
-          //   returnKeyType: 'done',
-          // }}
+          value={areaDetails}
+          onChangeText={(areaDetails) => {
+            if (areaDetails == '') {
+              setareaDetails(areaDetails);
+            }
+            // if (
+            //   areaDetails.startsWith(' ') ||
+            //   areaDetails.startsWith('.') ||
+            //   areaDetails.startsWith(',') ||
+            //   areaDetails.startsWith('/') ||
+            //   areaDetails.startsWith('-')
+            // ) {
+            //   return;
+            // }
+            if (!/^[A-Za-z0-9]/.test(addressLine1)) {
+              return;
+            }
+            if (/^([a-zA-Z0-9/,.-\s])+$/.test(areaDetails)) {
+              setareaDetails(areaDetails);
+            }
+          }}
+          placeholder={'*Area Details'}
+          inputStyle={styles.addressHeadingText}
         />
-        {/* <TextInputComponent
+
+        <TextInputComponent
           value={landMark}
           onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
-          placeholder={'Land Mark (optional)'}
-        /> */}
-        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Area / Locality</Text>
+          placeholder={'Landmark (Optional)'}
+          inputStyle={styles.addressHeadingText}
+        />
+        <View style={[styles.viewRowStyle, { marginTop: 12 }]}>
+          <View style={styles.pincodeView}>
+            <Text style={styles.addressLabel}>*Pincode</Text>
+
+            <TextInputComponent
+              value={pincode}
+              onChangeText={
+                (pincode) => validateAndSetPincode(pincode)
+                // (pincode == '' || /^[1-9]{1}\d{0,9}$/.test(pincode)) && setpincode(pincode)
+              }
+              placeholder={'Enter pin code'}
+              maxLength={6}
+              // textInputprops={{
+              //   onSubmitEditing: () => {
+              //     if (isAddressValid) {
+              //       onSavePress();
+              //     }
+              //   },
+              //   returnKeyType: 'done',
+              // }}
+            />
+          </View>
+          <View style={{ flex: 0.55 }}>
+            <Text style={styles.addressLabel}>City</Text>
+            <TextInputComponent
+              value={city}
+              textInputprops={{ editable: false }}
+              onChangeText={(city) =>
+                city.startsWith(' ') || city.startsWith('.') || city.startsWith(',')
+                  ? null
+                  : (city == '' || /^([a-zA-Z0-9.,\s])+$/.test(city)) && setcity(city)
+              }
+              maxLength={100}
+              placeholder={'City'}
+              multiline={false}
+            />
+          </View>
+        </View>
+        {/* state*/}
+        <Text style={[styles.addressLabel, { marginTop: 12 }]}>State</Text>
         <TextInputComponent
-          value={(city || '').startsWith(',') ? city.replace(', ', '') : city}
+          value={(state || '').startsWith(',') ? state.replace(', ', '') : state}
           textInputprops={{ editable: false }}
-          onChangeText={(city) =>
-            city.startsWith(' ') || city.startsWith('.') || city.startsWith(',')
+          onChangeText={(state) =>
+            state.startsWith(' ') || state.startsWith('.')
               ? null
-              : (city == '' || /^([a-zA-Z0-9.,\s])+$/.test(city)) && setcity(city)
+              : (state == '' || /^([a-zA-Z0-9.\s])+$/.test(state)) && setstate(state)
           }
           maxLength={100}
-          placeholder={'Enter area / locality name'}
+          placeholder={'State'}
           multiline={false}
         />
-        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14), marginBottom: 8 }}>
-          Address Type{' '}
+        <Text style={[styles.addressLabel, { marginTop: 12, marginBottom: 8 }]}>
+          Choose nick name for the address
         </Text>
         {renderAddressOption()}
         {addressType === PATIENT_ADDRESS_TYPE.OTHER && (
@@ -687,7 +973,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                 client
                   .mutate<deletePatientAddress, deletePatientAddressVariables>({
                     mutation: DELETE_PATIENT_ADDRESS,
-                    variables: { id: addressData.id },
+                    variables: { id: addressData?.id },
                     fetchPolicy: 'no-cache',
                   })
                   .then((_data: any) => {
@@ -711,7 +997,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                 marginLeft: width - 165,
                 ...Platform.select({
                   ios: {
-                    marginTop: isIphoneX ? height * 0.1 : height * 0.08,
+                    marginTop: isIphoneX() ? height * 0.1 : height * 0.08,
                   },
                   android: {
                     marginTop: height * 0.05,
@@ -750,8 +1036,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }} {...keyboardVerticalOffset}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ flex: 1 }}
+          {...keyboardVerticalOffset}
+        >
           <ScrollView bounces={false}>
+            {renderUserDetails()}
+            {renderAddressText()}
             {renderAddress()}
             <View style={{ height: Platform.OS == 'ios' ? 60 : 0 }} />
           </ScrollView>
@@ -765,7 +1057,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           >
             <Button
               title={
-                props.navigation.getParam('KeyName') == 'Update' || addOnly ? 'SAVE' : 'SAVE & USE'
+                props.navigation.getParam('KeyName') == 'Update' || addOnly
+                  ? 'SAVE ADDRESS'
+                  : 'SAVE & USE'
               }
               style={{ marginHorizontal: 40, width: '70%' }}
               onPress={onSavePress}

@@ -55,7 +55,7 @@
     },
     "follow_up_chat_days_text": "Follow Up chat for minimum of {0} days",
     "follow_up_chat_message": "is available for a minimum of {0} days for free follow-up chat post Consult. However, doctor can decide to increase the follow-up chat days as per case basis.",
-    "chatDisabledHeader": "You can't send message to the doctor. Book appointment for consulting with {0} again."
+    "chatDisabledHeader": "Free follow up chat days with the doctor are over. Please book a new appointment for consulting with {0} again!"
   },
   "login": {
     "hello": "hello!",
@@ -309,7 +309,7 @@
     "order_medicine": "ORDER MEDICINES",
     "order_test": "ORDER TESTS",
     "book_follow_up": "BOOK FOLLOW-UP",
-    "add_note_to_notify_users": "Please note that health records uploaded here will not be automatically visible to the doctor, you would have to upload them in consult chatroom!",
+    "add_note_to_notify_users": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!",
     "tabs": [
       {
         "title": "Consults & Rx",

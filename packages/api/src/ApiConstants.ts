@@ -366,7 +366,7 @@ export enum ApiConstants {
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
   FREE_CHAT_DAYS = 7,
   CHAT_DAYS_LIMIT = 30,
-  AUTO_SUBMIT_BY_SD_SMS_TEXT = 'Hi {0}, Dr. {1} has fast-tracked your consultation, if you wish to start the consultation now, please join the consultation room by clicking here  {2}.',
+  AUTO_SUBMIT_BY_SD_SMS_TEXT = 'Hi {0}, Dr. {1} has fast-tracked your consultation. To join the consultation, please click here {2}.',
   DOCTOR_CHAT_SMS_TEXT = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply.',
   DOCTOR_CHAT_SMS_LAST_DAY = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',
   CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
@@ -391,7 +391,9 @@ export enum ApiConstants {
   DOCTOR_DEEPLINK_CONSTANT = 'apollopatients://Doctor?',
   DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO = 'AEkA',
   DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO = 'MGY5',
-
+  PATIENT_APPT_DEEPLINK = 'apollopatients://Consult',
+  PATIENT_CHATROOM_DEEPLINK = 'apollopatients://ChatRoom?',
+  PATIENT_PRESCRIPTION_DEEPLINK = 'apollopatients://ConsultDetails?',
   // whatsapp constants
   WEB_ENGAGE_AUTHORIZATION = 'fe30a7fd-5dd7-48a8-9ce0-be85b5eb4de7',
 
@@ -457,8 +459,8 @@ export enum ApiConstants {
 
   PARTNER_SBI = 'SBIYONO',
 
-  PRESCRIPTION_DEEPLINK_PLACEHOLDER = '<caseSheetId>',
-  PRESCRIPTION_CLICK_HERE = 'Click here to access the Prescription:',
+  PRESCRIPTION_DEEPLINK_PLACEHOLDER = '<appointmentId>',
+  PRESCRIPTION_CLICK_HERE = 'Click here:',
 }
 
 export enum PATIENT_REPO_RELATIONS {
@@ -483,4 +485,8 @@ export const migrationDir = {
   consults_db: 'dist/migration/consults/**/*.js',
   doctors_db: 'dist/migration/doctors/**/*.js',
   profiles_db: 'dist/migration/profiles/**/*.js',
+};
+
+export const elasticConsts = {
+  ELASTIC_CONFLICT_RETRY_COUNT: 5,
 };

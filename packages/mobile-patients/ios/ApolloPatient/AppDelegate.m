@@ -30,11 +30,14 @@
 #import <PushKit/PushKit.h>
 #import "RNCallKeep.h"
 #import "RNVoipPushNotificationManager.h"
+@import GoogleMaps;
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+  
+  [GMSServices provideAPIKey:@"AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0"];
   RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
   RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
                                                    moduleName:@"ApolloPatient"
@@ -196,16 +199,16 @@ API_AVAILABLE(ios(10.0)){
     NSDictionary *userInfo = response.notification.request.content.userInfo;
     
     
-    if (userInfo[@"twi_message_type"]) {
-      
-      NSBundle *vitalsBundle = [NSBundle bundleWithIdentifier:@"com.apollo.ApolloVitalsFramework"];
-      
-      UIStoryboard *chatStoryBoard = [UIStoryboard storyboardWithName:@"Chat" bundle:vitalsBundle];
-      
-      ChatViewController *chatVC = [chatStoryBoard instantiateViewControllerWithIdentifier:@"ChatViewController"];
-      [self.window.rootViewController.navigationController pushViewController:chatVC animated:YES];
-      
-    }
+   if (userInfo[@"twi_message_type"]) {
+     
+     NSBundle *vitalsBundle = [NSBundle bundleWithIdentifier:@"com.apollo.ApolloVitalsFramework"];
+     
+     UIStoryboard *chatStoryBoard = [UIStoryboard storyboardWithName:@"Chat" bundle:vitalsBundle];
+     
+     ChatViewController *chatVC = [chatStoryBoard instantiateViewControllerWithIdentifier:@"ChatViewController"];
+     [self.window.rootViewController.navigationController pushViewController:chatVC animated:YES];
+     
+   }
     
     //     NSLog(@"center: %@, response: %@", center, response);
     

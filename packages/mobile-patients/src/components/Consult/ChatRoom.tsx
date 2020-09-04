@@ -205,7 +205,6 @@ let callhandelBack: boolean = true;
 let jdCount: any = 1;
 let isJdAllowed: boolean = true;
 let abondmentStarted = false;
-let showAlertPopUp: boolean = false;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -373,17 +372,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
-  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpChatDays');
-  const followUpChatDays =
-    caseSheetChatDays || caseSheetChatDays === 0
-      ? caseSheetChatDays === 0
+  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+  const followUpAfterInDays =
+    caseSheetChatDays || caseSheetChatDays === '0'
+      ? caseSheetChatDays === '0'
         ? 0
-        : caseSheetChatDays - 1
+        : Number(caseSheetChatDays) - 1
       : 6;
   const disableChat =
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
-      .add(followUpChatDays, 'days')
+      .add(followUpAfterInDays, 'days')
       .startOf('day')
       .isBefore(moment(new Date()).startOf('day'));
   // console.log('appointmentData >>>>', appointmentData);
@@ -522,6 +521,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   ]);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const [showPDF, setShowPDF] = useState<boolean>(false);
+  const [fileNamePDF, setFileNamePDF] = useState<string>('');
   const [textChange, setTextChange] = useState(false);
   const [sendMessageToDoctor, setSendMessageToDoctor] = useState<boolean>(false);
   const [callerAudio, setCallerAudio] = useState<boolean>(true);
@@ -696,10 +696,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const backDataFunctionality = () => {
     try {
       console.log(callhandelBack, 'is back called');
-
-      if (showAlertPopUp) {
-        return true;
-      }
       if (callhandelBack) {
         // handleCallTheEdSessionAPI();
         props.navigation.dispatch(
@@ -826,7 +822,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           if (noCount && noCount > 0) {
             setShowConnectAlertPopup(false);
           } else {
-            showAlertPopUp = true;
             setShowConnectAlertPopup(true);
           }
         }
@@ -843,7 +838,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.CONSULTED_WITH_DOCTOR_BEFORE, eventAttributes);
     setLoading(true);
-    showAlertPopUp = false;
 
     updateExternalConnect(client, doctorId, patientId, connected, channel)
       .then((data) => {
@@ -3552,6 +3546,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const openImageZoomViewer = (imageUrl: string, imageName: string) => {
+    props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+      images: [imageUrl],
+      heading: imageName,
+    });
+  };
+
   const openPopUp = (rowData: any) => {
     setLoading(true);
     if (rowData.url.match(/\.(pdf)$/) || rowData.fileType === 'pdf') {
@@ -3566,10 +3567,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           })
           .finally(() => {
             setLoading(false);
+            setFileNamePDF(rowData.fileName || '');
             setShowPDF(true);
           });
       } else {
         setUrl(rowData.url);
+        setFileNamePDF(rowData.fileName || '');
         setLoading(false);
         setShowPDF(true);
       }
@@ -3577,38 +3580,42 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (rowData.prismId) {
         getPrismUrls(client, patientId, rowData.prismId)
           .then((data: any) => {
+            openImageZoomViewer((data && data.urls[0]) || rowData.url, rowData.fileName || 'Image');
             setUrl((data && data.urls[0]) || rowData.url);
           })
           .catch((e) => {
             CommonBugFender('ChatRoom_OPEN_IMAGE', e);
+            openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
             setUrl(rowData.url);
           })
           .finally(() => {
             setLoading(false);
-            setPatientImageshow(true);
+            setPatientImageshow(false);
           });
       } else {
+        openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
         setUrl(rowData.url);
         setLoading(false);
-        setPatientImageshow(true);
+        setPatientImageshow(false);
       }
     } else {
       if (rowData.prismId) {
         getPrismUrls(client, patientId, rowData.prismId)
           .then((data: any) => {
             console.log(data, 'finaldata');
-
+            openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
             setUrl(rowData.url);
             setLoading(false);
-            setPatientImageshow(true);
+            setPatientImageshow(false);
             // Linking.openURL((data && data.urls[0]) || rowData.url).catch((err) =>
             // console.error('An error occurred', err)
             // );
           })
           .catch(() => {
+            openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
             setUrl(rowData.url);
             setLoading(false);
-            setPatientImageshow(true);
+            setPatientImageshow(false);
             //Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
           })
           .finally(() => {
@@ -3616,9 +3623,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setPatientImageshow(true);
           });
       } else {
+        openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
         setUrl(rowData.url);
         setLoading(false);
-        setPatientImageshow(true);
+        setPatientImageshow(false);
         // Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
       }
     }
@@ -5196,6 +5204,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             )}
 
             <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+            {waitAndEndCall()}
             {patientJoinedCall.current && !subscriberConnected.current && (
               <Text style={styles.centerTxt}>
                 {strings.common.waitForDoctirToJoinCall.replace('doctor_name', doctorName)}
@@ -5567,9 +5576,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             width: width - 116,
           }}
         >
-          {/* <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-            <SpeakerOn style={{ width: 60, height: 60 }} />
-          </TouchableOpacity> */}
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
@@ -5874,6 +5880,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const waitAndEndCall = () => {
+    if (patientJoinedCall.current && !subscriberConnected.current && callMinutes === 5) {
+      handleEndCall();
+    }
+  };
+
   const handleEndCall = () => {
     AsyncStorage.setItem('callDisconnected', 'true');
     setIsCall(false);
@@ -6158,6 +6170,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     id: patientId,
                     message: imageconsult,
                     fileType: item.fileType == 'pdf' ? 'pdf' : 'image',
+                    fileName: item.title + '.' + item.fileType,
                     prismId: recordId,
                     url: (data.urls && data.urls[0]) || '',
                     messageDate: new Date(),
@@ -6350,6 +6363,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
               const url = item.uploadedUrl ? item.uploadedUrl : '';
               const prism = item.prismPrescriptionFileId ? item.prismPrescriptionFileId : '';
+              const fileName = item.fileName ? item.fileName : '';
               // url &&
               //   url.map((item, index) => {
               if (url) {
@@ -6372,9 +6386,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     const text = {
                       id: patientId,
                       message: imageconsult,
-                      fileType: (documentPath ? documentPath : url).match(/\.(pdf)$/)
+                      fileType: fileName
+                        ? fileName.toLowerCase().endsWith('.pdf')
+                          ? 'pdf'
+                          : 'image'
+                        : (documentPath ? documentPath : url).match(/\.(pdf)$/)
                         ? 'pdf'
                         : 'image',
+                      fileName: fileName,
                       prismId: (prismFieldId ? prismFieldId : prism) || '',
                       url: documentPath ? documentPath : url,
                       messageDate: new Date(),
@@ -6892,9 +6911,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     setDropdownVisible(false);
                   }}
                   onFocus={() => setDropdownVisible(false)}
-                  onSubmitEditing={() => {
-                    Keyboard.dismiss();
-                  }}
                   editable={!disableChat}
                 />
                 <View
@@ -7247,13 +7263,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {showPDF && (
         <RenderPdf
           uri={url}
-          title={
-            url
-              .split('/')
-              .pop()!
-              .split('=')
-              .pop() || 'Document'
-          }
+          title={fileNamePDF || 'Document.pdf'}
           isPopup={true}
           setDisplayPdf={() => {
             setShowPDF(false);
@@ -7264,7 +7274,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       )}
       {showConnectAlertPopup && (
         <CustomAlert
-          description={`Have you interacted with ${appointmentData.doctorInfo.displayName} before?`}
+          description={`Have you consulted with ${appointmentData.doctorInfo.displayName} before?`}
           onNoPress={() => {
             setShowConnectAlertPopup(false);
             getUpdateExternalConnect(false);

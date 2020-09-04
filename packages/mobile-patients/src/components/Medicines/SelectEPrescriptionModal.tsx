@@ -564,9 +564,11 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                       let message = '';
                       let urls = '';
                       let prismImages = '';
+                      let fileName = '';
                       if (type === 'lab') {
                         date = data.date;
                         name = data.labTestName || '-';
+                        fileName = g(data, 'testResultFiles', '0', 'fileName') || '';
                         message = `${data.labTestSource || ''} Report\n`;
                         message += `Test Name: ${name}\n`;
                         message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
@@ -601,6 +603,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                       } else if (type === 'prescription') {
                         date = data.date;
                         name = data.prescriptionName || '-';
+                        fileName = g(data, 'prescriptionFiles', '0', 'fileName') || '';
                         message = `${data.source || ''} Report\n`;
                         message += `Test Name: ${name}\n`;
                         message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
@@ -668,6 +671,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                       submitValues.push({
                         id: data.id,
                         uploadedUrl: urls,
+                        fileName: fileName,
                         forPatient: (currentPatient && currentPatient.firstName) || '',
                         doctorName: name,
                         date: moment(date).format(DATE_FORMAT),

@@ -12,15 +12,17 @@ import { addMilliseconds, format, addDays, addMinutes } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
 import { APPOINTMENT_TYPE, Appointment } from 'consults-service/entities';
-import { writeRow, textInRow, uploadPdfFileToBlobStorage } from 'helpers/uploadFileToBlob';
 import { admin } from 'firebase';
-import PDFDocument from 'pdfkit';
 import { NotificationType, NotificationPriority } from 'notifications-service/constants';
 import {
   sendNotification,
   sendDoctorNotificationWhatsapp,
   sendNotificationSMS,
+  sendBrowserNotitication,
 } from 'notifications-service/handlers';
+import PDFDocument from 'pdfkit';
+import { uploadPdfFileToBlobStorage, textInRow, writeRow } from 'helpers/uploadFileToBlob';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 
 type PushNotificationMessage = {
   messageId: string;
@@ -124,14 +126,24 @@ const sendDailyAppointmentSummary: Resolver<
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const allAppts = await appointmentRepo.getTodaysAppointments(new Date());
-  console.log(allAppts.length, 'all appts count');
-  let pdfDoc: PDFKit.PDFDocument; // = new PDFDocument();
-  let fileName = '',
-    uploadPath = '';
+  const logFileName =
+    process.env.NODE_ENV + '_dailyapptsummary_' + format(new Date(), 'yyyyMMdd') + '.txt';
+  let logContent = '';
   let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
+  logContent =
+    '----------------------------\n' +
+    format(new Date(), 'yyyy-MM-dd hh:mm') +
+    '\n all appts count: ' +
+    allAppts.length +
+    '\n';
+  fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
+  let pdfDoc: PDFKit.PDFDocument; // = new PDFDocument();
+  let fileName = '',
+    uploadPath = '';
+
   let blobNames = '';
   const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
     let doctorsCount = 0;
@@ -146,6 +158,8 @@ const sendDailyAppointmentSummary: Resolver<
     let rowHeadx = 90;
     let rowx = 100;
     const docIds: string[] = [];
+    const allpdfs: string[] = [];
+    let fileStream: fs.WriteStream;
     allAppts.forEach((appt) => {
       docIds.push(appt.doctorId);
     });
@@ -158,15 +172,14 @@ const sendDailyAppointmentSummary: Resolver<
       } else if (appointment.appointmentType == APPOINTMENT_TYPE.ONLINE) {
         onlineAppointments++;
       }
-      //}
-
       if (flag == 0) {
         fileName =
           format(new Date(), 'dd-MM-yyyy') + '_' + appointment.doctorId + '_' + index + '.pdf';
         uploadPath = assetsDir + '/' + fileName;
         pdfDoc = new PDFDocument();
         //console.log('came here', onlineAppointments, fileName);
-        pdfDoc.pipe(fs.createWriteStream(uploadPath));
+        fileStream = fs.createWriteStream(uploadPath);
+        pdfDoc.pipe(fileStream);
         rowHeadx = 90;
         rowx = 100;
         writeRow(pdfDoc, rowHeadx);
@@ -189,7 +202,7 @@ const sendDailyAppointmentSummary: Resolver<
       textInRow(pdfDoc, appointment.appointmentType, rowx, 341);
       textInRow(pdfDoc, appointment.displayId.toString(), rowx, 441);
 
-      if (index + 1 == array.length) {
+      if (index + 1 == array.length || prevDoc != appointment.doctorId) {
         const doctorDetails = allDoctorDetails.filter((item) => {
           return item.id == prevDoc;
         });
@@ -204,58 +217,70 @@ const sendDailyAppointmentSummary: Resolver<
           .lineTo(420, totalAppointments * 30)
           .stroke();
         pdfDoc.end();
-
-        await delay(350);
-        console.log('pdf end');
-        const blobName = await uploadPdfFileToBlobStorage(fileName, uploadPath);
-        blobNames += blobName + ', ';
-        //console.log(blobName, 'blob names');
+        const fp = `${uploadPath}$${fileName}$${totalAppointments}$${doctorDetails[0].mobileNumber}`;
+        allpdfs.push(fp);
+        prevDoc = appointment.doctorId;
+        flag = 0;
         if (doctorDetails) {
           doctorsCount++;
-          // let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
-          //   '{0}',
-          //   doctorDetails[0].firstName
-          // ).replace('{1}', totalAppointments.toString());
-          // const onlineAppointmentsText =
-          //   onlineAppointments > 0
-          //     ? ApiConstants.ONLINE_APPOINTMENTS.replace('{0}', onlineAppointments.toString())
-          //     : '';
-          // const physicalAppointmentsText =
-          //   physicalAppointments > 0
-          //     ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
-          //     : '';
-          // messageBody += onlineAppointmentsText + physicalAppointmentsText;
-          // sendBrowserNotitication(doctorDetails[0].id, messageBody);
-
-          // sendNotificationSMS('+918019677178', messageBody);
-          // const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
-          // const templateData: string[] = [
-          //   'https://apolloaphstorage.blob.core.windows.net/doctors/2020-08-12-2b3572d7-9623-44ea-89be-ece581d2e522.pdf',
-          //   todaysDate + ' Appointments List',
-          //   todaysDate,
-          //   totalAppointments.toString(),
-          // ];
-          // sendDoctorNotificationWhatsapp(
-          //   ApiConstants.WHATSAPP_DOC_SUMMARY,
-          //   '+918019677178',
-          //   templateData
-          // );
-          onlineAppointments = 0;
-          physicalAppointments = 0;
-          prevDoc = appointment.doctorId;
-          flag = 0;
+          let messageBody = ApiConstants.DAILY_APPOINTMENT_SUMMARY.replace(
+            '{0}',
+            doctorDetails[0].firstName
+          ).replace('{1}', totalAppointments.toString());
+          const onlineAppointmentsText =
+            onlineAppointments > 0
+              ? ApiConstants.ONLINE_APPOINTMENTS.replace('{0}', onlineAppointments.toString())
+              : '';
+          const physicalAppointmentsText =
+            physicalAppointments > 0
+              ? ApiConstants.PHYSICAL_APPOINTMENTS.replace('{0}', physicalAppointments.toString())
+              : '';
+          messageBody += onlineAppointmentsText + physicalAppointmentsText;
+          sendBrowserNotitication(doctorDetails[0].id, messageBody);
+          sendNotificationSMS(doctorDetails[0].mobileNumber, messageBody);
         }
+        onlineAppointments = 0;
+        physicalAppointments = 0;
       }
 
       if (index + 1 === array.length) {
+        fileStream.on('finish', async () => {
+          allpdfs.map(async (pdffile) => {
+            logContent = pdffile + '\n';
+            fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
+            const docPdfDetails: string[] = pdffile.split('$');
+            const client = new AphStorageClient(
+              process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+              process.env.AZURE_STORAGE_CONTAINER_NAME
+            );
+            const pdfFile = await client.uploadFile({
+              name: docPdfDetails[1],
+              filePath: docPdfDetails[0],
+            });
+            const blobUrl = client.getBlobUrl(pdfFile.name);
+            blobNames += blobUrl + ', ';
+            logContent = blobUrl + '\n';
+            fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
+            const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
+            const templateData: string[] = [
+              blobUrl,
+              todaysDate + ' Appointments List',
+              todaysDate,
+              docPdfDetails[2],
+            ];
+            sendDoctorNotificationWhatsapp(
+              ApiConstants.WHATSAPP_DOC_SUMMARY,
+              docPdfDetails[3],
+              templateData
+            );
+          });
+        });
         resolve(doctorsCount);
       }
     });
   });
+
   const final = countOfNotifications + ' - ' + blobNames;
-  async function delay(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
   return ApiConstants.DAILY_APPOINTMENT_SUMMARY_RESPONSE.replace('{0}', final.toString());
 };
 

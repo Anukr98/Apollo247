@@ -6,9 +6,9 @@ import {
   GooglePlacesType,
   MedicineProduct,
   PlacesApiResponse,
-  getDeliveryTime,
   medCartItemsDetailsApi,
   MedicineOrderBilledItem,
+  availabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -659,6 +659,15 @@ export const isValidName = (value: string) =>
     : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
     ? true
     : false;
+  
+export const isValidPhoneNumber = (value: string) =>{
+    const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
+      ? !/^(234){1}\d{0,9}$/.test(value)
+        ? false
+        : true
+      : true;
+    return isValidNumber;
+}
 
 export const extractUrlFromString = (text: string): string | undefined => {
   const urlRegex = /(https?:\/\/[^ ]*)/;
@@ -1019,16 +1028,20 @@ export const callPermissions = (doRequest?: () => void) => {
       'microphone',
       'Enable microphone from settings for calls during consultation.',
       () => {
-        permissionHandler(
-          'storage',
-          'Enable storage from settings for uploading documents during consultation.',
-          () => {
-            doRequest && doRequest();
-          }
-        );
+        doRequest && doRequest();
       }
     );
   });
+};
+
+export const storagePermissions = (doRequest?: () => void) => {
+  permissionHandler(
+    'storage',
+    'Enable storage from settings for uploading documents during consultation.',
+    () => {
+      doRequest && doRequest();
+    }
+  );
 };
 
 export const InitiateAppsFlyer = (
@@ -1308,13 +1321,6 @@ export const trimTextWithEllipsis = (text: string, count: number) =>
 export const parseNumber = (number: string | number, decimalPoints?: number) =>
   Number(Number(number).toFixed(decimalPoints || 2));
 
-export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
-  return (
-    moment(deliveryDate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') <=
-    AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
-  );
-};
-
 export const getMaxQtyForMedicineItem = (qty?: number | string) => {
   return qty ? Number(qty) : AppConfig.Configuration.CART_ITEM_MAX_QUANTITY;
 };
@@ -1382,26 +1388,13 @@ export const addPharmaItemToCart = (
   }
 
   setLoading && setLoading(true);
-  getDeliveryTime({
-    postalcode: pincode,
-    ordertype: cartItem.isMedicine ? 'pharma' : 'fmcg',
-    lookup: [
-      {
-        sku: cartItem.id,
-        qty: cartItem.quantity,
-      },
-    ],
-  })
+  availabilityApi247(pincode, cartItem.id)
     .then((res) => {
-      const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
-      if (deliveryDate) {
-        if (isDeliveryDateWithInXDays(deliveryDate)) {
-          addToCart();
-        } else {
-          navigate();
-        }
-      } else {
+      const availability = g(res, 'data', 'response', '0' as any, 'exist');
+      if (availability) {
         addToCart();
+      } else {
+        navigate();
       }
     })
     .catch(() => {

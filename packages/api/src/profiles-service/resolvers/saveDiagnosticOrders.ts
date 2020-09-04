@@ -530,7 +530,7 @@ const SaveDiagnosticOrder: Resolver<
       }
 
       let homeCollectionData = {
-        'Patient_ID': patientDetails.id,
+        'Patient_ID': patientId,
         'Title': patientTitle,
         'PName': `${patientDetails.firstName} ${patientDetails.lastName}`,
         'Gender': patientGender,
@@ -548,6 +548,8 @@ const SaveDiagnosticOrder: Resolver<
         'Latitude': '0',
         'Longitude': '0',
         'SlotID': diagnosticOrderInput.employeeSlotId,
+        'ReferedDoctor': 'Self',
+        'DoctorID': 0,
         'TestDetail': new Array()
       }
 
@@ -809,7 +811,7 @@ const SaveItdoseHomeCollectionDiagnosticOrder: Resolver<
     }
 
     let homeCollectionData = {
-      'Patient_ID': patientDetails.id,
+      'Patient_ID': patientId,
       'Title': patientTitle,
       'PName': `${patientDetails.firstName} ${patientDetails.lastName}`,
       'Gender': patientGender,

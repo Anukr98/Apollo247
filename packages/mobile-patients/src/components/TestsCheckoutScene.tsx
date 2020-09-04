@@ -1,4 +1,7 @@
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  useAppCommonData,
+  AppCommonDataContextProps,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -18,6 +21,7 @@ import {
 import {
   SAVE_DIAGNOSTIC_ORDER,
   SAVE_ITDOSE_HOME_COLLECTION_DIAGNOSTIC_ORDER,
+  GET_DIAGNOSTICS_CITES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   DiagnosticLineItem,
@@ -64,6 +68,10 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  getDiagnosticsCites,
+  getDiagnosticsCitesVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -211,7 +219,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     couponDiscount,
     coupon,
   } = useDiagnosticsCart();
-  const { locationForDiagnostics } = useAppCommonData();
+  const { locationForDiagnostics, locationDetails } = useAppCommonData();
   const client = useApolloClient();
   const MAX_SLIDER_VALUE = grandTotal;
 
@@ -297,11 +305,55 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     renderAlert(`We're sorry :(  There's been a problem with your booking. Please book again.`);
   };
 
+  const getServiceableCityDetails = async (
+    city: string,
+    pId: string
+  ): Promise<AppCommonDataContextProps['locationForDiagnostics']> => {
+    const { data } = await client.query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
+      query: GET_DIAGNOSTICS_CITES,
+      variables: {
+        cityName: city,
+        patientId: pId,
+      },
+    });
+    const cities = data.getDiagnosticsCites.diagnosticsCities || [];
+    const matchingLocation = cities.find((c) => c!.cityname.toLowerCase() === city.toLowerCase());
+    if (matchingLocation) {
+      const { cityid, cityname, stateid, statename } = matchingLocation;
+      return {
+        cityId: `${cityid}`,
+        stateId: `${stateid}`,
+        city: cityname,
+        state: statename,
+      };
+    }
+    return null;
+  };
+
+  const handleSlotBookedError = () => {
+    props.navigation.goBack();
+    showAphAlert!({
+      title: string.common.uhOh,
+      description: `We're sorry :(  The slot you're trying to book is already booked. Please pick another slot.`,
+    });
+  };
+
   const initiateOrder = async () => {
     setShowSpinner(true);
+    let location: AppCommonDataContextProps['locationForDiagnostics'] = null;
+    try {
+      if (!g(locationForDiagnostics, 'city') && g(locationDetails, 'city')) {
+        location = await getServiceableCityDetails(locationDetails!.city, g(currentPatient, 'id'));
+      }
+    } catch (error) {
+      CommonBugFender('TestsCheckoutScene_initiateOrder_location_try', error);
+    }
+
     const { CentreCode, CentreName, City, State, Locality } = diagnosticClinic || {};
     const { date, Timeslot, TimeslotID } = diagnosticSlot || {};
-
+    const selectedLocation = (location ||
+      locationForDiagnostics ||
+      {}) as AppCommonDataContextProps['locationForDiagnostics'];
     const orderInfo: DiagnosticOrderInput = {
       // <- for home collection order
       diagnosticBranchCode: '',
@@ -318,10 +370,10 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       centerState: State || '',
       centerLocality: Locality || '',
       // for clinic order ->
-      city: (locationForDiagnostics || {}).city!,
-      state: (locationForDiagnostics || {}).state!,
-      stateId: `${(locationForDiagnostics || {}).stateId!}`,
-      cityId: `${(locationForDiagnostics || {}).cityId!}`,
+      city: selectedLocation!.city!,
+      state: selectedLocation!.state!,
+      stateId: `${selectedLocation!.stateId!}`,
+      cityId: `${selectedLocation!.cityId!}`,
       diagnosticDate: moment(date).format('YYYY-MM-DD'),
       prescriptionUrl: [
         ...physicalPrescriptions.map((item) => item.uploadedUrl),
@@ -355,9 +407,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
 
-    console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
-    console.log('orderInfo\n', { diagnosticOrderInput: orderInfo });
-
     try {
       const isHomeCollection = !!deliveryAddressId;
       const response = isHomeCollection
@@ -366,7 +415,11 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       const { orderId, displayId, errorCode, errorMessage } = response || {};
 
       if (errorCode || errorMessage) {
-        renderFailedMessage();
+        if (errorMessage === 'Slot Already Booked ') {
+          handleSlotBookedError();
+        } else {
+          renderFailedMessage();
+        }
         setShowSpinner(false);
         return;
       }
@@ -380,6 +433,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       }
       setShowSpinner(false);
     } catch (error) {
+      CommonBugFender('TestsCheckoutScene_initiateOrder_try', error);
       renderFailedMessage();
       setShowSpinner(false);
     }

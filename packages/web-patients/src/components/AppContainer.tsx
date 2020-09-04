@@ -75,6 +75,7 @@ const DoctorsLanding = loadable(() => import('components/DoctorsLanding'));
 import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
 import { Loader } from 'components/Loader';
 import { Prescription } from 'components/Consult/V2/Prescription';
+import { Sitemap } from 'components/Sitemap';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -240,6 +241,7 @@ const App: React.FC = () => {
             path={clientRoutes.prescription(':appointmentId')}
             component={Prescription}
           />
+          <Route exact path={clientRoutes.sitemap()} component={Sitemap} />
         </Switch>
       </div>
     </Scrollbars>

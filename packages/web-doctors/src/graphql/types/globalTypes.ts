@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -287,6 +288,19 @@ export enum patientLogType {
   All = 'All',
   FOLLOW_UP = 'FOLLOW_UP',
   REGULAR = 'REGULAR',
+}
+
+export enum CALL_FEEDBACK_RESPONSES_TYPES {
+  AUDIO = 'AUDIO',
+  AUDIOVIDEO = 'AUDIOVIDEO',
+  VIDEO = 'VIDEO',
+}
+
+export interface SaveAppointmentCallFeedbackInput {
+  appointmentCallDetailsId: string;
+  ratingValue: number;
+  feedbackResponseType?: CALL_FEEDBACK_RESPONSES_TYPES | null;
+  feedbackResponses?: string | null;
 }
 
 export interface BlockMultipleItems {

@@ -168,8 +168,8 @@ const toBase64 = (file: any) =>
   });
 
 const getDiffInDays = (nextAvailability: string) => {
-  if (nextAvailability && nextAvailability.length > 0) {
-    const nextAvailabilityTime = moment(new Date(nextAvailability.replace(/-/g, ' ')));
+  if (nextAvailability) {
+    const nextAvailabilityTime = moment(new Date(nextAvailability));
     const currentTime = moment(new Date());
     const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
     return differenceInDays;
@@ -205,7 +205,7 @@ const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
 const OUT_OF_STOCK_MESSAGE = 'Sorry, this item is out of stock in your area';
-const TAT_API_TIMEOUT_IN_MILLI_SEC = 10000; // in milli sec
+const TAT_API_TIMEOUT_IN_MILLI_SEC = 20000; // in milli sec
 const NO_ONLINE_SERVICE = 'NOT AVAILABLE FOR ONLINE SALE';
 const OUT_OF_STOCK = 'Out Of Stock';
 const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
@@ -263,11 +263,10 @@ interface SearchObject {
 }
 
 interface AppointmentFilterObject {
-  consultType: string[] | null;
   appointmentStatus: string[] | null;
   availability: string[] | null;
-  gender: string[] | null;
   doctorsList: string[] | null;
+  specialtyList: string[] | null;
 }
 
 const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
@@ -284,7 +283,14 @@ const genderList = [
 const languageList = ['English', 'Telugu'];
 const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
 const consultType = ['Online', 'Clinic Visit'];
-const appointmentStatus = ['New', 'Completed', 'Cancelled', 'Rescheduled', 'Follow-Up'];
+const appointmentStatus = [
+  'Active',
+  'Completed',
+  'Cancelled',
+  'Rescheduled',
+  'Follow-Up',
+  'Follow - Up Chat',
+];
 
 // End of doctors list based on specialty related changes
 
@@ -454,7 +460,12 @@ const getAvailableFreeChatDays = (appointmentTime: string) => {
   }
 };
 
+const removeGraphQLKeyword = (error: any) => {
+  return error.message.replace('GraphQL error:', '');
+};
+
 export {
+  removeGraphQLKeyword,
   getCouponByUserMobileNumber,
   getPackOfMedicine,
   getImageUrl,

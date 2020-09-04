@@ -246,10 +246,35 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   const pageSize = args.filterInput.pageSize ? args.filterInput.pageSize : 1000;
   const offset = (pageNo - 1) * pageSize;
 
-  elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
-
-  elasticMatch.push({ range: { 'doctorSlots.slots.slot': { gt :'now+15m'} } });
+  const elasticSlotDateAvailability: { [index: string]: any } = [];
  
+  if (args.filterInput.availability && args.filterInput.availability.length > 0){
+    args.filterInput.availability.forEach((availability) => {
+      elasticSlotDateAvailability.push(
+        {bool: {must: [
+          { match: { 'doctorSlots.slotDate': availability } },
+          { match: { 'doctorSlots.slots.slot': availability } },
+          { range: { 'doctorSlots.slots.slotThreshold': { gt :'now', lt: availability+'T18:30:00.000Z' } } }
+        ]}}
+      );
+    }); 
+  }
+
+  elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
+  elasticMatch.push({ range: { 'doctorSlots.slots.slotThreshold': { gt :'now' } } });
+
+  if (elasticSlotDateAvailability.length > 0 && args.filterInput.availableNow) {
+      elasticMatch.push({ bool: { should: [ 
+            { bool: { should: elasticSlotDateAvailability }
+            },
+            { bool: { must: { range: { 'doctorSlots.slots.slotThreshold': { gt : 'now', lte :'now+4h'} } } } }
+          ] } } );
+  } else if (elasticSlotDateAvailability.length > 0) {
+      elasticMatch.push({ bool:{ should: elasticSlotDateAvailability } });
+  } else if (args.filterInput.availableNow ) {
+    elasticMatch.push({ range: { 'doctorSlots.slots.slotThreshold': { gt :'now', lte :'now+4h'} } });
+  }
+
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
     elasticMatch.push({ match: { 'specialty.name': args.filterInput.specialtyName.join(',') } });
   }
@@ -368,6 +393,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
+    }
+    if (doctor.languages instanceof Array) {
+      doctor.languages = doctor.languages.join(', ');
     }
     for (const slots of doc._source.doctorSlots) {
       for (const slot of slots['slots']) {
@@ -575,12 +603,76 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       .concat(docs);
   }
 
+  const searchFilters: RequestParams.Search = {
+    index: process.env.ELASTIC_INDEX_DOCTORS,
+    body: {
+      size: 0,
+      aggs: {
+        brands: {
+          terms: {
+            field: "doctorType.keyword",
+            size: 10000,
+            order: {"_term": "asc"}
+          }
+        },
+        state: {
+          terms: {
+            field: "facility.state.keyword",
+            size: 10000,
+            min_doc_count: 1,
+            order: {"_term": "asc"}
+          },
+          aggs: {
+            city: {
+              terms: {
+                field: "facility.city.keyword",
+                size: 10000,
+                min_doc_count: 1,
+                order: {"_term": "asc"}
+              }
+            }
+          }
+        },
+        language: {
+          terms: {
+            field: "languages.keyword",
+            size: 10000,
+            min_doc_count: 1,
+            order: {"_term": "asc"}
+          }
+        },
+        experience: {
+          terms: {
+            field: "experience_range.keyword",
+            size: 10000,
+            order: {"_term": "asc"}
+          }
+        },
+        fee: {
+          terms: {
+            field: "fee_range.keyword",
+            size: 10000,
+            order: {"_term": "asc"}
+          }
+        },
+        gender: {
+          terms: {
+            field: "gender.keyword",
+            size: 10000,
+            order: {"_term": "asc"}
+          }
+        }
+      }
+    }
+  };
+
+  const aggnData = await client.search(searchFilters);
+
   function ifKeyExist(arr: any[], key: string, value: string) {
     if (arr.length) {
       arr = arr.filter((elem: any) => {
         return elem[key] === value
       });
-      // if filter returned a non-empty array
       if (arr.length) {
         return arr[0];
       }
@@ -594,83 +686,69 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     const words = input.split('_');
     const CapitalizedWords: string[] = [];
     words.forEach((element: string) => {
-      CapitalizedWords.push(element[0].toUpperCase() + element.slice(1, element.length).toLowerCase());
+      if(element.length >=1){
+        CapitalizedWords.push(element[0].toUpperCase() + element.slice(1, element.length).toLowerCase());
+      }
     });
     return CapitalizedWords.join(' ');
   }
 
   const filters: any = { city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: [] };
-  let cityObj: { state: string, data: string[] };
 
-  // making filters
-  for (const doctor of doctors) {
-    for (const hospital of doctor.doctorHospital) {
-      cityObj = { state: '', data: [] };
-      if (filters.city.length) {
-        cityObj = ifKeyExist(filters.city, 'state', hospital.facility.state);
-      }
-      if (cityObj && cityObj.state) {
-        if (!cityObj.data.includes(hospital.facility.city)) {
-          cityObj.data.push(hospital.facility.city);
-        }
-      } else {
-        cityObj.state = hospital.facility.state;
-        cityObj.data = [];
-        cityObj.data.push(hospital.facility.city);
-        filters.city.push(cityObj);
-      }
-    }
-
-    // "doctor.photoUrl" needs to be replaced with actual brand images-links
-    if (doctor.doctorType && !("name" in ifKeyExist(filters.brands, 'name', doctor.doctorType))) {
-      filters.brands.push({ 'name': doctor.doctorType, 'image': doctor.photoUrl, 'brandName': capitalize(doctor.doctorType) });
-    }
-
-    if (doctor.languages instanceof Array) {
-      for (const language of doctor.languages) {
-        if (!("name" in ifKeyExist(filters.language, 'name', language))) {
-          filters.language.push({ 'name': language });
+  function pushInFilters(esObject: any, field: string){
+    esObject[field]['buckets'].forEach((element: { key: 'string', doc_count: number }) => {
+      if(element['key'] && !("name" in ifKeyExist(filters[field], 'name', capitalize(element['key'])))){
+        if(field != 'brands'){
+          filters[field].push({ name: capitalize(element['key']) });
+        } else {
+          filters[field].push({ name: element['key'], brandName: capitalize(element['key']), image: '' });
         }
       }
-      doctor.languages = doctor.languages.join(', ');
-    }
-
-    if (doctor.experience_range && !("name" in ifKeyExist(filters.experience, 'name', doctor.experience_range))) {
-      filters.experience.push({ 'name': doctor.experience_range });
-    }
-
-    if (doctor.fee_range && !("name" in ifKeyExist(filters.fee, 'name', doctor.fee_range))) {
-      filters.fee.push({ 'name': doctor.fee_range });
-    }
-
-    if (doctor.gender && !("name" in ifKeyExist(filters.gender, 'name', doctor.gender))) {
-      filters.gender.push({ 'name': doctor.gender });
-    }
-
+    });
   }
 
-  const dayEndMinutes = differenceInMinutes(endOfDay(new Date()), (new Date()));
-  const twoDaysEndMinutes = differenceInMinutes(endOfDay(addDays(new Date(), 1)), (new Date()));
-  for (const availablity of finalDoctorNextAvailSlots) {
-    if (241 > availablity.availableInMinutes) {
-      if (!("name" in ifKeyExist(filters.availability, 'name', 'Now'))) {
-        filters.availability.push({ 'name': 'Now' });
-      }
+  pushInFilters(aggnData.body.aggregations, 'brands');
+  pushInFilters(aggnData.body.aggregations, 'language');
+  pushInFilters(aggnData.body.aggregations, 'gender');
+  pushInFilters(aggnData.body.aggregations, 'fee');
+  pushInFilters(aggnData.body.aggregations, 'experience');
+
+  aggnData.body.aggregations.state.buckets.forEach((state: any) => {
+    if(state['key'] && !("name" in ifKeyExist(filters['city'], 'state', capitalize(state['key'])))){
+      const cityObject: { state: string, data: string[] } = {state: '', data: [] };
+      state.city.buckets.forEach((city:any) => {
+        if(city['key'] && !cityObject.data.includes(capitalize(city['key']))){
+          cityObject.data.push(capitalize(city['key']));
+        }
+      });
+      cityObject.state = capitalize(state['key']);
+      filters.city.push(cityObject);
     }
-    if (dayEndMinutes > availablity.availableInMinutes && availablity.availableInMinutes > 240) {
-      if (!("name" in ifKeyExist(filters.availability, 'name', 'Today'))) {
-        filters.availability.push({ 'name': 'Today' });
+  });
+
+  filters.availability = [{ 'name': 'Now' }, { 'name': 'Today' }, { 'name': 'Tomorrow' }, { 'name': 'Next 3 Days' }]
+
+  function rangeCompare(field: string, order: string = 'asc') {
+    return function sort(objectA: any, objectB: any) {
+      if (!objectA.hasOwnProperty(field) || !objectB.hasOwnProperty(field)) {
+        return 0;
       }
-    } else if (twoDaysEndMinutes > availablity.availableInMinutes) {
-      if (!("name" in ifKeyExist(filters.availability, 'name', 'Tomorrow'))) {
-        filters.availability.push({ 'name': 'Tomorrow' });
+      const fieldA = parseInt(objectA[field].split("-")[0], 10);
+      const fieldB = parseInt(objectB[field].split("-")[0], 10);
+      let comparison = 0;
+      if (fieldA > fieldB) {
+        comparison = 1;
+      } else if (fieldA < fieldB) {
+        comparison = -1;
       }
-    } else if (availablity.availableInMinutes > twoDaysEndMinutes) {
-      if (!("name" in ifKeyExist(filters.availability, 'name', 'Next 3 Days'))) {
-        filters.availability.push({ 'name': 'Next 3 Days' });
-      }
-    }
+      return (
+        (order === 'desc') ? (comparison * -1) : comparison
+      );
+    };
   }
+  
+  filters.experience.sort(rangeCompare('name'));
+  filters.fee.sort(rangeCompare('name'));
 
   searchLogger(`API_CALL___END`);
   return {

@@ -204,7 +204,9 @@ export const convertCaseSheetToRxPdfData = async (
         frequency += '.';
       }
       const instructions = csRx.medicineInstructions;
-      const routeOfAdministration = csRx.medicineCustomDetails ? null : _capitalize(csRx.routeOfAdministration)
+      const routeOfAdministration = csRx.medicineCustomDetails
+        ? null
+        : _capitalize(csRx.routeOfAdministration);
       if (csRx.includeGenericNameInPrescription) {
         genericName = csRx.genericName;
       }
@@ -376,7 +378,7 @@ export const convertCaseSheetToRxPdfData = async (
     if (caseSheet.followUpConsultType)
       followUpDetails = followUpDetails + '(' + _capitalize(caseSheet.followUpConsultType) + ') ';
     let followUpDays;
-    if (caseSheet.followUpAfterInDays && caseSheet.followUpAfterInDays <= 7) {
+    if (caseSheet.followUpAfterInDays) {
       followUpDays = caseSheet.followUpAfterInDays;
       if (followUpDays) followUpDetails = followUpDetails + 'after ' + followUpDays + ' days';
     } else if (caseSheet.followUpDate) {

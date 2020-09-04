@@ -10,6 +10,7 @@ import {
   PAYTM_STATUS,
   REFUND_STATUS,
   MEDICINE_ORDER_PAYMENT_TYPE,
+  DEVICE_TYPE,
 } from 'profiles-service/entities';
 import { OneApollo } from 'helpers/oneApollo';
 import {
@@ -179,7 +180,8 @@ export const calculateRefund = async (
   totalOrderBilling: number,
   profilesDb: Connection,
   medOrderRepo: MedicineOrdersRepository,
-  reasonCode?: string
+  reasonCode?: string,
+  deliveryCharges?: number
 ) => {
   const paymentInfo = await medOrderRepo.getRefundsAndPaymentsByOrderId(orderDetails.id);
   if (!paymentInfo) {
@@ -216,7 +218,7 @@ export const calculateRefund = async (
   let isRefundSuccessful = false;
 
   // Maximum possible refund
-  const maxRefundAmountPossible = +new Decimal(amountPaid).minus(totalRefundAmount);
+  let maxRefundAmountPossible = +new Decimal(amountPaid).minus(totalRefundAmount);
 
   /**
    * Preference would be given to health credits consumption
@@ -224,6 +226,17 @@ export const calculateRefund = async (
    */
   healthCreditsToRefund = +new Decimal(healthCreditsRedeemed).minus(totalOrderBilling);
 
+  /**
+   * We cannot refund money received for delivery
+   */
+  if (totalOrderBilling != 0 && deliveryCharges) {
+    maxRefundAmountPossible = +new Decimal(maxRefundAmountPossible)
+      .minus(+deliveryCharges)
+      .minus(+orderDetails.packagingCharges);
+    healthCreditsToRefund = +new Decimal(healthCreditsToRefund)
+      .plus(+deliveryCharges)
+      .plus(+orderDetails.packagingCharges);
+  }
   /**
    * Refund all the money if health credits blocked are more than the amended order billing
    * Otherwise, refund the difference.
@@ -322,10 +335,10 @@ export const calculateRefund = async (
          * StoreCode for the OneApollo is decided based on deviceType in order
          */
         let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
-        if (orderDetails.deviceType) {
+        if (orderDetails.deviceType == DEVICE_TYPE.IOS) {
           storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
         }
-        if (orderDetails.deviceType) {
+        if (orderDetails.deviceType == DEVICE_TYPE.ANDROID) {
           storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
         }
 

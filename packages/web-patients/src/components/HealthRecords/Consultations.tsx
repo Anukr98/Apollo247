@@ -83,6 +83,9 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
         padding: '10px 15px',
+        position: 'absolute',
+        top: 5,
+        right: 0,
       },
       '& button': {
         boxShadow: 'none',
@@ -268,7 +271,7 @@ const useStyles = makeStyles((theme: Theme) => {
         left: 0,
         width: '100%',
         backgroundColor: '#f0f1ec',
-        zIndex: 991,
+        zIndex: 999,
       },
     },
     headerBackArrow: {

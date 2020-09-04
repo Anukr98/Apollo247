@@ -768,36 +768,43 @@ export const Prescription: React.FC = (props) => {
                             {caseSheetDetails.medicinePrescription.map((prescription) => (
                               <div className={classes.cdContainer}>
                                 <Typography>{prescription.medicineName}</Typography>
-                                <ul className={classes.consultList}>
-                                  <li>
-                                    {prescription.medicineDosage} {prescription.medicineUnit}
-                                  </li>
-                                  <li>
-                                    {prescription.medicineTimings &&
-                                    prescription.medicineTimings.length
-                                      ? prescription.medicineTimings
-                                          .map((timing: MEDICINE_TIMINGS | null) =>
-                                            _upperFirst(_lowerCase(timing))
-                                          )
-                                          .join(', ') +
-                                        `${
-                                          prescription.medicineToBeTaken &&
-                                          prescription.medicineToBeTaken.length
-                                            ? ', '
-                                            : ''
-                                        }`
-                                      : ''}
-                                    {prescription.medicineToBeTaken &&
-                                    prescription.medicineToBeTaken.length
-                                      ? prescription.medicineToBeTaken
-                                          .map((medicineTobeTaken: MEDICINE_TO_BE_TAKEN) =>
-                                            _upperFirst(_lowerCase(medicineTobeTaken || ''))
-                                          )
-                                          .join(', ') + '.'
-                                      : ''}
-                                  </li>
-                                  <li>{prescription.medicineConsumptionDurationInDays} days</li>
-                                </ul>
+                                {prescription.medicineCustomDetails ? (
+                                  <ul className={classes.consultList}>
+                                    <li>{prescription.medicineCustomDetails}</li>
+                                  </ul>
+                                ) : (
+                                  <ul className={classes.consultList}>
+                                    <li>
+                                      {prescription.medicineDosage}{' '}
+                                      {_upperFirst(_lowerCase(prescription.medicineUnit))}
+                                    </li>
+                                    <li>
+                                      {prescription.medicineTimings &&
+                                      prescription.medicineTimings.length
+                                        ? prescription.medicineTimings
+                                            .map((timing: MEDICINE_TIMINGS | null) =>
+                                              _upperFirst(_lowerCase(timing))
+                                            )
+                                            .join(', ') +
+                                          `${
+                                            prescription.medicineToBeTaken &&
+                                            prescription.medicineToBeTaken.length
+                                              ? ', '
+                                              : ''
+                                          }`
+                                        : ''}
+                                      {prescription.medicineToBeTaken &&
+                                      prescription.medicineToBeTaken.length
+                                        ? prescription.medicineToBeTaken
+                                            .map((medicineTobeTaken: MEDICINE_TO_BE_TAKEN) =>
+                                              _upperFirst(_lowerCase(medicineTobeTaken || ''))
+                                            )
+                                            .join(', ')
+                                        : ''}
+                                    </li>
+                                    <li>{prescription.medicineConsumptionDurationInDays} days</li>
+                                  </ul>
+                                )}
                               </div>
                             ))}
                             <div className={classes.summaryDownloads}>
