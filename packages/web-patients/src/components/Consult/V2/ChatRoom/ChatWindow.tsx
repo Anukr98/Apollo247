@@ -1575,6 +1575,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             >
               No
             </AphButton>
+            <AphButton
+              className={`${classes.quesButton}  ${
+                smokeHabit === 'ex-smoker' ? classes.btnActive : ''
+              }`}
+              onClick={() => setSmokeHabit('ex-smoker')}
+            >
+              Ex-Smoker
+            </AphButton>
           </Grid>
           <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
@@ -1585,7 +1593,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   showNextSlide();
                   const composeMessage = {
                     id: currentPatient && currentPatient.id,
-                    message: `Smoke:\n${_startCase(smokeHabit)}`,
+                    message: `Smoke:\n${
+                      smokeHabit === 'ex-smoker' ? 'Ex-Smoker' : _startCase(smokeHabit) // needed for lodash
+                    }`,
                     automatedText: '',
                     duration: '',
                     url: '',
@@ -1594,8 +1604,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     cardType: 'patient',
                   };
                   publishMessage(appointmentId, composeMessage);
-                  if (smokeHabit === 'yes') showNextSlide();
-                  else slickGotoSlide(8);
+                  if (smokeHabit === 'yes') {
+                    showNextSlide();
+                  } else if (smokeHabit === 'ex-smoker') {
+                    setSmokes('Ex-Smoker');
+                    slickGotoSlide(8);
+                  } else {
+                    slickGotoSlide(8);
+                  }
                 }
               }}
             >
@@ -1882,7 +1898,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 if (temperature.length > 0) {
                   const composeMessage = {
                     id: currentPatient && currentPatient.id,
-                    message: `Temperature:\n${temperature}°F`,
+                    message: `Temperature:\n${temperature} ${
+                      temperature !== 'No Idea' ? '°F' : ''
+                    }`,
                     automatedText: '',
                     duration: '',
                     url: '',

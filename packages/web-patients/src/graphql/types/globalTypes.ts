@@ -70,6 +70,7 @@ export enum CouponCategoryApplicable {
   FMCG = "FMCG",
   PHARMA = "PHARMA",
   PHARMA_FMCG = "PHARMA_FMCG",
+  PL = "PL",
 }
 
 export enum DEVICETYPE {
@@ -750,6 +751,7 @@ export interface OtpVerificationInput {
 
 export interface PatientAddressInput {
   patientId: string;
+  name?: string | null;
   addressLine1: string;
   addressLine2?: string | null;
   city?: string | null;
@@ -869,6 +871,7 @@ export interface UpdateAppointmentSessionInput {
 
 export interface UpdatePatientAddressInput {
   id: string;
+  name?: string | null;
   addressLine1: string;
   addressLine2?: string | null;
   city?: string | null;
