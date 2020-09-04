@@ -450,14 +450,11 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
           {isSmallScreen && allCombinedData && allCombinedData.length === 0 && (
             <div className={classes.noRecordFoundWrapper}>
               <img src={require('images/ic_records.svg')} />
-              <p>
-                You don’t have any records with us right now. Add a record to keep everything handy
-                in one place!
-              </p>
+              <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
             </div>
           )}
         </Scrollbars>
-        <div className={classes.addReportActions}>
+        {/* <div className={classes.addReportActions}>
           <AphButton
             color="primary"
             onClick={() => {
@@ -467,7 +464,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
           >
             Add Record
           </AphButton>
-        </div>
+        </div> */}
       </div>
       <div
         className={`${classes.rightSection} ${

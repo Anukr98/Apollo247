@@ -441,17 +441,13 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
       allCombinedData.sort((data1: LabResultsType, data2: LabResultsType) => {
         const filteredData1 =
           type === FILTER_TYPE.DATE
-            ? moment(data1.date)
-                .toDate()
-                .getTime()
+            ? moment(data1.date).toDate().getTime()
             : type === FILTER_TYPE.TEST
             ? data1.labTestName
             : data1.packageName;
         const filteredData2 =
           type === FILTER_TYPE.DATE
-            ? moment(data2.date)
-                .toDate()
-                .getTime()
+            ? moment(data2.date).toDate().getTime()
             : type === FILTER_TYPE.TEST
             ? data2.labTestName
             : data2.packageName;
@@ -573,10 +569,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           {isSmallScreen && allCombinedData && allCombinedData.length === 0 && (
             <div className={classes.noRecordFoundWrapper}>
               <img src={require('images/ic_records.svg')} />
-              <p>
-                You don’t have any records with us right now. Add a record to keep everything handy
-                in one place!
-              </p>
+              <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
             </div>
           )}
         </Scrollbars>
