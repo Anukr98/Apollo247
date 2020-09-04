@@ -364,7 +364,7 @@ export const ConsultTabs: React.FC = () => {
 
   const client = useApolloClient();
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
-  const { currentUserType } = useAuthContext();
+  const { currentUserType, chatDays } = useAuthContext();
   /* case sheet data*/
   const [symptoms, setSymptoms] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null
@@ -393,7 +393,9 @@ export const ConsultTabs: React.FC = () => {
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
-  const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
+  const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([
+    chatDays !== null ? chatDays.toString() : '',
+  ]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
   const [followUpConsultType, setFollowUpConsultType] = useState<string[]>([]);
 
@@ -738,7 +740,9 @@ export const ConsultTabs: React.FC = () => {
               'follow up old var type',
               typeof _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
             );
-            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
+
+            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays &&
+            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays !== null
               ? setFollowUpAfterInDays(([
                   _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
                 ] as unknown) as string[])
@@ -1344,6 +1348,7 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
         variables: {
           appointmentId: appointmentId,
+          patientId: patientId,
           callType: callType,
           doctorType: DOCTOR_CALL_TYPE.SENIOR,
           deviceType: DEVICETYPE.DESKTOP,
@@ -1376,6 +1381,7 @@ export const ConsultTabs: React.FC = () => {
           api: 'SendCallNotification',
           inputParam: JSON.stringify({
             appointmentId: appointmentId,
+            patientId: patientId,
             callType: callType,
             doctorType: DOCTOR_CALL_TYPE.SENIOR,
             deviceType: DEVICETYPE.DESKTOP,
@@ -1795,6 +1801,7 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
         variables: {
           appointmentCallId: isCall ? callId : chatRecordId,
+          patientId: params.patientId,
         },
       })
       .catch((error: ApolloError) => {

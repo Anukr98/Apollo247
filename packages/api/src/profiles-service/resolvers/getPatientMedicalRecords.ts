@@ -227,6 +227,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     id: String,
     fileUrl: String!
     date: Date!
+    hospitalizationDate: Date
     dateOfHospitalization: Float,
     hospitalName: String,
     doctorName: String,
@@ -555,6 +556,14 @@ const getPatientPrismMedicalRecords: Resolver<
       dischargeSummaryResult.dateOfDischarge = dischargeSummaryResult.dateOfDischarge * 1000;
     }
     dischargeSummaryResult.date = new Date(format(new Date(dischargeSummaryResult.dateOfDischarge), 'yyyy-MM-dd'));
+
+    /* Add hospitalization date field in ISO if found in prism data */
+    if (dischargeSummaryResult.dateOfHospitalization) {
+      if (dischargeSummaryResult.dateOfHospitalization.toString().length < 11) {
+        dischargeSummaryResult.dateOfHospitalization = dischargeSummaryResult.dateOfHospitalization * 1000;
+      }
+      dischargeSummaryResult.hospitalizationDate = new Date(format(new Date(dischargeSummaryResult.dateOfHospitalization), 'yyyy-MM-dd'));
+    }
 
   });
 
