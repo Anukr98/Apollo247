@@ -5,6 +5,7 @@ import fs from 'fs';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { format } from 'date-fns';
 import path from 'path';
+import { log } from 'customWinstonLogger';
 
 export const uploadFileTypeDefs = gql`
   enum UPLOAD_FILE_TYPES {
@@ -50,26 +51,97 @@ const uploadFile: Resolver<
   if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
     await client
       .deleteContainer()
-      .then((res) => null)
-      .catch((error) => null);
+      .then((res) => {
+        log(
+          'profileServiceLogger',
+          'uploadFile deleteContainer response',
+          'uploadFile()->deleteContainer()->THEN_BLOCK',
+          '',
+          JSON.stringify(res)
+        );
+      })
+      .catch((error) => {
+        log(
+          'profileServiceLogger',
+          'uploadFile deleteContainer error',
+          'uploadFile()->deleteContainer()->CATCH_BLOCK',
+          '',
+          JSON.stringify(error)
+        );
+      });
     await client
       .setServiceProperties()
-      .then((res) => null)
-      .catch((error) => null);
+      .then((res) => {
+        log(
+          'profileServiceLogger',
+          'uploadFile setServiceProperties response',
+          'uploadFile()->setServiceProperties()->THEN_BLOCK',
+          '',
+          JSON.stringify(res)
+        );
+      })
+      .catch((error) => {
+        log(
+          'profileServiceLogger',
+          'uploadFile setServiceProperties error',
+          'uploadFile()->setServiceProperties()->CATCH_BLOCK',
+          '',
+          JSON.stringify(error)
+        );
+      });
     await client
       .createContainer()
-      .then((res) => null)
-      .catch((error) => null);
+      .then((res) => {
+        log(
+          'profileServiceLogger',
+          'uploadFile createContainer response',
+          'uploadFile()->createContainer()->THEN_BLOCK',
+          '',
+          JSON.stringify(res)
+        );
+      })
+      .catch((error) => {
+        log(
+          'profileServiceLogger',
+          'uploadFile createContainer error',
+          'uploadFile()->createContainer()->CATCH_BLOCK',
+          '',
+          JSON.stringify(error)
+        );
+      });
   }
   await client
     .testStorageConnection()
-    .then((res) => null)
-    .catch((error) => null);
+    .then((res) => {
+      log(
+        'profileServiceLogger',
+        'uploadFile testStorageConnection response',
+        'uploadFile()->testStorageConnection()->THEN_BLOCK',
+        '',
+        JSON.stringify(res)
+      );
+    })
+    .catch((error) => {
+      log(
+        'profileServiceLogger',
+        'uploadFile testStorageConnection error',
+        'uploadFile()->testStorageConnection()->CATCH_BLOCK',
+        '',
+        JSON.stringify(error)
+      );
+    });
 
   const localFilePath = assetsDir + '/' + fileName;
   const readmeBlob = await client
     .uploadFile({ name: fileName, filePath: localFilePath })
     .catch((error) => {
+      log(
+        'profileServiceLogger',
+        'uploadFile error',
+        'uploadFile()->CATCH_BLOCK',
+        '',
+        JSON.stringify(error)
+      );
       throw error;
     });
   fs.unlinkSync(localFilePath);

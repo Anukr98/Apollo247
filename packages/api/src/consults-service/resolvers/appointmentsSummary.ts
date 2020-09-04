@@ -16,6 +16,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { STATUS } from 'consults-service/entities';
 import { DOCTOR_CALL_TYPE, APPT_CALL_TYPE } from 'notifications-service/constants';
 import _isEmpty from 'lodash/isEmpty';
+import { log } from 'customWinstonLogger';
 
 export const appointmentsSummaryTypeDefs = gql`
   type summaryResult {
@@ -401,24 +402,88 @@ const appointmentsSummary: Resolver<
   if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
     await client
       .deleteContainer()
-      .then((res) => null)
-      .catch((error) => null);
+      .then((res) => {
+        log(
+          'consultServiceLogger',
+          'deleteContainer resp',
+          'appointmentSummary()->deleteContainer',
+          JSON.stringify(res),
+          ''
+        );
+      })
+      .catch((error) => {
+        log(
+          'consultServiceLogger',
+          'deleteContainer error',
+          'appointmentSummary()->deleteContainer',
+          '',
+          JSON.stringify(error)
+        );
+      });
 
     await client
       .setServiceProperties()
-      .then((res) => null)
-      .catch((error) => null);
+      .then((res) => {
+        log(
+          'consultServiceLogger',
+          'setServiceProperties resp',
+          'appointmentSummary()->setServiceProperties',
+          JSON.stringify(res),
+          ''
+        );
+      })
+      .catch((error) => {
+        log(
+          'consultServiceLogger',
+          'setServiceProperties error',
+          'appointmentSummary()->setServiceProperties',
+          '',
+          JSON.stringify(error)
+        );
+      });
 
     await client
       .createContainer()
-      .then((res) => null)
-      .catch((error) => null);
+      .then((res) => {
+        log(
+          'consultServiceLogger',
+          'createContainer resp',
+          'appointmentSummary()->createContainer',
+          JSON.stringify(res),
+          ''
+        );
+      })
+      .catch((error) => {
+        log(
+          'consultServiceLogger',
+          'createContainer error',
+          'appointmentSummary()->createContainer',
+          '',
+          JSON.stringify(error)
+        );
+      });
   }
 
   await client
     .testStorageConnection()
-    .then((res) => null)
-    .catch((error) => null);
+    .then((res) => {
+      log(
+        'consultServiceLogger',
+        'testStorageConnection resp',
+        'appointmentSummary()->testStorageConnection',
+        JSON.stringify(res),
+        ''
+      );
+    })
+    .catch((error) => {
+      log(
+        'consultServiceLogger',
+        'testStorageConnection error',
+        'appointmentSummary()->testStorageConnection',
+        '',
+        JSON.stringify(error)
+      );
+    });
 
   const localFilePath = assetsDir + '/' + fileName;
 

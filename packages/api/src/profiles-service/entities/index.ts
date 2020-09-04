@@ -1282,6 +1282,13 @@ export class Patient extends BaseEntity {
   @AfterUpdate()
   async setPatientCache() {
     try {
+      log(
+        'profileServiceLogger',
+        'setting Cache',
+        'profilesService->setPatientCache()',
+        '',
+        ''
+      );
       await setCache(
         `patient:${this.id}`,
         JSON.stringify(this),

@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import { format } from 'date-fns';
 import { keyCache, hgetAllCache } from 'doctors-service/database/connectRedis';
+import { log } from 'customWinstonLogger';
 
 export const sitemapTypeDefs = gql`
   type SitemapResult {
@@ -196,7 +197,15 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
     '</urlset>';
   const fileName = 'sitemap.xml';
   const uploadPath = assetsDir + '/' + fileName;
-  fs.writeFile(uploadPath, sitemapStr, {}, (err) => null);
+  fs.writeFile(uploadPath, sitemapStr, {}, (err) => {
+    log(
+      'doctorServiceLogger',
+      'sitemamap generateSitemap error',
+      'sitemamap()->generateSitemap()',
+      '',
+      JSON.stringify(err)
+    );
+  });
   //return 'Sitemap generated :) ' + uploadPath;
   return {
     sitemapFilePath: uploadPath,

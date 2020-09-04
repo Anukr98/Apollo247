@@ -536,7 +536,13 @@ const getMedicineOrderOMSDetails: Resolver<
             reasonCode.statusMessage = '';
           }
         } catch (e) {
-          //console.log(e);
+          log(
+            'profileServiceLogger',
+            'getMedicineOrderOMSDetails error',
+            'getMedicineOrderOMSDetails()->CATCH_BLOCK',
+            '',
+            JSON.stringify(e)
+          );
         }
       }
     }
@@ -910,6 +916,13 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
             reasonCode.statusMessage = '';
           }
         } catch (e) {
+          log(
+            'profileServiceLogger',
+            'getMedicineOrderOMSDetailsWithAddress error',
+            'getMedicineOrderOMSDetailsWithAddress()->CATCH_BLOCK',
+            '',
+            JSON.stringify(e)
+          );
         }
       }
     }

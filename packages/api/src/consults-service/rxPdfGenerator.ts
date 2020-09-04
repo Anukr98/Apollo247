@@ -34,6 +34,7 @@ import {
   PrescriptionInputArgs,
 } from 'profiles-service/resolvers/prescriptionUpload';
 import { Doctor, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
+import { log } from 'customWinstonLogger';
 
 export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet>,
@@ -1109,7 +1110,15 @@ export const uploadRxPdf = async (
   const blobUrl = client.getBlobUrl(blob.name);
   const base64pdf = await convertPdfUrlToBase64(blobUrl);
 
-  fs.unlink(filePath, (error) => null);
+  fs.unlink(filePath, (error) => {
+    log(
+      'consultServiceLogger',
+      'uploadRxPdf fs.unlink error',
+      'rxPdfGenerator()->uploadRxPdf()->fs.unlink',
+      '',
+      JSON.stringify(error)
+    );
+  });
   const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
 
   return uploadData;
