@@ -694,13 +694,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           : { marginBottom: 20 }
         : {},
     ];
-    const foundMedicineInCart = cartItems.find((item) => item.id == medicine.sku);
     const price = medicine.price;
-    const specialPrice = medicine.special_price
-      ? typeof medicine.special_price == 'string'
-        ? Number(medicine.special_price)
-        : medicine.special_price
-      : undefined;
+    const specialPrice = Number(medicine.special_price) || undefined;
 
     const onNotifyMeClick = () => {
       showAphAlert!({
@@ -708,7 +703,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         description: `You will be notified when ${medicine.name} is back in stock.`,
       });
     };
-    const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == medicine.sku) != -1;
     const getItemQuantity = (id: string) => {
       const foundItem = cartItems.find((item) => item.id == id);
       return foundItem ? foundItem.quantity : 1;
@@ -732,19 +726,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             ? `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${medicine.thumbnail}`
             : ''
         }
-        isTest={isTest}
-        // specialPrice={}
         price={price}
         specialPrice={specialPrice}
-        unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
         quantity={getItemQuantity(medicine.sku)}
         onPressAdd={() => {
           CommonLogEvent(AppRoutes.SearchMedicineScene, 'Add item to cart');
           onAddCartItem(medicine);
-        }}
-        onPressRemove={() => {
-          CommonLogEvent(AppRoutes.SearchMedicineScene, 'Remove item from cart');
-          onRemoveCartItem(medicine);
         }}
         onNotifyMeClicked={() => {
           onNotifyMeClick();
@@ -759,19 +746,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             ? onRemoveCartItem(medicine)
             : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) - 1)
         }
-        onChangeUnit={(unit) => {
-          CommonLogEvent(AppRoutes.SearchMedicineScene, 'Change unit in cart');
-          onUpdateCartItem(medicine, unit);
-        }}
-        isMedicineAddedToCart={isMedicineAddedToCart}
-        isCardExpanded={!!foundMedicineInCart}
         isInStock={!!medicine.is_in_stock}
-        packOfCount={(medicine.mou && Number(medicine.mou)) || undefined}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
-        subscriptionStatus={'unsubscribed'}
-        onChangeSubscription={() => {}}
-        onEditPress={() => {}}
-        onAddSubscriptionPress={() => {}}
         removeCartItem={() => removeCartItem!(medicine.sku)}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
       />
