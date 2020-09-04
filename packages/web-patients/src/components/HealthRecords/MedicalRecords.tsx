@@ -431,24 +431,27 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const [showPopover, setShowPopover] = useState<boolean>(false);
 
   const sortByTypeRecords = (type: FILTER_TYPE) => {
-    return allCombinedData.sort((data1: LabResultsType, data2: LabResultsType) => {
-      const filteredData1 =
-        type === FILTER_TYPE.DATE
-          ? moment(data1.date).toDate().getTime()
-          : type === FILTER_TYPE.TEST
-          ? data1.labTestName
-          : data1.packageName;
-      const filteredData2 =
-        type === FILTER_TYPE.DATE
-          ? moment(data2.date).toDate().getTime()
-          : type === FILTER_TYPE.TEST
-          ? data2.labTestName
-          : data2.packageName;
-      if (type === FILTER_TYPE.DATE) {
-        return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
-      }
-      return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
-    });
+    return (
+      allCombinedData &&
+      allCombinedData.sort((data1: LabResultsType, data2: LabResultsType) => {
+        const filteredData1 =
+          type === FILTER_TYPE.DATE
+            ? moment(data1.date).toDate().getTime()
+            : type === FILTER_TYPE.TEST
+            ? data1.labTestName
+            : data1.packageName;
+        const filteredData2 =
+          type === FILTER_TYPE.DATE
+            ? moment(data2.date).toDate().getTime()
+            : type === FILTER_TYPE.TEST
+            ? data2.labTestName
+            : data2.packageName;
+        if (type === FILTER_TYPE.DATE) {
+          return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
+        }
+        return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
+      })
+    );
   };
 
   useEffect(() => {
