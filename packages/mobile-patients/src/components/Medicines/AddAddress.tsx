@@ -76,6 +76,7 @@ import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEven
 import { useFirstInstallTime } from 'react-native-device-info';
 
 const { height, width } = Dimensions.get('window');
+const setCharLen = width < 380 ? 25 : 30; //smaller devices like se, nexus 5
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
 const { isIphoneX } = DeviceHelper();
 
@@ -594,7 +595,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const renderUserDetails = () => {
     let beforeFocus =
       Platform.OS == 'android' && userName.length > 32
-        ? userName.slice(0, 30).concat('...')
+        ? userName.slice(0, setCharLen).concat('...')
         : userName;
     return (
       <View style={styles.userDetailsOuterView}>
