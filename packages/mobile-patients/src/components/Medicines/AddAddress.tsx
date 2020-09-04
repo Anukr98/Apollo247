@@ -343,8 +343,11 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           addOnly: addOnly,
           source: props.navigation.getParam('source'),
         });
+      }
+      //if change in the user details, then update
+      else if (!areFieldsSame) {
+        saveEditDetails();
       } else {
-        /**since for each address, we already have the lat-long */
         props.navigation.goBack();
       }
     } else {
@@ -501,7 +504,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     }
   };
 
-  const validateUserDetails = () => {
+  const validateUserDetails = (comingFrom: string) => {
     let validationMessage = '';
     if (!userName || !/^[A-Za-z]/.test(userName)) {
       validationMessage = 'Enter Valid Name';
@@ -510,8 +513,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     }
     if (validationMessage) {
       showAphAlert && showAphAlert({ title: 'Alert!', description: validationMessage });
+    } else if (comingFrom == 'userdetails') {
+      saveEditDetails(); //update the name & number
     } else {
-      saveEditDetails();
+      onSavePress(); //navigate to map as change in address + name & number
     }
   };
 
@@ -675,7 +680,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               <TouchableOpacity
                 style={{ width: '100%' }}
                 onPress={() => {
-                  validateUserDetails();
+                  validateUserDetails('userdetails');
                 }}
               >
                 <Text style={styles.userSaveText}>Save</Text>
@@ -1063,7 +1068,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   : 'SAVE & USE'
               }
               style={{ marginHorizontal: 40, width: '70%' }}
-              onPress={onSavePress}
+              onPress={() => validateUserDetails('save address')}
               disabled={!isAddressValid}
             ></Button>
           </View>
