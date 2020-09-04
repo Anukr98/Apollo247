@@ -2576,7 +2576,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               backgroundColor: 'transparent',
             }}
             PlaceholderContent={
-              loading ? <></> : <Spinner style={{ backgroundColor: 'transparent' }} />
+              loading ? (
+                <></>
+              ) : (
+                <Spinner
+                  style={{ backgroundColor: 'transparent' }}
+                  message={strings.common.imageLoading}
+                />
+              )
             }
           />
         ) : (
