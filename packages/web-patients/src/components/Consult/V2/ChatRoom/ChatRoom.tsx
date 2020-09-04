@@ -580,7 +580,10 @@ export const ChatRoom: React.FC = () => {
 
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
     setIsNextSlotLoading(true);
-    const todayDate = moment.utc(date).local().format('YYYY-MM-DD');
+    const todayDate = moment
+      .utc(date)
+      .local()
+      .format('YYYY-MM-DD');
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
         try {
@@ -753,18 +756,16 @@ export const ChatRoom: React.FC = () => {
                     ) : (
                       <h6>
                         {'Since you have already rescheduled 3 times with Dr. '}
-                        {`${
-                          data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName
-                        }`}{' '}
+                        {`${data &&
+                          data.getDoctorDetailsById &&
+                          data.getDoctorDetailsById.fullName}`}{' '}
                         {`, We will consider this a new paid appointment.`}
                       </h6>
                     )}
                     <br />
                     <h6>
                       Next slot for Dr.{' '}
-                      {`${
-                        data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName
-                      }`}
+                      {`${data && data.getDoctorDetailsById && data.getDoctorDetailsById.fullName}`}{' '}
                       is available on -
                     </h6>
                     <br />
