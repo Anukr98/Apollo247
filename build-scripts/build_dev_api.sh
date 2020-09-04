@@ -58,8 +58,9 @@ cd -
 #cd -
 
 echo -e "\ncopying all api files..."
-mkdir -pv skeleton/apollo-hospitals/packages/api/ || exit 2
+mkdir -pv skeleton/apollo-hospitals/packages/api/dist || exit 2
 cp -Rv packages/api/dist/* skeleton/apollo-hospitals/packages/api/ || exit 2
+cp -Rv packages/api/dist/migration skeleton/apollo-hospitals/packages/api/dist/ || exit 2
 cp -Rv packages/api/src/**/*.sql skeleton/apollo-hospitals/packages/api/ || exit 2
 echo "'packages/api/node_modules' -> 'skeleton/apollo-hospitals/packages/api/node_modules'"
 cp -RL packages/api/node_modules skeleton/apollo-hospitals/packages/api/ || exit 2
