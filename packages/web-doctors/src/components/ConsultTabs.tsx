@@ -393,7 +393,9 @@ export const ConsultTabs: React.FC = () => {
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
-  const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([chatDays.toString()]);
+  const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([
+    chatDays !== null ? chatDays.toString() : '',
+  ]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
   const [followUpConsultType, setFollowUpConsultType] = useState<string[]>([]);
 
