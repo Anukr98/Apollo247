@@ -891,6 +891,20 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       })
       .then((_data) => {
         const caseSheet = g(_data, 'data', 'getCaseSheet');
+        if (g(caseSheet, 'caseSheetDetails', 'doctorId') !== g(doctorDetails, 'id')) {
+          showAphAlert &&
+            showAphAlert({
+              title: string.common.alert,
+              description: 'Unauthorized Access',
+              unDismissable: true,
+              onPressOk: () => {
+                backDataFunctionality();
+                hideAphAlert && hideAphAlert();
+              },
+            });
+        } else {
+          setLoading && setLoading(false);
+        }
         setcaseSheet(caseSheet);
         setData(caseSheet);
         if (props.navigation.getParam('prevCaseSheet')) {
@@ -943,7 +957,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           ]);
         }
         callBack && callBack();
-        setLoading && setLoading(false);
       })
       .catch((e) => {
         const message = e.message ? e.message.split(':')[1].trim() : '';
