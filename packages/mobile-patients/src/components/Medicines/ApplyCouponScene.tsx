@@ -115,7 +115,13 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const [couponError, setCouponError] = useState<string>('');
   const [couponList, setcouponList] = useState<pharma_coupon[]>([]);
   const { currentPatient } = useAllCurrentPatients();
-  const { setCoupon, coupon: cartCoupon, cartItems, cartTotal, setCouponProducts } = useShoppingCart();
+  const {
+    setCoupon,
+    coupon: cartCoupon,
+    cartItems,
+    cartTotal,
+    setCouponProducts,
+  } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
@@ -160,6 +166,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
       .then((resp: any) => {
         if (resp.data.errorCode == 0) {
           if (resp.data.response.valid) {
+            console.log(g(resp.data, 'response'));
             setCoupon!(g(resp.data, 'response')!);
             props.navigation.goBack();
           } else {
@@ -167,7 +174,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           }
 
           const products = g(resp.data, 'response', 'products');
-          if(products && products.length) {
+          if (products && products.length) {
             setCouponProducts!(products);
           }
 

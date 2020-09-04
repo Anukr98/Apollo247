@@ -28,7 +28,8 @@
     "joinConsultRoomDescription": "Please click on 'Join' to start the\nconsult with",
     "waitForDoctirToJoinCall": "doctor_name is not in the room yet.\nPlease wait for few seconds while doctor joins the call....",
     "exotelMessage": " is trying to call you from the number ",
-    "requestMessage": ". Request you to answer the call."
+    "requestMessage": ". Request you to answer the call.",
+    "selectAddress": "Choose from saved address"
   },
   "consultType": {
     "mainHeading": "How would you like to consult with",

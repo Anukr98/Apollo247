@@ -3,13 +3,17 @@ import { StyleSheet, Text, FlatList, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CartItemCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemCard';
+import { CartItemCard2 } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemCard2';
+
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
-export interface CartItemsListProps {}
+export interface CartItemsListProps {
+  screen: 'cart' | 'summary';
+}
 
 export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
   const { cartItems, updateCartItem, removeCartItem } = useShoppingCart();
-
+  const { screen } = props;
   const renderCartItemsHeader = () => {
     console.log('cartItems >>>', cartItems);
     const itemsCount =
@@ -38,12 +42,14 @@ export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
           showsVerticalScrollIndicator={false}
           data={cartItems}
           renderItem={({ item, index }) => {
-            return (
+            return screen == 'cart' ? (
               <CartItemCard
                 item={item}
                 onUpdateQuantity={(quantity) => onUpdateQuantity(item, quantity)}
                 onPressDelete={() => onPressDelete(item)}
               />
+            ) : (
+              <CartItemCard2 item={item} />
             );
           }}
           keyExtractor={(item) => item.id}

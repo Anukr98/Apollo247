@@ -18,6 +18,18 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Savings } from '@aph/mobile-patients/src/components/MedicineCart/Components/Savings';
 import { KerbSidePickup } from '@aph/mobile-patients/src/components/MedicineCart/Components/KerbSidePickup';
 import { ProceedBar } from '@aph/mobile-patients/src/components/MedicineCart/Components/ProceedBar';
+import { ChooseAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/ChooseAddress';
+import { useApolloClient } from 'react-apollo-hooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '../../graphql/types/getPatientAddressList';
+import { GET_PATIENT_ADDRESS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { g } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -27,10 +39,81 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     cartTotal,
     couponProducts,
     cartItems,
+    setAddresses,
     setCartItems,
     setCouponProducts,
+    addresses,
+    deliveryAddressId,
+    setDeliveryAddressId,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const client = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
+  const [loading, setloading] = useState<boolean>(false);
+
+  useEffect(() => {
+    fetchAddress();
+  }, []);
+
+  useEffect(() => {}, [deliveryAddressId, cartItems]);
+
+  async function fetchAddress() {
+    try {
+      if (addresses.length) {
+        return;
+      }
+      const userId = g(currentPatient, 'id');
+      const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESS_LIST,
+        variables: { patientId: userId },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      const addressList =
+        (data.getPatientAddressList
+          .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
+      setAddresses!(addressList);
+    } catch (error) {
+      console.log(error);
+      renderAlert(`Something went wrong, unable to fetch addresses.`);
+    }
+  }
+
+  async function checkServicability(address: savePatientAddress_savePatientAddress_patientAddress) {
+    setloading(true);
+    if (deliveryAddressId && deliveryAddressId == address.id) {
+      return;
+    }
+    const response = await pinCodeServiceabilityApi(address.zipcode!);
+    const { data } = response;
+    if (data.Availability) {
+      setloading(false);
+      setDeliveryAddressId && setDeliveryAddressId(address.id);
+    } else {
+      setDeliveryAddressId && setDeliveryAddressId('');
+      setloading!(false);
+    }
+  }
+
+  function showAddressPopup() {
+    showAphAlert!({
+      title: string.common.selectAddress,
+      children: (
+        <ChooseAddress
+          addresses={addresses}
+          deliveryAddressId={deliveryAddressId}
+          onPressAddAddress={() => {}}
+          onPressEditAddress={(address) => {
+            console.log(address);
+          }}
+          onPressSelectAddress={(address) => {
+            checkServicability(address);
+            hideAphAlert && hideAphAlert();
+          }}
+        />
+      ),
+    });
+  }
 
   const headerRightComponent = () => {
     return (
@@ -82,7 +165,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }
 
   const renderCartItems = () => {
-    return <CartItemsList />;
+    return <CartItemsList screen={'cart'} />;
   };
   const renderAvailFreeDelivery = () => {
     return <FreeDelivery />;
@@ -115,13 +198,18 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   const renderProceedBar = () => {
-    return <ProceedBar />;
+    return (
+      <ProceedBar
+        onPressAddDeliveryAddress={() => showAddressPopup()}
+        onPressUploadPrescription={() => props.navigation.navigate(AppRoutes.CartSummary)}
+      />
+    );
   };
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 130 }}>
           {renderHeader()}
           {renderCartItems()}
           {renderAvailFreeDelivery()}
@@ -130,6 +218,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           {renderKerbSidePickup()}
         </ScrollView>
         {renderProceedBar()}
+        {loading && <Spinner />}
       </SafeAreaView>
     </View>
   );
