@@ -1413,10 +1413,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
-  getAllAppointmentsByPatientId(
-    ids: string[],
-    paginate: PaginateParams
-  ): [Promise<Appointment[]>, Promise<number | null>] {
+  getAllAppointmentsByPatientId(ids: string[], paginate: PaginateParams) {
     /**
      * to support ui for web as well as mobile
      * as web using asc and mobile will use desc (who sends paignation params)
@@ -1427,35 +1424,18 @@ export class AppointmentRepository extends Repository<Appointment> {
     if (paginate.skip || paginate.take) {
       order.bookingDate = 'DESC';
     }
-    // return [data, counts]<promises>;
-    return [
-      this.createQueryBuilder('appointment')
-        .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-        .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
-        .where('appointment.patientId IN (:...ids)', { ids })
-        .andWhere('appointment.discountedAmount != :discountedAmount', { discountedAmount: 0 })
-        .andWhere('appointment.status != :status1', {
-          status1: STATUS.PAYMENT_ABORTED,
-        })
-        .orderBy('appointment.bookingDate', order.bookingDate)
-        //send undefined to skip & take fns to skip pagination to support optional pagination
-        .skip(paginate.skip)
-        .take(paginate.take)
-        .getMany(),
-      //do pagiantion if needed...
-      Number.isInteger(paginate.take || paginate.skip)
-        ? this.createQueryBuilder('appointment')
-            .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-            .where('appointment.patientId IN (:...ids)', { ids })
-            .andWhere('appointment.discountedAmount != :discountedAmount', {
-              discountedAmount: 0,
-            })
-            .andWhere('appointment.status != :status1', {
-              status1: STATUS.PAYMENT_ABORTED,
-            })
-            .getCount()
-        : Promise.resolve(null),
-    ];
+    // returns [result , total]
+    return this.findAndCount({
+      where: {
+        patientId: In(ids),
+        discountedAmount: Not(0),
+        status: Not(In([STATUS.PAYMENT_ABORTED, STATUS.PAYMENT_PENDING])),
+      },
+      relations: ['appointmentPayments', 'appointmentRefunds'],
+      order,
+      //extra params...
+      ...paginate,
+    });
     /**
      * keeping below snippet to validate above query
      * once verified can be removed...
