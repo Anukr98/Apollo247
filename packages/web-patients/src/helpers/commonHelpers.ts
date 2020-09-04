@@ -470,6 +470,9 @@ const removeGraphQLKeyword = (error: any) => {
 const HEALTH_RECORDS_NO_DATA_FOUND =
   'You don’t have any records with us right now. Add a record to keep everything handy in one place!';
 
+const HEALTH_RECORDS_NOTE =
+  'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
+
 export {
   HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,
@@ -523,4 +526,5 @@ export {
   NOTIFY_WHEN_IN_STOCK,
   PINCODE_MAXLENGTH,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
+  HEALTH_RECORDS_NOTE,
 };

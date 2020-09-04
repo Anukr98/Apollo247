@@ -17,7 +17,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { ToplineReport } from 'components/HealthRecords/ToplineReport';
-import { HEALTH_RECORDS_NO_DATA_FOUND } from 'helpers/commonHelpers';
+import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -349,6 +349,11 @@ const useStyles = makeStyles((theme: Theme) => {
         wordBreak: 'break-word',
       },
     },
+    noteText: {
+      fontSize: 12,
+      padding: 10,
+      color: '#0087ba',
+    },
   };
 });
 
@@ -444,6 +449,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
+        <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />

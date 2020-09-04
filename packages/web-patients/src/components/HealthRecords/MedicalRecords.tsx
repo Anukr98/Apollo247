@@ -13,7 +13,7 @@ import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { DoctorsFilter } from 'components/DoctorsFilter';
-import { HEALTH_RECORDS_NO_DATA_FOUND } from 'helpers/commonHelpers';
+import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -362,7 +362,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         position: 'absolute',
         right: 10,
-        top: 5,
+        top: 80,
         borderBottom: 'none',
       },
     },
@@ -391,6 +391,11 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     disabled: {
       pointerEvents: 'none',
+    },
+    noteText: {
+      fontSize: 12,
+      padding: 10,
+      color: '#0087ba',
     },
   };
 });
@@ -436,13 +441,17 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
       allCombinedData.sort((data1: LabResultsType, data2: LabResultsType) => {
         const filteredData1 =
           type === FILTER_TYPE.DATE
-            ? moment(data1.date).toDate().getTime()
+            ? moment(data1.date)
+                .toDate()
+                .getTime()
             : type === FILTER_TYPE.TEST
             ? data1.labTestName
             : data1.packageName;
         const filteredData2 =
           type === FILTER_TYPE.DATE
-            ? moment(data2.date).toDate().getTime()
+            ? moment(data2.date)
+                .toDate()
+                .getTime()
             : type === FILTER_TYPE.TEST
             ? data2.labTestName
             : data2.packageName;
@@ -492,6 +501,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
+        <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
@@ -513,7 +523,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
               ? 'calc(100vh - 240px)'
               : isSmallScreen
               ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 270px)'
+              : 'calc(100vh - 350px)'
           }
         >
           <div className={classes.consultationsList}>
