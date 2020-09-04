@@ -183,7 +183,6 @@ export async function updateDoctorSlotStatusES(
         throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
     }
 
-    //naman_change index name
     const updateDoc: RequestParams.Update = {
         index: process.env.ELASTIC_INDEX_DOCTORS,
         id: doctorId,
