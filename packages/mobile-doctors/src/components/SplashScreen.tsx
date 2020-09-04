@@ -196,19 +196,46 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const getConfigData = (key: string) => {
             return (snapshot[key] || { val: () => null }).val();
           };
-          const Android_version = parseFloat(AppConfig.Configuration.Android_Version);
-          const iOS_version = parseFloat(AppConfig.Configuration.iOS_Version);
-          const environment = AppConfig.APP_ENV;
-          const iosVersion = parseFloat(getConfigData('ios_doctor_Latest_version') || '1.0');
-          const iosMandatory = getConfigData('ios_doctor_mandatory');
-          const androidVersion = parseFloat(
-            getConfigData('android_doctor_latest_version') || '1.0'
+          const fixVersion = (value: string, digits: number) => {
+            let modvalue = value;
+            if (value.length < digits) {
+              for (let i = value.length; i < digits; i++) {
+                modvalue += '0';
+              }
+            } else if (value.length > digits) {
+              modvalue = value.substr(0, digits);
+            }
+            return parseFloat(modvalue);
+          };
+          const androidVersionLength = AppConfig.Configuration.Android_Version.replace(/\./g, '')
+            .length;
+          const iosVersionLength = AppConfig.Configuration.iOS_Version.replace(/\./g, '').length;
+          const Android_version = parseFloat(
+            AppConfig.Configuration.Android_Version.replace(/\./g, '')
           );
+          const iOS_version = parseFloat(AppConfig.Configuration.iOS_Version.replace(/\./g, ''));
+          const environment = AppConfig.APP_ENV;
+          const iosVersion = fixVersion(
+            (getConfigData('ios_doctor_Latest_version') || '1.0').toString().replace(/\./g, ''),
+            iosVersionLength
+          );
+          const iosMandatory = getConfigData('ios_doctor_mandatory');
+          const androidVersion = fixVersion(
+            (getConfigData('android_doctor_latest_version') || '1.0').toString().replace(/\./g, ''),
+            androidVersionLength
+          );
+
           const androidMandatory = getConfigData('Android_doctor_mandatory');
-          const qaiosVersion = parseFloat(getConfigData('QA_ios_doctor_latest_version') || '1.0');
+          const qaiosVersion = fixVersion(
+            (getConfigData('QA_ios_doctor_latest_version') || '1.0').toString().replace(/\./g, ''),
+            iosVersionLength
+          );
           const qaiosMandatory = getConfigData('QA_ios_doctor_mandatory');
-          const qaAndroidVersion = parseFloat(
-            getConfigData('QA_android_doctor_latest_version') || '1.0'
+          const qaAndroidVersion = fixVersion(
+            (getConfigData('QA_android_doctor_latest_version') || '1.0')
+              .toString()
+              .replace(/\./g, ''),
+            androidVersionLength
           );
           const qaAndroidMandatory = getConfigData('QA_Doctor_Android_mandatory');
 
