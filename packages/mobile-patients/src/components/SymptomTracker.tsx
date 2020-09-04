@@ -59,7 +59,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [showHowItWorks, setShowHowItWorks] = useState<boolean>(true);
   const [messages, setMessages] = useState<any>([]);
   const [chatId, setChatId] = useState<string>('');
-  const [defaultSymptoms, setDefaultSymptoms] = useState([]);
+  const [defaultSymptoms, setDefaultSymptoms] = useState<object[]>([]);
 
   useEffect(() => {
     return function cleanup() {
@@ -180,15 +180,13 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
 
   const initializeChat = async (patient: any) => {
     setLoading(true);
-    const { uhid, id, relation, gender } = patient;
+    const { uhid, id, gender } = patient;
     const body = {
       userID: uhid,
       profileID: id,
       userProfile: {
-        alias: relation,
         age: Math.round(moment().diff(g(patient, 'dateOfBirth') || 0, 'years', true)),
-        gender: gender,
-        demographics: 'Others',
+        gender: 'Male',
       },
     };
     console.log('body', body);
@@ -389,7 +387,8 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     );
   };
 
-  const renderChatBot = () => {
+  console.log('messages', messages);
+  const renderChat = () => {
     return (
       <FlatList
         data={messages}
@@ -405,6 +404,22 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const renderChats = (item: any, index: number) => {
     return (
       <View key={index}>
+        {item.isSentByPatient ? renderPatientChat(item) : renderChatBot(item)}
+      </View>
+    );
+  };
+
+  const renderPatientChat = (item: any) => {
+    return (
+      <View style={styles.patientChatViewContainer}>
+        <Text style={styles.patientChatTextTitle}>{item.text}</Text>
+      </View>
+    );
+  };
+
+  const renderChatBot = (item: any) => {
+    return (
+      <View>
         <BotIcon style={styles.botIcon} />
         <View style={styles.chatViewContainer}>
           <Text style={styles.botTextTitle}>{item.text}</Text>
@@ -414,6 +429,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                 chatId: chatId,
                 goBackCallback: goBackCallback,
                 defaultSymptoms: defaultSymptoms,
+                storedMessages: messages,
               });
             }}
             placeholder={'e.g. Headache'}
@@ -427,19 +443,26 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     );
   };
 
-  const goBackCallback = async (symptomId: string) => {
+  const goBackCallback = async (data: any, chat_id: string, storedMessages: any) => {
+    insertMessage = storedMessages.concat({ text: data.name, isSentByPatient: true });
     setLoading(true);
     const body = {
       dialogue: {
-        text: symptomId,
+        text: data.id,
         options: [],
         status: 'reporting',
         sender: 'user',
       },
     };
     console.log('body', body);
+    console.log('chat_id', chat_id);
     try {
-      const res = await updateSymptomTrackerChat(chatId, body);
+      const res = await updateSymptomTrackerChat(chat_id, body);
+      if (res && res.data && res.data.dialogue) {
+        insertMessage = insertMessage.concat({ text: res.data.dialogue.text });
+        setDefaultSymptoms(res.data.dialogue.options);
+      }
+      setMessages(insertMessage);
       console.log('res', res);
     } catch (error) {
       CommonBugFender('UpdateSymptomTrackerChatApi', error);
@@ -493,7 +516,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
       {loading && <Spinner />}
       {renderHeader()}
       {showHowItWorks && renderHowItWorks()}
-      {messages && messages.length > 0 && renderChatBot()}
+      {messages && messages.length > 0 && renderChat()}
       {/* {renderBottomButtons()} */}
       {showProfilePopUp && renderProfileListView()}
     </SafeAreaView>
@@ -698,6 +721,17 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 0,
     marginTop: 7,
   },
+  patientChatViewContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    marginRight: 20,
+    borderBottomRightRadius: 0,
+    marginTop: 26,
+    alignSelf: 'flex-end',
+    backgroundColor: colors.LIGHT_BLUE,
+    minWidth: '30%',
+  },
   botTextTitle: {
     ...theme.fonts.IBMPlexSansMedium(16),
     color: colors.LIGHT_BLUE,
@@ -720,5 +754,9 @@ const styles = StyleSheet.create({
   bottomView: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  patientChatTextTitle: {
+    color: 'white',
+    ...theme.fonts.IBMPlexSansMedium(14),
   },
 });

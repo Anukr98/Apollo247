@@ -23,6 +23,9 @@ import { Spinner } from './ui/Spinner';
 
 interface SymptomSelectionProps extends NavigationScreenProps {
   chatId: string;
+  goBackCallback: () => void;
+  defaultSymptoms: object[];
+  storedMessages: object[];
 }
 
 var selectedSymtomsArr: string[] = [];
@@ -30,6 +33,7 @@ var selectedSymtomsArr: string[] = [];
 export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
   const chatId = props.navigation.getParam('chatId');
   const defaultSymptoms = props.navigation.getParam('defaultSymptoms');
+  const storedMessages = props.navigation.getParam('storedMessages');
 
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [refreshFlatList, setRefreshFlatList] = useState<boolean>(false);
@@ -146,7 +150,7 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
       // single symptom selection
       const { navigation } = props;
       navigation.goBack();
-      navigation.state.params!.goBackCallback(item.id);
+      navigation.state.params!.goBackCallback(item, chatId, storedMessages);
     } else {
       if (selectedSymtomsArr.includes(item.text)) {
         selectedSymtomsArr.splice(selectedSymtomsArr.indexOf(item.text), 1);
