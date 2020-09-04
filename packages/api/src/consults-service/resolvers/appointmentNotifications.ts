@@ -156,7 +156,6 @@ const sendApptReminderNotification: Resolver<
     args.inNextMin,
     APPOINTMENT_TYPE.ONLINE
   );
-  console.log(apptsList);
   if (apptsList.length > 0) {
     apptsList.map((appt) => {
       const pushNotificationInput = {
@@ -213,7 +212,6 @@ const sendPhysicalApptReminderNotification: Resolver<
     args.inNextMin,
     APPOINTMENT_TYPE.PHYSICAL
   );
-  console.log(apptsList);
   if (apptsList.length > 0) {
     apptsList.map((appt) => {
       const pushNotificationInput = {
@@ -241,7 +239,6 @@ const sendPhysicalApptReminderNotification: Resolver<
         consultsDb,
         doctorsDb
       );
-      console.log(notificationResult, 'appt notification');
     });
   }
 
