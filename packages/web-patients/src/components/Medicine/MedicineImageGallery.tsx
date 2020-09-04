@@ -13,13 +13,13 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
       },
       [theme.breakpoints.down('xs')]: {
-        width: 80,
-        position: 'absolute',
+        // width: 80,
+        // position: 'absolute',
         top: 20,
         right: 20,
       },
       '& .image-gallery-slides': {
-        border: 'solid 1px rgba(151,151,151,0.24)',
+        // border: 'solid 1px rgba(151,151,151,0.24)',
         borderRadius: 10,
         overflow: 'hidden',
       },

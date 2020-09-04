@@ -523,6 +523,40 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    ppWrapper: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 999,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    productPopup: {
+      position: 'relative',
+      width: 600,
+      height: 400,
+      background: '#fff',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        height: '100%',
+      },
+    },
+    closePopup: {
+      position: 'absolute',
+      top: 20,
+      right: 20,
+    },
+    ppContent: {
+      height: 'auto',
+      padding: 30,
+    },
   };
 });
 
@@ -763,9 +797,8 @@ export const MedicineDetails: React.FC = (props) => {
                 title: `${name} Price, Uses, Side Effects - Apollo 247`,
                 description: `Buy ${name}, Pack of ${getPackOfMedicine(
                   data.productdp[0]
-                )} at &#8377;${
-                  special_price || price
-                } in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
+                )} at &#8377;${special_price ||
+                  price} in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
                 canonicalLink:
                   typeof window !== 'undefined' &&
                   window.location &&
@@ -1111,6 +1144,30 @@ export const MedicineDetails: React.FC = (props) => {
                                 />
                               </div>
                             )}
+                            <div className={classes.ppWrapper}>
+                              <div className={classes.productPopup}>
+                                <a href="javascript:void(0);" className={classes.closePopup}>
+                                  <img src={require('images/ic_cross.svg')} alt="close" />
+                                </a>
+                                <div className={classes.ppContent}>
+                                  {medicineDetails.image && medicineDetails.image.length > 0 ? (
+                                    <MedicineImageGallery data={medicineDetails} />
+                                  ) : (
+                                    <div className={classes.noImageWrapper}>
+                                      <img
+                                        src={require('images/medicine.svg')}
+                                        alt={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
+                                          medicineDetails
+                                        )}`}
+                                        title={`${
+                                          medicineDetails.name
+                                        }, Pack of ${getPackOfMedicine(medicineDetails)}`}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
                             <div className={classes.productDetails}>
                               <div className={classes.productBasicInfo}>
                                 <h1>{medicineDetails.name}</h1>
