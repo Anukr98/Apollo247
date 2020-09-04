@@ -467,7 +467,11 @@ const removeGraphQLKeyword = (error: any) => {
   return error.message.replace('GraphQL error:', '');
 };
 
+const HEALTH_RECORDS_NO_DATA_FOUND =
+  'You don’t have any records with us right now. Add a record to keep everything handy in one place!';
+
 export {
+  HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,
   getCouponByUserMobileNumber,
   getPackOfMedicine,
