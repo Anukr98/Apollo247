@@ -1464,18 +1464,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const endCallNotificationAPI = (isCall: boolean) => {
-    if ((isCall && callId) || (!isCall && chatId)) {
-      client
-        .query<EndCallNotification, EndCallNotificationVariables>({
-          query: END_CALL_NOTIFICATION,
-          fetchPolicy: 'no-cache',
-          variables: {
-            appointmentCallId: isCall ? callId : chatId,
-            patientId: g(caseSheet, 'patientDetails', 'id'),
-          },
-        })
-        .catch((error) => {});
-    }
+    pubnubPresence((patient: number, doctor: number) => {
+      if ((isCall && callId) || (!isCall && chatId)) {
+        client
+          .query<EndCallNotification, EndCallNotificationVariables>({
+            query: END_CALL_NOTIFICATION,
+            fetchPolicy: 'no-cache',
+            variables: {
+              appointmentCallId: isCall ? callId : chatId,
+              patientId: g(caseSheet, 'patientDetails', 'id'),
+              numberOfParticipants: patient + doctor,
+            },
+          })
+          .catch((error) => {});
+      }
+    });
   };
 
   // const startInterval = (timer: number) => { //Consult remaning time
