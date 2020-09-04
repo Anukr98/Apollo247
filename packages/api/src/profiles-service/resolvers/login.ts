@@ -235,7 +235,8 @@ const sendSMS = async (mobileNumber: string, otp: string, hashCode: string, mess
   //logging api call data here
   log('smsOtpAPILogger', `OPT_API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
 
-  if (!isNotificationAllowed(mobileNumber)) {
+  const isWhitelisted = await isNotificationAllowed(mobileNumber);
+  if (!isWhitelisted) {
     return;
   }
   const smsResponse = await fetch(apiUrl)
@@ -257,7 +258,8 @@ const sendSMS = async (mobileNumber: string, otp: string, hashCode: string, mess
   return smsResponse;
 };
 const testSMS = async (mobileNumber: string, otp: string) => {
-  if (!isNotificationAllowed(mobileNumber)) {
+  const isWhitelisted = await isNotificationAllowed(mobileNumber);
+  if (!isWhitelisted) {
     return {
       status: null,
     };
@@ -301,7 +303,8 @@ export const loginResolvers = {
 const sendMessage = async (args: any) => {
   const { loginType, mobileNumber, otp, hashCode, logger, id, doctorsDb } = args;
 
-  if (!isNotificationAllowed(mobileNumber)) {
+  const isWhitelisted = await isNotificationAllowed(mobileNumber);
+  if (!isWhitelisted) {
     return {
       status: true,
       loginId: id,
