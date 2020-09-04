@@ -374,7 +374,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
   const getFormattedDate = (combinedData: HospitalizationType, dateFor: string) => {
     return dateFor === 'title' ? (
       <span>
-        From {moment(combinedData.date).format('DD MMM, YYYY')} to{' '}
+        From {moment(combinedData.dateOfHospitalization).format('DD MMM, YYYY')} to{' '}
         {moment(combinedData.date).format('DD MMM, YYYY')}
       </span>
     ) : (
