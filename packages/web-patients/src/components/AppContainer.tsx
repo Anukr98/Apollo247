@@ -112,7 +112,6 @@ const App: React.FC = () => {
   }, [signInError]);
 
   return (
-    <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh'}>
       <div className={`${classes.app}`}>
         <Helmet>
           <script
@@ -244,7 +243,6 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.sitemap()} component={Sitemap} />
         </Switch>
       </div>
-    </Scrollbars>
   );
 };
 // @ts-ignore

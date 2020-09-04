@@ -210,6 +210,7 @@ const NO_ONLINE_SERVICE = 'NOT AVAILABLE FOR ONLINE SALE';
 const OUT_OF_STOCK = 'Out Of Stock';
 const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
 const PINCODE_MAXLENGTH = 6;
+const SPECIALTY_DETAIL_LISTING_PAGE_SIZE = 50;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -442,7 +443,9 @@ const getCouponByUserMobileNumber = () => {
 };
 
 const isPastAppointment = (appointmentDateTime: string) =>
-  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
+  moment(appointmentDateTime)
+    .add(7, 'days')
+    .isBefore(moment());
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const followUpDayMoment = moment(appointmentTime).add(7, 'days');
@@ -515,4 +518,5 @@ export {
   OUT_OF_STOCK,
   NOTIFY_WHEN_IN_STOCK,
   PINCODE_MAXLENGTH,
+  SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
 };
