@@ -50,6 +50,8 @@ import { SpecialtySearch } from 'components/SpecialtySearch';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
+import Pagination from '@material-ui/lab/Pagination';
+
 let currentPage = 1;
 let apolloDoctorCount = 0;
 let partnerDoctorCount = 0;
@@ -298,6 +300,24 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorCards: {
       [theme.breakpoints.down('xs')]: {
         padding: '4px 20px 0 20px',
+      },
+    },
+    paginationContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      padding: 20,
+    },
+    pagination: {},
+    paginationUl: {
+      '& li': {
+        '& button': {
+          fontsize: 14,
+          fontWeight: 700,
+          color: '#02475b',
+          '&:hover': {
+            background: '#00B38E',
+          },
+        },
       },
     },
   };
@@ -972,6 +992,13 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 ) : (
                   'no results found'
                 )}
+              </div>
+              <div className={classes.paginationContainer}>
+                <Pagination
+                  count={10}
+                  color="primary"
+                  classes={{ root: classes.pagination, ul: classes.paginationUl }}
+                />
               </div>
               {faqData && faqData.length > 0 && (
                 <>
