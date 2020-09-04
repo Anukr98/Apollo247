@@ -244,7 +244,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         let date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
           .toDate()
           .getTime();
-        return date1 > date2 ? -1 : date1 < date2 ? 1 : a.id - b.id;
+        return date1 > date2 ? -1 : date1 < date2 ? 1 : b.id - a.id;
       });
     }
   };
