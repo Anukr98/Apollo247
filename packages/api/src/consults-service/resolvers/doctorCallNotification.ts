@@ -82,7 +82,7 @@ export const doctorCallNotificationTypeDefs = gql`
       patientId: String
       isDev: Boolean
     ): NotificationResult!
-    endCallNotification(appointmentCallId: String, isDev: Boolean, patientId: String): EndCallResult!
+    endCallNotification(appointmentCallId: String, isDev: Boolean, patientId: String, numberOfParticipants: Int): EndCallResult!
     sendApptNotification: ApptNotificationResult!
     getCallDetails(appointmentCallId: String): CallDetailsResult!
     sendPatientWaitNotification(appointmentId: String): sendPatientWaitNotificationResult
@@ -112,7 +112,7 @@ type CallDetailsResult = {
 
 const endCallNotification: Resolver<
   null,
-  { appointmentCallId: string; isDev: boolean, patientId: string },
+  { appointmentCallId: string; isDev: boolean, patientId: string, numberOfParticipants: number },
   ConsultServiceContext,
   EndCallResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
@@ -151,7 +151,8 @@ const endCallNotification: Resolver<
     args.isDev = false;
   }
 
-  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']) {
+  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
+  (!args.numberOfParticipants || (args.numberOfParticipants && args.numberOfParticipants < 2))) {
     hitCallKitCurl(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
       doctorName,
