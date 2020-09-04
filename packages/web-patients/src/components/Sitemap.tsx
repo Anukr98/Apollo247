@@ -13,7 +13,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sitemapContent: {
       background: '#f7f8f5',
-      padding: 20,
+      padding: '0 0 20px',
+    },
+    sitemapHeader: {
+      padding: '20px 20px 0',
     },
     sectionTitle: {
       '& h2': {
@@ -87,6 +90,9 @@ const useStyles = makeStyles((theme: Theme) => {
     sitemapListContent: {
       borderBottom: '1px solid rgba(0, 0, 0, 0.2)',
       padding: '0 20px 20px',
+      [theme.breakpoints.down('sm')]: {
+        padding: '20px 10px 10px',
+      },
       '&:last-child': {
         border: 'none',
       },
@@ -98,6 +104,9 @@ const useStyles = makeStyles((theme: Theme) => {
       height: 335,
       overflow: 'hidden',
       transition: '1s ease',
+      [theme.breakpoints.down('sm')]: {
+        height: 180,
+      },
       '& li': {
         '& a': {
           fontSize: 20,
@@ -106,6 +115,9 @@ const useStyles = makeStyles((theme: Theme) => {
           padding: '15px  0',
           position: 'relative',
           display: 'block',
+          [theme.breakpoints.down('sm')]: {
+            padding: '10px 0',
+          },
           '&:after': {
             content: "''",
             position: 'absolute',
@@ -114,6 +126,9 @@ const useStyles = makeStyles((theme: Theme) => {
             left: 0,
             borderRadius: 6,
             borderBottom: '4px solid transparent',
+            [theme.breakpoints.down('sm')]: {
+              bottom: 5,
+            },
           },
         },
         '&.active': {
@@ -186,6 +201,9 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#4A4A4A',
         padding: '0 10px',
       },
+      [theme.breakpoints.down('sm')]: {
+        display: 'none',
+      },
     },
     arrow: {
       position: 'relative',
@@ -234,6 +252,43 @@ const useStyles = makeStyles((theme: Theme) => {
         bottom: -8,
       },
     },
+    slMobile: {
+      display: 'none',
+      alignItems: 'center',
+      // margin: '0 0 50px',
+      '& img': {
+        position: 'relative',
+        zIndex: 4,
+        margin: '0 20px 0 0',
+      },
+      '& p': {
+        fontSize: 20,
+        lineHeight: '26px',
+        fontWeight: 700,
+        color: '#00B38E',
+      },
+      [theme.breakpoints.down('sm')]: {
+        display: 'flex',
+      },
+    },
+    sitemapLeft: {},
+    slWrapper: {
+      position: 'relative',
+      padding: '0 20px',
+    },
+    slContainer: {
+      [theme.breakpoints.down('sm')]: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        borderRadius: 0,
+        zIndex: 2,
+        height: 500,
+        overFlow: 'auto',
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -246,373 +301,398 @@ export const Sitemap: React.FC = (props) => {
       <Header />
       <div className={classes.container}>
         <div className={classes.sitemapContent}>
-          <div className={classes.sectionTitle}>
-            <Typography component="h2">
-              <span className={classes.font48}>A</span>PPOLO 24|7 SITE MAP
-            </Typography>
+          <div className={classes.sitemapHeader}>
+            <div className={classes.sectionTitle}>
+              <Typography component="h2">
+                <span className={classes.font48}>A</span>PPOLO 24|7 SITE MAP
+              </Typography>
+            </div>
+            <ol className={classes.breadcrumbs}>
+              <li>
+                <a href="javascript:void(0)">Home</a>
+              </li>
+              <li className="active">
+                <a href="javascript:void(0)">Sitemap</a>
+              </li>
+            </ol>
           </div>
-          <ol className={classes.breadcrumbs}>
-            <li>
-              <a href="javascript:void(0)">Home</a>
-            </li>
-            <li className="active">
-              <a href="javascript:void(0)">Sitemap</a>
-            </li>
-          </ol>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-              <div className={classes.sitemapListContainer}>
-                <div className={classes.sitemapListContent}>
-                  <ul className={`${classes.sitemapList} ${showMore ? classes.heightFull : ''}`}>
-                    <li className="active">
-                      <a href="javascript: void(0);">Apollo 24|7 Services</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 1</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 2</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 3</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 4</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 5</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 6</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 7</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 8</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 9</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 10</a>
-                    </li>
-                  </ul>
-                  <a
-                    href="javascript:void(0);"
-                    className={`${classes.showMore} ${showMore ? classes.smActive : ''}`}
-                    onClick={() => setShowMore(!showMore)}
-                  >
-                    {!showMore ? <span>Show More</span> : <span>Hide</span>}
-                    <ExpandMoreIcon />
-                  </a>
+          <div className={classes.slWrapper}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={4}>
+                <div className={classes.sitemapLeft}>
+                  <div className={classes.slMobile}>
+                    <img src={require('images/ham-menu.svg')} alt="Ham Menu" />
+                    <img
+                      src={require('images/ham-close.svg')}
+                      alt="Ham Close
+                    "
+                    />
+                    <Typography>Apollo 24|7 Services</Typography>
+                  </div>
+                  <div className={`${classes.sitemapListContainer} ${classes.slContainer}`}>
+                    <div className={classes.sitemapListContent}>
+                      <ul
+                        className={`${classes.sitemapList} ${showMore ? classes.heightFull : ''}`}
+                      >
+                        <li className="active">
+                          <a href="javascript: void(0);">Apollo 24|7 Services</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Doctor Sitemap 1</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Doctor Sitemap 2</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Doctor Sitemap 3</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Doctor Sitemap 4</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Doctor Sitemap 5</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Doctor Sitemap 6</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Doctor Sitemap 7</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Doctor Sitemap 8</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Doctor Sitemap 9</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Doctor Sitemap 10</a>
+                        </li>
+                      </ul>
+                      <a
+                        href="javascript:void(0);"
+                        className={`${classes.showMore} ${showMore ? classes.smActive : ''}`}
+                        onClick={() => setShowMore(!showMore)}
+                      >
+                        {!showMore ? <span>Show More</span> : <span>Hide</span>}
+                        <ExpandMoreIcon />
+                      </a>
+                    </div>
+                    <div className={classes.sitemapListContent}>
+                      <ul
+                        className={`${classes.sitemapList} ${showMore1 ? classes.heightFull : ''}`}
+                      >
+                        <li>
+                          <a href="javascript: void(0);">Medicine Sitemap 1</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Medicine Sitemap 2</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Medicine Sitemap 3</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Medicine Sitemap 4</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Medicine Sitemap 5</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Medicine Sitemap 6</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Medicine Sitemap 7</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Medicine Sitemap 8</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Medicine Sitemap 9</a>
+                        </li>
+                        <li>
+                          <a href="javascript: void(0);">Medicine Sitemap 10</a>
+                        </li>
+                      </ul>
+                      <a
+                        href="javascript:void(0);"
+                        className={`${classes.showMore} ${showMore1 ? classes.smActive : ''}`}
+                        onClick={() => setShowMore1(!showMore1)}
+                      >
+                        {!showMore1 ? <span>Show More</span> : <span>Hide</span>}
+                        <ExpandMoreIcon />
+                      </a>
+                    </div>
+                  </div>
                 </div>
-                <div className={classes.sitemapListContent}>
-                  <ul className={`${classes.sitemapList} ${showMore1 ? classes.heightFull : ''}`}>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 1</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 2</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 3</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 4</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 5</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 6</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 7</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 8</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 9</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 10</a>
-                    </li>
-                  </ul>
-                  <a
-                    href="javascript:void(0);"
-                    className={`${classes.showMore} ${showMore1 ? classes.smActive : ''}`}
-                    onClick={() => setShowMore1(!showMore1)}
-                  >
-                    {!showMore1 ? <span>Show More</span> : <span>Hide</span>}
-                    <ExpandMoreIcon />
-                  </a>
+              </Grid>
+              <Grid item xs={12} sm={8}>
+                <div className={classes.sitemapListContainer}>
+                  <div className={classes.paginationContainer}>
+                    <a
+                      href="javascript:void(0);"
+                      className={`${classes.arrow} ${classes.prev}`}
+                    ></a>
+                    <Typography>Page 1 of 50 </Typography>
+                    <a
+                      href="javascript:void(0);"
+                      className={`${classes.arrow} ${classes.next}`}
+                    ></a>
+                  </div>
+                  <div className={classes.sitemapLinkContainer}>
+                    <div className={classes.sLinkContent}>
+                      <Typography component="h3" className={classes.categoryTitle}>
+                        About Apollo24|7
+                      </Typography>
+                      <ul className={classes.smLinkList}>
+                        <li>
+                          <a href="javascript:void(0);">
+                            online Doctor Consultation and medicine delivery - Apollo 24|7
+                          </a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Order Medicine online</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Speciality</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">List of Doctors</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Book online doctor appointment</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Health Records</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">My account</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">about us - apollo 24|7</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">FAQ’s</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Terms and Conditions</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Privacy Policy</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Contact Us</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Check Risk level of Covid-19</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Project Kavach</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Latest updates on covid-19</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Prescription review</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <div className={classes.sLinkContent}>
+                      <Typography component="h3" className={classes.categoryTitle}>
+                        Shop By Category
+                      </Typography>
+                      <ul className={classes.smLinkList}>
+                        <li>
+                          <a href="javascript:void(0);">View All Medicine Brands</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Search by brand</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Personal care</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Mom Baby</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Nutrition</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Healthcare devices</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Special offers</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Holland Barret</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Healthcare</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <div className={classes.sLinkContent}>
+                      <Typography component="h3" className={classes.categoryTitle}>
+                        Shop By Health Areas
+                      </Typography>
+                      <ul className={classes.smLinkList}>
+                        <li>
+                          <a href="javascript:void(0);">Adult Care</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Beauty Skin Care</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Cardiac</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Mom Baby</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Nutrition</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Healthcare devices</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Special offers</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Holland Barret</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Healthcare</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <div className={classes.sLinkContent}>
+                      <Typography component="h3" className={classes.categoryTitle}>
+                        About Apollo24|7
+                      </Typography>
+                      <ul className={classes.smLinkList}>
+                        <li>
+                          <a href="javascript:void(0);">
+                            online Doctor Consultation and medicine delivery - Apollo 24|7
+                          </a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Order Medicine online</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Speciality</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">List of Doctors</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Book online doctor appointment</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Health Records</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">My account</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">about us - apollo 24|7</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">FAQ’s</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Terms and Conditions</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Privacy Policy</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Contact Us</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Check Risk level of Covid-19</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Project Kavach</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Latest updates on covid-19</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Prescription review</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <div className={classes.sLinkContent}>
+                      <Typography component="h3" className={classes.categoryTitle}>
+                        Shop By Category
+                      </Typography>
+                      <ul className={classes.smLinkList}>
+                        <li>
+                          <a href="javascript:void(0);">View All Medicine Brands</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Search by brand</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Personal care</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Mom Baby</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Nutrition</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Healthcare devices</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Special offers</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Holland Barret</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Healthcare</a>
+                        </li>
+                      </ul>
+                    </div>
+                    <div className={classes.sLinkContent}>
+                      <Typography component="h3" className={classes.categoryTitle}>
+                        Shop By Health Areas
+                      </Typography>
+                      <ul className={classes.smLinkList}>
+                        <li>
+                          <a href="javascript:void(0);">Adult Care</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Beauty Skin Care</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Cardiac</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Mom Baby</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Nutrition</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Healthcare devices</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Special offers</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Holland Barret</a>
+                        </li>
+                        <li>
+                          <a href="javascript:void(0);">Healthcare</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={8}>
-              <div className={classes.sitemapListContainer}>
-                <div className={classes.paginationContainer}>
-                  <a href="javascript:void(0);" className={`${classes.arrow} ${classes.prev}`}></a>
-                  <Typography>Page 1 of 50 </Typography>
-                  <a href="javascript:void(0);" className={`${classes.arrow} ${classes.next}`}></a>
-                </div>
-                <div className={classes.sitemapLinkContainer}>
-                  <div className={classes.sLinkContent}>
-                    <Typography component="h3" className={classes.categoryTitle}>
-                      About Apollo24|7
-                    </Typography>
-                    <ul className={classes.smLinkList}>
-                      <li>
-                        <a href="javascript:void(0);">
-                          online Doctor Consultation and medicine delivery - Apollo 24|7
-                        </a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Order Medicine online</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Speciality</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">List of Doctors</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Book online doctor appointment</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Health Records</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">My account</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">about us - apollo 24|7</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">FAQ’s</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Terms and Conditions</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Privacy Policy</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Contact Us</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Check Risk level of Covid-19</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Project Kavach</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Latest updates on covid-19</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Prescription review</a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className={classes.sLinkContent}>
-                    <Typography component="h3" className={classes.categoryTitle}>
-                      Shop By Category
-                    </Typography>
-                    <ul className={classes.smLinkList}>
-                      <li>
-                        <a href="javascript:void(0);">View All Medicine Brands</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Search by brand</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Personal care</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Mom Baby</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Nutrition</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare devices</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Special offers</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Holland Barret</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare</a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className={classes.sLinkContent}>
-                    <Typography component="h3" className={classes.categoryTitle}>
-                      Shop By Health Areas
-                    </Typography>
-                    <ul className={classes.smLinkList}>
-                      <li>
-                        <a href="javascript:void(0);">Adult Care</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Beauty Skin Care</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Cardiac</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Mom Baby</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Nutrition</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare devices</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Special offers</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Holland Barret</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare</a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className={classes.sLinkContent}>
-                    <Typography component="h3" className={classes.categoryTitle}>
-                      About Apollo24|7
-                    </Typography>
-                    <ul className={classes.smLinkList}>
-                      <li>
-                        <a href="javascript:void(0);">
-                          online Doctor Consultation and medicine delivery - Apollo 24|7
-                        </a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Order Medicine online</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Speciality</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">List of Doctors</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Book online doctor appointment</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Health Records</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">My account</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">about us - apollo 24|7</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">FAQ’s</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Terms and Conditions</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Privacy Policy</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Contact Us</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Check Risk level of Covid-19</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Project Kavach</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Latest updates on covid-19</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Prescription review</a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className={classes.sLinkContent}>
-                    <Typography component="h3" className={classes.categoryTitle}>
-                      Shop By Category
-                    </Typography>
-                    <ul className={classes.smLinkList}>
-                      <li>
-                        <a href="javascript:void(0);">View All Medicine Brands</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Search by brand</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Personal care</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Mom Baby</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Nutrition</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare devices</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Special offers</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Holland Barret</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare</a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className={classes.sLinkContent}>
-                    <Typography component="h3" className={classes.categoryTitle}>
-                      Shop By Health Areas
-                    </Typography>
-                    <ul className={classes.smLinkList}>
-                      <li>
-                        <a href="javascript:void(0);">Adult Care</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Beauty Skin Care</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Cardiac</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Mom Baby</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Nutrition</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare devices</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Special offers</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Holland Barret</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare</a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </Grid>
-          </Grid>
+          </div>
         </div>
       </div>
     </div>

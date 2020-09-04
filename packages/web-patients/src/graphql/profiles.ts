@@ -496,13 +496,12 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         errorMsg
         errorType
         response {
-          # hospitalizationDate
           authToken
           userId
           id
           fileUrl
           date
-          # hospitalizationDate
+          hospitalizationDate
           dateOfHospitalization
           hospitalName
           doctorName
