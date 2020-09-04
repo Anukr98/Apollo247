@@ -201,6 +201,9 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#4A4A4A',
         padding: '0 10px',
       },
+      [theme.breakpoints.down('sm')]: {
+        display: 'none',
+      },
     },
     arrow: {
       position: 'relative',
@@ -252,7 +255,7 @@ const useStyles = makeStyles((theme: Theme) => {
     slMobile: {
       display: 'none',
       alignItems: 'center',
-      margin: '0 0 50px',
+      // margin: '0 0 50px',
       '& img': {
         position: 'relative',
         zIndex: 4,
@@ -318,8 +321,12 @@ export const Sitemap: React.FC = (props) => {
               <Grid item xs={12} sm={4}>
                 <div className={classes.sitemapLeft}>
                   <div className={classes.slMobile}>
-                    {/* <img src={require('images/ham-menu.svg')} alt="Ham Menu" /> */}
-                    <img src={require('images/ham-close.svg')} alt="" />
+                    <img src={require('images/ham-menu.svg')} alt="Ham Menu" />
+                    <img
+                      src={require('images/ham-close.svg')}
+                      alt="Ham Close
+                    "
+                    />
                     <Typography>Apollo 24|7 Services</Typography>
                   </div>
                   <div className={`${classes.sitemapListContainer} ${classes.slContainer}`}>
