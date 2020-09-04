@@ -9148,7 +9148,7 @@
             "args": [],
             "type": {
               "kind": "OBJECT",
-              "name": "healthChecksDownloadResponse",
+              "name": "HealthChecksDownloadResponse",
               "ofType": null
             },
             "isDeprecated": false,
@@ -9160,7 +9160,7 @@
             "args": [],
             "type": {
               "kind": "OBJECT",
-              "name": "dischargeSummaryDownloadResponse",
+              "name": "DischargeSummaryDownloadResponse",
               "ofType": null
             },
             "isDeprecated": false,
@@ -10468,7 +10468,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "healthChecksDownloadResponse",
+        "name": "HealthChecksDownloadResponse",
         "description": null,
         "fields": [
           {
@@ -10520,7 +10520,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "healthChecksBaseResponse",
+                "name": "HealthChecksBaseResponse",
                 "ofType": null
               }
             },
@@ -10535,7 +10535,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "healthChecksBaseResponse",
+        "name": "HealthChecksBaseResponse",
         "description": null,
         "fields": [
           {
@@ -10659,7 +10659,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "healthCheckFileParameters",
+                "name": "HealthCheckFileParameters",
                 "ofType": null
               }
             },
@@ -10710,7 +10710,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "healthCheckFileParameters",
+        "name": "HealthCheckFileParameters",
         "description": null,
         "fields": [
           {
@@ -10793,7 +10793,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "dischargeSummaryDownloadResponse",
+        "name": "DischargeSummaryDownloadResponse",
         "description": null,
         "fields": [
           {
@@ -10845,7 +10845,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "dischargeSummaryBaseResponse",
+                "name": "DischargeSummaryBaseResponse",
                 "ofType": null
               }
             },
@@ -10860,7 +10860,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "dischargeSummaryBaseResponse",
+        "name": "DischargeSummaryBaseResponse",
         "description": null,
         "fields": [
           {
@@ -10927,6 +10927,18 @@
                 "name": "Date",
                 "ofType": null
               }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "hospitalizationDate",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Date",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -11048,7 +11060,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "hospitalizationFilesParameters",
+                "name": "HospitalizationFilesParameters",
                 "ofType": null
               }
             },
@@ -11075,7 +11087,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "hospitalizationFilesParameters",
+        "name": "HospitalizationFilesParameters",
         "description": null,
         "fields": [
           {
