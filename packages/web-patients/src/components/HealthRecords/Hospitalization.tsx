@@ -10,6 +10,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response as HospitalizationType } from '../../graphql/types/getPatientPrismMedicalRecords';
+import { HEALTH_RECORDS_NO_DATA_FOUND } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -550,10 +551,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
         ) : (
           <div className={classes.noRecordFoundWrapper}>
             <img src={require('images/ic_records.svg')} />
-            <p>
-              You don’t have any records with us right now. Add a record to keep everything handy in
-              one place!
-            </p>
+            <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
           </div>
         )}
       </div>

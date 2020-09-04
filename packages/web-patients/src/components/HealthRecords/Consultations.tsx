@@ -17,6 +17,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { ToplineReport } from 'components/HealthRecords/ToplineReport';
+import { HEALTH_RECORDS_NO_DATA_FOUND } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -641,10 +642,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
         ) : (
           <div className={classes.noRecordFoundWrapper}>
             <img src={require('images/ic_records.svg')} />
-            <p>
-              You don’t have any records with us right now. Add a record to keep everything handy in
-              one place!
-            </p>
+            <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
           </div>
         )}
       </div>

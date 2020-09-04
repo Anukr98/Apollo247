@@ -13,6 +13,7 @@ import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { DoctorsFilter } from 'components/DoctorsFilter';
+import { HEALTH_RECORDS_NO_DATA_FOUND } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -677,10 +678,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
         ) : (
           <div className={classes.noRecordFoundWrapper}>
             <img src={require('images/ic_records.svg')} />
-            <p>
-              You don’t have any records with us right now. Add a record to keep everything handy in
-              one place!
-            </p>
+            <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
           </div>
         )}
       </div>

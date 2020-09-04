@@ -280,7 +280,6 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
   };
 
   const sortByDate = (array: any[]) => {
-    console.log(array);
     return array.sort((a: any, b: any) => {
       let date1 = moment(a.bookingDate || a.date || a.quoteDateTime)
         .toDate()
