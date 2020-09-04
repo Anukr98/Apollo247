@@ -247,7 +247,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const elasticSlotDateAvailability: { [index: string]: any } = [];
   const elasticSlotAvailabileNow: { [index: string]: any } = [];
- 
+ // check elastic search index  /package/api/helpers/elasticIndex.ts
   if (args.filterInput.availability && args.filterInput.availability.length > 0) {
     args.filterInput.availability.forEach((availability) => {
       elasticSlotDateAvailability.push({
