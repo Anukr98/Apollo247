@@ -351,6 +351,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#67909C',
       fontWeight: 'normal',
     },
+    noteText: {
+      fontSize: 12,
+      padding: 10,
+      color: '#0087ba',
+    },
   };
 });
 
@@ -395,6 +400,10 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
+        <div className={classes.noteText}>
+          Please note that you can share these health records with the doctor during a consult by
+          uploading them in the consult chat room!
+        </div>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
@@ -408,7 +417,7 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
               ? 'calc(100vh - 240px)'
               : isSmallScreen
               ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 270px)'
+              : 'calc(100vh - 310px)'
           }
         >
           <div className={classes.consultationsList}>
