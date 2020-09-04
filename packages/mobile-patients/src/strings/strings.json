@@ -394,6 +394,8 @@
     "selectAnotherMember": "Select Another Member",
     "typeSymptomOrChooseFromList": "Type symptom here or choose from the list",
     "addSelectedSymptom": "ADD SELECTED SYMPTOMS",
-    "symptoms": "Symptoms"
+    "symptoms": "Symptoms",
+    "noOtherSymptoms": "NO OTHER SYMPTOM",
+    "thanksForGivingAnswers": "Thanks {{name}}, for helping us with your answers.\n\nBelow is a summary of your symptoms."
   }
 }

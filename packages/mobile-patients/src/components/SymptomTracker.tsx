@@ -60,6 +60,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [messages, setMessages] = useState<any>([]);
   const [chatId, setChatId] = useState<string>('');
   const [defaultSymptoms, setDefaultSymptoms] = useState<object[]>([]);
+  const [chatEnded, setChatEnded] = useState<boolean>(false);
 
   useEffect(() => {
     return function cleanup() {
@@ -180,13 +181,15 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
 
   const initializeChat = async (patient: any) => {
     setLoading(true);
+    setChatEnded(false);
+    insertMessage = [];
     const { uhid, id, gender } = patient;
     const body = {
       userID: uhid,
       profileID: id,
       userProfile: {
         age: Math.round(moment().diff(g(patient, 'dateOfBirth') || 0, 'years', true)),
-        gender: 'Male',
+        gender: gender,
       },
     };
     console.log('body', body);
@@ -387,7 +390,6 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     );
   };
 
-  console.log('messages', messages);
   const renderChat = () => {
     return (
       <FlatList
@@ -404,7 +406,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const renderChats = (item: any, index: number) => {
     return (
       <View key={index}>
-        {item.isSentByPatient ? renderPatientChat(item) : renderChatBot(item)}
+        {item.isSentByPatient ? renderPatientChat(item) : renderChatBot(item, index)}
       </View>
     );
   };
@@ -417,27 +419,51 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     );
   };
 
-  const renderChatBot = (item: any) => {
+  const renderChatBot = (item: any, index: number) => {
     return (
       <View>
         <BotIcon style={styles.botIcon} />
         <View style={styles.chatViewContainer}>
           <Text style={styles.botTextTitle}>{item.text}</Text>
-          <TextInput
-            onFocus={() => {
-              props.navigation.navigate(AppRoutes.SymptomSelection, {
-                chatId: chatId,
-                goBackCallback: goBackCallback,
-                defaultSymptoms: defaultSymptoms,
-                storedMessages: messages,
-              });
-            }}
-            placeholder={'e.g. Headache'}
-            style={styles.inputStyle}
-            placeholderTextColor={theme.colors.placeholderTextColor}
-            underlineColorAndroid={'transparent'}
-            selectionColor={theme.colors.INPUT_CURSOR_COLOR}
-          />
+          {index === messages.length - 1 && !chatEnded ? (
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.inputStyle}
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.SymptomSelection, {
+                  chatId: chatId,
+                  goBackCallback: goBackCallback,
+                  defaultSymptoms: defaultSymptoms,
+                  storedMessages: messages,
+                });
+              }}
+            >
+              <Text style={styles.placeholderTxt}>
+                {messages.length === 1 ? 'e.g. Headache' : 'Please type here'}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <View />
+          )}
+          {messages.length !== 1 && index === messages.length - 1 && !chatEnded ? (
+            <TouchableOpacity
+              style={styles.plainBtn}
+              onPress={() => {
+                insertMessage = insertMessage.concat({
+                  text: string.symptomChecker.thanksForGivingAnswers.replace(
+                    '{{name}}',
+                    selectedPatient!.name
+                  ),
+                });
+                setMessages(insertMessage);
+                setChatEnded(true);
+              }}
+            >
+              <Text style={styles.plainBtnTxt}>{string.symptomChecker.noOtherSymptoms}</Text>
+            </TouchableOpacity>
+          ) : (
+            <View />
+          )}
         </View>
       </View>
     );
@@ -512,14 +538,16 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        {renderHeader()}
+        {showHowItWorks && renderHowItWorks()}
+        {messages && messages.length > 0 && renderChat()}
+        {/* {renderBottomButtons()} */}
+        {showProfilePopUp && renderProfileListView()}
+      </SafeAreaView>
       {loading && <Spinner />}
-      {renderHeader()}
-      {showHowItWorks && renderHowItWorks()}
-      {messages && messages.length > 0 && renderChat()}
-      {/* {renderBottomButtons()} */}
-      {showProfilePopUp && renderProfileListView()}
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -730,14 +758,14 @@ const styles = StyleSheet.create({
     marginTop: 26,
     alignSelf: 'flex-end',
     backgroundColor: colors.LIGHT_BLUE,
-    minWidth: '30%',
+    minWidth: '40%',
+    maxWidth: '65%',
   },
   botTextTitle: {
     ...theme.fonts.IBMPlexSansMedium(16),
     color: colors.LIGHT_BLUE,
   },
   inputStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
     marginTop: 15,
     borderWidth: 0.5,
     borderColor: colors.LIGHT_BLUE,
@@ -758,5 +786,19 @@ const styles = StyleSheet.create({
   patientChatTextTitle: {
     color: 'white',
     ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  plainBtnTxt: {
+    color: colors.APP_YELLOW,
+    ...theme.fonts.IBMPlexSansMedium(13),
+  },
+  plainBtn: {
+    height: 25,
+    justifyContent: 'flex-end',
+    marginTop: 10,
+  },
+  placeholderTxt: {
+    ...theme.fonts.IBMPlexSansRegular(14),
+    color: colors.LIGHT_BLUE,
+    opacity: 0.3,
   },
 });
