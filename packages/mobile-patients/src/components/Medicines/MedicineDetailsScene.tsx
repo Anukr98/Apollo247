@@ -85,7 +85,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   mainView: {
-    backgroundColor: theme.colors.CARD_BG,
     paddingTop: 20,
   },
   doctorNameStyle: {
@@ -1351,9 +1350,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       ? `SIMILAR TO ${medicineDetails.name}`.toUpperCase()
       : 'SIMILAR PRODUCTS';
 
+    const marginTop =
+      !medicineOverview.length && !Substitutes.length && !medicineDetails.description ? 20 : 0;
+
     return (
       <>
-        <View style={styles.labelViewStyle}>
+        <View style={[styles.labelViewStyle, { marginTop }]}>
           <Text style={styles.labelStyle}>{sectionName}</Text>
         </View>
         <FlatList
