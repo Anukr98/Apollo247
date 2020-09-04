@@ -8,6 +8,9 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import _ from 'lodash';
 import { STATUS, REFUND_STATUS, Appointment } from 'consults-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { winstonLogger } from 'customWinstonLogger';
+
+const consultsLogger = winstonLogger.loggers.get('consultServiceLogger');
 
 export const consultOrdersTypeDefs = gql`
   type AppointmentsResult {
@@ -139,8 +142,16 @@ const consultOrders: Resolver<
     paginateParams.skip = pageSize * pageNo - pageSize; //bcoz pageNo. starts from 1 not 0.
   }
 
-  const [response, totalCount] = await Promise.all(
-    apptsRepo.getAllAppointmentsByPatientId(primaryPatientIds, paginateParams)
+  consultsLogger.log('info', `consult orders - PaginateParams: ${JSON.stringify(paginateParams)}`);
+
+  const [response, totalCount] = await apptsRepo.getAllAppointmentsByPatientId(
+    primaryPatientIds,
+    paginateParams
+  );
+
+  consultsLogger.log(
+    'info',
+    `consult orders - DB query resp length: ${Array.isArray(response) && response.length}`
   );
 
   const metaResponse = {

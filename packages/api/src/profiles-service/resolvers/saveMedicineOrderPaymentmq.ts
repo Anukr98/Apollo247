@@ -30,6 +30,7 @@ import {
   ONE_APOLLO_STORE_CODE,
 } from 'types/oneApolloTypes';
 import { OneApollo } from 'helpers/oneApollo';
+import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
@@ -118,6 +119,7 @@ type userDetailInput = {
   creditsToBlock: number;
   orderId: number;
   id: MedicineOrderPayments['id'];
+  bookingSource: MedicineOrders['bookingSource'];
 };
 
 type MedicinePaymentInputArgs = { medicinePaymentMqInput: MedicinePaymentMqInput };
@@ -305,6 +307,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
               creditsToBlock: medicinePaymentMqInput.healthCredits,
               orderId: orderDetails.orderAutoId,
               id: orderDetails.id,
+              bookingSource: orderDetails.bookingSource,
             },
             profilesDb
           );
@@ -445,7 +448,7 @@ const blockOneApolloUserPoints = async (
   const blockUserPointsInput: BlockOneApolloPointsRequest = {
     MobileNumber: +userDetailInput.mobileNumber,
     CreditsRedeemed: userDetailInput.creditsToBlock,
-    StoreCode: storeCode,
+    StoreCode: getStoreCodeFromDevice(userDetailInput.deviceType, userDetailInput.bookingSource),
     BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
   };
   const oneApollo = new OneApollo();

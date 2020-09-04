@@ -362,7 +362,6 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
               };
               setLocalFilter(initialAppointmentFilterObject);
               setFilter(initialAppointmentFilterObject);
-              setIsFilterOpen(false);
             }}
           >
             Clear Filters

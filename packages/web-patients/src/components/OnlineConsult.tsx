@@ -249,7 +249,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   let slotAvailableNext = '',
     consultNowSlotTime = '';
 
-  const doctorName = doctorDetails && doctorDetails.firstName ? doctorDetails.firstName : '';
+  const doctorName = doctorDetails && doctorDetails.fullName ? doctorDetails.fullName : '';
 
   const onlineConsultationFees =
     doctorDetails && doctorDetails.onlineConsultationFees

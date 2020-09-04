@@ -193,7 +193,16 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     const orderResponse = await getCache(`${REDIS_ORDER_AUTO_ID_KEY_PREFIX}${orderAutoId}`);
     if (!orderResponse) {
       return this.findOne({
-        select: ['id', 'currentStatus', 'orderAutoId', 'patientAddressId', 'isOmsOrder', 'patient'],
+        select: [
+          'id',
+          'currentStatus',
+          'orderAutoId',
+          'patientAddressId',
+          'isOmsOrder',
+          'patient',
+          'deviceType',
+          'bookingSource',
+        ],
         where: { orderAutoId },
         relations: ['patient'],
       });

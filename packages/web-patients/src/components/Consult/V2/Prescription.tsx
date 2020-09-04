@@ -1116,7 +1116,7 @@ export const Prescription: React.FC = (props) => {
                           <div className={classes.detailsContent}>
                             <Typography>{caseSheetDetails.referralSpecialtyName}</Typography>
                             <Typography>
-                              Reason for Refferral : {caseSheetDetails.referralDescription}
+                              Reason for Referral : {caseSheetDetails.referralDescription}
                             </Typography>
                             <Link
                               to={clientRoutes.specialties(
