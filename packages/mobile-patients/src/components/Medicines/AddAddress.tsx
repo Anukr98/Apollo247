@@ -343,9 +343,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           addOnly: addOnly,
           source: props.navigation.getParam('source'),
         });
-      }
-      //if change in the user details, then update
-      else if (!areFieldsSame) {
+      } else if (!areFieldsSame) {
         saveEditDetails();
       } else {
         props.navigation.goBack();
@@ -850,7 +848,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           value={landMark}
           onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
           placeholder={'Landmark (Optional)'}
-          inputStyle={styles.addressHeadingText}
+          inputStyle={[styles.addressHeadingText, { marginTop: '3%' }]}
         />
         <View style={[styles.viewRowStyle, { marginTop: 12 }]}>
           <View style={styles.pincodeView}>
