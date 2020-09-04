@@ -79,9 +79,10 @@ export const doctorCallNotificationTypeDefs = gql`
       deviceType: DEVICETYPE
       callSource: BOOKINGSOURCE
       appVersion: String
+      patientId: String
       isDev: Boolean
     ): NotificationResult!
-    endCallNotification(appointmentCallId: String, isDev: Boolean): EndCallResult!
+    endCallNotification(appointmentCallId: String, isDev: Boolean, patientId: String, numberOfParticipants: Int): EndCallResult!
     sendApptNotification: ApptNotificationResult!
     getCallDetails(appointmentCallId: String): CallDetailsResult!
     sendPatientWaitNotification(appointmentId: String): sendPatientWaitNotificationResult
@@ -111,7 +112,7 @@ type CallDetailsResult = {
 
 const endCallNotification: Resolver<
   null,
-  { appointmentCallId: string; isDev: boolean },
+  { appointmentCallId: string; isDev: boolean, patientId: string, numberOfParticipants: number },
   ConsultServiceContext,
   EndCallResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
@@ -131,22 +132,32 @@ const endCallNotification: Resolver<
     doctorName = doctor.displayName;
   }
 
+  args.patientId = args.patientId || callDetails.appointment.patientId;
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
-  const voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
-    callDetails.appointment.patientId,
+  let voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
+    args.patientId,
     DEVICE_TYPE.IOS
   );
+
+  if(args.patientId != callDetails.appointment.patientId && (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])){
+    args.patientId = callDetails.appointment.patientId;
+    voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
+      args.patientId,
+      DEVICE_TYPE.IOS
+    );
+  }
 
   if (!args.isDev) {
     args.isDev = false;
   }
 
-  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']) {
+  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
+  (!args.numberOfParticipants || (args.numberOfParticipants && args.numberOfParticipants < 2))) {
     hitCallKitCurl(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
       doctorName,
       callDetails.appointment.id,
-      callDetails.appointment.patientId,
+      args.patientId,
       false,
       APPT_CALL_TYPE.AUDIO,
       args.isDev
@@ -184,6 +195,7 @@ const sendCallNotification: Resolver<
     deviceType: DEVICETYPE;
     callSource: BOOKINGSOURCE;
     appVersion: string;
+    patientId: string;
     isDev: boolean;
   },
   ConsultServiceContext,
@@ -226,7 +238,8 @@ const sendCallNotification: Resolver<
       args.doctorType,
       appointmentCallDetails.id,
       args.isDev,
-      args.numberOfParticipants
+      args.numberOfParticipants,
+      args.patientId,
     );
     console.log(notificationResult, 'doctor call appt notification');
   } else {
@@ -243,7 +256,8 @@ const sendCallNotification: Resolver<
       args.doctorType,
       appointmentCallDetails.id,
       args.isDev,
-      args.numberOfParticipants
+      args.numberOfParticipants,
+      args.patientId,
     );
     console.log(notificationResult, 'doctor call appt notification');
   }

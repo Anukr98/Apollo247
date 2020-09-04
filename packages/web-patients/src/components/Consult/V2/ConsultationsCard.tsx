@@ -17,7 +17,11 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { AphButton, AphDialogTitle } from '@aph/web-ui-components';
 import moment from 'moment';
-import { readableParam, getAvailableFreeChatDays } from 'helpers/commonHelpers';
+import {
+  readableParam,
+  getAvailableFreeChatDays,
+  removeGraphQLKeyword,
+} from 'helpers/commonHelpers';
 import { Link, Route } from 'react-router-dom';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useMutation } from 'react-apollo-hooks';
@@ -40,11 +44,9 @@ import { GET_APPOINTMENT_DOCTOR_RESCHEDULED_DETAILS } from 'graphql/consult';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      padding: '20px 5px 10px 5px',
+      padding: '15px 0',
     },
     consultationSection: {
-      paddingLeft: 15,
-      paddingRight: 15,
       paddingBottom: 10,
     },
     consultCard: {
@@ -720,7 +722,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         console.log(e);
         setApiLoading(false);
         setIsAlertOpen(true);
-        setAlertMessage(`Error occured while rescheduling the appointment, ${e}`);
+        setAlertMessage(
+          `Error occured while rescheduling the appointment(${removeGraphQLKeyword(e)})`
+        );
       });
   };
 
@@ -939,7 +943,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           <span className={classes.btnContent}>Cytoplam, Metformin, Insulin…</span>
                           <img src={require('images/ic_arrow_right_white.svg')} alt="" />
                         </AphButton> */}
-                          {appointmentDetails.status === STATUS.COMPLETED &&
+                          {(appointmentDetails.status === STATUS.COMPLETED ||
+                            props.pastOrCurrent === 'past') &&
                             appointmentDetails.isFollowUp === 'false' && (
                               <div className={classes.bookFollowup}>
                                 <Route
@@ -983,9 +988,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                     appointmentDetails.doctorInfo.fullName
                                       ? readableParam(appointmentDetails.doctorInfo.fullName)
                                       : '';
-                                  if (pickAnotherSlot) {
-                                    getAppointmentNextSlotInitiatedByDoctor(appointmentDetails);
-                                  } else if (
+                                  if (
+                                    props.pastOrCurrent === 'past' ||
                                     showAppointmentAction(
                                       appointmentState,
                                       status,
@@ -993,6 +997,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                     ) === 'BOOK FOLLOWUP'
                                   ) {
                                     bookFollowup(appointmentDetails);
+                                  } else if (pickAnotherSlot) {
+                                    getAppointmentNextSlotInitiatedByDoctor(appointmentDetails);
                                   } else {
                                     appointmentDetails.status === STATUS.CANCELLED ||
                                     (appointmentDetails.status === STATUS.COMPLETED &&
@@ -1011,11 +1017,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                               >
                                 <h3>
                                   {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-                                    ? showAppointmentAction(
-                                        appointmentState,
-                                        status,
-                                        isConsultStarted
-                                      )
+                                    ? props.pastOrCurrent === 'past'
+                                      ? 'BOOK FOLLOWUP'
+                                      : showAppointmentAction(
+                                          appointmentState,
+                                          status,
+                                          isConsultStarted
+                                        )
                                     : 'VIEW DETAILS'}
                                 </h3>
                               </div>

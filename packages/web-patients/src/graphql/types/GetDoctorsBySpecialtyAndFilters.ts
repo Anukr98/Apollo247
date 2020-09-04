@@ -93,6 +93,8 @@ export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   specialty: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty | null;
   doctorsNextAvailability: (GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[] | null;
   doctorsAvailability: (GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability | null)[] | null;
+  apolloDoctorCount: number | null;
+  partnerDoctorCount: number | null;
 }
 
 export interface GetDoctorsBySpecialtyAndFilters {

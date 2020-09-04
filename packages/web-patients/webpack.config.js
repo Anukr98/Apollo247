@@ -16,7 +16,7 @@ const dotEnvConfig = dotenv.config({ path: envFile });
 if (dotEnvConfig.error) throw dotEnvConfig.error;
 Object.values(dotEnvConfig).forEach((val, KEY) => (process.env[KEY] = val));
 const isLocal = process.env.NODE_ENV === 'local';
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = process.env.NODE_ENV === 'dev';
 const isStaging = process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'vapt';
 const isProduction = process.env.NODE_ENV === 'production';
 const imageCdnBaseUrl = process.env.IMAGE_BASE_URL;
@@ -49,13 +49,6 @@ const plugins = [
   new MomentLocalesPlugin(),
   // new BundleAnalyzerPlugin(),
 
-  new WorkboxPlugin.GenerateSW({
-    // these options encourage the ServiceWorkers to get in there fast
-    // and not allow any straggling "old" SWs to hang around
-    clientsClaim: true,
-    skipWaiting: true,
-    maximumFileSizeToCacheInBytes: 50000000,
-  }),
   new WebpackPwaManifest({
     name: 'Apollo 247',
     short_name: 'Apollo 247',
@@ -95,6 +88,14 @@ const plugins = [
         destination: path.join('icons', 'android'),
       },
     ],
+  }),
+  new WorkboxPlugin.GenerateSW({
+    // these options encourage the ServiceWorkers to get in there fast
+    // and not allow any straggling "old" SWs to hang around
+    cleanupOutdatedCaches: true,
+    clientsClaim: true,
+    skipWaiting: true,
+    maximumFileSizeToCacheInBytes: 50000000,
   }),
 ];
 if (isLocal) {
@@ -215,7 +216,7 @@ module.exports = {
           maxAsyncRequests: 30,
           maxInitialRequests: 30,
           automaticNameDelimiter: '~',
-          enforceSizeThreshold: 50000,
+          //enforceSizeThreshold: 50000,
           cacheGroups: {
             defaultVendors: {
               test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,

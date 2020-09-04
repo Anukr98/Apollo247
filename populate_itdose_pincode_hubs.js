@@ -15,6 +15,26 @@ const client = new Client({
     //connectionTimeoutMillis: 20000,
 })
 
+const createTableIfNotExists = async (client) => {
+    const str = `CREATE TABLE IF NOT EXISTS diagnostic_itdose_pincode_hubs (
+        id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+        state_id INT,
+        state VARCHAR ( 255 ),
+        city_id INT,
+        city VARCHAR (255),
+        area_id INT,
+        area VARCHAR (255),
+        pincode INT
+    );`
+    client.query(str, (err) => {
+        if (err) {
+            throw new Error(err)
+        }
+        console.log(str)
+        return true
+    })
+}
+
 const truncatePincodeTable = async (client) => {
     const str = 'TRUNCATE TABLE diagnostic_itdose_pincode_hubs'
     client.query(str, (err) => {
@@ -30,7 +50,7 @@ const insertPincodes = async (client, pincodeMaster) => {
     async.eachSeries(pincodeMaster, (element, callback) => {
         let { StateID, State, CityID, City, AreaID, Area, PinCode } = element
         Area = Area.replace(/'/g, "''")
-        if (PinCode) {
+        if (PinCode && !isNaN(PinCode)) {
             try {
                 PinCode = parseInt(PinCode, 10)
                 console.log(PinCode)
@@ -38,6 +58,8 @@ const insertPincodes = async (client, pincodeMaster) => {
                 console.log('pincode not supported')
                 return callback()
             }
+        } else {
+            return callback()
         }
         const str = `INSERT INTO diagnostic_itdose_pincode_hubs(state_id, state, city_id, city, area_id, area, pincode) VALUES (${StateID}, '${State}', ${CityID}, '${City}', ${AreaID}, '${Area}', ${PinCode})`
         console.log(str)
@@ -60,7 +82,10 @@ const insertPincodes = async (client, pincodeMaster) => {
 
 
 const getPincodeMaster = async (token) => {
-    const apiUrl = "http://uatlims.apollohl.in/homecollection/api/HomeAPI/GetAreaPincode"
+    const apiUrl = process.env.DIAGNOSTIC_ITDOSE_GETPINCODE_URL
+    if (!apiUrl) {
+        throw new Error("add env DIAGNOSTIC_ITDOSE_GETPINCODE_URL")
+    }
     let options = {
         method: 'POST',
         headers: { authorization: `Bearer ${token}` }
@@ -122,6 +147,7 @@ const start = async () => {
     token = await getToken()
     pincodes = await getPincodeMaster(token)
     client.connect().catch(function (err) { console.log("error while connection", err) });
+    await createTableIfNotExists(client)
     await truncatePincodeTable(client)
     await insertPincodes(client, pincodes)
 }

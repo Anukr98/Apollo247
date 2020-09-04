@@ -935,6 +935,7 @@ export const SAVE_PATIENT_ADDRESS = gql`
         latitude
         longitude
         stateCode
+        name
       }
     }
   }
@@ -957,6 +958,8 @@ export const UPDATE_PATIENT_ADDRESS = gql`
         latitude
         longitude
         stateCode
+        mobileNumber
+        name
       }
     }
   }
@@ -978,6 +981,9 @@ export const GET_PATIENT_ADDRESS_BY_ID = gql`
         city
         state
         zipcode
+        landmark
+        mobileNumber
+        name
       }
     }
   }
@@ -1073,6 +1079,8 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         latitude
         longitude
         stateCode
+        mobileNumber
+        name
       }
     }
   }
@@ -2059,6 +2067,11 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             # resultDate
           }
           fileUrl
+          testResultFiles {
+            id
+            fileName
+            mimeType
+          }
         }
         errorCode
         errorMsg
@@ -2077,6 +2090,13 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           prescriptionSource
           source
           fileUrl
+          prescriptionFiles {
+            id
+            fileName
+            mimeType
+          }
+          hospital_name
+          hospitalId
         }
         errorCode
         errorMsg
@@ -2190,6 +2210,12 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             name
             userFriendlyNomenclature
             image
+          }
+          doctorHospital {
+            facility {
+              id
+              name
+            }
           }
         }
       }
