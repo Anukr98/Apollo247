@@ -993,13 +993,18 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   'no results found'
                 )}
               </div>
-              <div className={classes.paginationContainer}>
-                <Pagination
-                  count={10}
-                  color="primary"
-                  classes={{ root: classes.pagination, ul: classes.paginationUl }}
-                />
-              </div>
+              {pageNo < Math.ceil((apolloDoctorCount + partnerDoctorCount) / PAGE_SIZE) && (
+                <div className={classes.paginationContainer}>
+                  <Pagination
+                    count={Math.ceil((apolloDoctorCount + partnerDoctorCount) / PAGE_SIZE)}
+                    color="primary"
+                    page={pageNo}
+                    onChange={() => window.location.reload()}
+                    classes={{ root: classes.pagination, ul: classes.paginationUl }}
+                  />
+                </div>
+              )}
+
               {faqData && faqData.length > 0 && (
                 <>
                   <BookBest faqData={faqData[0]} specialityName={specialtyName} />
