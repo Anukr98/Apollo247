@@ -1405,28 +1405,9 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
-    pubnub
-      .hereNow({
-        channels: [appointmentId],
-        includeUUIDs: true,
-      })
-      .then((response: any) => {
-        const occupants = response.channels[appointmentId].occupants;
-        let doctorCount = 0;
-        let paientsCount = 0;
-        occupants.forEach((item: any) => {
-          if (item.uuid.indexOf('PATIENT') > -1) {
-            paientsCount = 1;
-          } else if (item.uuid.indexOf('DOCTOR') > -1) {
-            doctorCount = 1;
-          }
-        });
-
-        sendCallNotificationFnWithCheck(callType, isCall, doctorCount + paientsCount);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    pubnubPresence((patient: number, doctor: number) => {
+      sendCallNotificationFnWithCheck(callType, isCall, patient + doctor);
+    });
   };
 
   const sendToPatientAction = () => {
@@ -1834,11 +1815,14 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const endCallNotificationAction = (isCall: boolean) => {
+    pubnubPresence((patient: number, doctor: number) => {
+      endCallNotificationActionCheckFn(isCall, patient + doctor);
+    });
+  };
+
+  const pubnubPresence = (callBack: (patientCount: number, doctorCount: number) => void) => {
     pubnub
-      .hereNow({
-        channels: [appointmentId],
-        includeUUIDs: true,
-      })
+      .hereNow({ channels: [appointmentId], includeUUIDs: true })
       .then((response: any) => {
         const occupants = response.channels[appointmentId].occupants;
         let doctorCount = 0;
@@ -1850,8 +1834,7 @@ export const ConsultTabs: React.FC = () => {
             doctorCount = 1;
           }
         });
-
-        endCallNotificationActionCheckFn(isCall, doctorCount + paientsCount);
+        callBack(paientsCount, doctorCount);
       })
       .catch((error) => {
         console.error(error);
