@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   SafeAreaView,
@@ -30,7 +30,11 @@ import { AppRoutes } from './NavigatorContainer';
 import AsyncStorage from '@react-native-community/async-storage';
 import { CommonLogEvent, CommonBugFender } from '../FunctionHelpers/DeviceHelper';
 import moment from 'moment';
-import { startSymptomTrackerChat, updateSymptomTrackerChat } from '../helpers/apiCalls';
+import {
+  startSymptomTrackerChat,
+  updateSymptomTrackerChat,
+  getSymptomsFromTracker,
+} from '../helpers/apiCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const roundCountViewDimension = 30;
@@ -40,7 +44,6 @@ const howItWorksArrData = [
   'Choose doctor',
   'Book Appointment',
 ];
-const symptoms = ['Headache', 'Vomiting', 'Cold'];
 let insertMessage: object[] = [];
 
 interface SymptomTrackerProps extends NavigationScreenProps {}
@@ -48,6 +51,10 @@ interface Patient {
   name: string;
   gender: string;
   age: number;
+}
+interface Symptoms {
+  name: string;
+  id: string;
 }
 
 export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
@@ -58,9 +65,11 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [selectedPatient, setSelectedPatient] = useState<Patient>();
   const [showHowItWorks, setShowHowItWorks] = useState<boolean>(true);
   const [messages, setMessages] = useState<any>([]);
+  const [symptoms, setSymptoms] = useState<Symptoms>([]);
   const [chatId, setChatId] = useState<string>('');
   const [defaultSymptoms, setDefaultSymptoms] = useState<object[]>([]);
   const [chatEnded, setChatEnded] = useState<boolean>(false);
+  const flatlistRef = useRef<any>(null);
 
   useEffect(() => {
     return function cleanup() {
@@ -397,8 +406,9 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         keyExtractor={(_, index) => `${index}`}
         renderItem={({ item, index }) => renderChats(item, index)}
         ListHeaderComponent={renderPatientDetails}
-        // ListFooterComponent={renderSymptoms}
+        ListFooterComponent={renderSymptoms}
         showsVerticalScrollIndicator={false}
+        ref={flatlistRef}
       />
     );
   };
@@ -421,9 +431,16 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
 
   const renderChatBot = (item: any, index: number) => {
     return (
-      <View>
+      <View style={{ marginBottom: index === messages.length - 1 ? 20 : 0 }}>
         <BotIcon style={styles.botIcon} />
-        <View style={styles.chatViewContainer}>
+        <View
+          style={[
+            styles.chatViewContainer,
+            {
+              marginRight: chatEnded && index === messages.length - 1 ? 20 : 45,
+            },
+          ]}
+        >
           <Text style={styles.botTextTitle}>{item.text}</Text>
           {index === messages.length - 1 && !chatEnded ? (
             <TouchableOpacity
@@ -457,6 +474,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                 });
                 setMessages(insertMessage);
                 setChatEnded(true);
+                fetchSymptoms();
               }}
             >
               <Text style={styles.plainBtnTxt}>{string.symptomChecker.noOtherSymptoms}</Text>
@@ -467,6 +485,23 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         </View>
       </View>
     );
+  };
+
+  const fetchSymptoms = async () => {
+    setLoading(true);
+    try {
+      const res = await getSymptomsFromTracker(chatId);
+      console.log('res', res);
+      if (res && res.data && res.data.symptoms) {
+        setSymptoms(res.data.symptoms);
+        setTimeout(() => {
+          flatlistRef.current.scrollToEnd({ animated: true });
+        }, 300);
+      }
+    } catch (error) {
+      CommonBugFender('GetSymptomsFromTrackerApi', error);
+    }
+    setLoading(false);
   };
 
   const goBackCallback = async (data: any, chat_id: string, storedMessages: any) => {
@@ -487,6 +522,9 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
       if (res && res.data && res.data.dialogue) {
         insertMessage = insertMessage.concat({ text: res.data.dialogue.text });
         setDefaultSymptoms(res.data.dialogue.options);
+        setTimeout(() => {
+          flatlistRef.current.scrollToEnd({ animated: true });
+        }, 300);
       }
       setMessages(insertMessage);
       console.log('res', res);
@@ -498,20 +536,26 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
 
   const renderSymptoms = () => {
     return (
-      <View style={styles.symptomsContainer}>
-        <View style={styles.seperatorLine}>
-          <Text style={styles.patientDetailsTitle}>{string.symptomChecker.symptoms}</Text>
-        </View>
-        {symptoms &&
-          symptoms.length > 0 &&
-          symptoms.map((item, index) => {
-            return (
-              <View key={index} style={[styles.itemRowStyle, { marginTop: 14 }]}>
-                <View style={styles.bullet} />
-                <Text style={styles.patientDetailsText}>{item}</Text>
-              </View>
-            );
-          })}
+      <View>
+        {chatEnded ? (
+          <View style={styles.symptomsContainer}>
+            <View style={styles.seperatorLine}>
+              <Text style={styles.patientDetailsTitle}>{string.symptomChecker.symptoms}</Text>
+            </View>
+            {symptoms &&
+              symptoms.length > 0 &&
+              symptoms.map((item, index) => {
+                return (
+                  <View key={index} style={[styles.itemRowStyle, { marginTop: 14 }]}>
+                    <View style={styles.bullet} />
+                    <Text style={styles.patientDetailsText}>{item.name}</Text>
+                  </View>
+                );
+              })}
+          </View>
+        ) : (
+          <View />
+        )}
       </View>
     );
   };
@@ -711,7 +755,6 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     borderRadius: 10,
     marginRight: 20,
-    marginTop: 20,
     marginLeft: 40,
   },
   patientDetailsTitle: {

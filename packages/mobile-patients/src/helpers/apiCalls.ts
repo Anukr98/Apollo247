@@ -745,3 +745,8 @@ export const updateSymptomTrackerChat = async (
   const url = `https://sympai.apollo247.com/api/v1/chatbot/${chatId}`;
   return Axios.patch(url, data);
 };
+
+export const getSymptomsFromTracker = (chatId: string): Promise<AxiosResponse<any>> => {
+  const url = `https://sympai.apollo247.com/api/v1/chatbot/${chatId}/specialities`;
+  return Axios.get(url);
+};
