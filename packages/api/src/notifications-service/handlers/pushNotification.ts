@@ -1376,10 +1376,9 @@ export async function sendNotification(
     sendBrowserNotitication(doctorDetails.id, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.PRESCRIPTION_READY) {
     notificationTitle = ApiConstants.PRESCRIPTION_READY_TITLE;
-    notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace('{0}', patientDetails.firstName)
-      .replace('{1}', doctorDetails.firstName)
-      .replace('{2}', appointment.displayId.toString())
-      .replace('{3}', format(appointment.appointmentDateTime, 'yyyy-MM-dd'));
+    notificationBody = ApiConstants.PRESCRIPTION_READY_BODY
+      .replace('{0}', patientDetails.firstName)
+      .replace('{1}', doctorDetails.firstName);
 
     if (!process.env.DEEPLINK_PRESCRIPTION) {
       log(
@@ -1408,7 +1407,7 @@ export async function sendNotification(
       '',
       ''
     );
-    console.log(`FinalDeeplink: ${prescriptionDeeplink}`);
+
     sendNotificationSMS(patientDetails.mobileNumber, prescriptionDeeplink);
 
     // not sending whatsapp, leaving code here for future implementation purposes
