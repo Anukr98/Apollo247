@@ -132,7 +132,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       query: {
         bool: {
           must: [
-            { match: { 'doctorSlots.slots.status': 'OPEN' } },
+            { nested: { path : 'doctorSlots.slots', query : { match: { 'doctorSlots.slots.status': "OPEN" } } } },
             { match: { isSearchable: true } },
             { query_string: {
               fuzziness: 'AUTO',
@@ -160,7 +160,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         query: {
           bool: {
             must: [
-              { match: { 'doctorSlots.slots.status': 'OPEN' } },
+              { nested: { path : 'doctorSlots.slots', query : { match: { 'doctorSlots.slots.status': "OPEN" } } } },
               { match: { 'facility.city': args.city } },
               { match: { isSearchable: true } },
               { query_string: {
@@ -190,7 +190,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         query: {
           bool: {
             must: [
-              { match: { 'doctorSlots.slots.status': 'OPEN' } },
+              { nested: { path : 'doctorSlots.slots', query : { match: { 'doctorSlots.slots.status': "OPEN" } } } },
               { match: { isSearchable: true } },
               {
                 multi_match: {
@@ -296,7 +296,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       query: {
         bool: {
           must: [
-            { match: { 'doctorSlots.slots.status': 'OPEN' } },
+            { nested: { path : 'doctorSlots.slots', query : { match: { 'doctorSlots.slots.status': "OPEN" } } } },
             { match: { isSearchable: true } },
             { query_string: {
               fuzziness: 'AUTO',
@@ -406,7 +406,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
   }
   const elasticMatch = [];
-  elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
+  elasticMatch.push({ nested: { path : 'doctorSlots.slots', query : { match: { 'doctorSlots.slots.status': "OPEN" } } } });
   elasticMatch.push({ match: { isSearchable: true } });
   elasticMatch.push({
     multi_match: {
@@ -492,11 +492,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         query: {
           bool: {
             must: [
-              {
-                match: {
-                  'doctorSlots.slots.status': 'OPEN',
-                },
-              },
+              { nested: { path : 'doctorSlots.slots', query : { match: { 'doctorSlots.slots.status': "OPEN" } } } },
               { match: { isSearchable: true } },
             ],
           },
