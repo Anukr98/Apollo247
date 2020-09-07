@@ -227,6 +227,19 @@ export class AppointmentRepository extends Repository<Appointment> {
     return appointmentData;
   }
 
+  async getAppointmentsCountByDoctorIdandPatientId(doctorId: string, patientId: string) {
+    return await this.createQueryBuilder('appointment')
+      .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.PAYMENT_FAILED,
+        status4: STATUS.PAYMENT_PENDING_PG,
+        status5: STATUS.PAYMENT_ABORTED,
+      })
+      .getCount();
+  }
   getAppointmentsByDate(appointmentDateTime: Date) {
     return this.find({
       where: {
@@ -1419,7 +1432,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       where: {
         patientId: In(ids),
         discountedAmount: Not(0),
-        status: Not(STATUS.PAYMENT_ABORTED),
+        status: Not(In([STATUS.PAYMENT_ABORTED, STATUS.PAYMENT_PENDING])),
       },
       relations: ['appointmentPayments', 'appointmentRefunds'],
       order,
@@ -1441,6 +1454,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     //   .orderBy('appointment.bookingDate', 'ASC')
     //   .getMany();
   }
+
   followUpBookedCount(id: string) {
     return this.count({ where: { followUpParentId: id } });
   }
