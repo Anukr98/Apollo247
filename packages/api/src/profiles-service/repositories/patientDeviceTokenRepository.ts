@@ -2,6 +2,7 @@ import { EntityRepository, Repository, In } from 'typeorm';
 import { PatientDeviceTokens } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { DEVICE_TYPE } from 'profiles-service/entities/index';
 
 @EntityRepository(PatientDeviceTokens)
 export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens> {
@@ -40,6 +41,16 @@ export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens
     return this.find({
       patient: In(ids),
     });
+  }
+
+  getDeviceVoipPushToken(patient: string, deviceType: DEVICE_TYPE) {
+    return this.find({
+      where: { patient, deviceType },
+    });
+  }
+
+  updateVoipPushToken(id: string, updateAttrs: Partial<PatientDeviceTokens>) {
+    return this.update(id, updateAttrs);
   }
 
   async saveMultiplePatientDeviceToken(deviceTokenAttrs: Partial<PatientDeviceTokens>[]) {

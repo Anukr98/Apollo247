@@ -24,6 +24,7 @@ import {
   Deeplink,
   DoctorPatientExternalConnect,
   AdminAuditLogs,
+  DoctorProfileHistory,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -47,6 +48,7 @@ import {
   MedicineOrderLineItems,
   MedicineOrderPayments,
   MedicineOrders,
+  MedicineOrderRefunds,
   MedicineOrdersStatus,
   Patient,
   PatientAddress,
@@ -64,7 +66,10 @@ import {
   MedicineOrderShipments,
   MedicineOrderCancelReason,
   PharmacologistConsult,
+  MedicineOrderAddress,
+  PatientEntitiySubscriber,
 } from 'profiles-service/entities';
+import { DiagnosticItdosePincodeHubs } from 'profiles-service/entities/diagnostic_itdose_pincode_hub';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
 import {
@@ -73,6 +78,7 @@ import {
   AppointmentDocuments,
   AppointmentNoShow,
   AppointmentPayments,
+  ConsultQueueItem,
   AppointmentRefunds,
   AppointmentSessions,
   CaseSheet,
@@ -90,7 +96,11 @@ import {
   NotificationBin,
   NotificationBinArchive,
   AppointmentUpdateHistory,
+  ExotelDetails,
 } from 'consults-service/entities';
+import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
+import { migrationDir } from 'ApiConstants';
+import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity';
 
 export const connect = async () => {
   return await createConnections([
@@ -107,6 +117,7 @@ export const connect = async () => {
         DiagnosticOrdersStatus,
         DiagnosticOrgans,
         DiagnosticPincodeHubs,
+        DiagnosticItdosePincodeHubs,
         Diagnostics,
         LoginOtp,
         LoginOtpArchive,
@@ -118,6 +129,7 @@ export const connect = async () => {
         MedicineOrderShipments,
         MedicineOrders,
         MedicineOrdersStatus,
+        MedicineOrderRefunds,
         Patient,
         PatientAddress,
         PatientDeviceTokens,
@@ -134,6 +146,7 @@ export const connect = async () => {
         SearchHistory,
         MedicineOrderCancelReason,
         PharmacologistConsult,
+        MedicineOrderAddress,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
@@ -141,8 +154,11 @@ export const connect = async () => {
       username: process.env.PROFILES_DB_USER,
       password: process.env.PROFILES_DB_PASSWORD,
       database: `profiles_${process.env.DB_NODE_ENV}`,
+      subscribers: [PatientEntitiySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
-      synchronize: true,
+      synchronize: false,
+      migrationsRun: true,
+      migrations: [migrationDir.profiles_db],
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
@@ -174,6 +190,7 @@ export const connect = async () => {
         CityPincodeMapper,
         DoctorPatientExternalConnect,
         AdminAuditLogs,
+        DoctorProfileHistory,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -185,6 +202,9 @@ export const connect = async () => {
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
+      migrationsRun: true,
+      synchronize: false,
+      migrations: [migrationDir.doctors_db],
     },
     {
       name: 'consults-db',
@@ -211,6 +231,9 @@ export const connect = async () => {
         TransferAppointmentDetails,
         UtilizationCapacity,
         AppointmentUpdateHistory,
+        ExotelDetails,
+        ConsultQueueItem,
+        AppointmentCallFeedback,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -218,10 +241,14 @@ export const connect = async () => {
       username: process.env.CONSULTS_DB_USER,
       password: process.env.CONSULTS_DB_PASSWORD,
       database: `consults_${process.env.DB_NODE_ENV}`,
+      subscribers: [AppointmentEntitySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
+      migrationsRun: true,
+      synchronize: false,
+      migrations: [migrationDir.consults_db],
     },
   ]).catch((error) => {
     throw new Error(error);

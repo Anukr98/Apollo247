@@ -6,11 +6,6 @@ import {
 type YesOrNo = 'Yes' | 'No';
 
 export enum WebEngageEventName {
-  ONBOARDING_SCREEN_1 = 'Onboarding Screen 1',
-  ONBOARDING_SCREEN_2 = 'Onboarding Screen 2',
-  ONBOARDING_SCREEN_3 = 'Onboarding Screen 3',
-  ONBOARDING_SCREEN_4 = 'Onboarding Screen 4',
-  ONBOARDING_SKIP_CLICKED = 'Onboarding Skip Clicked',
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
   OTP_ENTERED = 'OTP Entered',
@@ -29,13 +24,13 @@ export enum WebEngageEventName {
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   CATEGORY_FILTER_CLICKED = 'Pharmacy Category Filter Clicked',
   CATEGORY_FILTER_APPLIED = 'Pharmacy Category Filter Applied',
+  CATEGORY_LIST_GRID_VIEW = 'Listing view',
   SHOW_PRESCRIPTION_AT_STORE_SELECTED = 'Show prescription at store selected',
   PHARMACY_STORE_PICKUP_VIEWED = 'Pharmacy store pickup viewed', // Every time a new pincode is entered, the event must be triggered
   PHARMACY_STORE_SELECTED_SUCCESS = 'Pharmacy store selected success',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
   PHARMACY_ADD_TO_CART_NONSERVICEABLE = 'Pharmacy Add to cart Nonserviceable',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
-  BUY_NOW = 'Buy Now',
   PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
   SKU_PRICE_MISMATCH = 'SKU Price Mismatch',
   TAT_API_FAILURE = 'Tat API Failure',
@@ -45,10 +40,18 @@ export enum WebEngageEventName {
   PHARMACY_PAYMENT_INITIATED = 'Pharmacy Payment Initiated',
   DIAGNOSTIC_PAYMENT_INITIATED = 'Diagnostic Payment Initiated',
   UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Upload Prescription Clicked',
+  CART_UPLOAD_PRESCRIPTION_CLICKED = 'Cart - upload prescription',
+  ITEMS_REMOVED_FROM_CART = 'Items removed from cart',
+  CART_APPLY_COUPON_CLCIKED = 'Pharmacy cart - Apply coupon clicked',
+  CART_COUPON_APPLIED = 'Pharmacy cart - coupon applied',
   UPLOAD_PRESCRIPTION_IMAGE_UPLOADED = 'Upload Prescription Image Uploaded',
   UPLOAD_PRESCRIPTION_OPTION_SELECTED = 'Upload Prescription Option Selected',
-  PHARMACY_SUBMIT_PRESCRIPTION = 'Pharmacy Submit Prescription',
+  UPLOAD_PRESCRIPTION_SUBMIT_CLICKED = 'Upload Prescription Submit Clicked',
+  UPLOAD_PRESCRIPTION_ADDRESS_SELECTED = 'Upload prescription - Address selected',
+  UPLOAD_PRESCRIPTION_NEW_ADDRESS = 'Upload prescription - New address added',
+  PHARMACY_SUBMIT_PRESCRIPTION = 'Upload Prescription Proceed Clicked',
   PHARMACY_CHECKOUT_COMPLETED = 'Pharmacy Checkout completed',
+  PHARMACY_DETAIL_IMAGE_CLICK = 'Product Detail page Image clicked',
   DIAGNOSTIC_CHECKOUT_COMPLETED = 'Diagnostic Checkout completed',
   DOCTOR_SEARCH = 'Doctor Search',
   SPECIALITY_CLICKED = 'Speciality Clicked',
@@ -85,12 +88,12 @@ export enum WebEngageEventName {
   MANAGE_DIABETES = 'Manage Diabetes',
   TRACK_SYMPTOMS = 'Track Symptoms',
   VIEW_HELATH_RECORDS = 'View Helath Records',
-  CORONA_VIRUS_TALK_TO_OUR_EXPERT = 'Corona Virus?Talk to our expert',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
   CHECK_YOUR_RISK_LEVEL = 'Check your risk level',
   NOTIFICATION_ICON = 'Notification Icon clicked',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
   NEED_HELP = 'Need Help?',
+  TICKET_RAISED = 'Ticket raised',
   MY_ACCOUNT = 'My Account',
   FIND_A_DOCTOR = 'Find a Doctor',
   TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
@@ -107,7 +110,6 @@ export enum WebEngageEventName {
   UPLOAD_PRESCRIPTION = 'Upload Prescription',
   UPLOAD_PHOTO = 'Upload Photo',
   ITEMS_CLICKED = 'Items Clicked',
-  REORDER_MEDICINES = 'Reorder Medicines',
   PHR_ORDER_MEDS_TESTS = 'PHR Order Meds & Tests',
   PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
   RE_ORDER_MEDICINE = 'ReOrder Medicine',
@@ -133,7 +135,12 @@ export enum WebEngageEventName {
   CONTINUE_CONSULTATION_CLICKED = 'Continue Consultation Clicked', // In appointment details screen
   NO_SLOTS_FOUND = 'No Slots Found', // In appointment details screen
   DOCTOR_RESCHEDULE_CLAIM_REFUND = 'Doctor reschedule and Claim Refund button click',
-
+  DOCTOR_CONNECT_TAB_CLICKED = 'Doctor Connect Tab Clicked',
+  APOLLO_DOCTOR_TAB_CLICKED = 'Apollo Doctor Tab Clicked',
+  UPLOAD_RECORDS_CLICK_CHATROOM = 'Upload Records in chatroom clicked',
+  TAKE_PHOTO_CLICK_CHATROOM = 'Take a photo in consult room clicked',
+  GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM = 'choose from gallery in consult room clicked',
+  UPLOAD_PHR_CLICK_CHATROOM = 'Upload from PHR in consult room clicked',
   // Medicine Events
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
@@ -146,6 +153,11 @@ export enum WebEngageEventName {
   PAYMENT_INSTRUMENT = 'Payment Instrument',
   PAYMENT_STATUS = 'Payment Status',
   CONSULT_PAYMENT_MODE_SELECTED = 'Consult booking payment mode selected',
+
+  // Deeplink Events
+  HOME_PAGE_VIEWED = 'Pharmacy Home page viewed',
+  PRODUCT_PAGE_VIEWED = 'Product page viewed',
+  CATEGORY_PAGE_VIEWED = 'Category page viewed',
 }
 
 export interface PatientInfo {
@@ -162,6 +174,19 @@ export interface UserInfo {
   'Patient UHID': string;
   'Mobile Number': string;
   'Customer ID': string;
+}
+
+export interface ConsultRoomDoctorPatientInfo {
+  'Patient name': string;
+  'Patient UHID': string;
+  'Doctor Name': string;
+  'Speciality name': string;
+  'Doctor ID': string;
+  'Speciality ID': string;
+  'Patient Age': number;
+  'Patient Gender': string;
+  'Hospital Name': string;
+  'Hospital City': string;
 }
 
 export interface AutoSelectLocation extends UserInfo {
@@ -197,19 +222,14 @@ export interface ConsultedBefore extends PatientInfo {
 }
 
 export interface ReorderMedicine extends PatientInfo {
-  source: 'Order Details' | 'PHR';
+  source: string;
   orderType: 'Cart' | 'Non Cart' | 'Offline';
-  noOfItemsNotAvailable: number;
+  noOfItemsNotAvailable?: number;
 }
 
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
 
-  [WebEngageEventName.ONBOARDING_SCREEN_1]: {};
-  [WebEngageEventName.ONBOARDING_SCREEN_2]: {};
-  [WebEngageEventName.ONBOARDING_SCREEN_3]: {};
-  [WebEngageEventName.ONBOARDING_SCREEN_4]: {};
-  [WebEngageEventName.ONBOARDING_SKIP_CLICKED]: {};
   [WebEngageEventName.MOBILE_ENTRY]: {};
   [WebEngageEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
   [WebEngageEventName.OTP_ENTERED]: { value: YesOrNo };
@@ -235,13 +255,13 @@ export interface WebEngageEvents {
   [WebEngageEventName.MANAGE_DIABETES]: PatientInfo;
   [WebEngageEventName.TRACK_SYMPTOMS]: PatientInfo;
   [WebEngageEventName.VIEW_HELATH_RECORDS]: PatientInfoWithSource;
-  [WebEngageEventName.CORONA_VIRUS_TALK_TO_OUR_EXPERT]: { clicked: true };
   [WebEngageEventName.LEARN_MORE_ABOUT_CORONAVIRUS]: { clicked: true };
   [WebEngageEventName.CHECK_YOUR_RISK_LEVEL]: { clicked: true };
   [WebEngageEventName.APOLLO_KAVACH_PROGRAM]: { clicked: true };
   [WebEngageEventName.NOTIFICATION_ICON]: { clicked: true };
   [WebEngageEventName.ACTIVE_APPOINTMENTS]: { clicked: true };
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
+  [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
   [WebEngageEventName.FIND_A_DOCTOR]: PatientInfo;
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
@@ -282,6 +302,8 @@ export interface WebEngageEvents {
     'product name': string;
     'customer id': string;
     pincode: number;
+    Serviceable: 'Yes' | 'No';
+    'Delivery TAT': number;
   };
   [WebEngageEventName.PRODUCT_DETAIL_TAB_CLICKED]: {
     tabName: string;
@@ -317,6 +339,12 @@ export interface WebEngageEvents {
     'sort by': string;
     price: string;
   };
+  [WebEngageEventName.CATEGORY_LIST_GRID_VIEW]: {
+    'Category name'?: string;
+    'Category id'?: string;
+    'Type': 'Grid' | 'List';
+    'Source': 'Search' | 'Category';
+  };
   [WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED]: {
     value: boolean;
   };
@@ -335,13 +363,12 @@ export interface WebEngageEvents {
     'product name': string;
     'product id': string; // (SKUID)
     Price: number;
-    'Discounted Price': number;
+    'Discounted Price'?: number;
     Quantity: number;
     Source:
       | 'Pharmacy Home'
       | 'Pharmacy PDP'
       | 'Pharmacy List'
-      | 'Diagnostic'
       | 'Pharmacy Partial Search'
       | 'Pharmacy Full Search';
     Brand?: string;
@@ -349,6 +376,7 @@ export interface WebEngageEvents {
     'category name'?: string;
     'category ID'?: string;
     Section?: string;
+    'Section Name'?: string;
     af_revenue: number;
     af_currency: string;
     // 'Patient Name': string;
@@ -385,19 +413,8 @@ export interface WebEngageEvents {
     // 'Mobile Number': string;
     // 'Customer ID': string;
   };
-  [WebEngageEventName.BUY_NOW]: {
-    'product name': string;
-    'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
-    'category ID': string;
-    Price: number;
-    'Discounted Price': number;
-    Quantity: number;
-    'Service Area': 'Pharmacy' | 'Diagnostic';
-  };
   [WebEngageEventName.PHARMACY_CART_VIEWED]: {
+    'Customer ID': string;
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
@@ -415,6 +432,7 @@ export interface WebEngageEvents {
     'Magento MRP': number;
     'Magento Pack Size': number;
     'Store API MRP': number;
+    'Price Change In Cart': 'Yes' | 'No';
   };
 
   [WebEngageEventName.TAT_API_FAILURE]: {
@@ -447,6 +465,8 @@ export interface WebEngageEvents {
     'Service Area': 'Pharmacy' | 'Diagnostic';
     'Store Id'?: string;
     'Store Name'?: string;
+    'Popup Shown'?: boolean;
+    'No. of out of stock items'?: number;
   };
   [WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
     'Total items in cart': number;
@@ -473,8 +493,37 @@ export interface WebEngageEvents {
   [WebEngageEventName.UPLOAD_PRESCRIPTION_CLICKED]: {
     Source: 'Home' | 'Cart';
   };
+  [WebEngageEventName.CART_UPLOAD_PRESCRIPTION_CLICKED]: {
+    'Customer ID': string;
+  };
+  [WebEngageEventName.ITEMS_REMOVED_FROM_CART]: {
+    'Product ID': string;
+    'Customer ID': string;
+    'Product Name': string;
+    'No. of items': number;
+  };
+  [WebEngageEventName.CART_APPLY_COUPON_CLCIKED]: {
+    'Customer ID': string;
+  };
+  [WebEngageEventName.CART_COUPON_APPLIED]: {
+    'Coupon Code': string;
+    'Discounted amount': string | number;
+    'Customer ID': string;
+  };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_OPTION_SELECTED]: {
-    OptionSelected: 'Search and add' | 'All Medicine' | 'call';
+    OptionSelected: 'Search and add' | 'All Medicine' | 'Call me for details';
+  };
+  [WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED]: {
+    Serviceable: 'Yes' | 'No';
+  };
+  [WebEngageEventName.UPLOAD_PRESCRIPTION_NEW_ADDRESS]: {
+    Serviceable: 'Yes' | 'No';
+  };
+  [WebEngageEventName.UPLOAD_PRESCRIPTION_SUBMIT_CLICKED]: {
+    OptionSelected: 'Search and add' | 'All Medicine' | 'Call me for details';
+    NumberOfPrescriptionClicked: number;
+    NumberOfPrescriptionUploaded: number;
+    NumberOfEPrescriptions: number;
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
     Source: 'Take a Photo' | 'Choose Gallery' | 'E-Rx';
@@ -510,6 +559,10 @@ export interface WebEngageEvents {
     af_revenue: number;
     af_currency: string;
   };
+  [WebEngageEventName.PHARMACY_DETAIL_IMAGE_CLICK]: {
+    'Product ID': string;
+    'Product Name': string;
+  };
   [WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED]: {
     'Order ID': string | number;
     'Order Type': 'Cart' | 'Non Cart';
@@ -543,7 +596,7 @@ export interface WebEngageEvents {
     Servicable: boolean;
   };
   [WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK]: {
-    SectionName: string;
+    'Section Name': string;
     ProductId: string;
     ProductName: string;
   };
@@ -556,7 +609,12 @@ export interface WebEngageEvents {
   };
 
   // ********** ConsultEvents ********** \\
-
+  [WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
+  [WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
+  [WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
+  [WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM]: ConsultRoomDoctorPatientInfo;
+  [WebEngageEventName.APOLLO_DOCTOR_TAB_CLICKED]: UserInfo;
+  [WebEngageEventName.DOCTOR_CONNECT_TAB_CLICKED]: UserInfo;
   [WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED]: {
     'Payment Mode': string;
   };
@@ -828,12 +886,15 @@ export interface WebEngageEvents {
     Success?: YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery address': string;
     Pincode: string;
+    'TAT Displayed': Date;
+    'Delivery TAT': number;
   };
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS]: {
     'TAT Displayed'?: Date;
     'Delivery Successful': YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery Address': string;
     Pincode: string;
+    'Delivery TAT': number;
   };
 
   [WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE]: {
@@ -889,8 +950,6 @@ export interface WebEngageEvents {
     Source: 'Consult & RX' | 'Medical Records'; // List/Profile
     Type: 'Prescription' | 'Test Result';
   };
-
-  [WebEngageEventName.REORDER_MEDICINES]: ReorderMedicines;
 
   [WebEngageEventName.PHR_ORDER_MEDS_TESTS]: PatientInfoWithConsultId;
 
@@ -1220,5 +1279,18 @@ export interface WebEngageEvents {
     'Appointment ID': string;
     Type: string;
     'Patient Id': string;
+  };
+  [WebEngageEventName.HOME_PAGE_VIEWED]: {
+    source: 'deeplink' | 'app home';
+  };
+  [WebEngageEventName.PRODUCT_PAGE_VIEWED]: {
+    source: 'deeplink' | 'widget' | 'search';
+    ProductId: string;
+    ProductName: string;
+  };
+  [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
+    source: 'home' | 'deeplink';
+    CategoryId: string;
+    CategoryName: string;
   };
 }

@@ -1,6 +1,7 @@
 import { createClient } from 'redis';
 import { debugLog } from 'customWinstonLogger';
 import { promisify } from 'util';
+
 const dLogger = debugLog(
   'profileServiceLogger',
   'RedisConnect',
@@ -10,6 +11,7 @@ const client = createClient({
   port: 6379,
   host: process.env.REDIS_HOST,
   password: process.env.REDIS_PASSWORD,
+  db: process.env.REDIS_DB || 0,
   retry_strategy: function(options) {
     if (options.error) {
       dLogger(
@@ -38,7 +40,8 @@ const getAsync = promisify(client.get).bind(client);
 export async function getCache(key: string) {
   try {
     const cache = await getAsync(key);
-    dLogger(new Date(), 'Redis Cache read', `Cache hit ${key}`);
+    if (cache && typeof cache === 'string')
+      dLogger(new Date(), 'Redis Cache read', `Cache hit ${key}`);
     return cache;
   } catch (e) {
     dLogger(new Date(), 'Redis read write error', `Cache hit ${key} ${JSON.stringify(e)}`);
@@ -51,7 +54,7 @@ const hgetallAsync = promisify(client.hgetall).bind(client);
 export async function hgetAllCache(key: string) {
   try {
     const cache = await hgetallAsync(key);
-    dLogger(new Date(), 'Redis Cache read hash', `Cache hit ${key}`);
+    if (cache) dLogger(new Date(), 'Redis Cache read hash', `Cache hit ${key}`);
     return cache;
   } catch (e) {
     dLogger(new Date(), 'Redis read hash error', `Cache hit ${key} ${JSON.stringify(e)}`);
@@ -61,10 +64,12 @@ export async function hgetAllCache(key: string) {
 
 export async function setCache(key: string, value: string, expiry: number) {
   try {
-    const set = client.set(key, value);
-    client.expire(key, expiry);
-    dLogger(new Date(), 'Redis Cache write', `Cache hit ${key}`);
-    return set;
+    if (key && value) {
+      const set = client.set(key, value);
+      client.expire(key, expiry);
+      dLogger(new Date(), 'Redis Cache write', `Cache hit ${key}`);
+      return set;
+    }
   } catch (e) {
     dLogger(new Date(), 'Redis Cache write error', `Cache hit ${key} ${JSON.stringify(e)}`);
     return false;
@@ -72,9 +77,11 @@ export async function setCache(key: string, value: string, expiry: number) {
 }
 export async function hmsetCache(key: string, value: { [index: string]: string }) {
   try {
-    const set = client.hmset(key, value);
-    dLogger(new Date(), 'Redis Cache write hashmap', `Cache hit ${key}`);
-    return set;
+    if (key && value) {
+      const set = client.hmset(key, value);
+      dLogger(new Date(), 'Redis Cache write hashmap', `Cache hit ${key}`);
+      return set;
+    }
   } catch (e) {
     dLogger(new Date(), 'Redis Cache write hashmap error', `Cache hit ${key} ${JSON.stringify(e)}`);
     return false;

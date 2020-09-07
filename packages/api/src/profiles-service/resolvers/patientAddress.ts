@@ -10,6 +10,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 export const addPatientAddressTypeDefs = gql`
   input PatientAddressInput {
     patientId: ID!
+    name: String
     addressLine1: String!
     addressLine2: String
     city: String
@@ -32,6 +33,7 @@ export const addPatientAddressTypeDefs = gql`
 
   input UpdatePatientAddressInput {
     id: ID!
+    name: String
     addressLine1: String!
     addressLine2: String
     city: String
@@ -48,6 +50,7 @@ export const addPatientAddressTypeDefs = gql`
 
   type PatientAddress {
     id: ID!
+    name: String
     addressLine1: String
     addressLine2: String
     city: String
@@ -91,6 +94,7 @@ export const addPatientAddressTypeDefs = gql`
 `;
 type PatientAddressInput = {
   patientId: string;
+  name: string;
   addressLine1: string;
   addressLine2: string;
   city: string;
@@ -107,6 +111,7 @@ type PatientAddressInput = {
 
 type UpdatePatientAddressInput = {
   id: string;
+  name: string;
   addressLine1: string;
   addressLine2: string;
   city: string;
@@ -191,7 +196,7 @@ const deletePatientAddress: Resolver<
   const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
   const deleteResp = await patientAddressRepo.deletePatientAddress(args.id);
   if (!deleteResp) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
   }
   return { status: true };
 };
@@ -203,10 +208,11 @@ const savePatientAddress: Resolver<
   AddPatientAddressResult
 > = async (parent, { PatientAddressInput }, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(PatientAddressInput.patientId);
+  const patientDetails = await patientRepo.getPatientDetails(PatientAddressInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+
   const savePatientaddressAttrs: Partial<PatientAddress> = {
     ...PatientAddressInput,
     patient: patientDetails,

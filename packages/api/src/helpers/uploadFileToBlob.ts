@@ -2,6 +2,7 @@ import path from 'path';
 import { format } from 'date-fns';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import fs from 'fs';
+//import { BlobServiceClient } from '@azure/storage-blob';
 
 export async function uploadFileToBlobStorage(
   fileType: string,
@@ -53,4 +54,49 @@ export async function uploadFileToBlobStorage(
     });
   fs.unlinkSync(localFilePath);
   return client.getBlobUrl(readmeBlob.name);
+}
+
+export async function uploadPdfFileToBlobStorage(
+  fileName: string,
+  filePath: string
+): Promise<string> {
+  // console.log(filePath, fileName, 'file details');
+  // const blobServiceClient = BlobServiceClient.fromConnectionString(
+  //   process.env.DOCTORS_AZURE_STORAGE_CONNECTION_STRING_API
+  //     ? process.env.DOCTORS_AZURE_STORAGE_CONNECTION_STRING_API
+  //     : ''
+  // );
+  // const containerName = process.env.DOCTORS_AZURE_STORAGE_CONTAINER_NAME
+  //   ? process.env.DOCTORS_AZURE_STORAGE_CONTAINER_NAME
+  //   : '';
+  // console.log('referencing the container ', containerName);
+  // const containerClient = blobServiceClient.getContainerClient(containerName);
+  // const blockBlobClient = containerClient.getBlockBlobClient(fileName);
+  // console.log('\nUploading to Azure storage as blob:\n', fileName);
+  // const uploadBlobResponse = await blockBlobClient.uploadFile(filePath, {
+  //   blobHTTPHeaders: { blobContentType: 'application/pdf' },
+  // });
+  // return uploadBlobResponse._response.status.toString();
+  return filePath;
+}
+
+export function textInRow(doc: PDFKit.PDFDocument, text: string, heigth: number, st: number) {
+  doc.y = heigth;
+  doc.x = st;
+  doc.fillColor('black');
+  doc.text(text, {
+    paragraphGap: 5,
+    indent: 5,
+    align: 'justify',
+    columns: 1,
+  });
+  return doc;
+}
+
+export function writeRow(doc: PDFKit.PDFDocument, heigth: number) {
+  doc
+    .lineJoin('miter')
+    .rect(30, heigth, 500, 20)
+    .stroke();
+  return doc;
 }

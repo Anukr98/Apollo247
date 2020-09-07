@@ -1,6 +1,9 @@
 import { setConfig, Config } from 'react-hot-loader';
 import { hot } from 'react-hot-loader/root';
 import React, { useEffect } from 'react';
+// import Loadable from 'react-loadable';
+import loadable from '@loadable/component';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Welcome } from 'components/Welcome';
@@ -9,19 +12,21 @@ import { useAuth } from 'hooks/authHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, createMuiTheme } from '@material-ui/core';
 import { AphThemeProvider, aphTheme } from '@aph/web-ui-components';
-import { DoctorDetails } from 'components/DoctorDetails';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
+
+const DoctorDetails = loadable(() => import('components/DoctorDetails'));
 import { AuthRouted } from 'components/AuthRouted';
-import { PatientsList } from 'components/PatientsList';
+import PatientsList from 'components/PatientsList';
 import { CartPoc } from 'components/CartPoc';
 import { MedicineCartLanding } from 'components/Cart/MedicineCartLanding';
 import { TestsCartLanding } from 'components/Tests/Cart/TestsCartLanding';
-import { MedicineLanding } from 'components/Medicine/MedicineLanding';
+// import MedicineLanding from 'components/Medicine/MedicineLanding';
+const MedicineLanding = loadable(() => import('components/Medicine/MedicineLanding'));
 import { ViewAllBrands } from 'components/Medicine/ViewAllBrands';
 import { SearchByBrand } from 'components/Medicine/SearchByBrand';
-import { Appointments } from 'components/ConsultRoom/Appointments';
-import { ChatRoom } from 'components/ChatRoom/ChatRoom';
+import { Appointments } from 'components/Consult/V2/Appointments';
+import { ChatRoom } from 'components/Consult/V2/ChatRoom/ChatRoom';
 import { PrescriptionsLanding } from 'components/Prescriptions/PrescriptionsLanding';
 import { MyAccount } from 'components/MyAccount/MyAccount';
 import { NotificationSettings } from 'components/Notifications/NotificationSettings';
@@ -30,13 +35,12 @@ import { PHRLanding } from 'components/HealthRecords/PHRLanding';
 import { AddRecords } from 'components/HealthRecords/AddRecords';
 import { OrdersLanding } from 'components/Orders/OrdersLanding';
 import { StoragePoc } from 'components/StoragePoc';
-// import { TrackJS } from 'trackjs';
 import { SearchByMedicine } from 'components/Medicine/SearchByMedicine';
 import { MedicineDetails } from 'components/Medicine/MedicineDetails';
 import { AddressBook } from 'components/MyAccount/AddressBook';
 import Scrollbars from 'react-custom-scrollbars';
 import { LocationProvider } from 'components/LocationProvider';
-import { SymptomsTracker } from 'components/SymptomsTracker/SymptomsTracker';
+const SymptomsTracker = loadable(() => import('components/SymptomsTracker/SymptomsTracker'));
 import { SymptomsTrackerSDK } from 'components/SymptomsTracker/SymptomsTrackerSDK';
 import { TestsLanding } from 'components/Tests/TestsLanding';
 import { TestDetails } from 'components/Tests/TestDetails';
@@ -50,9 +54,12 @@ import { Privacy } from 'components/Privacy';
 import { Faq } from 'components/Faq';
 import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
 import { ContactUs } from 'components/ContactUs';
-import { CovidLanding } from 'components/Covid/CovidLanding';
-import { KavachLanding } from 'components/Covid/KavachLanding';
-import { CovidArticleDetails } from 'components/Covid/CovidArticleDetails';
+// import CovidLanding from 'components/Covid/CovidLanding';
+// import KavachLanding from 'components/Covid/KavachLanding';
+// import CovidArticleDetails from 'components/Covid/CovidArticleDetails';
+const CovidLanding = loadable(() => import('components/Covid/CovidLanding'));
+const KavachLanding = loadable(() => import('components/Covid/KavachLanding'));
+const CovidArticleDetails = loadable(() => import('components/Covid/CovidArticleDetails'));
 import { AboutUs } from 'components/AboutUs';
 import { Help } from 'components/Help/Help';
 import { MyPayments } from 'components/MyAccount/MyPayments';
@@ -60,10 +67,14 @@ import { PayMedicine } from 'components/PayMedicine';
 import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
 import { ClinicCheckout } from './Checkout/ClinicCheckout';
 import { PrescriptionReview } from 'components/PrescriptionReview';
-import { SpecialityListing } from 'components/SpecialityListing';
+const SpecialityListing = loadable(() => import('components/SpecialityListing'));
 import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
 import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 import { MedicineSearch } from './Medicine/MedicineSearch';
+const DoctorsLanding = loadable(() => import('components/DoctorsLanding'));
+import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
+import { Loader } from 'components/Loader';
+import { Prescription } from 'components/Consult/V2/Prescription';
 import { CovidDiabetesLanding } from 'components/Covid/CovidDiabetesLanding';
 import { DoctorsLanding } from 'components/DoctorsLanding';
 import { Sitemap } from 'components/Sitemap';
@@ -99,7 +110,7 @@ const App: React.FC = () => {
   const pageName = window.location.pathname;
 
   useEffect(() => {
-    if (signInError) window.alert('Error signing in :(');
+    if (signInError) console.log('Error signing in :(');
   }, [signInError]);
 
   return (
@@ -145,7 +156,7 @@ const App: React.FC = () => {
           <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
           <Route exact path={clientRoutes.medicineSearch()} component={MedicineSearch} />
           <Route exact path={clientRoutes.medicinesLandingViewCart()} component={MedicineLanding} />
-          <Route exact path={clientRoutes.payMedicine(':payType')} component={PayMedicine} />
+          <AuthRouted exact path={clientRoutes.payMedicine(':payType')} component={PayMedicine} />
           <AuthRouted
             exact
             path={clientRoutes.medicinesCartInfo(':orderAutoId', ':orderStatus')}
@@ -226,6 +237,12 @@ const App: React.FC = () => {
             path={clientRoutes.medicinePrescription()}
             component={MedicinePrescriptions}
           />
+          <Route exact path={clientRoutes.covidProtocol()} component={covidProtocolLanding} />
+          <Route
+            exact
+            path={clientRoutes.prescription(':appointmentId')}
+            component={Prescription}
+          />
           <Route exact path={clientRoutes.covidDiabetes()} component={CovidDiabetesLanding} />
           <Route exact path={clientRoutes.sitemap()} component={Sitemap} />
         </Switch>
@@ -237,20 +254,18 @@ const App: React.FC = () => {
 const theme = createMuiTheme({ ...aphTheme });
 
 const AppContainer: React.FC = () => {
-  // TrackJS.install({
-  //   token: 'b85489445e5f4b48a0ffe851082f8e37',
-  //   application: process.env.NODE_ENV, // for more configuration options, see https://docs.trackjs.com
-  // });
-
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Loader />
         <AphThemeProvider theme={theme}>
           <MuiPickersUtilsProvider utils={DateFnsUtils}>
             <MedicinesCartProvider>
               <DiagnosticsCartProvider>
                 <LocationProvider>
-                  <App />
+                  <React.Suspense fallback={<div>Loading...</div>}>
+                    <App />
+                  </React.Suspense>
                 </LocationProvider>
               </DiagnosticsCartProvider>
             </MedicinesCartProvider>

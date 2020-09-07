@@ -9,6 +9,9 @@
     "lib": ["dom", "dom.iterable", "es5", "es6", "scripthost"],
     "esModuleInterop": true,
     "downlevelIteration": true,
+    "module": "esnext",
+    "removeComments": false,
+    "moduleResolution": "node",
     "strict": false,
     "noImplicitAny": true
   },

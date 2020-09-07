@@ -5,10 +5,8 @@ import { MEDICINE_ORDER_STATUS, MedicineOrdersStatus } from 'profiles-service/en
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import {
-  sendMedicineOrderStatusNotification,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
+import { sendMedicineOrderStatusNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 
 export const pharmaOrderConfirmationTypeDefs = gql`
   input OrderConfirmationInput {
@@ -60,7 +58,7 @@ const saveOrderConfirmation: Resolver<
   OrderConfirmationResult
 > = async (parent, { orderConfirmationInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrder(
     orderConfirmationInput.ordersResult.orderNo
   );
   if (!orderDetails) {

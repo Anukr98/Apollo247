@@ -49,6 +49,10 @@ import {
   paymentStatusResolvers,
 } from 'profiles-service/resolvers/pharmaPaymentStatus';
 import {
+  refundOrderTypeDefs,
+  refundInitResolver,
+} from 'profiles-service/resolvers/pharmaOrderRefund';
+import {
   saveMedicineOrderOMSTypeDefs,
   saveMedicineOrderOMSResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrdersOMS';
@@ -68,14 +72,7 @@ import {
   getMedicineOrdersOMSListTypeDefs,
   getMedicineOrdersOMSListResolvers,
 } from 'profiles-service/resolvers/getMedicineOrdersOMSList';
-import {
-  getOneApolloUserTypeDefs,
-  getOneApolloUserResolvers,
-} from 'profiles-service/resolvers/getOneApolloUser';
-import {
-  getOneApolloUserTransactionsTypeDefs,
-  getOneApolloUserTransactionsResolvers,
-} from 'profiles-service/resolvers/getOneApolloTransactions';
+import { oneApolloTypeDefs, oneApolloResolvers } from 'profiles-service/resolvers/oneApollo';
 import {
   getMedicineOrdersListTypeDefs,
   getMedicineOrdersListResolvers,
@@ -217,6 +214,11 @@ import {
   alertMedicineOrderPickupResolvers,
 } from 'profiles-service/resolvers/alertMedicineOrderPickup';
 
+import {
+  patientDeviceVoipTokenTypeDefs,
+  patientDeviceVoipTokenResolvers,
+} from 'profiles-service/resolvers/savepatientDeviceVoipToken';
+
 (async () => {
   await connect();
   const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
@@ -311,12 +313,8 @@ import {
         resolvers: savePrescriptionMedicineOrderOMSResolvers,
       },
       {
-        typeDefs: getOneApolloUserTypeDefs,
-        resolvers: getOneApolloUserResolvers,
-      },
-      {
-        typeDefs: getOneApolloUserTransactionsTypeDefs,
-        resolvers: getOneApolloUserTransactionsResolvers,
+        typeDefs: oneApolloTypeDefs,
+        resolvers: oneApolloResolvers,
       },
       {
         typeDefs: saveMedicineOrderPaymentTypeDefs,
@@ -369,6 +367,10 @@ import {
       {
         typeDefs: uhidTypeDefs,
         resolvers: uhidResolvers,
+      },
+      {
+        typeDefs: refundOrderTypeDefs,
+        resolvers: refundInitResolver,
       },
       {
         typeDefs: updateOrderStatusTypeDefs,
@@ -477,6 +479,10 @@ import {
       {
         typeDefs: alertMedicineOrderPickupTypeDefs,
         resolvers: alertMedicineOrderPickupResolvers,
+      },
+      {
+        typeDefs: patientDeviceVoipTokenTypeDefs,
+        resolvers: patientDeviceVoipTokenResolvers,
       },
     ]),
     plugins: [

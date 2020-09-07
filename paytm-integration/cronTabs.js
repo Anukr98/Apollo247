@@ -210,7 +210,7 @@ exports.updateSdSummary = (req, res) => {
     query: docCountQuery,
   };
   axios
-    .post(process.env.API_URL, seniorDataRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, seniorDataRequestJSON)
     .then((response) => {
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
@@ -237,7 +237,7 @@ exports.updateSdSummary = (req, res) => {
               query: Query,
             };
             axios
-              .post(process.env.API_URL, updateSdSummaryRequestJSON)
+              .post(process.env.DASHBOARD_API_URL, updateSdSummaryRequestJSON)
               .then((response) => {
                 const fileName =
                   process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-updateSdSummary.txt';
@@ -276,7 +276,7 @@ exports.updateJdSummary = (req, res) => {
     query: docCountQuery,
   };
   axios
-    .post(process.env.API_URL, juniorDataRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, juniorDataRequestJSON)
     .then((response) => {
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
@@ -303,7 +303,7 @@ exports.updateJdSummary = (req, res) => {
               query: Query,
             };
             axios
-              .post(process.env.API_URL, updateJdSummaryRequestJSON)
+              .post(process.env.DASHBOARD_API_URL, updateJdSummaryRequestJSON)
               .then((response) => {
                 const fileName =
                   process.env.PHARMA_LOGS_PATH + new Date().toDateString() + '-updateJdSummary.txt';
@@ -343,7 +343,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
     query: docCountQuery,
   };
   axios
-    .post(process.env.API_URL, seniorDataRequestJSON)
+    .post(process.env.DASHBOARD_API_URL, seniorDataRequestJSON)
     .then((response) => {
       //if summaryDate in url empty it will take currentDate
       //if pass anyDate in url summaryDate that date records will update if exist, otherwise insert
@@ -370,7 +370,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
               query: Query,
             };
             axios
-              .post(process.env.API_URL, updateDoctorFeeSummaryRequestJSON)
+              .post(process.env.DASHBOARD_API_URL, updateDoctorFeeSummaryRequestJSON)
               .then((response) => {
                 const fileName =
                   process.env.PHARMA_LOGS_PATH +
@@ -507,6 +507,63 @@ exports.refreshDoctorDeepLinks = (req, res) => {
 exports.generateDeeplinkForNewDoctors = (req, res) => {
   const requestJSON = {
     query: Constants.DOCTORS_DEEPLINK_GENERATE,
+  };
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
+
+exports.sendCallStartNotification = (req, res) => {
+  const requestJSON = {
+    query: Constants.CALL_START_NOTIFICATION,
+  };
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
+
+exports.saveMedicineInfoRedis = (req, res) => {
+  console.log(req.body, 'input body');
+  let inputData = Constants.SAVE_MEDICINE_INFO.replace('{0}', req.body.sku);
+  inputData = inputData.replace('{1}', req.body.name);
+  inputData = inputData.replace('{2}', req.body.status);
+  inputData = inputData.replace('{3}', req.body.price);
+  inputData = inputData.replace('{4}', req.body.special_price);
+  inputData = inputData.replace('{5}', req.body.special_price_from);
+  inputData = inputData.replace('{6}', req.body.special_price_to);
+  inputData = inputData.replace('{7}', req.body.qty);
+  inputData = inputData.replace('{8}', req.body.description);
+  inputData = inputData.replace('{9}', req.body.url_key);
+  inputData = inputData.replace('{10}', req.body.base_image);
+  inputData = inputData.replace('{11}', req.body.is_prescription_required);
+  inputData = inputData.replace('{12}', req.body.category_name);
+  inputData = inputData.replace('{13}', req.body.product_discount_category);
+  inputData = inputData.replace('{14}', req.body.sell_online);
+  inputData = inputData.replace('{15}', req.body.molecules);
+  inputData = inputData.replace('{16}', req.body.mou);
+  inputData = inputData.replace('{17}', req.body.gallery_images);
+  inputData = inputData.replace('{18}', req.body.manufacturer);
+  console.log(inputData, 'input body');
+  const requestJSON = {
+    query: inputData,
   };
   axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios

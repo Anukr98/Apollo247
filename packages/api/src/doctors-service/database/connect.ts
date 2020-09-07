@@ -23,6 +23,7 @@ import {
   NotificationBin,
   NotificationBinArchive,
   AppointmentUpdateHistory,
+  ExotelDetails
 } from 'consults-service/entities/';
 import {
   AdminDoctorMapper,
@@ -49,6 +50,8 @@ import {
   Deeplink,
   DoctorPatientExternalConnect,
   AdminAuditLogs,
+  DoctorProfileHistory,
+  DoctorHelpLine,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -74,6 +77,7 @@ import {
   MedicineOrders,
   MedicineOrdersStatus,
   MedicineOrderShipments,
+  MedicineOrderRefunds,
   Patient,
   PatientAddress,
   PatientDeviceTokens,
@@ -89,9 +93,15 @@ import {
   CouponPharmaRules,
   MedicineOrderCancelReason,
   PharmacologistConsult,
+  MedicineOrderAddress,
+  PatientEntitiySubscriber,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
+import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
+import { migrationDir } from 'ApiConstants';
+import { AdminFilterMapper } from 'doctors-service/entities/AdminFilterMapper';
+import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity'
 
 export const connect = async () => {
   return await createConnections([
@@ -121,6 +131,9 @@ export const connect = async () => {
         CityPincodeMapper,
         DoctorPatientExternalConnect,
         AdminAuditLogs,
+        DoctorProfileHistory,
+        DoctorHelpLine,
+        AdminFilterMapper,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -129,10 +142,12 @@ export const connect = async () => {
       password: process.env.DOCTORS_DB_PASSWORD,
       database: `doctors_${process.env.DB_NODE_ENV}`,
       logging: process.env.NODE_ENV === 'production' ? false : true,
-      synchronize: true,
+      synchronize: false,
+      migrationsRun: true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
+      migrations: [migrationDir.doctors_db],
     },
     {
       name: 'consults-db',
@@ -160,6 +175,8 @@ export const connect = async () => {
         TransferAppointmentDetails,
         UtilizationCapacity,
         AppointmentUpdateHistory,
+        ExotelDetails,
+        AppointmentCallFeedback
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -167,10 +184,14 @@ export const connect = async () => {
       username: process.env.CONSULTS_DB_USER,
       password: process.env.CONSULTS_DB_PASSWORD,
       database: `consults_${process.env.DB_NODE_ENV}`,
+      subscribers: [AppointmentEntitySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
+      migrationsRun: true,
+      synchronize: false,
+      migrations: [migrationDir.consults_db],
     },
     {
       name: 'patients-db',
@@ -199,6 +220,7 @@ export const connect = async () => {
         MedicineOrders,
         MedicineOrdersStatus,
         MedicineOrderShipments,
+        MedicineOrderRefunds,
         Patient,
         PatientAddress,
         PatientDeviceTokens,
@@ -213,6 +235,7 @@ export const connect = async () => {
         RegistrationCodes,
         MedicineOrderCancelReason,
         PharmacologistConsult,
+        MedicineOrderAddress,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
@@ -220,10 +243,14 @@ export const connect = async () => {
       username: process.env.PROFILES_DB_USER,
       password: process.env.PROFILES_DB_PASSWORD,
       database: `profiles_${process.env.DB_NODE_ENV}`,
+      subscribers: [PatientEntitiySubscriber],
+      migrationsRun: true,
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,
       },
+      synchronize: false,
+      migrations: [migrationDir.profiles_db],
     },
   ]).catch((error) => {
     throw new Error(error);

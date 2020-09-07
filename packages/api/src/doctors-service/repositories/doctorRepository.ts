@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Brackets, Connection, Not } from 'typeorm';
+import { EntityRepository, Repository, Brackets, Connection, Not, In } from 'typeorm';
 import {
   Doctor,
   ConsultMode,
@@ -6,6 +6,7 @@ import {
   DOCTOR_ONLINE_STATUS,
   CityPincodeMapper,
   ConsultHours,
+  Secretary,
 } from 'doctors-service/entities';
 import { ES_DOCTOR_SLOT_STATUS } from 'consults-service/entities';
 import {
@@ -19,12 +20,14 @@ import {
   DoctorSlotAvailabilityObject,
   DoctorsObject,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
-import { format, differenceInMinutes, addMinutes, addDays } from 'date-fns';
+import { format, differenceInMinutes, addMinutes, addDays, subMinutes } from 'date-fns';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { ApiConstants } from 'ApiConstants';
+import { Client, RequestParams } from '@elastic/elasticsearch';
+
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 type DoctorSlot = {
@@ -34,8 +37,66 @@ type DoctorSlot = {
   slotType: string;
 };
 
+//define generalise  anonymous cb fn
+// type responseCB = (data: any) => any
+
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
+  async updateDoctorSlots(doctorId: string, consultsDb: Connection, doctorsDb: Connection) {
+    const daysDiff = ApiConstants.ES_ADD_DAYS;
+    let stDate = new Date();
+    let slotsAdded = '';
+    const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+
+    if (!process.env.ELASTIC_INDEX_DOCTORS) {
+      throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+    }
+
+    const updateDoc: RequestParams.Update = {
+      index: process.env.ELASTIC_INDEX_DOCTORS,
+      id: doctorId,
+      body: {
+        script: {
+          source: 'ctx._source.doctorSlots = []',
+        },
+      },
+    };
+    await client.update(updateDoc);
+    for (let i = 0; i <= daysDiff; i++) {
+      const doctorSlots = await this.getDoctorSlots(
+        new Date(format(stDate, 'yyyy-MM-dd')),
+        doctorId,
+        consultsDb,
+        doctorsDb
+      );
+
+      if (!process.env.ELASTIC_INDEX_DOCTORS) {
+        throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+      }
+
+      const doc1: RequestParams.Update = {
+        index: process.env.ELASTIC_INDEX_DOCTORS,
+        id: doctorId,
+        body: {
+          script: {
+            source: 'ctx._source.doctorSlots.add(params.slot)',
+            params: {
+              slot: {
+                slotDate: format(stDate, 'yyyy-MM-dd'),
+                slots: doctorSlots,
+              },
+            },
+          },
+        },
+      };
+      slotsAdded += doctorId + ' - ' + format(stDate, 'yyyy-MM-dd') + ',';
+      const updateResp = await client.update(doc1);
+      console.log(updateResp, 'updateResp');
+      stDate = addDays(stDate, 1);
+    }
+    return slotsAdded;
+  }
+
   async getDoctorSlots(
     availableDate: Date,
     doctorId: string,
@@ -47,7 +108,6 @@ export class DoctorRepository extends Repository<Doctor> {
     previousDate = addDays(availableDate, -1);
     const checkStart = `${previousDate.toDateString()} 18:30:00`;
     const checkEnd = `${availableDate.toDateString()} 18:30:00`;
-    console.log(checkStart, checkEnd, 'check start end');
     let weekDay = format(previousDate, 'EEEE').toUpperCase();
     let timeSlots = await ConsultHours.find({
       where: { doctor: doctorId, weekDay },
@@ -130,6 +190,10 @@ export class DoctorRepository extends Repository<Doctor> {
                   const slotInfo = {
                     slotId: ++slotCount,
                     slot: generatedSlot,
+                    slotThreshold: subMinutes(
+                      new Date(generatedSlot),
+                      timeSlot.consultBuffer > 0 ? timeSlot.consultBuffer : 5
+                    ),
                     status: ES_DOCTOR_SLOT_STATUS.OPEN,
                     slotType: timeSlot.consultMode,
                   };
@@ -150,45 +214,107 @@ export class DoctorRepository extends Repository<Doctor> {
       });
     }
     const appts = consultsDb.getCustomRepository(AppointmentRepository);
-    const apptSlots = await appts.findByDateDoctorId(doctorId, availableDate);
-    if (apptSlots && apptSlots.length > 0) {
-      apptSlots.map((appt) => {
-        const apptDt = format(appt.appointmentDateTime, 'yyyy-MM-dd');
-        const sl = `${apptDt}T${appt.appointmentDateTime
-          .getUTCHours()
-          .toString()
-          .padStart(2, '0')}:${appt.appointmentDateTime
-          .getUTCMinutes()
-          .toString()
-          .padStart(2, '0')}:00.000Z`;
-        if (availableSlots.indexOf(sl) >= 0) {
-          doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
-          //availableSlots.splice(availableSlots.indexOf(sl), 1);
-        }
+    const apptSlots = appts.findByDateDoctorId(doctorId, availableDate).catch((error) => {
+      return error;
+    });
+    const doctorBblockedSlots = appts
+      .getDoctorBlockedSlots(doctorId, availableDate, doctorsDb, availableSlots)
+      .catch((error) => {
+        return error;
       });
-    }
-    const doctorBblockedSlots = await appts.getDoctorBlockedSlots(
-      doctorId,
-      availableDate,
-      doctorsDb,
-      availableSlots
-    );
-    if (doctorBblockedSlots.length > 0) {
-      availableSlots = availableSlots.filter((val) => {
-        !doctorBblockedSlots.includes(val);
-        if (doctorBblockedSlots.includes(val)) {
-          doctorSlots[availableSlots.indexOf(val)].status = ES_DOCTOR_SLOT_STATUS.BLOCKED;
+
+    const slots = [apptSlots, doctorBblockedSlots];
+
+    return Promise.all(slots)
+      .then((res) => {
+        const apptSlots = res[0];
+        const doctorBblockedSlots = res[1];
+
+        if (apptSlots && apptSlots.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          apptSlots.map((appt: any) => {
+            const apptDt = format(appt.appointmentDateTime, 'yyyy-MM-dd');
+            const sl = `${apptDt}T${appt.appointmentDateTime
+              .getUTCHours()
+              .toString()
+              .padStart(2, '0')}:${appt.appointmentDateTime
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
+            if (availableSlots.indexOf(sl) >= 0) {
+              doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
+            }
+          });
         }
+
+        if (doctorBblockedSlots.length > 0) {
+          availableSlots = availableSlots.filter((val) => {
+            !doctorBblockedSlots.includes(val);
+            if (doctorBblockedSlots.includes(val)) {
+              doctorSlots[availableSlots.indexOf(val)].status = ES_DOCTOR_SLOT_STATUS.BLOCKED;
+            }
+          });
+        }
+
+        return doctorSlots;
+      })
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.GET_DOCTOR_SLOT_ERROR, undefined, {
+          error,
+        });
       });
-    }
-    return doctorSlots;
   }
 
-  getDoctorProfileData(id: string) {
-    return this.findOne({
-      where: [{ id, isActive: true }],
-      relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
-    });
+  async getDoctorProfileData(id: string) {
+    const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+    if (!process.env.ELASTIC_INDEX_DOCTORS) {
+      throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+    }
+
+    const searchParams: RequestParams.Search = {
+      index: process.env.ELASTIC_INDEX_DOCTORS,
+      body: {
+        query: {
+          bool: {
+            must: [
+              {
+                match_phrase: {
+                  doctorId: id,
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+    const getDetails = await client.search(searchParams);
+    let doctorData, facilities;
+
+    if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
+      doctorData = getDetails.body.hits.hits[0]._source;
+      if (doctorData['languages'] instanceof Array) {
+        doctorData['languages'] = doctorData['languages'].join(', ');
+      }
+      doctorData.id = doctorData.doctorId;
+      doctorData.specialty.id = doctorData.specialty.specialtyId;
+      doctorData.doctorHospital = [];
+      const availableModes: string[] = [];
+      for (const consultHour of doctorData.consultHours) {
+        consultHour['id'] = consultHour['consultHoursId'];
+        if (!availableModes.includes(consultHour['consultMode'])) {
+          availableModes.push(consultHour['consultMode']);
+        }
+      }
+
+      facilities = doctorData.facility;
+      facilities = Array.isArray(facilities) ? facilities : [facilities];
+      for (const facility of facilities) {
+        facility.id = facility.facilityId;
+        doctorData.doctorHospital.push({ facility });
+      }
+      doctorData.availableModes = availableModes;
+    }
+    return doctorData;
   }
 
   getCityMappingPincode(pincode: string) {
@@ -217,6 +343,13 @@ export class DoctorRepository extends Repository<Doctor> {
   findByMobileNumber(mobileNumber: string, isActive: Boolean) {
     return this.findOne({
       where: [{ mobileNumber, isActive }],
+      relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
+    });
+  }
+
+  findByMobileNumberWithRelations(mobileNumber: string, isActive: Boolean) {
+    return this.findOne({
+      where: [{ mobileNumber, isActive }],
       relations: [
         'specialty',
         'doctorHospital',
@@ -235,6 +368,8 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
+  getDoctorDetailswithRelations() {}
+
   updateFirebaseId(id: string, firebaseToken: string) {
     return this.update(id, { firebaseToken: firebaseToken });
   }
@@ -245,6 +380,10 @@ export class DoctorRepository extends Repository<Doctor> {
 
   updateDoctorSignature(id: string, signature: string) {
     return this.update(id, { signature });
+  }
+
+  updateDoctorChatDays(id: string, chatDays: number) {
+    return this.update(id, { chatDays });
   }
 
   findById(id: string) {
@@ -263,6 +402,13 @@ export class DoctorRepository extends Repository<Doctor> {
         'starTeam.associatedDoctor.doctorHospital',
         'starTeam.associatedDoctor.doctorHospital.facility',
       ],
+    });
+  }
+
+  getDoctorSecretary(id: string) {
+    return this.findOne({
+      where: [{ id, isActive: true }],
+      relations: ['doctorSecretary', 'doctorSecretary.secretary'],
     });
   }
 
@@ -341,6 +487,18 @@ export class DoctorRepository extends Repository<Doctor> {
       .where('doctor.id IN (:...doctorIds)', { doctorIds })
       .getRawMany();
   }
+
+  // async getDoctorById(doctorId: string, cb?: responseCB) {
+  //   const data = await this.findOne({
+  //     where: [{ id: doctorId }]
+  //   })
+
+  //   if (cb) {
+  //     cb(data)
+  //     return;
+  //   }
+  //   return data
+  // }
 
   searchByName(searchString: string, cityName: string) {
     const cities: string[] = [
@@ -956,6 +1114,10 @@ export class DoctorRepository extends Repository<Doctor> {
 
   updateNextAvailSlot(id: string, nextAvailableSlot: Date) {
     return this.update(id, { nextAvailableSlot });
+  }
+
+  getAllDocsById(ids: string[]) {
+    return this.find({ where: { id: In(ids) } });
   }
 
   getAllDoctors(doctorId: string, limit: number, offset: number) {

@@ -9,15 +9,13 @@ import _isEmpty from 'lodash/isEmpty';
 import { Navigation } from 'components/Navigation';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { locationRoutesBlackList } from 'helpers/commonHelpers';
-import { useLoginPopupState, useAuth } from 'hooks/authHooks';
-import { LocationSearch } from 'components/LocationSearch';
-import { LocationProvider, LocationContext } from 'components/LocationProvider';
+import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { MedicineLocationSearch } from 'components/MedicineLocationSearch';
 import { AphButton } from '@aph/web-ui-components';
 import { useParams } from 'hooks/routerHooks';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -26,18 +24,17 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: theme.palette.common.white,
-      padding: '0 0 0 20px',
+      padding: '0 20px',
       [theme.breakpoints.down('xs')]: {
-        padding: '0 0 0 20px',
+        padding: '0 10px',
+        boxShadow: '0 0.5px 2px 0 rgba(0, 0, 0, 0.1)',
       },
-      [theme.breakpoints.down(900)]: {
-        paddingRight: 0,
-      },
+      [theme.breakpoints.down(900)]: {},
     },
     headerSticky: {
       position: 'fixed',
       width: '100%',
-      zIndex: 99,
+      zIndex: 999,
       top: 0,
     },
     container: {
@@ -45,12 +42,8 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
     },
     logo: {
-      paddingTop: 20,
-      paddingBottom: 11,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 12,
-        paddingBottom: 9,
-      },
+      width: 150,
+      [theme.breakpoints.down('xs')]: {},
       '& a': {
         display: 'block',
       },
@@ -62,12 +55,19 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    headerNav: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      width: '100%',
+    },
     userAccount: {
       padding: '20px 16px',
+      paddingRight: 0,
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
         marginLeft: 'auto',
-        padding: 16,
+        padding: '16px 0 16px 10px',
       },
     },
     userAccountActive: {
@@ -179,6 +179,9 @@ const useStyles = makeStyles((theme: Theme) => {
       transition: '0.1s ease',
       overflow: 'hidden',
       zIndex: 9,
+      [theme.breakpoints.down('sm')]: {
+        top: 60,
+      },
     },
     userAccountList: {
       padding: 0,
@@ -186,20 +189,27 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyle: 'none',
       textAlign: 'left',
       '& li': {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
         borderBottom: '1px solid rgba(2, 71, 91, 0.3)',
-        '& >img': {
-          margin: '0 20px 0 0',
-        },
         '& a': {
           padding: '10px 20px',
+          fontWeight: 500,
           display: 'flex',
           alignItems: 'center',
-          fontWeight: 500,
-          '& img': {
-            margin: '0 10px 0 0',
+          justifyContent: 'space-between',
+          '& span': {
+            display: 'flex',
+            alignItems: 'center',
+            '& img': {
+              margin: '0 10px 0 0',
+            },
+          },
+        },
+      },
+      [theme.breakpoints.down('sm')]: {
+        '& li': {
+          '& a': {
+            padding: '6px 10px !important',
+            fontSize: 12,
           },
         },
       },
@@ -211,13 +221,20 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
       padding: '8px 20px',
       display: 'block',
+      [theme.breakpoints.down('sm')]: {
+        padding: 8,
+      },
     },
     userListActive: {
       width: '300px !important',
+      [theme.breakpoints.down('sm')]: {
+        width: '240px !important',
+      },
     },
     userDetails: {
       padding: '10px 20px',
       textAlign: 'left',
+      cursor: 'auto',
       '& h2': {
         fontSize: 23,
         fontWeight: 700,
@@ -230,6 +247,17 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         padding: '10px 0',
         textTransform: 'uppercase',
+      },
+      [theme.breakpoints.down('sm')]: {
+        padding: '5px 10px',
+        '& h2': {
+          fontSize: 16,
+          padding: '0 0 8px',
+        },
+        '& p': {
+          fontSize: 12,
+          padding: '8px 0',
+        },
       },
     },
     userInfo: {
@@ -244,14 +272,58 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
+      [theme.breakpoints.down('sm')]: {
+        padding: 10,
+      },
+    },
+    backArrow: {
+      position: 'absolute',
+      top: 90,
+      left: 70,
+      width: 48,
+      height: 48,
+      lineHeight: '36px',
+      borderRadius: '50%',
+      textAlign: 'center',
+      backgroundColor: '#02475b',
+      [theme.breakpoints.down('xs')]: {
+        top: 15,
+        left: 20,
+        background: 'transparent',
+        width: 25,
+        height: 24,
+        zIndex: 9,
+      },
+      '& img': {
+        verticalAlign: 'bottom',
+      },
+    },
+    whiteArrow: {
+      verticalAlign: 'middle',
+      // [theme.breakpoints.down(1220)]: {
+      //   display: 'none',
+      // },
+    },
+    blackArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.up(1220)]: {
+        display: 'none',
+      },
     },
   };
 });
 
-export const Header: React.FC = (props) => {
+interface HeaderProps {
+  backArrowVisible?: boolean;
+  isWebView?: boolean;
+  backLocation?: string;
+}
+
+export const Header: React.FC<HeaderProps> = (props) => {
   const classes = useStyles({});
   const avatarRef = useRef(null);
   const { isSigningIn, isSignedIn, setVerifyOtpError, signOut } = useAuth();
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
   const [profileVisible, setProfileVisible] = React.useState<boolean>(false);
   const [mobileNumber, setMobileNumber] = React.useState('');
@@ -295,127 +367,176 @@ export const Header: React.FC = (props) => {
     clientRoutes.medicineSearch(),
   ];
 
+  const getAge = (dob: string) => {
+    if (dob && dob.length) {
+      return ` | ${moment().diff(dob, 'years')}`;
+    }
+    return null;
+  };
+
   return (
     <div className={classes.headerSticky}>
       <div className={classes.container}>
         <header className={classes.header} data-cypress="Header">
           <div className={classes.logo}>
             <Link to="/">
-              <img src={require('images/ic_logo.png')} title={'Open the home page'} />
+              <img
+                src={require('images/ic_logo.png')}
+                title={'Online Doctor Consultation & Medicines'}
+                alt={'Online Doctor Consultation & Medicines'}
+              />
             </Link>
           </div>
           {/* {checkIfDisabled() && currentPath !== '/' && <LocationSearch />} */}
           {MedicineRoutes.find((route) => route === currentPath) && <MedicineLocationSearch />}
-          <MedicinesCartContext.Consumer>
-            {() => <Navigation activeMedicineRoutes={MedicineRoutes} />}
-          </MedicinesCartContext.Consumer>
-          <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
-            <div
-              className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
-                currentPath === clientRoutes.myAccount() ||
-                currentPath === clientRoutes.addressBook() ||
-                currentPath === clientRoutes.needHelp()
-                  ? classes.userAccountActive
-                  : ''
-              }`}
-            >
-              {isSignedIn ? (
-                <Link
-                  className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
-                  to={profileVisible ? clientRoutes.myAccount() : '#'}
-                  title={'Control profile'}
-                  ref={node}
-                  onClick={(e) => {
-                    if (!profileVisible) {
-                      setProfileVisible(true);
-                    }
-                  }}
-                >
-                  {isSigningIn ? (
-                    <CircularProgress />
-                  ) : (
-                    <>
-                      <img src={require('images/ic_account.svg')} />
-                      {profileVisible && (
-                        <Paper
-                          className={`${classes.userOptions} ${
-                            profileVisible ? classes.userListActive : ''
-                          }`}
-                        >
-                          <div className={classes.userDetails}>
-                            <Typography component="h2">Surj Gupta</Typography>
-                            <Typography>UHID : APD1.0010783329</Typography>
-                            <div className={classes.userInfo}>
-                              <Typography>Male | 31</Typography>
-                              <Typography>+91 9769435788</Typography>
+          <div className={classes.headerNav}>
+            <MedicinesCartContext.Consumer>
+              {() => <Navigation activeMedicineRoutes={MedicineRoutes} />}
+            </MedicinesCartContext.Consumer>
+            <div className={`${classes.headerRightGroup} ${isSignedIn ? classes.appLogin : ''}`}>
+              <div
+                className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin} ${
+                  currentPath === clientRoutes.myAccount() ||
+                  currentPath === clientRoutes.addressBook() ||
+                  currentPath === clientRoutes.needHelp()
+                    ? classes.userAccountActive
+                    : ''
+                }`}
+              >
+                {isSignedIn ? (
+                  <div
+                    className={`${classes.userCircle} ${isSignedIn ? classes.userActive : ''}`}
+                    title={'Control profile'}
+                    ref={node}
+                    onClick={(e) => {
+                      if (!profileVisible) {
+                        setProfileVisible(true);
+                      }
+                    }}
+                  >
+                    {isSigningIn ? (
+                      <CircularProgress />
+                    ) : (
+                      <>
+                        <img
+                          src={require('images/ic_account_white.svg')}
+                          alt="Profile"
+                          title="Profile"
+                        />
+                        {profileVisible && (
+                          <Paper
+                            className={`${classes.userOptions} ${
+                              profileVisible ? classes.userListActive : ''
+                            }`}
+                          >
+                            {currentPatient && (
+                              <div className={classes.userDetails}>
+                                <Typography component="h2">{currentPatient.firstName}</Typography>
+                                <Typography>UHID : {currentPatient.uhid}</Typography>
+                                <div className={classes.userInfo}>
+                                  <Typography>
+                                    {currentPatient.gender}
+                                    {getAge(currentPatient.dateOfBirth)}
+                                  </Typography>
+                                  <Typography>{currentPatient.mobileNumber}</Typography>
+                                </div>
+                              </div>
+                            )}
+                            <ul className={classes.userAccountList}>
+                              <li>
+                                <Link to={clientRoutes.myAccount()}>
+                                  <span>
+                                    <img src={require('images/ic_manageprofile.svg')} alt="" />{' '}
+                                    Manage Profiles
+                                  </span>
+                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                </Link>
+                              </li>
+
+                              <li>
+                                <Link to={clientRoutes.addressBook()}>
+                                  <span>
+                                    <img src={require('images/ic_location.svg')} alt="" /> Address
+                                    Book
+                                  </span>
+                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                </Link>
+                              </li>
+
+                              {currentPatient && (
+                                <li>
+                                  <Link to={clientRoutes.yourOrders()}>
+                                    <span>
+                                      <img src={require('images/ic_invoice.svg')} alt="" /> My
+                                      Orders
+                                    </span>
+                                    <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                  </Link>
+                                </li>
+                              )}
+
+                              <li>
+                                <Link to={clientRoutes.myPayments()}>
+                                  <span>
+                                    <img src={require('images/ic_fees.svg')} alt="" /> My Payments
+                                  </span>
+                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                </Link>
+                              </li>
+
+                              {currentPatient && (
+                                <li>
+                                  <Link to={clientRoutes.healthRecords()}>
+                                    <span>
+                                      <img
+                                        src={require('images/ic_notificaiton_accounts.svg')}
+                                        alt=""
+                                      />{' '}
+                                      Health Records
+                                    </span>
+                                    <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                  </Link>
+                                </li>
+                              )}
+
+                              <li>
+                                <Link to={clientRoutes.needHelp()}>
+                                  <span>
+                                    <img src={require('images/ic_round_live_help.svg')} alt="" />{' '}
+                                    Need Help
+                                  </span>
+                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                </Link>
+                              </li>
+
+                              <li>
+                                <a href="javascript:void(0)" onClick={() => signOut()}>
+                                  <span>
+                                    <img src={require('images/ic_logout.svg')} alt="" /> Logout
+                                  </span>
+                                </a>
+                              </li>
+                            </ul>
+                            <div className={classes.downloadOptions}>
+                              <img src={require('images/apollo247.png')} />
+                              <AphButton
+                                color="primary"
+                                onClick={() => window.open(getAppStoreLink())}
+                                className={classes.downloadAppBtn}
+                              >
+                                Download App
+                              </AphButton>
                             </div>
-                          </div>
-                          <ul className={classes.userAccountList}>
-                            <li>
-                              <Link to={clientRoutes.myAccount()}>
-                                <img src={require('images/ic_manageprofile.svg')} alt="" /> Manage
-                                Profiles
-                              </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </li>
-                            <li>
-                              <Link to={clientRoutes.addressBook()}>
-                                <img src={require('images/ic_location.svg')} alt="" /> Address Book
-                              </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </li>
-                            <li>
-                              <Link to={clientRoutes.addressBook()}>
-                                <img src={require('images/ic_invoice.svg')} alt="" /> My Orders
-                              </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </li>
-                            <li>
-                              <Link to={clientRoutes.myPayments()}>
-                                <img src={require('images/ic_fees.svg')} alt="" /> My Payments
-                              </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </li>
-                            <li>
-                              <Link to={clientRoutes.healthRecords()}>
-                                <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />{' '}
-                                Health Records
-                              </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </li>
-                            <li>
-                              <Link to={clientRoutes.needHelp()}>
-                                <img src={require('images/ic_round_live_help.svg')} alt="" /> Need
-                                Help
-                              </Link>
-                              <img src={require('images/ic_arrow_right.svg')} alt="" />
-                            </li>
-                            <li>
-                              <a href="javascript:void(0)" onClick={() => signOut()}>
-                                <img src={require('images/ic_logout.svg')} alt="" /> Logout
-                              </a>
-                            </li>
-                          </ul>
-                          <div className={classes.downloadOptions}>
-                            <img src={require('images/apollo247.png')} />
-                            <AphButton
-                              color="primary"
-                              onClick={() => window.open(getAppStoreLink())}
-                              className={classes.downloadAppBtn}
-                            >
-                              Download App
-                            </AphButton>
-                          </div>
-                        </Paper>
-                      )}
-                    </>
-                  )}
-                </Link>
-              ) : (
-                <ProtectedWithLoginPopup>
-                  {({ protectWithLoginPopup }) => (
-                    <>
-                      {/* <div
+                          </Paper>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <ProtectedWithLoginPopup>
+                    {({ protectWithLoginPopup }) => (
+                      <>
+                        {/* <div
                         onClick={() => {
                           isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup();
                         }}
@@ -424,63 +545,79 @@ export const Header: React.FC = (props) => {
                       >
                         Login/SignUp
                       </div> */}
-                      <div
-                        id="loginPopup"
-                        className={`${classes.userCircle} ${classes.userActive}`}
-                        onClick={() =>
-                          isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
-                        }
-                        ref={avatarRef}
-                        title={'Login/SignUp'}
-                      >
-                        {isSigningIn ? (
-                          <CircularProgress />
-                        ) : (
-                          <img src={require('images/ic_account.svg')} title={'Login/SignUp'} />
-                        )}
-                      </div>
-                    </>
-                  )}
-                </ProtectedWithLoginPopup>
-              )}
-              {!isSignedIn && (
-                <Popover
-                  open={isLoginPopupVisible}
-                  anchorEl={avatarRef.current}
-                  onClose={() => {
-                    const otpAfterCleaning = otp.replace(/,/g, '');
-                    if (
-                      mobileNumber.length === 0 ||
-                      (mobileNumber.length === 10 && otpAfterCleaning.length === 0) ||
-                      otpAfterCleaning.length === 6
-                    ) {
-                      setIsLoginPopupVisible(false);
-                      setVerifyOtpError(false);
-                    }
-                  }}
-                  anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  classes={{ paper: classes.topPopover }}
-                >
-                  <Paper className={classes.loginForm}>
-                    <SignIn
-                      setMobileNumber={(mobileNumber: string) => setMobileNumber(mobileNumber)}
-                      setOtp={(otp: string) => setOtp(otp)}
-                      mobileNumber={mobileNumber}
-                      otp={otp}
-                    />
-                  </Paper>
-                </Popover>
-              )}
+                        <div
+                          id="loginPopup"
+                          className={`${classes.userCircle} ${classes.userActive}`}
+                          onClick={() =>
+                            isSignedIn ? clientRoutes.medicinesCart() : protectWithLoginPopup()
+                          }
+                          ref={avatarRef}
+                          title={'Login/SignUp'}
+                        >
+                          {isSigningIn ? (
+                            <CircularProgress />
+                          ) : (
+                            <img
+                              src={require('images/ic_account_white.svg')}
+                              title={'Login/SignUp'}
+                              alt="Login/SignUp"
+                            />
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </ProtectedWithLoginPopup>
+                )}
+                {!isSignedIn && (
+                  <Popover
+                    open={isLoginPopupVisible}
+                    anchorEl={avatarRef.current}
+                    onClose={() => {
+                      const otpAfterCleaning = otp.replace(/,/g, '');
+                      if (
+                        mobileNumber.length === 0 ||
+                        (mobileNumber.length === 10 && otpAfterCleaning.length === 0) ||
+                        otpAfterCleaning.length === 6
+                      ) {
+                        setIsLoginPopupVisible(false);
+                        setVerifyOtpError(false);
+                      }
+                    }}
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    transformOrigin={{
+                      vertical: 'top',
+                      horizontal: 'right',
+                    }}
+                    classes={{ paper: classes.topPopover }}
+                  >
+                    <Paper className={classes.loginForm}>
+                      <SignIn
+                        setMobileNumber={(mobileNumber: string) => setMobileNumber(mobileNumber)}
+                        setOtp={(otp: string) => setOtp(otp)}
+                        mobileNumber={mobileNumber}
+                        otp={otp}
+                      />
+                    </Paper>
+                  </Popover>
+                )}
+              </div>
             </div>
           </div>
         </header>
+        {props.backArrowVisible && (
+          <>
+            {!props.isWebView && (
+              <Link to={props.backLocation || clientRoutes.welcome()}>
+                <div className={classes.backArrow}>
+                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                </div>
+              </Link>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

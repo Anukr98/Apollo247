@@ -7,10 +7,11 @@ import {
   patientLogType,
   CaseSheet,
   APPOINTMENT_STATE,
+  Appointment,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { AphError } from 'AphError';
+import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { NotificationBinRepository } from 'notifications-service/repositories/notificationBinRepository';
@@ -62,6 +63,8 @@ export const getAppointmentHistoryTypeDefs = gql`
     actualAmount: Float
     discountedAmount: Float
     appointmentPayments: [AppointmentPayment]
+    isConsultStarted: Boolean
+    symptoms: String
   }
 
   input AppointmentHistoryInput {
@@ -71,6 +74,11 @@ export const getAppointmentHistoryTypeDefs = gql`
 
   type AppointmentResult {
     appointmentsHistory: [AppointmentHistory!]
+  }
+
+  type AppointmentStatusResult {
+    status: String
+    state: String
   }
 
   type DoctorAppointmentResult {
@@ -99,6 +107,7 @@ export const getAppointmentHistoryTypeDefs = gql`
 
   extend type Query {
     getAppointmentHistory(appointmentHistoryInput: AppointmentHistoryInput): AppointmentResult!
+    getAppointmentStatus(id: String): AppointmentStatusResult
     getDoctorAppointments(startDate: Date, endDate: Date, doctorId: String): DoctorAppointmentResult
     getAppointmentData(appointmentId: String): DoctorAppointmentResult
     getPatientLog(
@@ -165,11 +174,10 @@ const getAppointmentHistory: Resolver<
   ConsultServiceContext,
   AppointmentResult
 > = async (parent, { appointmentHistoryInput }, { consultsDb, doctorsDb, patientsDb }) => {
+  const { patientId } = appointmentHistoryInput;
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(
-    appointmentHistoryInput.patientId
-  );
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
 
   const appointmentsHistory = await appointmentRepo.getPatientAppointments(
     appointmentHistoryInput.doctorId,
@@ -196,6 +204,29 @@ const getAppointmentHistory: Resolver<
   return { appointmentsHistory };
 };
 
+type AppointmentStatusResult = {
+  status: string;
+  state: string;
+};
+
+const getAppointmentStatus: Resolver<
+  null,
+  { id: string },
+  ConsultServiceContext,
+  AppointmentStatusResult
+> = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
+  console.log('args', args);
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+
+  try {
+    const appointment: Appointment | undefined = await appointmentRepo.findById(args.id);
+    if (appointment == null) throw new AphUserInputError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
+    return { status: appointment.status, state: appointment.appointmentState };
+  } catch (invalidGrant) {
+    throw new AphError(AphErrorMessages.GET_APPOINTMENT_STATUS_ERROR, undefined, { invalidGrant });
+  }
+};
+
 const getDoctorAppointments: Resolver<
   null,
   { startDate: Date; endDate: Date; doctorId: string },
@@ -206,7 +237,7 @@ const getDoctorAppointments: Resolver<
   let doctordata;
 
   if (args.doctorId === undefined || args.doctorId == null) {
-    doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+    doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   } else {
     doctordata = await doctorRepository.findById(args.doctorId);
   }
@@ -287,7 +318,7 @@ const getPatientLog: Resolver<
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   let doctordata;
   if (args.doctorId === undefined || args.doctorId == null) {
-    doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+    doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   } else {
     doctordata = await doctorRepository.findById(args.doctorId);
   }
@@ -375,7 +406,6 @@ export const getAppointmentHistoryResolvers = {
       return { __typename: 'Patient', id: appointments.patientId };
     },
   },
-
   PatientLog: {
     patientInfo(appointments: PatientLog) {
       return { __typename: 'Patient', id: appointments.patientid };
@@ -384,6 +414,7 @@ export const getAppointmentHistoryResolvers = {
 
   Query: {
     getAppointmentHistory,
+    getAppointmentStatus,
     getDoctorAppointments,
     getAppointmentData,
     getPatientLog,

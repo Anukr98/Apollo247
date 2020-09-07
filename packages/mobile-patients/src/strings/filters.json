@@ -1,0 +1,31 @@
+{
+  "city": [
+    { "state": "Andhra Pradesh", "data": ["Vijayawada", "Guntur", "Nellore"] },
+    { "state": "Telangana", "data": ["Hyderabad", "Suryapet"] },
+    { "state": "Maharastra", "data": ["Mumbai"] }
+  ],
+  "brands": [
+    { "name": "APOLLO_HOMECARE", "image": "/sda", "brandName": "Apollo Homecare" },
+    { "name": "STAR_APOLLO", "image": "/das", "brandName": "Star Apollo" },
+    { "name": "SPECTRA", "image": "/sds", "brandName": "Spectra" },
+    { "name": "CRADLE", "image": "/sas", "brandName": "Cradle" },
+    { "name": "APOLLO", "image": "/sas", "brandName": "Apollo" },
+    { "name": "CLINIC", "image": "/sas", "brandName": "Clinic" },
+    { "name": "DOCTOR_CONNECT", "image": "/sas", "brandName": "Doctor Connect" },
+    { "name": "JUNIOR", "image": "/sas", "brandName": "Junior" },
+    { "name": "PAYROLL", "image": "/sas", "brandName": "Payroll" },
+    { "name": "WHITE_DENTAL", "image": "/sas", "brandName": "White Dental" },
+    { "name": "SUGAR", "image": "/sas", "brandName": "Sugar" },
+    { "name": "FERTILITY", "image": "/sas", "brandName": "Fertility" }
+  ],
+  "experience": [{ "name": "0-5" }, { "name": "5-10" }, { "name": "11 - 15" }, { "name": "15+" }],
+  "availability": [
+    { "name": "Now" },
+    { "name": "Today" },
+    { "name": "Tomorrow" },
+    { "name": "Next 3 Days" }
+  ],
+  "fee": [{ "name": "0-500" }, { "name": "500-1000" }, { "name": "501-1000" }, { "name": "1000+" }],
+  "gender": [{ "name": "MALE" }, { "name": "FEMALE" }],
+  "language": [{ "name": "Hindi" }, { "name": "English" }, { "name": "Telugu" }]
+}

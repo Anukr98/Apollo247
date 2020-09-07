@@ -20,8 +20,8 @@ import {
   CONSULTS_RX_SEARCH_FILTER,
   REQUEST_ROLES,
   PATIENT_TYPE,
-  ES_DOCTOR_SLOT_STATUS,
   AppointmentUpdateHistory,
+  PaginateParams,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -43,17 +43,63 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 import { log } from 'customWinstonLogger';
 import { ApiConstants } from 'ApiConstants';
-import { Client, RequestParams } from '@elastic/elasticsearch';
+import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
 
+const REDIS_APPOINTMENT_ID_KEY_PREFIX: string = 'patient:appointment:';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
-  findById(id: string) {
-    return this.findOne({ id }).catch((getApptError) => {
+  async findById(id: string) {
+    const cache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
+    if (cache && typeof cache === 'string') {
+      let cacheAppointment: Appointment = JSON.parse(cache);
+      if (cacheAppointment.sdConsultationDate) {
+        cacheAppointment.sdConsultationDate = new Date(cacheAppointment.sdConsultationDate);
+      }
+      if (cacheAppointment.bookingDate) {
+        cacheAppointment.bookingDate = new Date(cacheAppointment.bookingDate);
+      }
+      if (cacheAppointment.appointmentDateTime) {
+        cacheAppointment.appointmentDateTime = new Date(cacheAppointment.appointmentDateTime);
+      }
+      if (cacheAppointment.updatedDate) {
+        cacheAppointment.updatedDate = new Date(cacheAppointment.updatedDate);
+      }
+      if (cacheAppointment.cancelledDate) {
+        cacheAppointment.cancelledDate = new Date(cacheAppointment.cancelledDate);
+      }
+      if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.createdDate) {
+        cacheAppointment.paymentInfo.createdDate = new Date(
+          cacheAppointment.paymentInfo.createdDate
+        );
+      }
+      if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.paymentDateTime) {
+        cacheAppointment.paymentInfo.paymentDateTime = new Date(
+          cacheAppointment.paymentInfo.paymentDateTime
+        );
+      }
+      if (cacheAppointment.paymentInfo && cacheAppointment.paymentInfo.updatedDate) {
+        cacheAppointment.paymentInfo.updatedDate = new Date(
+          cacheAppointment.paymentInfo.updatedDate
+        );
+      }
+      return this.create(cacheAppointment);
+    }
+    const appointment = await this.findOne({ id }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
       });
     });
+
+    if (appointment) {
+      await setCache(
+        `${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`,
+        JSON.stringify(appointment),
+        ApiConstants.CACHE_EXPIRATION_3600
+      );
+    }
+
+    return appointment;
   }
 
   getAppointmentsCount(doctorId: string, patientId: string) {
@@ -77,10 +123,36 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getCount();
   }
 
-  getAppointmentsByIds(ids: string[]) {
-    return this.createQueryBuilder('appointment')
-      .where('appointment.id IN (:...ids)', { ids })
-      .getMany();
+  async getAppointmentsByIds(ids: string[]) {
+    const result: Appointment[] = [];
+
+    return this.handleCachingMultipleItems(ids, REDIS_APPOINTMENT_ID_KEY_PREFIX, result);
+  }
+
+  async handleCachingMultipleItems(ids: string[], redisKeyPrefix: string, result: Appointment[]) {
+    const idsNotInCache: string[] = [];
+    for (let i = 0; i < ids.length; i++) {
+      const item = await getCache(`${redisKeyPrefix}${ids[i]}`);
+      if (item && typeof item == 'string') {
+        result.push(JSON.parse(item));
+      } else {
+        idsNotInCache.push(ids[i]);
+      }
+    }
+    if (idsNotInCache && idsNotInCache.length > 0) {
+      const itemFromDb = await this.createQueryBuilder('appointment')
+        .where('appointment.id IN (:...idsNotInCache)', { idsNotInCache })
+        .getMany();
+      for (let i = 0; i < itemFromDb.length; i++) {
+        await setCache(
+          `${redisKeyPrefix}${itemFromDb[i].id}`,
+          JSON.stringify(itemFromDb[i]),
+          ApiConstants.CACHE_EXPIRATION_3600
+        );
+      }
+      result = result.concat(itemFromDb);
+    }
+    return result;
   }
 
   getAppointmentsByIdsWithSpecificFields(ids: string[], fields: string[]) {
@@ -111,21 +183,22 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-
   /**
    * One stop method to create/update appointments
-   * This was needed in order to always pass the @BeforeUpdate hook in index.ts 
+   * This was needed in order to always pass the @BeforeUpdate hook in index.ts
    * and prevent certain status/states to change after they have reached a final status/states
    * Check out the hook in index.ts for more context around the code that does that
    */
-  createUpdateAppointment(appt: Appointment, updateDetails: Partial<Appointment>, errorType: AphErrorMessages): Promise<Appointment> {
+  createUpdateAppointment(
+    appt: Appointment,
+    updateDetails: Partial<Appointment>,
+    errorType: AphErrorMessages
+  ): Promise<Appointment> {
     const appointment = this.create(appt);
     Object.assign(appointment, { ...updateDetails });
-    return appointment
-      .save()
-      .catch((appointmentError) => {
-        throw new AphError(errorType, undefined, { appointmentError });
-      })
+    return appointment.save().catch((appointmentError) => {
+      throw new AphError(errorType, undefined, { appointmentError });
+    });
   }
 
   updatePatientType(appt: Appointment, patientType: PATIENT_TYPE) {
@@ -133,10 +206,10 @@ export class AppointmentRepository extends Repository<Appointment> {
       appt,
       {
         id: appt.id,
-        patientType
+        patientType,
       },
       AphErrorMessages.UPDATE_APPOINTMENT_ERROR
-    )
+    );
   }
 
   getAppointmentsByDocId(doctorId: string) {
@@ -154,6 +227,19 @@ export class AppointmentRepository extends Repository<Appointment> {
     return appointmentData;
   }
 
+  async getAppointmentsCountByDoctorIdandPatientId(doctorId: string, patientId: string) {
+    return await this.createQueryBuilder('appointment')
+      .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
+      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
+        status1: STATUS.CANCELLED,
+        status2: STATUS.PAYMENT_PENDING,
+        status3: STATUS.PAYMENT_FAILED,
+        status4: STATUS.PAYMENT_PENDING_PG,
+        status5: STATUS.PAYMENT_ABORTED,
+      })
+      .getCount();
+  }
   getAppointmentsByDate(appointmentDateTime: Date) {
     return this.find({
       where: {
@@ -352,15 +438,19 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  updateAppointment(id: string, appointmentInfo: Partial<Appointment>, apptDetails: Appointment) {
+  async updateAppointment(
+    id: string,
+    appointmentInfo: Partial<Appointment>,
+    apptDetails: Appointment
+  ) {
     return this.createUpdateAppointment(
       apptDetails,
       {
         id,
-        ...appointmentInfo
+        ...appointmentInfo,
       },
       AphErrorMessages.UPDATE_APPOINTMENT_ERROR
-    )
+    );
   }
 
   findAppointmentPayment(id: string) {
@@ -461,7 +551,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       skip: offset,
       take: limit,
       order: {
-        appointmentDateTime: 'DESC',
+        sdConsultationDate: 'DESC',
       },
     });
   }
@@ -500,6 +590,31 @@ export class AppointmentRepository extends Repository<Appointment> {
         }
       )
       .orderBy('appointment.appointmentDateTime', 'ASC')
+      .getMany();
+  }
+
+  getTodaysAppointments(startDate: Date) {
+    const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+
+    return this.createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
+      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
+        fromDate: newStartDate,
+        toDate: newEndDate,
+      })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
+      .orderBy('appointment.doctorId', 'ASC')
       .getMany();
   }
 
@@ -575,6 +690,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           status6: STATUS.PAYMENT_ABORTED,
         }
       )
+      .orderBy('appointment.sdConsultationDate', 'DESC')
       .getMany();
   }
 
@@ -685,13 +801,12 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
-  async getPatinetUpcomingAppointments(ids: string[]) {
+  async getPatientUpcomingAppointments(ids: string[]) {
     const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
     const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
-
-    const upcomingAppts = await this.createQueryBuilder('appointment')
+    return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-      .where('appointment.appointmentDateTime > :apptDate', { apptDate: new Date() })
+      .where('appointment.appointmentDateTime > :weekPastDateUTC', { weekPastDateUTC })
       .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
         'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
@@ -706,12 +821,13 @@ export class AppointmentRepository extends Repository<Appointment> {
       )
       .orderBy('appointment.appointmentDateTime', 'ASC')
       .getMany();
+  }
 
-    const weekPastAppts = await this.createQueryBuilder('appointment')
-      .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
-        fromDate: weekPastDateUTC,
-        toDate: new Date(),
-      })
+  async getPatientUpcomingAppointmentsCount(ids: string[]) {
+    const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
+    const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
+    return this.createQueryBuilder('appointment')
+      .where('appointment.appointmentDateTime > :weekPastDateUTC', { weekPastDateUTC })
       .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
         'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
@@ -724,11 +840,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           status6: STATUS.PAYMENT_ABORTED,
         }
       )
-      .orderBy('appointment.appointmentDateTime', 'DESC')
-      .getMany();
-
-    const consultRoomAppts = upcomingAppts.concat(weekPastAppts);
-    return consultRoomAppts;
+      .getCount();
   }
 
   getPatientAndDoctorsAppointments(patientId: string, doctorIds: string[]) {
@@ -875,9 +987,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-          .getUTCMinutes()
-          .toString()
-          .padStart(2, '0')}:00.000Z`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
       console.log(availableSlots, 'availableSlots final list');
       console.log(availableSlots.indexOf(sl), 'indexof');
       console.log(checkStart, checkEnd, 'check start end');
@@ -1035,9 +1147,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1075,13 +1187,18 @@ export class AppointmentRepository extends Repository<Appointment> {
     else return 0;
   }
 
-  async updateAppointmentStatus(id: string, status: STATUS, isSeniorConsultStarted: boolean, apptDetails: Appointment) {
+  async updateAppointmentStatus(
+    id: string,
+    status: STATUS,
+    isSeniorConsultStarted: boolean,
+    apptDetails: Appointment
+  ) {
     return this.createUpdateAppointment(
       apptDetails,
       {
         id,
         status,
-        isSeniorConsultStarted
+        isSeniorConsultStarted,
       },
       AphErrorMessages.UPDATE_APPOINTMENT_ERROR
     );
@@ -1100,7 +1217,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         id,
         status,
         isSeniorConsultStarted,
-        sdConsultationDate
+        sdConsultationDate,
       },
       AphErrorMessages.UPDATE_APPOINTMENT_ERROR
     );
@@ -1164,10 +1281,10 @@ export class AppointmentRepository extends Repository<Appointment> {
       {
         id,
         appointmentState,
-        isSeniorConsultStarted: false
+        isSeniorConsultStarted: false,
       },
       AphErrorMessages.UPDATE_APPOINTMENT_ERROR
-    )
+    );
   }
 
   checkDoctorAppointmentByDate(doctorId: string, appointmentDateTime: Date) {
@@ -1188,38 +1305,25 @@ export class AppointmentRepository extends Repository<Appointment> {
         appointmentDateTime,
         rescheduleCount,
         appointmentState,
-        status: STATUS.PENDING
+        status: STATUS.PENDING,
       },
       AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR
     );
-
   }
 
-  updateJdQuestionStatusbyIds(ids: string[]) {
-    return new Promise(async (resolve, reject) => {
-      try {
-
-        //Do not use forEach here, forEach loops do not support await
-        for (let k = 0, totalItemsTosave = ids.length; k < totalItemsTosave; k++) {
-          await this.createUpdateAppointment(
-            this.create(),
-            {
-              id: ids[k],
-              isJdQuestionsComplete: true,
-              isConsultStarted: true
-            },
-            AphErrorMessages.UPDATE_APPOINTMENT_ERROR
-          )
-        }
-
-        return resolve();
-      }
-      catch (exception) {
-        return reject(exception);
-      }
-    })
+  async updateJdQuestionStatusbyIds(ids: string[]) {
+    for (let i = 0; i < ids.length; i++) {
+      await delCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${ids[i]}`);
+    }
+    return this.update([...ids], {
+      isJdQuestionsComplete: true,
+      isConsultStarted: true,
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
   }
-
 
   rescheduleAppointmentByDoctor(
     id: string,
@@ -1235,7 +1339,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         appointmentDateTime,
         rescheduleCountByDoctor,
         appointmentState,
-        status: STATUS.PENDING
+        status: STATUS.PENDING,
       },
       AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR
     );
@@ -1253,13 +1357,12 @@ export class AppointmentRepository extends Repository<Appointment> {
       status: STATUS.CANCELLED,
       cancelledBy,
       cancelledById,
-      cancelledDate: new Date()
-    }
+      cancelledDate: new Date(),
+    };
 
     if (cancelledBy == REQUEST_ROLES.DOCTOR) {
       apptUpdatePartial['doctorCancelReason'] = cancelReason;
-    }
-    else {
+    } else {
       apptUpdatePartial['patientCancelReason'] = cancelReason;
     }
 
@@ -1270,14 +1373,19 @@ export class AppointmentRepository extends Repository<Appointment> {
     );
   }
 
-  systemCancelAppointment(id: string, apptDetails: Appointment) {
+  systemCancelAppointment(
+    id: string,
+    appointmentInfo: Partial<Appointment>,
+    apptDetails: Appointment
+  ) {
     return this.createUpdateAppointment(
       apptDetails,
       {
         id,
         cancelledBy: REQUEST_ROLES.SYSTEM,
         cancelledDate: new Date(),
-        status: STATUS.CANCELLED
+        status: STATUS.CANCELLED,
+        ...appointmentInfo,
       },
       AphErrorMessages.CANCEL_APPOINTMENT_ERROR
     );
@@ -1318,18 +1426,45 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getMany();
   }
 
-  getAllAppointmentsByPatientId(ids: string[]) {
-    return this.createQueryBuilder('appointment')
-      .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-      .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
-      .where('appointment.patientId IN (:...ids)', { ids })
-      .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
-      .andWhere('appointment.status not in(:status1)', {
-        status1: STATUS.PAYMENT_ABORTED,
-      })
-      .orderBy('appointment.bookingDate', 'ASC')
-      .getMany();
+  getAllAppointmentsByPatientId(ids: string[], paginate: PaginateParams) {
+    /**
+     * to support ui for web as well as mobile
+     * as web using asc and mobile will use desc (who sends paignation params)
+     * wll remove this once web also use pagination
+     */
+    const order: { bookingDate: 'ASC' | 'DESC' } = { bookingDate: 'ASC' };
+
+    if (paginate.skip || paginate.take) {
+      order.bookingDate = 'DESC';
+    }
+    // returns [result , total]
+    return this.findAndCount({
+      where: {
+        patientId: In(ids),
+        discountedAmount: Not(0),
+        status: Not(In([STATUS.PAYMENT_ABORTED, STATUS.PAYMENT_PENDING])),
+      },
+      relations: ['appointmentPayments', 'appointmentRefunds'],
+      order,
+      //extra params...
+      ...paginate,
+    });
+    /**
+     * keeping below snippet to validate above query
+     * once verified can be removed...
+     */
+    // return this.createQueryBuilder('appointment')
+    //   .innerJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
+    //   .leftJoinAndSelect('appointment.appointmentRefunds', 'appointmentRefunds')
+    //   .where('appointment.patientId IN (:...ids)', { ids })
+    //   .andWhere('appointment.discountedAmount not in(:discountedAmount)', { discountedAmount: 0 })
+    //   .andWhere('appointment.status not in(:status1)', {
+    //     status1: STATUS.PAYMENT_ABORTED,
+    //   })
+    //   .orderBy('appointment.bookingDate', 'ASC')
+    //   .getMany();
   }
+
   followUpBookedCount(id: string) {
     return this.count({ where: { followUpParentId: id } });
   }
@@ -1367,9 +1502,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1427,9 +1562,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-                .getUTCMinutes()
-                .toString()
-                .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           }
           console.log('start slot', slot);
 
@@ -1649,7 +1784,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       apptDetails,
       {
         id,
-        isConsultStarted: status
+        isConsultStarted: status,
       },
       AphErrorMessages.CANCEL_APPOINTMENT_ERROR
     );
@@ -1929,6 +2064,16 @@ export class AppointmentRepository extends Repository<Appointment> {
       .getCount();
   }
 
+  getNotStartedAppointments() {
+    const apptDateTime = new Date(format(addMinutes(new Date(), -5), 'yyyy-MM-dd HH:mm') + ':00');
+    return this.createQueryBuilder('appointment')
+      .where('appointment.status = :status', { status: STATUS.PENDING })
+      .andWhere('appointment.appointmentDateTime = :apptDateTime', {
+        apptDateTime,
+      })
+      .getMany();
+  }
+
   getAppointmentCountByCouponCode(couponCode: string) {
     return this.createQueryBuilder('appointment')
       .andWhere('appointment.couponCode = :couponCode', { couponCode })
@@ -1936,36 +2081,6 @@ export class AppointmentRepository extends Repository<Appointment> {
         status1: STATUS.PAYMENT_PENDING,
       })
       .getCount();
-  }
-
-  async updateDoctorSlotStatusES(
-    doctorId: string,
-    apptDate: string,
-    apptSlot: string,
-    slotType: APPOINTMENT_TYPE,
-    status: ES_DOCTOR_SLOT_STATUS
-  ) {
-    const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
-    const updateDoc: RequestParams.Update = {
-      index: 'doctors',
-      id: doctorId,
-      body: {
-        script: {
-          source:
-            'for (int i = 0; i < ctx._source.doctorSlots.length; ++i) { if(ctx._source.doctorSlots[i].slotDate == params.slotDate) { for(int k=0;k<ctx._source.doctorSlots[i].slots.length;k++){if(ctx._source.doctorSlots[i].slots[k].slot == params.slot){ ctx._source.doctorSlots[i].slots[k].status = params.status;}}}}',
-          params: {
-            slotDate: apptDate,
-            slot: apptSlot,
-            slotType,
-            status,
-          },
-        },
-      },
-    };
-    const updateResp = await client.update(updateDoc).catch((error) => {
-      console.log(error, 'update error in slot');
-    });
-    console.log(updateResp, 'updateResp');
   }
 
   getAllDoctorAppointments(doctorId: string, apptDate: Date) {
@@ -1991,5 +2106,18 @@ export class AppointmentRepository extends Repository<Appointment> {
   saveAppointmentHistory(historyAttrs: Partial<AppointmentUpdateHistory>) {
     historyAttrs.updatedAt = new Date();
     return AppointmentUpdateHistory.create(historyAttrs).save();
+  }
+
+  async getAppointmenIdsFromPatientID(patientId: string) {
+    return this.find({
+      select: ['id'],
+      where: {
+        patientId,
+      },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
   }
 }

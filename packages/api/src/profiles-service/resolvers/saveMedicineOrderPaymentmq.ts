@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import { Connection, UpdateResult } from 'typeorm';
 import {
   MEDICINE_ORDER_PAYMENT_TYPE,
   MedicineOrderPayments,
@@ -8,22 +9,29 @@ import {
   PAYMENT_METHODS_REVERSE,
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
+  DEVICE_TYPE,
+  MedicineOrders,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ServiceBusService } from 'azure-sb';
-import {
-  sendMedicineOrderStatusNotification,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
-
+import { sendMedicineOrderStatusNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { medicineCOD } from 'helpers/emailTemplates/medicineCOD';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
+import {
+  BlockOneApolloPointsRequest,
+  BlockUserPointsResponse,
+  ONE_APOLLO_STORE_CODE,
+} from 'types/oneApolloTypes';
+import { OneApollo } from 'helpers/oneApollo';
+import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
+import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   enum CODCity {
@@ -57,6 +65,8 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     CODCity: CODCity
     orderId: String
     paymentMode: PAYMENT_METHODS
+    healthCredits: Float
+    partnerInfo: String
   }
 
   type SaveMedicineOrderPaymentMqResult {
@@ -88,6 +98,8 @@ type MedicinePaymentMqInput = {
   email: string;
   CODCity: CODCity;
   paymentMode: PAYMENT_METHODS_REVERSE;
+  healthCredits: number;
+  partnerInfo: string;
 };
 
 enum CODCity {
@@ -99,6 +111,15 @@ type SaveMedicineOrderResult = {
   errorMessage: string;
   paymentOrderId: string;
   orderStatus: MEDICINE_ORDER_STATUS;
+};
+
+type userDetailInput = {
+  mobileNumber: string;
+  deviceType: DEVICE_TYPE | DEVICE_TYPE.ANDROID;
+  creditsToBlock: number;
+  orderId: number;
+  id: MedicineOrderPayments['id'];
+  bookingSource: MedicineOrders['bookingSource'];
 };
 
 type MedicinePaymentInputArgs = { medicinePaymentMqInput: MedicinePaymentMqInput };
@@ -154,7 +175,11 @@ const SaveMedicineOrderPaymentMq: Resolver<
     responseCode: medicinePaymentMqInput.responseCode,
     responseMessage: medicinePaymentMqInput.responseMessage,
     bankTxnId: medicinePaymentMqInput.bankTxnId,
+    partnerInfo: medicinePaymentMqInput.partnerInfo,
   };
+  if (medicinePaymentMqInput.healthCredits) {
+    paymentAttrs.healthCreditsRedeemed = medicinePaymentMqInput.healthCredits;
+  }
   if (medicinePaymentMqInput.paymentMode) {
     const paymentMode: string = PAYMENT_METHODS[medicinePaymentMqInput.paymentMode];
     paymentAttrs.paymentMode = paymentMode as PAYMENT_METHODS_REVERSE;
@@ -169,26 +194,37 @@ const SaveMedicineOrderPaymentMq: Resolver<
   }
 
   let savePaymentDetails: MedicineOrderPayments | undefined;
+
   if ((savePaymentDetails = await medicineOrdersRepo.findMedicineOrderPayment(orderDetails.id))) {
+    if (
+      savePaymentDetails.paymentStatus !== 'PENDING' &&
+      savePaymentDetails.paymentMode != PAYMENT_METHODS_REVERSE.COD
+    ) {
+      throw new AphError(AphErrorMessages.PAYMENT_ALREADY_PROCESSED, undefined, {});
+    }
     await medicineOrdersRepo.updateMedicineOrderPayment(
       orderDetails.id,
       orderDetails.orderAutoId,
       paymentAttrs
     );
+    //get above updated details
+    savePaymentDetails = await medicineOrdersRepo.findMedicineOrderPayment(orderDetails.id);
   } else {
     savePaymentDetails = await medicineOrdersRepo.saveMedicineOrderPayment(paymentAttrs);
-    if (!savePaymentDetails) {
-      log(
-        'profileServiceLogger',
-        'saveMedicineOrderPayment failed ',
-        'SaveMedicineOrderPaymentMq()->saveMedicineOrderPayment',
-        JSON.stringify(paymentAttrs),
-        ''
-      );
-      throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
-    }
     delete savePaymentDetails.medicineOrders;
   }
+
+  if (!savePaymentDetails) {
+    log(
+      'profileServiceLogger',
+      'saveMedicineOrderPayment failed ',
+      'SaveMedicineOrderPaymentMq()->saveMedicineOrderPayment',
+      JSON.stringify(paymentAttrs),
+      ''
+    );
+    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  }
+
   orderStatus = orderDetails.currentStatus;
 
   if (
@@ -259,6 +295,45 @@ const SaveMedicineOrderPaymentMq: Resolver<
       medicinePaymentMqInput.paymentStatus != 'TXN_FAILURE' &&
       medicinePaymentMqInput.paymentStatus != 'PENDING'
     ) {
+      if (
+        medicinePaymentMqInput.healthCredits &&
+        !Object.keys(savePaymentDetails.healthCreditsRedemptionRequest).length
+      ) {
+        try {
+          const oneApolloresponse = await blockOneApolloUserPoints(
+            {
+              mobileNumber: orderDetails.patient.mobileNumber.slice(3),
+              deviceType: orderDetails.deviceType,
+              creditsToBlock: medicinePaymentMqInput.healthCredits,
+              orderId: orderDetails.orderAutoId,
+              id: orderDetails.id,
+              bookingSource: orderDetails.bookingSource,
+            },
+            profilesDb
+          );
+
+          if (!oneApolloresponse.Success) {
+            log(
+              'profileServiceLogger',
+              `Points block request failed - ${orderDetails.orderAutoId}`,
+              'blockUserPoints()',
+              JSON.stringify(oneApolloresponse),
+              'true'
+            );
+            await handleOneApolloFailure(orderDetails, medicineOrdersRepo, profilesDb);
+          }
+        } catch (e) {
+          log(
+            'profileServiceLogger',
+            `Points block request exception - ${orderDetails.orderAutoId}`,
+            'blockUserPoints()',
+            e.stack,
+            'true'
+          );
+          await handleOneApolloFailure(orderDetails, medicineOrdersRepo, profilesDb);
+        }
+      }
+
       const serviceBusConnectionString = process.env.AZURE_SERVICE_BUS_CONNECTION_STRING;
       const azureServiceBus = new ServiceBusService(serviceBusConnectionString);
       const queueName = orderDetails.isOmsOrder
@@ -324,17 +399,18 @@ const SaveMedicineOrderPaymentMq: Resolver<
           ? ApiConstants.MEDICINE_SUPPORT_EMAILID
           : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
+      //medicine support cc email is '' and input is used, hence retaining this
       let ccEmailIds =
         process.env.NODE_ENV == 'dev' ||
         process.env.NODE_ENV == 'development' ||
         process.env.NODE_ENV == 'local'
-          ? <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID
+          ? ''
           : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 
       if (medicinePaymentMqInput.email && medicinePaymentMqInput.email.length > 0) {
         ccEmailIds = ccEmailIds.concat(medicinePaymentMqInput.email);
       }
-
+      //retaining cc as input is concatenated with cc
       const emailContent: EmailMessage = {
         subject: subject,
         fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,
@@ -354,6 +430,73 @@ const SaveMedicineOrderPaymentMq: Resolver<
     paymentOrderId,
     orderStatus,
   };
+};
+
+const blockOneApolloUserPoints = async (
+  userDetailInput: userDetailInput,
+  profilesDb: Connection
+) => {
+  let storeCode = ONE_APOLLO_STORE_CODE.WEBCUS;
+  switch (userDetailInput.deviceType) {
+    case DEVICE_TYPE.ANDROID:
+      storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
+      break;
+    case DEVICE_TYPE.IOS:
+      storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
+      break;
+  }
+  const blockUserPointsInput: BlockOneApolloPointsRequest = {
+    MobileNumber: +userDetailInput.mobileNumber,
+    CreditsRedeemed: userDetailInput.creditsToBlock,
+    StoreCode: getStoreCodeFromDevice(userDetailInput.deviceType, userDetailInput.bookingSource),
+    BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
+  };
+  const oneApollo = new OneApollo();
+  const response: Partial<BlockUserPointsResponse> = await oneApollo.blockOneUserCredits(
+    blockUserPointsInput
+  );
+  const medRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  await medRepo.updateMedicineOrderPayment(userDetailInput.id, userDetailInput.orderId, {
+    healthCreditsRedemptionRequest: response,
+  });
+  return response;
+};
+
+const handleOneApolloFailure = async (
+  orderDetails: MedicineOrders,
+  medicineOrdersRepo: MedicineOrdersRepository,
+  profilesDb: Connection
+) => {
+  let cancelOrderUpdates: Promise<MedicineOrdersStatus | UpdateResult>[] = [];
+
+  const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+    orderStatus: MEDICINE_ORDER_STATUS.CANCELLED,
+    medicineOrders: orderDetails,
+    statusDate: new Date(),
+    statusMessage: '' + ApiConstants.ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE,
+  };
+  cancelOrderUpdates.push(
+    medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId)
+  );
+
+  cancelOrderUpdates.push(
+    medicineOrdersRepo.updateMedicineOrderDetails(
+      orderDetails.id,
+      orderDetails.orderAutoId,
+      new Date(),
+      MEDICINE_ORDER_STATUS.CANCELLED
+    )
+  );
+  await Promise.all(cancelOrderUpdates);
+
+  calculateRefund(
+    orderDetails,
+    0,
+    profilesDb,
+    medicineOrdersRepo,
+    ApiConstants.ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE
+  );
+  throw new AphError(AphErrorMessages.ONEAPOLLO_CREDITS_BLOCK_FAILED, undefined, {});
 };
 
 export const saveMedicineOrderPaymentMqResolvers = {

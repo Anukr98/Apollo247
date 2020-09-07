@@ -9,8 +9,8 @@ import {
 import { Resolver } from 'api-gateway';
 import {
   sendCartNotification,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 
 export const getDigitizedOrderTypeDefs = gql`
   input MedicineOrderInput {
@@ -83,7 +83,7 @@ const getDigitizedPrescription: Resolver<
     status = 'Rejected';
   }
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(MedicineOrderInput.quoteId);
+  const orderDetails = await medicineOrdersRepo.getMedicineOrder(MedicineOrderInput.quoteId);
   if (orderDetails) {
     MedicineOrderInput.items.map((item) => {
       const orderItemAttrs: Partial<MedicineOrderLineItems> = {

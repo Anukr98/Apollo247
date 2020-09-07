@@ -193,12 +193,12 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
       <div className={classes.prescriptionPreview}>
         <div className={classes.pageContent}>
           {(otherInstructions && otherInstructions.length > 0) ||
-          (followUp[0] && parseInt(followUpAfterInDays[0]) > 0) ||
           !isEmpty(referralSpecialtyName) ||
           !isEmpty(referralDescription) ? (
             <div className={classes.prescriptionSection}>
               <div className={classes.sectionHeader}>
-                <img src={require('images/ic-doctors-2.svg')} /> ADVICE/INSTRUCTIONS
+                <img src={require('images/ic-doctors-2.svg')} />
+                ADVICE/INSTRUCTIONS
               </div>
               <div className={classes.adviceInstruction}>
                 {otherInstructions && otherInstructions.length > 0 && (
@@ -211,12 +211,16 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
                     </div>
                   </div>
                 )}
-                {followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
-                  <div className={classes.advice}>
-                    <span>Follow Up</span>
-                    <div className={classes.followContent}>{props.getFollowUpData()}</div>
-                  </div>
-                ) : null}
+                {/* {followUp[0] && parseInt(followUpAfterInDays[0]) > 0
+                    ? (
+                      <div className={classes.advice}>
+                        <span>Follow Up</span>
+                        <div className={classes.followContent}>
+                          {props.getFollowUpData()}
+                        </div>
+                      </div>
+                    )
+                    : null} */}
 
                 {(!isEmpty(referralSpecialtyName) || !isEmpty(referralDescription)) && (
                   <div className={classes.advice}>
@@ -224,7 +228,7 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
                     <div>
                       {!isEmpty(referralSpecialtyName) && (
                         <div className={classes.followContent} style={{ marginBottom: 5 }}>
-                          {referralSpecialtyName}
+                          {`Consult a ${referralSpecialtyName}`}
                         </div>
                       )}
                       {!isEmpty(referralDescription) && (

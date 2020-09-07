@@ -29,13 +29,14 @@ import { apiRoutes } from './apiRoutes';
 import {
   CommonBugFender,
   setBugFenderLog,
-  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
+import { TestSlot } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import {
   searchDiagnostics,
@@ -63,8 +64,10 @@ import {
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { postReorderMedicines } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getLatestMedicineOrder';
+import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
+import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { handleUniversalLinks } from './UniversalLinks';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -80,15 +83,7 @@ interface AphConsole {
   table(...data: any[]): void;
 }
 
-export interface TestSlot {
-  employeeCode: string;
-  employeeName: string;
-  diagnosticBranchCode: string;
-  date: Date;
-  slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
-}
-
-const isDebugOn = AppConfig.Configuration.LOG_ENVIRONMENT == 'debug';
+const isDebugOn = __DEV__;
 
 export const aphConsole: AphConsole = {
   error: (message?: any, ...optionalParams: any[]) => {
@@ -133,6 +128,19 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
   return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
 };
 
+export const followUpChatDaysCaseSheet = (
+  caseSheet:
+    | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
+    | null
+) => {
+  const case_sheet =
+    caseSheet &&
+    caseSheet
+      .filter((j) => j && j.doctorType !== DoctorType.JUNIOR)
+      .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
+  return case_sheet;
+};
+
 export const formatOrderAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
@@ -146,6 +154,14 @@ export const formatOrderAddress = (
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   return `${addrLine}${formattedZipcode}`;
+};
+
+export const getUuidV4 = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c == 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 };
 
 export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
@@ -385,8 +401,38 @@ export const getNetStatus = async () => {
   return status;
 };
 
-export const nextAvailability = (nextSlot: string) => {
-  return `available in ${mhdMY(nextSlot, 'min')}`;
+export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
+  const isValidTime = moment(nextSlot).isValid();
+  if (isValidTime) {
+    const current = moment(new Date());
+    const difference = moment.duration(moment(nextSlot).diff(current));
+    const differenceMinute = Math.ceil(difference.asMinutes());
+    const diffDays = Math.ceil(difference.asDays());
+    const isTomorrow = moment(nextSlot).isAfter(
+      current
+        .add(1, 'd')
+        .startOf('d')
+        .set({
+          hour: moment('06:00', 'HH:mm').get('hour'),
+          minute: moment('06:00', 'HH:mm').get('minute'),
+        })
+    );
+    if (differenceMinute < 60) {
+      return `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
+    } else if (differenceMinute >= 60 && !isTomorrow) {
+      return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
+    } else if (isTomorrow && diffDays < 2) {
+      return `${type} Tomorrow${
+        type === 'Available' ? ` at ${moment(nextSlot).format('hh:mm A')}` : ''
+      }`;
+    } else if ((diffDays >= 2 && diffDays <= 30) || type == 'Consult') {
+      return `${type} in ${diffDays} days`;
+    } else {
+      return `${type} after a month`;
+    }
+  } else {
+    return type === 'Available' ? 'Available' : 'Book Consult';
+  }
 };
 
 export const mhdMY = (
@@ -404,7 +450,7 @@ export const mhdMY = (
   const days = Math.ceil(difference.asDays());
   const months = Math.ceil(difference.asMonths());
   const year = Math.ceil(difference.asYears());
-  if (min > 0 && min < 24) {
+  if (min > 0 && min < 60) {
     return `${min} ${mText}${min !== 1 ? 's' : ''}`;
   } else if (hours > 0 && hours < 24) {
     return `${hours} ${hText}${hours !== 1 ? 's' : ''}`;
@@ -614,14 +660,18 @@ export const isValidName = (value: string) =>
     ? true
     : false;
 
+export const extractUrlFromString = (text: string): string | undefined => {
+  const urlRegex = /(https?:\/\/[^ ]*)/;
+  return (text.match(urlRegex) || [])[0];
+};
+
 export const reOrderMedicines = async (
   order:
-    | getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails
+    | getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails
     | getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails,
   currentPatient: any,
   source: ReorderMedicines['source']
 ) => {
-  postReorderMedicines(source, currentPatient);
   // Medicines
   // use billedItems for delivered orders
   const billedItems = g(
@@ -667,6 +717,8 @@ export const reOrderMedicines = async (
         isMedicine: (item.type_id || '').toLowerCase() == 'pharma',
         thumbnail: item.thumbnail || item.image,
         isInStock: item.is_in_stock == 1,
+        maxOrderQty: item.MaxOrderQty,
+        productType: item.type_id,
       } as ShoppingCartItem)
   );
   const unavailableItems = billedLineItems
@@ -676,6 +728,20 @@ export const reOrderMedicines = async (
     : lineItems
         .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU!))
         .map((item) => item.medicineName!);
+
+  const eventAttributes: WebEngageEvents[WebEngageEventName.RE_ORDER_MEDICINE] = {
+    orderType: 'Cart',
+    noOfItemsNotAvailable: unavailableItems.length,
+    source,
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient UHID': g(currentPatient, 'uhid'),
+    Relation: g(currentPatient, 'relation'),
+    'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Customer ID': g(currentPatient, 'id'),
+  };
+  postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
 
   // Prescriptions
   const prescriptionUrls = (order.prescriptionImageUrl || '')
@@ -765,6 +831,15 @@ export const addTestsToCart = async (
   }
 };
 
+export const getDiscountPercentage = (price: number | string, specialPrice?: number | string) => {
+  const discountPercent = !specialPrice
+    ? 0
+    : Number(price) == Number(specialPrice)
+    ? 0
+    : ((Number(price) - Number(specialPrice)) / Number(price)) * 100;
+  return Math.ceil(discountPercent);
+};
+
 export const getBuildEnvironment = () => {
   switch (apiRoutes.graphql()) {
     case 'https://aph.dev.api.popcornapps.com//graphql':
@@ -813,58 +888,25 @@ export const getRelations = (self?: string) => {
 
 export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
 
-export const isValidTestSlot = (
-  slot: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo,
-  date: Date
-) => {
+export const isValidTestSlot = (slot: TestSlot, date: Date) => {
   return (
-    slot.status != 'booked' &&
     (moment(date)
       .format('DMY')
       .toString() ===
     moment()
       .format('DMY')
       .toString()
-      ? moment(slot.startTime!.trim(), 'HH:mm').isSameOrAfter(
+      ? moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrAfter(
           moment(new Date()).add(
             AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
             'minutes'
           )
         )
       : true) &&
-    moment(slot.endTime!.trim(), 'HH:mm').isSameOrBefore(
+    moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
       moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
     )
   );
-};
-
-export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, endTime: string) => {
-  return slots.find(
-    (item) => item.slotInfo.startTime == startTime && item.slotInfo.endTime == endTime
-  )!;
-};
-
-export const getUniqueTestSlots = (slots: TestSlot[]) => {
-  return slots
-    .filter(
-      (item, idx, array) =>
-        array.findIndex(
-          (_item) =>
-            _item.slotInfo.startTime == item.slotInfo.startTime &&
-            _item.slotInfo.endTime == item.slotInfo.endTime
-        ) == idx
-    )
-    .map((val) => ({
-      startTime: val.slotInfo.startTime!,
-      endTime: val.slotInfo.endTime!,
-    }))
-    .sort((a, b) => {
-      if (moment(a.startTime.trim(), 'HH:mm').isAfter(moment(b.startTime.trim(), 'HH:mm')))
-        return 1;
-      else if (moment(b.startTime.trim(), 'HH:mm').isAfter(moment(a.startTime.trim(), 'HH:mm')))
-        return -1;
-      return 0;
-    });
 };
 
 const webengage = new WebEngage();
@@ -884,9 +926,16 @@ export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Ob
 };
 
 export const postwebEngageAddToCartEvent = (
-  { sku, name, category_id, price, special_price }: MedicineProduct,
+  {
+    sku,
+    name,
+    price,
+    special_price,
+    category_id,
+  }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'],
-  section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section']
+  section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'],
+  sectionName?: string
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
@@ -896,16 +945,13 @@ export const postwebEngageAddToCartEvent = (
     'category name': '',
     'category ID': category_id || '',
     Price: price,
-    'Discounted Price': typeof special_price == 'string' ? Number(special_price) : special_price,
+    'Discounted Price': Number(special_price) || undefined,
     Quantity: 1,
     Source: source,
     Section: section ? section : '',
-    af_revenue: special_price
-      ? typeof special_price == 'string'
-        ? Number(special_price)
-        : special_price
-      : price,
+    af_revenue: Number(special_price) || price,
     af_currency: 'INR',
+    'Section Name': sectionName || '',
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -979,7 +1025,9 @@ export const callPermissions = (doRequest?: () => void) => {
   });
 };
 
-export const InitiateAppsFlyer = () => {
+export const InitiateAppsFlyer = (
+  navigation: NavigationScreenProp<NavigationRoute<object>, object>
+) => {
   console.log('InitiateAppsFlyer');
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
     if (JSON.parse(res.data.is_first_launch) == true) {
@@ -1035,11 +1083,28 @@ export const InitiateAppsFlyer = () => {
     }
   );
 
-  onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution((res) => {
-    console.log('onAppOpenAttribution', res);
-    console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
+  onAppOpenAttributionCanceller = appsFlyer.onAppOpenAttribution(async (res) => {
+    // for iOS universal links
+    if (Platform.OS === 'ios') {
+      try {
+        AsyncStorage.setItem('deeplink', res.data.af_dp);
+        AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
 
-    // AsyncStorage.setItem('deeplink', decodeURIComponent(res.data.af_dp));
+        console.log('res.data.af_dp_onAppOpenAttribution', decodeURIComponent(res.data.af_dp));
+        setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
+        setBugFenderLog(
+          'onAppOpenAttribution_APPS_FLYER_DEEP_LINK_Referral_Code',
+          res.data.af_sub1
+        );
+
+        setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK_COMPLETE', res.data);
+      } catch (error) {}
+
+      const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+      if (userLoggedIn == 'true') {
+        handleUniversalLinks(res.data, navigation);
+      }
+    }
   });
 };
 
@@ -1109,20 +1174,20 @@ export const SetAppsFlyerCustID = (patientId: string) => {
 };
 
 export const postAppsFlyerAddToCartEvent = (
-  { sku, type_id, price, special_price, manufacturer }: MedicineProduct,
+  {
+    sku,
+    type_id,
+    price,
+    special_price,
+  }: Pick<MedicineProduct, 'sku' | 'type_id' | 'price' | 'special_price'>,
   id: string
 ) => {
   const eventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_ADD_TO_CART] = {
     'customer id': id,
-    af_revenue: special_price
-      ? typeof special_price == 'string'
-        ? Number(special_price)
-        : special_price
-      : price,
+    af_revenue: Number(special_price) || price,
     af_currency: 'INR',
     item_type: type_id == 'Pharma' ? 'Drugs' : 'FMCG',
     sku: sku,
-    brand: manufacturer,
   };
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1236,6 +1301,10 @@ export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
   );
 };
 
+export const getMaxQtyForMedicineItem = (qty?: number | string) => {
+  return qty ? Number(qty) : AppConfig.Configuration.CART_ITEM_MAX_QUANTITY;
+};
+
 export const addPharmaItemToCart = (
   cartItem: ShoppingCartItem,
   pincode: string,
@@ -1244,25 +1313,55 @@ export const addPharmaItemToCart = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>,
   currentPatient: GetCurrentPatients_getCurrentPatients_patients,
   isLocationServeiceable: boolean,
+  otherInfo: {
+    source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'];
+    section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'];
+    categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
+  },
   onComplete?: () => void
 ) => {
   const unServiceableMsg = 'Sorry, not serviceable in your area.';
+
   const navigate = () => {
-    if (!isLocationServeiceable) {
-      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
-        'product name': cartItem.name,
-        'product id': cartItem.id,
-        pincode: pincode,
-        'Mobile Number': g(currentPatient, 'mobileNumber')!,
-      };
-      postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
-    }
     navigation.navigate(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
       deliveryError: unServiceableMsg,
     });
   };
+
+  const addToCart = () => {
+    addCartItem!(cartItem);
+    postwebEngageAddToCartEvent(
+      {
+        sku: cartItem.id,
+        name: cartItem.name,
+        price: cartItem.price,
+        special_price: cartItem.specialPrice,
+        category_id: g(otherInfo, 'categoryId'),
+      },
+      g(otherInfo, 'source')!,
+      g(otherInfo, 'section')
+    );
+    postAppsFlyerAddToCartEvent(
+      {
+        sku: cartItem.id,
+        name: cartItem.name,
+        price: cartItem.price,
+        special_price: cartItem.specialPrice,
+        category_id: g(otherInfo, 'categoryId'),
+      },
+      g(currentPatient, 'id')!
+    );
+  };
+
   if (!isLocationServeiceable) {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE] = {
+      'product name': cartItem.name,
+      'product id': cartItem.id,
+      pincode: pincode,
+      'Mobile Number': g(currentPatient, 'mobileNumber')!,
+    };
+    postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE, eventAttributes);
     onComplete && onComplete();
     navigate();
     return;
@@ -1283,16 +1382,16 @@ export const addPharmaItemToCart = (
       const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
       if (deliveryDate) {
         if (isDeliveryDateWithInXDays(deliveryDate)) {
-          addCartItem!(cartItem);
+          addToCart();
         } else {
           navigate();
         }
       } else {
-        addCartItem!(cartItem);
+        addToCart();
       }
     })
     .catch(() => {
-      addCartItem!(cartItem);
+      addToCart();
     })
     .finally(() => {
       setLoading && setLoading(false);
@@ -1304,4 +1403,8 @@ export const dataSavedUserID = async (key: string) => {
   let userId: any = await AsyncStorage.getItem(key);
   userId = JSON.parse(userId);
   return userId;
+};
+
+export const setWebEngageScreenNames = (screenName: string) => {
+  webengage.screen(screenName);
 };

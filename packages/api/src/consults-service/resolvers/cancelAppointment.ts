@@ -4,7 +4,6 @@ import {
   STATUS,
   REQUEST_ROLES,
   APPOINTMENT_STATE,
-  ES_DOCTOR_SLOT_STATUS,
   AppointmentUpdateHistory,
   APPOINTMENT_UPDATED_BY,
   VALUE_TYPE,
@@ -17,15 +16,17 @@ import { EmailMessage } from 'types/notificationMessageTypes';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { cancellationEmailTemplate } from 'helpers/emailTemplates/cancellationEmailTemplate';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import { sendNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
-import { addMilliseconds, format, addDays } from 'date-fns';
+import { addMilliseconds, format } from 'date-fns';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
-import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
+import { initiateRefund } from 'consults-service/helpers/refundHelper';
 import { log } from 'customWinstonLogger';
+import { PaytmResponse } from 'types/refundHelperTypes';
 
 export const cancelAppointmentTypeDefs = gql`
   input CancelAppointmentInput {
@@ -114,7 +115,6 @@ const cancelAppointment: Resolver<
     appointment
   );
 
-
   if (
     appointment.appointmentPayments.length &&
     appointment.appointmentPayments[0].amountPaid >= 1
@@ -151,30 +151,6 @@ const cancelAppointment: Resolver<
     }
   }
 
-  //update slot status in ES as open
-  const slotApptDt = format(appointment.appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
-  const actualApptDt = format(appointment.appointmentDateTime, 'yyyy-MM-dd');
-  let apptDt = format(appointment.appointmentDateTime, 'yyyy-MM-dd');
-  if (appointment.appointmentDateTime >= new Date(slotApptDt)) {
-    apptDt = format(addDays(new Date(apptDt), 1), 'yyyy-MM-dd');
-  }
-
-  const sl = `${actualApptDt}T${appointment.appointmentDateTime
-    .getUTCHours()
-    .toString()
-    .padStart(2, '0')}:${appointment.appointmentDateTime
-      .getUTCMinutes()
-      .toString()
-      .padStart(2, '0')}:00.000Z`;
-  console.log(slotApptDt, apptDt, sl, appointment.doctorId, 'appoint date time');
-  appointmentRepo.updateDoctorSlotStatusES(
-    appointment.doctorId,
-    apptDt,
-    sl,
-    appointment.appointmentType,
-    ES_DOCTOR_SLOT_STATUS.BOOKED
-  );
-
   const historyAttrs: Partial<AppointmentUpdateHistory> = {
     appointment,
     userType:
@@ -188,6 +164,8 @@ const cancelAppointment: Resolver<
       cancelAppointmentInput.cancelledBy == 'PATIENT'
         ? appointment.patientId
         : appointment.doctorId,
+    fromState: appointment.appointmentState,
+    toState: appointment.appointmentState,
     reason: cancelAppointmentInput.cancelReason,
   };
   appointmentRepo.saveAppointmentHistory(historyAttrs);
@@ -257,20 +235,20 @@ const cancelAppointment: Resolver<
     HospitalName: hospitalName,
   });
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
-  const ccEmailIds =
-    process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
-      ? ApiConstants.PATIENT_APPT_CC_EMAILID
-      : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
-  const ccTriggerEmailIds =
-    process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
-      ? ApiConstants.PATIENT_APPT_CC_EMAILID_TRIGGER
-      : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
+  // const ccEmailIds =
+  //   process.env.NODE_ENV == 'dev' ||
+  //   process.env.NODE_ENV == 'development' ||
+  //   process.env.NODE_ENV == 'local'
+  //     ? ApiConstants.PATIENT_APPT_CC_EMAILID
+  //     : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
+  // const ccTriggerEmailIds =
+  //   process.env.NODE_ENV == 'dev' ||
+  //   process.env.NODE_ENV == 'development' ||
+  //   process.env.NODE_ENV == 'local'
+  //     ? ApiConstants.PATIENT_APPT_CC_EMAILID_TRIGGER
+  //     : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {
-    ccEmail: ccEmailIds.toString(),
+    //ccEmail: ccEmailIds.toString(),
     toEmail: toEmailId.toString(),
     subject: mailSubject.toString(),
     fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
@@ -281,31 +259,6 @@ const cancelAppointment: Resolver<
   if (cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT) {
     sendMail(emailContent);
   }
-  //send mail to doctor admin start
-  if (cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT) {
-    const adminRepo = doctorsDb.getCustomRepository(AdminDoctorMap);
-    const adminDetails = await adminRepo.findByadminId(appointment.doctorId);
-    console.log(adminDetails, 'adminDetails');
-    if (adminDetails == null) throw new AphError(AphErrorMessages.GET_ADMIN_USER_ERROR);
-
-    const listOfEmails: string[] = [];
-
-    adminDetails.length > 0 &&
-      adminDetails.map((value) => listOfEmails.push(value.adminuser.email));
-    console.log('listOfEmails', listOfEmails);
-    listOfEmails.forEach(async (adminemail) => {
-      const adminEmailContent: EmailMessage = {
-        ccEmail: ccTriggerEmailIds.toString(),
-        toEmail: adminemail.toString(),
-        subject: mailSubject.toString(),
-        fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
-        fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
-        messageContent: mailContent,
-      };
-      sendMail(adminEmailContent);
-    });
-  }
-  //send mail to doctor admin end
   return { status: STATUS.CANCELLED };
 };
 

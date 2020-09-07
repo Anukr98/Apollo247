@@ -8,12 +8,13 @@ import {
   Appointment,
   APPOINTMENT_STATE,
 } from 'consults-service/entities';
-import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import { sendNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 @EntityRepository(RescheduleAppointmentDetails)
 export class RescheduleAppointmentDetailsRepository extends Repository<
-RescheduleAppointmentDetails
+  RescheduleAppointmentDetails
 > {
   async getAppointmentsAndReschedule(
     doctorId: string,

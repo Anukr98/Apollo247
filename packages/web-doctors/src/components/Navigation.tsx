@@ -53,26 +53,47 @@ export const Navigation: React.FC = (props) => {
 
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">
-      <Link
-        title="Home"
-        id="homeId"
-        to={isJuniorDoctor ? clientRoutes.juniorDoctor() : clientRoutes.welcome()}
-        className={` ${(window.location.href.toLowerCase().includes('/calendar') ||
-          window.location.href.toLowerCase().includes('/junior-doctor') ||
-          window.location.href.toLowerCase().includes('/jd-admin') ||
-          window.location.href.toLowerCase().includes('/jd-consultroom')) &&
-          classes.menuItemActive}`}
-      >
-        Home
-      </Link>
+      {isJuniorDoctor && (
+        <>
+          <Link
+            title="Active Consults"
+            id="activeConsult"
+            to={clientRoutes.juniorDoctorActive()}
+            className={` ${window.location.href.toLowerCase().includes('/junior-doctor/active') &&
+              classes.menuItemActive}`}
+          >
+            Active Consults
+          </Link>
+          <Link
+            title="Past Consults"
+            id="pastConsult"
+            to={clientRoutes.juniorDoctorPast()}
+            className={` ${window.location.href.toLowerCase().includes('/junior-doctor/past') &&
+              classes.menuItemActive}`}
+          >
+            Past Consults
+          </Link>
+        </>
+      )}
       {!isJuniorDoctor && !isAdminDoctor ? (
-        <Link
-          title="Patients"
-          className={`${window.location.href.includes('/patientlog') && classes.menuItemActive}`}
-          to={clientRoutes.PatientLog()}
-        >
-          Patients
-        </Link>
+        <>
+          <Link
+            title="Home"
+            id="homeId"
+            to={clientRoutes.welcome()}
+            className={` ${window.location.href.toLowerCase().includes('/calendar') &&
+              classes.menuItemActive}`}
+          >
+            Home
+          </Link>
+          <Link
+            title="Patients"
+            className={`${window.location.href.includes('/patientlog') && classes.menuItemActive}`}
+            to={clientRoutes.PatientLog()}
+          >
+            Patients
+          </Link>
+        </>
       ) : null}
     </div>
   );

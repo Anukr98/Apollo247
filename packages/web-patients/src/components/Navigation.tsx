@@ -3,20 +3,23 @@ import { Theme, Popover } from '@material-ui/core';
 import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { useAuth } from 'hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { useParams } from 'hooks/routerHooks';
+import Typography from '@material-ui/core/Typography';
+import { useLocation } from 'react-router';
+import { buyMedicineClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     appNavigation: {
-      marginLeft: 'auto',
+      // marginLeft: 'auto',
       display: 'flex',
       alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
-        marginLeft: 0,
+        // marginLeft: 0,
       },
       '& a': {
         fontSize: 13,
@@ -34,23 +37,21 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '36px 16px 34px 16px',
       },
     },
-    homePageNav: {
-      marginLeft: 'auto',
-      [theme.breakpoints.down('xs')]: {
-        marginLeft: 'auto',
-      },
-    },
+    homePageNav: {},
     menuTitle: {
       textTransform: 'uppercase',
       borderBottom: '1px solid #01475b',
       paddingBottom: 3,
       display: 'inline-block',
+      fontSize: '13px !important',
+      lineHeight: '18px !important',
     },
     menuInfo: {
       paddingTop: 3,
-      fontSize: 12,
+      fontSize: '12px !important',
       opacity: 0.6,
       display: 'block',
+      lineHeight: '17px !important',
     },
     menuItemActive: {
       backgroundColor: '#f7f8f5',
@@ -74,13 +75,15 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
       cursor: 'pointer',
       [theme.breakpoints.down('xs')]: {
-        padding: '25px 16px 23px 16px',
+        padding: '25px 10px 23px 10px',
       },
       '& img': {
         verticalAlign: 'middle',
       },
-      '& >span': {
+      '& >a': {
         position: 'relative',
+        padding: 0,
+        display: 'block',
       },
       '&:focus': {
         outline: 'none',
@@ -215,6 +218,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
     clientRoutes.payOnlineClinicConsult(),
     // clientRoutes.payMedicine(params.payType),
   ];
+  const { currentPatient } = useAllCurrentPatients();
 
   return (
     <div
@@ -247,7 +251,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             className={
               currentPath === clientRoutes.specialityListing() ? classes.menuItemActive : ''
             }
-            title={'Medicines'}
+            title={'Doctors'}
           >
             Book Appointment
           </Link>
@@ -259,6 +263,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
                 : ''
             }
             title={'Medicines'}
+            onClick={() => buyMedicineClickTracking(currentPatient && currentPatient.id)}
           >
             Buy Medicines
           </Link>
@@ -306,8 +311,7 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
           >
             <span className={classes.menuTitle}>Doctors</span>
             <span className={classes.menuInfo}>
-              Consult
-              <br /> Online
+              Consult <br /> Online
             </span>
           </Link>
           <Link
@@ -358,21 +362,22 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
       )} */}
       <div
         id="cartId"
-        onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}
-        onKeyPress={() => setIsCartPopoverOpen(true)}
-        ref={cartPopoverRef}
-        tabIndex={0}
-        className={`${classes.notificationBtn} ${
-          currentPath === clientRoutes.medicinesCart() ? classes.menuItemActive : ''
-        }  ${currentPath === clientRoutes.testsCart() ? classes.menuItemActive : ''}`}
-        title={'cart'}
+        className={classes.notificationBtn}
+        // onClick={() => setIsCartPopoverOpen(!isCartPopoverOpen)}
+        // onKeyPress={() => setIsCartPopoverOpen(true)}
+        // ref={cartPopoverRef}
+        // tabIndex={0}
+        //  ${
+        //   currentPath === clientRoutes.medicinesCart() ? classes.menuItemActive : ''
+        // }  ${currentPath === clientRoutes.testsCart() ? classes.menuItemActive : ''}`}
+        // title={'cart'}
       >
-        <span>
+        <Link to={clientRoutes.medicinesCart()}>
           <img src={require('images/ic_cart.svg')} alt="Cart" title={'cart'} />
           <span className={classes.itemCount}>
             {cartItems.length + diagnosticsCartItems.length || 0}
           </span>
-        </span>
+        </Link>
       </div>
       {/* <div className={`${classes.notificationBtn}`}>
         <img src={require('images/ic_notification.svg')} alt="Notifications" />

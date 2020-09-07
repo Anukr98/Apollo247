@@ -61,12 +61,18 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 0,
       borderTop: '0.5px solid rgba(2,71,91,0.2)',
       paddingTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        margin: '10px 0 0',
+      },
     },
     deliveryTimeGroupWrap: {
       display: 'flex',
       backgroundColor: theme.palette.common.white,
       padding: 10,
       borderRadius: 5,
+      [theme.breakpoints.down('xs')]: {
+        padding: 0,
+      },
     },
     deliveryTime: {
       fontSize: 14,
@@ -212,18 +218,25 @@ const apiDetails = {
   deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
   deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
   service_url: process.env.PHARMACY_SERVICE_AVAILABILITY,
+  deliveryHeaderTATUrl: process.env.PHARMACY_MED_DELIVERY_HEADER_TAT,
 };
 
 type HomeDeliveryProps = {
   setDeliveryTime: (deliveryTime: string) => void;
   deliveryTime: string;
   selectedZipCode: (zipCode: string) => void;
+  checkForPriceUpdate: (shopid: string) => void;
 };
 
 interface TatInterface {
   artCode: string;
   deliverydate: string;
   siteId: string;
+}
+
+interface lookupType {
+  sku: string;
+  qty: number;
 }
 
 export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
@@ -334,12 +347,12 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
   const removeNonDeliverableItemsFromCart = () => {
     if (nonServicableSKU.length) {
-      let arrId: any[] = [];
+      let arrSku: any[] = [];
       nonServicableSKU.map((nonDeliverableSKU: string) => {
         let obj = cartItems.find((o) => o.sku === nonDeliverableSKU);
-        arrId.push(obj.id);
+        arrSku.push(obj.sku);
       });
-      removeCartItems && removeCartItems(arrId);
+      removeCartItems && removeCartItems(arrSku);
       setShowNonDeliverablePopup(false);
       setNonServicableSKU([]);
     }
@@ -378,6 +391,45 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     setDeliveryLoading(false);
     setIsLoading(false);
     changeCartTatStatus(true);
+  };
+
+  const fetchUserDisplayDeliveryTime = async (paramObject: {
+    postalcode: string;
+    ordertype: string;
+    lookup: lookupType[];
+  }) => {
+    const CancelToken = axios.CancelToken;
+    let cancelGetDeliveryTimeApi: Canceler | undefined;
+    await axios
+      .post(
+        apiDetails.deliveryHeaderTATUrl,
+        {
+          ...paramObject,
+        },
+        {
+          headers: {
+            Authentication: apiDetails.deliveryAuthToken,
+          },
+          timeout: TAT_API_TIMEOUT_IN_MILLI_SEC,
+          cancelToken: new CancelToken((c) => {
+            // An executor function receives a cancel function as a parameter
+            cancelGetDeliveryTimeApi = c;
+          }),
+        }
+      )
+      .then(async ({ data }: any) => {
+        sessionStorage.removeItem('tatFail');
+        if (data && data.tat && data.tat[0]) {
+          setDeliveryTime(data.tat[0].deliverydate);
+          props.checkForPriceUpdate(data.tat[0].siteId);
+          changeCartTatStatus && changeCartTatStatus(true);
+        }
+      })
+      .catch((e) => {
+        sessionStorage.setItem('tatFail', 'true');
+        console.log(e);
+        setDefaultDeliveryTime();
+      });
   };
 
   const fetchDeliveryTime = async (zipCode: string) => {
@@ -419,18 +471,17 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               const tatResult = res.data.tat;
 
               const nonDeliverySKUArr = tatResult
-                .filter((item: TatInterface) => getDiffInDays(item.deliverydate) > 10)
+                .filter(
+                  (item: TatInterface) =>
+                    getDiffInDays(item.deliverydate) > 10 ||
+                    item.siteId === '' ||
+                    item.siteId === null
+                )
                 .map((filteredSku: TatInterface) => filteredSku.artCode);
 
               const deliverableSku = tatResult
                 .filter((item: TatInterface) => getDiffInDays(item.deliverydate) <= 10)
                 .map((filteredSku: TatInterface) => filteredSku.artCode);
-
-              const deliveryTime = tatResult
-                .filter((item: TatInterface) => getDiffInDays(item.deliverydate) <= 10)
-                .map((e: TatInterface) => e.deliverydate)
-                .sort()
-                .reverse()[0];
 
               deliverableSku.map((deliverableSKU: string) => {
                 let obj = cartItems.find((o) => o.sku === deliverableSKU);
@@ -451,11 +502,14 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                 setShowNonDeliverablePopup(true);
                 setNonServicableSKU(nonDeliverySKUArr);
               } else {
-                changeCartTatStatus && changeCartTatStatus(true);
+                fetchUserDisplayDeliveryTime({
+                  postalcode: zipCode || '',
+                  ordertype: medicineCartType,
+                  lookup: lookUp,
+                });
               }
 
               setErrorDeliveryTimeMsg('');
-              setDeliveryTime(deliveryTime);
             } else if (
               typeof res.data.errorMSG === 'string' ||
               typeof res.data.errorMsg === 'string'
@@ -467,6 +521,11 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         } catch (error) {
           console.log(error);
           setDefaultDeliveryTime();
+          fetchUserDisplayDeliveryTime({
+            postalcode: zipCode || '',
+            ordertype: medicineCartType,
+            lookup: lookUp,
+          });
         }
       })
       .catch((error: any) => {
@@ -578,53 +637,53 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               <CircularProgress />
             </div>
           ) : (
-            <ul>
-              {deliveryAddresses.map(
-                (address, idx) =>
-                  idx === selectedAddressDataIndex && (
-                    <li key={idx}>
-                      <FormControlLabel
-                        checked={address.id === deliveryAddressId}
-                        className={classes.radioLabel}
-                        value={address.id}
-                        control={<AphRadio color="primary" />}
-                        label={formatAddress(address)}
-                        onChange={() => {
-                          checkServiceAvailabilityCheck(address.zipcode)
-                            .then((res: AxiosResponse) => {
-                              if (res && res.data && res.data.Availability) {
-                                /**Gtm code start  */
-                                gtmTracking({
-                                  category: 'Pharmacy',
-                                  action: 'Order',
-                                  label: 'Address Selected',
-                                });
-                                /**Gtm code End  */
-                                checkLatLongStateCodeAvailability(address);
-                              } else {
-                                setShowPlaceNotFoundPopup(true);
-                              }
-                            })
-                            .catch((e: any) => {
-                              console.log(e);
-                            });
-                        }}
-                      />
-                    </li>
-                  )
-              )}
-            </ul>
-          )}
+              <ul>
+                {deliveryAddresses.map(
+                  (address, idx) =>
+                    idx === selectedAddressDataIndex && (
+                      <li key={idx}>
+                        <FormControlLabel
+                          checked={address.id === deliveryAddressId}
+                          className={classes.radioLabel}
+                          value={address.id}
+                          control={<AphRadio color="primary" />}
+                          label={formatAddress(address)}
+                          onChange={() => {
+                            checkServiceAvailabilityCheck(address.zipcode)
+                              .then((res: AxiosResponse) => {
+                                if (res && res.data && res.data.Availability) {
+                                  /**Gtm code start  */
+                                  gtmTracking({
+                                    category: 'Pharmacy',
+                                    action: 'Order',
+                                    label: 'Address Selected',
+                                  });
+                                  /**Gtm code End  */
+                                  checkLatLongStateCodeAvailability(address);
+                                } else {
+                                  setShowPlaceNotFoundPopup(true);
+                                }
+                              })
+                              .catch((e: any) => {
+                                console.log(e);
+                              });
+                          }}
+                        />
+                      </li>
+                    )
+                )}
+              </ul>
+            )}
         </>
       ) : (
-        <>
-          {isLoading && (
-            <div className={classes.alignCenter}>
-              <CircularProgress />
-            </div>
-          )}
-        </>
-      )}
+          <>
+            {isLoading && (
+              <div className={classes.alignCenter}>
+                <CircularProgress />
+              </div>
+            )}
+          </>
+        )}
 
       <div className={classes.bottomActions}>
         {!isSigningIn ? (

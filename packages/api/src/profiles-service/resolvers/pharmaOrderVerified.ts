@@ -11,12 +11,15 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
-  NotificationType,
   sendMedicineOrderStatusNotification,
   sendCartNotification,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { ApiConstants } from 'ApiConstants';
+import Decimal from 'decimal.js';
 
 export const saveOrderShipmentsTypeDefs = gql`
   input SaveOrderShipmentsInput {
@@ -99,7 +102,7 @@ const saveOrderShipments: Resolver<
   SaveOrderShipmentsResult
 > = async (parent, { saveOrderShipmentsInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
     saveOrderShipmentsInput.orderId
   );
   if (!orderDetails) {
@@ -162,8 +165,8 @@ const saveOrderShipments: Resolver<
       const itemDetails = shipment.itemDetails.map((item) => {
         return {
           ...item,
-          quantity: Number((item.quantity / item.packSize).toFixed(2)),
-          mrp: Number((item.unitPrice * item.packSize).toFixed(2)),
+          quantity: +new Decimal(item.quantity).dividedBy(item.packSize).toFixed(4),
+          mrp: +new Decimal(item.unitPrice).times(item.packSize).toFixed(4),
         };
       });
       const orderShipmentsAttrs: Partial<MedicineOrderShipments> = {
@@ -224,6 +227,20 @@ const saveOrderShipments: Resolver<
       orderDetails,
       profilesDb
     );
+
+    //post order ready at store event to webEngage
+    const postBody: Partial<WebEngageInput> = {
+      userId: orderDetails.patient.mobileNumber,
+      eventName: ApiConstants.MEDICINE_ORDER_KERB_STORE_READY_EVENT_NAME.toString(),
+      eventData: {
+        orderId: orderDetails.orderAutoId,
+        statusDateTime: format(
+          parseISO(shipmentsInput[0].updatedDate),
+          "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+        ),
+      },
+    };
+    postEvent(postBody);
   } else {
     const pushNotificationInput = {
       orderAutoId: orderDetails.orderAutoId,
@@ -231,6 +248,20 @@ const saveOrderShipments: Resolver<
     };
     sendCartNotification(pushNotificationInput, profilesDb);
   }
+
+  //post order verified event to webEngage
+  const postBody: Partial<WebEngageInput> = {
+    userId: orderDetails.patient.mobileNumber,
+    eventName: ApiConstants.MEDICINE_ORDER_VERIFIED_EVENT_NAME.toString(),
+    eventData: {
+      orderId: orderDetails.orderAutoId,
+      statusDateTime: format(
+        parseISO(shipmentsInput[0].updatedDate),
+        "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+      ),
+    },
+  };
+  postEvent(postBody);
 
   return {
     status: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,

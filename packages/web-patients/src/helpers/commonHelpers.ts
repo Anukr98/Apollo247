@@ -6,6 +6,9 @@ import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
+import fetchUtil from 'helpers/fetch';
+import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentDetails } from 'graphql/types/GetPatientAllAppointments';
 
 declare global {
   interface Window {
@@ -45,6 +48,7 @@ const locationRoutesBlackList: string[] = [
   '/address-book',
   '/aboutUs',
   '/appointments',
+  '/appointmentslist',
   '/faq',
   '/needHelp',
   '/my-payments',
@@ -165,7 +169,7 @@ const toBase64 = (file: any) =>
 
 const getDiffInDays = (nextAvailability: string) => {
   if (nextAvailability && nextAvailability.length > 0) {
-    const nextAvailabilityTime = nextAvailability && moment(nextAvailability);
+    const nextAvailabilityTime = moment(new Date(nextAvailability.replace(/-/g, ' ')));
     const currentTime = moment(new Date());
     const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
     return differenceInDays;
@@ -173,10 +177,9 @@ const getDiffInDays = (nextAvailability: string) => {
     return 0;
   }
 };
-const getDiffInMinutes = (doctorAvailablePhysicalSlots: string) => {
-  if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
-    const nextAvailabilityTime =
-      doctorAvailablePhysicalSlots && moment(doctorAvailablePhysicalSlots);
+const getDiffInMinutes = (doctorAvailableSlots: string) => {
+  if (doctorAvailableSlots && doctorAvailableSlots.length > 0) {
+    const nextAvailabilityTime = moment(doctorAvailableSlots);
     const currentTime = moment(new Date());
     const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
     return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
@@ -185,10 +188,9 @@ const getDiffInMinutes = (doctorAvailablePhysicalSlots: string) => {
   }
 };
 
-const getDiffInHours = (doctorAvailablePhysicalSlots: string) => {
-  if (doctorAvailablePhysicalSlots && doctorAvailablePhysicalSlots.length > 0) {
-    const nextAvailabilityTime =
-      doctorAvailablePhysicalSlots && moment(doctorAvailablePhysicalSlots);
+const getDiffInHours = (doctorAvailableSlots: string) => {
+  if (doctorAvailableSlots && doctorAvailableSlots.length > 0) {
+    const nextAvailabilityTime = moment(doctorAvailableSlots);
     const currentTime = moment(new Date());
     const differenceInHours = currentTime.diff(nextAvailabilityTime, 'hours') * -1;
     return Math.round(differenceInHours) + 1;
@@ -202,7 +204,12 @@ const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 
 const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
-const TAT_API_TIMEOUT_IN_MILLI_SEC = 10000; // in milli sec
+const OUT_OF_STOCK_MESSAGE = 'Sorry, this item is out of stock in your area';
+const TAT_API_TIMEOUT_IN_MILLI_SEC = 20000; // in milli sec
+const NO_ONLINE_SERVICE = 'NOT AVAILABLE FOR ONLINE SALE';
+const OUT_OF_STOCK = 'Out Of Stock';
+const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
+const PINCODE_MAXLENGTH = 6;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -255,6 +262,14 @@ interface SearchObject {
   prakticeSpecialties: string | null;
 }
 
+interface AppointmentFilterObject {
+  consultType: string[] | null;
+  appointmentStatus: string[] | null;
+  availability: string[] | null;
+  gender: string[] | null;
+  doctorsList: string[] | null;
+}
+
 const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
 const experienceList = [
   { key: '0-5', value: '0 - 5' },
@@ -268,6 +283,8 @@ const genderList = [
 ];
 const languageList = ['English', 'Telugu'];
 const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
+const consultType = ['Online', 'Clinic Visit'];
+const appointmentStatus = ['New', 'Completed', 'Cancelled', 'Rescheduled', 'Follow-Up'];
 
 // End of doctors list based on specialty related changes
 
@@ -339,7 +356,120 @@ const isRejectedStatus = (status: MEDICINE_ORDER_STATUS) => {
   );
 };
 
+const getAvailability = (nextAvailability: string, differenceInMinutes: number, type: string) => {
+  const nextAvailabilityMoment = moment(nextAvailability);
+  const tomorrowAvailabilityHourTime = moment('06:00', 'HH:mm');
+  const tomorrowAvailabilityTime = moment()
+    .add('days', 1)
+    .set({
+      hour: tomorrowAvailabilityHourTime.get('hour'),
+      minute: tomorrowAvailabilityHourTime.get('minute'),
+    });
+  const diffInHoursForTomorrowAvailabilty = nextAvailabilityMoment.diff(
+    tomorrowAvailabilityTime,
+    'minutes'
+  );
+  const isAvailableTomorrow =
+    diffInHoursForTomorrowAvailabilty > 0 && diffInHoursForTomorrowAvailabilty < 1440;
+  const isAvailableAfterTomorrow = diffInHoursForTomorrowAvailabilty >= 1440;
+  const isAvailableAfterMonth = nextAvailabilityMoment.diff(moment(), 'days') > 30;
+  const message = type === 'doctorInfo' ? 'consult' : 'available';
+  if (differenceInMinutes > 0 && differenceInMinutes < 60) {
+    return `${message} in ${differenceInMinutes} ${differenceInMinutes === 1 ? 'min' : 'mins'}`;
+  } else if (isAvailableAfterMonth && type === 'consultType') {
+    // only applies for consultType
+    return `Available after a month`;
+  } else if (isAvailableTomorrow) {
+    return type === 'doctorInfo' || type === 'markup'
+      ? `${message} tomorrow`
+      : `${message} tomorrow at ${nextAvailabilityMoment.format('hh:mm A')}`;
+  } else if (isAvailableAfterTomorrow) {
+    return `${message} in ${
+      nextAvailabilityMoment.diff(tomorrowAvailabilityTime, 'days') + 1 // intentionally added + 1 as we need to consider 6 am as next day
+    } days`;
+  } else if (!isAvailableTomorrow && differenceInMinutes >= 60) {
+    return `${message} at ${nextAvailabilityMoment.format('hh:mm A')}`;
+  } else {
+    return type === 'doctorInfo' ? 'Book Consult' : 'Available';
+  }
+};
+
+const isActualUser = () => {
+  const botPattern =
+    '(googlebot/|bot|Googlebot-Mobile|Googlebot-Image|Google favicon|Mediapartners-Google|bingbot|slurp|java|wget|curl|Commons-HttpClient|Python-urllib|libwww|httpunit|nutch|phpcrawl|msnbot|jyxobot|FAST-WebCrawler|FAST Enterprise Crawler|biglotron|teoma|convera|seekbot|gigablast|exabot|ngbot|ia_archiver|GingerCrawler|webmon |httrack|webcrawler|grub.org|UsineNouvelleCrawler|antibot|netresearchserver|speedy|fluffy|bibnum.bnf|findlink|msrbot|panscient|yacybot|AISearchBot|IOI|ips-agent|tagoobot|MJ12bot|dotbot|woriobot|yanga|buzzbot|mlbot|yandexbot|purebot|Linguee Bot|Voyager|CyberPatrol|voilabot|baiduspider|citeseerxbot|spbot|twengabot|postrank|turnitinbot|scribdbot|page2rss|sitebot|linkdex|Adidxbot|blekkobot|ezooms|dotbot|Mail.RU_Bot|discobot|heritrix|findthatfile|europarchive.org|NerdByNature.Bot|sistrix crawler|ahrefsbot|Aboundex|domaincrawler|wbsearchbot|summify|ccbot|edisterbot|seznambot|ec2linkfinder|gslfbot|aihitbot|intelium_bot|facebookexternalhit|yeti|RetrevoPageAnalyzer|lb-spider|sogou|lssbot|careerbot|wotbox|wocbot|ichiro|DuckDuckBot|lssrocketcrawler|drupact|webcompanycrawler|acoonbot|openindexspider|gnam gnam spider|web-archive-net.com.bot|backlinkcrawler|coccoc|integromedb|content crawler spider|toplistbot|seokicks-robot|it2media-domain-crawler|ip-web-crawler.com|siteexplorer.info|elisabot|proximic|changedetection|blexbot|arabot|WeSEE:Search|niki-bot|CrystalSemanticsBot|rogerbot|360Spider|psbot|InterfaxScanBot|Lipperhey SEO Service|CC Metadata Scaper|g00g1e.net|GrapeshotCrawler|urlappendbot|brainobot|fr-crawler|binlar|SimpleCrawler|Livelapbot|Twitterbot|cXensebot|smtbot|bnf.fr_bot|A6-Indexer|ADmantX|Facebot|Twitterbot|OrangeBot|memorybot|AdvBot|MegaIndex|SemanticScholarBot|ltx71|nerdybot|xovibot|BUbiNG|Qwantify|archive.org_bot|Applebot|TweetmemeBot|crawler4j|findxbot|SemrushBot|yoozBot|lipperhey|y!j-asr|Domain Re-Animator Bot|AddThis)';
+  const re = new RegExp(botPattern, 'i');
+  const userAgent = navigator.userAgent;
+  return !re.test(userAgent);
+};
+
+const getStoreName = (storeAddress: string) => {
+  const store = JSON.parse(storeAddress);
+  return store && store.storename ? _upperFirst(_lowerCase(store.storename)) : '';
+};
+
+const getPackOfMedicine = (medicineDetail: MedicineProductDetails) => {
+  return `${medicineDetail.mou} ${
+    medicineDetail.PharmaOverview && medicineDetail.PharmaOverview.length > 0
+      ? medicineDetail.PharmaOverview[0].Doseform
+      : ''
+  }${medicineDetail.mou && parseFloat(medicineDetail.mou) !== 1 ? 'S' : ''}`;
+};
+
+const getImageUrl = (imageUrl: string) => {
+  return (
+    imageUrl &&
+    imageUrl
+      .split(',')
+      .filter((imageUrl) => imageUrl)
+      .map((imageUrl) => `/catalog/product${imageUrl}`)[0]
+  );
+};
+
+const getCouponByUserMobileNumber = () => {
+  return fetchUtil(
+    `${process.env.GET_PHARMA_AVAILABLE_COUPONS}?mobile=${localStorage.getItem('userMobileNo')}`,
+    'GET',
+    {},
+    '',
+    false
+  );
+};
+
+const isPastAppointment = (appointmentDateTime: string) =>
+  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
+
+const getAvailableFreeChatDays = (appointmentTime: string) => {
+  const followUpDayMoment = moment(appointmentTime).add(7, 'days');
+  const diffInDays = followUpDayMoment.diff(moment(), 'days');
+  if (diffInDays <= 0) {
+    const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
+    const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
+    return diffInHours > 0
+      ? `${diffInHours} hours free chat remaining`
+      : diffInMinutes > 0
+      ? `${diffInMinutes} minutes free chat remaining`
+      : '';
+  } else {
+    return `${diffInDays} days free chat remaining`;
+  }
+};
+
+const removeGraphQLKeyword = (error: any) => {
+  return error.message.replace('GraphQL error:', '');
+};
+
 export {
+  removeGraphQLKeyword,
+  getCouponByUserMobileNumber,
+  getPackOfMedicine,
+  getImageUrl,
+  getAvailableFreeChatDays,
+  isPastAppointment,
+  AppointmentFilterObject,
+  consultType,
+  appointmentStatus,
+  getStoreName,
+  getAvailability,
   isRejectedStatus,
   getStatus,
   getSymptoms,
@@ -354,6 +484,7 @@ export {
   getDiffInMinutes,
   getDiffInHours,
   NO_SERVICEABLE_MESSAGE,
+  OUT_OF_STOCK_MESSAGE,
   sortByProperty,
   locationRoutesBlackList,
   getDeviceType,
@@ -373,4 +504,9 @@ export {
   ORDER_BILLING_STATUS_STRINGS,
   getTypeOfProduct,
   kavachHelpline,
+  isActualUser,
+  NO_ONLINE_SERVICE,
+  OUT_OF_STOCK,
+  NOTIFY_WHEN_IN_STOCK,
+  PINCODE_MAXLENGTH,
 };

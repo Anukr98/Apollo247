@@ -90,12 +90,13 @@ target 'ApolloPatient' do
   pod 'RCTSystemSetting', :path => '../node_modules/react-native-system-setting'
   pod 'RNSound', :path => '../node_modules/react-native-sound'
   pod 'react-native-video', :path => '../node_modules/react-native-video'
-
-  # ServiceExtension Target
-
-  pod 'react-native-video', :path => '../node_modules/react-native-video'
-
   pod 'react-native-background-timer', :path => '../node_modules/react-native-background-timer'
+  pod 'CodePush', :path => '../node_modules/react-native-code-push'
+  pod 'RNDateTimePicker', :path => '../node_modules/@react-native-community/datetimepicker'
+  pod 'RNCallKeep', :path => '../node_modules/react-native-callkeep'
+  pod 'RNVoipPushNotification', :path => '../node_modules/react-native-voip-push-notification'
+  
+  # ServiceExtension Target
 
   target 'NotificationService' do
       platform :ios, '10.0'

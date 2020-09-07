@@ -2,14 +2,9 @@ import { EntityRepository, Repository } from 'typeorm';
 import { PatientAddress } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { getCache, setCache } from 'profiles-service/database/connectRedis';
-import { debugLog } from 'customWinstonLogger';
+import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
-const dLogger = debugLog(
-  'profileServiceLogger',
-  'patientRepository',
-  Math.floor(Math.random() * 100000000)
-);
+
 // if changing key please also change the same in entity
 const REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX: string = 'address:list:patient';
 @EntityRepository(PatientAddress)
@@ -69,7 +64,11 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
     return this.findOne({ where: { id } });
   }
 
-  deletePatientAddress(id: string) {
-    return this.delete(id);
+  async deletePatientAddress(id: string) {
+    const address = await this.findOne({ where: { id } });
+    if (address) {
+      delCache(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, address.patientId));
+      return this.delete(id);
+    }
   }
 }

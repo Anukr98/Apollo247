@@ -132,6 +132,9 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     medicineUnit: MEDICINE_UNIT!
     routeOfAdministration: ROUTE_OF_ADMINISTRATION
     medicineCustomDosage: String
+    medicineCustomDetails: String
+    includeGenericNameInPrescription: Boolean
+    genericName: String
   }
 
   type DoctorFavouriteMedicine {
@@ -150,6 +153,9 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     medicineUnit: MEDICINE_UNIT
     routeOfAdministration: ROUTE_OF_ADMINISTRATION
     medicineCustomDosage: String
+    medicineCustomDetails: String
+    includeGenericNameInPrescription: Boolean
+    genericName: String
   }
 
   input UpdateDoctorsFavouriteMedicineInput {
@@ -168,6 +174,9 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     medicineUnit: MEDICINE_UNIT
     routeOfAdministration: ROUTE_OF_ADMINISTRATION
     medicineCustomDosage: String
+    medicineCustomDetails: String
+    includeGenericNameInPrescription: Boolean
+    genericName: String
   }
 
   type FavouriteMedicineList {
@@ -218,6 +227,9 @@ type SaveDoctorsFavouriteMedicineInput = {
   medicineUnit: MEDICINE_UNIT;
   routeOfAdministration?: ROUTE_OF_ADMINISTRATION;
   medicineCustomDosage?: string;
+  medicineCustomDetails?: string;
+  includeGenericNameInPrescription?: Boolean;
+  genericName?: string;
 };
 
 type SaveDoctorsFavouriteMedicineInputArgs = {
@@ -232,7 +244,7 @@ const saveDoctorsFavouriteMedicine: Resolver<
 > = async (parent, { saveDoctorsFavouriteMedicineInput }, { doctorsDb, mobileNumber }) => {
   //doctor check
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   if (saveDoctorsFavouriteMedicineInput.medicineName.trim().length == 0)
@@ -267,7 +279,7 @@ const getDoctorFavouriteMedicineList: Resolver<
   GetDoctorFavouriteMedicineListResult
 > = async (parent, args, { mobileNumber, doctorsDb, consultsDb }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const favouriteTestRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
@@ -289,7 +301,7 @@ const removeFavouriteMedicine: Resolver<
   const favouriteMedicineRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
 
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   // check if id exists or not
@@ -299,9 +311,9 @@ const removeFavouriteMedicine: Resolver<
   //delete medicine
   await favouriteMedicineRepo.removeFavouriteMedicineById(args.id);
 
-  const doctorsOtherFavouriteMedicines = await favouriteMedicineRepo.favouriteMedicines(<string>(
-    doctordata.id
-  ));
+  const doctorsOtherFavouriteMedicines = await favouriteMedicineRepo.favouriteMedicines(
+    <string>doctordata.id
+  );
 
   return { medicineList: doctorsOtherFavouriteMedicines };
 };
@@ -322,6 +334,9 @@ type UpdateDoctorsFavouriteMedicineInput = {
   medicineUnit: string;
   routeOfAdministration?: ROUTE_OF_ADMINISTRATION;
   medicineCustomDosage?: string;
+  medicineCustomDetails?: string;
+  includeGenericNameInPrescription?: Boolean;
+  genericName?: string;
 };
 
 type UpdateDoctorsFavouriteMedicineInputArgs = {
@@ -335,7 +350,7 @@ const updateDoctorFavouriteMedicine: Resolver<
   FavouriteMedicineList
 > = async (parent, { updateDoctorsFavouriteMedicineInput }, { doctorsDb, mobileNumber }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   if (updateDoctorsFavouriteMedicineInput.medicineName.trim().length == 0)

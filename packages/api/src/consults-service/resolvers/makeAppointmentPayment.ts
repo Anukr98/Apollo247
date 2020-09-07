@@ -13,7 +13,8 @@ import {
   VALUE_TYPE,
   APPOINTMENT_UPDATED_BY,
 } from 'consults-service/entities';
-import { initiateRefund, PaytmResponse } from 'consults-service/helpers/refundHelper';
+import { initiateRefund } from 'consults-service/helpers/refundHelper';
+import { PaytmResponse } from 'types/refundHelperTypes';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -25,13 +26,12 @@ import { Connection } from 'typeorm';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
-import { addMilliseconds, format, addDays, differenceInSeconds } from 'date-fns';
+import { addMilliseconds, format, differenceInSeconds } from 'date-fns';
 import {
   sendNotification,
-  NotificationType,
   sendDoctorAppointmentNotification,
-} from 'notifications-service/resolvers/notifications';
-
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { DoctorType } from 'doctors-service/entities';
 import { appointmentPaymentEmailTemplate } from 'helpers/emailTemplates/appointmentPaymentEmailTemplate';
 import { log } from 'customWinstonLogger';
@@ -39,6 +39,7 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { acceptCoupon } from 'helpers/couponServices';
 import { AcceptCouponRequest } from 'types/coupons';
+import { updateDoctorSlotStatusES } from 'doctors-service/entities/doctorElastic';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
@@ -68,6 +69,7 @@ export const makeAppointmentPaymentTypeDefs = gql`
     bankName: String
     refundAmount: Float
     paymentMode: PAYMENT_METHODS
+    partnerInfo: String
   }
 
   type AppointmentPayment {
@@ -123,6 +125,7 @@ type AppointmentPaymentInput = {
   bankName: string;
   refundAmount: number;
   paymentMode: PAYMENT_METHODS_REVERSE;
+  partnerInfo: string;
 };
 
 type AppointmentInputArgs = { paymentInput: AppointmentPaymentInput };
@@ -210,9 +213,7 @@ const makeAppointmentPayment: Resolver<
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
     if (processingAppointment.couponCode) {
       const patient = patientsDb.getCustomRepository(PatientRepository);
-      const patientDetails = await patient.findByIdWithoutRelations(
-        processingAppointment.patientId
-      );
+      const patientDetails = await patient.getPatientDetails(processingAppointment.patientId);
       if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
       const payload: AcceptCouponRequest = {
         mobile: patientDetails.mobileNumber.replace('+91', ''),
@@ -236,7 +237,11 @@ const makeAppointmentPayment: Resolver<
         `${JSON.stringify(processingAppointment)}`,
         'true'
       );
-      await apptsRepo.systemCancelAppointment(processingAppointment.id, processingAppointment);
+      await apptsRepo.systemCancelAppointment(
+        processingAppointment.id,
+        { paymentInfo },
+        processingAppointment
+      );
       let isRefunded: boolean = false;
       if (paymentInfo.amountPaid && paymentInfo.amountPaid >= 1) {
         let refundResponse = await initiateRefund(
@@ -280,28 +285,13 @@ const makeAppointmentPayment: Resolver<
       };
     }
 
-    const slotApptDt =
-      format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd') + ' 18:30:00';
-    const actualApptDt = format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd');
-    let apptDt = format(processingAppointment.appointmentDateTime, 'yyyy-MM-dd');
-    if (processingAppointment.appointmentDateTime >= new Date(slotApptDt)) {
-      apptDt = format(addDays(new Date(apptDt), 1), 'yyyy-MM-dd');
-    }
-
-    const sl = `${actualApptDt}T${processingAppointment.appointmentDateTime
-      .getUTCHours()
-      .toString()
-      .padStart(2, '0')}:${processingAppointment.appointmentDateTime
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
-    console.log(slotApptDt, apptDt, sl, processingAppointment.doctorId, 'appoint date time');
-    apptsRepo.updateDoctorSlotStatusES(
+    //cannot remove this from here
+    updateDoctorSlotStatusES(
       processingAppointment.doctorId,
-      apptDt,
-      sl,
       processingAppointment.appointmentType,
-      ES_DOCTOR_SLOT_STATUS.BOOKED
+      ES_DOCTOR_SLOT_STATUS.BOOKED,
+      processingAppointment.appointmentDateTime,
+      processingAppointment
     );
 
     //Send booking confirmation SMS,EMAIL & NOTIFICATION to patient
@@ -338,7 +328,7 @@ const makeAppointmentPayment: Resolver<
     }
     if (
       timeDifference / 60 <=
-      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
+        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
       submitFlag == 1
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
@@ -368,13 +358,17 @@ const makeAppointmentPayment: Resolver<
         notes,
         isJdConsultStarted: true,
       };
+
       caseSheetRepo.savecaseSheet(casesheetAttrs);
-      apptsRepo.updateJdQuestionStatusbyIds([processingAppointment.id]);
+      processingAppointment.isConsultStarted = true;
+      processingAppointment.isJdQuestionsComplete = true;
       const historyAttrs: Partial<AppointmentUpdateHistory> = {
         appointment: processingAppointment,
         userType: APPOINTMENT_UPDATED_BY.PATIENT,
         fromValue: currentStatus,
         toValue: STATUS.PENDING,
+        fromState: processingAppointment.appointmentState,
+        toState: processingAppointment.appointmentState,
         valueType: VALUE_TYPE.STATUS,
         userName: processingAppointment.patientId,
         reason: ApiConstants.APPOINTMENT_AUTO_SUBMIT_HISTORY.toString(),
@@ -387,6 +381,8 @@ const makeAppointmentPayment: Resolver<
         fromValue: currentStatus,
         toValue: STATUS.PENDING,
         valueType: VALUE_TYPE.STATUS,
+        fromState: processingAppointment.appointmentState,
+        toState: processingAppointment.appointmentState,
         userName: processingAppointment.patientId,
         reason: ApiConstants.BOOK_APPOINTMENT_HISTORY_REASON.toString(),
       };
@@ -398,6 +394,8 @@ const makeAppointmentPayment: Resolver<
       userType: APPOINTMENT_UPDATED_BY.PATIENT,
       fromValue: STATUS.PAYMENT_PENDING,
       toValue: STATUS.PAYMENT_FAILED,
+      fromState: processingAppointment.appointmentState,
+      toState: processingAppointment.appointmentState,
       valueType: VALUE_TYPE.STATUS,
       userName: processingAppointment.patientId,
     };
@@ -423,6 +421,8 @@ const makeAppointmentPayment: Resolver<
           userType: APPOINTMENT_UPDATED_BY.PATIENT,
           fromValue: STATUS.PAYMENT_PENDING,
           toValue: STATUS.PAYMENT_PENDING_PG,
+          fromState: processingAppointment.appointmentState,
+          toState: processingAppointment.appointmentState,
           valueType: VALUE_TYPE.STATUS,
           userName: processingAppointment.patientId,
         };
@@ -436,10 +436,15 @@ const makeAppointmentPayment: Resolver<
   paymentInfo.paymentStatus = paymentInput.paymentStatus;
   paymentInfo.responseCode = paymentInput.responseCode;
   paymentInfo.responseMessage = paymentInput.responseMessage;
-  await apptsRepo.updateAppointment(processingAppointment.id, {
-    status: appointmentStatus,
-    paymentInfo,
-  }, processingAppointment);
+  paymentInfo.partnerInfo = paymentInput.partnerInfo;
+  await apptsRepo.updateAppointment(
+    processingAppointment.id,
+    {
+      status: appointmentStatus,
+      paymentInfo,
+    },
+    processingAppointment
+  );
   processingAppointment.status = appointmentStatus;
   paymentInfo.appointment = processingAppointment;
   return { appointment: paymentInfo, isRefunded: false };
@@ -459,7 +464,7 @@ const sendPatientAcknowledgements = async (
   }
 
   const patient = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patient.findById(appointmentData.patientId);
+  const patientDetails = await patient.getPatientDetails(appointmentData.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -538,8 +543,8 @@ const sendPatientAcknowledgements = async (
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'development' ||
-      process.env.NODE_ENV == 'local'
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {

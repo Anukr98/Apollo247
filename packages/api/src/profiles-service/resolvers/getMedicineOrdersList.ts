@@ -12,6 +12,11 @@ export const getMedicineOrdersListTypeDefs = gql`
     MedicineOrdersList: [MedicineOrders]
   }
 
+  enum DEVICE_TYPE {
+    IOS
+    ANDROID
+    DESKTOP
+  }
   type MedicineOrderDetailsResult {
     MedicineOrderDetails: MedicineOrders
   }
@@ -19,6 +24,8 @@ export const getMedicineOrdersListTypeDefs = gql`
   enum BOOKING_SOURCE {
     WEB
     MOBILE
+    ORDER_PUNCHING_TOOL
+    MFINE
   }
 
   type MedicineOrders {
@@ -33,6 +40,7 @@ export const getMedicineOrdersListTypeDefs = gql`
     deliveryType: MEDICINE_DELIVERY_TYPE!
     patientAddressId: ID
     devliveryCharges: Float
+    deviceType: DEVICE_TYPE
     prescriptionImageUrl: String
     prismPrescriptionFileId: String
     pharmaRequest: String
@@ -111,16 +119,20 @@ const getMedicineOrdersList: Resolver<
   MedicineOrdersListResult
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(args.patientId);
+
+  const patientDetails = await patientRepo.getPatientDetails(args.patientId);
+
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(args.patientId);
-
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+
   const MedicineOrdersList = await medicineOrdersRepo.getMedicineOrdersList(primaryPatientIds);
 
-  return { MedicineOrdersList };
+  return {
+    MedicineOrdersList,
+  };
 };
 
 const getMedicineOrderDetails: Resolver<
@@ -131,7 +143,7 @@ const getMedicineOrderDetails: Resolver<
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   if (args.patientId) {
-    const patientDetails = await patientRepo.findById(args.patientId);
+    const patientDetails = await patientRepo.getPatientDetails(args.patientId);
     if (!patientDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
     }
@@ -148,7 +160,6 @@ const getMedicineOrderDetails: Resolver<
       args.orderAutoId
     );
   }
-  console.log(MedicineOrderDetails, 'medicineOrderDetails');
   if (!MedicineOrderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
@@ -157,13 +168,17 @@ const getMedicineOrderDetails: Resolver<
 
 const getMedicinePaymentOrder: Resolver<
   null,
-  {},
+  {}, //for consistency response though not mandatory
   ProfilesServiceContext,
   MedicineOrdersListResult
 > = async (parent, args, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+
   const MedicineOrdersList = await medicineOrdersRepo.getPaymentMedicineOrders();
-  return { MedicineOrdersList };
+
+  return {
+    MedicineOrdersList,
+  };
 };
 
 export const getMedicineOrdersListResolvers = {

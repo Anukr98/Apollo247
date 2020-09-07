@@ -217,6 +217,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       props.stopAudioVideoCallpatient();
       props.setIscall(false);
       if (event.reason === 'networkDisconnected') {
+        props.setSessionError({
+          message: 'Call was disconnected due to Network problems on the patient end.',
+        });
+      } else {
+        props.setSessionError({ message: 'Patient left the call.' });
       }
     },
     error: (error: any) => {
@@ -283,7 +288,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       console.log('Subscribe stream disconnected!', event);
     },
     destroyed: (event: any) => {
-      console.log('Subscribe stream destroyed!', event);
+      console.log('Subscribe destroyed!', event);
       if (event.reason === 'networkDisconnected') {
       }
     },
@@ -304,6 +309,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       if (event.reason === 'quality') {
         setDowngradeToAudio(false);
       }
+    },
+    streamDestroyed: (event: any) => {
+      console.log('Subscribe stream destroyed!');
     },
   };
 
@@ -378,8 +386,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   }}
                   eventHandlers={publisherHandler}
                   onError={(error: any) => {
-                    console.log('Publisher Error', error);
-                    props.setPublisherError(error);
+                    console.log('Publisher Error', error, error.name);
+                    if (error.name === 'OT_USER_MEDIA_ACCESS_DENIED') {
+                      props.setPublisherError({
+                        message: 'Audio/Video permissions are not provided',
+                      });
+                    } else if (error.name === 'OT_HARDWARE_UNAVAILABLE') {
+                      props.setPublisherError({ message: 'Audio/Video device is not connected.' });
+                    } else if (error.name === 'OT_CHROME_MICROPHONE_ACQUISITION_ERROR') {
+                      props.setPublisherError({ message: 'Audio device is not connected.' });
+                    } else {
+                      props.setPublisherError(error);
+                    }
                   }}
                 />
 

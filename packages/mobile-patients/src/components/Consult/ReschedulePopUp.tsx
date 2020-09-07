@@ -9,7 +9,7 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Platform, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import {
@@ -76,6 +76,9 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
       CommonBugFender('ReschedulePopUp_acceptChange_try', error);
     }
   };
+
+  const isAwaitingReschedule =
+    g(props.data, 'appointmentState') == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
 
   return (
     <View
@@ -225,7 +228,11 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                       paddingHorizontal: 16,
                     }}
                   >
-                    {`Next slot for ${props.doctor && props.doctor.fullName} is available on —`}
+                    {isAwaitingReschedule
+                      ? `${(props.doctor && props.doctor.fullName) ||
+                          'Dr.'} has suggested the below slot for rescheduling this appointment —`
+                      : `Next slot for ${(props.doctor && props.doctor.fullName) ||
+                          'Dr.'} is available on —`}
                   </Text>
                   {props.reschduleDateTime ? (
                     <Text

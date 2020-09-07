@@ -140,6 +140,7 @@ type AppointmentBooking = {
   status: STATUS;
   patientName: string;
   appointmentState: APPOINTMENT_STATE;
+  patientType: PATIENT_TYPE;
 };
 
 type AppointmentBookingResult = {
@@ -170,7 +171,7 @@ const bookAppointment: Resolver<
 > = async (parent, { appointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   //check if patient id is valid
   const patient = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patient.findById(appointmentInput.patientId);
+  const patientDetails = await patient.getPatientDetails(appointmentInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -299,20 +300,23 @@ const bookAppointment: Resolver<
     throw new AphError(AphErrorMessages.BOOKING_LIMIT_EXCEEDED, undefined, {});
   }
 
-  const appointmentDetails = await apptsrepo.getAppointmentsByDocId(appointmentInput.doctorId);
-  let prevPatientId = '0';
-  if (appointmentDetails.length) {
-    //forEach loops do not support await
-    for (let k = 0, totalItems = appointmentDetails.length; k < totalItems; k++) {
-      const appointmentData = appointmentDetails[k];
-      if (appointmentData.patientId != prevPatientId) {
-        prevPatientId = appointmentData.patientId;
-        await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.NEW);
-      } else {
-        await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.REPEAT);
-      }
-    }
-  }
+  const patientAppointmentCountWithThisDoctor: number = await apptsrepo.getAppointmentsCountByDoctorIdandPatientId(
+    appointmentInput.doctorId,
+    appointmentInput.patientId
+  );
+  // let prevPatientId = '0';
+  // if (appointmentDetails.length) {
+  //   //forEach loops do not support await
+  //   for (let k = 0, totalItems = appointmentDetails.length; k < totalItems; k++) {
+  //     const appointmentData = appointmentDetails[k];
+  //     if (appointmentData.patientId != prevPatientId) {
+  //       prevPatientId = appointmentData.patientId;
+  //       await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.NEW);
+  //     } else {
+  //       await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.REPEAT);
+  //     }
+  //   }
+  // }
 
   //calculate coupon discount value
   if (appointmentInput.couponCode) {
@@ -324,6 +328,7 @@ const bookAppointment: Resolver<
 
     const payload: ValidateCouponRequest = {
       mobile: patientDetails.mobileNumber.replace('+91', ''),
+      email: patientDetails.emailAddress,
       billAmount: parseInt(amount.toString(), 10),
       coupon: appointmentInput.couponCode,
       paymentType: '',
@@ -338,8 +343,8 @@ const bookAppointment: Resolver<
             appointmentInput.appointmentType == APPOINTMENT_TYPE.ONLINE
               ? 1
               : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-                ? 0
-                : -1,
+              ? 0
+              : -1,
           cost: parseInt(amount.toString(), 10),
           rescheduling: false,
         },
@@ -369,6 +374,7 @@ const bookAppointment: Resolver<
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
     appointmentDateTime: new Date(appointmentInput.appointmentDateTime.toISOString()),
     appointmentState: APPOINTMENT_STATE.NEW,
+    patientType: patientAppointmentCountWithThisDoctor > 0 ? PATIENT_TYPE.REPEAT : PATIENT_TYPE.NEW,
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
 
@@ -387,6 +393,8 @@ const bookAppointment: Resolver<
     userType: APPOINTMENT_UPDATED_BY.PATIENT,
     fromValue: '',
     toValue: STATUS.PAYMENT_PENDING,
+    fromState: '',
+    toState: APPOINTMENT_STATE.NEW,
     valueType: VALUE_TYPE.STATUS,
     userName: appointmentInput.patientId,
     reason: ApiConstants.BOOK_APPOINTMENT_HISTORY_REASON.toString(),

@@ -6,10 +6,8 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
-import {
-  sendDiagnosticOrderStatusNotification,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
+import { sendDiagnosticOrderStatusNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 
 export const saveDiagnosticOrderPaymentTypeDefs = gql`
   input DiagnosticPaymentInput {

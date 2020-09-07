@@ -110,6 +110,8 @@ export const AuthProvider: React.FC = (props) => {
 
   const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
   const setNewToken = () => {
+    // const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    // if(userLoggedIn == 'true'){ // no need to refresh jwt token on login
     try {
       firebase.auth().onAuthStateChanged(async (user) => {
         // console.log('authprovider', user);
@@ -125,6 +127,7 @@ export const AuthProvider: React.FC = (props) => {
         }
       });
     } catch (e) {}
+  // }
   };
   const buildApolloClient = (authToken: string, handleUnauthenticated: any) => {
     if (authToken) {
@@ -320,8 +323,6 @@ export const AuthProvider: React.FC = (props) => {
                 console.log('SplashScreen Webengage----', { error });
               }
 
-              setBugFenderLog('GET_PATIENT_API_CALL_SUCCESS');
-
               const allPatients = g(data, 'data', 'getPatientByMobileNumber', 'patients');
               setSavePatientDetails && setSavePatientDetails(allPatients);
 
@@ -334,8 +335,6 @@ export const AuthProvider: React.FC = (props) => {
               setMobileAPICalled(false);
             })
             .catch(async (error) => {
-              setBugFenderLog('GET_PATIENT_API_CALL_FAIL');
-
               CommonBugFender('AuthProvider_getPatientApiCall', error);
               const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
               const item = JSON.parse(retrievedItem);

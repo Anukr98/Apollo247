@@ -273,6 +273,11 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    symptomsText: {
+      [theme.breakpoints.down(375)]: {
+        maxWidth: '190px',
+      },
+    },
   };
 });
 
@@ -389,7 +394,10 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isRedirect, setIsRedirect] = useState<boolean>(false);
 
-  const getAge = (dob: string) => moment().diff(moment(dob, 'YYYY-MM-DD'), 'years').toString();
+  const getAge = (dob: string) =>
+    moment()
+      .diff(moment(dob, 'YYYY-MM-DD'), 'years')
+      .toString();
   const setUserAge = (dob: string) => {
     setPatientAge(getAge(dob));
   };
@@ -478,7 +486,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
               </Link>
-              UNDERSTAND YOUR SYMPTOMS
+              <span className={classes.symptomsText}>UNDERSTAND YOUR SYMPTOMS</span>
               {isSignedIn && (
                 <div className={classes.profileDropdownMobile}>
                   <div className={classes.labelFor}>For</div>

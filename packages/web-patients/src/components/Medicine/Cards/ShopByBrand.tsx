@@ -11,11 +11,18 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       width: '100%',
-      '& >div >img': {
-        width: 24,
-        height: 24,
-        [theme.breakpoints.down('xs')]: {
-          display: 'none !important',
+      '& >div': {
+        '& >img': {
+          width: 24,
+          height: 24,
+          [theme.breakpoints.down('xs')]: {
+            display: 'none !important',
+          },
+        },
+        '& >div': {
+          [theme.breakpoints.down('xs')]: {
+            margin: '0 -20px 0 -10px',
+          },
         },
       },
     },
@@ -31,9 +38,6 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       height: 60,
-      [theme.breakpoints.down('xs')]: {
-        boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.1)',
-      },
     },
     cardIcon: {
       textAlign: 'center',
@@ -50,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface ShopByBrandsProps {
   data: MedicinePageSection[];
+  sectionName: string;
 }
 
 export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
@@ -85,9 +90,9 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
       {
         breakpoint: 480,
         settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-          centerMode: true,
+          slidesToShow: 2,
+          slidesToScroll: 2,
+          // centerMode: true,
           nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
           prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },
@@ -99,6 +104,8 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
     url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
+  const searchText = props.sectionName.replace(/_/g, '-');
+
   return (
     <div className={classes.root}>
       <Slider {...sliderSettings}>
@@ -108,7 +115,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
             formattedTitle = _replace(formattedTitle, ' ', '-');
             return (
               <div key={index} className={classes.card}>
-                <Link to={clientRoutes.searchByMedicine('shop-by-brand', brand.url_key)}>
+                <Link to={clientRoutes.searchByMedicine(searchText, brand.url_key)}>
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>
                       <img

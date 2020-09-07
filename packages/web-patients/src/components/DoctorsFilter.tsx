@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       [theme.breakpoints.down('xs')]: {
         borderRadius: 0,
-        paddingTop: 0,
+        paddingTop: 20,
         width: '100%',
         paddingBottom: 20,
         boxShadow: '0 15px 20px 0 rgba(0, 0, 0, 0.1)',

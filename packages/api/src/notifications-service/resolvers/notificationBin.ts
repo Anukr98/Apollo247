@@ -1,4 +1,3 @@
-import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
 import {
@@ -18,81 +17,11 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { subDays, format, differenceInDays, addMinutes } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
-import { sendNotificationSMS } from 'notifications-service/resolvers/notifications';
+import { sendNotificationSMS, sendChatMessageNotification } from 'notifications-service/handlers';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { sendChatMessageNotification } from 'notifications-service/resolvers/notifications';
-
-export const notificationBinTypeDefs = gql`
-  enum notificationStatus {
-    READ
-    UNREAD
-  }
-
-  enum notificationEventName {
-    APPOINTMENT
-  }
-
-  enum notificationType {
-    CHAT
-  }
-
-  input MessageInput {
-    fromId: String!
-    toId: String!
-    eventName: notificationEventName!
-    eventId: String!
-    message: String!
-    status: notificationStatus!
-    type: notificationType!
-  }
-
-  type NotificationBinData {
-    fromId: String!
-    toId: String!
-    eventName: notificationEventName!
-    eventId: String!
-    message: String!
-    status: notificationStatus!
-    type: notificationType!
-    id: String
-  }
-
-  type NotificationData {
-    notificationData: NotificationBinData
-  }
-
-  type NotificationDataSet {
-    notificationData: [GetNotificationsResponse]
-  }
-
-  type NotificationBinDataSet {
-    notificationData: [NotificationBinData]
-  }
-
-  type GetNotificationsResponse {
-    appointmentId: String
-    doctorId: String
-    lastUnreadMessageDate: DateTime
-    patientId: String
-    patientFirstName: String
-    patientLastName: String
-    patientPhotoUrl: String
-    unreadNotificationsCount: Int
-  }
-
-  extend type Query {
-    getNotifications(toId: String!, startDate: Date, endDate: Date): NotificationDataSet
-    sendUnreadMessagesNotification: String
-    archiveMessages: String
-  }
-
-  extend type Mutation {
-    insertMessage(messageInput: MessageInput): NotificationData
-    markMessageToUnread(eventId: String): NotificationBinDataSet
-  }
-`;
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 type MessageInput = {
   fromId: string;
@@ -134,7 +63,7 @@ const insertMessage: Resolver<
 
     //get patient details
     const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-    const patientDetails = await patientRepo.findById(fromId);
+    const patientDetails = await patientRepo.getPatientDetails(fromId);
     if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
     //get appointment details
@@ -145,11 +74,22 @@ const insertMessage: Resolver<
     if (appointmentData.status != STATUS.COMPLETED)
       throw new AphError(AphErrorMessages.APPOINTMENT_NOT_COMPLETED);
 
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const consultDate = format(appointmentData.sdConsultationDate, 'yyyy-MM-dd');
+    const today = format(addMinutes(new Date(), +0), 'yyyy-MM-dd');
+    const consultDate = format(
+      addMinutes(new Date(appointmentData.sdConsultationDate), +0),
+      'yyyy-MM-dd'
+    );
     const difference = differenceInDays(new Date(today), new Date(consultDate));
 
-    if (difference > parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10))
+    const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);  
+    const caseSheetDetails = await caseSheetRepo.getSDLatestCompletedCaseSheet(appointmentData.id);
+    if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
+
+    const followUpDays = caseSheetDetails.followUpAfterInDays ? 
+      parseInt(caseSheetDetails.followUpAfterInDays.toString(), 10): 
+      ApiConstants.FREE_CHAT_DAYS;
+
+    if (difference > followUpDays)
       throw new AphError(AphErrorMessages.FREE_CHAT_DAYS_COMPLETED);
 
     //create message body
@@ -244,16 +184,25 @@ const sendUnreadMessagesNotification: Resolver<
     const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
     const appointmentsData = await appointmentRepo.getAppointmentsByIdsWithSpecificFields(
       appointmentIds,
-      ['appointment.doctorId', 'appointment.sdConsultationDate']
+      ['appointment.doctorId', 'appointment.sdConsultationDate', 'appointment.id']
     );
 
     //Filtering the last date appointments
-    const lastDayAppointments = appointmentsData.filter((appointment) => {
+    const lastDayAppointments = appointmentsData.filter(async (appointment) => {
+      const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);  
+      const caseSheetDetails = await caseSheetRepo.getSDLatestCompletedCaseSheet(appointment.id);
+      if (!caseSheetDetails) return false;
+  
       if (!appointment.sdConsultationDate) return false;
-      const today = format(new Date(), 'yyyy-MM-dd');
-      const consultDate = format(appointment.sdConsultationDate, 'yyyy-MM-dd');
+      const today = format(addMinutes(new Date(), +0), 'yyyy-MM-dd');
+      const consultDate = format(addMinutes(appointment.sdConsultationDate, +0), 'yyyy-MM-dd');
       const difference = differenceInDays(new Date(today), new Date(consultDate));
-      return difference == parseInt(ApiConstants.FREE_CHAT_DAYS.toString(), 10) - 1;
+
+      const lastFollowUpDay = caseSheetDetails.followUpAfterInDays ? 
+      parseInt(caseSheetDetails.followUpAfterInDays.toString(), 10) -1: 
+      ApiConstants.FREE_CHAT_DAYS -1;
+
+      return difference == lastFollowUpDay;
     });
 
     //Mapping the doctor ids with count of last day appointments
@@ -320,14 +269,11 @@ const archiveMessages: Resolver<null, {}, NotificationsServiceContext, String> =
   args,
   { consultsDb }
 ) => {
-  //Getting all the appointments past 1 day of free chat days
+
   const currentIstDate = addMinutes(new Date(), 330); //Taking IST time
-  const appointmentDateToBeArchived = subDays(currentIstDate, ApiConstants.FREE_CHAT_DAYS);
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointments = await appointmentRepo.getAllCompletedAppointmentsByConsultTime(
-    appointmentDateToBeArchived
-  );
-  const appointmentIdsToBeArchived = appointments.map((appointment) => appointment.id);
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const caseSheets = await caseSheetRepo.getAllAppointmentsToBeArchived(currentIstDate);
+  const appointmentIdsToBeArchived = caseSheets.map((caseSheet) => caseSheet.appointment_id);
 
   if (appointmentIdsToBeArchived.length) {
     //Getting the Notifications which needs to be archived
@@ -387,7 +333,7 @@ const getNotifications: Resolver<
   const startDate =
     args.startDate && args.endDate
       ? args.startDate
-      : subDays(new Date(), ApiConstants.FREE_CHAT_DAYS);
+      : subDays(new Date(), doctorDetails.chatDays);
   const endDate = args.startDate && args.endDate ? args.endDate : new Date();
   const notificationBinRepo = consultsDb.getCustomRepository(NotificationBinRepository);
   const notificationData = await notificationBinRepo.getNotificationInTimePeriod(

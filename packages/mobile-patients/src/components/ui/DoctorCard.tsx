@@ -29,6 +29,7 @@ import {
   mhdMY,
   nameFormater,
   postWebEngageEvent,
+  nextAvailability,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -123,6 +124,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
     | null;
   numberOfLines?: number;
   availableModes?: ConsultMode | null;
+  callSaveSearch?: string;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -225,6 +227,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       onlinePrice: rowData && rowData.onlineConsultationFees,
       InpersonPrice: rowData && rowData.physicalConsultationFees,
       ConsultType: props.availableModes,
+      callSaveSearch: props.callSaveSearch,
       params: params,
     });
   };
@@ -358,10 +361,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 }}
               > */}
               <View style={styles.imageView}>
-                {rowData.thumbnailUrl &&
-                rowData.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
-                ) ? (
+                {!!g(rowData, 'thumbnailUrl') ? (
                   <Image
                     style={{
                       height: 80,
@@ -369,7 +369,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       width: 80,
                     }}
                     source={{
-                      uri: rowData.thumbnailUrl,
+                      uri: rowData.thumbnailUrl!,
                     }}
                     resizeMode={'contain'}
                   />
@@ -526,7 +526,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     ]}
                   >
                     {availableTime && moment(availableTime).isValid()
-                      ? `Consult in ${mhdMY(availableTime, 'min')}`
+                      ? nextAvailability(availableTime, 'Consult')
                       : string.common.book_apointment}
                   </Text>
                 </TouchableOpacity>

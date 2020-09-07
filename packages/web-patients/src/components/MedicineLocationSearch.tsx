@@ -8,24 +8,18 @@ import { useShoppingCart } from './MedicinesCartProvider';
 import axios, { AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
-import { findAddrComponents } from 'helpers/commonHelpers';
+import { findAddrComponents, isActualUser } from 'helpers/commonHelpers';
+import { pincodeAutoSelectTracking, pincodeManualSelectTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     userLocation: {
       borderLeft: '0.5px solid rgba(2,71,91,0.3)',
-      paddingLeft: 20,
-      marginLeft: 40,
-      paddingTop: 14,
-      paddingBottom: 14,
-      marginTop: 10,
-      marginBottom: 10,
+      padding: '10px 20px',
       position: 'relative',
       [theme.breakpoints.down('xs')]: {
-        marginLeft: 'auto',
         borderLeft: 'none',
-        paddingTop: 15,
-        paddingBottom: 15,
+        padding: '0px 10px 0px 20px',
       },
     },
     locationWrap: {
@@ -64,6 +58,7 @@ const useStyles = makeStyles((theme: Theme) => {
     userName: {
       fontSize: 12,
       color: '#01475b',
+      lineHeight: 'normal',
     },
     locationPopRoot: {
       overflow: 'initial',
@@ -86,8 +81,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     noService: {
-      position: 'absolute',
-      bottom: -2,
+      // position: 'absolute',
+      // bottom: -2,
       fontSize: 11,
       color: '#890000',
       minWidth: 140,
@@ -196,6 +191,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const [pincodeError, setPincodeError] = React.useState<boolean>(false);
   const [mutationLoading, setMutationLoading] = React.useState<boolean>(false);
   const [alertMessage, setAlertMessage] = React.useState<string>('');
+  const [modeChoose, setModeChoose] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const [isUserDeniedLocationAccess, setIsUserDeniedLocationAccess] = React.useState<
     boolean | null
@@ -349,6 +345,16 @@ export const MedicineLocationSearch: React.FC = (props) => {
   const isServiceable = (pincode: string) => {
     checkServiceAvailability(pincode)
       .then(({ data }: any) => {
+        modeChoose === 'auto'
+          ? pincodeAutoSelectTracking({
+              pincode,
+              serviceability: data.Availability,
+            })
+          : pincodeManualSelectTracking({
+              pincode,
+              serviceability: data.Availability,
+              source: 'Pharmacy Home',
+            });
         if (data && data.Availability) {
           checkSelectedPincodeServiceability(pincode, '0');
           getPlaceDetails(pincode);
@@ -363,6 +369,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
         setMutationLoading(false);
       });
   };
+  const isUser = isActualUser();
 
   return (
     <div className={classes.userLocation}>
@@ -382,7 +389,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
             } ${pharmaAddressDetails ? pharmaAddressDetails.pincode : ''}`}
           </span>
           <span>
-            <img src={require('images/ic_dropdown_green.svg')} alt="" />
+            <img src={require('images/ic_dropdown_green.svg')} alt="Dropdown" title="Dropdown" />
           </span>
         </div>
         {headerPincodeError === '1' && (
@@ -412,6 +419,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
             onClick={() => {
               setHeaderPincodeError(null);
               locateCurrentLocation();
+              setModeChoose('auto');
             }}
           >
             Auto Select Location
@@ -420,6 +428,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
             onClick={() => {
               setIsLocationPopover(false);
               setIsPincodeDialogOpen(true);
+              setModeChoose('manual');
             }}
           >
             Enter Delivery Pincode
@@ -469,36 +478,39 @@ export const MedicineLocationSearch: React.FC = (props) => {
           </div>
         </div>
       </AphDialog>
-      <Popover
-        open={isPopoverOpen}
-        anchorEl={mascotRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.locationPopoverClose} onClick={closePopOver}>
-              <img src={require('images/ic_cross_popup.svg')} alt="" />
+      {typeof window !== 'undefined' && window.navigator && isUser && (
+        <Popover
+          open={isPopoverOpen}
+          anchorEl={mascotRef.current}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          classes={{ paper: classes.bottomPopover }}
+        >
+          <div className={classes.successPopoverWindow}>
+            <div className={classes.windowWrap}>
+              <div className={classes.locationPopoverClose} onClick={closePopOver}>
+                <img src={require('images/ic_cross_popup.svg')} alt="" />
+              </div>
+              <div className={classes.mascotIcon}>
+                <img src={require('images/ic-mascot.png')} alt="" />
+              </div>
+              <MedicineAllowLocation
+                setIsPincodeDialogOpen={setIsPincodeDialogOpen}
+                setIsPopoverOpen={setIsPopoverOpen}
+                isPopoverOpen={isPopoverOpen}
+                locateCurrentLocation={locateCurrentLocation}
+                setModeChoose={setModeChoose}
+              />
             </div>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <MedicineAllowLocation
-              setIsPincodeDialogOpen={setIsPincodeDialogOpen}
-              setIsPopoverOpen={setIsPopoverOpen}
-              isPopoverOpen={isPopoverOpen}
-              locateCurrentLocation={locateCurrentLocation}
-            />
           </div>
-        </div>
-      </Popover>
+        </Popover>
+      )}
       <Alerts
         setAlertMessage={setAlertMessage}
         alertMessage={alertMessage}

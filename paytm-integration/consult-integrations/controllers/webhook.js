@@ -14,7 +14,10 @@ module.exports = async (req, res, next) => {
 
     const checksum = payload.CHECKSUMHASH;
     delete payload.CHECKSUMHASH;
-    if (!verifychecksum(payload, process.env.PAYTM_MERCHANT_KEY_CONSULTS, checksum)) {
+    let merchantKey = process.env.PAYTM_MERCHANT_KEY_CONSULTS;
+    if (payload.MID == process.env.SBI_MID_CONSULTS)
+      merchantKey = process.env.SBI_PAYTM_MERCHANT_KEY_CONSULTS;
+    if (!verifychecksum(payload, merchantKey, checksum)) {
       logger.error(
         `${orderId} - consult-response-webhook: checksum did not match - ${JSON.stringify(payload)}`
       );
@@ -34,7 +37,7 @@ module.exports = async (req, res, next) => {
 
     if (response.data.errors && response.data.errors.length) {
       logger.info(`${orderId} - consult-payment-webhook - ${JSON.stringify(response.data.errors)}`);
-      //throw new Error(`Error Occured in makeAppointmentPayment - consult-payment-webhook - for order id: ${orderId}`);
+      throw new Error(`Error Occured in makeAppointmentPayment - consult-payment-webhook - for order id: ${orderId}`);
     }
     res.send('webhook consumed successfully!');
   } catch (e) {

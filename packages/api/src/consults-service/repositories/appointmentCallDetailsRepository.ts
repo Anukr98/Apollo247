@@ -3,7 +3,7 @@ import { AppointmentCallDetails } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { differenceInMinutes } from 'date-fns';
-import { DOCTOR_CALL_TYPE } from 'notifications-service/resolvers/notifications';
+import { DOCTOR_CALL_TYPE } from 'notifications-service/constants';
 
 @EntityRepository(AppointmentCallDetails)
 export class AppointmentCallDetailsRepository extends Repository<AppointmentCallDetails> {
@@ -29,7 +29,7 @@ export class AppointmentCallDetailsRepository extends Repository<AppointmentCall
   }
 
   getCallDetails(id: string) {
-    return this.findOne({ where: { id } });
+    return this.findOne({ where: { id }, relations: ['appointment'] });
   }
 
   findByAppointmentId(appointmentId: string) {

@@ -1,9 +1,8 @@
 import { Theme, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { useRef, useState } from 'react';
-import { AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
-import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
+import { AphDialogTitle, AphDialog, AphDialogClose, AphButton } from '@aph/web-ui-components';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -165,6 +164,12 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       justifyContent: 'center',
     },
+    memberTitle: {
+      '& h2': {
+        fontSize: 15,
+        textTransform: 'uppercase',
+      },
+    },
   };
 });
 
@@ -207,68 +212,68 @@ export const ManageProfiles: React.FC = (props) => {
       >
         {allCurrentPatients &&
           allCurrentPatients.map((accountDetails) => {
-            const firstName = _startCase(
-              _toLower(accountDetails && accountDetails.firstName ? accountDetails.firstName : '')
-            );
-            const lastName = _startCase(
-              _toLower(accountDetails && accountDetails.lastName ? accountDetails.lastName : '')
-            );
-            const relation = accountDetails.relation === 'ME' ? 'SELF' : accountDetails.relation;
-            const gender = accountDetails && accountDetails.gender ? accountDetails.gender : null;
-            const uhid = accountDetails.uhid;
-            const age =
-              accountDetails && accountDetails.dateOfBirth
-                ? moment().diff(accountDetails.dateOfBirth, 'years')
-                : null;
-            const dob =
-              accountDetails && accountDetails.dateOfBirth ? accountDetails.dateOfBirth : null;
-            const photoUrl = accountDetails && accountDetails.photoUrl;
-            const userId = accountDetails && accountDetails.id;
-            const mobileNumber =
-              (accountDetails && accountDetails.mobileNumber && accountDetails.mobileNumber) || '';
+            if (accountDetails) {
+              const firstName = _startCase(
+                _toLower(accountDetails.firstName ? accountDetails.firstName : '')
+              );
+              const lastName = _startCase(
+                _toLower(accountDetails.lastName ? accountDetails.lastName : '')
+              );
+              const relation = accountDetails.relation === 'ME' ? 'SELF' : accountDetails.relation;
+              const gender = accountDetails.gender ? accountDetails.gender : null;
+              const uhid = accountDetails.uhid;
+              const dob = accountDetails.dateOfBirth ? accountDetails.dateOfBirth : null;
+              const age = dob ? moment().diff(dob, 'years') : null;
+              const photoUrl = accountDetails.photoUrl;
+              const userId = accountDetails.id;
+              const mobileNumber =
+                (accountDetails.mobileNumber && accountDetails.mobileNumber) || '';
 
-            return (
-              <div
-                className={classes.customScroll}
-                onClick={() => {
-                  setIsAddNewProfileDialogOpen(true);
-                  setUpdatingPatientId(userId);
-                  setIsMeClicked(accountDetails.relation === 'ME');
-                }}
-                title={'Update Profile'}
-              >
-                {firstName && (
-                  <div className={classes.profileCard}>
-                    <div className={classes.profileImg}>
-                      <img src={photoUrl ? photoUrl : require('images/no_photo.png')} alt="" />
-                    </div>
-                    <div className={classes.profileGroup}>
-                      <div className={classes.userTopGroup}>
-                        <div className={classes.userName}>{`${firstName} ${lastName}`}</div>
-                        <div className={classes.rightGroup}>
-                          <div className={classes.userInfo}>
-                            {gender && age ? (
-                              <>{`${relation} | ${gender} | ${age}`}</>
-                            ) : (
-                              `${relation}`
-                            )}
+              return (
+                <div
+                  className={classes.customScroll}
+                  onClick={() => {
+                    setIsAddNewProfileDialogOpen(true);
+                    setUpdatingPatientId(userId);
+                    setIsMeClicked(accountDetails.relation === 'ME');
+                  }}
+                  title={'Edit Profile'}
+                >
+                  {firstName && firstName.length > 0 && (
+                    <div className={classes.profileCard}>
+                      <div className={classes.profileImg}>
+                        <img src={photoUrl ? photoUrl : require('images/no_photo.png')} alt="" />
+                      </div>
+                      <div className={classes.profileGroup}>
+                        <div className={classes.userTopGroup}>
+                          <div className={classes.userName}>{`${firstName} ${lastName}`}</div>
+                          <div className={classes.rightGroup}>
+                            <div className={classes.userInfo}>
+                              {gender && age ? (
+                                <>{`${relation} | ${gender} | ${age}`}</>
+                              ) : (
+                                `${relation}`
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className={classes.userBottomGroup}>
-                        <div className={classes.userId}>UHID : {uhid}</div>
-                        <div className={classes.rightGroup}>
-                          {dob ? `DOB : ${moment(dob).format('DD MMM, YYYY')}` : ''}
+                        <div className={classes.userBottomGroup}>
+                          <div className={classes.userId}>UHID : {uhid}</div>
+                          {dob && dob.length > 0 && (
+                            <div className={classes.rightGroup}>
+                              {`DOB : ${moment(dob).format('DD MMM, YYYY')}`}
+                            </div>
+                          )}
+                        </div>
+                        <div className={classes.userBottom}>
+                          <div className={classes.rightGroup}>{mobileNumber}</div>
                         </div>
                       </div>
-                      <div className={classes.userBottom}>
-                        <div className={classes.rightGroup}>{mobileNumber}</div>
-                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            );
+                  )}
+                </div>
+              );
+            }
           })}
       </Scrollbars>
       <div className={classes.bottomActions}>
@@ -285,8 +290,8 @@ export const ManageProfiles: React.FC = (props) => {
       </div>
       <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIsAddNewProfileDialogOpen(false)} title={'Close'} />
-        <AphDialogTitle>
-          {updatingPatientId.length > 0 ? 'Update Profile' : 'Add New Profile'}
+        <AphDialogTitle className={classes.memberTitle}>
+          {updatingPatientId.length > 0 ? 'Edit Profile' : 'Add New Family Member'}
           {/* {updatingPatientId.length > 0 ? (
             <div
               onClick={() => setIsDeletePopoverOpen(true)}
@@ -305,6 +310,9 @@ export const ManageProfiles: React.FC = (props) => {
           selectedPatientId={updatingPatientId}
           successHandler={(isPopoverOpen: boolean) => setIsPopoverOpen(isPopoverOpen)}
           isProfileDelete={isProfileDelete}
+          addNewProfileFromEditMenu={() => {
+            setUpdatingPatientId('');
+          }}
         />
       </AphDialog>
       {!isMeClicked && (

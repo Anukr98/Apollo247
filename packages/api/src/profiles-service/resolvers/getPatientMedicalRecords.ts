@@ -11,7 +11,11 @@ import path from 'path';
 import { ApiConstants } from 'ApiConstants';
 
 import { getLabResults, getPrescriptionData, getAuthToken } from 'helpers/phrV1Services';
-import { LabResultsDownloadResponse, PrescriptionDownloadResponse } from 'types/phrv1';
+import {
+  LabResultsDownloadResponse,
+  PrescriptionDownloadResponse,
+  GetAuthTokenResponse,
+} from 'types/phrv1';
 import { format } from 'date-fns';
 import { prescriptionSource } from 'profiles-service/resolvers/prescriptionUpload';
 
@@ -118,6 +122,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     additionalNotes: String
     consultId: String
     tag: String
+    siteDisplayName: String
     labTestResults: [LabTestFileParameters]
     fileUrl: String!
     date: Date!
@@ -145,6 +150,8 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     source: String!
     fileUrl: String!
     date: Date!
+    hospital_name: String
+    hospitalId: String
     prescriptionFiles: [PrecriptionFileParameters]
   }
 
@@ -171,9 +178,18 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     labResults: LabResultsDownloadResponse
     prescriptions: PrescriptionDownloadResponse
   }
+
+  type PrismAuthTokenResponse {
+    errorCode: Int
+    errorMsg: String
+    errorType: String
+    response: String
+  }
+
   extend type Query {
     getPatientMedicalRecords(patientId: ID!, offset: Int, limit: Int): MedicalRecordsResult
     getPatientPrismMedicalRecords(patientId: ID!): PrismMedicalRecordsResult
+    getPrismAuthToken(uhid: String!): PrismAuthTokenResponse
   }
 `;
 
@@ -230,30 +246,13 @@ type PrismMedicalRecordsResult = {
   prescriptions: PrescriptionDownloadResponse;
 };
 
+//Not in use, to support backward compatability
 const getPatientMedicalRecords: Resolver<
   null,
   { patientId: string; offset?: number; limit?: number },
   ProfilesServiceContext,
   MedicalRecordsResult
 > = async (parent, args, { profilesDb, doctorsDb }) => {
-  //commented to support backward compatability
-  /*const { patientId, offset, limit } = args;
-
-  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(patientId);
-  if (patientDetails == null) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-  }
-
-  const medicalRecordsRepo = profilesDb.getCustomRepository(MedicalRecordsRepository);
-  const primaryPatientIds = await patientRepo.getLinkedPatientIds(patientId);
-
-  const medicalRecords = await medicalRecordsRepo.findByPatientIds(
-    primaryPatientIds,
-    offset,
-    limit
-  ); 
-  return { medicalRecords };*/
   return { medicalRecords: [] };
 };
 
@@ -282,7 +281,8 @@ const getPatientPrismMedicalRecords: Resolver<
   PrismMedicalRecordsResult
 > = async (parent, args, { mobileNumber, profilesDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientsRepo.findById(args.patientId);
+  const patientDetails = await patientsRepo.getPatientDetails(args.patientId);
+
   if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 
   if (!patientDetails.uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
@@ -339,7 +339,6 @@ const getPatientPrismMedicalRecords: Resolver<
       prescription.fileUrl.length > 0
         ? prescription.fileUrl.replace('{FILE_NAME}', prescription.prescriptionFiles[0].fileName)
         : '';
-
     if (prescription.dateOfPrescription.toString().length < 11) {
       prescription.dateOfPrescription = prescription.dateOfPrescription * 1000;
     }
@@ -381,7 +380,6 @@ const getPatientPrismMedicalRecords: Resolver<
     if (element.labTestDate.toString().length < 11) {
       element.labTestDate = element.labTestDate * 1000;
     }
-
     const labResult = {
       id: element.id,
       labTestName: element.labTestName,
@@ -444,175 +442,22 @@ const getPatientPrismMedicalRecords: Resolver<
     prescriptions: prescriptions,
   };
 
-  /*
-  //get authtoken for the logged in user mobile number
-  const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
-
-  const authLog = {
-    message: 'PrismAuthToken API Response',
-    time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
-    level: 'info',
-    response: prismAuthToken,
-  };
-  winston.log(authLog);
-
-  if (!prismAuthToken) throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {});
-
-  //get users list for the mobile number
-  const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
-
-  const usersLog = {
-    message: 'PrismUserList API Response',
-    time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
-    level: 'info',
-    response: prismUserList,
-  };
-  winston.log(usersLog);
-
-  const patientDetails = await patientsRepo.findById(args.patientId);
-  if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-
-  let uhid = '';
-  if (patientDetails.primaryUhid) {
-    uhid = patientDetails.primaryUhid;
-  } else {
-    uhid = await patientsRepo.validateAndGetUHID(args.patientId, prismUserList);
-  }
-
-  if (!uhid) {
-    throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {});
-  }
-
-  //get authtoken for the logged in user mobile number
-  const prismUHIDAuthToken = await patientsRepo.getPrismAuthTokenByUHID(uhid);
-
-  if (!prismUHIDAuthToken)
-    throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {});
-
-  //just call get prism user details with the corresponding uhid
-  await patientsRepo.getPrismUsersDetails(uhid, prismUHIDAuthToken);
-  const formattedLabResults: LabTestResult[] = [];
-  const labResults = await patientsRepo.getPatientLabResults(uhid, prismUHIDAuthToken);
-  const labResultLog = {
-    message: 'LabResults API Response',
-    time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
-    level: 'info',
-    response: labResults,
-  };
-  winston.log(labResultLog);
-
-  labResults.forEach((element: PrismLabTestResult) => {
-    let prismFileIds: string[] = [];
-    let labResultParams: LabTestResultParameter[] = [];
-    //collecting prism file ids
-    if (element.testResultFiles.length > 0) {
-      prismFileIds = element.testResultFiles.map((item) => {
-        return `${item.id}_${item.fileName}`;
-      });
-    }
-    //collecting test result params
-    if (element.labTestResults.length > 0) {
-      labResultParams = element.labTestResults.map((item) => {
-        return {
-          parameterName: item.parameterName,
-          result: item.result,
-          unit: item.unit,
-          range: item.range,
-          outOfRange: item.outOfRange,
-          resultDate: item.resultDate,
-          setOutOfRange: item.setOutOfRange,
-          setResultDate: item.setResultDate,
-          setUnit: item.setUnit,
-          setParameterName: item.setParameterName,
-          setRange: item.setRange,
-          setResult: item.setResult,
-        };
-      });
-    }
-
-    const labResult = {
-      id: element.id,
-      labTestName: element.labTestName,
-      labTestSource: element.labTestSource,
-      labTestDate: format(new Date(element.labTestDate), 'yyyy-MM-dd HH:mm'),
-      labTestReferredBy: element.labTestRefferedBy,
-      additionalNotes: element.additionalNotes,
-      testResultPrismFileIds: prismFileIds,
-      labTestResultParameters: labResultParams,
-      departmentName: element.departmentName,
-      signingDocName: element.signingDocName,
-      observation: element.observation,
-    };
-
-    formattedLabResults.push(labResult);
-  });
-
-  const formattedHealthChecks: HealthCheckResult[] = [];
-  const healthChecks = await patientsRepo.getPatientHealthChecks(uhid, prismUHIDAuthToken);
-  const healthChecksLog = {
-    message: 'HealthChecks API Response',
-    time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
-    level: 'info',
-    response: healthChecks,
-  };
-  winston.log(healthChecksLog);
-  healthChecks.forEach((element: PrismHealthCheckResult) => {
-    //collecting prism file ids
-    let prismFileIds: string[] = [];
-    if (element.healthCheckFiles.length > 0) {
-      prismFileIds = element.healthCheckFiles.map((item) => {
-        return `${item.id}_${item.fileName}`;
-      });
-    }
-    const healthCheckResult = {
-      appointmentDate: format(new Date(element.appointmentDate), 'yyyy-MM-dd HH:mm'),
-      followupDate: format(new Date(element.followupDate), 'yyyy-MM-dd HH:mm'),
-      healthCheckDate: format(new Date(element.healthCheckDate), 'yyyy-MM-dd HH:mm'),
-      healthCheckPrismFileIds: prismFileIds,
-      healthCheckName: element.healthCheckName,
-      healthCheckSummary: element.healthCheckSummary,
-      id: element.id,
-      source: element.source,
-    };
-
-    formattedHealthChecks.push(healthCheckResult);
-  });
-
-  const formattedHospitalizations: HospitalizationResult[] = [];
-  const hospitalizations = await patientsRepo.getPatientHospitalizations(uhid, prismUHIDAuthToken);
-  const hospitalizationsLog = {
-    message: 'Hospitalizations API Response',
-    time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
-    level: 'info',
-    response: hospitalizations,
-  };
-  winston.log(hospitalizationsLog);
-  hospitalizations.forEach((element: PrismHospitalizationResult) => {
-    //collecting prism file ids
-    let prismFileIds: string[] = [];
-    if (element.hospitalizationFiles.length > 0) {
-      prismFileIds = element.hospitalizationFiles.map((item) => {
-        return `${item.id}_${item.fileName}`;
-      });
-    }
-    const hospitalizationResult = {
-      id: element.id,
-      diagnosisNotes: element.diagnosisNotes,
-      dateOfDischarge: format(new Date(element.dateOfDischarge), 'yyyy-MM-dd HH:mm'),
-      dateOfHospitalization: format(new Date(element.dateOfHospitalization), 'yyyy-MM-dd HH:mm'),
-      dateOfNextVisit: format(new Date(element.dateOfNextVisit), 'yyyy-MM-dd HH:mm'),
-      hospitalizationPrismFileIds: prismFileIds,
-      source: element.source,
-    };
-    formattedHospitalizations.push(hospitalizationResult);
-  }); */
-
   return result;
+};
+
+const getPrismAuthToken: Resolver<
+  null,
+  { uhid: string },
+  ProfilesServiceContext,
+  GetAuthTokenResponse
+> = async (parent, args, {}) => {
+  return await getAuthToken(args.uhid);
 };
 
 export const getPatientMedicalRecordsResolvers = {
   Query: {
     getPatientMedicalRecords,
     getPatientPrismMedicalRecords,
+    getPrismAuthToken,
   },
 };

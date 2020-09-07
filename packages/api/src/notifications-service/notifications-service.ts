@@ -5,20 +5,23 @@ import 'reflect-metadata';
 import gql from 'graphql-tag';
 import { GraphQLDate, GraphQLDateTime, GraphQLTime } from 'graphql-iso-date';
 import {
-  getNotificationsTypeDefs,
   getNotificationsResolvers,
-} from 'notifications-service/resolvers/notifications';
+  emailResolvers,
+  webEngageResolvers,
+  notificationBinResolvers,
+} from 'notifications-service/resolvers';
+import {
+  getNotificationsTypeDefs,
+  emailTypeDefs,
+  notificationBinTypeDefs,
+  webEngageTypeDefs,
+} from 'notifications-service/typedefs';
 import { GatewayHeaders } from 'api-gateway';
 import { getConnection } from 'typeorm';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
 import { connect } from 'notifications-service/database/connect';
-import { emailTypeDefs, emailResolvers } from 'notifications-service/resolvers/email';
 import { format, differenceInMilliseconds } from 'date-fns';
 import { winstonLogger } from 'customWinstonLogger';
-import {
-  notificationBinTypeDefs,
-  notificationBinResolvers,
-} from 'notifications-service/resolvers/notificationBin';
 
 (async () => {
   await connect();
@@ -64,6 +67,10 @@ import {
       {
         typeDefs: notificationBinTypeDefs,
         resolvers: notificationBinResolvers,
+      },
+      {
+        typeDefs: webEngageTypeDefs,
+        resolvers: webEngageResolvers,
       },
     ]),
     plugins: [

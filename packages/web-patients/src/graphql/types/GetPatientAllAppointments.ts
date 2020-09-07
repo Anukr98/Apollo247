@@ -51,6 +51,7 @@ export interface GetPatientAllAppointments_getPatientAllAppointments_appointment
   weekDay: WeekDay;
   consultDuration: number | null;
   consultBuffer: number | null;
+  actualDay: WeekDay | null;
 }
 
 export interface GetPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_doctorHospital_facility {
@@ -107,9 +108,50 @@ export interface GetPatientAllAppointments_getPatientAllAppointments_appointment
   displayOrder: number | null;
 }
 
+export interface GetPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_starTeam_associatedDoctor_specialty {
+  __typename: "DoctorSpecialties";
+  id: string;
+  name: string;
+  image: string | null;
+}
+
+export interface GetPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_starTeam_associatedDoctor_doctorHospital_facility {
+  __typename: "Facility";
+  name: string;
+  facilityType: string;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  city: string | null;
+  country: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  id: string;
+  imageUrl: string | null;
+}
+
+export interface GetPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_starTeam_associatedDoctor_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: GetPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_starTeam_associatedDoctor_doctorHospital_facility;
+}
+
+export interface GetPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_starTeam_associatedDoctor {
+  __typename: "Profile";
+  fullName: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  experience: string | null;
+  qualification: string | null;
+  id: string;
+  photoUrl: string | null;
+  specialty: GetPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_starTeam_associatedDoctor_specialty;
+  doctorHospital: GetPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_starTeam_associatedDoctor_doctorHospital[];
+}
+
 export interface GetPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_starTeam {
   __typename: "StarTeam";
   isActive: boolean | null;
+  associatedDoctor: GetPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_starTeam_associatedDoctor | null;
 }
 
 export interface GetPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo {

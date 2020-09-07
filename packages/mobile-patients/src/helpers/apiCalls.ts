@@ -1,24 +1,32 @@
 import Axios, { AxiosResponse, Canceler } from 'axios';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { getTagalysConfig, Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 
 export interface MedicineProduct {
+  category_id?: string;
   description: string;
   id: number;
-  category_id: string;
-  image: string | null;
+  image: string;
   is_in_stock: 0 | 1;
-  is_prescription_required: '0' | '1'; //1 for required
+  is_prescription_required: 0 | 1 | '0' | '1';
+  MaxOrderQty: number;
+  mou: string; // minimum order unit
   name: string;
   price: number;
-  special_price: number | string;
   sku: string;
-  small_image?: string | null;
-  status: number;
-  thumbnail: string | null;
+  small_image: string;
+  special_price?: string | number;
+  status: string | number;
+  thumbnail: string;
   type_id: 'FMCG' | 'Pharma' | 'PL';
-  mou: string; // minimum order unit
+  url_key: string;
+}
+
+export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
+  image: string[];
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
+  similar_products: MedicineProduct[];
 }
 
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
@@ -35,10 +43,6 @@ interface PharmaOverview {
         CaptionDesc: string;
       }[]
     | string;
-}
-
-export interface MedicineProductDetails extends MedicineProduct {
-  PharmaOverview: PharmaOverview[];
 }
 
 export interface MedicineProductDetailsResponse {
@@ -241,16 +245,36 @@ export interface OfferBannerSection {
   sku?: string;
 }
 
+export interface MedicinePageAPiMetadata {
+  section_key: string;
+  section_name: string;
+  section_position: number;
+  visible: boolean;
+}
+
+export interface MedicinePageProducts {
+  products: MedicineProduct[];
+  category_id?: number;
+}
+
 export interface MedicinePageAPiResponse {
   mainbanners: OfferBannerSection[];
   healthareas: MedicinePageSection[];
   deals_of_the_day: DealsOfTheDaySection[];
   shop_by_category: MedicinePageSection[];
   shop_by_brand: MedicinePageSection[];
-  hot_sellers?: { products: MedicineProduct[]; category_id?: number };
-  monsoon_essentials?: { products: MedicineProduct[]; category_id?: number };
-  widget_2?: { products: MedicineProduct[]; category_id?: number };
-  widget_3?: { products: MedicineProduct[]; category_id?: number };
+  hot_sellers?: MedicinePageProducts;
+  monsoon_essentials?: MedicinePageProducts;
+  widget_2?: MedicinePageProducts;
+  widget_3?: MedicinePageProducts;
+  metadata: MedicinePageAPiMetadata[];
+  [key: string]:
+    | MedicinePageAPiMetadata[]
+    | MedicinePageProducts
+    | OfferBannerSection[]
+    | DealsOfTheDaySection[]
+    | MedicinePageSection[]
+    | any;
 }
 
 export interface PackageInclusion {
@@ -310,26 +334,28 @@ export const getMedicineDetailsApi = (
 
 let cancelSearchMedicineApi: Canceler | undefined;
 
-export const searchMedicineApi = (
-  searchText: string
+export const searchMedicineApi = async (
+  searchText: string,
+  pageId: number = 1
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   const CancelToken = Axios.CancelToken;
   cancelSearchMedicineApi && cancelSearchMedicineApi();
 
-  return Axios.post(
-    `${config.MED_SEARCH[0]}/popcsrchprd_api.php`,
-    { params: searchText },
-    {
-      headers: {
-        Authorization: config.MED_SEARCH[1],
-        'Content-Type': 'application/json',
-      },
-      cancelToken: new CancelToken((c) => {
-        // An executor function receives a cancel function as a parameter
-        cancelSearchMedicineApi = c;
-      }),
-    }
-  );
+  return Axios({
+    url: config.MED_SEARCH[0],
+    method: 'POST',
+    data: {
+      params: searchText,
+      page_id: pageId,
+    },
+    headers: {
+      Authorization: config.MED_SEARCH[1],
+    },
+    cancelToken: new CancelToken((c) => {
+      // An executor function receives a cancel function as a parameter
+      cancelSearchMedicineApi = c;
+    }),
+  });
 };
 
 export const searchPickupStoresApi = async (
@@ -417,35 +443,42 @@ export const medCartItemsDetailsApi = (
   );
 };
 
-// export const getPopularProductsBasedOnCityApi = (
-//   city: CityOptions
-// ): Promise<AxiosResponse<any>> => {
-//   return Axios.get(`${config.SHOP_BY_CITY[0]}/popularinyourcityapi.php?plc=${city}`);
-// };
+export const trackTagalysEvent = (
+  params: Tagalys.Event,
+  userId: string
+): Promise<AxiosResponse<any>> => {
+  return Axios({
+    url: config.TRACK_EVENT[0],
+    method: 'POST',
+    data: {
+      ...getTagalysConfig(userId),
+      ...params,
+    },
+  });
+};
 
 let cancelSearchSuggestionsApi: Canceler | undefined;
 
 export const getMedicineSearchSuggestionsApi = (
-  params: string
+  searchText: string
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   const CancelToken = Axios.CancelToken;
   cancelSearchSuggestionsApi && cancelSearchSuggestionsApi();
 
-  return Axios.post(
-    `${config.MED_SEARCH_SUGGESTION[0]}/popcsrchss_api.php`,
-    {
-      params: params,
+  return Axios({
+    url: config.MED_SEARCH_SUGGESTION[0],
+    method: 'POST',
+    data: {
+      params: searchText,
     },
-    {
-      headers: {
-        Authorization: config.MED_SEARCH_SUGGESTION[1],
-      },
-      cancelToken: new CancelToken((c) => {
-        // An executor function receives a cancel function as a parameter
-        cancelSearchSuggestionsApi = c;
-      }),
-    }
-  );
+    headers: {
+      Authorization: config.MED_SEARCH_SUGGESTION[1],
+    },
+    cancelToken: new CancelToken((c) => {
+      // An executor function receives a cancel function as a parameter
+      cancelSearchSuggestionsApi = c;
+    }),
+  });
 };
 
 export const getProductsByCategoryApi = (
@@ -680,4 +713,10 @@ export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> =>
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
   const url = `${baseUrl}/validate`;
   return Axios.post(url, data);
+};
+
+export const userSpecificCoupon = (mobileNumber: string): Promise<AxiosResponse<any>> => {
+  const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
+  const url = `${baseUrl}/availableCoupons?mobile=${mobileNumber}`;
+  return Axios.get(url);
 };

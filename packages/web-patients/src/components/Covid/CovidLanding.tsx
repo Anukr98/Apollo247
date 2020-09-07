@@ -17,6 +17,9 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { BottomLinks } from 'components/BottomLinks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { ManageProfile } from 'components/ManageProfile';
+import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -186,6 +189,17 @@ const useStyles = makeStyles((theme: Theme) => {
       height: 24,
       cursor: 'pointer',
     },
+    headerCovid: {
+      position: 'relative',
+      [theme.breakpoints.down('xs')]: {
+        '& header': {
+          display: 'none',
+        },
+        '& >div': {
+          position: 'static',
+        },
+      },
+    },
     modalFooter: {
       textAlign: 'left',
       position: 'relative',
@@ -216,8 +230,9 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CovidLanding: React.FC = (props: any) => {
+const CovidLanding: React.FC = (props: any) => {
   const classes = useStyles({});
+  const onePrimaryUser = hasOnePrimaryUser();
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const headingArr = [
     {
@@ -250,10 +265,11 @@ export const CovidLanding: React.FC = (props: any) => {
   const [isWebView, setIsWebView] = useState<boolean>(false);
   const [expandedImage, setExpandedImage] = useState<string>('');
   const [expandedTitle, setExpandedTitle] = useState<string>('');
+  const [covidCategory, setCovidCategory] = useState<string>('');
   const [expandedSourceUrl, setExpandedSourceUrl] = useState<string>('');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const scrollToRef = useRef<HTMLDivElement>(null);
-
+  const { currentPatient } = useAllCurrentPatients();
   const didMount = useRef(false);
   const covidArticleBaseUrl =
     process.env.NODE_ENV !== 'production'
@@ -270,10 +286,17 @@ export const CovidLanding: React.FC = (props: any) => {
       const qParamsArr = props.location.search.split('=');
       if (qParamsArr && qParamsArr.length) {
         const isWebView = qParamsArr.some((param: string) => param.includes('mobile_app'));
-        setIsWebView(isWebView);
+        if (isWebView) {
+          sessionStorage.setItem('webView', 'true');
+          setIsWebView(isWebView);
+        }
+      }
+    } else {
+      if (sessionStorage.getItem('webView') && sessionStorage.getItem('webView').length > 0) {
+        setIsWebView(true);
       }
     }
-  });
+  }, []);
   useEffect(() => {
     fetchUtil(covidArticleBaseUrl!, 'GET', {}, '', true).then((res: any) => {
       const body = res.data;
@@ -318,10 +341,18 @@ export const CovidLanding: React.FC = (props: any) => {
 
   return (
     <div className={classes.root}>
-      {isDesktopOnly ? <Header /> : ''}
+      <div className={classes.headerCovid}>
+        <Header backArrowVisible={true} isWebView={isWebView} />
+      </div>
       <div className={classes.container}>
         <div className={classes.pageContainer} ref={scrollToRef}>
-          <Banner isWebView={isWebView} />
+          <Banner
+            title={'Coronavirus (Covid-19)'}
+            subtitle={
+              'Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.'
+            }
+            isWebView={isWebView}
+          />
           <div className={classes.sectionGroup}>
             <div className={classes.panelsGroup}>
               {headingArr.map((parentCat) => (
@@ -450,6 +481,9 @@ export const CovidLanding: React.FC = (props: any) => {
       </div>
       <BottomLinks />
       {!isWebView && <NavigationBottom />}
+      {!onePrimaryUser && <ManageProfile />}
     </div>
   );
 };
+
+export default CovidLanding;

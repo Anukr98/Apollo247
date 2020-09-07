@@ -5,11 +5,12 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Resolver } from 'api-gateway';
 import { getConnection } from 'typeorm';
-
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 import { Gender } from 'doctors-service/entities';
 import { getRegisteredUsers } from 'helpers/phrV1Services';
+import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
+import { ApiConstants } from 'ApiConstants';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 
 export const getCurrentPatientsTypeDefs = gql`
@@ -129,7 +130,7 @@ export const getCurrentPatientsTypeDefs = gql`
     ): GetCurrentPatientsResult
   }
 `;
-
+const REDIS_PATIENT_LOCK_PREFIX = `patient:lock:`;
 export type GetCurrentPatientsResult = {
   patients: Object[] | null;
 };
@@ -140,19 +141,24 @@ const getCurrentPatients: Resolver<
   ProfilesServiceContext,
   GetCurrentPatientsResult
 > = async (parent, args, { mobileNumber, profilesDb }) => {
-  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  let patients = await patientRepo.findByMobileNumber(mobileNumber);
-
-  if (patients.length > 0) return { patients };
-
   const findOrCreatePatient = async (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>
   ): Promise<Patient> => {
-    const existingPatient = await Patient.findOne({
-      where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
-    });
-    return existingPatient || Patient.create(createOptions).save();
+    const lockKey = `${REDIS_PATIENT_LOCK_PREFIX}${mobileNumber}`;
+    const lockedProfile = await getCache(lockKey);
+    if (lockedProfile && typeof lockedProfile == 'string') {
+      throw new Error(AphErrorMessages.PROFILE_CREATION_IN_PROGRESS);
+    } else {
+      await setCache(lockKey, 'true', ApiConstants.CACHE_EXPIRATION_120);
+      const existingPatient = await Patient.findOne({
+        where: { uhid: findOptions.uhid, mobileNumber: findOptions.mobileNumber, isActive: true },
+      });
+
+      const patient = existingPatient || Patient.create(createOptions).save();
+      await delCache(lockKey);
+      return patient;
+    }
   };
 
   let patientPromises: Object[] = [];
@@ -173,7 +179,7 @@ const getCurrentPatients: Resolver<
             : undefined,
           mobileNumber,
           uhid: data.uhid,
-          dateOfBirth: data.dob.length == 0 ? undefined : new Date(data.dob),
+          dateOfBirth: !data.dob || data.dob.length == 0 ? undefined : new Date(data.dob),
           androidVersion: args.deviceType === DEVICE_TYPE.ANDROID ? args.appVersion : undefined,
           iosVersion: args.deviceType === DEVICE_TYPE.IOS ? args.appVersion : undefined,
           primaryUhid: data.uhid,
@@ -201,7 +207,8 @@ const getCurrentPatients: Resolver<
     throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
   });
 
-  patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
 
   const deviceTokens: Partial<PatientDeviceTokens>[] = [];
   patients.forEach((patientRecord) => {

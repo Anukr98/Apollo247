@@ -26,7 +26,6 @@ import _forEach from 'lodash/forEach';
 import { getIstTimestamp } from 'helpers/dateHelpers';
 import { usePrevious } from 'hooks/reactCustomHooks';
 import { LocationContext } from 'components/LocationProvider';
-import { CouponCode } from 'components/Coupon/CouponCode';
 import {
   makeAppointmentPayment,
   makeAppointmentPaymentVariables,
@@ -39,7 +38,6 @@ import {
   ValidateConsultCoupon,
   ValidateConsultCouponVariables,
 } from 'graphql/types/ValidateConsultCoupon';
-import { ModeComment } from '@material-ui/icons';
 import moment from 'moment';
 import { gtmTracking, _cbTracking } from '../gtmTracking';
 
@@ -241,7 +239,10 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     afternoonSlots: number[] = [],
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
-  const doctorAvailableTime = moment().add(props.doctorAvailableIn, 'm').toDate() || new Date();
+  const doctorAvailableTime =
+    moment()
+      .add(props.doctorAvailableIn, 'm')
+      .toDate() || new Date();
   const apiDateFormat =
     dateSelected === ''
       ? moment(doctorAvailableTime).format('YYYY-MM-DD')
@@ -562,10 +563,6 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
         <div className={classes.customScrollBar}>
-          <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
-            Please note that after booking, you will need to download the Apollo 247 app to continue
-            with your consultation.
-          </p>
           <Grid container spacing={2}>
             <Grid item sm={6} xs={12}>
               <div className={classes.consultGroup}>
@@ -639,37 +636,6 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
               </div>
             </Grid>
           </Grid>
-          {/* <CouponCode
-            disableSubmit={disableCoupon}
-            setCouponCodeFxn={() => {
-              const speciality = getSpeciality();
-              const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
-              gtmTracking({
-                category: 'Consultations',
-                action: speciality,
-                label: `Coupon Applied - ${couponCode}`,
-                value: couponValue,
-              });
-              setCouponCode(couponCode);
-            }}
-            setCouponCode={setCouponCode}
-            subtotal={physicalConsultationFees}
-            doctorId={doctorId}
-            revisedAmount={revisedAmount}
-            setRevisedAmount={setRevisedAmount}
-            appointmentDateTime={appointmentDateTime}
-            appointmentType={AppointmentType.PHYSICAL}
-            removeCouponCode={() => {
-              const speciality = getSpeciality();
-              const couponValue = Number(physicalConsultationFees) - Number(revisedAmount);
-              gtmTracking({
-                category: 'Consultations',
-                action: speciality,
-                label: `Coupon Removed - ${couponCode}`,
-                value: couponValue,
-              });
-            }}
-          /> */}
           <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
             I have read and understood the Terms &amp; Conditions of usage of 24x7 and consent to
             the same. I am voluntarily availing of the services provided on this platform. I am

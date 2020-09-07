@@ -15,7 +15,10 @@ module.exports = async (req, res, next) => {
 
     const checksum = payload.CHECKSUMHASH;
     delete payload.CHECKSUMHASH;
-    if (!verifychecksum(payload, process.env.PAYTM_MERCHANT_KEY_PHARMACY, checksum)) {
+    let merchantKey = process.env.PAYTM_MERCHANT_KEY_PHARMACY;
+    if (payload.MID == process.env.SBI_MID_PHARMACY)
+      merchantKey = process.env.SBI_PAYTM_MERCHANT_KEY_PHARMACY;
+    if (!verifychecksum(payload, merchantKey, checksum)) {
       logger.error(
         `${orderId} - paymed-response: checksum did not match - ${JSON.stringify(payload)}`
       );
@@ -23,7 +26,8 @@ module.exports = async (req, res, next) => {
     }
 
     // Source of booking
-    bookingSource = payload.MERC_UNQ_REF;
+    const [bookingSource, healthCredits] = payload.MERC_UNQ_REF.split(':');
+    payload.HEALTH_CREDITS = healthCredits;
     /* make success and failure response */
     switch (payload.STATUS) {
       case 'TXN_FAILURE':

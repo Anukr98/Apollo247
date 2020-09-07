@@ -13,6 +13,12 @@ import {
 import { Validate, IsDate } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
 
+export enum Apps {
+  DASHBOARD = 'DASHBOARD',
+  DOCTOR_WEB = 'DOCTOR_WEB',
+  DOCTOR_APP = 'DOCTOR_APP',
+}
+
 export enum AccountType {
   CURRENT,
   SAVINGS,
@@ -198,11 +204,15 @@ export class AdminAuditLogs extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   previousDetails: string;
 
+  @Index('AdminAuditLogs_doctorId')
   @Column({ nullable: true })
   doctorId: string;
 
   @Column({ nullable: true, type: 'text' })
   currentDetails: string;
+
+  @Column({ default: false })
+  isConsultOrBlockedHours: Boolean;
 }
 
 //AdminAuditLogs ends
@@ -216,6 +226,7 @@ export class ConsultHours extends BaseEntity {
   @Column({ default: 10 })
   consultBuffer: number;
 
+  @Index('ConsultHours_consultMode')
   @Column()
   consultMode: ConsultMode;
 
@@ -226,16 +237,25 @@ export class ConsultHours extends BaseEntity {
   createdDate: Date;
 
   @Index('ConsultHours_doctorId')
-  @ManyToOne((type) => Doctor, (doctor) => doctor.consultHours)
+  @ManyToOne(
+    (type) => Doctor,
+    (doctor) => doctor.consultHours
+  )
   doctor: Doctor;
 
-  @ManyToOne((type) => DoctorAndHospital, (doctorHospital) => doctorHospital.consultHours)
+  @ManyToOne(
+    (type) => DoctorAndHospital,
+    (doctorHospital) => doctorHospital.consultHours
+  )
   doctorHospital: DoctorAndHospital;
 
   @Column({ type: 'time' })
   endTime: string;
 
-  @ManyToOne((type) => Facility, (facility) => facility.consultHours)
+  @ManyToOne(
+    (type) => Facility,
+    (facility) => facility.consultHours
+  )
   facility: Facility;
 
   @PrimaryGeneratedColumn('uuid')
@@ -270,10 +290,16 @@ export class ConsultHours extends BaseEntity {
 //doctor starts
 @Entity()
 export class Doctor extends BaseEntity {
-  @OneToMany((type) => AdminDoctorMapper, (admindoctormapper) => admindoctormapper.doctor)
+  @OneToMany(
+    (type) => AdminDoctorMapper,
+    (admindoctormapper) => admindoctormapper.doctor
+  )
   admindoctormapper: AdminDoctorMapper[];
 
-  @OneToMany((type) => DoctorBankAccounts, (bankAccount) => bankAccount.doctor)
+  @OneToMany(
+    (type) => DoctorBankAccounts,
+    (bankAccount) => bankAccount.doctor
+  )
   bankAccount: DoctorBankAccounts[];
 
   @Column({ default: true })
@@ -288,7 +314,10 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   city: string;
 
-  @OneToMany((type) => ConsultHours, (consultHours) => consultHours.doctor)
+  @OneToMany(
+    (type) => ConsultHours,
+    (consultHours) => consultHours.doctor
+  )
   consultHours: ConsultHours[];
 
   @OneToMany(
@@ -303,10 +332,16 @@ export class Doctor extends BaseEntity {
   )
   doctorFavouriteMedicine: DoctorsFavouriteMedicine[];
 
-  @OneToMany((type) => DoctorsFavouriteTests, (doctorFavouriteTest) => doctorFavouriteTest.doctor)
+  @OneToMany(
+    (type) => DoctorsFavouriteTests,
+    (doctorFavouriteTest) => doctorFavouriteTest.doctor
+  )
   doctorFavouriteTest: DoctorsFavouriteTests[];
 
-  @OneToMany((type) => DoctorDeviceTokens, (doctorDeviceTokens) => doctorDeviceTokens.doctor)
+  @OneToMany(
+    (type) => DoctorDeviceTokens,
+    (doctorDeviceTokens) => doctorDeviceTokens.doctor
+  )
   doctorDeviceTokens: DoctorDeviceTokens[];
 
   @Column({ nullable: true })
@@ -322,10 +357,16 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   displayName: string;
 
-  @OneToMany((type) => DoctorAndHospital, (doctorHospital) => doctorHospital.doctor)
+  @OneToMany(
+    (type) => DoctorAndHospital,
+    (doctorHospital) => doctorHospital.doctor
+  )
   doctorHospital: DoctorAndHospital[];
 
-  @OneToOne((type) => DoctorSecretary, (doctorSecretary) => doctorSecretary.doctor)
+  @OneToOne(
+    (type) => DoctorSecretary,
+    (doctorSecretary) => doctorSecretary.doctor
+  )
   doctorSecretary: DoctorSecretary;
 
   @Index('Doctor_doctorType')
@@ -351,7 +392,6 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   experience: Number;
 
-  @Index('Doctor_firstName')
   @Column()
   @Validate(NameValidator)
   firstName: string;
@@ -366,23 +406,23 @@ export class Doctor extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('Doctor_isActive')
   @Column({ default: true })
   isActive: Boolean;
 
-  @Index('Doctor_isSearchable')
   @Column({ default: true })
   isSearchable: Boolean;
 
   @Column({ nullable: true, type: 'text' })
   languages: string;
 
-  @Index('Doctor_lastName')
   @Column()
   @Validate(NameValidator)
   lastName: string;
 
-  @OneToMany((type) => DoctorLoginSessionHistory, (loginSession) => loginSession.doctor)
+  @OneToMany(
+    (type) => DoctorLoginSessionHistory,
+    (loginSession) => loginSession.doctor
+  )
   loginSessionHistory: DoctorLoginSessionHistory[];
 
   @Column({ nullable: true })
@@ -402,7 +442,10 @@ export class Doctor extends BaseEntity {
   @Column({ default: DOCTOR_ONLINE_STATUS.AWAY })
   onlineStatus: DOCTOR_ONLINE_STATUS;
 
-  @OneToMany((type) => Packages, (packages) => packages.doctor)
+  @OneToMany(
+    (type) => Packages,
+    (packages) => packages.doctor
+  )
   packages: Packages[];
 
   @Column({ nullable: true, type: 'text' })
@@ -423,13 +466,19 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   signature: string;
 
-  @ManyToOne((type) => DoctorSpecialty, (specialty) => specialty.doctor)
+  @ManyToOne(
+    (type) => DoctorSpecialty,
+    (specialty) => specialty.doctor
+  )
   specialty: DoctorSpecialty;
 
   @Column({ nullable: true, type: 'text' })
   specialization: string;
 
-  @OneToMany((type) => StarTeam, (starTeam) => starTeam.starDoctor)
+  @OneToMany(
+    (type) => StarTeam,
+    (starTeam) => starTeam.starDoctor
+  )
   starTeam: StarTeam[];
 
   @Column({ nullable: true })
@@ -456,7 +505,10 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   zip: string;
 
-  @Column({ default: false })
+  @Column({ type: 'smallint', default: 7 })
+  chatDays: number;
+
+  @Column({ nullable: true })
   skipAutoQuestions: Boolean;
 
   @BeforeUpdate()
@@ -469,21 +521,31 @@ export class Doctor extends BaseEntity {
 //doctorHospital starts
 @Entity()
 export class DoctorAndHospital extends BaseEntity {
-  @OneToMany((type) => ConsultHours, (consultHours) => consultHours.doctorHospital)
+  @OneToMany(
+    (type) => ConsultHours,
+    (consultHours) => consultHours.doctorHospital
+  )
   consultHours: ConsultHours[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @ManyToOne((type) => Doctor, (doctor) => doctor.doctorHospital)
+  @ManyToOne(
+    (type) => Doctor,
+    (doctor) => doctor.doctorHospital
+  )
   doctor: Doctor;
 
-  @ManyToOne((type) => Facility, (facility) => facility.doctorHospital)
+  @ManyToOne(
+    (type) => Facility,
+    (facility) => facility.doctorHospital
+  )
   facility: Facility;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('DoctorAndHospital_medmantraId')
   @Column({ nullable: true })
   medmantraId: string;
 
@@ -518,7 +580,10 @@ export class DoctorBankAccounts extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @ManyToOne((type) => Doctor, (doctor) => doctor.bankAccount)
+  @ManyToOne(
+    (type) => Doctor,
+    (doctor) => doctor.bankAccount
+  )
   doctor: Doctor;
 
   @PrimaryGeneratedColumn('uuid')
@@ -556,9 +621,6 @@ export class DoctorSpecialty extends BaseEntity {
   symptoms: string;
 
   @Column({ nullable: true })
-  commonSearchWords: string;
-
-  @Column({ nullable: true })
   displayOrder: Number;
 
   @Column({ nullable: true })
@@ -593,7 +655,10 @@ export class DoctorSpecialty extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
-  @OneToMany((type) => Doctor, (doctor) => doctor.specialty)
+  @OneToMany(
+    (type) => Doctor,
+    (doctor) => doctor.specialty
+  )
   doctor: Doctor[];
 
   @BeforeUpdate()
@@ -609,7 +674,10 @@ export class Facility extends BaseEntity {
   @Column({ nullable: true })
   city: string;
 
-  @OneToMany((type) => ConsultHours, (consultHours) => consultHours.facility)
+  @OneToMany(
+    (type) => ConsultHours,
+    (consultHours) => consultHours.facility
+  )
   consultHours: ConsultHours[];
 
   @Column({ nullable: true })
@@ -618,7 +686,10 @@ export class Facility extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @OneToMany((type) => DoctorAndHospital, (doctorHospital) => doctorHospital.doctor)
+  @OneToMany(
+    (type) => DoctorAndHospital,
+    (doctorHospital) => doctorHospital.doctor
+  )
   doctorHospital: DoctorAndHospital[];
 
   @Column()
@@ -671,7 +742,10 @@ export class Packages extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @ManyToOne((type) => Doctor, (doctor) => doctor.packages)
+  @ManyToOne(
+    (type) => Doctor,
+    (doctor) => doctor.packages
+  )
   doctor: Doctor;
 
   @PrimaryGeneratedColumn('uuid')
@@ -709,7 +783,10 @@ export class StarTeam extends BaseEntity {
   @Column({ default: false })
   isActive: Boolean;
 
-  @ManyToOne((type) => Doctor, (doctor) => doctor.starTeam)
+  @ManyToOne(
+    (type) => Doctor,
+    (doctor) => doctor.starTeam
+  )
   starDoctor: Doctor;
 
   @Column({ nullable: true })
@@ -725,7 +802,10 @@ export class StarTeam extends BaseEntity {
 //doctor device tokens starts
 @Entity()
 export class DoctorDeviceTokens extends BaseEntity {
-  @ManyToOne((type) => Doctor, (doctor) => doctor.doctorDeviceTokens)
+  @ManyToOne(
+    (type) => Doctor,
+    (doctor) => doctor.doctorDeviceTokens
+  )
   doctor: Doctor;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -764,7 +844,10 @@ export enum AdminType {
 
 @Entity()
 export class AdminUsers extends BaseEntity {
-  @OneToMany((type) => AdminDoctorMapper, (admindoctormapper) => admindoctormapper.adminuser)
+  @OneToMany(
+    (type) => AdminDoctorMapper,
+    (admindoctormapper) => admindoctormapper.adminuser
+  )
   admindoctormapper: AdminDoctorMapper[];
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -814,7 +897,10 @@ export class Secretary extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @OneToMany((type) => DoctorSecretary, (doctorSecretary) => doctorSecretary.secretary)
+  @OneToMany(
+    (type) => DoctorSecretary,
+    (doctorSecretary) => doctorSecretary.secretary
+  )
   doctorSecretary: DoctorSecretary[];
 
   @PrimaryGeneratedColumn('uuid')
@@ -856,7 +942,10 @@ export class DoctorSecretary extends BaseEntity {
   @Column({ default: true })
   isActive: Boolean;
 
-  @ManyToOne((type) => Secretary, (secretary) => secretary.doctorSecretary)
+  @ManyToOne(
+    (type) => Secretary,
+    (secretary) => secretary.doctorSecretary
+  )
   secretary: Secretary;
 
   @Column({ nullable: true })
@@ -875,7 +964,10 @@ export class DoctorsFavouriteMedicine extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @ManyToOne((type) => Doctor, (doctor) => doctor.doctorFavouriteMedicine)
+  @ManyToOne(
+    (type) => Doctor,
+    (doctor) => doctor.doctorFavouriteMedicine
+  )
   doctor: Doctor;
 
   @Column({ nullable: true })
@@ -921,6 +1013,15 @@ export class DoctorsFavouriteMedicine extends BaseEntity {
   medicineName: string;
 
   @Column({ nullable: true })
+  medicineCustomDetails: string;
+
+  @Column({ nullable: true })
+  includeGenericNameInPrescription: Boolean;
+
+  @Column({ nullable: true })
+  genericName: string;
+
+  @Column({ nullable: true })
   routeOfAdministration: ROUTE_OF_ADMINISTRATION;
 
   @Column({ nullable: true })
@@ -939,7 +1040,10 @@ export class DoctorsFavouriteTests extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @ManyToOne((type) => Doctor, (doctor) => doctor.doctorFavouriteTest)
+  @ManyToOne(
+    (type) => Doctor,
+    (doctor) => doctor.doctorFavouriteTest
+  )
   doctor: Doctor;
 
   @PrimaryGeneratedColumn('uuid')
@@ -964,7 +1068,10 @@ export class DoctorsFavouriteAdvice extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @ManyToOne((type) => Doctor, (doctor) => doctor.doctorFavouriteAdvice)
+  @ManyToOne(
+    (type) => Doctor,
+    (doctor) => doctor.doctorFavouriteAdvice
+  )
   doctor: Doctor;
 
   @PrimaryGeneratedColumn('uuid')
@@ -995,10 +1102,16 @@ export class AdminDoctorMapper extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
-  @ManyToOne((type) => Doctor, (doctor) => doctor.admindoctormapper)
+  @ManyToOne(
+    (type) => Doctor,
+    (doctor) => doctor.admindoctormapper
+  )
   doctor: Doctor;
 
-  @ManyToOne((type) => AdminUsers, (adminuser) => adminuser.admindoctormapper)
+  @ManyToOne(
+    (type) => AdminUsers,
+    (adminuser) => adminuser.admindoctormapper
+  )
   adminuser: AdminUsers;
 }
 //admin_doctors ends
@@ -1018,7 +1131,10 @@ export class DoctorLoginSessionHistory extends BaseEntity {
   @Column()
   onlineStatus: DOCTOR_ONLINE_STATUS;
 
-  @ManyToOne((type) => Doctor, (doctor) => doctor.loginSessionHistory)
+  @ManyToOne(
+    (type) => Doctor,
+    (doctor) => doctor.loginSessionHistory
+  )
   doctor: Doctor;
 
   @Column()
@@ -1090,7 +1206,10 @@ export class Auditor extends BaseEntity {
     this.updatedDate = new Date();
   }
 
-  @OneToMany((type) => AdminAuditorMapper, (adminauditormapper) => adminauditormapper.auditor)
+  @OneToMany(
+    (type) => AdminAuditorMapper,
+    (adminauditormapper) => adminauditormapper.auditor
+  )
   adminauditormapper: AdminAuditorMapper[];
 }
 //Auditor end
@@ -1107,10 +1226,16 @@ export class AdminAuditorMapper extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
-  @ManyToOne((type) => Auditor, (auditor) => auditor.adminauditormapper)
+  @ManyToOne(
+    (type) => Auditor,
+    (auditor) => auditor.adminauditormapper
+  )
   auditor: Auditor;
 
-  @ManyToOne((type) => AdminUsers, (adminuser) => adminuser.admindoctormapper)
+  @ManyToOne(
+    (type) => AdminUsers,
+    (adminuser) => adminuser.admindoctormapper
+  )
   adminuser: AdminUsers;
 }
 // QAadmin_auditor_mapper ends
@@ -1166,7 +1291,6 @@ export class Deeplink extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
-  @Index('Deeplink_deepLink')
   @Column({ nullable: true, type: 'text' })
   deepLink: string;
 
@@ -1220,9 +1344,49 @@ export class DoctorPatientExternalConnect extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index('DoctorPatientExternalConnect_patientId')
   @Column({ nullable: true })
   patientId: string;
 
+  @Index('DoctorPatientExternalConnect_appointmentId')
   @Column({ nullable: true })
   appointmentId: string;
+}
+
+@Entity()
+export class DoctorProfileHistory extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  doctorId: string;
+
+  @Column({ nullable: true, type: 'timestamp' })
+  updatedAt: Date;
+
+  @Column({ nullable: true })
+  updatedBy: string;
+
+  @Column({ nullable: true })
+  application: Apps;
+
+  @Column({ nullable: true })
+  beforeUpdate: string;
+
+  @Column({ nullable: true })
+  afterUpdate: string;
+}
+
+@Entity()
+export class DoctorHelpLine extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+  @Column({ unique: true })
+  doctorType: DoctorType;
+  @Column()
+  mobileNumber: string;
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+  @Column({ nullable: true, type: 'timestamp' })
+  updatedAt: Date;
 }

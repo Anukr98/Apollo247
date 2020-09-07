@@ -13,15 +13,16 @@ import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { useParams } from 'hooks/routerHooks';
 import { gtmTracking, _obTracking, _cbTracking } from 'gtmTracking';
-import { paymentInstrumentClickTracking } from 'webEngageTracking';
+import {
+  paymentInstrumentClickTracking,
+  consultPayInitiateTracking,
+  pharmacyPaymentInitiateTracking,
+} from 'webEngageTracking';
 import { useMutation } from 'react-apollo-hooks';
-import { getDeviceType } from 'helpers/commonHelpers';
+import { getDeviceType, getCouponByUserMobileNumber } from 'helpers/commonHelpers';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
 import _lowerCase from 'lodash/lowerCase';
 
-import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
-
-// import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
 import {
   saveMedicineOrderOMS,
   saveMedicineOrderOMSVariables,
@@ -364,6 +365,12 @@ const useStyles = makeStyles((theme: Theme) => {
     hideButton: {
       display: 'none !important',
     },
+    offerMessage: {
+      color: '#00b38e',
+      fontSize: 12,
+      fontWeight: 300,
+      textTransform: 'none',
+    },
   };
 });
 
@@ -432,6 +439,7 @@ export const PayMedicine: React.FC = (props) => {
     deliveryTime,
     totalWithCouponDiscount,
     validateCouponResult,
+    shopId,
   } = cartValues;
   const deliveryCharges =
     cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
@@ -484,9 +492,30 @@ export const PayMedicine: React.FC = (props) => {
     }
   });
 
+  const getCouponByMobileNumber = () => {
+    getCouponByUserMobileNumber()
+      .then((resp: any) => {
+        if (resp.errorCode == 0 && resp.response && resp.response.length > 0) {
+          const couponCode = resp.response[0].coupon;
+          setConsultCouponCode(couponCode || '');
+        } else {
+          setConsultCouponCode('');
+        }
+      })
+      .catch((e: any) => {
+        console.log(e);
+        setConsultCouponCode('');
+      });
+  };
+
+  useEffect(() => {
+    if (params.payType === 'consults' && !consultCouponCode) {
+      getCouponByMobileNumber();
+    }
+  }, []);
+
   useEffect(() => {
     if (validateConsultCouponResult && validateConsultCouponResult.valid) {
-      console.log('validateConsultCouponResult', validateConsultCouponResult);
       setRevisedAmount(
         validateConsultCouponResult.billAmount - validateConsultCouponResult.discount
       );
@@ -501,16 +530,12 @@ export const PayMedicine: React.FC = (props) => {
     }
   }, [validateConsultCouponResult]);
 
-  const getDiscountedLineItemPrice = (id: number) => {
-    if (
-      couponCode.length > 0 &&
-      validateCouponResult &&
-      validateCouponResult.pharmaLineItemsWithDiscountedPrice
-    ) {
-      const item = validateCouponResult.pharmaLineItemsWithDiscountedPrice.find(
-        (item: pharmaCouponItem) => item.itemId === id.toString()
-      );
-      return item.applicablePrice.toFixed(2);
+  const getDiscountedLineItemPrice = (sku: string) => {
+    if (couponCode.length > 0 && validateCouponResult && validateCouponResult.products) {
+      const item: any = validateCouponResult.products.find((item: any) => item.sku === sku);
+      return item.onMrp
+        ? (item.mrp - item.discountAmt).toFixed(2)
+        : (item.specialPrice - item.discountAmt).toFixed(2);
     }
   };
 
@@ -522,22 +547,27 @@ export const PayMedicine: React.FC = (props) => {
             medicineName: cartItemDetails.name,
             price:
               couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                ? Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
-            itemValue: cartItemDetails.quantity * cartItemDetails.price,
+            itemValue: Number((cartItemDetails.quantity * cartItemDetails.price).toFixed(2)),
             itemDiscount: Number(
               (
                 cartItemDetails.quantity *
                 (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                  ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.id))
+                  ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.sku))
                   : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
               ).toFixed(2)
             ),
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
-            isMedicine: _lowerCase(cartItemDetails.type_id) === 'pharma' ? '1' : '0',
+            isMedicine:
+              _lowerCase(cartItemDetails.type_id) === 'pharma'
+                ? '1'
+                : _lowerCase(cartItemDetails.type_id) === 'pl'
+                ? '2'
+                : '0',
             specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
           };
         })
@@ -568,6 +598,7 @@ export const PayMedicine: React.FC = (props) => {
           items: cartItemsForApi,
           coupon: couponCode ? couponCode : null,
           deviceType: getDeviceType(),
+          shopId: shopId,
         },
       },
     }
@@ -632,6 +663,20 @@ export const PayMedicine: React.FC = (props) => {
       value: totalWithCouponDiscount,
     });
     /**Gtm code End  */
+    pharmacyPaymentInitiateTracking({
+      amount: totalWithCouponDiscount,
+      serviceArea: 'pharmacy',
+      payMode: value,
+    });
+    sessionStorage.setItem(
+      'pharmacyCheckoutValues',
+      JSON.stringify({
+        grandTotal: mrpTotal,
+        discountAmount:
+          (productDiscount && productDiscount.toFixed(2)) ||
+          (couponValue && parseFloat(couponValue).toFixed(2)),
+      })
+    );
     setMutationLoading(true);
     paymentMutation()
       .then((res) => {
@@ -685,7 +730,9 @@ export const PayMedicine: React.FC = (props) => {
               process.env.PHARMACY_PG_URL
             }/paymed?amount=${totalWithCouponDiscount.toFixed(
               2
-            )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES`;
+            )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES${
+              sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
+            }`;
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
@@ -708,8 +755,8 @@ export const PayMedicine: React.FC = (props) => {
         console.log(e);
         setMutationLoading(false);
         setIsLoading(false);
-        localStorage.removeItem(`${currentPatient && currentPatient.id}`);
-        sessionStorage.setItem('cartValues', '');
+        // localStorage.removeItem(`${currentPatient && currentPatient.id}`);
+        // sessionStorage.setItem('cartValues', '');
         setIsAlertOpen(true);
         setAlertMessage('Something went wrong, please try later.');
       });
@@ -722,8 +769,23 @@ export const PayMedicine: React.FC = (props) => {
 
   const onClickConsultPay = (value: string) => {
     setShowZeroPaymentButton(false);
-
     setIsLoading(true);
+    const eventData = {
+      actualPrice: Number(amount),
+      consultDateTime: appointmentDateTime,
+      consultType: appointmentType,
+      discountAmount:
+        validateConsultCouponResult && validateConsultCouponResult.valid
+          ? Number(validateConsultCouponResult.amount - validateConsultCouponResult.discount)
+          : Number(revisedAmount),
+      discountCoupon: consultCouponCode,
+      doctorCity: '',
+      doctorName,
+      specialty: speciality,
+      netAmount: Number(amount),
+      patientGender: currentPatient && currentPatient.gender,
+    };
+    consultPayInitiateTracking(eventData);
     paymentMutationConsult({
       variables: {
         bookAppointment: {
@@ -816,7 +878,9 @@ export const PayMedicine: React.FC = (props) => {
               res.data.bookAppointment.appointment.id
             }&patientId=${
               currentPatient ? currentPatient.id : ''
-            }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES`;
+            }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES${
+              sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
+            }`;
             window.location.href = pgUrl;
           }
           // setMutationLoading(false);
@@ -879,6 +943,34 @@ export const PayMedicine: React.FC = (props) => {
                     />
                   ) : (
                     <ul className={classes.paymentOptions}>
+                      {sessionStorage.getItem('utm_source') === 'sbi' && (
+                        <li
+                          key={'sbiCashCard'}
+                          onClick={() =>
+                            params.payType === 'pharmacy'
+                              ? onClickPay(
+                                  process.env.SBI_CASHCARD_PAY_TYPE,
+                                  'SBI YONO CASHLESS CARD'
+                                )
+                              : onClickConsultPay(process.env.SBI_CASHCARD_PAY_TYPE)
+                          }
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <img
+                            src={
+                              'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
+                            }
+                            alt=""
+                            style={{ height: 30, width: 30 }}
+                          />
+                          <div style={{ paddingLeft: 10 }}>
+                            SBI YONO CASHLESS CARD
+                            <div className={classes.offerMessage}>
+                              You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}% cashback
+                            </div>
+                          </div>
+                        </li>
+                      )}
                       {paymentOptions.length > 0 &&
                         paymentOptions.map((payType, index) => {
                           return (

@@ -181,6 +181,14 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 20,
       },
     },
+    mainHead: {
+      display: 'flex',
+      fontSize: 56,
+      fontWeight: 600,
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 36,
+      },
+    },
   };
 });
 
@@ -202,10 +210,14 @@ export const HeroBanner: React.FC = () => {
       <div className={`${classes.bannerImg} ${isSignedIn ? classes.loginbannerImg : ''}`}>
         <img
           className={classes.mobileBanner}
-          src={require('images/img_doctors_xxhdpi.png')}
-          alt=""
+          src={require('images/img_doctors_xxhdpi.jpg')}
+          alt="Online Doctor Consultation & Medicines"
         />
-        <img className={classes.desktopBanner} src={require('images/img-doctors@1x.png')} alt="" />
+        <img
+          className={classes.desktopBanner}
+          src={require('images/img-doctors@1x.png')}
+          alt="Online Doctor Consultation & Medicines"
+        />
       </div>
       <div className={classes.bannerInfo}>
         {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
@@ -249,8 +261,8 @@ export const HeroBanner: React.FC = () => {
             </AphSelect>
           </Typography>
         ) : (
-          <Typography variant="h1">hello there!</Typography>
-        )}
+            <span className={classes.mainHead}>hello there!</span>
+          )}
         <p>How can we help you today? :)</p>
         <OurServices />
       </div>

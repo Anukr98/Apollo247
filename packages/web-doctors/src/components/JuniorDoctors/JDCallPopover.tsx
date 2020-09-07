@@ -8,10 +8,10 @@ import { isEmpty } from 'lodash';
 import { AphSelect, AphTextField, AphButton } from '@aph/web-ui-components';
 import { useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
-import { useMutation } from 'react-apollo-hooks';
+import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
 import { CANCEL_APPOINTMENT } from 'graphql/profiles';
-import { REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
+import { REMOVE_FROM_CONSULT_QUEUE, INITIATE_CONFERENCE_TELEPHONE_CALL } from 'graphql/consults';
 import { REQUEST_ROLES, STATUS, DoctorType } from 'graphql/types/globalTypes';
 import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/CancelAppointment';
 import {
@@ -23,6 +23,7 @@ import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 import { CircularProgress } from '@material-ui/core';
 import { JDConsultRoomParams } from 'helpers/clientRoutes';
 import { TestCall } from '../TestCall';
+import { removeLocalStorageItem } from 'components/case-sheet/panels/LocalStorageUtils';
 
 const ringtoneUrl = require('../../images/phone_ringing.mp3');
 
@@ -338,6 +339,97 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       minHeight: 'auto',
     },
+    modalPopup: {
+      '& div': {
+        '&:focus': {
+          outline: 'none',
+        },
+      },
+    },
+    phoneCallConnect: {
+      textTransform: 'none',
+      fontSize: '12px',
+      fontWeight: 500,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 2,
+      marginRight: 16,
+      letterSpacing: 'normal',
+      color: '#fc9916',
+      cursor: 'pointer',
+      '& img': {
+        right: '7px',
+        top: '5px',
+        position: 'relative',
+      },
+    },
+    connectCallModal: {
+      width: '482px',
+      height: '320px',
+      borderRadius: '10px',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      backgroundColor: '#ffffff',
+      margin: 'auto',
+      marginTop: 88,
+      position: 'relative',
+    },
+    callHeader: {
+      fontSize: '24px',
+      fontWeight: 600,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 'normal',
+      letterSpacing: 'normal',
+      color: '#02475b',
+    },
+    callSubheader: {
+      fontSize: '14px',
+      fontWeight: 'normal',
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 'normal',
+      letterSpacing: 'normal',
+      color: '#979797',
+      display: 'block',
+      marginTop: 8,
+    },
+    callOption: {
+      width: 30,
+      height: 30,
+      backgroundColor: '#00b38e',
+      color: '#FFFFFF',
+      display: 'inline-block',
+      marginRight: 10,
+      fontWeight: 600,
+      fontSize: 20,
+      borderRadius: 5,
+      textAlign: 'center',
+    },
+    callOptionFirst: {
+      fontSize: '16px',
+      fontWeight: 500,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 'normal',
+      letterSpacing: 'normal',
+      color: '#00b38e',
+      width: '50%',
+    },
+    callNote: {
+      fontSize: '14px',
+      fontWeight: 'normal',
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 'normal',
+      letterSpacing: 'normal',
+      color: '#01475b',
+    },
+    callButtonWrapper: {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      marginRight: 20,
+      marginTop: 40,
+    },
     okButtonWrapper: {
       textAlign: 'right',
     },
@@ -614,6 +706,28 @@ const useStyles = makeStyles((theme: Theme) => {
       clip: 'rect(0,0,0,0)',
       border: 0,
     },
+    toastMessage: {
+      width: '520px',
+      height: '40px',
+      borderRadius: '10px',
+      boxShadow: '0 1px 13px 0 rgba(0, 0, 0, 0.16)',
+      backgroundColor: '#00b38e',
+      position: 'absolute',
+      top: '172px',
+      left: '150px',
+      zIndex: 1,
+    },
+    toastMessageText: {
+      fontSize: '14px',
+      fontWeight: 500,
+      fontStretch: 'normal',
+      fontStyle: 'normal',
+      lineHeight: 1.43,
+      letterSpacing: 'normal',
+      color: '#ffffff',
+      position: 'absolute',
+      top: 6,
+    },
   };
 });
 
@@ -657,6 +771,10 @@ interface CallPopoverProps {
   setSessionError: (error: any) => void;
   setPublisherError: (error: any) => void;
   setSubscriberError: (error: any) => void;
+  setIscall: (value: boolean) => void;
+  isCall: boolean;
+  setRejectedByPatientBeforeAnswer: (value: string) => void;
+  rejectedByPatientBeforeAnswer: string | null;
 }
 
 let intervalId: any;
@@ -711,6 +829,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const callAbandonment = '^^#callAbandonment';
   const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
+  const patientRejectedCall = '^^#PATIENT_REJECTED_CALL';
+
+  const [showToastMessage, setShowToastMessage] = useState<boolean>(false);
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [remainingConsultStartTime, setRemainingConsultStartTime] = React.useState<number>(-1);
@@ -783,6 +904,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     timerIntervalId && clearInterval(timerIntervalId);
   };
   const [disableStartConsult, setDisableStartConsult] = useState<boolean>(false);
+
+  const [connectCall, setConnectCall] = useState<boolean>(false);
+  const client = useApolloClient();
 
   useEffect(() => {
     if (isCallAccepted) {
@@ -1070,6 +1194,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     subscribeKey: subscribekey,
     publishKey: publishkey,
     ssl: true,
+    origin: 'apollo.pubnubapi.com',
   };
   const { setCaseSheetEdit, autoCloseCaseSheet } = useContext(CaseSheetContextJrd);
 
@@ -1173,6 +1298,17 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         if (message.message && message.message.message === acceptcallMsg) {
           setPlayRingtone(false);
           setIsCallAccepted(true);
+        }
+
+        /** Call rejected by patient before answer */
+        if (message && message.message === patientRejectedCall) {
+          setPlayRingtone(false);
+          props.setRejectedByPatientBeforeAnswer('Call rejected by patient');
+          setTimeout(() => {
+            toggelChatVideo();
+            stopAudioVideoCallpatient();
+            props.setIscall(false);
+          }, 500);
         }
       },
     });
@@ -1322,12 +1458,13 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       )
     );
     const diffInHours = diff.asHours();
-    if (diffInHours > 0 && diffInHours < 12)
+    if (diffInHours > 0 && diffInHours < 12) {
       if (diff.hours() <= 0) {
         return `| Time to consult ${
           diff.minutes().toString().length < 2 ? '0' + diff.minutes() : diff.minutes()
         } : ${diff.seconds().toString().length < 2 ? '0' + diff.seconds() : diff.seconds()}`;
       }
+    }
     return '';
   };
 
@@ -1388,7 +1525,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               </div>
             ) : remainingConsultStartTime <= 10 && remainingConsultStartTime > -1 ? (
               <div className={`${classes.consultDur} ${classes.consultDurShow}`}>
-                {remainingConsultStartTime} minute(s) left for Senior Doctor to start the consult.
+                {remainingConsultStartTime}
+                minute(s) left for Senior Doctor to start the consult.
               </div>
             ) : (
               !props.hasCameraMicPermission && (
@@ -1398,6 +1536,37 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               )
             )}
           </div>
+
+          {showToastMessage && (
+            <div
+              className={classes.toastMessage}
+              onLoad={() => {
+                setTimeout(() => {
+                  setShowToastMessage(false);
+                }, 10000);
+              }}
+            >
+              <span className={classes.toastMessageText}>
+                <img
+                  src={require('images/ic_cancel_green.svg')}
+                  alt=""
+                  style={{
+                    height: 18,
+                    width: 18,
+                    position: 'relative',
+                    top: 4,
+                    marginLeft: 12,
+                    marginRight: 20,
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => {
+                    setShowToastMessage(false);
+                  }}
+                />
+                You will get a call from {process.env.EXOTEL_CALLER_ID}. Please pick up the call !
+              </span>
+            </div>
+          )}
 
           {/* code commented as requested by the testing team
           ------------------------------------------------------------
@@ -1412,6 +1581,15 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         <div className={classes.headerRightGroup}>
           {startAppointment ? (
             <span>
+              <span
+                className={classes.phoneCallConnect}
+                onClick={() => {
+                  setConnectCall(true);
+                }}
+              >
+                <img src={require('images/call_connect.svg')} />
+                Connect via phone call
+              </span>
               <AphButton
                 classes={{
                   root: classes.saveBtn,
@@ -1542,6 +1720,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 setDisableOnCancel(true);
                 autoSend(audioCallMsg);
                 setIsVideoCall(false);
+                props.setIscall(true);
               }}
             >
               <img src={require('images/call_popup.svg')} alt="" />
@@ -1558,6 +1737,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 setDisableOnCancel(true);
                 autoSend(videoCallMsg);
                 setIsVideoCall(true);
+                props.setIscall(true);
               }}
             >
               <img src={require('images/video_popup.svg')} alt="" />
@@ -1822,7 +2002,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                     setIsCancelPopoverOpen(false);
                     cancelConsultAction();
                     mutationRemoveConsult()
-                      .then(() => {})
+                      .then(() => {
+                        removeLocalStorageItem(params.appointmentId);
+                      })
                       .catch((e: ApolloError) => {
                         const logObject = {
                           api: 'RemoveFromConsultQueue',
@@ -1859,8 +2041,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                         storeInHistory: true,
                       },
                       (status: any, response: any) => {
-                        if (document.getElementById('homeId')) {
-                          document.getElementById('homeId')!.click();
+                        if (document.getElementById('activeConsult')) {
+                          document.getElementById('activeConsult')!.click();
                         }
                       }
                     );
@@ -1964,6 +2146,100 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       </Modal>
       {/* referral field required popup end */}
 
+      <Modal
+        className={classes.modalPopup}
+        open={connectCall}
+        onClose={() => {
+          setConnectCall(false);
+        }}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <div>
+          <Paper className={classes.connectCallModal}>
+            <div
+              style={{
+                display: 'inline-block',
+                marginTop: 30,
+                marginLeft: 20,
+              }}
+            >
+              <span className={classes.callHeader}>Connect to your patient via phone call !</span>
+              <span className={classes.callSubheader}>
+                {'Please follow the steps to connect to your patient :'}
+              </span>
+              <span
+                style={{
+                  display: 'flex',
+                  margin: '30px 0px 20px 10px',
+                  alignItems: 'center',
+                }}
+              >
+                <span className={classes.callOption}>1</span>
+                <span className={classes.callOptionFirst}>
+                  Answer the call from {process.env.EXOTEL_CALLER_ID}
+                  <br />
+                  to connect.
+                </span>
+                <span className={classes.callOption}>2</span>
+                <span className={classes.callOptionFirst}>Wait for the patient to connect.</span>
+              </span>
+
+              <span className={classes.callNote}>
+                {'*Note : Your personal phone number will not be shared.'}
+              </span>
+              <div className={classes.callButtonWrapper}>
+                <AphButton
+                  color="primary"
+                  onClick={() => {
+                    setConnectCall(false);
+                  }}
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    color: '#fc9916',
+                    boxShadow: 'none',
+                    marginRight: 20,
+                  }}
+                >
+                  {'Cancel'}
+                </AphButton>
+                <AphButton
+                  color="primary"
+                  style={{
+                    borderRadius: 5,
+                    boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
+                    backgroundColor: '#fc9916',
+                  }}
+                  onClick={() => {
+                    const fromMobileNumber = currentPatient.mobileNumber;
+                    const toMobileNumber = patientDetails.mobileNumber;
+                    const appointmentId = params.appointmentId;
+                    console.log(fromMobileNumber, toMobileNumber, appointmentId);
+
+                    const exotelInput = {
+                      from: fromMobileNumber,
+                      to: toMobileNumber,
+                      appointmentId: appointmentId,
+                    };
+                    setConnectCall(false);
+                    client.query({
+                      query: INITIATE_CONFERENCE_TELEPHONE_CALL,
+                      variables: {
+                        exotelInput: exotelInput,
+                      },
+                      fetchPolicy: 'no-cache',
+                    });
+                    setShowToastMessage(true);
+                  }}
+                >
+                  {'PROCEED TO CONNECT'}
+                </AphButton>
+              </div>
+            </div>
+          </Paper>
+        </div>
+      </Modal>
+
       {/* audio/video start*/}
       <div className={classes.posRelative}>
         <div className={showVideo ? '' : classes.audioVideoContainer}>
@@ -1980,6 +2256,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               timerSeconds={timerSeconds}
               isCallAccepted={isCallAccepted}
               isNewMsg={isNewMsg}
+              isCall={props.isCall}
+              setIscall={props.setIscall}
               convertCall={() => convertCall()}
               JDPhotoUrl={currentPatient && currentPatient.photoUrl ? currentPatient.photoUrl : ''}
               setSessionError={props.setSessionError}

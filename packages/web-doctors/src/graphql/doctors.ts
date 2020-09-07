@@ -223,6 +223,9 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_DOCTOR = gql`
         externalId
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        includeGenericNameInPrescription
+        genericName
       }
       allowedDosages
     }
@@ -254,6 +257,15 @@ export const GET_DOCTOR_AVAILABLE_SLOTS = gql`
   query GetDoctorAvailableSlots($DoctorAvailabilityInput: DoctorAvailabilityInput) {
     getDoctorAvailableSlots(DoctorAvailabilityInput: $DoctorAvailabilityInput) {
       availableSlots
+    }
+  }
+`;
+
+export const GET_DOCTOR_HELPLINE_NUMBER = gql`
+  query GetDoctorHelpline {
+    getDoctorHelpline {
+      doctorType
+      mobileNumber
     }
   }
 `;
