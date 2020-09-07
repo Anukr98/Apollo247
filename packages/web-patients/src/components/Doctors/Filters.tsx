@@ -11,7 +11,7 @@ import {
   languageList,
   availabilityList,
 } from 'helpers/commonHelpers';
-import _ from 'lodash';
+import _cloneDeep from 'lodash/cloneDeep';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -230,9 +230,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
   } = props;
 
   const [isFilterOpen, setisFilterOpen] = useState(false);
-  const [localFilter, setLocalFilter] = useState<SearchObject>(_.cloneDeep(filter));
-
-  console.log(filter, localFilter, _.cloneDeep(filter));
+  const [localFilter, setLocalFilter] = useState<SearchObject>(_cloneDeep(filter));
 
   const applyClass = (type: Array<string>, value: string) => {
     return type.includes(value) ? classes.filterActive : '';
