@@ -199,7 +199,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
   const apolloClient = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { cardDetails } = props;
-  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
+  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(false);
   const [triggerInvoice, setTriggerInvoice] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   let paymentStatus,
