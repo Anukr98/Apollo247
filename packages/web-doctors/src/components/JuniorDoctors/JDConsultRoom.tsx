@@ -1094,30 +1094,9 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
-    pubnub
-      .hereNow({
-        channels: [appointmentId],
-        includeUUIDs: true,
-      })
-      .then((response: any) => {
-        const occupants = response.channels[appointmentId].occupants;
-
-        let doctorCount = 0;
-        let paientsCount = 0;
-
-        occupants.forEach((item: any) => {
-          if (item.uuid.indexOf('PATIENT') > -1) {
-            paientsCount = 1;
-          } else if (item.uuid.indexOf('JUNIOR') > -1) {
-            doctorCount = 1;
-          }
-        });
-
-        sendCallNotificationFnWithCheck(callType, isCall, doctorCount + paientsCount);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    pubnubPresence((patient: number, doctor: number) => {
+      sendCallNotificationFnWithCheck(callType, isCall, patient + doctor);
+    });
   };
 
   const sendCallNotificationFnWithCheck = (
@@ -1456,7 +1435,8 @@ export const JDConsultRoom: React.FC = () => {
       ? true
       : false;
   };
-  const endCallNotificationAction = (isCall: boolean) => {
+
+  const endCallNotificationActionCheckFn = (isCall: boolean, numberOfParticipants: number) => {
     client
       .query<EndCallNotification, EndCallNotificationVariables>({
         query: END_CALL_NOTIFICATION,
@@ -1464,6 +1444,7 @@ export const JDConsultRoom: React.FC = () => {
         variables: {
           appointmentCallId: isCall ? callId : chatRecordId,
           patientId: patientId,
+          numberOfParticipants,
         },
       })
       .catch((error: ApolloError) => {
@@ -1487,6 +1468,34 @@ export const JDConsultRoom: React.FC = () => {
         console.log('Error in Call Notification', error.message);
       });
   };
+
+  const endCallNotificationAction = (isCall: boolean) => {
+    pubnubPresence((patient: number, doctor: number) => {
+      endCallNotificationActionCheckFn(isCall, patient + doctor);
+    });
+  };
+
+  const pubnubPresence = (callBack: (patientCount: number, doctorCount: number) => void) => {
+    pubnub
+      .hereNow({ channels: [appointmentId], includeUUIDs: true })
+      .then((response: any) => {
+        const occupants = response.channels[appointmentId].occupants;
+        let doctorCount = 0;
+        let paientsCount = 0;
+        occupants.forEach((item: any) => {
+          if (item.uuid.indexOf('PATIENT') > -1) {
+            paientsCount = 1;
+          } else if (item.uuid.indexOf('DOCTOR') > -1) {
+            doctorCount = 1;
+          }
+        });
+        callBack(paientsCount, doctorCount);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 1;
   // const assignedDoctor = {
