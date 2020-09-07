@@ -819,6 +819,16 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#FC9916',
       fontWeight: 600,
     },
+    addList: {
+      '& li': {
+        '& h5': {
+          width: 160,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        },
+      },
+    },
   })
 );
 
@@ -3172,7 +3182,7 @@ export const MedicinePrescription: React.FC = () => {
                 </div>
               )}
 
-              {caseSheetEdit && <div className={classes.addRemove}>{actionButtons}</div>}
+              {caseSheetEdit && <div>{actionButtons}</div>}
             </li>
           );
         } else {
@@ -3402,7 +3412,7 @@ export const MedicinePrescription: React.FC = () => {
               onClick={() => {
                 handlePastMedicinesTabs(0);
                 setIsPrevMedDialogOpen(true);
-                if(pastAppointmentsArr && pastAppointmentsArr.length > 0){
+                if (pastAppointmentsArr && pastAppointmentsArr.length > 0) {
                   getMedicineCopy(pastAppointmentsArr[0]);
                 }
               }}
@@ -3411,11 +3421,7 @@ export const MedicinePrescription: React.FC = () => {
               <span className={classes.lowercase}>x</span>
             </AphButton>
           ) : (
-            <span
-              className={classes.noPrevPresc}
-            >
-              No previous prescriptions
-            </span>
+            <span className={classes.noPrevPresc}>No previous prescriptions</span>
           )}
         </>
       )}
@@ -4038,9 +4044,7 @@ export const MedicinePrescription: React.FC = () => {
                           item.appointmentDateTime === selectedDate ? classes.dateTabsActive : ''
                         }`}
                         onClick={() => {
-                          getMedicineCopy(
-                            item
-                          );
+                          getMedicineCopy(item);
                         }}
                       >
                         {`${format(new Date(item.appointmentDateTime), 'dd  MMMMMMMMMMMM')}`}
@@ -4102,7 +4106,7 @@ export const MedicinePrescription: React.FC = () => {
                             <Typography>Added Medicine</Typography>
                           </div>
                           <div className={classes.medicineContent}>
-                            <ul className={classes.medicineList}>
+                            <ul className={`${classes.medicineList} ${classes.addList}`}>
                               {/* Add 'added' class to li of this ul for the color as per design  */}
                               {medicineAddedCopyHtml('present')}
                               {/* {medicineHtml('removed')} */}
