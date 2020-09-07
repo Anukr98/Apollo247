@@ -1,13 +1,18 @@
-import React from 'react';
-import { Theme } from '@material-ui/core';
+import React, { useEffect } from 'react';
+import { Theme, Modal, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { ConsultOrders_consultOrders_appointments as CardDetails } from 'graphql/types/ConsultOrders';
 import { AphButton } from '@aph/web-ui-components';
 import moment from 'moment';
 import { getAppStoreLink } from 'helpers/dateHelpers';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Link } from 'react-router-dom';
 import { readableParam } from 'helpers/commonHelpers';
+import { OrderStatusContent } from 'components/OrderStatusContent';
+import { GET_APPOINTMENT_DATA, GET_CONSULT_INVOICE } from 'graphql/consult';
+import { useApolloClient } from 'react-apollo-hooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { GetOrderInvoice } from 'graphql/types/GetOrderInvoice';
+import { STATUS } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -172,6 +177,16 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    modal: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    loader: {
+      textAlign: 'center',
+      padding: '20px 0',
+      outline: 'none',
+    },
   };
 });
 
@@ -181,7 +196,12 @@ interface PaymentCardProps {
 
 export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
   const classes = useStyles({});
+  const apolloClient = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
   const { cardDetails } = props;
+  const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
+  const [triggerInvoice, setTriggerInvoice] = React.useState<boolean>(false);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   let paymentStatus,
     paymentRefId = '';
   let amountPaid = 0;
@@ -210,6 +230,81 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
     paymentStatus === 'PENDING' || paymentStatus === 'TXN_FAILURE'
       ? 'TRY AGAIN'
       : 'Download Apollo 247 App';
+
+  const handlePaymentModalClose = () => {
+    setIsConfirmedPopoverOpen(false);
+  };
+
+  useEffect(() => {
+    if (triggerInvoice) {
+      setIsLoading(true);
+      apolloClient
+        .query<GetOrderInvoice>({
+          query: GET_CONSULT_INVOICE,
+          variables: {
+            appointmentId: cardDetails.id,
+            patientId: currentPatient && currentPatient.id,
+          },
+          fetchPolicy: 'cache-first',
+        })
+        .then(({ data }) => {
+          if (data && data.getOrderInvoice && data.getOrderInvoice.length) {
+            window.open(data.getOrderInvoice, '_blank');
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => {
+          setIsLoading(false);
+          setTriggerInvoice(false);
+        });
+    }
+  }, [triggerInvoice]);
+
+  const doctorId = cardDetails ? cardDetails.doctorId : '';
+
+  const statusActions = (status: string, type: string) => {
+    switch (status) {
+      case 'PENDING':
+      case 'PAYMENT_PENDING':
+        return {
+          ctaText: 'TRY AGAIN',
+          info:
+            'In case your account has been debited, you should get the refund in 10-14 working days.',
+          callbackFunction: () => {
+            window.location.href = clientRoutes.doctorDetails(readableDoctorName, doctorId);
+          },
+        };
+      case 'PAYMENT_FAILED':
+        return {
+          ctaText: 'TRY AGAIN',
+          info:
+            'In case your account has been debited, you should get the refund in 10-14 working days.',
+          callbackFunction: () => {
+            window.location.href = clientRoutes.doctorDetails(readableDoctorName, doctorId);
+          },
+        };
+      case 'PAYMENT_ABORTED':
+        return {
+          ctaText: 'TRY AGAIN',
+          info:
+            'In case your account has been debited, you should get the refund in 10-14 working days.',
+          callbackFunction: () => {
+            window.location.href = clientRoutes.doctorDetails(readableDoctorName, doctorId);
+          },
+        };
+      case 'PAYMENT_SUCCESS':
+        return {
+          ctaText: 'Go to Consult Room',
+          info: '',
+          callbackFunction: () => {
+            window.location.href = clientRoutes.chatRoom('', doctorId);
+          },
+        };
+    }
+  };
+
   return (
     <div
       className={`${classes.root} ${
@@ -252,10 +347,8 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
           </div>
           <div className={classes.infoText}>
             <span>Payment Ref Number - {paymentRefId}</span>
-            <span className={classes.rightArrow}>
-              <Link to={clientRoutes.doctorDetails(readableDoctorName, cardDetails.doctorId)}>
-                <img src={require('images/ic_arrow_right.svg')} alt="Image arrow" />
-              </Link>
+            <span className={classes.rightArrow} onClick={() => setIsConfirmedPopoverOpen(true)}>
+              <img src={require('images/ic_arrow_right.svg')} alt="Image arrow" />
             </span>
           </div>
         </div>
@@ -284,6 +377,52 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
           )}
         </div>
       </div>
+      {isConfirmedPopoverOpen && cardDetails && paymentStatus && (
+        <Modal
+          open={isConfirmedPopoverOpen}
+          className={classes.modal}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          {isLoading ? (
+            <div className={classes.loader}>
+              <CircularProgress />
+            </div>
+          ) : (
+            <OrderStatusContent
+              paymentStatus={
+                paymentStatus === 'Payment Failed'
+                  ? 'failed'
+                  : paymentStatus === 'Payment Pending'
+                  ? 'pending'
+                  : paymentStatus === 'Payment Invalid'
+                  ? 'aborted'
+                  : 'success'
+              }
+              paymentInfo={statusActions(cardDetails.status, 'text').info}
+              orderId={Number(cardDetails.displayId)}
+              amountPaid={amountPaid}
+              doctorDetail={{
+                fullName: cardDetails.doctor.name,
+                doctorHospital: [],
+              }}
+              paymentRefId={paymentRefId}
+              bookingDateTime={moment(cardDetails.appointmentDateTime)
+                .format('DD MMM YYYY, h:mm[ ]A')
+                .replace(/(A|P)(M)/, '$1.$2.')
+                .toString()}
+              type="consult"
+              consultMode={
+                cardDetails.appointmentType === 'ONLINE' ? 'ONLINE CONSULT' : 'CLINIC VISIT'
+              }
+              onClose={() => handlePaymentModalClose()}
+              ctaText={statusActions(cardDetails.status, 'text').ctaText}
+              orderStatusCallback={statusActions(cardDetails.status, 'callback').callbackFunction}
+              fetchConsultInvoice={setTriggerInvoice}
+            />
+          )}
+        </Modal>
+      )}
     </div>
   );
 };
