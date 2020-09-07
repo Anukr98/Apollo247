@@ -117,6 +117,7 @@ import {
 import { AddToCartButtons } from './AddToCartButtons';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '../../graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import _ from 'lodash';
+import { CategoryAndSpecialOffers } from '@aph/mobile-patients/src/components/Medicines/CategoryAndSpecialOffers';
 
 const styles = StyleSheet.create({
   sliderDotStyle: {
@@ -132,19 +133,10 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     justifyContent: 'center',
   },
-  searchBarSuggestionsViewStyle: {
-    flex: 1,
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    left: 0,
-    top: 76,
-  },
-  searchBarAndSuggestionMainViewStyle: {
-    flex: 1,
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
+  categoryAndSpecialOffers: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingBottom: 10,
   },
 });
 
@@ -1935,7 +1927,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     return (
       <ScrollView removeClippedSubviews={true} bounces={false}>
-        <View style={{ height: 10 }} />
+        <CategoryAndSpecialOffers
+          containerStyle={styles.categoryAndSpecialOffers}
+          onPressShopByCategory={() => {}}
+          onPressSpecialOffers={() => {}}
+        />
         {sectionsView}
         {!error && <View style={{ height: 20 }} />}
       </ScrollView>
