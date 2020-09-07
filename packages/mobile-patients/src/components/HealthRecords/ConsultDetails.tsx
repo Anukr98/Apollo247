@@ -89,7 +89,6 @@ import {
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '../../helpers/mimeType';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { string } from '../../strings/string';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -906,8 +905,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 </Text>
                 {caseSheetDetails?.referralDescription &&
                   <Text style={styles.dataTextStyle}>{caseSheetDetails!.referralDescription}</Text>}
-                <TouchableOpacity
-                  style={{ marginTop: 12 }}
+                <TouchableOpacity style={{ marginTop: 12 }}
                   onPress={() => {
                     props.navigation.navigate(AppRoutes.DoctorSearch);
                   }}
@@ -927,7 +925,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       </View>
     );
   };
-
 
   const renderGenerealAdvice = () => {
     // if (
