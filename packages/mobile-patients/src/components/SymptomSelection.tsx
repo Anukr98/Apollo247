@@ -7,6 +7,7 @@ import {
   FlatList,
   Text,
   TouchableOpacity,
+  Keyboard,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -27,8 +28,13 @@ interface SymptomSelectionProps extends NavigationScreenProps {
   defaultSymptoms: object[];
   storedMessages: object[];
 }
+interface Symptoms {
+  name: string;
+  id: string;
+}
 
 var selectedSymtomsArr: string[] = [];
+var selectedSymtomsIdsArr: string[] = [];
 
 export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
   const chatId = props.navigation.getParam('chatId');
@@ -36,9 +42,9 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
   const storedMessages = props.navigation.getParam('storedMessages');
 
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+  const [selectedSymptomsIds, setSelectedSymptomsIds] = useState<string[]>([]);
   const [refreshFlatList, setRefreshFlatList] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<any>({});
-  const [symptomTextString, setSymptomTextString] = useState<any>({});
   const [symptoms, setSymptoms] = useState<{}[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -71,7 +77,6 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
     return (
       <TextInputComponent
         onChangeText={(symptoms) => {
-          setSymptomTextString(symptoms);
           const search = _.debounce(fetchSymptoms, 500);
           setSearchQuery((prevSearch: any) => {
             if (prevSearch.cancel) {
@@ -130,7 +135,7 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
           symptomSelectionHandler(item);
         }}
       >
-        {symptoms.length === 0 && selectedSymptoms.includes(item.text) ? (
+        {symptoms.length === 0 && selectedSymptoms.includes(item.name) ? (
           <CheckedIcon style={{ marginRight: 15 }} />
         ) : symptoms.length === 0 ? (
           <CheckUnselectedIcon style={{ marginRight: 15 }} />
@@ -146,18 +151,22 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
   };
 
   const symptomSelectionHandler = (item: any) => {
-    if (symptomTextString) {
+    if (symptoms.length !== 0) {
       // single symptom selection
       const { navigation } = props;
       navigation.goBack();
       navigation.state.params!.goBackCallback(item, chatId, storedMessages);
     } else {
-      if (selectedSymtomsArr.includes(item.text)) {
-        selectedSymtomsArr.splice(selectedSymtomsArr.indexOf(item.text), 1);
+      Keyboard.dismiss();
+      if (selectedSymtomsArr.includes(item.name)) {
+        selectedSymtomsArr.splice(selectedSymtomsArr.indexOf(item.name), 1);
+        selectedSymtomsIdsArr.splice(selectedSymtomsIdsArr.indexOf(item.id), 1);
       } else {
-        selectedSymtomsArr = selectedSymtomsArr.concat(item.text);
+        selectedSymtomsArr = selectedSymtomsArr.concat(item.name);
+        selectedSymtomsIdsArr = selectedSymtomsIdsArr.concat(item.id);
       }
       setSelectedSymptoms(selectedSymtomsArr);
+      setSelectedSymptomsIds(selectedSymtomsIdsArr);
       setRefreshFlatList(!refreshFlatList);
     }
   };
@@ -167,10 +176,19 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
       <Button
         title={string.symptomChecker.addSelectedSymptom}
         style={styles.bottomBtn}
-        disabledStyle={styles.bottomBtn}
+        // disabledStyle={styles.bottomBtn}
         titleTextStyle={styles.bottomBtnTxt}
-        disabled={selectedSymptoms.length === 0}
-        onPress={() => {}}
+        // disabled={selectedSymptoms.length === 0}
+        onPress={() => {
+          const newObj = {
+            name: selectedSymptoms.join(', '),
+            id: selectedSymptomsIds.toString(),
+          };
+          console.log('newObj', newObj);
+          const { navigation } = props;
+          navigation.goBack();
+          navigation.state.params!.goBackCallback(newObj, chatId, storedMessages);
+        }}
       />
     );
   };

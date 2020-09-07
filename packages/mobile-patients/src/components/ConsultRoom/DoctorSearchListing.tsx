@@ -866,7 +866,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     const movedata = props.navigation.getParam('MoveDoctor') || '';
     if (movedata == 'MoveDoctor') {
-      props.navigation.push(AppRoutes.SymptomChecker);
+      props.navigation.push(AppRoutes.SymptomTracker);
     } else {
       try {
         const MoveDoctor = props.navigation.getParam('movedFrom') || '';

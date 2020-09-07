@@ -36,6 +36,7 @@ import {
   getSymptomsFromTracker,
 } from '../helpers/apiCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { AlertPopup } from './ui/AlertPopup';
 
 const roundCountViewDimension = 30;
 const howItWorksArrData = [
@@ -62,13 +63,15 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [showList, setShowList] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
-  const [selectedPatient, setSelectedPatient] = useState<Patient>();
+  const [selectedPatient, setSelectedPatient] = useState<any>();
   const [showHowItWorks, setShowHowItWorks] = useState<boolean>(true);
   const [messages, setMessages] = useState<any>([]);
-  const [symptoms, setSymptoms] = useState<Symptoms>([]);
+  const [symptoms, setSymptoms] = useState<Symptoms[]>([]);
+  const [specialities, setSpecialities] = useState<any>([]);
   const [chatId, setChatId] = useState<string>('');
   const [defaultSymptoms, setDefaultSymptoms] = useState<object[]>([]);
   const [chatEnded, setChatEnded] = useState<boolean>(false);
+  const [restartVisible, setRestartVisible] = useState<boolean>(false);
   const flatlistRef = useRef<any>(null);
 
   useEffect(() => {
@@ -189,6 +192,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   };
 
   const initializeChat = async (patient: any) => {
+    console.log('patient', patient);
     setLoading(true);
     setChatEnded(false);
     insertMessage = [];
@@ -273,11 +277,8 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
 
   const onProfileChange = (profile: any) => {
     if (profile && profile.firstName) {
-      setSelectedPatient({
-        name: profile.firstName + profile.lastName,
-        gender: profile.gender,
-        age: Math.round(moment().diff(g(profile, 'dateOfBirth') || 0, 'years', true)),
-      });
+      setSelectedPatient(profile);
+
       // start chat
       initializeChat(profile);
     }
@@ -301,13 +302,10 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
 
   const onSelectedProfile = (item: any) => {
     selectUser(item);
-    setSelectedPatient({
-      name: item.firstName + item.lastName,
-      gender: item.gender,
-      age: Math.round(moment().diff(g(item, 'dateOfBirth') || 0, 'years', true)),
-    });
+    setSelectedPatient(item);
     setShowProfilePopUp(false);
     setShowHowItWorks(false);
+
     // start chat
     initializeChat(item);
   };
@@ -365,17 +363,18 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         </View>
         <View style={[styles.itemRowStyle, styles.patientDetailsMargin]}>
           <Text style={styles.patientDetailsText}>
-            {string.symptomChecker.name} - {selectedPatient!.name}
+            {string.symptomChecker.name} - {selectedPatient.firstName} {selectedPatient.lastName}
           </Text>
         </View>
         <View style={[styles.itemRowStyle, styles.patientDetailsMargin]}>
           <Text style={styles.patientDetailsText}>
-            {string.symptomChecker.age} - {selectedPatient!.gender}
+            {string.symptomChecker.age} - {selectedPatient.gender}
           </Text>
         </View>
         <View style={[styles.itemRowStyle, styles.patientDetailsMargin]}>
           <Text style={styles.patientDetailsText}>
-            {string.symptomChecker.gender} - {selectedPatient!.age}
+            {string.symptomChecker.gender} -{' '}
+            {Math.round(moment().diff(g(selectedPatient, 'dateOfBirth') || 0, 'years', true))}
           </Text>
         </View>
         <TouchableOpacity
@@ -469,11 +468,10 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                 insertMessage = insertMessage.concat({
                   text: string.symptomChecker.thanksForGivingAnswers.replace(
                     '{{name}}',
-                    selectedPatient!.name
+                    selectedPatient.firstName + selectedPatient.lastName
                   ),
                 });
                 setMessages(insertMessage);
-                setChatEnded(true);
                 fetchSymptoms();
               }}
             >
@@ -494,9 +492,11 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
       console.log('res', res);
       if (res && res.data && res.data.symptoms) {
         setSymptoms(res.data.symptoms);
+        setSpecialities(res.data.specialities);
         setTimeout(() => {
           flatlistRef.current.scrollToEnd({ animated: true });
         }, 300);
+        setChatEnded(true);
       }
     } catch (error) {
       CommonBugFender('GetSymptomsFromTrackerApi', error);
@@ -563,21 +563,41 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const renderBottomButtons = () => {
     return (
       <View style={styles.bottomView}>
-        <Button
-          title="Proceed"
-          style={styles.proceedBtn}
+        <TouchableOpacity
           onPress={() => {
-            setShowProfilePopUp(true);
+            setRestartVisible(true);
           }}
-        />
+        >
+          <Text style={styles.restartBtnTxt}>{string.symptomChecker.restart}</Text>
+        </TouchableOpacity>
         <Button
-          title="Proceed"
-          style={styles.proceedBtn}
+          title={string.symptomChecker.consultDoctor}
+          style={[styles.proceedBtn, { marginTop: 0 }]}
           onPress={() => {
-            setShowProfilePopUp(true);
+            const filteredSpecialities = specialities.map((item: any) => {
+              return item.name;
+            });
+            props.navigation.push(AppRoutes.DoctorSearchListing, {
+              specialities: filteredSpecialities,
+              MoveDoctor: 'MoveDoctor',
+            });
           }}
         />
       </View>
+    );
+  };
+
+  const renderRestartChatModal = () => {
+    return (
+      <AlertPopup
+        visible={restartVisible}
+        onDismiss={() => setRestartVisible(false)}
+        title={string.symptomChecker.restartSymptomTrackerDiscription}
+        onContinue={() => {
+          setRestartVisible(false);
+          initializeChat(selectedPatient);
+        }}
+      />
     );
   };
 
@@ -585,9 +605,10 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     <View style={styles.container}>
       <SafeAreaView style={styles.container}>
         {renderHeader()}
+        {renderRestartChatModal()}
         {showHowItWorks && renderHowItWorks()}
         {messages && messages.length > 0 && renderChat()}
-        {/* {renderBottomButtons()} */}
+        {chatEnded && renderBottomButtons()}
         {showProfilePopUp && renderProfileListView()}
       </SafeAreaView>
       {loading && <Spinner />}
@@ -825,6 +846,9 @@ const styles = StyleSheet.create({
   bottomView: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginHorizontal: 20,
+    justifyContent: 'space-around',
+    paddingVertical: 10,
   },
   patientChatTextTitle: {
     color: 'white',
@@ -843,5 +867,9 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansRegular(14),
     color: colors.LIGHT_BLUE,
     opacity: 0.3,
+  },
+  restartBtnTxt: {
+    color: colors.SKY_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(14),
   },
 });

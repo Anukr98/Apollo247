@@ -396,6 +396,9 @@
     "addSelectedSymptom": "ADD SELECTED SYMPTOMS",
     "symptoms": "Symptoms",
     "noOtherSymptoms": "NO OTHER SYMPTOM",
-    "thanksForGivingAnswers": "Thanks {{name}}, for helping us with your answers.\n\nBelow is a summary of your symptoms."
+    "thanksForGivingAnswers": "Thanks {{name}}, for helping us with your answers.\n\nBelow is a summary of your symptoms.",
+    "restart": "RESTART",
+    "consultDoctor": "Consult Doctor",
+    "restartSymptomTrackerDiscription": "This will end your symptom tracking and you’ll have to start it again. Do you want to continue tracking your symptoms or go back?"
   }
 }
