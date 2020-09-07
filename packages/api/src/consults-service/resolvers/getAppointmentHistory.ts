@@ -215,7 +215,6 @@ const getAppointmentStatus: Resolver<
   ConsultServiceContext,
   AppointmentStatusResult
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
-  console.log('args', args);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
   try {

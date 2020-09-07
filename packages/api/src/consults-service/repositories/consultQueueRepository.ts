@@ -53,9 +53,7 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
     });
     let minCount = -1,
       minDoctorId: string = '0';
-    console.log(onlineJrDocs.length, 'jd length online');
     if (onlineJrDocs.length > 0) {
-      console.log('entered here');
       await getQueueCounts();
       return minDoctorId;
     } else {
@@ -68,12 +66,10 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
           const queueCount = await ConsultQueueItem.count({
             where: { doctorId: doctor.id, isActive: true },
           });
-          console.log('each doctor', doctor.id, queueCount);
           if (minCount == -1 || minCount > queueCount) {
             minCount = queueCount;
             minDoctorId = doctor.id;
           }
-          console.log('selected count', minCount, minDoctorId);
           if (serialNo == onlineJrDocs.length) {
             resolve(minDoctorId);
           }
