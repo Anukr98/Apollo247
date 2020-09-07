@@ -11,6 +11,12 @@ import { VisitClinicFollowupConsult } from 'components/VisitClinicFollowupConsul
 import { LocationProvider } from 'components/LocationProvider';
 import { OnlineFollwupConsult } from 'components/OnlineFollowupConsult';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
+import {
+  GetDoctorDetailsById,
+  GetDoctorDetailsByIdVariables,
+} from 'graphql/types/GetDoctorDetailsById';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -68,7 +74,7 @@ const TabContainer: React.FC = (props) => {
 };
 interface DoctorCardProps {
   setIsPopoverOpen: (popover: boolean) => void;
-  doctorDetails: DoctorDetails;
+  doctorId: string;
   setSelectedSlot: (selectedSlot: string) => void;
   setFollwupAppoitnmentType: (followupAppointmentType: number) => void;
 }
@@ -76,14 +82,29 @@ interface DoctorCardProps {
 export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles({});
 
-  const { doctorDetails, setIsPopoverOpen, setSelectedSlot, setFollwupAppoitnmentType } = props;
+  const { doctorId, setIsPopoverOpen, setSelectedSlot, setFollwupAppoitnmentType } = props;
   const [tabValue, setTabValue] = useState<number>(0);
 
-  if (doctorDetails) {
-    const isPayrollDoctor =
-      doctorDetails && doctorDetails.doctorType === DoctorType.PAYROLL ? true : false;
+  const { data, loading, error } = useQueryWithSkip<
+    GetDoctorDetailsById,
+    GetDoctorDetailsByIdVariables
+  >(GET_DOCTOR_DETAILS_BY_ID, {
+    variables: { id: doctorId },
+  });
 
-    const doctorId = doctorDetails && doctorDetails.id;
+  if (loading) {
+    return <LinearProgress />;
+  }
+  if (error) {
+    return <div>Error....</div>;
+  }
+
+  const doctorDetails = data && data.getDoctorDetailsById ? data.getDoctorDetailsById : null;
+
+  if (doctorDetails) {
+    const isPayrollDoctor = doctorDetails.doctorType === DoctorType.PAYROLL ? true : false;
+
+    const doctorId = doctorDetails.id;
 
     const consultModeOnline: any = [];
     const consultModePhysical: any = [];

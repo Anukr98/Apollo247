@@ -869,7 +869,9 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     }
     if (appointmentStatus.includes('Follow-Up')) {
       const filteredList = localFilteredAppointmentsList.filter(
-        (appointment) => appointment.isFollowUp !== 'false'
+        (appointment) =>
+          appointment.status === STATUS.COMPLETED &&
+          !isPastAppointment(appointment.appointmentDateTime)
       );
       finalList = [...finalList, ...filteredList];
     }

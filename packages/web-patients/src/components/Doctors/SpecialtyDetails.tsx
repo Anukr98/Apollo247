@@ -421,8 +421,8 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [filter, setFilter] = useState<SearchObject>(searchObject);
   const [filteredDoctorData, setFilteredDoctorData] = useState<any>(null);
   const [doctorData, setDoctorData] = useState<DoctorDetails[] | null>(null);
-  const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(false);
-  const [isPhysicalSelected, setIsPhysicalSelected] = useState<boolean>(false);
+  const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(true);
+  const [isPhysicalSelected, setIsPhysicalSelected] = useState<boolean>(true);
   const [doctorType, setDoctorType] = useState<DOCTOR_CATEGORY>(DOCTOR_CATEGORY.APOLLO);
   const [onlyFilteredCount, setOnlyFilteredCount] = useState<number>(0);
   const [pageNo, setPageNo] = useState<number>(1);

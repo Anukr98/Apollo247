@@ -680,7 +680,7 @@ export const ChatRoom: React.FC = () => {
                     appointmentDetails.status !== STATUS.COMPLETED && (
                       <div className={classes.headerActions}>
                         <AphButton
-                          disabled={jrDoctorJoined}
+                          disabled={appointmentDetails.isSeniorConsultStarted}
                           classes={{
                             root: classes.viewButton,
                             disabled: classes.disabledButton,
