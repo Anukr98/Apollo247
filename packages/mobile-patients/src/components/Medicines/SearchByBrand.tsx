@@ -139,6 +139,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const [endReached, setEndReached] = useState<boolean>(products ? true : false);
   const [prevData, setPrevData] = useState<MedicineProduct[]>();
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
+  const [searchQuery, setSearchQuery] = useState({});
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
@@ -426,6 +427,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
                 return;
               }
               const search = _.debounce(onSearchMedicine, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
               search(value);
             }
           }}
@@ -479,18 +486,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       index == 0 ? { marginTop: 20 } : {},
       index == array.length - 1 ? { marginBottom: 20 } : {},
     ];
-    const foundMedicineInCart = cartItems.find((item) => item.id == medicine.sku);
     const price = medicine.price;
-    const specialPrice = medicine.special_price
-      ? typeof medicine.special_price == 'string'
-        ? Number(medicine.special_price)
-        : medicine.special_price
-      : undefined;
-
-    const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == medicine.sku) != -1;
+    const specialPrice = Number(medicine.special_price) || undefined;
 
     return (
       <SearchMedicineCard
+        isSellOnline={!!medicine.sell_online}
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           CommonLogEvent('SEARCH_BY_BRAND', 'Save past Search');
@@ -512,7 +513,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         }
         price={price}
         specialPrice={specialPrice}
-        unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
         quantity={getItemQuantity(medicine.sku)}
         onPressAdd={() => {
           CommonLogEvent('SEARCH_BY_BRAND', 'Add item to cart');
@@ -535,19 +535,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
             ? onRemoveCartItem(medicine)
             : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) - 1)
         }
-        onChangeUnit={(unit) => {
-          CommonLogEvent('SEARCH_BY_BRAND', 'Change unit in cart');
-          onUpdateCartItem(medicine, unit);
-        }}
-        isMedicineAddedToCart={isMedicineAddedToCart}
-        isCardExpanded={!!foundMedicineInCart}
         isInStock={!!medicine.is_in_stock}
-        packOfCount={(medicine.mou && Number(medicine.mou)) || undefined}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
-        subscriptionStatus={'unsubscribed'}
-        onChangeSubscription={() => {}}
-        onEditPress={() => {}}
-        onAddSubscriptionPress={() => {}}
         removeCartItem={() => removeCartItem!(medicine.sku)}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
       />
@@ -569,18 +558,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           : { marginBottom: 20 }
         : {},
     ];
-    const foundMedicineInCart = cartItems.find((item) => item.id == medicine.sku);
     const price = medicine.price;
-    const specialPrice = medicine.special_price
-      ? typeof medicine.special_price == 'string'
-        ? Number(medicine.special_price)
-        : medicine.special_price
-      : undefined;
-
-    const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == medicine.sku) != -1;
+    const specialPrice = Number(medicine.special_price) || undefined;
 
     return (
       <SearchMedicineGridCard
+        isSellOnline={!!medicine.sell_online}
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           CommonLogEvent('SEARCH_BY_BRAND', 'Save past Search');
@@ -601,15 +584,10 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         }
         price={price}
         specialPrice={specialPrice}
-        unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
         quantity={getItemQuantity(medicine.sku)}
         onPressAdd={() => {
           CommonLogEvent('SEARCH_BY_BRAND', 'Add item to cart');
           onAddCartItem(medicine);
-        }}
-        onPressRemove={() => {
-          CommonLogEvent('SEARCH_BY_BRAND', 'Remove item from cart');
-          onRemoveCartItem(medicine);
         }}
         onNotifyMeClicked={() => {
           onNotifyMeClick(medicine.name);
@@ -624,19 +602,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
             ? onRemoveCartItem(medicine)
             : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) - 1)
         }
-        onChangeUnit={(unit) => {
-          CommonLogEvent('SEARCH_BY_BRAND', 'Change unit in cart');
-          onUpdateCartItem(medicine, unit);
-        }}
-        isMedicineAddedToCart={isMedicineAddedToCart}
-        isCardExpanded={!!foundMedicineInCart}
         isInStock={!!medicine.is_in_stock}
-        packOfCount={(medicine.mou && Number(medicine.mou)) || undefined}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
-        subscriptionStatus={'unsubscribed'}
-        onChangeSubscription={() => {}}
-        onEditPress={() => {}}
-        onAddSubscriptionPress={() => {}}
         removeCartItem={() => removeCartItem!(medicine.sku)}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
       />

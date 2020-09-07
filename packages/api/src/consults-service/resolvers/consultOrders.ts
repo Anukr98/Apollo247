@@ -8,6 +8,9 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import _ from 'lodash';
 import { STATUS, REFUND_STATUS, Appointment } from 'consults-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { winstonLogger } from 'customWinstonLogger';
+
+const consultsLogger = winstonLogger.loggers.get('consultServiceLogger');
 
 export const consultOrdersTypeDefs = gql`
   type AppointmentsResult {
@@ -55,11 +58,7 @@ export const consultOrdersTypeDefs = gql`
     refundId: String
   }
   extend type Query {
-    consultOrders(
-      patientId: String
-      pageNo: Int
-      pageSize: Int
-    ): AppointmentsResult
+    consultOrders(patientId: String, pageNo: Int, pageSize: Int): AppointmentsResult
   }
 `;
 
@@ -83,15 +82,15 @@ type DoctorResponse = {
 };
 
 type AppointmentsResult = {
-  meta: PaginateMetaDataConsultOrders,
+  meta: PaginateMetaDataConsultOrders;
   appointments: Partial<ApptResponse[]>;
 };
 
 type PaginateMetaDataConsultOrders = {
-  total: number | null,
-  pageSize: number | null,
-  pageNo: number | null
-}
+  total: number | null;
+  pageSize: number | null;
+  pageNo: number | null;
+};
 
 type ApptPayment = {
   amountPaid: number;
@@ -113,7 +112,7 @@ type ApptRefunds = {
 
 const consultOrders: Resolver<
   null,
-  { patientId: string, pageNo?: number, pageSize?: number },
+  { patientId: string; pageNo?: number; pageSize?: number },
   ConsultServiceContext,
   AppointmentsResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
@@ -132,27 +131,34 @@ const consultOrders: Resolver<
 
   // paginated vars
   const { pageNo, pageSize = 10 } = args; //default pageSize = 10
-  const paginateParams: { take?: number, skip?: number } = {};
+  const paginateParams: { take?: number; skip?: number } = {};
 
   //pageNo should be greater than 0
   if (pageNo === 0) {
     throw new AphError(AphErrorMessages.PAGINATION_PARAMS_PAGENO_ERROR, undefined, {});
   }
   if (pageNo) {
-    paginateParams.take = pageSize
-    paginateParams.skip = (pageSize * pageNo) - pageSize //bcoz pageNo. starts from 1 not 0.
+    paginateParams.take = pageSize;
+    paginateParams.skip = pageSize * pageNo - pageSize; //bcoz pageNo. starts from 1 not 0.
   }
 
-  const [response, totalCount]: any = await apptsRepo.getAllAppointmentsByPatientId(
+  consultsLogger.log('info', `consult orders - PaginateParams: ${JSON.stringify(paginateParams)}`);
+
+  const [response, totalCount] = await apptsRepo.getAllAppointmentsByPatientId(
     primaryPatientIds,
     paginateParams
+  );
+
+  consultsLogger.log(
+    'info',
+    `consult orders - DB query resp length: ${Array.isArray(response) && response.length}`
   );
 
   const metaResponse = {
     pageNo: pageNo || null,
     pageSize: (Number.isInteger(pageNo) && pageSize) || null,
-    total: (Number.isInteger(pageNo) && totalCount) || null
-  }
+    total: (Number.isInteger(pageNo) && totalCount) || null,
+  };
 
   /**
    * will use it once web-app use pagination logic...
@@ -230,15 +236,16 @@ const consultOrders: Resolver<
       });
       return {
         meta: metaResponse,
-        appointments: output
+        appointments: output,
       };
     } else {
       throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
     }
-  } else if (response.length == 0) return {
-    meta: metaResponse,
-    appointments: []
-  };
+  } else if (response.length == 0)
+    return {
+      meta: metaResponse,
+      appointments: [],
+    };
   else throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
 };
 

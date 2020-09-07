@@ -183,9 +183,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     noPrevPresc: {
       backgroundColor: 'transparent',
-      //boxShadow: 'none',
       color: '#02475B',
-      textTransform: 'uppercase',
       fontSize: 13,
       fontWeight: 500,
       paddingLeft: 4,
@@ -290,7 +288,7 @@ const useStyles = makeStyles((theme: Theme) =>
       listStyle: 'none',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent: 'center',
       width: '100%',
       overflow: 'hidden',
       position: 'relative',
@@ -300,16 +298,8 @@ const useStyles = makeStyles((theme: Theme) =>
         fontWeight: 500,
         textAlign: 'center',
         cursor: 'pointer',
-        padding: '0 10px',
-        minWidth: 100,
-        '&:first-child': {
-          minWidth: 'auto',
-          padding: '20px 0',
-        },
-        '&:last-child': {
-          minWidth: 'auto',
-          padding: '20px  0',
-        },
+        padding: '0 20px',
+        minWidth: 120,
         '& span': {
           display: 'block',
           fontSize: 12,
@@ -365,6 +355,7 @@ const useStyles = makeStyles((theme: Theme) =>
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        textTransform: 'uppercase',
         '& button': {
           position: 'static',
           minWidth: 'auto',
@@ -649,6 +640,8 @@ const useStyles = makeStyles((theme: Theme) =>
       position: 'absolute',
       top: 10,
       background: '#fff',
+      minWidth: 'auto !important',
+      padding: '20px 0 !important',
     },
     prev: {
       left: -10,
@@ -815,6 +808,24 @@ const useStyles = makeStyles((theme: Theme) =>
         margin: '0 0 10px',
         '& button': {
           right: '10px !important',
+        },
+      },
+    },
+    lowercase: {
+      textTransform: 'lowercase',
+    },
+    removeBtn: {
+      fontSize: 12,
+      color: '#FC9916',
+      fontWeight: 600,
+    },
+    addList: {
+      '& li': {
+        '& h5': {
+          width: 160,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         },
       },
     },
@@ -2298,7 +2309,7 @@ export const MedicinePrescription: React.FC = () => {
     );
   });
 
-  const getMedicineCopy = (item: any, time: any) => {
+  const getMedicineCopy = (item: any) => {
     setSelectedDate(item.appointmentDateTime);
     const MedicineCopy = item.caseSheet.filter(function(e: any) {
       return e.doctorType !== 'JUNIOR';
@@ -2405,28 +2416,31 @@ export const MedicinePrescription: React.FC = () => {
     const pastAppointmentsFilterArr =
       pastAppointments && pastAppointments.length > 0
         ? pastAppointments.filter(function(item: any) {
-          //return item.appointmentDateTime !== appointmentInfo.appointmentDateTime;
-            if(item.appointmentDateTime !== appointmentInfo.appointmentDateTime){
+            //return item.appointmentDateTime !== appointmentInfo.appointmentDateTime;
+            if (item.appointmentDateTime !== appointmentInfo.appointmentDateTime) {
               const MedicineCopy = item.caseSheet.filter(function(e: any) {
                 return e.doctorType !== 'JUNIOR' && e.sentToPatient;
               });
-              if(MedicineCopy.length > 0){
+              if (MedicineCopy.length > 0) {
                 const sortedArr = sortBy(MedicineCopy, 'version');
                 const lastMedCopy = sortedArr[sortedArr.length - 1];
-                if(lastMedCopy.medicinePrescription && lastMedCopy.medicinePrescription.length > 0){
+                if (
+                  lastMedCopy.medicinePrescription &&
+                  lastMedCopy.medicinePrescription.length > 0
+                ) {
                   return item;
-                }else{
+                } else {
                   return null;
                 }
-              }else{
+              } else {
                 return null;
               }
-            }else{
+            } else {
               return null;
-            };
+            }
           })
         : [];
-        //console.log(pastAppointmentsFilterArr);
+    //console.log(pastAppointmentsFilterArr);
     const chunkArr = chunk(sortBy(pastAppointmentsFilterArr, 'appointmentDateTime').reverse(), 4);
     setPagesCount(chunkArr.length);
     setPastAppointmentsArr(chunkArr.length > 0 ? chunkArr[index] : []);
@@ -3051,7 +3065,7 @@ export const MedicinePrescription: React.FC = () => {
                 classes={{ root: classes.updateSymptom }}
                 onClick={() => deletemedicine(index)}
               >
-                <Typography className="orange">REMOVE</Typography>
+                <Typography className={classes.removeBtn}>REMOVE</Typography>
               </AphButton>,
               // <AphButton
               //   variant="contained"
@@ -3168,7 +3182,7 @@ export const MedicinePrescription: React.FC = () => {
                 </div>
               )}
 
-              {caseSheetEdit && <div className={classes.addRemove}>{actionButtons}</div>}
+              {caseSheetEdit && <div>{actionButtons}</div>}
             </li>
           );
         } else {
@@ -3180,7 +3194,7 @@ export const MedicinePrescription: React.FC = () => {
 
   useEffect(() => {
     if (caseSheetEdit) {
-     handlePastMedicinesTabs(0);
+      handlePastMedicinesTabs(0);
     }
   }, [caseSheetEdit]);
 
@@ -3390,22 +3404,25 @@ export const MedicinePrescription: React.FC = () => {
           >
             <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
           </AphButton>
-          {pastAppointmentsArr && pastAppointmentsArr.length > 0 ? <AphButton
-            variant="contained"
-            color="primary"
-            classes={{ root: classes.btnAddDoctor }}
-            onClick={() => {
-              handlePastMedicinesTabs(0);
-              setIsPrevMedDialogOpen(true);
-            }}
-          >
-            <img src={require('images/ic_dark_plus.svg')} alt="" /> PREVIOUS Rx
-          </AphButton>: <span
-          className={classes.noPrevPresc}
-            // variant="contained"
-            //color="primary"
-            //classes={{ root: classes.noPrevPresc }}
-          >No previous prescriptions</span>}
+          {pastAppointmentsArr && pastAppointmentsArr.length > 0 ? (
+            <AphButton
+              variant="contained"
+              color="primary"
+              classes={{ root: classes.btnAddDoctor }}
+              onClick={() => {
+                handlePastMedicinesTabs(0);
+                setIsPrevMedDialogOpen(true);
+                if (pastAppointmentsArr && pastAppointmentsArr.length > 0) {
+                  getMedicineCopy(pastAppointmentsArr[0]);
+                }
+              }}
+            >
+              <img src={require('images/ic_dark_plus.svg')} alt="" /> PREVIOUS R
+              <span className={classes.lowercase}>x</span>
+            </AphButton>
+          ) : (
+            <span className={classes.noPrevPresc}>No previous prescriptions</span>
+          )}
         </>
       )}
       {isEditFavMedicine && (
@@ -4027,13 +4044,7 @@ export const MedicinePrescription: React.FC = () => {
                           item.appointmentDateTime === selectedDate ? classes.dateTabsActive : ''
                         }`}
                         onClick={() => {
-                          getMedicineCopy(
-                            item,
-                            format(
-                              new Date(item.appointmentDateTime),
-                              'dd  MMMMMMMMMMMM yyyy, h:mm a'
-                            )
-                          );
+                          getMedicineCopy(item);
                         }}
                       >
                         {`${format(new Date(item.appointmentDateTime), 'dd  MMMMMMMMMMMM')}`}
@@ -4095,7 +4106,7 @@ export const MedicinePrescription: React.FC = () => {
                             <Typography>Added Medicine</Typography>
                           </div>
                           <div className={classes.medicineContent}>
-                            <ul className={classes.medicineList}>
+                            <ul className={`${classes.medicineList} ${classes.addList}`}>
                               {/* Add 'added' class to li of this ul for the color as per design  */}
                               {medicineAddedCopyHtml('present')}
                               {/* {medicineHtml('removed')} */}

@@ -19,7 +19,7 @@ import {
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
-import { BlockUserPointsResponse } from 'types/oneApolloTypes';
+import { BlockUserPointsResponse, OneApollTransaction } from 'types/oneApolloTypes';
 import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger';
@@ -27,55 +27,10 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 
-export type ONE_APOLLO_USER_REG = {
-  FirstName: string;
-  LastName: string;
-  MobileNumber: string;
-  Gender: Gender;
-  BusinessUnit: string;
-  StoreCode: string;
-  CustomerId: string;
-};
-
-export enum ONE_APOLLO_PRODUCT_CATEGORY {
-  PRIVATE_LABEL = 'A247',
-  NON_PHARMA = 'F247',
-  PHARMA = 'P247',
-}
-
-export type OneApollTransaction = {
-  BillNo: string;
-  BU: string;
-  StoreCode: string;
-  NetAmount: number;
-  GrossAmount: number;
-  TransactionDate: Date;
-  MobileNumber: string;
-  SendCommunication: boolean;
-  CalculateHealthCredits: boolean;
-  Gender: Gender;
-  Discount: number;
-  CreditsRedeemed?: number;
-  RedemptionRequestNo?: string;
-  TransactionLineItems: TransactionLineItems[];
-};
-
-export interface TransactionLineItemsPartial {
-  ProductCode: string;
-  NetAmount: number;
-  GrossAmount: number;
-  DiscountAmount: number;
-}
 
 export interface PaginateParams {
   take?: number;
   skip?: number;
-}
-
-export interface TransactionLineItems extends TransactionLineItemsPartial {
-  ProductName: string;
-  ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY;
-  PointsRedeemed?: number;
 }
 
 export enum CouponApplicability {
@@ -1282,14 +1237,19 @@ export class Patient extends BaseEntity {
   @AfterUpdate()
   async setPatientCache() {
     try {
-      console.log(`Setting cache`);
+      log(
+        'profileServiceLogger',
+        'setting Cache',
+        'profilesService->setPatientCache()',
+        '',
+        ''
+      );
       await setCache(
         `patient:${this.id}`,
         JSON.stringify(this),
         ApiConstants.CACHE_EXPIRATION_3600
       );
     } catch (ex) {
-      console.log(`Exception #`, ex);
     }
   }
 }

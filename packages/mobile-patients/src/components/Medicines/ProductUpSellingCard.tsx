@@ -15,6 +15,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Divider, Image } from 'react-native-elements';
+import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 
 export interface Props extends Omit<AddToCartButtonsProps, 'containerStyle'> {
   title: string;
@@ -22,6 +23,7 @@ export interface Props extends Omit<AddToCartButtonsProps, 'containerStyle'> {
   price: number;
   specialPrice?: number | string;
   isInStock: boolean;
+  isSellOnline: boolean;
   onPress: () => void;
   onAddToCart: () => void;
   onNotify: () => void;
@@ -35,6 +37,7 @@ export const ProductUpSellingCard: React.FC<Props> = ({
   price,
   specialPrice,
   isInStock,
+  isSellOnline,
   onPress,
   onAddToCart,
   onNotify,
@@ -56,6 +59,7 @@ export const ProductUpSellingCard: React.FC<Props> = ({
       </Text>
     </View>
   );
+  const renderNotForSaleTag = () => <NotForSaleBadge containerStyle={{ alignSelf: 'center' }} />;
 
   const renderPriceAndAddToCartButton = () => {
     const discount = getDiscountPercentage(price, specialPrice);
@@ -69,7 +73,11 @@ export const ProductUpSellingCard: React.FC<Props> = ({
         )}
         <View style={[styles.priceAndAddToCartButton, { marginTop: !!discount ? 0 : 12 }]}>
           <Text style={styles.price}>{`Rs. ${discount ? specialPrice : price}`}</Text>
-          {isInStock ? renderAddToCartButton() : renderNotifyButton()}
+          {isInStock
+            ? isSellOnline
+              ? renderAddToCartButton()
+              : renderNotForSaleTag()
+            : renderNotifyButton()}
         </View>
       </View>
     );

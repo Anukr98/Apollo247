@@ -64,6 +64,7 @@ const icon_gps = require('../ui/icons/ic_gps_fixed.png');
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
+const mapHeight = screenHeight > 650 ? screenHeight / 1.63 : screenHeight / 1.8;
 
 const { isIphoneX } = DeviceHelper();
 
@@ -555,7 +556,7 @@ export const Maps: React.FC<MapProps> = (props) => {
     return (
       <MapView
         provider={PROVIDER_GOOGLE}
-        style={{ height: screenHeight > 600 ? screenHeight / 1.6 : screenHeight / 1.8 }}
+        style={{ height: mapHeight }}
         region={region}
         ref={_map}
         zoomEnabled={true}

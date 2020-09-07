@@ -501,7 +501,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           id
           fileUrl
           date
-          # hospitalizationDate
+          hospitalizationDate
           dateOfHospitalization
           hospitalName
           doctorName

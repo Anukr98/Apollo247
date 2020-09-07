@@ -248,9 +248,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
         JSON.stringify(topicError),
         JSON.stringify(topicError)
       );
-      console.log('topic create error', topicError);
     }
-    console.log('connected to topic', queueName);
 
     const message = 'MEDICINE_ORDER:' + saveOrder.orderAutoId + ':' + patientDetails.id;
     azureServiceBus.sendTopicMessage(queueName, message, (sendMsgError) => {
@@ -262,9 +260,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
           message,
           JSON.stringify(sendMsgError)
         );
-        console.log('send message error', sendMsgError);
       }
-      console.log('message sent to topic');
     });
   });
 

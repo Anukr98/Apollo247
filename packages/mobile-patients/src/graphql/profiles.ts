@@ -1142,6 +1142,8 @@ export const GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS = gql`
           routeOfAdministration
           medicineCustomDosage
           medicineCustomDetails
+          includeGenericNameInPrescription
+          genericName
         }
         notes
         otherInstructions {
@@ -1154,6 +1156,9 @@ export const GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS = gql`
           howOften
           severity
         }
+        referralSpecialtyName
+        referralDescription
+        prescriptionGeneratedDate
       }
       patientDetails {
         id

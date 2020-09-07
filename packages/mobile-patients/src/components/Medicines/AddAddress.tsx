@@ -76,6 +76,7 @@ import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEven
 import { useFirstInstallTime } from 'react-native-device-info';
 
 const { height, width } = Dimensions.get('window');
+const setCharLen = width < 380 ? 25 : 30; //smaller devices like se, nexus 5
 const key = AppConfig.Configuration.GOOGLE_API_KEY;
 const { isIphoneX } = DeviceHelper();
 
@@ -201,6 +202,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [addressType, setAddressType] = useState<PATIENT_ADDRESS_TYPE>();
   const [optionalAddress, setOptionalAddress] = useState<string>('');
   const [editProfile, setEditProfile] = useState<boolean>(false);
+  const [isFocus, setIsFocus] = useState<boolean>(false);
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
@@ -341,8 +343,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           addOnly: addOnly,
           source: props.navigation.getParam('source'),
         });
+      } else if (!areFieldsSame) {
+        saveEditDetails();
       } else {
-        /**since for each address, we already have the lat-long */
         props.navigation.goBack();
       }
     } else {
@@ -499,7 +502,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     }
   };
 
-  const validateUserDetails = () => {
+  const validateUserDetails = (comingFrom: string) => {
     let validationMessage = '';
     if (!userName || !/^[A-Za-z]/.test(userName)) {
       validationMessage = 'Enter Valid Name';
@@ -508,8 +511,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     }
     if (validationMessage) {
       showAphAlert && showAphAlert({ title: 'Alert!', description: validationMessage });
+    } else if (comingFrom == 'userdetails') {
+      saveEditDetails(); //update the name & number
     } else {
-      saveEditDetails();
+      onSavePress(); //navigate to map as change in address + name & number
     }
   };
 
@@ -581,8 +586,20 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     }
   };
 
+  const _onFocus = () => {
+    setIsFocus(true);
+  };
+
+  const _onBlur = () => {
+    setIsFocus(false);
+  };
+
   /**view added for the patient's details */
   const renderUserDetails = () => {
+    let beforeFocus =
+      Platform.OS == 'android' && userName.length > 32
+        ? userName.slice(0, setCharLen).concat('...')
+        : userName;
     return (
       <View style={styles.userDetailsOuterView}>
         <View style={styles.viewRowStyle}>
@@ -607,7 +624,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   onChangeText={(userName) =>
                     userName.startsWith(' ') ? null : setuserName(userName)
                   }
-                  value={userName}
+                  onFocus={() => _onFocus()}
+                  onBlur={() => _onBlur()}
+                  value={isFocus ? userName : beforeFocus}
                   editable={editProfile}
                   placeholder={'Full Name'}
                   inputStyle={styles.textInputName}
@@ -659,7 +678,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               <TouchableOpacity
                 style={{ width: '100%' }}
                 onPress={() => {
-                  validateUserDetails();
+                  validateUserDetails('userdetails');
                 }}
               >
                 <Text style={styles.userSaveText}>Save</Text>
@@ -829,7 +848,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           value={landMark}
           onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
           placeholder={'Landmark (Optional)'}
-          inputStyle={styles.addressHeadingText}
+          inputStyle={[styles.addressHeadingText, { marginTop: '3%' }]}
         />
         <View style={[styles.viewRowStyle, { marginTop: 12 }]}>
           <View style={styles.pincodeView}>
@@ -1047,7 +1066,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   : 'SAVE & USE'
               }
               style={{ marginHorizontal: 40, width: '70%' }}
-              onPress={onSavePress}
+              onPress={() => validateUserDetails('save address')}
               disabled={!isAddressValid}
             ></Button>
           </View>
