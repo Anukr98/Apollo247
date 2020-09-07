@@ -732,21 +732,13 @@ export const ConsultTabs: React.FC = () => {
                   _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
                 ] as unknown) as boolean[])
               : setFollowUp([]);
-            console.log(
-              'follow up old var',
-              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
-            );
-            console.log(
-              'follow up old var type',
-              typeof _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
-            );
 
             _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays &&
-            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays !== null
-              ? setFollowUpAfterInDays(([
-                  _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
-                ] as unknown) as string[])
-              : setFollowUpAfterInDays([]);
+              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays !== null &&
+              setFollowUpAfterInDays(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
+              ] as unknown) as string[]);
+
             _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
               ? setFollowUpDate(([
                   _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
