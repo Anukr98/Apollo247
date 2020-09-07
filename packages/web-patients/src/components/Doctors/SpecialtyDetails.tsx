@@ -302,19 +302,6 @@ interface Range {
   };
 }
 
-const searchObject: SearchObject = {
-  searchKeyword: '',
-  cityName: [],
-  experience: [],
-  availability: [],
-  fees: [],
-  gender: [],
-  language: [],
-  dateSelected: '',
-  specialtyName: '',
-  prakticeSpecialties: '',
-};
-
 let availableNow = {};
 const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilter: string) => {
   if (availability.length === 0) {
@@ -374,6 +361,18 @@ interface SpecialityProps {
 }
 
 export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
+  const searchObject: SearchObject = {
+    searchKeyword: '',
+    cityName: [],
+    experience: [],
+    availability: [],
+    fees: [],
+    gender: [],
+    language: [],
+    dateSelected: '',
+    specialtyName: '',
+    prakticeSpecialties: '',
+  };
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
   const scrollToRef = useRef<HTMLDivElement>(null);
