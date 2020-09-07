@@ -46,22 +46,6 @@ export enum ONE_APOLLO_PRODUCT_CATEGORY {
   PHARMA = 'P247',
 }
 
-export type OneApollTransaction = {
-  BillNo: string;
-  BU: string;
-  StoreCode: string;
-  NetAmount: number;
-  GrossAmount: number;
-  TransactionDate: Date;
-  MobileNumber: string;
-  SendCommunication: boolean;
-  CalculateHealthCredits: boolean;
-  Gender: Gender;
-  Discount: number;
-  CreditsRedeemed?: number;
-  RedemptionRequestNo?: string;
-  TransactionLineItems: TransactionLineItems[];
-};
 
 export interface TransactionLineItemsPartial {
   ProductCode: string;
