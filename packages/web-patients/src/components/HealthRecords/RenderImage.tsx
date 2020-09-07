@@ -14,11 +14,11 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
     },
     prescriptionImage: {
-      backgroundColor: theme.palette.common.white,
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
       borderRadius: 10,
       marginBottom: 12,
-      padding: 40,
+      padding: 20,
       textAlign: 'center',
       [theme.breakpoints.down('xs')]: {
         padding: 20,
@@ -40,8 +40,8 @@ export const RenderImage: React.FC<RenderImageProps> = (props) => {
       <a href={activeData.fileUrl}>Download the file</a>
     </div>
   ) : (
-    <div className={classes.prescriptionImage}>
-      <img src={activeData.fileUrl} alt="Preview is not available" />
-    </div>
-  );
+      <div className={classes.prescriptionImage}>
+        <img src={activeData.fileUrl} alt="Preview is not available" />
+      </div>
+    );
 };
