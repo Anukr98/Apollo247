@@ -1,6 +1,6 @@
 import { HealthMedicineCard } from '@aph/mobile-patients/src/components/HealthRecords/HealthMedicineCard';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { AddFileIcon, NoData } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AddFileIcon, NoData, Filter } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -8,11 +8,9 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, FlatList } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from '../../graphql/types/getPatientMedicalRecords';
 import {
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
 } from '../../graphql/types/getPatientPrismMedicalRecords';
@@ -32,69 +30,37 @@ const styles = StyleSheet.create({
 });
 
 export interface MedicalRecordsProps extends NavigationScreenProps {
-  //onTabCount: (count: number) => void;
-  MedicalRecordData:
-    | (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[]
+  healthChecksNewData?:
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response | null)[]
     | null
     | undefined;
-  labTestsData?:
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests | null)[]
+  hospitalizationsNewData?:
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response | null)[]
     | null
     | undefined;
-  healthChecksData?:
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks | null)[]
-    | null
-    | undefined;
-  hospitalizationsData?:
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations | null)[]
-    | null
-    | undefined;
-  labResultsData:
+  labResultsData?:
     | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response | null)[]
     | null
     | undefined;
-  prescriptionsData:
+  prescriptionsData?:
     | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response | null)[]
     | null
     | undefined;
-  renderDeleteMedicalOrder: (id: string) => void;
 }
 
 export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const {
-    MedicalRecordData,
-    labTestsData,
-    healthChecksData,
-    hospitalizationsData,
-    labResultsData,
-    prescriptionsData,
-  } = props;
+  const { healthChecksNewData, hospitalizationsNewData, labResultsData, prescriptionsData } = props;
   const [combination, setCombination] = useState<{ type: string; data: any }[]>();
 
   useEffect(() => {
     const mergeArray: { type: string; data: any }[] = [];
     console.log('combination before', mergeArray);
-    // MedicalRecordData!.forEach((item) => {
-    //   mergeArray.push({ type: 'medical', data: item });
-    // });
-    // labTestsData!.forEach((item) => {
-    //   mergeArray.push({ type: 'lab', data: item });
-    // });
-    // healthChecksData!.forEach((item) => {
-    //   mergeArray.push({ type: 'health', data: item });
-    // });
-    // hospitalizationsData!.forEach((item) => {
-    //   mergeArray.push({ type: 'hospital', data: item });
-    // });
     labResultsData!.forEach((item) => {
       mergeArray.push({ type: 'lab', data: item });
     });
-    // prescriptionsData!.forEach((item) => {
-    //   mergeArray.push({ type: 'prescription', data: item });
-    // });
     console.log('combination after', mergeArray);
     setCombination(sortByDate(mergeArray));
   }, [labResultsData]);
@@ -129,6 +95,9 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
           }
         >
           <AddFileIcon />
+        </TouchableOpacity>
+        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+          <Filter />
         </TouchableOpacity>
       </View>
     );
