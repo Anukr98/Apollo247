@@ -1336,7 +1336,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1881,6 +1881,7 @@ export const MedicineCart: React.FC = (props) => {
                                   deliveryTime: deliveryTime,
                                   validateCouponResult: validateCouponResult,
                                   shopId: shopId,
+                                  deliveryAddressId,
                                 })
                               );
                               history.push(clientRoutes.payMedicine('pharmacy'));
@@ -1995,6 +1996,7 @@ export const MedicineCart: React.FC = (props) => {
                               deliveryTime: deliveryTime,
                               validateCouponResult: validateCouponResult,
                               shopId: shopId,
+                              deliveryAddressId,
                             })
                           );
                           history.push(clientRoutes.payMedicine('pharmacy'));
