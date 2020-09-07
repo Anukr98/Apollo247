@@ -102,7 +102,7 @@ const addPatientHospitalizationRecord: Resolver<
         })
     }
 
-    let dischargeSummaryUploadArgs: DischargeSummaryUploadRequest = {
+    const dischargeSummaryUploadArgs: DischargeSummaryUploadRequest = {
         hospitalName: addHospitalizationRecordInput.hospitalName,
         dateOfHospitalization: "",
         doctorName: addHospitalizationRecordInput.doctorName,
@@ -116,7 +116,7 @@ const addPatientHospitalizationRecord: Resolver<
         hospitalizationFiles: hospitalizationFilesInput
     }
 
-    let uploadResult: DischargeSummaryUploadResponse = await saveDischargeSummaryToPrism(patient.uhid, dischargeSummaryUploadArgs);
+    const uploadResult: DischargeSummaryUploadResponse = await saveDischargeSummaryToPrism(patient.uhid, dischargeSummaryUploadArgs);
 
     const addHospitalizationRecordAttrs: Partial<HospitalizationRecords> = {
         patient: patient,
@@ -136,7 +136,7 @@ const addPatientHospitalizationRecord: Resolver<
         addHospitalizationRecordInput.hospitalizationFiles && addHospitalizationRecordInput.hospitalizationFiles.length &&
         addHospitalizationRecordInput.hospitalizationFiles[0].fileName.length > 0
     ) {
-        let fileRecord = addHospitalizationRecordInput.hospitalizationFiles[0]
+        const fileRecord = addHospitalizationRecordInput.hospitalizationFiles[0]
 
         const uploadFileType = getFileTypeFromMime(fileRecord.mimeType);
 

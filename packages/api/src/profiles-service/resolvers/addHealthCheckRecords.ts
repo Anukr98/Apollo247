@@ -100,7 +100,7 @@ const addPatientHealthCheckRecord: Resolver<
         })
     }
 
-    let healthCheckUploadArgs: HealthCheckUploadRequest = {
+    const healthCheckUploadArgs: HealthCheckUploadRequest = {
         healthCheckName: addHealthCheckRecordInput.healthCheckName,
         healthCheckType: "",
         healthCheckSummary: "",
@@ -110,7 +110,7 @@ const addPatientHealthCheckRecord: Resolver<
         healthCheckFiles: healthCheckFilesInput
     }
 
-    let uploadResult: HealthCheckUploadResponse = await saveHealthCheckToPrism(patient.uhid, healthCheckUploadArgs);
+    const uploadResult: HealthCheckUploadResponse = await saveHealthCheckToPrism(patient.uhid, healthCheckUploadArgs);
 
     const addHealthCheckRecordsAttrs: Partial<HealthCheckRecords> = {
         patient: patient,
@@ -128,7 +128,7 @@ const addPatientHealthCheckRecord: Resolver<
         addHealthCheckRecordInput.healthCheckFiles && addHealthCheckRecordInput.healthCheckFiles.length &&
         addHealthCheckRecordInput.healthCheckFiles[0].fileName.length > 0
     ) {
-        let fileRecord = addHealthCheckRecordInput.healthCheckFiles[0]
+        const fileRecord = addHealthCheckRecordInput.healthCheckFiles[0]
 
         const uploadFileType = getFileTypeFromMime(fileRecord.mimeType);
 

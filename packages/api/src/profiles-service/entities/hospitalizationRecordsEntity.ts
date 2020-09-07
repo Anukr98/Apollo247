@@ -15,6 +15,8 @@ import {
     EventSubscriber,
     EntitySubscriberInterface,
     UpdateEvent,
+    CreateDateColumn,
+    UpdateDateColumn
 } from 'typeorm';
 
 import { Patient, MedicalRecordType } from 'profiles-service/entities/'
@@ -52,19 +54,9 @@ export class HospitalizationRecords extends BaseEntity {
     )
     patient: Patient;
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @CreateDateColumn()
     createdDate: Date;
 
-    @Column({ type: 'timestamp', nullable: true })
+    @UpdateDateColumn()
     updatedDate: Date;
-
-    @BeforeInsert()
-    updateDateCreation() {
-        this.createdDate = new Date();
-    }
-
-    @BeforeUpdate()
-    updateDateUpdate() {
-        this.updatedDate = new Date();
-    }
 }
