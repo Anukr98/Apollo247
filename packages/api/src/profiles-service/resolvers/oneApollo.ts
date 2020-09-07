@@ -14,6 +14,8 @@ export const oneApolloTypeDefs = gql`
     earnedHC: Float!
     availableHC: Float!
     tier: String!
+    burnedCredits: Float!
+    blockedCredits: Float
   }
 
   type TransactionDetails {
@@ -36,6 +38,8 @@ type UserDetailResponse = {
   earnedHC: number;
   availableHC: number;
   tier: string;
+  burnedCredits: number;
+  blockedCredits: number;
 };
 
 type TransactionDetails = {
@@ -90,11 +94,15 @@ const getOneApolloUser: Resolver<
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
     }
   }
+  const userData = response.CustomerData;
+  const individualData = userData.Individual;
   return {
-    name: response.CustomerData.Name,
-    earnedHC: response.CustomerData.EarnedCredits,
-    availableHC: response.CustomerData.AvailableCredits,
-    tier: response.CustomerData.Tier,
+    name: userData.Name,
+    earnedHC: individualData ? individualData.EarnedCredits : userData.EarnedCredits,
+    availableHC: userData.AvailableCredits,
+    tier: individualData ? individualData.Tier : userData.Tier,
+    burnedCredits: individualData ? individualData.BurnedCredits : userData.BurnedCredits,
+    blockedCredits: individualData ? individualData.BlockedCredits : userData.BlockedCredits,
   };
 };
 
