@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
 import { DealsOfTheDaySection } from '../../../helpers/MedicineApiCalls';
+import { LazyIntersection } from '../../lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -134,7 +135,13 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
               >
                 <div className={classes.cardWrap}>
                   <div className={classes.cardIcon}>
-                    <img src={`${apiDetails.url}${deal.image_url}`} width="100%" alt="" />
+                    <LazyIntersection
+                      src={`${apiDetails.url}${deal.image_url}`}
+                      alt={''}
+                      style={{ 'width': '100%' }}
+                    />
+                    {/* <img
+                      src={`${apiDetails.url}${deal.image_url}`} width="100%" alt="" /> */}
                   </div>
                 </div>
                 {/* <div className={classes.offerDetails}>Upto 30% Off</div> */}

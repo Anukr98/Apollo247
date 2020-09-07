@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Image from './Image'
 import useIO from './useIO'
-const fallbackImage = require('images/ic-location.svg');
+const fallbackImage = require('images/ic_logo.png');
 
 interface LazyIntersectionInterface {
     src: string;
     alt: string;
     style?: object;
+    fallbackImage?: string;
 }
 
 export const LazyIntersection: React.FC<LazyIntersectionInterface> = (props) => {
@@ -40,7 +41,7 @@ export const LazyIntersection: React.FC<LazyIntersectionInterface> = (props) => 
     return (
         <Image
             src={props.src}
-            fallbackSrc={fallbackImage}
+            fallbackSrc={props.fallbackImage || fallbackImage}
             isLazy
             style={props.style || {}}
             alt='thumbnails'

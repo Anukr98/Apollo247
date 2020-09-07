@@ -7,6 +7,7 @@ import Slider from 'react-slick';
 import { MedicinePageSection } from '../../../helpers/MedicineApiCalls';
 import _lowerCase from 'lodash/lowerCase';
 import _replace from 'lodash/replace';
+import { LazyIntersection } from '../../lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -119,7 +120,10 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
                 <Link to={clientRoutes.searchByMedicine(searchText, category.url_key)}>
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>
-                      <img src={`${apiDetails.url}${category.image_url}`} alt="" />
+                      <LazyIntersection
+                        src={`${apiDetails.url}${category.image_url}`}
+                        alt={''}
+                      />
                     </div>
                     <div className={classes.cardTitle}>{category.title}</div>
                   </div>
