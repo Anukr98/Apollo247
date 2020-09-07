@@ -130,6 +130,22 @@ export const AuthProvider: React.FC = (props) => {
       } catch (e) {}
     }
   };
+
+  const validateAndUpdate = (authToken: any) => {
+    if (authToken) {
+      const jwtDecode = require('jwt-decode');
+      const millDate = jwtDecode(authToken).exp;
+      const currentTime = new Date().valueOf() / 1000;
+      // console.log('millDate', millDate, currentTime, millDate > currentTime);
+      if (millDate < currentTime) {
+        getFirebaseToken();
+      } else {
+        setAuthToken(authToken);
+      }
+    } else {
+      getFirebaseToken();
+    }
+  };
   const buildApolloClient = (authToken: string, handleUnauthenticated: any) => {
     if (authToken) {
       const jwtDecode = require('jwt-decode');
@@ -244,10 +260,11 @@ export const AuthProvider: React.FC = (props) => {
     async function fetchData() {
       let jwtToken: any = await AsyncStorage.getItem('jwt');
       jwtToken = JSON.parse(jwtToken);
-      console.log('jwtToken', jwtToken);
+      // console.log('jwtToken', jwtToken);
 
-      setAuthToken(jwtToken);
-      getFirebaseToken();
+      // setAuthToken(jwtToken);
+      // getFirebaseToken();
+      validateAndUpdate(jwtToken);
     }
     fetchData();
   }, [auth]);
