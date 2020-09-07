@@ -27,6 +27,9 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 
+import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
+import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
+
 export type ONE_APOLLO_USER_REG = {
   FirstName: string;
   LastName: string;
@@ -255,6 +258,8 @@ export enum MedicalRecordType {
   TEST_REPORT = 'TEST_REPORT',
   CONSULTATION = 'CONSULTATION ',
   PRESCRIPTION = 'PRESCRIPTION',
+  HEALTHCHECK = 'HEALTHCHECK',
+  HOSPITALIZATION = 'HOSPITALIZATION',
 }
 
 export enum DIAGNOSTIC_ORDER_STATUS {
@@ -1090,6 +1095,18 @@ export class Patient extends BaseEntity {
     (medicalRecords) => medicalRecords.patient
   )
   medicalRecords: MedicalRecords[];
+
+  @OneToMany(
+    (type) => HealthCheckRecords,
+    (healthCheckRecord) => healthCheckRecord.patient
+  )
+  healthCheckRecords: HealthCheckRecords[];
+
+  @OneToMany(
+    (type) => HospitalizationRecords,
+    (hospitalizationRecords) => hospitalizationRecords.patient
+  )
+  hospitalizationRecords: HospitalizationRecords[];
 
   @OneToMany(
     (type) => PatientFeedback,

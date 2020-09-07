@@ -403,6 +403,8 @@ export enum ApiConstants {
   //PHRV1 constants start
   LABTEST_SOURCE_SELF_UPLOADED = '247self',
   PRESCRIPTION_SOURCE_PREFIX = '247',
+  HEALTHCHECK_SELF_UPLOAD = '247self',
+  HOSPITALIZATION_SELF_UPLOAD = '247self',
   //PHRV1 constants end
 
   //REDIS KEYS
