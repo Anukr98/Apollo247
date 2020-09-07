@@ -54,9 +54,6 @@ import { Privacy } from 'components/Privacy';
 import { Faq } from 'components/Faq';
 import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
 import { ContactUs } from 'components/ContactUs';
-// import CovidLanding from 'components/Covid/CovidLanding';
-// import KavachLanding from 'components/Covid/KavachLanding';
-// import CovidArticleDetails from 'components/Covid/CovidArticleDetails';
 const CovidLanding = loadable(() => import('components/Covid/CovidLanding'));
 const KavachLanding = loadable(() => import('components/Covid/KavachLanding'));
 const CovidArticleDetails = loadable(() => import('components/Covid/CovidArticleDetails'));
@@ -75,8 +72,6 @@ const DoctorsLanding = loadable(() => import('components/DoctorsLanding'));
 import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
 import { Loader } from 'components/Loader';
 import { Prescription } from 'components/Consult/V2/Prescription';
-import { CovidDiabetesLanding } from 'components/Covid/CovidDiabetesLanding';
-import { DoctorsLanding } from 'components/DoctorsLanding';
 import { Sitemap } from 'components/Sitemap';
 
 const useStyles = makeStyles((theme: Theme) => {
