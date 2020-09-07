@@ -11,6 +11,7 @@ import {
   languageList,
   availabilityList,
 } from 'helpers/commonHelpers';
+import _ from 'lodash';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -228,8 +229,10 @@ export const Filters: React.FC<FilterProps> = (props) => {
     onlyFilteredCount,
   } = props;
 
-  const [isFilterOpen, setisFilterOpen] = React.useState(false);
-  const [localFilter, setLocalFilter] = useState<SearchObject>(filter);
+  const [isFilterOpen, setisFilterOpen] = useState(false);
+  const [localFilter, setLocalFilter] = useState<SearchObject>(_.cloneDeep(filter));
+
+  console.log(filter, localFilter, _.cloneDeep(filter));
 
   const applyClass = (type: Array<string>, value: string) => {
     return type.includes(value) ? classes.filterActive : '';
@@ -246,24 +249,19 @@ export const Filters: React.FC<FilterProps> = (props) => {
 
   const setFilterValues = (type: string, value: string) => {
     if (type === 'experience') {
-      let { experience } = localFilter;
-      experience = filterValues(experience, value);
+      const experience = filterValues(localFilter.experience, value);
       setLocalFilter({ ...localFilter, experience });
     } else if (type === 'fee') {
-      let { fees } = localFilter;
-      fees = filterValues(fees, value);
+      const fees = filterValues(localFilter.fees, value);
       setLocalFilter({ ...localFilter, fees });
     } else if (type === 'gender') {
-      let { gender } = localFilter;
-      gender = filterValues(gender, value);
+      const gender = filterValues(localFilter.gender, value);
       setLocalFilter({ ...localFilter, gender });
     } else if (type === 'language') {
-      let { language } = localFilter;
-      language = filterValues(language, value);
+      const language = filterValues(localFilter.language, value);
       setLocalFilter({ ...localFilter, language });
     } else if (type === 'availability') {
-      let { availability } = localFilter;
-      availability = filterValues(availability, value);
+      const availability = filterValues(localFilter.availability, value);
       setLocalFilter({ ...localFilter, availability });
     }
   };
