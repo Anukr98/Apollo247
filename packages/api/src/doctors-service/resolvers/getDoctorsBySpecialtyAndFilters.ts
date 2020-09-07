@@ -15,7 +15,6 @@ import { differenceInMinutes } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
 import { debugLog } from 'customWinstonLogger';
 import { distanceBetweenTwoLatLongInMeters } from 'helpers/distanceCalculator';
-import { endOfDay, addDays } from 'date-fns';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
@@ -670,22 +669,39 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       .concat(docs);
   }
 
+  const aggnDocumentsSpan = 10000; 
   const searchFilters: RequestParams.Search = {
     index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
+      query: {
+        bool: {
+          must: [
+            {
+              match: {
+                "isSearchable": "true"
+              }
+            },
+            {
+              match: {
+                "isActive": "true"
+              }
+            }
+          ]
+        }
+      },
       size: 0,
       aggs: {
         brands: {
           terms: {
             field: "doctorType.keyword",
-            size: 10000,
+            size: aggnDocumentsSpan,
             order: {"_term": "asc"}
           }
         },
         state: {
           terms: {
             field: "facility.state.keyword",
-            size: 10000,
+            size: aggnDocumentsSpan,
             min_doc_count: 1,
             order: {"_term": "asc"}
           },
@@ -693,7 +709,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
             city: {
               terms: {
                 field: "facility.city.keyword",
-                size: 10000,
+                size: aggnDocumentsSpan,
                 min_doc_count: 1,
                 order: {"_term": "asc"}
               }
@@ -703,7 +719,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         language: {
           terms: {
             field: "languages.keyword",
-            size: 10000,
+            size: aggnDocumentsSpan,
             min_doc_count: 1,
             order: {"_term": "asc"}
           }
@@ -711,21 +727,21 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         experience: {
           terms: {
             field: "experience_range.keyword",
-            size: 10000,
+            size: aggnDocumentsSpan,
             order: {"_term": "asc"}
           }
         },
         fee: {
           terms: {
             field: "fee_range.keyword",
-            size: 10000,
+            size: aggnDocumentsSpan,
             order: {"_term": "asc"}
           }
         },
         gender: {
           terms: {
             field: "gender.keyword",
-            size: 10000,
+            size: aggnDocumentsSpan,
             order: {"_term": "asc"}
           }
         }
@@ -754,7 +770,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     const CapitalizedWords: string[] = [];
     words.forEach((element: string) => {
       if(element.length >=1){
-        CapitalizedWords.push(element[0].toUpperCase() + element.slice(1, element.length).toLowerCase());
+        CapitalizedWords.push((element[0].toUpperCase() + element.slice(1, element.length).toLowerCase()).trim());
       }
     });
     return CapitalizedWords.join(' ');
