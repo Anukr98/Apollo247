@@ -115,7 +115,6 @@ export const getDoctorDetailsTypeDefs = gql`
     chatDays: Int
     languages: String
     lastName: String!
-    mobileNumber: String!
     onlineConsultationFees: String!
     onlineStatus: DOCTOR_ONLINE_STATUS!
     photoUrl: String
