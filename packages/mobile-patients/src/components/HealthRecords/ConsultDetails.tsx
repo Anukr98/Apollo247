@@ -365,7 +365,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             </View>
           </View>
         )}
-        {caseSheetDetails?.prescriptionGeneratedDate &&
+        {!!(caseSheetDetails?.prescriptionGeneratedDate) &&
           <Text style={styles.prescDateTextStyle}>Prescription generated on {moment(caseSheetDetails!.prescriptionGeneratedDate).format(
             AppConfig.Configuration.CASESHEET_PRESCRIPTION_DATE_FORMAT
           )} at {moment(caseSheetDetails!.prescriptionGeneratedDate).format(
