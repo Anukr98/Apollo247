@@ -243,7 +243,6 @@ const App: React.FC = () => {
             path={clientRoutes.prescription(':appointmentId')}
             component={Prescription}
           />
-          <Route exact path={clientRoutes.covidDiabetes()} component={CovidDiabetesLanding} />
           <Route exact path={clientRoutes.sitemap()} component={Sitemap} />
         </Switch>
       </div>
