@@ -531,31 +531,50 @@ const useStyles = makeStyles((theme: Theme) => {
       bottom: 0,
       zIndex: 999,
       background: 'rgba(0,0,0,0.5)',
-      display: 'flex',
+      display: 'none',
       alignItems: 'center',
       justifyContent: 'center',
+      [theme.breakpoints.down('sm')]: {
+        display: 'flex',
+      },
     },
     productPopup: {
       position: 'relative',
       width: 600,
       height: 400,
       background: '#fff',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
       [theme.breakpoints.down('sm')]: {
         width: '100%',
         height: '100%',
       },
+      '& h1': {
+        padding: '0 0 5px 10px',
+        fontSize: 16,
+        fontWeight: 700,
+        margin: 0,
+        width: 240,
+        whiteSpace: 'nowrap',
+        textOverflow: 'ellipsis',
+        overflow: 'hidden',
+      },
     },
     closePopup: {
-      position: 'absolute',
-      top: 20,
-      right: 20,
+      // position: 'absolute',
+      // top: 20,
+      // borderBottomLeftRadius: 20,
     },
     ppContent: {
       height: 'auto',
       padding: 30,
+      '& >div': {
+        position: 'static',
+        width: 'auto',
+      },
+    },
+    ppHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      padding: 20,
     },
   };
 });
@@ -1151,13 +1170,16 @@ export const MedicineDetails: React.FC = (props) => {
                             {imageClick && (
                               <div className={classes.ppWrapper}>
                                 <div className={classes.productPopup}>
-                                  <a
-                                    href="javascript:void(0);"
-                                    className={classes.closePopup}
-                                    onClick={() => setImageClick(false)}
-                                  >
-                                    <img src={require('images/ic_cross.svg')} alt="close" />
-                                  </a>
+                                  <div className={classes.ppHeader}>
+                                    <a
+                                      href="javascript:void(0);"
+                                      className={classes.closePopup}
+                                      onClick={() => setImageClick(false)}
+                                    >
+                                      <img src={require('images/ic_cross.svg')} alt="close" />
+                                    </a>
+                                    <h1>{medicineDetails.name}</h1>
+                                  </div>
                                   <div className={classes.ppContent}>
                                     {medicineDetails.image && medicineDetails.image.length > 0 ? (
                                       <MedicineImageGallery
