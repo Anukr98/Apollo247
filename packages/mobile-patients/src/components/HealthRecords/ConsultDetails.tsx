@@ -47,6 +47,7 @@ import {
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_UNIT,
+  ConsultMode,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
@@ -130,9 +131,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
   },
+  bottomPaddingTwelve: {
+    paddingBottom: 12
+  },
   labelStyle: {
     paddingBottom: 4,
     color: theme.colors.SHERPA_BLUE,
+    lineHeight: 24,
+    ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  skyBluelabelStyle: {
+    paddingBottom: 4,
+    color: theme.colors.SKY_BLUE,
     lineHeight: 24,
     ...theme.fonts.IBMPlexSansMedium(14),
   },
@@ -355,11 +365,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             </View>
           </View>
         )}
-        {g(caseSheetDetails, 'prescriptionGeneratedDate') &&
+        {caseSheetDetails?.prescriptionGeneratedDate &&
           <Text style={styles.prescDateTextStyle}>Prescription generated on {moment(caseSheetDetails!.prescriptionGeneratedDate).format(
-            'DD MMM YYYY'
+            AppConfig.Configuration.CASESHEET_PRESCRIPTION_DATE_FORMAT
           )} at {moment(caseSheetDetails!.prescriptionGeneratedDate).format(
-            'hh:mm A'
+            AppConfig.Configuration.CASESHEET_PRESCRIPTION_TIME_FORMAT
           )}</Text>}
         {caseSheetDetails && caseSheetDetails.followUp ? (
           <View>
@@ -411,15 +421,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         <View style={styles.labelViewStyle}>
                           <Text style={styles.labelStyle}>{item.symptom}</Text>
                         </View>
-                        {g(item, "since") && <Text style={styles.dataTextStyle}>
+                        {item?.since && <Text style={styles.dataTextStyle}>
                           Since: {item.since}
                         </Text>}
-                        {g(item, "howOften") && <Text style={styles.dataTextStyle}>
+                        {item?.howOften && <Text style={styles.dataTextStyle}>
                           How Often: {item.howOften}
                         </Text>}
-                        {g(item, "severity") && <Text style={styles.dataTextStyle}>
-                          Severity: ${item.severity}
-                        </Text> }
+                        {item?.severity && <Text style={styles.dataTextStyle}>
+                          Severity: {item.severity}
+                        </Text>}
                       </View>
                     );
                 })}
@@ -828,7 +838,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       <View>
                         <View style={styles.labelViewStyle}>
                           <Text style={styles.labelStyle}>{item.medicineName}</Text>
-                          {g(item, "includeGenericNameInPrescription")
+                          {item?.includeGenericNameInPrescription!!
                           && <Text style={styles.subLabelStyle}>{item.genericName}</Text>}
                         </View>
                         <Text style={styles.dataTextStyle}>{medicineDescription(item)}</Text>
@@ -942,7 +952,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails!.otherInstructions && caseSheetDetails!.otherInstructions !== null ? (
               <View>
-                <Text style={[styles.labelStyle, {color: "#0087BA"}]}>
+                <Text style={[styles.skyBluelabelStyle]}>
                   {caseSheetDetails!
                     .otherInstructions!.map((item, i) => {
                       if (item && item.instruction !== '') {
@@ -971,7 +981,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           collapse={showFollowUp}
           onPress={() => setshowFollowUpl(!showFollowUp)}
         >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
+          <View style={[styles.cardViewStyle, styles.bottomPaddingTwelve]}>
             {caseSheetDetails &&
             caseSheetDetails!.followUp &&
             caseSheetDetails!.doctorType !== 'JUNIOR' ? (
@@ -979,10 +989,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 <View>
                   <View style={styles.labelViewStyle}>
                       <Text style={styles.labelStyle}>
-                        {caseSheetDetails!.consultType === 'PHYSICAL'
+                        {caseSheetDetails!.consultType === ConsultMode.PHYSICAL
                           ? 'Clinic Visit'
-                          : 'Online Consult'} with {'\n'}{props.navigation.state.params!.DoctorInfo &&
-                            props.navigation.state.params!.DoctorInfo.displayName}
+                          : 'Online Consult'} with {'\n'}{props.navigation.state.params!.DoctorInfo?.displayName}
                       </Text>
                   </View>
                   {caseSheetDetails!.followUpAfterInDays! <= '7' ? (
