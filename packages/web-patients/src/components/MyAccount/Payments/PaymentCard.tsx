@@ -264,10 +264,18 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
 
   const doctorId = cardDetails ? cardDetails.doctorId : '';
 
-  const statusActions = (status: string, type: string) => {
+  const statusActions = (status: string) => {
     switch (status) {
       case 'PENDING':
-      case 'PAYMENT_PENDING':
+        return {
+          ctaText: 'Go to home',
+          info:
+            "Your payment is in progress and this may take couple of minutes to confirm your booking. we'll intimate you once your bank confirms the payment.",
+          callbackFunction: () => {
+            window.location.href = clientRoutes.appointments();
+          },
+        };
+      case 'TXN_FAILURE':
         return {
           ctaText: 'TRY AGAIN',
           info:
@@ -276,30 +284,20 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
             window.location.href = clientRoutes.doctorDetails(readableDoctorName, doctorId);
           },
         };
-      case 'PAYMENT_FAILED':
-        return {
-          ctaText: 'TRY AGAIN',
-          info:
-            'In case your account has been debited, you should get the refund in 10-14 working days.',
-          callbackFunction: () => {
-            window.location.href = clientRoutes.doctorDetails(readableDoctorName, doctorId);
-          },
-        };
-      case 'PAYMENT_ABORTED':
-        return {
-          ctaText: 'TRY AGAIN',
-          info:
-            'In case your account has been debited, you should get the refund in 10-14 working days.',
-          callbackFunction: () => {
-            window.location.href = clientRoutes.doctorDetails(readableDoctorName, doctorId);
-          },
-        };
-      case 'PAYMENT_SUCCESS':
+      case 'TXN_SUCCESS':
         return {
           ctaText: 'Go to Consult Room',
           info: '',
           callbackFunction: () => {
-            window.location.href = clientRoutes.chatRoom('', doctorId);
+            window.location.href = clientRoutes.chatRoom(cardDetails.id, doctorId);
+          },
+        };
+      default:
+        return {
+          ctaText: 'Go to appointments',
+          info: '',
+          callbackFunction: () => {
+            window.location.href = clientRoutes.appointments();
           },
         };
     }
@@ -399,7 +397,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
                   ? 'aborted'
                   : 'success'
               }
-              paymentInfo={statusActions(cardDetails.status, 'text').info}
+              paymentInfo={statusActions(paymentStatus).info}
               orderId={Number(cardDetails.displayId)}
               amountPaid={amountPaid}
               doctorDetail={{
@@ -416,8 +414,8 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
                 cardDetails.appointmentType === 'ONLINE' ? 'ONLINE CONSULT' : 'CLINIC VISIT'
               }
               onClose={() => handlePaymentModalClose()}
-              ctaText={statusActions(cardDetails.status, 'text').ctaText}
-              orderStatusCallback={statusActions(cardDetails.status, 'callback').callbackFunction}
+              ctaText={statusActions(paymentStatus).ctaText}
+              orderStatusCallback={statusActions(paymentStatus).callbackFunction}
               fetchConsultInvoice={setTriggerInvoice}
             />
           )}
