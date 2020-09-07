@@ -184,8 +184,6 @@ const submitPrescriptionOrder: Resolver<
       PrescUrl: orderPrescriptionUrl,
     },
   };
-
-  console.log('medicineOrderPharma', medicineOrderPharma);
   const placeOrderUrl = process.env.PHARMACY_MED_PLACE_ORDERS
     ? process.env.PHARMACY_MED_PLACE_ORDERS
     : '';
@@ -230,7 +228,6 @@ const submitPrescriptionOrder: Resolver<
   );
 
   const orderResp: PharmaResponse = JSON.parse(textRes);
-  console.log(orderResp, 'respp', orderResp.ordersResult.Message);
 
   if (orderResp.ordersResult.Status === false) {
     errorCode = -1;

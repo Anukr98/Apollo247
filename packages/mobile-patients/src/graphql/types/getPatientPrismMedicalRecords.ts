@@ -67,6 +67,13 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_lab
   outOfRange: boolean | null;
 }
 
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_testResultFiles {
+  __typename: "PrecriptionFileParameters";
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+}
+
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response {
   __typename: "LabResultsBaseResponse";
   id: string;
@@ -78,6 +85,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_lab
   observation: string | null;
   labTestResults: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_labTestResults | null)[] | null;
   fileUrl: string;
+  testResultFiles: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_testResultFiles | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults {
@@ -86,6 +94,13 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_lab
   errorCode: number;
   errorMsg: string | null;
   errorType: string | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response_prescriptionFiles {
+  __typename: "PrecriptionFileParameters";
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response {
@@ -98,6 +113,9 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_pre
   prescriptionSource: string | null;
   source: string;
   fileUrl: string;
+  prescriptionFiles: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response_prescriptionFiles | null)[] | null;
+  hospital_name: string | null;
+  hospitalId: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions {

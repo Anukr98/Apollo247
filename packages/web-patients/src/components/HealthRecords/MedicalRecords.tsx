@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, LinearProgress, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress, Popover } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
 import { MedicalCard } from 'components/HealthRecords/MedicalCard';
@@ -11,6 +11,9 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
+import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType } from '../../graphql/types/getPatientPrismMedicalRecords';
+import { DoctorsFilter } from 'components/DoctorsFilter';
+import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -33,7 +36,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sourceField: {
       maxWidth: 70,
-       [theme.breakpoints.down('xs')]: {
+      fontSize: 14,
+      color: '#67909C',
+      fontWeight: 'normal',
+      [theme.breakpoints.down('xs')]: {
         maxWidth: '100%',
       },
     },
@@ -47,6 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#f0f1ec',
         padding: 0,
         borderRadius: 0,
+        position: 'relative',
       },
     },
     rightSection: {
@@ -66,7 +73,7 @@ const useStyles = makeStyles((theme: Theme) => {
         left: 0,
         width: '100%',
         backgroundColor: '#f0f1ec',
-        zIndex: 991,
+        zIndex: 999,
       },
     },
     sectionHeader: {
@@ -94,6 +101,9 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
         padding: '10px 15px',
+        position: 'absolute',
+        top: 5,
+        right: 0,
       },
       '& button': {
         boxShadow: 'none',
@@ -256,7 +266,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       marginBottom: 12,
       padding: 14,
-      display: 'flex',
+      '& hr': {
+        opacity: '0.2',
+      },
       '&:before': {
         display: 'none',
       },
@@ -278,9 +290,9 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingRight: 5,
       },
       '& label': {
-        fontSize: 12,
+        fontSize: 16,
         fontWeight: 500,
-        color: '#01475b',
+        color: '#02475b',
         paddingBottom: 3,
       },
       '& p': {
@@ -315,59 +327,159 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    doctorInfo: {
+      paddingRight: 16,
+      width: 'calc(100% - 24px)',
+    },
+    doctorName: {
+      fontSize: 16,
+      color: '#0087BA',
+      fontWeight: 500,
+      marginBottom: 5,
+    },
+    testName: {
+      fontSize: 16,
+      color: '#01475b',
+      fontWeight: 500,
+      marginBottom: 12,
+      lineHeight: '21px',
+    },
+    checkDate: {
+      fontSize: 14,
+      color: '#02475b',
+      lineHeight: '21px',
+      fontWeight: 500,
+    },
+    sitedisplayName: {
+      fontSize: 14,
+      color: '#67909C',
+      fontWeight: 'normal',
+    },
+    filterIcon: {
+      borderBottom: '1px solid #bfbfbf',
+      padding: '5px 10px 0 0',
+      textAlign: 'right',
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        right: 10,
+        top: 80,
+        borderBottom: 'none',
+      },
+    },
+    locationPopRoot: {
+      overflow: 'initial',
+      boxShadow: '0 0 3px 0 rgba(0, 0, 0, 0.2)',
+      border: 'solid 1px #f7f8f5',
+      '& ul': {
+        margin: 0,
+        padding: 0,
+        '& li': {
+          padding: '7px 50px 7px 10px',
+          fontSize: 15,
+          fontWeight: 500,
+          borderBottom: 'solid 1px #f7f8f5',
+          listStyleType: 'none',
+          cursor: 'pointer',
+          '&:last-child': {
+            borderBottom: 'none',
+          },
+        },
+      },
+    },
+    filterActive: {
+      color: '#00b38e !important',
+    },
+    disabled: {
+      pointerEvents: 'none',
+    },
+    noteText: {
+      fontSize: 12,
+      padding: 10,
+      color: '#0087ba',
+    },
   };
 });
 
 type MedicalRecordProps = {
-  allCombinedData: any;
+  allCombinedData: LabResultsType[];
+  setLabResults: (labResults: LabResultsType[]) => void;
   loading: boolean;
-  setActiveData: (activeData: any) => void;
-  activeData: any;
+  setActiveData: (activeData: LabResultsType) => void;
+  activeData: LabResultsType;
   error: boolean;
   deleteReport: (id: string, type: string) => void;
 };
 
+enum FILTER_TYPE {
+  DATE = 'Date',
+  TEST = 'Test',
+  PACKAGE = 'Package',
+}
+
 export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const classes = useStyles({});
+
+  const {
+    allCombinedData,
+    setLabResults,
+    loading,
+    activeData,
+    setActiveData,
+    error,
+    deleteReport,
+  } = props;
+  const locationRef = useRef(null);
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
+  const [filterApplied, setFilterApplied] = useState<FILTER_TYPE>(FILTER_TYPE.DATE);
+  const [showPopover, setShowPopover] = useState<boolean>(false);
 
-  const { allCombinedData, loading, activeData, setActiveData, error, deleteReport } = props;
-
-  const getFormattedDate = (combinedData: any, type: string, dateFor: string) => {
-    return dateFor === 'title' &&
-      moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY') ? (
-      <span>Today , {moment(combinedData.date).format('DD MMM YYYY')}</span>
-    ) : (
-      <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
+  const sortByTypeRecords = (type: FILTER_TYPE) => {
+    return (
+      allCombinedData &&
+      allCombinedData.sort((data1: LabResultsType, data2: LabResultsType) => {
+        const filteredData1 =
+          type === FILTER_TYPE.DATE
+            ? moment(data1.date).toDate().getTime()
+            : type === FILTER_TYPE.TEST
+            ? data1.labTestName
+            : data1.packageName;
+        const filteredData2 =
+          type === FILTER_TYPE.DATE
+            ? moment(data2.date).toDate().getTime()
+            : type === FILTER_TYPE.TEST
+            ? data2.labTestName
+            : data2.packageName;
+        if (type === FILTER_TYPE.DATE) {
+          return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
+        }
+        return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
+      })
     );
   };
 
-  const getName = (combinedData: any, type: string) => {
-    switch (type) {
-      case 'lab':
-        return combinedData.labTestName;
-      case 'prescription':
-        return combinedData.prescriptionName;
-      default:
-        return '';
-    }
+  useEffect(() => {
+    const filteredData = sortByTypeRecords(filterApplied);
+    setLabResults(filteredData);
+    setActiveData(filteredData[0]);
+  }, [filterApplied]);
+
+  const getFormattedDate = (combinedData: LabResultsType, dateFor: string) => {
+    const formattedDate = moment(combinedData.date).format('DD MMM YYYY');
+    return dateFor === 'title' &&
+      moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY') ? (
+      <span>Today , {formattedDate}</span>
+    ) : (
+      <span>{formattedDate}</span>
+    );
   };
 
-  const getSource = (activeData: any, type: string) => {
-    switch (type) {
-      case 'lab':
-        return activeData && activeData.siteDisplayName
-          ? activeData.siteDisplayName
-          : !!activeData.labTestSource
-          ? activeData.labTestSource
-          : '-';
-      case 'prescription':
-        return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
-      default:
-        return '-';
-    }
+  const getStringDate = (combinedData: LabResultsType) => {
+    const formattedDate = moment(combinedData.date).format('DD MMM YYYY');
+    return moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY')
+      ? `Today , ${formattedDate}`
+      : `${formattedDate}`;
   };
 
   if (loading) {
@@ -385,10 +497,19 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
+        <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
           </Link>
+        </div>
+        <div className={classes.filterIcon}>
+          <img
+            ref={locationRef}
+            onClick={() => setShowPopover(true)}
+            src={require('images/ic_filter.svg')}
+            alt=""
+          />
         </div>
         <Scrollbars
           autoHide={true}
@@ -398,13 +519,13 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
               ? 'calc(100vh - 240px)'
               : isSmallScreen
               ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 270px)'
+              : 'calc(100vh - 350px)'
           }
         >
           <div className={classes.consultationsList}>
             {allCombinedData &&
               allCombinedData.length > 0 &&
-              allCombinedData.map((combinedData: any) => (
+              allCombinedData.map((combinedData: LabResultsType) => (
                 <div
                   className={classes.consultGroup}
                   onClick={() => {
@@ -416,15 +537,31 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 >
                   <div className={classes.consultGroupHeader}>
                     <div className={classes.circle}></div>
-                    <span>{getFormattedDate(combinedData.data, combinedData.type, 'title')}</span>
+                    <span>
+                      {filterApplied === FILTER_TYPE.DATE
+                        ? getFormattedDate(combinedData, 'title')
+                        : filterApplied === FILTER_TYPE.TEST
+                        ? combinedData.labTestName
+                        : combinedData.packageName}
+                    </span>
                   </div>
                   <MedicalCard
                     deleteReport={deleteReport}
-                    name={getName(combinedData.data, combinedData.type)}
-                    source={getSource(combinedData.data, combinedData.type)}
-                    type={combinedData.type}
-                    id={`${combinedData.type}-${combinedData.data.id}`}
-                    isActiveCard={activeData && activeData.data === combinedData.data}
+                    name={
+                      filterApplied === FILTER_TYPE.DATE
+                        ? combinedData.labTestName
+                        : getStringDate(combinedData)
+                    }
+                    source={
+                      combinedData && combinedData.siteDisplayName
+                        ? combinedData.siteDisplayName
+                        : !!combinedData.labTestSource
+                        ? combinedData.labTestSource
+                        : '-'
+                    }
+                    type={'LabResults'}
+                    id={`LabResults-${combinedData.id}`}
+                    isActiveCard={activeData && activeData === combinedData}
                   />
                 </div>
               ))}
@@ -432,10 +569,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           {isSmallScreen && allCombinedData && allCombinedData.length === 0 && (
             <div className={classes.noRecordFoundWrapper}>
               <img src={require('images/ic_records.svg')} />
-              <p>
-                You don’t have any records with us right now. Add a record to keep everything handy
-                in one place!
-              </p>
+              <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
             </div>
           )}
         </Scrollbars>
@@ -469,7 +603,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 >
                   <img src={require('images/ic_back.svg')} />
                 </AphButton>
-                <span>REPORT Details</span>
+                <span>TEST Details</span>
               </div>
             </div>
             <Scrollbars
@@ -480,62 +614,153 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                   ? 'calc(100vh - 287px)'
                   : isSmallScreen
                   ? 'calc(100vh - 55px)'
-                  : 'calc(100vh - 245px)'
+                  : 'calc(100vh - 322px)'
               }
             >
               {((!isSmallScreen && activeData) ||
                 (isSmallScreen && showMobileDetails && activeData)) && (
                 <div className={classes.medicalRecordsDetails}>
                   <div className={classes.cbcDetails}>
-                    <div className={classes.reportsDetails}>
-                      <label>Check-up Date</label>
-                      <p>{getFormattedDate(activeData.data, activeData.type, 'checkUp')}</p>
-                    </div>
-                    <div className={classes.reportsDetails}>
-                      <label>Source</label>
-                      <p className={classes.sourceField}>{getSource(activeData.data, activeData.type)}</p>
-                    </div>
-                    <div className={classes.reportsDetails}>
-                      <label>Referring Doctor</label>
-                      <p>
-                        {!!activeData.data.prescribedBy
-                          ? activeData.data.prescribedBy
-                          : !!activeData.data.labTestRefferedBy
-                          ? activeData.data.labTestRefferedBy
-                          : '-'}
-                      </p>
-                    </div>
-                    {activeData && activeData.data && activeData.data.siteDisplayName && (
+                    {activeData.labTestName && (
                       <div className={classes.reportsDetails}>
-                        <label>{activeData.data.siteDisplayName}</label>
+                        <div className={classes.testName}>{activeData.labTestName}</div>
                       </div>
                     )}
+                    {!!activeData.labTestRefferedBy && (
+                      <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
+                        <div>Dr. {activeData.labTestRefferedBy}</div>
+                      </div>
+                    )}
+                    {activeData.siteDisplayName && (
+                      <div className={classes.reportsDetails}>
+                        <div className={classes.sitedisplayName}>{activeData.siteDisplayName}</div>
+                      </div>
+                    )}
+                    <hr />
+                    <div className={classes.reportsDetails}>
+                      <label>CheckUp Date</label>
+                      <p>
+                        On{' '}
+                        <span className={classes.checkDate}>
+                          {getFormattedDate(activeData, 'checkUp')}
+                        </span>
+                      </p>
+                    </div>
                   </div>
-                  {(activeData.data.observations || activeData.data.additionalNotes) && (
+                  {/* {(activeData.observation || activeData.additionalNotes) && (
                     <ToplineReport activeData={activeData} />
-                  )}
-                  {activeData.data.labTestResults && activeData.data.labTestResults.length > 0 && (
+                  )} */}
+                  {activeData.labTestResults && activeData.labTestResults.length > 0 && (
                     <DetailedFindings activeData={activeData} />
                   )}
-                  {activeData &&
-                    ((activeData.data.fileUrl && activeData.data.fileUrl.length > 0) ||
-                      (activeData.data.fileUrl && activeData.data.fileUrl.length > 0)) && (
-                      <RenderImage activeData={activeData} />
-                    )}
+                  {activeData.fileUrl && activeData.fileUrl.length > 0 && (
+                    <RenderImage
+                      activeData={activeData}
+                      type={
+                        activeData.testResultFiles &&
+                        activeData.testResultFiles.length &&
+                        activeData.testResultFiles[0].fileName &&
+                        activeData.testResultFiles[0].fileName.includes('pdf')
+                          ? 'pdf'
+                          : activeData.fileUrl.includes('pdf')
+                          ? 'pdf'
+                          : 'image'
+                      }
+                    />
+                  )}
                 </div>
               )}
             </Scrollbars>
+            {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
+              <a href={activeData.fileUrl}>
+                <div className={classes.addReportActions}>
+                  <AphButton color="primary" fullWidth>
+                    DOWNLOAD TEST REPORT
+                  </AphButton>
+                </div>
+              </a>
+            )}
           </>
         ) : (
           <div className={classes.noRecordFoundWrapper}>
             <img src={require('images/ic_records.svg')} />
-            <p>
-              You don’t have any records with us right now. Add a record to keep everything handy in
-              one place!
-            </p>
+            <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
           </div>
         )}
       </div>
+      <Popover
+        open={showPopover}
+        onClose={() => setShowPopover(false)}
+        anchorEl={locationRef.current}
+        classes={{
+          paper: classes.locationPopRoot,
+        }}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <ul>
+          <li className={classes.disabled}>View by</li>
+          <li
+            className={filterApplied === FILTER_TYPE.DATE ? classes.filterActive : ''}
+            onClick={() => {
+              setFilterApplied(FILTER_TYPE.DATE);
+              setShowPopover(false);
+            }}
+          >
+            {FILTER_TYPE.DATE}
+          </li>
+          <li
+            className={filterApplied === FILTER_TYPE.TEST ? classes.filterActive : ''}
+            onClick={() => {
+              setFilterApplied(FILTER_TYPE.TEST);
+              setShowPopover(false);
+            }}
+          >
+            {FILTER_TYPE.TEST}
+          </li>
+          <li
+            className={filterApplied === FILTER_TYPE.PACKAGE ? classes.filterActive : ''}
+            onClick={() => {
+              setFilterApplied(FILTER_TYPE.PACKAGE);
+              setShowPopover(false);
+            }}
+          >
+            {FILTER_TYPE.PACKAGE}
+          </li>
+        </ul>
+      </Popover>
     </div>
   );
 };
+
+// const getName = (combinedData: any, type: string) => {
+//   switch (type) {
+//     case 'lab':
+//       return combinedData.labTestName;
+//     case 'prescription':
+//       return combinedData.prescriptionName;
+//     default:
+//       return '';
+//   }
+// };
+
+// const getSource = (activeData: any, type: string) => {
+//   switch (type) {
+//     case 'lab':
+//       return activeData && activeData.siteDisplayName
+//         ? activeData.siteDisplayName
+//         : !!activeData.labTestSource
+//         ? activeData.labTestSource
+//         : '-';
+//     case 'prescription':
+//       return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
+//     default:
+//       return '-';
+//   }
+// };

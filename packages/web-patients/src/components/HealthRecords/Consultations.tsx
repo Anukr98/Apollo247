@@ -17,6 +17,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { ToplineReport } from 'components/HealthRecords/ToplineReport';
+import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -83,6 +84,9 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       [theme.breakpoints.down('xs')]: {
         padding: '10px 15px',
+        position: 'absolute',
+        top: 5,
+        right: 0,
       },
       '& button': {
         boxShadow: 'none',
@@ -268,7 +272,7 @@ const useStyles = makeStyles((theme: Theme) => {
         left: 0,
         width: '100%',
         backgroundColor: '#f0f1ec',
-        zIndex: 991,
+        zIndex: 999,
       },
     },
     headerBackArrow: {
@@ -344,6 +348,11 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
         wordBreak: 'break-word',
       },
+    },
+    noteText: {
+      fontSize: 12,
+      padding: 10,
+      color: '#0087ba',
     },
   };
 });
@@ -440,6 +449,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
+        <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
@@ -512,10 +522,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
           {isSmallScreen && filteredData && filteredData.length === 0 && (
             <div className={classes.noRecordFoundWrapper}>
               <img src={require('images/ic_records.svg')} />
-              <p>
-                You don’t have any records with us right now. Add a record to keep everything handy
-                in one place!
-              </p>
+              <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
             </div>
           )}
         </Scrollbars>
@@ -639,10 +646,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
         ) : (
           <div className={classes.noRecordFoundWrapper}>
             <img src={require('images/ic_records.svg')} />
-            <p>
-              You don’t have any records with us right now. Add a record to keep everything handy in
-              one place!
-            </p>
+            <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
           </div>
         )}
       </div>

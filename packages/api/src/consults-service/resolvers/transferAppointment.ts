@@ -354,7 +354,6 @@ const initiateTransferAppointment: Resolver<
     consultsDb,
     doctorsDb
   );
-  console.log(notificationResult, 'notificationResult');
   return { transferAppointment, doctorNextSlot: slot };
 };
 

@@ -168,8 +168,8 @@ const toBase64 = (file: any) =>
   });
 
 const getDiffInDays = (nextAvailability: string) => {
-  if (nextAvailability && nextAvailability.length > 0) {
-    const nextAvailabilityTime = moment(new Date(nextAvailability.replace(/-/g, ' ')));
+  if (nextAvailability) {
+    const nextAvailabilityTime = moment(new Date(nextAvailability));
     const currentTime = moment(new Date());
     const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
     return differenceInDays;
@@ -210,6 +210,7 @@ const NO_ONLINE_SERVICE = 'NOT AVAILABLE FOR ONLINE SALE';
 const OUT_OF_STOCK = 'Out Of Stock';
 const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
 const PINCODE_MAXLENGTH = 6;
+const SPECIALTY_DETAIL_LISTING_PAGE_SIZE = 50;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -263,11 +264,10 @@ interface SearchObject {
 }
 
 interface AppointmentFilterObject {
-  consultType: string[] | null;
   appointmentStatus: string[] | null;
   availability: string[] | null;
-  gender: string[] | null;
   doctorsList: string[] | null;
+  specialtyList: string[] | null;
 }
 
 const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
@@ -284,7 +284,14 @@ const genderList = [
 const languageList = ['English', 'Telugu'];
 const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
 const consultType = ['Online', 'Clinic Visit'];
-const appointmentStatus = ['New', 'Completed', 'Cancelled', 'Rescheduled', 'Follow-Up'];
+const appointmentStatus = [
+  'Active',
+  'Completed',
+  'Cancelled',
+  'Rescheduled',
+  'Follow-Up',
+  'Follow - Up Chat',
+];
 
 // End of doctors list based on specialty related changes
 
@@ -436,7 +443,9 @@ const getCouponByUserMobileNumber = () => {
 };
 
 const isPastAppointment = (appointmentDateTime: string) =>
-  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
+  moment(appointmentDateTime)
+    .add(7, 'days')
+    .isBefore(moment());
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const followUpDayMoment = moment(appointmentTime).add(7, 'days');
@@ -458,7 +467,14 @@ const removeGraphQLKeyword = (error: any) => {
   return error.message.replace('GraphQL error:', '');
 };
 
+const HEALTH_RECORDS_NO_DATA_FOUND =
+  'You don’t have any records with us right now. Add a record to keep everything handy in one place!';
+
+const HEALTH_RECORDS_NOTE =
+  'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
+
 export {
+  HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,
   getCouponByUserMobileNumber,
   getPackOfMedicine,
@@ -509,4 +525,6 @@ export {
   OUT_OF_STOCK,
   NOTIFY_WHEN_IN_STOCK,
   PINCODE_MAXLENGTH,
+  SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
+  HEALTH_RECORDS_NOTE,
 };

@@ -83,6 +83,7 @@ import {
   View,
   ViewStyle,
   Platform,
+  AsyncStorage,
 } from 'react-native';
 import {
   NavigationActions,
@@ -92,6 +93,7 @@ import {
 } from 'react-navigation';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
+import _ from 'lodash';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -191,7 +193,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const doctorTypeFilter = props.navigation.getParam('doctorType');
   const cityFilter = props.navigation.getParam('city');
   const brandFilter = props.navigation.getParam('brand');
-  const [docFiltersOptions, setDocFilterOptions] = useState<any>(docFilters);
+  const [docFiltersOptions, setDocFilterOptions] = useState<any>(
+    !docFilters ? searchFilters : docFilters
+  );
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
@@ -235,6 +239,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   const [filterMode, setfilterMode] = useState<ConsultMode>(ConsultMode.BOTH);
+  const [searchQuery, setSearchQuery] = useState({});
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -244,47 +249,60 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [sortValue, setSortValue] = useState<string>('');
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
 
-  const preFilters = docFilters === undefined ? searchFilters : docFilters;
-  const filterData: filterDataType[] = [
-    {
-      label: 'City',
-      options: preFilters['city'],
-      selectedOptions: [],
-    },
-    {
-      label: 'Brands',
-      options: preFilters['brands'],
-      selectedOptions: [],
-    },
-    {
-      label: 'In Years',
-      options: getValuesArray(preFilters['experience']),
-      selectedOptions: [],
-    },
-    {
-      label: 'Availability',
-      options: getValuesArray(preFilters['availability']),
-      selectedOptions: [],
-    },
-    {
-      label: 'In Rupees',
-      options: getValuesArray(preFilters['fee']),
-      selectedOptions: [],
-    },
-    {
-      label: '',
-      options: getValuesArray(preFilters['gender']),
-      selectedOptions: [],
-    },
-    {
-      label: '',
-      options: getValuesArray(preFilters['language']),
-      selectedOptions: [],
-    },
-  ];
-  const [FilterData, setFilterData] = useState<filterDataType[]>([...filterData]);
+  const filterOptions = (filters: any) => {
+    let preFilters = filters;
+    let filterData: filterDataType[] = [
+      {
+        label: 'City',
+        options: preFilters['city'],
+        selectedOptions: [],
+      },
+      {
+        label: 'Brands',
+        options: preFilters['brands'],
+        selectedOptions: [],
+      },
+      {
+        label: 'In Years',
+        options: getValuesArray(preFilters['experience']),
+        selectedOptions: [],
+      },
+      {
+        label: 'Availability',
+        options: getValuesArray(preFilters['availability']),
+        selectedOptions: [],
+      },
+      {
+        label: 'In Rupees',
+        options: getValuesArray(preFilters['fee']),
+        selectedOptions: [],
+      },
+      {
+        label: '',
+        options: getValuesArray(preFilters['gender']),
+        selectedOptions: [],
+      },
+      {
+        label: '',
+        options: getValuesArray(preFilters['language']),
+        selectedOptions: [],
+      },
+    ];
+
+    return filterData;
+  };
+  const [FilterData, setFilterData] = useState<filterDataType[]>([
+    ...filterOptions(docFiltersOptions),
+  ]);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
 
+  useEffect(() => {
+    async function fetchFilter() {
+      const retrievedFilterOptions: any = await AsyncStorage.getItem('FilterOptions');
+      retrievedFilterOptions && setDocFilterOptions(JSON.parse(retrievedFilterOptions));
+    }
+    fetchFilter();
+  }, []);
   useEffect(() => {
     checkLocation();
     setDeepLinkFilter();
@@ -652,6 +670,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               data.getDoctorsBySpecialtyAndFilters &&
               data.getDoctorsBySpecialtyAndFilters.doctors &&
               data.getDoctorsBySpecialtyAndFilters.doctors[0];
+        // filterOptions(data.getDoctorsBySpecialtyAndFilters.filters);
+        setDocFilterOptions(data.getDoctorsBySpecialtyAndFilters.filters);
+        setFilterData(filterOptions(data.getDoctorsBySpecialtyAndFilters.filters));
+        AsyncStorage.setItem(
+          'FilterOptions',
+          JSON.stringify(data.getDoctorsBySpecialtyAndFilters.filters)
+        );
         setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(doctorInfo));
         //end log data
       })
@@ -1296,7 +1321,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onChangeText={(value) => {
             if (isValidSearch(value)) {
               setDoctorSearch(value);
-              filterDoctors(doctorsList, doctorsType, value);
+              const search = _.debounce(filterDoctors, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
+              search(doctorsList, doctorsType, value);
             }
           }}
         />

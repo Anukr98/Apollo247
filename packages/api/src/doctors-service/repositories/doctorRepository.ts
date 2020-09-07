@@ -91,7 +91,6 @@ export class DoctorRepository extends Repository<Doctor> {
       };
       slotsAdded += doctorId + ' - ' + format(stDate, 'yyyy-MM-dd') + ',';
       const updateResp = await client.update(doc1);
-      console.log(updateResp, 'updateResp');
       stDate = addDays(stDate, 1);
     }
     return slotsAdded;

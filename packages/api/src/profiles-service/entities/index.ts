@@ -27,6 +27,48 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 
+import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
+import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
+
+export type ONE_APOLLO_USER_REG = {
+  FirstName: string;
+  LastName: string;
+  MobileNumber: string;
+  Gender: Gender;
+  BusinessUnit: string;
+  StoreCode: string;
+  CustomerId: string;
+};
+
+export enum ONE_APOLLO_PRODUCT_CATEGORY {
+  PRIVATE_LABEL = 'A247',
+  NON_PHARMA = 'F247',
+  PHARMA = 'P247',
+}
+
+export type OneApollTransaction = {
+  BillNo: string;
+  BU: string;
+  StoreCode: string;
+  NetAmount: number;
+  GrossAmount: number;
+  TransactionDate: Date;
+  MobileNumber: string;
+  SendCommunication: boolean;
+  CalculateHealthCredits: boolean;
+  Gender: Gender;
+  Discount: number;
+  CreditsRedeemed?: number;
+  RedemptionRequestNo?: string;
+  TransactionLineItems: TransactionLineItems[];
+};
+
+export interface TransactionLineItemsPartial {
+  ProductCode: string;
+  NetAmount: number;
+  GrossAmount: number;
+  DiscountAmount: number;
+}
 
 export interface PaginateParams {
   take?: number;
@@ -210,6 +252,8 @@ export enum MedicalRecordType {
   TEST_REPORT = 'TEST_REPORT',
   CONSULTATION = 'CONSULTATION ',
   PRESCRIPTION = 'PRESCRIPTION',
+  HEALTHCHECK = 'HEALTHCHECK',
+  HOSPITALIZATION = 'HOSPITALIZATION',
 }
 
 export enum DIAGNOSTIC_ORDER_STATUS {
@@ -1047,6 +1091,18 @@ export class Patient extends BaseEntity {
   medicalRecords: MedicalRecords[];
 
   @OneToMany(
+    (type) => HealthCheckRecords,
+    (healthCheckRecord) => healthCheckRecord.patient
+  )
+  healthCheckRecords: HealthCheckRecords[];
+
+  @OneToMany(
+    (type) => HospitalizationRecords,
+    (hospitalizationRecords) => hospitalizationRecords.patient
+  )
+  hospitalizationRecords: HospitalizationRecords[];
+
+  @OneToMany(
     (type) => PatientFeedback,
     (patientfeedback) => patientfeedback.patient
   )
@@ -1237,14 +1293,19 @@ export class Patient extends BaseEntity {
   @AfterUpdate()
   async setPatientCache() {
     try {
-      console.log(`Setting cache`);
+      log(
+        'profileServiceLogger',
+        'setting Cache',
+        'profilesService->setPatientCache()',
+        '',
+        ''
+      );
       await setCache(
         `patient:${this.id}`,
         JSON.stringify(this),
         ApiConstants.CACHE_EXPIRATION_3600
       );
     } catch (ex) {
-      console.log(`Exception #`, ex);
     }
   }
 }
