@@ -183,9 +183,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     noPrevPresc: {
       backgroundColor: 'transparent',
-      //boxShadow: 'none',
       color: '#02475B',
-      textTransform: 'uppercase',
       fontSize: 13,
       fontWeight: 500,
       paddingLeft: 4,
@@ -2301,7 +2299,7 @@ export const MedicinePrescription: React.FC = () => {
     );
   });
 
-  const getMedicineCopy = (item: any, time: any) => {
+  const getMedicineCopy = (item: any) => {
     setSelectedDate(item.appointmentDateTime);
     const MedicineCopy = item.caseSheet.filter(function(e: any) {
       return e.doctorType !== 'JUNIOR';
@@ -3404,6 +3402,9 @@ export const MedicinePrescription: React.FC = () => {
               onClick={() => {
                 handlePastMedicinesTabs(0);
                 setIsPrevMedDialogOpen(true);
+                if(pastAppointmentsArr && pastAppointmentsArr.length > 0){
+                  getMedicineCopy(pastAppointmentsArr[0]);
+                }
               }}
             >
               <img src={require('images/ic_dark_plus.svg')} alt="" /> PREVIOUS R
@@ -3412,9 +3413,6 @@ export const MedicinePrescription: React.FC = () => {
           ) : (
             <span
               className={classes.noPrevPresc}
-              // variant="contained"
-              //color="primary"
-              //classes={{ root: classes.noPrevPresc }}
             >
               No previous prescriptions
             </span>
@@ -4041,11 +4039,7 @@ export const MedicinePrescription: React.FC = () => {
                         }`}
                         onClick={() => {
                           getMedicineCopy(
-                            item,
-                            format(
-                              new Date(item.appointmentDateTime),
-                              'dd  MMMMMMMMMMMM yyyy, h:mm a'
-                            )
+                            item
                           );
                         }}
                       >
