@@ -697,7 +697,27 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
             </div>
           </div>
         </div>
-        <div className={classes.filterFooter}>
+
+      </div>
+      <div className={classes.dialogActions}>
+        <span>
+          <AphButton
+            className={classes.clearBtn}
+            onClick={() => {
+              const initialAppointmentFilterObject: AppointmentFilterObject = {
+                consultType: [],
+                appointmentStatus: [],
+                availability: [],
+                gender: [],
+                doctorsList: [],
+              };
+              setLocalFilter(initialAppointmentFilterObject);
+              setFilter(initialAppointmentFilterObject);
+            }}
+          >
+            Clear Filters
+          </AphButton>
+
           <AphButton
             color="primary"
             variant="contained"

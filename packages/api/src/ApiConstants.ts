@@ -491,3 +491,10 @@ export const migrationDir = {
 export const elasticConsts = {
   ELASTIC_CONFLICT_RETRY_COUNT: 5,
 };
+
+export const PharmaProductTypes = {
+  FMCG: 'FMCG',
+  PHARMA: 'Pharma',
+  PL: 'PL',
+};
+

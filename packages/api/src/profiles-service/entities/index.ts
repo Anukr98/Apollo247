@@ -19,7 +19,7 @@ import {
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
-import { BlockUserPointsResponse } from 'types/oneApolloTypes';
+import { BlockUserPointsResponse, OneApollTransaction } from 'types/oneApolloTypes';
 import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger';
@@ -73,12 +73,6 @@ export interface TransactionLineItemsPartial {
 export interface PaginateParams {
   take?: number;
   skip?: number;
-}
-
-export interface TransactionLineItems extends TransactionLineItemsPartial {
-  ProductName: string;
-  ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY;
-  PointsRedeemed?: number;
 }
 
 export enum CouponApplicability {

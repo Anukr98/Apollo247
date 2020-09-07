@@ -551,7 +551,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
               alt={firstName || ''}
             />
             {appointmentDetails.status !== STATUS.COMPLETED &&
-              appointmentDetails.status !== STATUS.CANCELLED && (
+              appointmentDetails.status !== STATUS.CANCELLED &&
+              !appointmentDetails.isSeniorConsultStarted && (
                 <div
                   onClick={() => setIsCancelPopoverOpen(true)}
                   ref={cancelAppointRef}
