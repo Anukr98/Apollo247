@@ -907,7 +907,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           collapse={showReferral}
           onPress={() => setShowReferral(!showReferral)}
         >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
+          <View style={[styles.cardViewStyle, styles.bottomPaddingTwelve]}>
             {caseSheetDetails?.referralSpecialtyName ? (
               <View>
                 <Text style={styles.labelStyle}>
