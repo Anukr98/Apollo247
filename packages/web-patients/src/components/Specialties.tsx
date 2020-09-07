@@ -20,7 +20,7 @@ import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { useQuery } from 'react-apollo-hooks';
 import { specialtyClickTracking } from 'webEngageTracking';
 import { SchemaMarkup } from 'SchemaMarkup';
-
+import { LazyIntersection } from './lib/LazyIntersection';
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     root: {
@@ -191,17 +191,27 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
                             selectedCity === ''
                               ? clientRoutes.specialties(readableParam(specialityDetails.name))
                               : clientRoutes.citySpecialties(
-                                  _lowerCase(selectedCity),
-                                  readableParam(specialityDetails.name)
-                                )
+                                _lowerCase(selectedCity),
+                                readableParam(specialityDetails.name)
+                              )
                           }
                         >
                           <div className={classes.contentBox}>
-                            <Avatar
-                              title={`Online Doctor Consultation - ${specialityDetails.name}`}
-                              alt={`Online Doctor Consultation - ${specialityDetails.name}`}
+                            <LazyIntersection
                               src={specialityDetails.image || ''}
-                              className={classes.bigAvatar}
+                              alt={`Online Doctor Consultation - ${specialityDetails.name}`}
+                              style={{
+                                width: 48,
+                                height: 48,
+                                marginRight: 15,
+                                '& img': {
+                                  verticalAlign: 'middle',
+                                  height: 'auto',
+                                  width: 'auto',
+                                  maxWidth: '100%',
+                                  maxHeight: '100%',
+                                },
+                              }}
                             />
                             <div className={classes.spContent}>
                               <div>{specialityDetails.name}</div>
@@ -231,6 +241,6 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
       </div>
     </>
   ) : (
-    <p>No results found</p>
-  );
+          <p>No results found</p>
+        );
 };
