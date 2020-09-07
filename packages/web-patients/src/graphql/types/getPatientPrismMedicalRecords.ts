@@ -68,26 +68,41 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_lab
   outOfRange: boolean | null;
 }
 
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_testResultFiles {
+  __typename: "PrecriptionFileParameters";
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  content: string | null;
+  byteContent: string | null;
+}
+
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response {
   __typename: "LabResultsBaseResponse";
+  authToken: string | null;
   id: string;
   labTestName: string;
   labTestSource: string;
+  packageId: string | null;
+  packageName: string | null;
   date: any;
   labTestRefferedBy: string | null;
   siteDisplayName: string | null;
+  tag: string | null;
+  consultId: string | null;
   additionalNotes: string | null;
   observation: string | null;
   labTestResults: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_labTestResults | null)[] | null;
   fileUrl: string;
+  testResultFiles: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_testResultFiles | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults {
   __typename: "LabResultsDownloadResponse";
-  response: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response | null)[] | null;
   errorCode: number;
   errorMsg: string | null;
   errorType: string | null;
+  response: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response | null)[] | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response {
@@ -111,7 +126,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_pre
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response_healthCheckFiles {
-  __typename: "healthCheckFileParameters";
+  __typename: "HealthCheckFileParameters";
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
@@ -121,7 +136,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hea
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response {
-  __typename: "healthChecksBaseResponse";
+  __typename: "HealthChecksBaseResponse";
   authToken: string | null;
   userId: string | null;
   id: string;
@@ -137,7 +152,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hea
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew {
-  __typename: "healthChecksDownloadResponse";
+  __typename: "HealthChecksDownloadResponse";
   errorCode: number;
   errorMsg: string | null;
   errorType: string | null;
@@ -145,7 +160,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hea
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response_hospitalizationFiles {
-  __typename: "hospitalizationFilesParameters";
+  __typename: "HospitalizationFilesParameters";
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
@@ -155,12 +170,13 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hos
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response {
-  __typename: "dischargeSummaryBaseResponse";
+  __typename: "DischargeSummaryBaseResponse";
   authToken: string | null;
   userId: string | null;
   id: string | null;
   fileUrl: string;
   date: any;
+  hospitalizationDate: any | null;
   dateOfHospitalization: number | null;
   hospitalName: string | null;
   doctorName: string | null;
@@ -175,7 +191,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hos
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew {
-  __typename: "dischargeSummaryDownloadResponse";
+  __typename: "DischargeSummaryDownloadResponse";
   errorCode: number;
   errorMsg: string | null;
   errorType: string | null;

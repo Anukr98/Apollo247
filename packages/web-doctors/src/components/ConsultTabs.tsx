@@ -364,7 +364,7 @@ export const ConsultTabs: React.FC = () => {
 
   const client = useApolloClient();
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
-  const { currentUserType } = useAuthContext();
+  const { currentUserType, chatDays } = useAuthContext();
   /* case sheet data*/
   const [symptoms, setSymptoms] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null
@@ -393,7 +393,9 @@ export const ConsultTabs: React.FC = () => {
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
-  const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
+  const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([
+    chatDays !== null ? chatDays.toString() : '',
+  ]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
   const [followUpConsultType, setFollowUpConsultType] = useState<string[]>([]);
 
@@ -738,7 +740,9 @@ export const ConsultTabs: React.FC = () => {
               'follow up old var type',
               typeof _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
             );
-            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
+
+            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays &&
+            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays !== null
               ? setFollowUpAfterInDays(([
                   _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
                 ] as unknown) as string[])
@@ -1344,6 +1348,7 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
         variables: {
           appointmentId: appointmentId,
+          patientId: patientId,
           callType: callType,
           doctorType: DOCTOR_CALL_TYPE.SENIOR,
           deviceType: DEVICETYPE.DESKTOP,
@@ -1376,6 +1381,7 @@ export const ConsultTabs: React.FC = () => {
           api: 'SendCallNotification',
           inputParam: JSON.stringify({
             appointmentId: appointmentId,
+            patientId: patientId,
             callType: callType,
             doctorType: DOCTOR_CALL_TYPE.SENIOR,
             deviceType: DEVICETYPE.DESKTOP,
@@ -1399,28 +1405,9 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
-    pubnub
-      .hereNow({
-        channels: [appointmentId],
-        includeUUIDs: true,
-      })
-      .then((response: any) => {
-        const occupants = response.channels[appointmentId].occupants;
-        let doctorCount = 0;
-        let paientsCount = 0;
-        occupants.forEach((item: any) => {
-          if (item.uuid.indexOf('PATIENT') > -1) {
-            paientsCount = 1;
-          } else if (item.uuid.indexOf('DOCTOR') > -1) {
-            doctorCount = 1;
-          }
-        });
-
-        sendCallNotificationFnWithCheck(callType, isCall, doctorCount + paientsCount);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    pubnubPresence((patient: number, doctor: number) => {
+      sendCallNotificationFnWithCheck(callType, isCall, patient + doctor);
+    });
   };
 
   const sendToPatientAction = () => {
@@ -1788,13 +1775,16 @@ export const ConsultTabs: React.FC = () => {
   const startAppointmentClick = (startAppointment: boolean) => {
     setStartAppointment(startAppointment);
   };
-  const endCallNotificationAction = (isCall: boolean) => {
+
+  const endCallNotificationActionCheckFn = (isCall: boolean, numberOfParticipants: number) => {
     client
       .query<EndCallNotification, EndCallNotificationVariables>({
         query: END_CALL_NOTIFICATION,
         fetchPolicy: 'no-cache',
         variables: {
           appointmentCallId: isCall ? callId : chatRecordId,
+          patientId: params.patientId,
+          numberOfParticipants,
         },
       })
       .catch((error: ApolloError) => {
@@ -1822,6 +1812,33 @@ export const ConsultTabs: React.FC = () => {
         console.log('Error in Call Notification', error.message);
       });
     setGiveRating(true);
+  };
+
+  const endCallNotificationAction = (isCall: boolean) => {
+    pubnubPresence((patient: number, doctor: number) => {
+      endCallNotificationActionCheckFn(isCall, patient + doctor);
+    });
+  };
+
+  const pubnubPresence = (callBack: (patientCount: number, doctorCount: number) => void) => {
+    pubnub
+      .hereNow({ channels: [appointmentId], includeUUIDs: true })
+      .then((response: any) => {
+        const occupants = response.channels[appointmentId].occupants;
+        let doctorCount = 0;
+        let paientsCount = 0;
+        occupants.forEach((item: any) => {
+          if (item.uuid.indexOf('PATIENT') > -1) {
+            paientsCount = 1;
+          } else if (item.uuid.indexOf('DOCTOR') > -1) {
+            doctorCount = 1;
+          }
+        });
+        callBack(paientsCount, doctorCount);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   const submitRatingHandler = (data: {

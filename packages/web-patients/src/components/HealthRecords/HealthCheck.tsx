@@ -10,6 +10,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response as HealthCheckType } from '../../graphql/types/getPatientPrismMedicalRecords';
+import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -327,16 +328,17 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 'calc(100% - 24px)',
     },
     doctorName: {
-      fontSize: 17,
+      fontSize: 16,
       color: '#0087BA',
-      fontWeight: 600,
+      fontWeight: 500,
       marginBottom: 5,
     },
     testName: {
-      fontSize: 23,
-      color: '#02475b',
+      fontSize: 16,
+      color: '#01475b',
       fontWeight: 500,
       marginBottom: 12,
+      lineHeight: '21px',
     },
     checkDate: {
       fontSize: 14,
@@ -348,6 +350,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       color: '#67909C',
       fontWeight: 'normal',
+    },
+    noteText: {
+      fontSize: 12,
+      padding: 10,
+      color: '#0087ba',
     },
   };
 });
@@ -378,32 +385,6 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
     );
   };
 
-  const getName = (combinedData: any, type: string) => {
-    switch (type) {
-      case 'lab':
-        return combinedData.labTestName;
-      case 'prescription':
-        return combinedData.prescriptionName;
-      default:
-        return '';
-    }
-  };
-
-  const getSource = (activeData: any, type: string) => {
-    switch (type) {
-      case 'lab':
-        return activeData && activeData.siteDisplayName
-          ? activeData.siteDisplayName
-          : !!activeData.labTestSource
-          ? activeData.labTestSource
-          : '-';
-      case 'prescription':
-        return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
-      default:
-        return '-';
-    }
-  };
-
   if (loading) {
     return (
       <div className={classes.loader}>
@@ -419,6 +400,7 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
+        <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
@@ -432,7 +414,7 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
               ? 'calc(100vh - 240px)'
               : isSmallScreen
               ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 270px)'
+              : 'calc(100vh - 310px)'
           }
         >
           <div className={classes.consultationsList}>
@@ -466,14 +448,11 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
           {isSmallScreen && allCombinedData && allCombinedData.length === 0 && (
             <div className={classes.noRecordFoundWrapper}>
               <img src={require('images/ic_records.svg')} />
-              <p>
-                You don’t have any records with us right now. Add a record to keep everything handy
-                in one place!
-              </p>
+              <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
             </div>
           )}
         </Scrollbars>
-        <div className={classes.addReportActions}>
+        {/* <div className={classes.addReportActions}>
           <AphButton
             color="primary"
             onClick={() => {
@@ -483,7 +462,7 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
           >
             Add Record
           </AphButton>
-        </div>
+        </div> */}
       </div>
       <div
         className={`${classes.rightSection} ${
@@ -568,10 +547,7 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
         ) : (
           <div className={classes.noRecordFoundWrapper}>
             <img src={require('images/ic_records.svg')} />
-            <p>
-              You don’t have any records with us right now. Add a record to keep everything handy in
-              one place!
-            </p>
+            <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
           </div>
         )}
       </div>

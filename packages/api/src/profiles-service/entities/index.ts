@@ -1299,14 +1299,19 @@ export class Patient extends BaseEntity {
   @AfterUpdate()
   async setPatientCache() {
     try {
-      console.log(`Setting cache`);
+      log(
+        'profileServiceLogger',
+        'setting Cache',
+        'profilesService->setPatientCache()',
+        '',
+        ''
+      );
       await setCache(
         `patient:${this.id}`,
         JSON.stringify(this),
         ApiConstants.CACHE_EXPIRATION_3600
       );
     } catch (ex) {
-      console.log(`Exception #`, ex);
     }
   }
 }

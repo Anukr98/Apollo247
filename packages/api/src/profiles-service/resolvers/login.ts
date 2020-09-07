@@ -195,8 +195,6 @@ const testSendSMS: Resolver<
 
   //call sms gateway service to send the OTP here
   const smsResult = await testSMS(mobileNumber, otp);
-
-  console.log(smsResult.status, smsResult);
   if (smsResult.status != 'OK') {
     return {
       send: false,

@@ -13,6 +13,7 @@ export interface MedicineProduct {
   mou: string; // minimum order unit
   name: string;
   price: number;
+  sell_online: 0 | 1;
   sku: string;
   small_image: string;
   special_price?: string | number;
@@ -148,7 +149,7 @@ export interface GetTatResponse247 {
       sku: string;
       qty: number;
       mrp: number;
-      exist: boolean
+      exist: boolean;
     }[];
     storeCode: string;
     tat: string;
@@ -550,6 +551,11 @@ export const getPlaceInfoByPlaceId = (
   return Axios.get(url);
 };
 
+export const getLatLongFromAddress = (address: string) : Promise<AxiosResponse<PlacesApiResponse>> =>{
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}`
+  return Axios.get(url);
+}
+  
 // let cancelAutoCompletePlaceSearchApi: Canceler | undefined;
 
 export const autoCompletePlaceSearch = (

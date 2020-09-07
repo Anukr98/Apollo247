@@ -192,7 +192,6 @@ const cancelAppointment: Resolver<
       appointmentId: appointment.id,
       notificationType: NotificationType.PATIENT_CANCEL_APPOINTMENT,
     };
-    console.log('sending notification for cancel', appointment.id);
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
   }
 
@@ -255,7 +254,6 @@ const cancelAppointment: Resolver<
     fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
     messageContent: mailContent,
   };
-  console.log('sending mail for cancel', appointment.id);
   if (cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT) {
     sendMail(emailContent);
   }

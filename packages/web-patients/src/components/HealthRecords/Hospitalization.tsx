@@ -10,6 +10,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response as HospitalizationType } from '../../graphql/types/getPatientPrismMedicalRecords';
+import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -327,16 +328,17 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 'calc(100% - 24px)',
     },
     doctorName: {
-      fontSize: 17,
+      fontSize: 16,
       color: '#0087BA',
-      fontWeight: 600,
+      fontWeight: 500,
       marginBottom: 5,
     },
     testName: {
-      fontSize: 23,
-      color: '#02475b',
+      fontSize: 16,
+      color: '#01475b',
       fontWeight: 500,
       marginBottom: 12,
+      lineHeight: '21px',
     },
     checkDate: {
       fontSize: 14,
@@ -348,6 +350,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       color: '#67909C',
       fontWeight: 'normal',
+    },
+    noteText: {
+      fontSize: 12,
+      padding: 10,
+      color: '#0087ba',
     },
   };
 });
@@ -370,9 +377,11 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
   const { allCombinedData, loading, activeData, setActiveData, error, deleteReport } = props;
 
   const getFormattedDate = (combinedData: HospitalizationType, dateFor: string) => {
-    return dateFor === 'title' &&
-      moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY') ? (
-      <span>Today , {moment(combinedData.date).format('DD MMM YYYY')}</span>
+    return dateFor === 'title' ? (
+      <span>
+        From {moment(combinedData.dateOfHospitalization).format('DD MMM, YYYY')} to{' '}
+        {moment(combinedData.date).format('DD MMM, YYYY')}
+      </span>
     ) : (
       <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
     );
@@ -393,6 +402,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
+        <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
@@ -406,7 +416,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
               ? 'calc(100vh - 240px)'
               : isSmallScreen
               ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 270px)'
+              : 'calc(100vh - 310px)'
           }
         >
           <div className={classes.consultationsList}>
@@ -428,7 +438,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
                   </div>
                   <MedicalCard
                     deleteReport={deleteReport}
-                    name={`Dr. ${combinedData.doctorName}` || '-'}
+                    name={combinedData.doctorName ? `Dr. ${combinedData.doctorName}` : '-'}
                     source={combinedData.hospitalName || '-'}
                     type={'Hospitalization'}
                     id={`Hospitalization-${combinedData.id}`}
@@ -440,14 +450,11 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
           {isSmallScreen && allCombinedData && allCombinedData.length === 0 && (
             <div className={classes.noRecordFoundWrapper}>
               <img src={require('images/ic_records.svg')} />
-              <p>
-                You don’t have any records with us right now. Add a record to keep everything handy
-                in one place!
-              </p>
+              <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
             </div>
           )}
         </Scrollbars>
-        <div className={classes.addReportActions}>
+        {/* <div className={classes.addReportActions}>
           <AphButton
             color="primary"
             onClick={() => {
@@ -457,7 +464,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
           >
             Add Record
           </AphButton>
-        </div>
+        </div> */}
       </div>
       <div
         className={`${classes.rightSection} ${
@@ -477,7 +484,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
                 >
                   <img src={require('images/ic_back.svg')} />
                 </AphButton>
-                <span>Test Results</span>
+                <span>HOSPITALIZATION DETAILS</span>
               </div>
             </div>
             <Scrollbars
@@ -496,41 +503,41 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
                 <div className={classes.medicalRecordsDetails}>
                   <div className={classes.cbcDetails}>
                     <div className={classes.reportsDetails}>
-                      <div className={classes.testName}>Dr. {activeData.doctorName || '-'}</div>
+                      <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
+                        {activeData.doctorName ? `Dr. ${activeData.doctorName}` : '-'}
+                      </div>
                     </div>
                     {activeData.hospitalName && (
-                      <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
+                      <div className={`${classes.reportsDetails} ${classes.sitedisplayName}`}>
                         <div>{activeData.hospitalName}</div>
                       </div>
                     )}
                     <hr />
                     <div className={classes.reportsDetails}>
-                      <label>Uploaded Date</label>
+                      <label>Discharge Date</label>
                       <p>
                         On{' '}
                         <span className={classes.checkDate}>
-                          {getFormattedDate(activeData, 'checkUp')}
+                          {getFormattedDate(activeData, 'dischargeDate')}
                         </span>
                       </p>
                     </div>
                   </div>
-                  {activeData &&
-                    ((activeData.fileUrl && activeData.fileUrl.length > 0) ||
-                      (activeData.fileUrl && activeData.fileUrl.length > 0)) && (
-                      <RenderImage
-                        activeData={activeData}
-                        type={
-                          activeData.hospitalizationFiles &&
-                          activeData.hospitalizationFiles.length &&
-                          activeData.hospitalizationFiles[0].fileName &&
-                          activeData.hospitalizationFiles[0].fileName.includes('pdf')
-                            ? 'pdf'
-                            : activeData.fileUrl.includes('pdf')
-                            ? 'pdf'
-                            : 'image'
-                        }
-                      />
-                    )}
+                  {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
+                    <RenderImage
+                      activeData={activeData}
+                      type={
+                        activeData.hospitalizationFiles &&
+                        activeData.hospitalizationFiles.length &&
+                        activeData.hospitalizationFiles[0].fileName &&
+                        activeData.hospitalizationFiles[0].fileName.includes('pdf')
+                          ? 'pdf'
+                          : activeData.fileUrl.includes('pdf')
+                          ? 'pdf'
+                          : 'image'
+                      }
+                    />
+                  )}
                 </div>
               )}
             </Scrollbars>
@@ -547,10 +554,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
         ) : (
           <div className={classes.noRecordFoundWrapper}>
             <img src={require('images/ic_records.svg')} />
-            <p>
-              You don’t have any records with us right now. Add a record to keep everything handy in
-              one place!
-            </p>
+            <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
           </div>
         )}
       </div>

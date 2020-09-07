@@ -35,7 +35,7 @@ export const sendNotificationSMS = async (mobileNumber: string, message: string)
 
   const apiUrl = `${apiUrlWithKey}${queryParams}`;
   //logging api call data here
-  log('smsOtpAPILogger', `OPT_API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
+  log('smsAPILogger', `API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
   const smsResponse = await fetch(apiUrl)
     .then((res) => res.json())
     .catch((error) => {
@@ -45,6 +45,13 @@ export const sendNotificationSMS = async (mobileNumber: string, message: string)
       throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
     });
 
+  log(
+    'smsAPILogger',
+    `API_CALL_RESPONSE: ${JSON.stringify(smsResponse)}`,
+    'sendSMS()->API_CALL_ENDING',
+    '',
+    ''
+  );
   console.log('smsResponse:', JSON.stringify(smsResponse, null, 1));
   return smsResponse;
 };

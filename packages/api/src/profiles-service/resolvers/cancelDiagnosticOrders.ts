@@ -87,7 +87,6 @@ const updateDiagnosticOrder: Resolver<
     updateDiagnosticOrderInput.id,
     updateAttrs
   );
-  console.log(updateDetails, 'diagnostic update details');
   return { message: 'Order updated successfully' };
 };
 

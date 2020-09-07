@@ -482,7 +482,6 @@ const sendPatientAcknowledgements = async (
     consultsDb,
     doctorsDb
   );
-  console.log(notificationResult, 'book appt notification');
   sendDoctorAppointmentNotification(
     appointmentData.appointmentDateTime,
     appointmentData.patientName,
