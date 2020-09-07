@@ -294,7 +294,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
         };
       default:
         return {
-          ctaText: 'Go to appointments',
+          ctaText: 'Go to home',
           info: '',
           callbackFunction: () => {
             window.location.href = clientRoutes.appointments();
