@@ -421,13 +421,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         <View style={styles.labelViewStyle}>
                           <Text style={styles.labelStyle}>{item.symptom}</Text>
                         </View>
-                        {item?.since && <Text style={styles.dataTextStyle}>
+                        {!!(item?.since) && <Text style={styles.dataTextStyle}>
                           Since: {item.since}
                         </Text>}
-                        {item?.howOften && <Text style={styles.dataTextStyle}>
+                        {!!(item?.howOften) && <Text style={styles.dataTextStyle}>
                           How Often: {item.howOften}
                         </Text>}
-                        {item?.severity && <Text style={styles.dataTextStyle}>
+                        {!!(item?.severity) && <Text style={styles.dataTextStyle}>
                           Severity: {item.severity}
                         </Text>}
                       </View>
@@ -838,7 +838,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       <View>
                         <View style={styles.labelViewStyle}>
                           <Text style={styles.labelStyle}>{item.medicineName}</Text>
-                          {item?.includeGenericNameInPrescription!!
+                          {!!(item?.includeGenericNameInPrescription)
                           && <Text style={styles.subLabelStyle}>{item.genericName}</Text>}
                         </View>
                         <Text style={styles.dataTextStyle}>{medicineDescription(item)}</Text>
@@ -908,12 +908,12 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           onPress={() => setShowReferral(!showReferral)}
         >
           <View style={[styles.cardViewStyle, styles.bottomPaddingTwelve]}>
-            {caseSheetDetails?.referralSpecialtyName ? (
+            {!!(caseSheetDetails?.referralSpecialtyName) ? (
               <View>
                 <Text style={styles.labelStyle}>
                   {caseSheetDetails!.referralSpecialtyName}
                 </Text>
-                {caseSheetDetails?.referralDescription &&
+                {!!(caseSheetDetails?.referralDescription) &&
                   <Text style={styles.dataTextStyle}>{caseSheetDetails!.referralDescription}</Text>}
                 <TouchableOpacity style={{ marginTop: 12 }}
                   onPress={() => {
