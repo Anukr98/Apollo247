@@ -1268,7 +1268,7 @@ app.get('/processOmsOrders', (req, res) => {
               }
             } else {
               logger.error(
-                `error while fetching order details for oms -> ${JSON.stringify(response)}`
+                `error while fetching order details for oms -> ${JSON.stringify(response.data)}`
               );
             }
           })
