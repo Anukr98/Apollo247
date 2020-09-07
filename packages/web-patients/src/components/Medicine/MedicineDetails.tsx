@@ -579,6 +579,7 @@ export const MedicineDetails: React.FC = (props) => {
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [metaTagProps, setMetaTagProps] = React.useState(null);
+  const [imageClick, setImageClick] = React.useState<boolean>(false);
   const { cartItems } = useShoppingCart();
   const { diagnosticsCartItems } = useDiagnosticsCart();
 
@@ -1130,7 +1131,10 @@ export const MedicineDetails: React.FC = (props) => {
                         >
                           <div className={classes.productInformation}>
                             {medicineDetails.image && medicineDetails.image.length > 0 ? (
-                              <MedicineImageGallery data={medicineDetails} />
+                              <MedicineImageGallery
+                                data={medicineDetails}
+                                setImageClick={setImageClick}
+                              />
                             ) : (
                               <div className={classes.noImageWrapper}>
                                 <img
@@ -1144,30 +1148,39 @@ export const MedicineDetails: React.FC = (props) => {
                                 />
                               </div>
                             )}
-                            <div className={classes.ppWrapper}>
-                              <div className={classes.productPopup}>
-                                <a href="javascript:void(0);" className={classes.closePopup}>
-                                  <img src={require('images/ic_cross.svg')} alt="close" />
-                                </a>
-                                <div className={classes.ppContent}>
-                                  {medicineDetails.image && medicineDetails.image.length > 0 ? (
-                                    <MedicineImageGallery data={medicineDetails} />
-                                  ) : (
-                                    <div className={classes.noImageWrapper}>
-                                      <img
-                                        src={require('images/medicine.svg')}
-                                        alt={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
-                                          medicineDetails
-                                        )}`}
-                                        title={`${
-                                          medicineDetails.name
-                                        }, Pack of ${getPackOfMedicine(medicineDetails)}`}
+                            {imageClick && (
+                              <div className={classes.ppWrapper}>
+                                <div className={classes.productPopup}>
+                                  <a
+                                    href="javascript:void(0);"
+                                    className={classes.closePopup}
+                                    onClick={() => setImageClick(false)}
+                                  >
+                                    <img src={require('images/ic_cross.svg')} alt="close" />
+                                  </a>
+                                  <div className={classes.ppContent}>
+                                    {medicineDetails.image && medicineDetails.image.length > 0 ? (
+                                      <MedicineImageGallery
+                                        data={medicineDetails}
+                                        setImageClick={setImageClick}
                                       />
-                                    </div>
-                                  )}
+                                    ) : (
+                                      <div className={classes.noImageWrapper}>
+                                        <img
+                                          src={require('images/medicine.svg')}
+                                          alt={`${
+                                            medicineDetails.name
+                                          }, Pack of ${getPackOfMedicine(medicineDetails)}`}
+                                          title={`${
+                                            medicineDetails.name
+                                          }, Pack of ${getPackOfMedicine(medicineDetails)}`}
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
+                            )}
                             <div className={classes.productDetails}>
                               <div className={classes.productBasicInfo}>
                                 <h1>{medicineDetails.name}</h1>
