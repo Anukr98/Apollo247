@@ -13,6 +13,7 @@ import {
   Tab,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import { withStyles } from '@material-ui/core/styles';
 import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 import VideocamIcon from '@material-ui/icons/Videocam';
 import Typography from '@material-ui/core/Typography';
@@ -29,6 +30,15 @@ export interface RateCallProps {
   }) => void;
   visible: boolean;
 }
+
+const StyledRating = withStyles({
+  iconFilled: {
+    color: '#FFDF00',
+  },
+  iconEmpty: {
+    color: 'grey',
+  },
+})(Rating);
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -91,7 +101,7 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
   ];
   const classes = useStyles({});
 
-  const [rating, setRating] = useState<number>(5);
+  const [rating, setRating] = useState<number>(0);
   const [feedbackResponseType, setFeedbackResponseType] = useState<string>(callType[0].title);
   const [othersAudioFeedback, setOthersAudioFeedback] = useState<string>('');
   const [othersVideoFeedback, setOthersVideoFeedback] = useState<string>('');
@@ -130,7 +140,7 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
 
   const renderRating = () => {
     return (
-      <Rating
+      <StyledRating
         className={classes.rating}
         size="large"
         value={rating}

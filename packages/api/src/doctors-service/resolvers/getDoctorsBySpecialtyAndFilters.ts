@@ -228,6 +228,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   let doctors = [];
   const finalSpecialityDetails = [];
   const elasticMatch = [];
+  const elasticSort = [];
   const earlyAvailableApolloDoctors = [],
     earlyAvailableNonApolloDoctors = [],
     docs = [];
@@ -247,32 +248,70 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   const offset = (pageNo - 1) * pageSize;
 
   const elasticSlotDateAvailability: { [index: string]: any } = [];
- 
-  if (args.filterInput.availability && args.filterInput.availability.length > 0){
+  const elasticSlotAvailabileNow: { [index: string]: any } = [];
+ // check elastic search index  /package/api/helpers/elasticIndex.ts
+  if (args.filterInput.availability && args.filterInput.availability.length > 0) {
     args.filterInput.availability.forEach((availability) => {
-      elasticSlotDateAvailability.push(
-        {bool: {must: [
-          { match: { 'doctorSlots.slotDate': availability } },
-          { match: { 'doctorSlots.slots.slot': availability } },
-          { range: { 'doctorSlots.slots.slotThreshold': { gt :'now', lt: availability+'T18:30:00.000Z' } } }
-        ]}}
-      );
-    }); 
+      elasticSlotDateAvailability.push({
+        bool: {
+          must: [
+            { match: { 'doctorSlots.slotDate': availability } },
+            {
+              nested: {
+                path: 'doctorSlots.slots',
+                query: {
+                  bool: {
+                    must: [
+                      { match: { 'doctorSlots.slots.slot': availability } },
+                      { range: { 'doctorSlots.slots.slotThreshold': { gt: 'now', lt: availability + 'T18:30:00.000Z' }, },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          ],
+        },
+      });
+    });
   }
 
-  elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
-  elasticMatch.push({ range: { 'doctorSlots.slots.slotThreshold': { gt :'now' } } });
+  if (args.filterInput.availableNow) {
+    elasticSlotAvailabileNow.push({
+      nested: {
+        path: 'doctorSlots.slots',
+        query: { range: { 'doctorSlots.slots.slotThreshold': { gt: 'now', lte: 'now+4h' } } },
+      },
+    });
+  }
+
+  elasticMatch.push({
+    nested: {
+      path: 'doctorSlots.slots',
+      query: {
+        bool: {
+          must: [
+            { match: { 'doctorSlots.slots.status': 'OPEN' } },
+            { range: { 'doctorSlots.slots.slotThreshold': { gt: 'now' } } },
+          ],
+        },
+      },
+    },
+  });
 
   if (elasticSlotDateAvailability.length > 0 && args.filterInput.availableNow) {
-      elasticMatch.push({ bool: { should: [ 
-            { bool: { should: elasticSlotDateAvailability }
-            },
-            { bool: { must: { range: { 'doctorSlots.slots.slotThreshold': { gt : 'now', lte :'now+4h'} } } } }
-          ] } } );
+    elasticMatch.push({
+      bool: {
+        should: [
+          { bool: { should: elasticSlotDateAvailability } },
+          { bool: { must: elasticSlotAvailabileNow } },
+        ],
+      },
+    });
   } else if (elasticSlotDateAvailability.length > 0) {
-      elasticMatch.push({ bool:{ should: elasticSlotDateAvailability } });
-  } else if (args.filterInput.availableNow ) {
-    elasticMatch.push({ range: { 'doctorSlots.slots.slotThreshold': { gt :'now', lte :'now+4h'} } });
+    elasticMatch.push({ bool: { should: elasticSlotDateAvailability } });
+  } else if (args.filterInput.availableNow) {
+    elasticMatch.push(elasticSlotAvailabileNow);
   }
 
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
@@ -330,6 +369,34 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   elasticMatch.push({ match: { isSearchable: 'true' } });
 
+  if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
+    elasticSort.push({
+      _geo_distance: {
+        'facility.location': {
+          lat: args.filterInput.geolocation.latitude,
+          lon: args.filterInput.geolocation.longitude,
+        },
+        order: 'asc',
+        unit: 'km',
+      },
+    });
+  } else {
+    elasticSort.push({
+      'doctorSlots.slots.slot': {
+        order: 'asc',
+        mode: 'min',
+        nested_path: 'doctorSlots.slots',
+        nested_filter: {
+          range: {
+            'doctorSlots.slots.slot': {
+              gte: 'now',
+            },
+          },
+        },
+      },
+    });
+  }
+  
   if (!process.env.ELASTIC_INDEX_DOCTORS) {
     throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
   }
