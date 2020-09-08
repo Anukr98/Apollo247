@@ -132,7 +132,8 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
   const { activeData } = props;
   return (
     activeData &&
-    activeData.labTestResults && (
+    activeData.labTestResults &&
+    activeData.labTestResults.length > 0 && (
       <ExpansionPanel className={classes.root} defaultExpanded={true}>
         <ExpansionPanelSummary
           expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
@@ -146,13 +147,12 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
               const unit = MedicalTest.find((item) => item.key === detail.unit);
               return (
                 <Grid item xs={12} sm={12}>
-                  {/* icon should come here */}
                   <div className={classes.cardTitle}>
                     <img
                       className={classes.labtest}
                       src={require('images/ic_labtest.svg')}
                       alt=""
-                    />{' '}
+                    />
                     Impressions
                   </div>
                   <div className={classes.cardSection}>
