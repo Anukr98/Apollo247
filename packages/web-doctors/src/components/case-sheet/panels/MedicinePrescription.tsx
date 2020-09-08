@@ -2680,15 +2680,16 @@ export const MedicinePrescription: React.FC = () => {
                   <img src={require('images/add_doctor_white.svg')} alt="" />
                 </AphButton>,
               ];
-        const genericName = (
-          <span>
-            {medicine.includeGenericNameInPrescription! &&
-              medicine.genericName!.trim().length > 0 && (
-                <h6>{`Contains ${medicine.genericName}`}</h6>
-              )}
-          </span>
-        );
-
+          const genericName = (
+            <span>
+              {medicine.includeGenericNameInPrescription!  &&
+                medicine.genericName &&
+                medicine.genericName !== null &&
+                medicine.genericName.trim().length > 0 && (
+                  <h6>{`Contains ${medicine.genericName}`}</h6>
+                )}
+            </span>
+          );
         return (
           <li
             style={{ position: 'relative' }}
