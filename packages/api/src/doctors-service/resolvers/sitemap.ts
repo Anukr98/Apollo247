@@ -206,7 +206,11 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
   let medicineUrls = '\n<!--Medicines list-->\n';
   if (redisMedKeys && redisMedKeys.length > 0) {
     let medCount = redisMedKeys.length;
-    if (process.env.NODE_ENV == 'local' || process.env.NODE_ENV == 'dev') {
+    if (
+      process.env.NODE_ENV == 'local' ||
+      process.env.NODE_ENV == 'dev' ||
+      process.env.NODE_ENV == 'staging'
+    ) {
       medCount = 100;
     }
     for (let k = 0; k < medCount; k++) {
@@ -221,7 +225,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
         const url = process.env.SITEMAP_BASE_URL + 'medicine/' + skuDets.url_key.toString();
         const urlInfo: SitemapUrls = {
           url,
-          urlName: skuDets.name,
+          urlName: decodeURIComponent(skuDets.name),
         };
         medicinesUrls.push(urlInfo);
         medicineUrls += `<url>\n<loc>${url}</loc>\n<lastmod>${modifiedDate}</lastmod>\n</url>\n`;
@@ -231,15 +235,13 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
 
   //read static page urls from redis cache
   const staticPages = await keyCache('apollo247:staticpages:*');
-  console.log(staticPages, 'staticPages');
   if (staticPages && staticPages.length > 0) {
     for (let k = 0; k < staticPages.length; k++) {
       const pageDets = await hgetAllCache(staticPages[k]);
-      console.log(pageDets, 'page dets');
       if (pageDets) {
         const urlInfo: SitemapUrls = {
           url: pageDets.pageUrl,
-          urlName: pageDets.pageName,
+          urlName: decodeURIComponent(pageDets.pageName),
         };
         staticPageUrls.push(urlInfo);
       }
