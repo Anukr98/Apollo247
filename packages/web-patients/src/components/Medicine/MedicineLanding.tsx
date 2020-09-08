@@ -17,7 +17,7 @@ import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as m
 import { useMutation } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
 import { MedicinePageAPiResponse } from './../../helpers/MedicineApiCalls';
-import axios from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { PaymentStatusModal } from 'components/Cart/PaymentStatusModal';
 import { useParams } from 'hooks/routerHooks';
 import { NavigationBottom } from 'components/NavigationBottom';
@@ -559,15 +559,13 @@ const MedicineLanding: React.FC = (props: any) => {
   /* Gtm code End */
 
   const getMedicinePageProducts = async () => {
-    await axios
+    await fetchWrapper
       .post(
         apiDetails.url!,
         {},
         {
-          headers: {
-            Authorization: apiDetails.authToken,
-            Accept: '*/*',
-          },
+          Authorization: apiDetails.authToken,
+          Accept: '*/*',
         }
       )
       .then((res: any) => {

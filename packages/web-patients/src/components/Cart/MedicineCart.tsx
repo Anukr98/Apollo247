@@ -19,7 +19,7 @@ import {
 } from '@aph/web-ui-components';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
-import axios from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import {
   useShoppingCart,
@@ -781,7 +781,7 @@ export const MedicineCart: React.FC = (props) => {
       return { ItemId: item.sku };
     });
     if (sessionStorage.getItem('tatFail') === 'true' || shopId === '') return Promise.resolve(true);
-    return await axios
+    return await fetchWrapper
       .post(
         apiDetails.getInventoryUrl || '',
         {
@@ -789,9 +789,7 @@ export const MedicineCart: React.FC = (props) => {
           itemDetails: productSKUs,
         },
         {
-          headers: {
-            Authentication: apiDetails.priceUpdateToken,
-          },
+          Authentication: apiDetails.priceUpdateToken,
         }
       )
       .then((res) => {
@@ -1057,13 +1055,11 @@ export const MedicineCart: React.FC = (props) => {
         response.products.forEach((data: any) => {
           if (!cartSkuSet.has(data.sku))
             promises.push(
-              axios.post(
+              fetchWrapper.post(
                 apiDetails.url || '',
                 { params: data.sku },
                 {
-                  headers: {
-                    Authorization: apiDetails.authToken,
-                  },
+                  Authorization: apiDetails.authToken,
                 }
               )
             );

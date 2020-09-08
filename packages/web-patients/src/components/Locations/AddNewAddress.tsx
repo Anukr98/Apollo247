@@ -9,7 +9,7 @@ import { PATIENT_ADDRESS_TYPE } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
-import axios, { AxiosError, AxiosPromise, AxiosResponse } from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
@@ -170,7 +170,7 @@ type AddNewAddressProps = {
   currentAddress?: GetPatientAddressList_getPatientAddressList_addressList;
   disableActions?: boolean;
   forceRefresh?: (forceRefresh: boolean) => void;
-  checkServiceAvailability?: (zipCode: string | null) => AxiosPromise;
+  checkServiceAvailability?: (zipCode: string | null) => any;
   setDeliveryTime?: (deliveryTime: string) => void;
 };
 
@@ -273,7 +273,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   // ------------------------------------------------
   useEffect(() => {
     if (pincode && pincode.length === 6) {
-      axios
+      fetchWrapper
         .get(
           `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
         )
@@ -327,11 +327,11 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
               }
             }
           } catch {
-            (e: AxiosError) => console.log(e);
+            (e: any) => console.log(e);
             showError = true;
           }
         })
-        .catch((e: AxiosError) => {
+        .catch((e: any) => {
           console.log(e);
         });
     }
@@ -518,7 +518,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       if (props.checkServiceAvailability) {
                         props
                           .checkServiceAvailability(pincode)
-                          .then((res: AxiosResponse) => {
+                          .then((res: any) => {
                             if (res && res.data && res.data.Availability) {
                               /**Gtm code start  */
                               gtmTracking({

@@ -19,8 +19,8 @@ import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvi
 import { gtmTracking } from '../../gtmTracking';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
 import fetchUtil from 'helpers/fetch';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { PharmaCoupon } from './MedicineCart';
-import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -260,13 +260,11 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         response.products.forEach((data: any) => {
           if (!cartSkuSet.has(data.sku))
             promises.push(
-              axios.post(
+              fetchWrapper.post(
                 apiDetails.url || '',
                 { params: data.sku },
                 {
-                  headers: {
-                    Authorization: apiDetails.authToken,
-                  },
+                  Authorization: apiDetails.authToken,
                 }
               )
             );

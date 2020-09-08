@@ -7,7 +7,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { UPDATE_PATIENT_ADDRESS } from 'graphql/address';
 import { useMutation } from 'react-apollo-hooks';
 import { GetPatientAddressList_getPatientAddressList_addressList as Address } from 'graphql/types/GetPatientAddressList';
-import axios, { AxiosPromise, AxiosResponse, AxiosError } from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { Alerts } from 'components/Alerts/Alerts';
 import { gtmTracking } from '../../gtmTracking';
 import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
@@ -142,7 +142,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface ViewAllAddressProps {
   setIsViewAllAddressDialogOpen: (isViewAllAddressDialogOpen: boolean) => void;
   formatAddress: (address: Address) => string;
-  checkServiceAvailability?: (zipCode: string | null) => AxiosPromise;
+  checkServiceAvailability?: (zipCode: string | null) => any;
   setDeliveryTime?: (deliveryTime: string) => void;
 }
 
@@ -175,7 +175,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
       // get lat long
       if (addressDetails.zipcode && addressDetails.zipcode.length === 6) {
         setIsLoading(true);
-        axios
+        fetchWrapper
           .get(googleMapApi)
           .then(({ data }) => {
             try {
@@ -236,7 +236,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                 });
               }
             } catch {
-              (e: AxiosError) => {
+              (e: any) => {
                 console.log(e);
                 setIsLoading(false);
                 setIsAlertOpen(true);
@@ -244,7 +244,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
               };
             }
           })
-          .catch((e: AxiosError) => {
+          .catch((e: any) => {
             setIsLoading(false);
             setIsAlertOpen(true);
             setAlertMessage(e.message);
@@ -308,7 +308,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
               setMutationLoading(true);
               props
                 .checkServiceAvailability(localZipCode)
-                .then((res: AxiosResponse) => {
+                .then((res: any) => {
                   if (res && res.data && res.data.Availability) {
                     /**Gtm code start  */
                     gtmTracking({

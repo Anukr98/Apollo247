@@ -5,9 +5,9 @@ import { AphTextField, AphButton, AphDialog, AphDialogClose } from '@aph/web-ui-
 import { MedicineAllowLocation } from 'components/MedicineAllowLocation';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useShoppingCart } from './MedicinesCartProvider';
-import axios, { AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { findAddrComponents, isActualUser } from 'helpers/commonHelpers';
 import { pincodeAutoSelectTracking, pincodeManualSelectTracking } from 'webEngageTracking';
 
@@ -279,7 +279,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
   };
 
   const getCurrentLocationDetails = async (currentLat: string, currentLong: string) => {
-    await axios
+    await fetchWrapper
       .get(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentLat},${currentLong}&key=${process.env.GOOGLE_API_KEY}`
       )
@@ -290,7 +290,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
             setAddressDetails(addrComponents);
           }
         } catch {
-          (e: AxiosError) => {
+          (e: any) => {
             console.log(e);
             setIsAlertOpen(true);
             setAlertMessage('Something went wrong :(');
@@ -298,7 +298,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
           };
         }
       })
-      .catch((e: AxiosError) => {
+      .catch((e: any) => {
         setMutationLoading(false);
         setIsAlertOpen(true);
         setAlertMessage('Something went wrong :(');
@@ -307,7 +307,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
   };
 
   const getPlaceDetails = (pincode: string) => {
-    axios
+    fetchWrapper
       .get(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
       )
@@ -318,13 +318,13 @@ export const MedicineLocationSearch: React.FC = (props) => {
             setAddressDetails(addrComponents);
           }
         } catch {
-          (e: AxiosError) => {
+          (e: any) => {
             setMutationLoading(false);
             console.log(e);
           };
         }
       })
-      .catch((e: AxiosError) => {
+      .catch((e: any) => {
         setMutationLoading(false);
         setIsAlertOpen(true);
         setAlertMessage('Something went wrong :(');

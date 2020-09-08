@@ -9,7 +9,7 @@ import { MedicineFilter } from 'components/Medicine/MedicineFilter';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
-import axios from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 import _lowerCase from 'lodash/lowerCase';
 import _replace from 'lodash/replace';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
@@ -301,16 +301,14 @@ export const SearchByMedicine: React.FC = (props) => {
 
   const onSearchMedicine = async () => {
     setIsLoading(true);
-    await axios
+    await fetchWrapper
       .post(
         apiDetailsText.url,
         {
           params: paramSearchText,
         },
         {
-          headers: {
-            Authorization: apiDetails.authToken,
-          },
+          Authorization: apiDetails.authToken,
         }
       )
       .then(({ data }) => {
@@ -328,19 +326,17 @@ export const SearchByMedicine: React.FC = (props) => {
   };
 
   const getCategoryProducts = () => {
-    axios
+    fetchWrapper
       .post(
         apiDetails.skuUrl || '',
         { params: paramSearchText, level: 'category' },
         {
-          headers: {
-            Authorization: apiDetails.authToken,
-          },
+          Authorization: apiDetails.authToken,
         }
       )
       .then((res) => {
         setCategoryId(res.data.category_id || paramSearchText);
-        axios
+        fetchWrapper
           .post(
             apiDetails.url || '',
             {
@@ -348,10 +344,8 @@ export const SearchByMedicine: React.FC = (props) => {
               page_id: 1,
             },
             {
-              headers: {
-                Authorization: apiDetails.authToken,
-                Accept: '*/*',
-              },
+              Authorization: apiDetails.authToken,
+              Accept: '*/*',
             }
           )
           .then(({ data }) => {
