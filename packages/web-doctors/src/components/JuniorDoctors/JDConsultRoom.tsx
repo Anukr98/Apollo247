@@ -533,7 +533,7 @@ export const JDConsultRoom: React.FC = () => {
   const [referralError, setReferralError] = useState<boolean>(false);
   const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
 
-  const [giveRating, setGiveRating] = useState<boolean>(false);
+  const [giveRating, setGiveRating] = useState<boolean>(true);
 
   //OT Error state
   const [sessionError, setSessionError] = React.useState<boolean>(null);
@@ -1476,7 +1476,6 @@ export const JDConsultRoom: React.FC = () => {
         sessionClient.notify(JSON.stringify(logObject));
         console.log('Error in Call Notification', error.message);
       });
-    setGiveRating(true);
   };
 
   const endCallNotificationAction = (isCall: boolean) => {
@@ -1745,6 +1744,7 @@ export const JDConsultRoom: React.FC = () => {
 
                 {!disableChat() && (
                   <JDCallPopover
+                    setGiveRating = {setGiveRating}
                     setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                     createSessionAction={createSessionAction}
                     saveCasesheetAction={(flag: boolean, endConsult: boolean) =>

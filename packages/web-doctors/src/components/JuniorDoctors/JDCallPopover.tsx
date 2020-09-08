@@ -775,6 +775,7 @@ interface CallPopoverProps {
   isCall: boolean;
   setRejectedByPatientBeforeAnswer: (value: string) => void;
   rejectedByPatientBeforeAnswer: string | null;
+  setGiveRating: (flag: boolean) => void;
 }
 
 let intervalId: any;
@@ -928,6 +929,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     setShowVideo(false);
     setShowVideoChat(false);
     setPlayRingtone(false);
+    props.setGiveRating(true);
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
     props.isAudioVideoCallEnded(false);
@@ -2232,21 +2234,21 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                       },
                       fetchPolicy: 'no-cache',
                     });
-                    const text = {	
-                      id: props.doctorId,	
-                      message: exotelCall,	
-                      exotelNumber: process.env.EXOTEL_CALLER_ID,	
-                      isTyping: true,	
-                      messageDate: new Date(),	
-                      sentBy: REQUEST_ROLES.JUNIOR,	
-                    };	
-                    pubnub.publish(	
-                      {	
-                        message: text,	
-                        channel: channel,	
-                        storeInHistory: true,	
-                      },	
-                      (status: any, response: any) => {},	
+                    const text = {
+                      id: props.doctorId,
+                      message: exotelCall,
+                      exotelNumber: process.env.EXOTEL_CALLER_ID,
+                      isTyping: true,
+                      messageDate: new Date(),
+                      sentBy: REQUEST_ROLES.JUNIOR,
+                    };
+                    pubnub.publish(
+                      {
+                        message: text,
+                        channel: channel,
+                        storeInHistory: true,
+                      },
+                      (status: any, response: any) => {}
                     );
                     setShowToastMessage(true);
                   }}
