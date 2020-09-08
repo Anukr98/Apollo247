@@ -3,7 +3,7 @@ import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { AphRadio, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
-import _each from 'lodash';
+//import _each from 'lodash';
 import { useMutation } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { PHRAMA_COUPONS_LIST, VALIDATE_PHARMA_COUPONS } from '../../graphql/medicines';
