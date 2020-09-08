@@ -332,6 +332,7 @@ const useStyles = makeStyles((theme: Theme) =>
         fontWeight: 600,
       },
       '& h2': {
+        textTransform: 'uppercase',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -355,7 +356,6 @@ const useStyles = makeStyles((theme: Theme) =>
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        textTransform: 'uppercase',
         '& button': {
           position: 'static',
           minWidth: 'auto',
