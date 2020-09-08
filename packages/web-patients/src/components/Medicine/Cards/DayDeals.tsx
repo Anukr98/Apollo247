@@ -43,6 +43,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     cardIcon: {
       width: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     offerDetails: {
       position: 'absolute',
@@ -138,7 +141,8 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
                     <LazyIntersection
                       src={`${apiDetails.url}${deal.image_url}`}
                       alt={''}
-                      style={{ width: '273px' }}
+                      fallbackImage={require('images/ic_placeholder_rectangle.png')}
+                      style={{ maxWidth: '273px' }}
                     />
                     {/* <img
                       src={`${apiDetails.url}${deal.image_url}`} width="100%" alt="" /> */}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from './Image';
 import useIO from './useIO';
-const fallbackImage = require('images/ic_logo.png');
+const fallbackImage = require('images/ic_placeholder_circle.png');
 
 interface LazyIntersectionInterface {
   src: string;
