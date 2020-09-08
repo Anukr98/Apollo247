@@ -116,7 +116,7 @@
     "react-slick": "^0.15.4",
     "unfetch": "^4.1.0",
     "uuid": "^3.3.3",
-    "validator": "^11.1.0",
+    "validator": "file:../validator",
     "webpack-pwa-manifest": "^4.2.0",
     "workbox-webpack-plugin": "^5.1.3"
   },
