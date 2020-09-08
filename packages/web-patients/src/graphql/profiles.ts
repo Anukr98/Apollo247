@@ -896,3 +896,12 @@ export const GET_SITEMAP = gql`
     }
   }
 `;
+
+export const GET_LAB_RESULT_PDF = gql`
+  query getLabResultpdf($patientId: ID!, $recordId: String!) {
+    getLabResultpdf(patientId: $patientId, recordId: $recordId) {
+      url
+    }
+  }
+`;
+
