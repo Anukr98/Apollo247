@@ -468,14 +468,27 @@ export const AddMedicinePrescriptionPopUp: React.FC<AddMedicinePrescriptionPopUp
                     ) {
                       medicine.push(
                         ...appointment.caseSheet[0].medicinePrescription
-                          .filter((item) =>
-                            medicinesId.includes(
-                              g(item, 'id') ||
-                                g(item, 'externalId') ||
-                                g(item, 'medicineName') ||
-                                ''
-                            )
-                          )
+                          .map((item) => {
+                            if (
+                              medicinesId.includes(
+                                g(item, 'id') ||
+                                  g(item, 'externalId') ||
+                                  g(item, 'medicineName') ||
+                                  ''
+                              )
+                            ) {
+                              return {
+                                ...item,
+                                externalId:
+                                  g(item, 'id') ||
+                                  g(item, 'externalId') ||
+                                  g(item, 'medicineName') ||
+                                  '',
+                              } as GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePrescription;
+                            } else {
+                              return null;
+                            }
+                          })
                           .filter((item) => item)
                       );
                     }
