@@ -79,10 +79,13 @@ const useStyles = makeStyles((theme: Theme) => {
     resultGroup: {
       display: 'flex',
       '& label': {
-        fontSize: 12,
-        fontWeight: 500,
+        fontSize: 14,
+        fontWeight: 'normal',
         color: '#01475b',
       },
+    },
+    resultGroupLastrow: {
+      display: 'block',
     },
     result: {
       fontSize: 14,
@@ -91,6 +94,14 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 0.04,
       color: '#0087ba',
       marginLeft: 'auto',
+      // float: 'right',
+    },
+    resultField: {
+      fontSize: 13,
+      fontWeight: 'normal',
+      float: 'none',
+      marginTop: 10,
+      paddingLeft: 17,
     },
     resultError: {
       color: '#d10001',
@@ -104,7 +115,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 5,
       height: 5,
       borderRadius: '50%',
-      backgroundColor: '#02475B',
+      backgroundColor: 'rgba(2,71,91,0.6)',
       display: 'inline-block',
       marginRight: 12,
     },
@@ -178,11 +189,13 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
                         </div>
                       </Grid>
                       <Grid item xs={12} sm={12}>
-                        <div className={classes.resultGroup}>
+                        <div className={`${classes.resultGroup} ${classes.resultGroupLastrow}`}>
                           <label>
                             <span className={classes.bullet}></span>Result
                           </label>
-                          <div className={classes.result}>{detail.result || 'N/A'}</div>
+                          <div className={`${classes.result} ${classes.resultField}`}>
+                            {detail.result || 'N/A'}
+                          </div>
                         </div>
                       </Grid>
                     </Grid>

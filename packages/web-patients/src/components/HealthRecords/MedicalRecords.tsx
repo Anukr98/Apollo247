@@ -291,7 +291,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     reportsDetails: {
-      paddingLeft: 10,
+      paddingLeft: 0,
       paddingRight: 10,
       [theme.breakpoints.down('xs')]: {
         paddingLeft: 5,
