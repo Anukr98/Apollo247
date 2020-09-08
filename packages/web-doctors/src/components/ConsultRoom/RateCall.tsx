@@ -81,6 +81,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     submitButton: {
       marginTop: 10,
+      marginLeft: 20,
       float: 'right',
     },
   };
@@ -112,6 +113,7 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
   const [isOtherVideoFeedback, setIsOtherVideoFeedback] = useState<boolean>(false);
   const hasFeedbackIssue = rating !== 0 && rating < 3;
   const isBtnDisabled = rating < 3 && audioFeedbacks.length === 0 && videoFeedbacks.length === 0;
+  const [showDialog, setShowDialog] = useState<boolean>(props.visible);
 
   useEffect(() => {
     const otherAudioFeedback = audioFeedbacks.filter(
@@ -279,6 +281,18 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
     );
   };
 
+  const renderCancelBtn = () => {
+    return (
+      <AphButton
+        title="CANCEL"
+        className={classes.submitButton}
+        onClick={() => setShowDialog(false)}
+      >
+        CANCEL
+      </AphButton>
+    );
+  };
+
   const renderSubmitBtn = () => {
     return (
       <AphButton
@@ -342,7 +356,7 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
   };
 
   return (
-    <Dialog open={props.visible}>
+    <Dialog open={showDialog}>
       <DialogContent className={classes.dialogContainer}>
         <div>
           <Typography className={classes.title}>
@@ -364,6 +378,7 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
           )}
           {renderCalltypeTab()}
           {renderMultiSelectQuestions()}
+          {rating == 0 && renderCancelBtn()}
           {rating !== 0 && renderSubmitBtn()}
         </div>
       </DialogContent>

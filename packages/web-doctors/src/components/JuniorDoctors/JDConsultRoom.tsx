@@ -21,6 +21,7 @@ import {
   GET_CASESHEET_JRD,
   CREATE_CASESHEET_FOR_JRD,
   MODIFY_CASESHEET,
+  SAVE_APPOINTMENT_CALL_FEEDBACK,
 } from 'graphql/profiles';
 import {
   CreateJuniorDoctorCaseSheet,
@@ -46,6 +47,7 @@ import {
   STATUS,
   DEVICETYPE,
   BOOKINGSOURCE,
+  CALL_FEEDBACK_RESPONSES_TYPES,
 } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
@@ -87,6 +89,11 @@ import {
   SendCallNotificationVariables,
 } from 'graphql/types/SendCallNotification';
 import moment from 'moment';
+import { RateCall } from 'components/ConsultRoom/RateCall';
+import {
+  saveAppointmentCallFeedback,
+  saveAppointmentCallFeedbackVariables,
+} from 'graphql/types/saveAppointmentCallFeedback';
 import Alert from '../Alert';
 import {
   getLocalStorageItem,
@@ -525,6 +532,8 @@ export const JDConsultRoom: React.FC = () => {
   const [referralDescription, setReferralDescription] = useState<string>('');
   const [referralError, setReferralError] = useState<boolean>(false);
   const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
+
+  const [giveRating, setGiveRating] = useState<boolean>(true);
 
   //OT Error state
   const [sessionError, setSessionError] = React.useState<boolean>(null);
@@ -1496,6 +1505,47 @@ export const JDConsultRoom: React.FC = () => {
       });
   };
 
+  const submitRatingHandler = (data: {
+    rating: number;
+    feedbackResponseType: CALL_FEEDBACK_RESPONSES_TYPES | null;
+    audioFeedbacks: {}[];
+    videoFeedbacks: {}[];
+  }) => {
+    setGiveRating(false);
+    const query = {
+      appointmentCallDetailsId: callId,
+      ratingValue: data.rating,
+      feedbackResponseType: data.feedbackResponseType,
+      feedbackResponses:
+        data.audioFeedbacks.length === 0 && data.videoFeedbacks.length === 0
+          ? null
+          : JSON.stringify({
+              audio: data.audioFeedbacks,
+              video: data.videoFeedbacks,
+            }),
+    };
+
+    client
+      .mutate<saveAppointmentCallFeedback, saveAppointmentCallFeedbackVariables>({
+        mutation: SAVE_APPOINTMENT_CALL_FEEDBACK,
+        variables: {
+          saveAppointmentCallFeedback: query,
+        },
+      })
+      .then((_data: any) => {
+        alert('Thank you for sharing your reviews.');
+      })
+      .catch((e: any) => {
+        alert('Error in giving feedback. Please try again!');
+      });
+  };
+
+  const showRateCallModal = () => {
+    return (
+      <RateCall visible={giveRating} submitRatingCallback={(data) => submitRatingHandler(data)} />
+    );
+  };
+
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 1;
   // const assignedDoctor = {
@@ -1604,6 +1654,7 @@ export const JDConsultRoom: React.FC = () => {
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
+            {showRateCallModal()}
             <div className={classes.container}>
               <div className={classes.pageContainer}>
                 {/* patient and doctors details start */}
@@ -1693,6 +1744,7 @@ export const JDConsultRoom: React.FC = () => {
 
                 {!disableChat() && (
                   <JDCallPopover
+                    setGiveRating = {setGiveRating}
                     setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                     createSessionAction={createSessionAction}
                     saveCasesheetAction={(flag: boolean, endConsult: boolean) =>
