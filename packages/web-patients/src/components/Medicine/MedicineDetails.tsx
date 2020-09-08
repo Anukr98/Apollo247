@@ -839,10 +839,8 @@ export const MedicineDetails: React.FC = (props) => {
   const history = useHistory();
 
   useEffect(() => {
-    if (!medicineDetails) {
-      getMedicineDetails(params.sku);
-    }
-  }, [medicineDetails]);
+    getMedicineDetails(params.sku);
+  }, [params.sku]);
 
   useEffect(() => {
     if (params && params.searchText) {
