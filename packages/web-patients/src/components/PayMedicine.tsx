@@ -397,14 +397,10 @@ export const PayMedicine: React.FC = (props) => {
   const [consultCouponCode, setConsultCouponCode] = React.useState<string>('');
   const [revisedAmount, setRevisedAmount] = React.useState<number>(0);
   const [consult, setConsult] = useState<boolean>(false);
+  const [isPharmaFailure, setIsPharmaFailure] = useState<boolean>(false);
+
   const [validityStatus, setValidityStatus] = useState<boolean>(false);
-  const {
-    cartTotal,
-    deliveryAddressId,
-    prescriptions,
-    ePrescriptionData,
-    cartItems,
-  } = useShoppingCart();
+  const { cartTotal, prescriptions, ePrescriptionData, cartItems } = useShoppingCart();
 
   const params = useParams<{
     payType: string;
@@ -440,6 +436,7 @@ export const PayMedicine: React.FC = (props) => {
     totalWithCouponDiscount,
     validateCouponResult,
     shopId,
+    deliveryAddressId,
   } = cartValues;
   const deliveryCharges =
     cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
@@ -751,6 +748,7 @@ export const PayMedicine: React.FC = (props) => {
           action: 'Order',
           label: 'Failed / Cancelled',
         });
+        setIsPharmaFailure(true);
         /**Gtm code End  */
         console.log(e);
         setMutationLoading(false);
@@ -1169,6 +1167,7 @@ export const PayMedicine: React.FC = (props) => {
         isAlertOpen={isAlertOpen}
         setIsAlertOpen={setIsAlertOpen}
         consult={consult}
+        isPharmaFailure={isPharmaFailure}
       />
     </div>
   );
