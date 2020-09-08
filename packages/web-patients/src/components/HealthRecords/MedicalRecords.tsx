@@ -12,7 +12,11 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType } from '../../graphql/types/getPatientPrismMedicalRecords';
-import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
+import {
+  HEALTH_RECORDS_NO_DATA_FOUND,
+  HEALTH_RECORDS_NOTE,
+  removeGraphQLKeyword,
+} from 'helpers/commonHelpers';
 import { GET_LAB_RESULT_PDF } from 'graphql/profiles';
 import { getLabResultpdf, getLabResultpdfVariables } from 'graphql/types/getLabResultpdf';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -523,7 +527,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
         .catch((e: any) => {
           console.log(e);
           setIsAlertOpen(true);
-          setAlertMessage('Something went wrong while downloading!!!');
+          setAlertMessage(`Something went wrong while downloading(${removeGraphQLKeyword(e)})`);
         })
         .finally(() => {
           setIsDownloading(false);
