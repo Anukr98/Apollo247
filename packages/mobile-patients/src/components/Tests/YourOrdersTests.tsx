@@ -9,7 +9,6 @@ import {
   getDiagnosticOrdersListVariables,
   getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -42,22 +41,17 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     getDiagnosticOrdersList,
     getDiagnosticOrdersListVariables
   >(GET_DIAGNOSTIC_ORDER_LIST, {
-    variables: { patientId: g(currentPatient, 'id') },
+    variables: { patientId: currentPatient?.id },
     fetchPolicy: 'no-cache',
   });
   const orders =
-    (loading || error) && !data
-      ? []
-      : (g(data, 'getDiagnosticOrdersList', 'ordersList') as TestOrder[]) || [];
+    loading || error ? [] : (data?.getDiagnosticOrdersList?.ordersList as TestOrder[]) || [];
 
   const getSlotStartTime = (slot: string /*07:00-07:30 */) => {
     return moment((slot.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
   };
 
-  const renderOrder = (
-    order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
-    index: number
-  ) => {
+  const renderOrder = (order: TestOrder, index: number) => {
     const isHomeVisit = !!order.slotTimings;
     const dt = moment(order.diagnosticDate).format(`D MMM YYYY`);
     const tm = getSlotStartTime(order.slotTimings);
@@ -102,13 +96,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderOrders = () => {
     return (
-      <View>
-        <FlatList
-          bounces={false}
-          data={orders}
-          renderItem={({ item, index }) => renderOrder(item, index)}
-        />
-      </View>
+      <FlatList
+        bounces={false}
+        data={orders}
+        renderItem={({ item, index }) => renderOrder(item, index)}
+        ListEmptyComponent={renderNoOrders()}
+      />
     );
   };
 
@@ -135,7 +128,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderError = () => {
-    if (!loading && error) {
+    if (error) {
       return (
         <Card
           cardContainer={[styles.noDataCard]}
@@ -162,9 +155,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           onScroll={(i) => onScrolling(i.nativeEvent.contentOffset.y)}
           scrollEventThrottle={1}
         >
-          {renderOrders()}
-          {renderNoOrders()}
           {renderError()}
+          {renderOrders()}
         </ScrollView>
         {!loading && <ScrollableFooter show={show} />}
       </SafeAreaView>

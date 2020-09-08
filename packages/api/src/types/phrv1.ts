@@ -184,6 +184,10 @@ export interface GetAuthTokenResponse {
   response: string;
 }
 
+export interface GetLabResultpdfResponse {
+  url: string
+}
+
 export interface HealthChecksResponse {
   errorCode: number;
   errorMsg: string;

@@ -12,8 +12,16 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType } from '../../graphql/types/getPatientPrismMedicalRecords';
-import { DoctorsFilter } from 'components/DoctorsFilter';
-import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
+import {
+  HEALTH_RECORDS_NO_DATA_FOUND,
+  HEALTH_RECORDS_NOTE,
+  removeGraphQLKeyword,
+} from 'helpers/commonHelpers';
+import { GET_LAB_RESULT_PDF } from 'graphql/profiles';
+import { getLabResultpdf, getLabResultpdfVariables } from 'graphql/types/getLabResultpdf';
+import { useApolloClient } from 'react-apollo-hooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -418,7 +426,8 @@ enum FILTER_TYPE {
 
 export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const classes = useStyles({});
-
+  const apolloClient = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
   const {
     allCombinedData,
     setLabResults,
@@ -434,6 +443,9 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
   const [filterApplied, setFilterApplied] = useState<FILTER_TYPE>(FILTER_TYPE.DATE);
   const [showPopover, setShowPopover] = useState<boolean>(false);
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
 
   const sortByTypeRecords = (type: FILTER_TYPE) => {
     return (
@@ -461,8 +473,10 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
 
   useEffect(() => {
     const filteredData = sortByTypeRecords(filterApplied);
-    setLabResults(filteredData);
-    setActiveData(filteredData[0]);
+    if (filteredData) {
+      setLabResults(filteredData);
+      setActiveData(filteredData[0]);
+    }
   }, [filterApplied]);
 
   const getFormattedDate = (combinedData: LabResultsType, dateFor: string) => {
@@ -493,6 +507,33 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   if (error) {
     return <div>Error while fetching the medical records</div>;
   }
+
+  const downloadTestReport = (recordId: string) => {
+    if (currentPatient && currentPatient.id) {
+      setIsDownloading(true);
+      apolloClient
+        .query<getLabResultpdf, getLabResultpdfVariables>({
+          query: GET_LAB_RESULT_PDF,
+          variables: {
+            patientId: currentPatient.id,
+            recordId,
+          },
+        })
+        .then(({ data }: any) => {
+          if (data && data.getLabResultpdf && data.getLabResultpdf.url) {
+            window.open(data.getLabResultpdf.url, '_blank');
+          }
+        })
+        .catch((e: any) => {
+          console.log(e);
+          setIsAlertOpen(true);
+          setAlertMessage(`Something went wrong while downloading(${removeGraphQLKeyword(e)})`);
+        })
+        .finally(() => {
+          setIsDownloading(false);
+        });
+    }
+  };
 
   return (
     <div className={classes.root}>
@@ -671,15 +712,19 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 </div>
               )}
             </Scrollbars>
-            {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
-              <a href={activeData.fileUrl}>
-                <div className={classes.addReportActions}>
-                  <AphButton color="primary" fullWidth>
-                    DOWNLOAD TEST REPORT
-                  </AphButton>
-                </div>
-              </a>
-            )}
+            <div className={classes.addReportActions}>
+              <AphButton
+                color="primary"
+                onClick={() => downloadTestReport(activeData.id)}
+                fullWidth
+              >
+                {isDownloading ? (
+                  <CircularProgress size={22} color="secondary" />
+                ) : (
+                  'DOWNLOAD TEST REPORT'
+                )}
+              </AphButton>
+            </div>
           </>
         ) : (
           <div className={classes.noRecordFoundWrapper}>
@@ -735,6 +780,12 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           </li>
         </ul>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

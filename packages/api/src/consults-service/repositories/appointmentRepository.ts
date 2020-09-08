@@ -698,8 +698,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
-        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
-        {
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',        {
           status1: STATUS.CANCELLED,
           status2: STATUS.PAYMENT_PENDING,
           status3: STATUS.UNAVAILABLE_MEDMANTRA,

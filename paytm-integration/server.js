@@ -1176,12 +1176,16 @@ app.get('/processOmsOrders', (req, res) => {
                     shippingcity: deliveryCity,
                     shippingstateid: deliveryStateCode,
                     customerid: '',
-                    patiendname: patientDetails.firstName,
+                    patiendname: patientAddressDetails.name || patientDetails.firstName,
                     customername:
                       patientDetails.firstName +
                       (patientDetails.lastName ? ' ' + patientDetails.lastName : ''),
-                    primarycontactno: patientAddressDetails.mobileNumber.substr(3),
-                    secondarycontactno: '',
+                    primarycontactno: patientAddressDetails.mobileNumber
+                      ? patientAddressDetails.mobileNumber.substr(
+                          patientAddressDetails.mobileNumber.length - 10
+                        )
+                      : '',
+                    secondarycontactno: patientDetails.mobileNumber.substr(3),
                     age: patientAge,
                     emailid: patientDetails.emailAddress || '',
                     cardno: '0',
@@ -1268,7 +1272,7 @@ app.get('/processOmsOrders', (req, res) => {
               }
             } else {
               logger.error(
-                `error while fetching order details for oms -> ${JSON.stringify(response)}`
+                `error while fetching order details for oms -> ${JSON.stringify(response.data)}`
               );
             }
           })

@@ -75,6 +75,7 @@ export enum CouponCategoryApplicable {
   FMCG = "FMCG",
   PHARMA = "PHARMA",
   PHARMA_FMCG = "PHARMA_FMCG",
+  PL = "PL",
 }
 
 export enum CustomerType {

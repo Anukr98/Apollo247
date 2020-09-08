@@ -861,3 +861,46 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
     }
   }
 `;
+
+export const GET_SITEMAP = gql`
+  mutation generateSitemap {
+    generateSitemap {
+      specialityUrls {
+        urlName
+        url
+      }
+      doctorUrls {
+        urlName
+        url
+      }
+      articleUrls {
+        urlName
+        url
+      }
+      healthAreasUrls {
+        urlName
+        url
+      }
+      shopByCategoryUrls {
+        urlName
+        url
+      }
+      medicinesUrls {
+        urlName
+        url
+      }
+      staticPageUrls {
+        urlName
+        url
+      }
+    }
+  }
+`;
+
+export const GET_LAB_RESULT_PDF = gql`
+  query getLabResultpdf($patientId: ID!, $recordId: String!) {
+    getLabResultpdf(patientId: $patientId, recordId: $recordId) {
+      url
+    }
+  }
+`;

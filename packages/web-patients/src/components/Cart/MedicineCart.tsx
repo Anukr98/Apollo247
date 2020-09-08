@@ -1875,6 +1875,7 @@ export const MedicineCart: React.FC = (props) => {
                                   deliveryTime: deliveryTime,
                                   validateCouponResult: validateCouponResult,
                                   shopId: shopId,
+                                  deliveryAddressId,
                                 })
                               );
                               history.push(clientRoutes.payMedicine('pharmacy'));
@@ -1989,6 +1990,7 @@ export const MedicineCart: React.FC = (props) => {
                               deliveryTime: deliveryTime,
                               validateCouponResult: validateCouponResult,
                               shopId: shopId,
+                              deliveryAddressId,
                             })
                           );
                           history.push(clientRoutes.payMedicine('pharmacy'));
