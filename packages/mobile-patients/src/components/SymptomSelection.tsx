@@ -122,6 +122,7 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
         renderItem={({ item, index }) => renderSymptoms(item, index)}
         extraData={refreshFlatList}
         keyboardShouldPersistTaps="handled"
+        onScrollBeginDrag={() => Keyboard.dismiss()}
       />
     );
   };
