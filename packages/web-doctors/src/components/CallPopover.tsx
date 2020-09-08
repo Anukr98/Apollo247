@@ -1124,6 +1124,7 @@ interface CallPopoverProps {
   showConfirmPrescription: boolean;
   setShowConfirmPrescription: (flag: boolean) => void;
   casesheetInfo: any;
+  setGiveRating: (flag: boolean) => void;
 }
 let countdowntimer: any;
 let intervalId: any;
@@ -1544,6 +1545,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setDisableOnCancel(false);
     clearInterval(intervalMissCall);
     setPlayRingtone(false);
+    props.setGiveRating(true);
     if (!isCallAccepted) sendCallDisconnectNotification();
 
     const cookieStr = `action=`;

@@ -1803,7 +1803,6 @@ export const ConsultTabs: React.FC = () => {
         sessionClient.notify(JSON.stringify(logObject));
         console.log('Error in Call Notification', error.message);
       });
-    setGiveRating(true);
   };
 
   const endCallNotificationAction = (isCall: boolean) => {
@@ -2010,6 +2009,7 @@ export const ConsultTabs: React.FC = () => {
             {showRateCallModal()}
             <div className={classes.container}>
               <CallPopover
+                setGiveRating={setGiveRating}
                 setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                 createSessionAction={createSessionAction}
                 saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) =>
