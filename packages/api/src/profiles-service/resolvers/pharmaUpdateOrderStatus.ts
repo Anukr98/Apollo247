@@ -26,7 +26,7 @@ import { syncInventory } from 'helpers/inventorySync';
 import { SYNC_TYPE } from 'types/inventorySync';
 
 import { createOneApolloTransaction } from 'profiles-service/helpers/OneApolloTransactionHelper';
-
+import { ItemDetails } from 'types/oneApolloTypes';
 
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
