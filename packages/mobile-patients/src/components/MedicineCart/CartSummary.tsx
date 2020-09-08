@@ -13,7 +13,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { SelectedAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/SelectedAddress';
 import { ChooseAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/ChooseAddress';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { pinCodeServiceabilityApi247 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CartItemsList } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemsList';
@@ -36,9 +36,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     if (deliveryAddressId && deliveryAddressId == address.id) {
       return;
     }
-    const response = await pinCodeServiceabilityApi(address.zipcode!);
+    const response = await pinCodeServiceabilityApi247(address.zipcode!);
     const { data } = response;
-    if (data.Availability) {
+    if (data.response) {
       setloading(false);
       setDeliveryAddressId && setDeliveryAddressId(address.id);
     } else {

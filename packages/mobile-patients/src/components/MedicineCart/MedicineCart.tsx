@@ -28,7 +28,12 @@ import {
 import { GET_PATIENT_ADDRESS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { g } from '@aph/mobile-patients/src//helpers/helperFunctions';
-import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  pinCodeServiceabilityApi247,
+  availabilityApi247,
+  TatApiInput247,
+  getDeliveryTAT247,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
@@ -50,12 +55,15 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
+  const [lastCartItems, setlastCartItems] = useState('');
 
   useEffect(() => {
     fetchAddress();
   }, []);
 
-  useEffect(() => {}, [deliveryAddressId, cartItems]);
+  useEffect(() => {
+    availabilityTat();
+  }, [deliveryAddressId, cartItems]);
 
   async function fetchAddress() {
     try {
@@ -84,14 +92,78 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (deliveryAddressId && deliveryAddressId == address.id) {
       return;
     }
-    const response = await pinCodeServiceabilityApi(address.zipcode!);
+    const response = await pinCodeServiceabilityApi247(address.zipcode!);
     const { data } = response;
-    if (data.Availability) {
+    if (data.response) {
       setloading(false);
       setDeliveryAddressId && setDeliveryAddressId(address.id);
     } else {
       setDeliveryAddressId && setDeliveryAddressId('');
       setloading!(false);
+    }
+  }
+
+  async function availabilityTat() {
+    const newCartItems =
+      cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId;
+    if (newCartItems == lastCartItems) {
+      return;
+    }
+    if (deliveryAddressId && cartItems.length > 0) {
+      setlastCartItems(newCartItems);
+      const skus = cartItems.map((item) => item.id);
+      const selectedAddress: any = addresses.find((item) => item.id == deliveryAddressId);
+      try {
+        const response = await availabilityApi247(selectedAddress.zipcode || '', skus.join(','));
+        console.log(response.data);
+        const items = g(response, 'data', 'response') || [];
+        const unserviceableSkus = items.filter(({ exist }) => exist == false).map(({ sku }) => sku);
+        const updatedCartItems = cartItems.map((item) => ({
+          ...item,
+          unserviceable: unserviceableSkus.indexOf(item.id) != -1,
+        }));
+        console.log('updatedCartItems', updatedCartItems);
+        setCartItems!(updatedCartItems);
+
+        const serviceableItems = updatedCartItems
+          .filter((item) => !item.unserviceable)
+          .map((item) => {
+            return { sku: item.id, qty: item.quantity };
+          });
+        console.log('serviceableItems', serviceableItems);
+
+        const tatInput: TatApiInput247 = {
+          pincode: selectedAddress.zipcode || '',
+          lat: selectedAddress?.latitude!,
+          lng: selectedAddress?.longitude!,
+          items: serviceableItems,
+        };
+        const res = await getDeliveryTAT247(tatInput);
+        console.log('res >>', res.data);
+        const tatTimeStamp = g(res, 'data', 'response', 'tatU');
+        if (tatTimeStamp && tatTimeStamp !== -1) {
+          const deliveryDate = g(res, 'data', 'response', 'tat');
+          if (deliveryDate) {
+            const inventoryData = g(res, 'data', 'response', 'items') || [];
+            const inventory = inventoryData
+              .filter(({ qty }) => qty > 0)
+              .map((item) => {
+                return {
+                  itemId: item.sku,
+                  qty: item.qty,
+                  mrp: item.qty,
+                };
+              });
+            if (inventory && inventory.length) {
+              // fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, inventory);
+            }
+          } else {
+          }
+        } else {
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
 

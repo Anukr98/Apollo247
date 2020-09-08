@@ -14,11 +14,10 @@ export interface CartItemsListProps {
 export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
   const { cartItems, updateCartItem, removeCartItem } = useShoppingCart();
   const { screen } = props;
+
   const renderCartItemsHeader = () => {
-    console.log('cartItems >>>', cartItems);
     const itemsCount =
       cartItems.length == 0 || cartItems.length > 10 ? cartItems.length : `0${cartItems.length}`;
-
     return (
       <View style={styles.cartItemsHeader}>
         <Text style={styles.cartItemsHeaderText}>ITEMS IN YOUR CART</Text>
