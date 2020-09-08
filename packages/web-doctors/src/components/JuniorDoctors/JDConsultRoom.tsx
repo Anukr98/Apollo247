@@ -1485,7 +1485,7 @@ export const JDConsultRoom: React.FC = () => {
         occupants.forEach((item: any) => {
           if (item.uuid.indexOf('PATIENT') > -1) {
             paientsCount = 1;
-          } else if (item.uuid.indexOf('DOCTOR') > -1) {
+          } else if (item.uuid.indexOf('JUNIOR') > -1) {
             doctorCount = 1;
           }
         });
