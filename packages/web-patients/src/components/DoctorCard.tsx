@@ -9,7 +9,6 @@ import { clientRoutes } from 'helpers/clientRoutes';
 //   GetDoctorNextAvailableSlotVariables,
 // } from 'graphql/types/GetDoctorNextAvailableSlot';
 // import { useQueryWithSkip } from 'hooks/apolloHooks';
-// import { format, differenceInMinutes } from 'date-fns';
 // import LinearProgress from '@material-ui/core/LinearProgress';
 import _forEach from 'lodash/forEach';
 import _startCase from 'lodash/startCase';

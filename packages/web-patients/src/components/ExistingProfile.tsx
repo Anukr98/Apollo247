@@ -12,7 +12,8 @@ import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/Ge
 import _capitalize from 'lodash/capitalize';
 import _sortBy from 'lodash/sortBy';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import { format, parseISO } from 'date-fns';
+import format from 'date-fns/format';
+import parseISO from 'date-fns/parseISO';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Alerts } from 'components/Alerts/Alerts';
 

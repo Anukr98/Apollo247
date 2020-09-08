@@ -7,7 +7,7 @@ import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDe
 import _forEach from 'lodash/forEach';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import _find from 'lodash/find';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import isTomorrow from 'date-fns/isTomorrow';
 import { getIstTimestamp } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
