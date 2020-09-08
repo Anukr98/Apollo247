@@ -385,7 +385,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, [cartTotal]);
 
   const removeFreeProductsFromCart = () => {
-    const updatedCartItems = cartItems.filter((item) => item.price != 0);
+    const updatedCartItems = cartItems.filter(
+      (item) => !couponProducts.find((val) => val.sku == item.id)
+    );
     setCartItems!(updatedCartItems);
     setCouponProducts!([]);
   };
@@ -902,6 +904,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
+                setCoupon!(null);
+                if (couponProducts.length) {
+                  removeFreeProductsFromCart();
+                }
                 if (navigatedFrom === 'registration') {
                   props.navigation.dispatch(
                     StackActions.reset({
@@ -916,10 +922,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   );
                 } else {
                   props.navigation.navigate('MEDICINES', { focusSearch: true });
-                  setCoupon!(null);
-                  if (couponProducts.length) {
-                    removeFreeProductsFromCart();
-                  }
                   // to stop triggering useEffect on every change in cart items
                   setStoreId!('');
                   setselectedTab(tabs[0].title);
@@ -939,6 +941,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         }
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
+          setCoupon!(null);
+          if (couponProducts.length) {
+            removeFreeProductsFromCart();
+          }
           props.navigation.goBack();
         }}
       />
