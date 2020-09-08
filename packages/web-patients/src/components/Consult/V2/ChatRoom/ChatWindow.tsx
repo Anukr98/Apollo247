@@ -828,6 +828,7 @@ interface ChatWindowProps {
   rescheduleAPI: (bookRescheduleInput: BookRescheduleAppointmentInput) => void;
   jrDoctorJoined: boolean;
   setJrDoctorJoined: (jrDoctorJoined: boolean) => void;
+  setSrDoctorJoined: (srDoctorJoined: boolean) => void;
   appointmentDetails: AppointmentHistory;
 }
 
@@ -2146,6 +2147,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.consultPatientStartedMsg ||
                     messageDetails.message === autoMessageStrings.patientJoinedMeetingRoom
                   ) {
+                    props.setSrDoctorJoined(
+                      messageDetails.message === autoMessageStrings.startConsultMsg
+                    );
                     return null;
                   }
                   const duration = messageDetails.duration;

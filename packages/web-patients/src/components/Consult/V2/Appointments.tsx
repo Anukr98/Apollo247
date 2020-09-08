@@ -371,6 +371,14 @@ const useStyles = makeStyles((theme: Theme) => {
         right: 0,
       },
     },
+    disableIcon: {
+      opacity: 0.7,
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        top: -35,
+        right: 0,
+      },
+    },
     modalDialog: {
       display: 'flex',
       alignItems: 'center',
@@ -724,56 +732,53 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   }, [paymentData, appointmentHistory]);
 
   useEffect(() => {
-    if (currentPatient && currentPatient.id) {
-      setMutationLoading(true);
-      apolloClient
-        .query<GetPatientAllAppointments, GetPatientAllAppointmentsVariables>({
-          query: GET_PATIENT_ALL_APPOINTMENTS,
-          variables: {
-            patientId: currentPatient.id || (allCurrentPatients && allCurrentPatients[0].id) || '',
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data }: any) => {
-          if (
-            data &&
-            data.getPatientAllAppointments &&
-            data.getPatientAllAppointments.appointments
-          ) {
-            const appointmentsListData = data.getPatientAllAppointments.appointments;
-            const doctorsList = appointmentsListData.map((appointment: AppointmentsType) => {
-              return appointment && appointment.doctorInfo && appointment.doctorInfo.fullName
-                ? appointment.doctorInfo.fullName
-                : null;
-            });
-            const specialtyList = appointmentsListData.map((appointment: AppointmentsType) => {
-              return appointment &&
-                appointment.doctorInfo &&
-                appointment.doctorInfo.specialty &&
-                appointment.doctorInfo.specialty.name
-                ? appointment.doctorInfo.specialty.name
-                : null;
-            });
-            setFilterDoctorsList(doctorsList || []);
-            setFilterSpecialtyList(specialtyList || []);
-            setAppointmentsList(appointmentsListData);
-            setFilteredAppointmentsList(appointmentsListData);
-            setFilter(initialAppointmentFilterObject);
-          } else {
-            setAppointmentsList([]);
-            setFilteredAppointmentsList([]);
-          }
-          setMutationError(false);
-        })
-        .catch((e) => {
-          console.log(e);
-          setMutationError(true);
-        })
-        .finally(() => {
-          setMutationLoading(false);
-        });
-    }
-  }, [currentPatient]);
+    // if (currentPatient && currentPatient.id) {
+    setMutationLoading(true);
+    apolloClient
+      .query<GetPatientAllAppointments, GetPatientAllAppointmentsVariables>({
+        query: GET_PATIENT_ALL_APPOINTMENTS,
+        variables: {
+          patientId: '1e466f7e-7536-469e-952e-9410e9f4e29d',
+          // currentPatient.id || (allCurrentPatients && allCurrentPatients[0].id) || '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }: any) => {
+        if (data && data.getPatientAllAppointments && data.getPatientAllAppointments.appointments) {
+          const appointmentsListData = data.getPatientAllAppointments.appointments;
+          const doctorsList = appointmentsListData.map((appointment: AppointmentsType) => {
+            return appointment && appointment.doctorInfo && appointment.doctorInfo.fullName
+              ? appointment.doctorInfo.fullName
+              : null;
+          });
+          const specialtyList = appointmentsListData.map((appointment: AppointmentsType) => {
+            return appointment &&
+              appointment.doctorInfo &&
+              appointment.doctorInfo.specialty &&
+              appointment.doctorInfo.specialty.name
+              ? appointment.doctorInfo.specialty.name
+              : null;
+          });
+          setFilterDoctorsList(doctorsList || []);
+          setFilterSpecialtyList(specialtyList || []);
+          setAppointmentsList(appointmentsListData);
+          setFilteredAppointmentsList(appointmentsListData);
+          setFilter(initialAppointmentFilterObject);
+        } else {
+          setAppointmentsList([]);
+          setFilteredAppointmentsList([]);
+        }
+        setMutationError(false);
+      })
+      .catch((e) => {
+        console.log(e);
+        setMutationError(true);
+      })
+      .finally(() => {
+        setMutationLoading(false);
+      });
+    // }
+  }, []);
 
   const statusActions: statusMap = {
     PAYMENT_PENDING: {
@@ -1165,6 +1170,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                       onClick={() => setSearchClicked(true)}
                     />
                     <AphInput
+                      disabled={appointmentsList && appointmentsList.length === 0}
                       className={
                         searchClicked ? `${classes.searchInputActive}` : `${classes.searchInput}`
                       }
@@ -1201,7 +1207,16 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
 
               <div className={classes.appointmentOptions}>
                 {selectOtherMember('webDisplay')}
-                <div className={classes.filterIcon} onClick={() => setIsFilterOpen(true)}>
+                <div
+                  className={
+                    appointmentsList && appointmentsList.length > 0
+                      ? classes.filterIcon
+                      : classes.disableIcon
+                  }
+                  onClick={() =>
+                    appointmentsList && appointmentsList.length > 0 && setIsFilterOpen(true)
+                  }
+                >
                   <img src={require('images/ic_filterblack.svg')} alt="" />
                 </div>
               </div>
