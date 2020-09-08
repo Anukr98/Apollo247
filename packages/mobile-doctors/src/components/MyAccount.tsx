@@ -98,6 +98,16 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   useEffect(() => {
     if (doctorDetails) {
       const chatDays = g(doctorDetails, 'chatDays');
+      AsyncStorage.setItem(
+        'settingsData',
+        JSON.stringify({
+          ivrEnabled: ivrSwitch,
+          typeOfAppointment: appointmentType,
+          onlineRemainderTime: onlineAppointmentTime.value,
+          inpersonRemainderTime: inpersonAppointmentTime.value,
+          followUpDays: chatDays,
+        })
+      );
       if (chatDays !== null && chatDays !== undefined) {
         setFollowUpDays(daysOptionArray[chatDays]);
       }
