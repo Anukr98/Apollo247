@@ -354,7 +354,11 @@ export const Sitemap: React.FC = (props) => {
           sitemapData.doctorUrls.length > 0 &&
           sitemapData.doctorUrls.slice(prev, next)
       );
-      history.replaceState(null, '', clientRoutes.sitemap('doctors-sitemap', pageNo.toString()));
+      history.replaceState(
+        null,
+        '',
+        clientRoutes.childSitemap('doctors-sitemap', pageNo.toString())
+      );
     } else if (selected === 'medicines-sitemap') {
       setMedicineSitemapData(
         sitemapData &&
@@ -362,7 +366,11 @@ export const Sitemap: React.FC = (props) => {
           sitemapData.medicinesUrls.length > 0 &&
           sitemapData.medicinesUrls.slice(prev, next)
       );
-      history.replaceState(null, '', clientRoutes.sitemap('medicines-sitemap', pageNo.toString()));
+      history.replaceState(
+        null,
+        '',
+        clientRoutes.childSitemap('medicines-sitemap', pageNo.toString())
+      );
     }
   }, [pageNo, selected, sitemapData]);
 
@@ -429,7 +437,7 @@ export const Sitemap: React.FC = (props) => {
                           onClick={() => {
                             setSelected('sitemap');
                             setIsMenuOpen(false);
-                            history.replaceState(null, '', clientRoutes.sitemap('sitemap', '1'));
+                            history.replaceState(null, '', clientRoutes.sitemap('sitemap'));
                           }}
                         >
                           <a>Apollo 24|7 Services</a>
@@ -443,7 +451,7 @@ export const Sitemap: React.FC = (props) => {
                             history.replaceState(
                               null,
                               '',
-                              clientRoutes.sitemap('doctors-sitemap', '1')
+                              clientRoutes.childSitemap('doctors-sitemap', '1')
                             );
                           }}
                         >
@@ -458,7 +466,7 @@ export const Sitemap: React.FC = (props) => {
                             history.replaceState(
                               null,
                               '',
-                              clientRoutes.sitemap('medicines-sitemap', '1')
+                              clientRoutes.childSitemap('medicines-sitemap', '1')
                             );
                           }}
                         >

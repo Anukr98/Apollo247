@@ -220,7 +220,8 @@ const App: React.FC = () => {
         <Route exact path={clientRoutes.medicinePrescription()} component={MedicinePrescriptions} />
         <Route exact path={clientRoutes.covidProtocol()} component={covidProtocolLanding} />
         <Route exact path={clientRoutes.prescription(':appointmentId')} component={Prescription} />
-        <Route exact path={clientRoutes.sitemap(':sitemap', ':pageNo')} component={Sitemap} />
+        <Route exact path={clientRoutes.sitemap(':sitemap')} component={Sitemap} />
+        <Route exact path={clientRoutes.childSitemap(':sitemap', ':pageNo')} component={Sitemap} />
       </Switch>
     </div>
   );
