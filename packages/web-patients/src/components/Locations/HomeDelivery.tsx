@@ -33,7 +33,6 @@ import {
   TAT_API_TIMEOUT_IN_MILLI_SEC,
 } from 'helpers/commonHelpers';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
-import fetchWrapper from 'helpers/fetchWrapper';
 
 export const formatAddress = (address: Address) => {
   const addressFormat = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
