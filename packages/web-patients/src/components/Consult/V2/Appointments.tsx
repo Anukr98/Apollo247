@@ -733,50 +733,54 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
 
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
-    setMutationLoading(true);
-    apolloClient
-      .query<GetPatientAllAppointments, GetPatientAllAppointmentsVariables>({
-        query: GET_PATIENT_ALL_APPOINTMENTS,
-        variables: {
-          patientId: currentPatient.id || (allCurrentPatients && allCurrentPatients[0].id) || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }: any) => {
-        if (data && data.getPatientAllAppointments && data.getPatientAllAppointments.appointments) {
-          const appointmentsListData = data.getPatientAllAppointments.appointments;
-          const doctorsList = appointmentsListData.map((appointment: AppointmentsType) => {
-            return appointment && appointment.doctorInfo && appointment.doctorInfo.fullName
-              ? appointment.doctorInfo.fullName
-              : null;
-          });
-          const specialtyList = appointmentsListData.map((appointment: AppointmentsType) => {
-            return appointment &&
-              appointment.doctorInfo &&
-              appointment.doctorInfo.specialty &&
-              appointment.doctorInfo.specialty.name
-              ? appointment.doctorInfo.specialty.name
-              : null;
-          });
-          setFilterDoctorsList(doctorsList || []);
-          setFilterSpecialtyList(specialtyList || []);
-          setAppointmentsList(appointmentsListData);
-          setFilteredAppointmentsList(appointmentsListData);
-          setFilter(initialAppointmentFilterObject);
-        } else {
-          setAppointmentsList([]);
-          setFilteredAppointmentsList([]);
-        }
-        setMutationError(false);
-      })
-      .catch((e) => {
-        console.log(e);
-        setMutationError(true);
-      })
-      .finally(() => {
-        setMutationLoading(false);
-      });
-    // }
+      setMutationLoading(true);
+      apolloClient
+        .query<GetPatientAllAppointments, GetPatientAllAppointmentsVariables>({
+          query: GET_PATIENT_ALL_APPOINTMENTS,
+          variables: {
+            patientId: currentPatient.id || (allCurrentPatients && allCurrentPatients[0].id) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }: any) => {
+          if (
+            data &&
+            data.getPatientAllAppointments &&
+            data.getPatientAllAppointments.appointments
+          ) {
+            const appointmentsListData = data.getPatientAllAppointments.appointments;
+            const doctorsList = appointmentsListData.map((appointment: AppointmentsType) => {
+              return appointment && appointment.doctorInfo && appointment.doctorInfo.fullName
+                ? appointment.doctorInfo.fullName
+                : null;
+            });
+            const specialtyList = appointmentsListData.map((appointment: AppointmentsType) => {
+              return appointment &&
+                appointment.doctorInfo &&
+                appointment.doctorInfo.specialty &&
+                appointment.doctorInfo.specialty.name
+                ? appointment.doctorInfo.specialty.name
+                : null;
+            });
+            setFilterDoctorsList(doctorsList || []);
+            setFilterSpecialtyList(specialtyList || []);
+            setAppointmentsList(appointmentsListData);
+            setFilteredAppointmentsList(appointmentsListData);
+            setFilter(initialAppointmentFilterObject);
+          } else {
+            setAppointmentsList([]);
+            setFilteredAppointmentsList([]);
+          }
+          setMutationError(false);
+        })
+        .catch((e) => {
+          console.log(e);
+          setMutationError(true);
+        })
+        .finally(() => {
+          setMutationLoading(false);
+        });
+    }
   }, [currentPatient]);
 
   const statusActions: statusMap = {
