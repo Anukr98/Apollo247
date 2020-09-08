@@ -16,15 +16,7 @@ interface AlertPopupProps {
 export const AlertPopup: React.FC<AlertPopupProps> = (props) => {
   const renderCloseIcon = () => {
     return (
-      <View
-        style={{
-          alignSelf: 'flex-end',
-          backgroundColor: 'transparent',
-          marginBottom: 16,
-          position: 'absolute',
-          top: -45,
-        }}
-      >
+      <View style={styles.closeIcon}>
         <TouchableOpacity onPress={() => props.onDismiss()}>
           <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
         </TouchableOpacity>
@@ -119,5 +111,12 @@ const styles = StyleSheet.create({
   },
   btnTxt: {
     ...theme.fonts.IBMPlexSansSemiBold(13),
+  },
+  closeIcon: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'transparent',
+    marginBottom: 16,
+    position: 'absolute',
+    top: -45,
   },
 });

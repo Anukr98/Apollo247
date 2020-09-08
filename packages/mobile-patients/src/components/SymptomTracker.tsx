@@ -8,7 +8,6 @@ import {
   Modal,
   Platform,
   TouchableOpacity,
-  TextInput,
   FlatList,
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -19,7 +18,8 @@ import {
   LinkedUhidIcon,
   DropdownGreen,
   BotIcon,
-  Pending,
+  InfoIcon,
+  CrossPopup,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '../theme/colors';
@@ -38,6 +38,7 @@ import {
 } from '../helpers/apiCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AlertPopup } from './ui/AlertPopup';
+import { Overlay } from 'react-native-elements';
 
 const roundCountViewDimension = 30;
 const howItWorksArrData = [
@@ -73,6 +74,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [defaultSymptoms, setDefaultSymptoms] = useState<object[]>([]);
   const [chatEnded, setChatEnded] = useState<boolean>(false);
   const [restartVisible, setRestartVisible] = useState<boolean>(false);
+  const [showInfo, setShowInfo] = useState<boolean>(false);
   const flatlistRef = useRef<any>(null);
 
   useEffect(() => {
@@ -123,8 +125,8 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
           onPressLeftIcon={() => backDataFunctionality()}
           rightComponent={
             !showHowItWorks ? (
-              <TouchableOpacity onPress={() => setShowHowItWorks(true)}>
-                <Pending style={styles.infoIcon} />
+              <TouchableOpacity style={styles.infoIconView} onPress={() => setShowInfo(true)}>
+                <InfoIcon style={styles.infoIcon} />
               </TouchableOpacity>
             ) : (
               <View />
@@ -137,7 +139,14 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
 
   const renderHowItWorks = () => {
     return (
-      <View style={styles.cardStyle}>
+      <View
+        style={[
+          styles.cardStyle,
+          {
+            margin: showInfo ? 0 : 20,
+          },
+        ]}
+      >
         <View style={styles.rowContainer}>
           <Symptomtracker style={styles.symptomTrackerIconStyle} />
           <Text style={styles.title}>{string.symptomChecker.howItWorks}</Text>
@@ -174,13 +183,17 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
             </View>
           );
         })}
-        <Button
-          title="Proceed"
-          style={styles.proceedBtn}
-          onPress={() => {
-            setShowProfilePopUp(true);
-          }}
-        />
+        {!showInfo ? (
+          <Button
+            title="Proceed"
+            style={styles.proceedBtn}
+            onPress={() => {
+              setShowProfilePopUp(true);
+            }}
+          />
+        ) : (
+          <View />
+        )}
       </View>
     );
   };
@@ -626,11 +639,43 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     );
   };
 
+  const renderCloseIcon = () => {
+    return (
+      <View style={styles.closeIcon}>
+        <TouchableOpacity onPress={() => setShowInfo(false)}>
+          <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderInfoModal = () => {
+    return (
+      <Overlay
+        onRequestClose={() => setShowInfo(false)}
+        isVisible={showInfo}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
+        containerStyle={{
+          marginBottom: 20,
+        }}
+        fullScreen
+        transparent
+        overlayStyle={styles.overlayStyle}
+      >
+        <View>
+          {renderCloseIcon()}
+          {renderHowItWorks()}
+        </View>
+      </Overlay>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.container}>
         {renderHeader()}
         {renderRestartChatModal()}
+        {renderInfoModal()}
         {showHowItWorks && renderHowItWorks()}
         {!showHowItWorks && messages && messages.length > 0 && renderChat()}
         {chatEnded && renderBottomButtons()}
@@ -900,5 +945,32 @@ const styles = StyleSheet.create({
   infoIcon: {
     width: 20,
     height: 20,
+  },
+  overlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '88.88%',
+    height: '88.88%',
+    borderRadius: 10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    backgroundColor: 'transparent',
+    overflow: 'hidden',
+    elevation: 0,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  closeIcon: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'transparent',
+    marginBottom: 16,
+    position: 'absolute',
+    top: -45,
+  },
+  infoIconView: {
+    height: 30,
+    justifyContent: 'center',
+    width: 30,
+    alignItems: 'flex-end',
   },
 });

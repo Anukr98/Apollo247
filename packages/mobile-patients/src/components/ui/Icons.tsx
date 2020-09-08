@@ -1128,3 +1128,7 @@ export const MinusIconOrange: React.FC<IconProps> = (props) => (
 export const BotIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/bot.png')} />
 );
+
+export const InfoIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/info.png')} />
+);
