@@ -99,7 +99,7 @@ const getOneApolloUser: Resolver<
   return {
     name: userData.Name,
     earnedHC: individualData ? individualData.EarnedCredits : userData.EarnedCredits,
-    availableHC: userData.AvailableCredits,
+    availableHC: userData.AvailableCredits < 0 ? 0 : userData.AvailableCredits,
     tier: individualData ? individualData.Tier : userData.Tier,
     burnedCredits: individualData ? individualData.BurnedCredits : userData.BurnedCredits,
     blockedCredits: individualData ? individualData.BlockedCredits : userData.BlockedCredits,
