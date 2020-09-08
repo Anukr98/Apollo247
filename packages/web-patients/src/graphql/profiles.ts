@@ -861,3 +861,38 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
     }
   }
 `;
+
+export const GET_SITEMAP = gql`
+  mutation generateSitemap {
+    generateSitemap {
+      specialityUrls {
+        urlName
+        url
+      }
+      doctorUrls {
+        urlName
+        url
+      }
+      articleUrls {
+        urlName
+        url
+      }
+      healthAreasUrls {
+        urlName
+        url
+      }
+      shopByCategoryUrls {
+        urlName
+        url
+      }
+      medicinesUrls {
+        urlName
+        url
+      }
+      staticPageUrls {
+        urlName
+        url
+      }
+    }
+  }
+`;
