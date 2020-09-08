@@ -1119,6 +1119,13 @@ export class DoctorRepository extends Repository<Doctor> {
     return this.find({ where: { id: In(ids) } });
   }
 
+  getAllDocAdminsById(ids: string[]) {
+    return this.find({
+      where: { id: In(ids) },
+      relations: ['admindoctormapper', 'admindoctormapper.adminuser'],
+    });
+  }
+
   getAllDoctors(doctorId: string, limit: number, offset: number) {
     if (doctorId == '0') {
       return this.find({
