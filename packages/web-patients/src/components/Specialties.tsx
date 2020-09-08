@@ -1,25 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, Grid, Avatar, CircularProgress } from '@material-ui/core';
-import _uniqueId from 'lodash/uniqueId';
-import _map from 'lodash/map';
-import _filter from 'lodash/filter';
-import _startsWith from 'lodash/startsWith';
-import _toLower from 'lodash/toLower';
-import { useAllCurrentPatients } from 'hooks/authHooks';
-import { clientRoutes } from 'helpers/clientRoutes';
-import { Route, Link } from 'react-router-dom';
-import { readableParam } from 'helpers/commonHelpers';
-import { getSymptoms } from 'helpers/commonHelpers';
-import _lowerCase from 'lodash/lowerCase';
+import { CircularProgress, Grid, Theme } from '@material-ui/core';
+import { createStyles, makeStyles } from '@material-ui/styles';
+import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import {
   GetAllSpecialties,
   GetAllSpecialties_getAllSpecialties as SpecialtyType,
 } from 'graphql/types/GetAllSpecialties';
-import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { getSymptoms, readableParam } from 'helpers/commonHelpers';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import _lowerCase from 'lodash/lowerCase';
 import { useQuery } from 'react-apollo-hooks';
-import { specialtyClickTracking } from 'webEngageTracking';
+import { Link, Route } from 'react-router-dom';
 import { SchemaMarkup } from 'SchemaMarkup';
+import { specialtyClickTracking } from 'webEngageTracking';
 import { LazyIntersection } from './lib/LazyIntersection';
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -191,9 +185,9 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
                             selectedCity === ''
                               ? clientRoutes.specialties(readableParam(specialityDetails.name))
                               : clientRoutes.citySpecialties(
-                                _lowerCase(selectedCity),
-                                readableParam(specialityDetails.name)
-                              )
+                                  _lowerCase(selectedCity),
+                                  readableParam(specialityDetails.name)
+                                )
                           }
                         >
                           <div className={classes.contentBox}>
@@ -241,6 +235,6 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
       </div>
     </>
   ) : (
-          <p>No results found</p>
-        );
+    <p>No results found</p>
+  );
 };

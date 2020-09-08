@@ -138,7 +138,7 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
                     <LazyIntersection
                       src={`${apiDetails.url}${deal.image_url}`}
                       alt={''}
-                      style={{ 'width': '100%' }}
+                      style={{ width: '273px' }}
                     />
                     {/* <img
                       src={`${apiDetails.url}${deal.image_url}`} width="100%" alt="" /> */}
