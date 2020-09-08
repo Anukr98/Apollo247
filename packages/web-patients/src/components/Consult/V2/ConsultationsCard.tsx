@@ -392,6 +392,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 0,
       textAlign: 'right',
       position: 'relative',
+      minHeight: 34,
       '& h3': {
         fontSize: 13,
         lineHeight: '24px',
@@ -969,12 +970,12 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                     </h3>
                                   )}
                                 />
-                                {props.pastOrCurrent !== 'past' &&
+                                {/* {props.pastOrCurrent !== 'past' &&
                                   appointmentDetails &&
                                   appointmentDetails.doctorInfo &&
                                   appointmentDetails.doctorInfo.displayName && (
                                     <h6>With Dr. {appointmentDetails.doctorInfo.displayName}</h6>
-                                  )}
+                                  )} */}
                               </div>
                             )}
                           <Route
