@@ -412,8 +412,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             id: medicineDetails!.sku!,
             mou: medicineDetails.mou,
             name: medicineDetails!.name,
-            price: couponProducts[index]!.mrp,
-            specialPrice: Number(medicineDetails.special_price) || undefined,
+            price: medicineDetails.price,
+            specialPrice: Number(couponProducts[index]!.mrp), // special price as coupon product price
             quantity: couponProducts[index]!.quantity,
             prescriptionRequired: medicineDetails.is_prescription_required == '1',
             isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
@@ -803,7 +803,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         categoryId: item.productType,
         mrp: item.price,
         quantity: item.quantity,
-        specialPrice: item.specialPrice || item.price,
+        specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
       })),
     };
     validateConsultCoupon(data)
@@ -1692,8 +1692,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     ({ isInStock, unserviceable }) => !isInStock || unserviceable
   );
 
+  const cartAfterDiscount = cartTotal - productDiscount;
+
   const disableProceedToPay = !!(
     cartItems.length === 0 ||
+    cartAfterDiscount === 0 ||
     cartTotal === 0 ||
     isNotInStockOrUnserviceable ||
     (!deliveryAddressId && !storeId) ||
