@@ -216,8 +216,12 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         data1: HealthCheckType | HospitalizationType | LabResultsType,
         data2: HealthCheckType | HospitalizationType | LabResultsType
       ) => {
-        let date1 = moment(data1.date).toDate().getTime();
-        let date2 = moment(data2.date).toDate().getTime();
+        let date1 = moment(data1.date)
+          .toDate()
+          .getTime();
+        let date2 = moment(data2.date)
+          .toDate()
+          .getTime();
         return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
       }
     );
@@ -279,30 +283,16 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
       });
   };
 
-
-  const sortByDate = (array: { type: string; data: any }[], type: string) => {
-    if (type === 'medRecords') {
-      return array.sort(({ data: data1 }, { data: data2 }) => {
-        let date1 = moment(data1.date)
-          .toDate()
-          .getTime();
-        let date2 = moment(data2.date)
-          .toDate()
-          .getTime();
-        return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
-      });
-    } else {
-      return array.sort((a: any, b: any) => {
-        let date1 = moment(a.bookingDate || a.date || a.quoteDateTime)
-          .toDate()
-          .getTime();
-        let date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
-          .toDate()
-          .getTime();
-        return date1 > date2 ? -1 : date1 < date2 ? 1 : b.id - a.id;
-      });
-    }
-
+  const sortByDate = (array: any[]) => {
+    return array.sort((a: any, b: any) => {
+      let date1 = moment(a.bookingDate || a.date || a.quoteDateTime)
+        .toDate()
+        .getTime();
+      let date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
+        .toDate()
+        .getTime();
+      return date1 > date2 ? -1 : date1 < date2 ? 1 : a.id - b.id;
+    });
   };
 
   useEffect(() => {
