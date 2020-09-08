@@ -461,8 +461,10 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
 
   useEffect(() => {
     const filteredData = sortByTypeRecords(filterApplied);
-    setLabResults(filteredData);
-    setActiveData(filteredData[0]);
+    if (filteredData) {
+      setLabResults(filteredData);
+      setActiveData(filteredData[0]);
+    }
   }, [filterApplied]);
 
   const getFormattedDate = (combinedData: LabResultsType, dateFor: string) => {
