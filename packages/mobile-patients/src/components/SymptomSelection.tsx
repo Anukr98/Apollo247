@@ -51,6 +51,7 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
   useEffect(() => {
     return function cleanup() {
       selectedSymtomsArr = [];
+      selectedSymtomsIdsArr = [];
     };
   }, []);
 
@@ -99,14 +100,13 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
       text: searchString,
       filter: 'symptoms',
     };
-    console.log('queryParams', queryParams);
+
     try {
       const res = await autocompleteSymptoms(chatId, queryParams);
       if (res && res.data && res.data.results) {
         setSymptoms(res.data.results);
         setLoading(false);
       }
-      console.log('res', res);
     } catch (error) {
       setLoading(false);
       CommonBugFender('AutoCompleteSymptomsApi', error);
@@ -184,7 +184,6 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
             name: selectedSymptoms.join(', '),
             id: selectedSymptomsIds.toString(),
           };
-          console.log('newObj', newObj);
           const { navigation } = props;
           navigation.goBack();
           navigation.state.params!.goBackCallback(newObj, chatId, storedMessages);
@@ -198,7 +197,7 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
       {renderHeader()}
       {loading && <Spinner />}
       {renderSymptomsList()}
-      {renderBottomButton()}
+      {selectedSymptoms.length > 0 && renderBottomButton()}
     </SafeAreaView>
   );
 };

@@ -19,6 +19,7 @@ import {
   LinkedUhidIcon,
   DropdownGreen,
   BotIcon,
+  Pending,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '../theme/colors';
@@ -75,10 +76,23 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const flatlistRef = useRef<any>(null);
 
   useEffect(() => {
+    loadData();
     return function cleanup() {
       insertMessage = [];
     };
   }, []);
+
+  const loadData = async () => {
+    const symptomTrackerStarted = await AsyncStorage.getItem('symptomTrackerStarted');
+    if (symptomTrackerStarted) {
+      if (currentPatient) {
+        setSelectedPatient(currentPatient);
+      }
+      initializeChat(currentPatient);
+      setShowHowItWorks(false);
+    }
+    AsyncStorage.setItem('symptomTrackerStarted', JSON.stringify(true));
+  };
 
   const backDataFunctionality = async () => {
     try {
@@ -107,6 +121,15 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
           title={'SYMPTOM TRACKER'}
           leftIcon="backArrow"
           onPressLeftIcon={() => backDataFunctionality()}
+          rightComponent={
+            !showHowItWorks ? (
+              <TouchableOpacity onPress={() => setShowHowItWorks(true)}>
+                <Pending style={styles.infoIcon} />
+              </TouchableOpacity>
+            ) : (
+              <View />
+            )
+          }
         />
       </View>
     );
@@ -192,7 +215,6 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   };
 
   const initializeChat = async (patient: any) => {
-    console.log('patient', patient);
     setLoading(true);
     setChatEnded(false);
     insertMessage = [];
@@ -205,10 +227,8 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         gender: gender,
       },
     };
-    console.log('body', body);
     try {
       const res = await startSymptomTrackerChat(body);
-      console.log('res', res);
       if (res && res.data && res.data.dialogue) {
         if (insertMessage.length === 0) {
           insertMessage = [{ text: res.data.dialogue.text }];
@@ -233,6 +253,8 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         onProfileChange={onProfileChange}
         navigation={props.navigation}
         saveUserChange={true}
+        editProfileCallback={editProfileCallback}
+        screenName={string.symptomChecker.symptomTracker}
         listContainerStyle={{ marginTop: Platform.OS === 'ios' ? 10 : 60 }}
         childView={
           <View
@@ -339,11 +361,12 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
               setShowList(true);
             } else {
               setShowProfilePopUp(false);
-              setShowHowItWorks(false);
               props.navigation.navigate(AppRoutes.EditProfile, {
                 isEdit: false,
                 isPoptype: true,
                 mobileNumber: currentPatient && currentPatient!.mobileNumber,
+                screenName: string.symptomChecker.symptomTracker,
+                goBackCallback: editProfileCallback,
               });
             }
           }}
@@ -354,6 +377,12 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
       </View>
     </View>
   );
+
+  const editProfileCallback = (patient: any) => {
+    setShowHowItWorks(false);
+    setSelectedPatient(patient);
+    initializeChat(patient);
+  };
 
   const renderPatientDetails = () => {
     return (
@@ -368,13 +397,13 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         </View>
         <View style={[styles.itemRowStyle, styles.patientDetailsMargin]}>
           <Text style={styles.patientDetailsText}>
-            {string.symptomChecker.age} - {selectedPatient.gender}
+            {string.symptomChecker.age} -{' '}
+            {Math.round(moment().diff(g(selectedPatient, 'dateOfBirth') || 0, 'years', true))}
           </Text>
         </View>
         <View style={[styles.itemRowStyle, styles.patientDetailsMargin]}>
           <Text style={styles.patientDetailsText}>
-            {string.symptomChecker.gender} -{' '}
-            {Math.round(moment().diff(g(selectedPatient, 'dateOfBirth') || 0, 'years', true))}
+            {string.symptomChecker.gender} - {selectedPatient.gender}
           </Text>
         </View>
         <TouchableOpacity
@@ -468,10 +497,14 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                 insertMessage = insertMessage.concat({
                   text: string.symptomChecker.thanksForGivingAnswers.replace(
                     '{{name}}',
-                    selectedPatient.firstName + selectedPatient.lastName
+                    selectedPatient.firstName + ' ' + selectedPatient.lastName
                   ),
                 });
                 setMessages(insertMessage);
+                setChatEnded(true);
+                setTimeout(() => {
+                  flatlistRef.current.scrollToEnd({ animated: true });
+                }, 300);
                 fetchSymptoms();
               }}
             >
@@ -486,27 +519,23 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   };
 
   const fetchSymptoms = async () => {
-    setLoading(true);
     try {
       const res = await getSymptomsFromTracker(chatId);
-      console.log('res', res);
       if (res && res.data && res.data.symptoms) {
         setSymptoms(res.data.symptoms);
         setSpecialities(res.data.specialities);
         setTimeout(() => {
           flatlistRef.current.scrollToEnd({ animated: true });
         }, 300);
-        setChatEnded(true);
       }
     } catch (error) {
       CommonBugFender('GetSymptomsFromTrackerApi', error);
     }
-    setLoading(false);
   };
 
   const goBackCallback = async (data: any, chat_id: string, storedMessages: any) => {
     insertMessage = storedMessages.concat({ text: data.name, isSentByPatient: true });
-    setLoading(true);
+    setMessages(insertMessage);
     const body = {
       dialogue: {
         text: data.id,
@@ -515,8 +544,6 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         sender: 'user',
       },
     };
-    console.log('body', body);
-    console.log('chat_id', chat_id);
     try {
       const res = await updateSymptomTrackerChat(chat_id, body);
       if (res && res.data && res.data.dialogue) {
@@ -527,17 +554,15 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         }, 300);
       }
       setMessages(insertMessage);
-      console.log('res', res);
     } catch (error) {
       CommonBugFender('UpdateSymptomTrackerChatApi', error);
     }
-    setLoading(false);
   };
 
   const renderSymptoms = () => {
     return (
       <View>
-        {chatEnded ? (
+        {chatEnded && symptoms.length > 0 ? (
           <View style={styles.symptomsContainer}>
             <View style={styles.seperatorLine}>
               <Text style={styles.patientDetailsTitle}>{string.symptomChecker.symptoms}</Text>
@@ -577,7 +602,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
             const filteredSpecialities = specialities.map((item: any) => {
               return item.name;
             });
-            props.navigation.push(AppRoutes.DoctorSearchListing, {
+            props.navigation.navigate(AppRoutes.DoctorSearchListing, {
               specialities: filteredSpecialities,
               MoveDoctor: 'MoveDoctor',
             });
@@ -607,7 +632,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         {renderHeader()}
         {renderRestartChatModal()}
         {showHowItWorks && renderHowItWorks()}
-        {messages && messages.length > 0 && renderChat()}
+        {!showHowItWorks && messages && messages.length > 0 && renderChat()}
         {chatEnded && renderBottomButtons()}
         {showProfilePopUp && renderProfileListView()}
       </SafeAreaView>
@@ -871,5 +896,9 @@ const styles = StyleSheet.create({
   restartBtnTxt: {
     color: colors.SKY_BLUE,
     ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  infoIcon: {
+    width: 20,
+    height: 20,
   },
 });

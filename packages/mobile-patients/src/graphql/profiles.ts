@@ -108,6 +108,7 @@ export const ADD_NEW_PROFILE = gql`
         lastName
         emailAddress
         gender
+        dateOfBirth
       }
     }
   }
