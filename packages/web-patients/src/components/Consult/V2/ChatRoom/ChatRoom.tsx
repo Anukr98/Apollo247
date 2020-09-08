@@ -667,6 +667,7 @@ export const ChatRoom: React.FC = () => {
                     handleRescheduleOpen={handleRescheduleOpen}
                     doctorDetails={data}
                     appointmentDetails={appointmentDetails}
+                    srDoctorJoined={srDoctorJoined}
                   />
                 )}
               </div>
