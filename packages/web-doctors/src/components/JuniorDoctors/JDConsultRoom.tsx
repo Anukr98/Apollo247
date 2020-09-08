@@ -533,7 +533,7 @@ export const JDConsultRoom: React.FC = () => {
   const [referralError, setReferralError] = useState<boolean>(false);
   const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
 
-  const [giveRating, setGiveRating] = useState<boolean>(true);
+  const [giveRating, setGiveRating] = useState<boolean>(false);
 
   //OT Error state
   const [sessionError, setSessionError] = React.useState<boolean>(null);
@@ -1744,7 +1744,7 @@ export const JDConsultRoom: React.FC = () => {
 
                 {!disableChat() && (
                   <JDCallPopover
-                    setGiveRating = {setGiveRating}
+                    setGiveRating={setGiveRating}
                     setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                     createSessionAction={createSessionAction}
                     saveCasesheetAction={(flag: boolean, endConsult: boolean) =>
