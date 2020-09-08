@@ -869,7 +869,7 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
   }
 
-  if (inputArguments && inputArguments.followUpAfterInDays) {
+  if (inputArguments && !(inputArguments.followUpConsultType === undefined && inputArguments.followUpConsultType === null)) {
     if (
       inputArguments.followUpAfterInDays > ApiConstants.CHAT_DAYS_LIMIT ||
       inputArguments.followUpAfterInDays < 0
