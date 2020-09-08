@@ -1110,7 +1110,7 @@ export const Prescription: React.FC = (props) => {
                             expanded: classes.panelExpanded,
                           }}
                         >
-                          <Typography className={classes.panelHeading}>REFERAL</Typography>
+                          <Typography className={classes.panelHeading}>REFERRAL</Typography>
                         </ExpansionPanelSummary>
                         <ExpansionPanelDetails className={classes.panelDetails}>
                           <div className={classes.detailsContent}>

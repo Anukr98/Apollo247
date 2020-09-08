@@ -2896,6 +2896,8 @@ export const GET_ONEAPOLLO_USER = gql`
       earnedHC
       availableHC
       tier
+      burnedCredits
+      blockedCredits
     }
   }
 `;
