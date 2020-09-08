@@ -732,14 +732,13 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   }, [paymentData, appointmentHistory]);
 
   useEffect(() => {
-    // if (currentPatient && currentPatient.id) {
+    if (currentPatient && currentPatient.id) {
     setMutationLoading(true);
     apolloClient
       .query<GetPatientAllAppointments, GetPatientAllAppointmentsVariables>({
         query: GET_PATIENT_ALL_APPOINTMENTS,
         variables: {
-          patientId: '1e466f7e-7536-469e-952e-9410e9f4e29d',
-          // currentPatient.id || (allCurrentPatients && allCurrentPatients[0].id) || '',
+          patientId: currentPatient.id || (allCurrentPatients && allCurrentPatients[0].id) || '',
         },
         fetchPolicy: 'no-cache',
       })
@@ -778,7 +777,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
         setMutationLoading(false);
       });
     // }
-  }, []);
+  }, [currentPatient]);
 
   const statusActions: statusMap = {
     PAYMENT_PENDING: {
