@@ -21,10 +21,14 @@ import { log } from 'customWinstonLogger';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
+
 import { syncInventory } from 'helpers/inventorySync';
 import { SYNC_TYPE } from 'types/inventorySync';
 import { ItemDetails } from 'types/oneApolloTypes';
 import { createOneApolloTransaction } from 'profiles-service/helpers/OneApolloTransactionHelper';
+
+import { createOneApolloTransaction } from 'profiles-service/helpers/OneApolloTransactionHelper';
+import { ItemDetails } from 'types/oneApolloTypes';
 
 export const updateOrderStatusTypeDefs = gql`
   input OrderStatusInput {
