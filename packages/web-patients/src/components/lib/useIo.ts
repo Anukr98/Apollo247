@@ -19,9 +19,7 @@ const useIO = (options: any) => {
           rootMargin,
         }
       );
-      console.log(111, root);
-      console.log(222, rootMargin);
-      console.log(333, threshold);
+
       elements.forEach((element) => {
         observer.current.observe(element);
       });
