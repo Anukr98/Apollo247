@@ -107,7 +107,9 @@ export class AphStorageClient {
     name?: Parameters<typeof BlobURL.fromContainerURL>[1];
     file: File;
   }) => {
-    const fileName = (`${name}.${file.name.split('.').pop()}`) as Parameters<typeof BlobURL.fromContainerURL>[1];
+    const fileName = `${name}.${file.name.split('.').pop()}` as Parameters<
+      typeof BlobURL.fromContainerURL
+    >[1];
     const blockBlobUrl = BlockBlobURL.fromBlobURL(
       BlobURL.fromContainerURL(this.containerUrl, fileName)
     );
@@ -116,7 +118,7 @@ export class AphStorageClient {
     return aphBlob;
   };
   uploadPdfBrowserFile = async ({
-    name = uuid()+'.pdf',
+    name = uuid() + '.pdf',
     file,
   }: {
     name?: Parameters<typeof BlobURL.fromContainerURL>[1];
@@ -140,6 +142,25 @@ export class AphStorageClient {
       BlobURL.fromContainerURL(this.containerUrl, name)
     );
     const blob = await uploadFileToBlockBlob(Aborter.none, filePath, blockBlobUrl);
+    const aphBlob: AphBlob = { ...blob, name };
+    return aphBlob;
+  };
+
+  uploadPdfFile = async ({
+    name = uuid(),
+    filePath,
+  }: {
+    name?: Parameters<typeof BlobURL.fromContainerURL>[1];
+    filePath: Parameters<typeof uploadFileToBlockBlob>[1];
+  }) => {
+    const blockBlobUrl = BlockBlobURL.fromBlobURL(
+      BlobURL.fromContainerURL(this.containerUrl, name)
+    );
+    const blob = await uploadFileToBlockBlob(Aborter.none, filePath, blockBlobUrl, {
+      blobHTTPHeaders: {
+        blobContentType: 'application/pdf',
+      },
+    });
     const aphBlob: AphBlob = { ...blob, name };
     return aphBlob;
   };
