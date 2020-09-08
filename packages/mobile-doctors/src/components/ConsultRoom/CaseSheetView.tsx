@@ -2567,7 +2567,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             source={{
               uri: (patientDetails && patientDetails.photoUrl) || '',
             }}
-            style={{ height: width, width: width }}
+            style={{ height: width, width: width, backgroundColor: theme.colors.WHITE }}
             resizeMode={'contain'}
             placeholderStyle={{
               height: width,
