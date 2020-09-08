@@ -1,8 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles, mergeClasses } from '@material-ui/styles';
 import { Theme, Typography, Grid } from '@material-ui/core';
 import { Header } from 'components/Header';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GET_SITEMAP } from 'graphql/profiles';
+import { useAuth } from 'hooks/authHooks';
+import { clientRoutes } from 'helpers/clientRoutes';
+import Pagination from '@material-ui/lab/Pagination';
+import { generateSitemap_generateSitemap } from 'graphql/types/generateSitemap';
+import { useParams } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -13,7 +19,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sitemapContent: {
       background: '#f7f8f5',
-      padding: 20,
+      padding: '0 0 20px',
+    },
+    sitemapHeader: {
+      padding: '20px 20px 0',
     },
     sectionTitle: {
       '& h2': {
@@ -87,6 +96,9 @@ const useStyles = makeStyles((theme: Theme) => {
     sitemapListContent: {
       borderBottom: '1px solid rgba(0, 0, 0, 0.2)',
       padding: '0 20px 20px',
+      [theme.breakpoints.down('sm')]: {
+        padding: '20px 10px 10px',
+      },
       '&:last-child': {
         border: 'none',
       },
@@ -98,14 +110,21 @@ const useStyles = makeStyles((theme: Theme) => {
       height: 335,
       overflow: 'hidden',
       transition: '1s ease',
+      [theme.breakpoints.down('sm')]: {
+        height: 180,
+      },
       '& li': {
         '& a': {
+          cursor: 'pointer',
           fontSize: 20,
           lineHeight: '26px',
           letterSpacing: '0.2px',
           padding: '15px  0',
           position: 'relative',
           display: 'block',
+          [theme.breakpoints.down('sm')]: {
+            padding: '10px 0',
+          },
           '&:after': {
             content: "''",
             position: 'absolute',
@@ -114,6 +133,9 @@ const useStyles = makeStyles((theme: Theme) => {
             left: 0,
             borderRadius: 6,
             borderBottom: '4px solid transparent',
+            [theme.breakpoints.down('sm')]: {
+              bottom: 5,
+            },
           },
         },
         '&.active': {
@@ -173,7 +195,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sLinkContent: {},
     paginationContainer: {
-      width: 150,
       position: 'absolute',
       top: -40,
       right: 0,
@@ -186,6 +207,9 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#4A4A4A',
         padding: '0 10px',
       },
+      // [theme.breakpoints.down('sm')]: {
+      //   display: 'none',
+      // },
     },
     arrow: {
       position: 'relative',
@@ -234,385 +258,349 @@ const useStyles = makeStyles((theme: Theme) => {
         bottom: -8,
       },
     },
+    slMobile: {
+      display: 'none',
+      alignItems: 'center',
+      // margin: '0 0 50px',
+      '& img': {
+        position: 'relative',
+        zIndex: 4,
+        margin: '0 20px 0 0',
+      },
+      '& p': {
+        fontSize: 20,
+        lineHeight: '26px',
+        fontWeight: 700,
+        color: '#00B38E',
+      },
+      [theme.breakpoints.down('sm')]: {
+        display: 'flex',
+      },
+    },
+    sitemapLeft: {},
+    slWrapper: {
+      position: 'relative',
+      padding: '0 20px',
+    },
+    slContainer: {
+      [theme.breakpoints.down('sm')]: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        borderRadius: 0,
+        zIndex: 2,
+        height: 500,
+        overFlow: 'auto',
+        display: 'none',
+      },
+    },
+    paginationUl: {
+      '& li': {
+        '& button': {
+          fontsize: 14,
+          fontWeight: 700,
+          color: '#02475b',
+          '&:hover': {
+            background: '#00B38E',
+          },
+        },
+      },
+    },
+    gridClass: {
+      [theme.breakpoints.down('xs')]: {
+        padding: '30px 10px !important',
+      },
+    },
   };
 });
 
 export const Sitemap: React.FC = (props) => {
   const classes = useStyles({});
-  const [showMore, setShowMore] = useState<Boolean>(false);
-  const [showMore1, setShowMore1] = useState<Boolean>(false);
+  const params = useParams<{ sitemap: string; pageNo: string }>();
+  const [sitemapData, setSitemapData] = useState<generateSitemap_generateSitemap | null>(null);
+  const [doctorSitemapData, setDoctorSitemapData] = useState([]);
+  const [medicineSitemapData, setMedicineSitemapData] = useState([]);
+  const [selected, setSelected] = useState<string>(params.sitemap);
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [pageNo, setPageNo] = useState<number>(parseInt(params.pageNo));
+  const apolloClient = useApolloClient();
+  const { setIsLoading } = useAuth();
+
+  useEffect(() => {
+    setIsLoading(true);
+    apolloClient
+      .query({
+        query: GET_SITEMAP,
+        variables: {},
+        fetchPolicy: 'no-cache',
+      })
+      .then((res) => {
+        if (res && res.data && res.data.generateSitemap) {
+          setSitemapData(res.data.generateSitemap);
+        }
+      })
+      .catch((err) => console.log(err))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    const next = pageNo * 1000 - 1;
+    const prev = next - 999;
+    if (selected === 'doctors-sitemap') {
+      setDoctorSitemapData(
+        sitemapData &&
+          sitemapData.doctorUrls &&
+          sitemapData.doctorUrls.length > 0 &&
+          sitemapData.doctorUrls.slice(prev, next)
+      );
+      history.replaceState(
+        null,
+        '',
+        clientRoutes.childSitemap('doctors-sitemap', pageNo.toString())
+      );
+    } else if (selected === 'medicines-sitemap') {
+      setMedicineSitemapData(
+        sitemapData &&
+          sitemapData.medicinesUrls &&
+          sitemapData.medicinesUrls.length > 0 &&
+          sitemapData.medicinesUrls.slice(prev, next)
+      );
+      history.replaceState(
+        null,
+        '',
+        clientRoutes.childSitemap('medicines-sitemap', pageNo.toString())
+      );
+    }
+  }, [pageNo, selected, sitemapData]);
+
+  const currentServiceLength =
+    selected === 'doctors-sitemap'
+      ? sitemapData && sitemapData.doctorUrls && sitemapData.doctorUrls.length
+      : sitemapData && sitemapData.medicinesUrls && sitemapData.medicinesUrls.length;
+
   return (
     <div className={classes.sitemapContainer}>
       <Header />
       <div className={classes.container}>
         <div className={classes.sitemapContent}>
-          <div className={classes.sectionTitle}>
-            <Typography component="h2">
-              <span className={classes.font48}>A</span>PPOLO 24|7 SITE MAP
-            </Typography>
+          <div className={classes.sitemapHeader}>
+            <div className={classes.sectionTitle}>
+              <Typography component="h2">
+                <span className={classes.font48}>A</span>PPOLO 24|7 SITE MAP
+              </Typography>
+            </div>
+            <ol className={classes.breadcrumbs}>
+              <li>
+                <a href={clientRoutes.welcome()}>Home</a>
+              </li>
+              <li className="active">
+                <a href="">Sitemap</a>
+              </li>
+            </ol>
           </div>
-          <ol className={classes.breadcrumbs}>
-            <li>
-              <a href="javascript:void(0)">Home</a>
-            </li>
-            <li className="active">
-              <a href="javascript:void(0)">Sitemap</a>
-            </li>
-          </ol>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-              <div className={classes.sitemapListContainer}>
-                <div className={classes.sitemapListContent}>
-                  <ul className={`${classes.sitemapList} ${showMore ? classes.heightFull : ''}`}>
-                    <li className="active">
-                      <a href="javascript: void(0);">Apollo 24|7 Services</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 1</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 2</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 3</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 4</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 5</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 6</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 7</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 8</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 9</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Doctor Sitemap 10</a>
-                    </li>
-                  </ul>
-                  <a
-                    href="javascript:void(0);"
-                    className={`${classes.showMore} ${showMore ? classes.smActive : ''}`}
-                    onClick={() => setShowMore(!showMore)}
+          <div className={classes.slWrapper}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={4}>
+                <div className={classes.sitemapLeft}>
+                  <div className={classes.slMobile}>
+                    {!isMenuOpen ? (
+                      <img
+                        src={require('images/ham-menu.svg')}
+                        alt="Ham Menu"
+                        onClick={() => setIsMenuOpen(true)}
+                      />
+                    ) : (
+                      <img
+                        src={require('images/ham-close.svg')}
+                        onClick={() => setIsMenuOpen(false)}
+                        alt="Ham Close"
+                      />
+                    )}
+                    <Typography>
+                      {selected === 'sitemap'
+                        ? 'Apollo 24|7 Services'
+                        : selected === 'doctors-sitemap'
+                        ? 'Doctor Sitemap'
+                        : 'Medicine Sitemap'}
+                    </Typography>
+                  </div>
+                  <div
+                    className={`${classes.sitemapListContainer} ${
+                      isMenuOpen ? '' : classes.slContainer
+                    }`}
                   >
-                    {!showMore ? <span>Show More</span> : <span>Hide</span>}
-                    <ExpandMoreIcon />
-                  </a>
+                    <div className={classes.sitemapListContent}>
+                      <ul className={`${classes.sitemapList}`}>
+                        <li
+                          className={selected === 'sitemap' ? 'active' : ''}
+                          onClick={() => {
+                            setSelected('sitemap');
+                            setIsMenuOpen(false);
+                            history.replaceState(null, '', clientRoutes.sitemap('sitemap'));
+                          }}
+                        >
+                          <a>Apollo 24|7 Services</a>
+                        </li>
+                        <li
+                          className={selected === 'doctors-sitemap' ? 'active' : ''}
+                          onClick={() => {
+                            setSelected('doctors-sitemap');
+                            setPageNo(1);
+                            setIsMenuOpen(false);
+                            history.replaceState(
+                              null,
+                              '',
+                              clientRoutes.childSitemap('doctors-sitemap', '1')
+                            );
+                          }}
+                        >
+                          <a>Doctor Sitemap</a>
+                        </li>
+                        <li
+                          className={selected === 'medicines-sitemap' ? 'active' : ''}
+                          onClick={() => {
+                            setSelected('medicines-sitemap');
+                            setPageNo(1);
+                            setIsMenuOpen(false);
+                            history.replaceState(
+                              null,
+                              '',
+                              clientRoutes.childSitemap('medicines-sitemap', '1')
+                            );
+                          }}
+                        >
+                          <a>Medicine Sitemap</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
-                <div className={classes.sitemapListContent}>
-                  <ul className={`${classes.sitemapList} ${showMore1 ? classes.heightFull : ''}`}>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 1</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 2</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 3</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 4</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 5</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 6</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 7</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 8</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 9</a>
-                    </li>
-                    <li>
-                      <a href="javascript: void(0);">Medicine Sitemap 10</a>
-                    </li>
-                  </ul>
-                  <a
-                    href="javascript:void(0);"
-                    className={`${classes.showMore} ${showMore1 ? classes.smActive : ''}`}
-                    onClick={() => setShowMore1(!showMore1)}
-                  >
-                    {!showMore1 ? <span>Show More</span> : <span>Hide</span>}
-                    <ExpandMoreIcon />
-                  </a>
+              </Grid>
+              <Grid item xs={12} sm={8} className={classes.gridClass}>
+                <div className={classes.sitemapListContainer}>
+                  {selected !== 'sitemap' && (
+                    <div className={classes.paginationContainer}>
+                      <Pagination
+                        count={Math.ceil(currentServiceLength / 1000)}
+                        classes={{ ul: classes.paginationUl }}
+                        page={pageNo}
+                        onChange={(e, value) => setPageNo(value)}
+                        siblingCount={0}
+                      />
+                    </div>
+                  )}
+                  <div className={classes.sitemapLinkContainer}>
+                    {selected === 'sitemap' ? (
+                      <>
+                        <div className={classes.sLinkContent}>
+                          <Typography component="h3" className={classes.categoryTitle}>
+                            About Apollo24|7
+                          </Typography>
+                          {sitemapData &&
+                            sitemapData.staticPageUrls &&
+                            sitemapData.staticPageUrls.length > 0 &&
+                            sitemapData.staticPageUrls.map((key) => (
+                              <ul className={classes.smLinkList}>
+                                <li>
+                                  <a href={key.url}>{key.urlName}</a>
+                                </li>
+                              </ul>
+                            ))}
+                        </div>
+                        <div className={classes.sLinkContent}>
+                          <Typography component="h3" className={classes.categoryTitle}>
+                            Shop By Category
+                          </Typography>
+                          {sitemapData &&
+                            sitemapData.shopByCategoryUrls &&
+                            sitemapData.shopByCategoryUrls.length > 0 &&
+                            sitemapData.shopByCategoryUrls.map((key) => (
+                              <ul className={classes.smLinkList}>
+                                <li>
+                                  <a href={key.url}>{key.urlName}</a>
+                                </li>
+                              </ul>
+                            ))}
+                        </div>
+                        <div className={classes.sLinkContent}>
+                          <Typography component="h3" className={classes.categoryTitle}>
+                            Shop By Health Areas
+                          </Typography>
+                          {sitemapData &&
+                            sitemapData.healthAreasUrls &&
+                            sitemapData.healthAreasUrls.length > 0 &&
+                            sitemapData.healthAreasUrls.map((key) => (
+                              <ul className={classes.smLinkList}>
+                                <li>
+                                  <a href={key.url}>{key.urlName}</a>
+                                </li>
+                              </ul>
+                            ))}
+                        </div>
+                        <div className={classes.sLinkContent}>
+                          <Typography component="h3" className={classes.categoryTitle}>
+                            Specialties
+                          </Typography>
+                          {sitemapData &&
+                            sitemapData.specialityUrls &&
+                            sitemapData.specialityUrls.length > 0 &&
+                            sitemapData.specialityUrls.map((key) => (
+                              <ul className={classes.smLinkList}>
+                                <li>
+                                  <a href={key.url}>{key.urlName}</a>
+                                </li>
+                              </ul>
+                            ))}
+                        </div>
+                        <div className={classes.sLinkContent}>
+                          <Typography component="h3" className={classes.categoryTitle}>
+                            Article URLs
+                          </Typography>
+                          {sitemapData &&
+                            sitemapData.articleUrls &&
+                            sitemapData.articleUrls.length > 0 &&
+                            sitemapData.articleUrls.map((key) => (
+                              <ul className={classes.smLinkList}>
+                                <li>
+                                  <a href={key.url}>{key.urlName.replace('/', '')}</a>
+                                </li>
+                              </ul>
+                            ))}
+                        </div>
+                      </>
+                    ) : selected === 'medicines-sitemap' ? (
+                      <div className={classes.sLinkContent}>
+                        {medicineSitemapData &&
+                          medicineSitemapData.length > 0 &&
+                          medicineSitemapData.map((key) => (
+                            <ul className={classes.smLinkList}>
+                              <li>
+                                <a href={key.url}>{key.urlName}</a>
+                              </li>
+                            </ul>
+                          ))}
+                      </div>
+                    ) : (
+                      selected === 'doctors-sitemap' && (
+                        <div className={classes.sLinkContent}>
+                          {doctorSitemapData &&
+                            doctorSitemapData.length > 0 &&
+                            doctorSitemapData.map((key) => (
+                              <ul className={classes.smLinkList}>
+                                <li>
+                                  <a href={key.url}>{key.urlName}</a>
+                                </li>
+                              </ul>
+                            ))}
+                        </div>
+                      )
+                    )}
+                  </div>
                 </div>
-              </div>
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={8}>
-              <div className={classes.sitemapListContainer}>
-                <div className={classes.paginationContainer}>
-                  <a href="javascript:void(0);" className={`${classes.arrow} ${classes.prev}`}></a>
-                  <Typography>Page 1 of 50 </Typography>
-                  <a href="javascript:void(0);" className={`${classes.arrow} ${classes.next}`}></a>
-                </div>
-                <div className={classes.sitemapLinkContainer}>
-                  <div className={classes.sLinkContent}>
-                    <Typography component="h3" className={classes.categoryTitle}>
-                      About Apollo24|7
-                    </Typography>
-                    <ul className={classes.smLinkList}>
-                      <li>
-                        <a href="javascript:void(0);">
-                          online Doctor Consultation and medicine delivery - Apollo 24|7
-                        </a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Order Medicine online</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Speciality</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">List of Doctors</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Book online doctor appointment</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Health Records</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">My account</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">about us - apollo 24|7</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">FAQ’s</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Terms and Conditions</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Privacy Policy</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Contact Us</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Check Risk level of Covid-19</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Project Kavach</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Latest updates on covid-19</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Prescription review</a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className={classes.sLinkContent}>
-                    <Typography component="h3" className={classes.categoryTitle}>
-                      Shop By Category
-                    </Typography>
-                    <ul className={classes.smLinkList}>
-                      <li>
-                        <a href="javascript:void(0);">View All Medicine Brands</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Search by brand</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Personal care</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Mom Baby</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Nutrition</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare devices</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Special offers</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Holland Barret</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare</a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className={classes.sLinkContent}>
-                    <Typography component="h3" className={classes.categoryTitle}>
-                      Shop By Health Areas
-                    </Typography>
-                    <ul className={classes.smLinkList}>
-                      <li>
-                        <a href="javascript:void(0);">Adult Care</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Beauty Skin Care</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Cardiac</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Mom Baby</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Nutrition</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare devices</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Special offers</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Holland Barret</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare</a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className={classes.sLinkContent}>
-                    <Typography component="h3" className={classes.categoryTitle}>
-                      About Apollo24|7
-                    </Typography>
-                    <ul className={classes.smLinkList}>
-                      <li>
-                        <a href="javascript:void(0);">
-                          online Doctor Consultation and medicine delivery - Apollo 24|7
-                        </a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Order Medicine online</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Speciality</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">List of Doctors</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Book online doctor appointment</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Health Records</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">My account</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">about us - apollo 24|7</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">FAQ’s</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Terms and Conditions</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Privacy Policy</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Contact Us</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Check Risk level of Covid-19</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Project Kavach</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Latest updates on covid-19</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Prescription review</a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className={classes.sLinkContent}>
-                    <Typography component="h3" className={classes.categoryTitle}>
-                      Shop By Category
-                    </Typography>
-                    <ul className={classes.smLinkList}>
-                      <li>
-                        <a href="javascript:void(0);">View All Medicine Brands</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Search by brand</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Personal care</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Mom Baby</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Nutrition</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare devices</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Special offers</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Holland Barret</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare</a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className={classes.sLinkContent}>
-                    <Typography component="h3" className={classes.categoryTitle}>
-                      Shop By Health Areas
-                    </Typography>
-                    <ul className={classes.smLinkList}>
-                      <li>
-                        <a href="javascript:void(0);">Adult Care</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Beauty Skin Care</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Cardiac</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Mom Baby</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Nutrition</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare devices</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Special offers</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Holland Barret</a>
-                      </li>
-                      <li>
-                        <a href="javascript:void(0);">Healthcare</a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </Grid>
-          </Grid>
+          </div>
         </div>
       </div>
     </div>

@@ -1739,14 +1739,14 @@ export const MedicineCart: React.FC = (props) => {
                               <div className={classes.appliedCoupon}>
                                 {Number(validateCouponResult.discount.toFixed(2)) >
                                   Number(productDiscount.toFixed(2)) ||
-                                  (validateCouponResult.products &&
-                                    validateCouponResult.products.length &&
-                                    validateCouponResult.products.filter(({ mrp }) => mrp === 0)
-                                      .length && (
-                                      <span className={classes.linkText}>
-                                        <span>{couponCode}</span> applied
-                                      </span>
-                                    ))}
+                                (validateCouponResult.products &&
+                                  validateCouponResult.products.length &&
+                                  validateCouponResult.products.filter(({ mrp }) => mrp === 0)
+                                    .length) ? (
+                                  <span className={classes.linkText}>
+                                    <span>{couponCode}</span> applied
+                                  </span>
+                                ) : null}
                                 <span className={classes.rightArrow}>
                                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                                 </span>
@@ -1875,6 +1875,7 @@ export const MedicineCart: React.FC = (props) => {
                                   deliveryTime: deliveryTime,
                                   validateCouponResult: validateCouponResult,
                                   shopId: shopId,
+                                  deliveryAddressId,
                                 })
                               );
                               history.push(clientRoutes.payMedicine('pharmacy'));
@@ -1989,6 +1990,7 @@ export const MedicineCart: React.FC = (props) => {
                               deliveryTime: deliveryTime,
                               validateCouponResult: validateCouponResult,
                               shopId: shopId,
+                              deliveryAddressId,
                             })
                           );
                           history.push(clientRoutes.payMedicine('pharmacy'));

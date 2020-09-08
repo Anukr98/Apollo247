@@ -415,11 +415,11 @@ export const MedicineLocationSearch: React.FC = (props) => {
         }}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'right',
+          horizontal: 'left',
         }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: 'left',
+          horizontal: 'right',
         }}
       >
         <ul>

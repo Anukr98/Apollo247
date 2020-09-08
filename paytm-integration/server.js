@@ -143,7 +143,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateUtilizationCapacity Response\n' +
         JSON.stringify(response.data.data.updateUtilizationCapacity) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -164,7 +164,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdatePhrDocSummary Response\n' +
         JSON.stringify(response.data.data.updatePhrDocSummary) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -186,7 +186,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\ngetAvailableDoctorsCount Response\n' +
         JSON.stringify(response.data.data.getAvailableDoctorsCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -208,7 +208,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateConsultRating Response\n' +
         JSON.stringify(response.data.data.updateConsultRating) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -243,7 +243,7 @@ app.get('/updateSpecialtyCount', (req, res) => {
         '\nupdateSpecialtyCount Response\n' +
         JSON.stringify(response.data.data.updateSpecialtyCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -282,7 +282,7 @@ app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
         '\nupdateDoctorsAwayAndOnlineCount Response\n' +
         JSON.stringify(response.data.data.updateDoctorsAwayAndOnlineCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -414,10 +414,7 @@ app.get('/diagnosticpayment', (req, res) => {
             req.query.price
           )}|APOLLO247|${firstName}|${emailAddress}|||||||||||eCwWELxi`;
 
-          const hash = crypto
-            .createHash('sha512')
-            .update(code)
-            .digest('hex');
+          const hash = crypto.createHash('sha512').update(code).digest('hex');
 
           console.log('paymentCode==>', code);
           console.log('paymentHash==>', hash);
@@ -855,7 +852,7 @@ app.get('/processOrders', (req, res) => {
                   '\n---------------------------\n' +
                   JSON.stringify(pharmaInput) +
                   '\n-------------------\n';
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -875,7 +872,7 @@ app.get('/processOrders', (req, res) => {
                     console.log('pharma resp', resp, resp.data.ordersResult);
                     //const orderData = JSON.parse(resp.data);
                     content = resp.data.ordersResult + '\n==================================\n';
-                    fs.appendFile(fileName, content, function(err) {
+                    fs.appendFile(fileName, content, function (err) {
                       if (err) throw err;
                       console.log('Updated!');
                     });
@@ -1179,12 +1176,16 @@ app.get('/processOmsOrders', (req, res) => {
                     shippingcity: deliveryCity,
                     shippingstateid: deliveryStateCode,
                     customerid: '',
-                    patiendname: patientDetails.firstName,
+                    patiendname: patientAddressDetails.name || patientDetails.firstName,
                     customername:
                       patientDetails.firstName +
                       (patientDetails.lastName ? ' ' + patientDetails.lastName : ''),
-                    primarycontactno: patientAddressDetails.mobileNumber.substr(3),
-                    secondarycontactno: '',
+                    primarycontactno: patientAddressDetails.mobileNumber
+                      ? patientAddressDetails.mobileNumber.substr(
+                          patientAddressDetails.mobileNumber.length - 10
+                        )
+                      : '',
+                    secondarycontactno: patientDetails.mobileNumber.substr(3),
                     age: patientAge,
                     emailid: patientDetails.emailAddress || '',
                     cardno: '0',
@@ -1270,7 +1271,9 @@ app.get('/processOmsOrders', (req, res) => {
                   });
               }
             } else {
-              logger.error(`error while fetching order details for oms -> ${response}`);
+              logger.error(
+                `error while fetching order details for oms -> ${JSON.stringify(response.data)}`
+              );
             }
           })
           .catch((error) => {
@@ -1602,7 +1605,7 @@ app.get('/processOrderById', (req, res) => {
             '\n---------------------------\n' +
             JSON.stringify(pharmaInput) +
             '\n-------------------\n';
-          fs.appendFile(fileName, content, function(err) {
+          fs.appendFile(fileName, content, function (err) {
             if (err) throw err;
             console.log('Updated!');
           });
@@ -1617,7 +1620,7 @@ app.get('/processOrderById', (req, res) => {
               console.log('pharma resp', resp, resp.data.ordersResult);
               //const orderData = JSON.parse(resp.data);
               content = resp.data.ordersResult + '\n==================================\n';
-              fs.appendFile(fileName, content, function(err) {
+              fs.appendFile(fileName, content, function (err) {
                 if (err) throw err;
                 console.log('Updated!');
               });

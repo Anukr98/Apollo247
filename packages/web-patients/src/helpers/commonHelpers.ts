@@ -199,8 +199,8 @@ const getDiffInHours = (doctorAvailableSlots: string) => {
   }
 };
 const acceptedFilesNamesForFileUpload = ['png', 'jpg', 'jpeg', 'pdf'];
-const MAX_FILE_SIZE_FOR_UPLOAD = 2000000;
-const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 2MB';
+const MAX_FILE_SIZE_FOR_UPLOAD = 3000000;
+const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 3MB';
 const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
@@ -210,6 +210,7 @@ const NO_ONLINE_SERVICE = 'NOT AVAILABLE FOR ONLINE SALE';
 const OUT_OF_STOCK = 'Out Of Stock';
 const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
 const PINCODE_MAXLENGTH = 6;
+const SPECIALTY_DETAIL_LISTING_PAGE_SIZE = 50;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -442,7 +443,9 @@ const getCouponByUserMobileNumber = () => {
 };
 
 const isPastAppointment = (appointmentDateTime: string) =>
-  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
+  moment(appointmentDateTime)
+    .add(7, 'days')
+    .isBefore(moment());
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const followUpDayMoment = moment(appointmentTime).add(7, 'days');
@@ -464,7 +467,14 @@ const removeGraphQLKeyword = (error: any) => {
   return error.message.replace('GraphQL error:', '');
 };
 
+const HEALTH_RECORDS_NO_DATA_FOUND =
+  'You don’t have any records with us right now. Add a record to keep everything handy in one place!';
+
+const HEALTH_RECORDS_NOTE =
+  'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
+
 export {
+  HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,
   getCouponByUserMobileNumber,
   getPackOfMedicine,
@@ -515,4 +525,6 @@ export {
   OUT_OF_STOCK,
   NOTIFY_WHEN_IN_STOCK,
   PINCODE_MAXLENGTH,
+  SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
+  HEALTH_RECORDS_NOTE,
 };

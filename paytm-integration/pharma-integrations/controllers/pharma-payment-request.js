@@ -12,11 +12,14 @@ module.exports = async (req, res) => {
   let orderId;
   try {
     let { oid: orderAutoId, pid: patientId, amount, hc: healthCredits } = req.query;
-
     orderId = orderAutoId;
+
+    logger.info(`${orderId} - paymed-request-input -  ${JSON.stringify(req.query)}`);
     amount = amount ? +amount : 0;
     healthCredits = healthCredits ? +healthCredits : 0;
-
+    if (healthCredits < 0 || amount < 0) {
+      throw new Error(PAYMENT_REQUEST_FAILURE_INVALID_PARAMETERS);
+    }
     const effectiveAmount = +new Decimal(amount).plus(healthCredits);
 
     // Decide if we need token here or we can use static token

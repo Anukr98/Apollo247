@@ -418,9 +418,9 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
   return (
     <div className={classes.root}>
       <div
-        className={`${classes.videoChatWindow} ${
+        className={`videoChatWindow ${
           props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''
-        }`}
+          }`}
       >
         {!props.showVideoChat && (
           <div className={classes.timerCls}>
@@ -465,12 +465,12 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
               console.log('Session Error', error);
               props.setSessionError(error);
             }}
-            // eventHandlers={{
-            //   connectionDestroyed: (event: any) => {
-            //     props.stopConsultCall();
-            //     setIscall(false);
-            //   },
-            // }}
+          // eventHandlers={{
+          //   connectionDestroyed: (event: any) => {
+          //     props.stopConsultCall();
+          //     setIscall(false);
+          //   },
+          // }}
           >
             <div
               className={`${classes.minimizeImg}
@@ -520,8 +520,8 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                       className={classes.maximizeImg}
                       src={
                         doctorDetails &&
-                        doctorDetails.getDoctorDetailsById &&
-                        doctorDetails.getDoctorDetailsById.photoUrl !== null
+                          doctorDetails.getDoctorDetailsById &&
+                          doctorDetails.getDoctorDetailsById.photoUrl !== null
                           ? doctorDetails.getDoctorDetailsById.photoUrl
                           : require('images/DefaultPatient_Video.svg')
                       }
@@ -532,8 +532,8 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                     className={classes.maximizeImg}
                     src={
                       doctorDetails &&
-                      doctorDetails.getDoctorDetailsById &&
-                      doctorDetails.getDoctorDetailsById.photoUrl !== null
+                        doctorDetails.getDoctorDetailsById &&
+                        doctorDetails.getDoctorDetailsById.photoUrl !== null
                         ? doctorDetails.getDoctorDetailsById.photoUrl
                         : require('images/DefaultPatient_Video.svg')
                     }
@@ -562,8 +562,8 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                         <img
                           src={
                             doctorDetails &&
-                            doctorDetails.getDoctorDetailsById &&
-                            doctorDetails.getDoctorDetailsById.photoUrl !== null
+                              doctorDetails.getDoctorDetailsById &&
+                              doctorDetails.getDoctorDetailsById.photoUrl !== null
                               ? doctorDetails.getDoctorDetailsById.photoUrl
                               : require('images/DefaultPatient_Video.svg')
                           }

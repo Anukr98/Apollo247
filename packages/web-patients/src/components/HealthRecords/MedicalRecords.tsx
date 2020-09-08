@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress, Popover } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
 import { MedicalCard } from 'components/HealthRecords/MedicalCard';
@@ -12,6 +12,16 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType } from '../../graphql/types/getPatientPrismMedicalRecords';
+import {
+  HEALTH_RECORDS_NO_DATA_FOUND,
+  HEALTH_RECORDS_NOTE,
+  removeGraphQLKeyword,
+} from 'helpers/commonHelpers';
+import { GET_LAB_RESULT_PDF } from 'graphql/profiles';
+import { getLabResultpdf, getLabResultpdfVariables } from 'graphql/types/getLabResultpdf';
+import { useApolloClient } from 'react-apollo-hooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { Alerts } from 'components/Alerts/Alerts';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -360,15 +370,47 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         position: 'absolute',
         right: 10,
-        top: 5,
+        top: 80,
         borderBottom: 'none',
       },
+    },
+    locationPopRoot: {
+      overflow: 'initial',
+      boxShadow: '0 0 3px 0 rgba(0, 0, 0, 0.2)',
+      border: 'solid 1px #f7f8f5',
+      '& ul': {
+        margin: 0,
+        padding: 0,
+        '& li': {
+          padding: '7px 50px 7px 10px',
+          fontSize: 15,
+          fontWeight: 500,
+          borderBottom: 'solid 1px #f7f8f5',
+          listStyleType: 'none',
+          cursor: 'pointer',
+          '&:last-child': {
+            borderBottom: 'none',
+          },
+        },
+      },
+    },
+    filterActive: {
+      color: '#00b38e !important',
+    },
+    disabled: {
+      pointerEvents: 'none',
+    },
+    noteText: {
+      fontSize: 12,
+      padding: 10,
+      color: '#0087ba',
     },
   };
 });
 
 type MedicalRecordProps = {
   allCombinedData: LabResultsType[];
+  setLabResults: (labResults: LabResultsType[]) => void;
   loading: boolean;
   setActiveData: (activeData: LabResultsType) => void;
   activeData: LabResultsType;
@@ -376,21 +418,82 @@ type MedicalRecordProps = {
   deleteReport: (id: string, type: string) => void;
 };
 
+enum FILTER_TYPE {
+  DATE = 'Date',
+  TEST = 'Test',
+  PACKAGE = 'Package',
+}
+
 export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const classes = useStyles({});
+  const apolloClient = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
+  const {
+    allCombinedData,
+    setLabResults,
+    loading,
+    activeData,
+    setActiveData,
+    error,
+    deleteReport,
+  } = props;
+  const locationRef = useRef(null);
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
+  const [filterApplied, setFilterApplied] = useState<FILTER_TYPE>(FILTER_TYPE.DATE);
+  const [showPopover, setShowPopover] = useState<boolean>(false);
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
 
-  const { allCombinedData, loading, activeData, setActiveData, error, deleteReport } = props;
+  const sortByTypeRecords = (type: FILTER_TYPE) => {
+    return (
+      allCombinedData &&
+      allCombinedData.sort((data1: LabResultsType, data2: LabResultsType) => {
+        const filteredData1 =
+          type === FILTER_TYPE.DATE
+            ? moment(data1.date).toDate().getTime()
+            : type === FILTER_TYPE.TEST
+            ? data1.labTestName
+            : data1.packageName;
+        const filteredData2 =
+          type === FILTER_TYPE.DATE
+            ? moment(data2.date).toDate().getTime()
+            : type === FILTER_TYPE.TEST
+            ? data2.labTestName
+            : data2.packageName;
+        if (type === FILTER_TYPE.DATE) {
+          return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
+        }
+        return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
+      })
+    );
+  };
+
+  useEffect(() => {
+    const filteredData = sortByTypeRecords(filterApplied);
+    if (filteredData) {
+      setLabResults(filteredData);
+      setActiveData(filteredData[0]);
+    }
+  }, [filterApplied]);
 
   const getFormattedDate = (combinedData: LabResultsType, dateFor: string) => {
+    const formattedDate = moment(combinedData.date).format('DD MMM YYYY');
     return dateFor === 'title' &&
       moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY') ? (
-        <span>Today , {moment(combinedData.date).format('DD MMM YYYY')}</span>
-      ) : (
-        <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
-      );
+      <span>Today , {formattedDate}</span>
+    ) : (
+      <span>{formattedDate}</span>
+    );
+  };
+
+  const getStringDate = (combinedData: LabResultsType) => {
+    const formattedDate = moment(combinedData.date).format('DD MMM YYYY');
+    return moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY')
+      ? `Today , ${formattedDate}`
+      : `${formattedDate}`;
   };
 
   if (loading) {
@@ -405,16 +508,49 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
     return <div>Error while fetching the medical records</div>;
   }
 
+  const downloadTestReport = (recordId: string) => {
+    if (currentPatient && currentPatient.id) {
+      setIsDownloading(true);
+      apolloClient
+        .query<getLabResultpdf, getLabResultpdfVariables>({
+          query: GET_LAB_RESULT_PDF,
+          variables: {
+            patientId: currentPatient.id,
+            recordId,
+          },
+        })
+        .then(({ data }: any) => {
+          if (data && data.getLabResultpdf && data.getLabResultpdf.url) {
+            window.open(data.getLabResultpdf.url, '_blank');
+          }
+        })
+        .catch((e: any) => {
+          console.log(e);
+          setIsAlertOpen(true);
+          setAlertMessage(`Something went wrong while downloading(${removeGraphQLKeyword(e)})`);
+        })
+        .finally(() => {
+          setIsDownloading(false);
+        });
+    }
+  };
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
+        <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
           <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
             <img src={require('images/ic_addfile.svg')} />
           </Link>
         </div>
         <div className={classes.filterIcon}>
-          <img src={require('images/ic_filter.svg')} alt="" />
+          <img
+            ref={locationRef}
+            onClick={() => setShowPopover(true)}
+            src={require('images/ic_filter.svg')}
+            alt=""
+          />
         </div>
         <Scrollbars
           autoHide={true}
@@ -423,8 +559,8 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 240px)'
               : isSmallScreen
-                ? 'calc(100vh - 230px)'
-                : 'calc(100vh - 270px)'
+              ? 'calc(100vh - 230px)'
+              : 'calc(100vh - 350px)'
           }
         >
           <div className={classes.consultationsList}>
@@ -442,17 +578,27 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 >
                   <div className={classes.consultGroupHeader}>
                     <div className={classes.circle}></div>
-                    <span>{getFormattedDate(combinedData, 'title')}</span>
+                    <span>
+                      {filterApplied === FILTER_TYPE.DATE
+                        ? getFormattedDate(combinedData, 'title')
+                        : filterApplied === FILTER_TYPE.TEST
+                        ? combinedData.labTestName
+                        : combinedData.packageName}
+                    </span>
                   </div>
                   <MedicalCard
                     deleteReport={deleteReport}
-                    name={combinedData.labTestName}
+                    name={
+                      filterApplied === FILTER_TYPE.DATE
+                        ? combinedData.labTestName
+                        : getStringDate(combinedData)
+                    }
                     source={
                       combinedData && combinedData.siteDisplayName
                         ? combinedData.siteDisplayName
                         : !!combinedData.labTestSource
-                          ? combinedData.labTestSource
-                          : '-'
+                        ? combinedData.labTestSource
+                        : '-'
                     }
                     type={'LabResults'}
                     id={`LabResults-${combinedData.id}`}
@@ -464,10 +610,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           {isSmallScreen && allCombinedData && allCombinedData.length === 0 && (
             <div className={classes.noRecordFoundWrapper}>
               <img src={require('images/ic_records.svg')} />
-              <p>
-                You don’t have any records with us right now. Add a record to keep everything handy
-                in one place!
-              </p>
+              <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
             </div>
           )}
         </Scrollbars>
@@ -486,7 +629,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
       <div
         className={`${classes.rightSection} ${
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
-          }`}
+        }`}
       >
         {allCombinedData && allCombinedData.length > 0 ? (
           <>
@@ -511,86 +654,138 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 287px)'
                   : isSmallScreen
-                    ? 'calc(100vh - 55px)'
-                    : 'calc(100vh - 322px)'
+                  ? 'calc(100vh - 55px)'
+                  : 'calc(100vh - 322px)'
               }
             >
               {((!isSmallScreen && activeData) ||
                 (isSmallScreen && showMobileDetails && activeData)) && (
-                  <div className={classes.medicalRecordsDetails}>
-                    <div className={classes.cbcDetails}>
+                <div className={classes.medicalRecordsDetails}>
+                  <div className={classes.cbcDetails}>
+                    {activeData.labTestName && (
                       <div className={classes.reportsDetails}>
                         <div className={classes.testName}>{activeData.labTestName}</div>
                       </div>
+                    )}
+                    {!!activeData.labTestRefferedBy && (
                       <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
-                        <div>
-                          {!!activeData.labTestRefferedBy
-                            ? `Dr. ${activeData.labTestRefferedBy}`
-                            : '-'}
-                        </div>
+                        <div>Dr. {activeData.labTestRefferedBy}</div>
                       </div>
+                    )}
+                    {activeData.siteDisplayName && (
                       <div className={classes.reportsDetails}>
-                        {activeData && activeData.siteDisplayName && (
-                          <div className={classes.sitedisplayName}>{activeData.siteDisplayName}</div>
-                        )}
+                        <div className={classes.sitedisplayName}>{activeData.siteDisplayName}</div>
                       </div>
-                      <hr />
-                      <div className={classes.reportsDetails}>
-                        <label>CheckUp Date</label>
-                        <p>
-                          On{' '}
-                          <span className={classes.checkDate}>
-                            {getFormattedDate(activeData, 'checkUp')}
-                          </span>
-                        </p>
-                      </div>
+                    )}
+                    <hr />
+                    <div className={classes.reportsDetails}>
+                      <label>CheckUp Date</label>
+                      <p>
+                        On{' '}
+                        <span className={classes.checkDate}>
+                          {getFormattedDate(activeData, 'checkUp')}
+                        </span>
+                      </p>
                     </div>
-                    {/* {(activeData.observation || activeData.additionalNotes) && (
+                  </div>
+                  {/* {(activeData.observation || activeData.additionalNotes) && (
                     <ToplineReport activeData={activeData} />
                   )} */}
-                    {activeData.labTestResults && activeData.labTestResults.length > 0 && (
-                      <DetailedFindings activeData={activeData} />
-                    )}
-                    {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
-                      <RenderImage
-                        activeData={activeData}
-                        type={
-                          activeData.testResultFiles &&
-                            activeData.testResultFiles.length &&
-                            activeData.testResultFiles[0].fileName &&
-                            activeData.testResultFiles[0].fileName.includes('pdf')
-                            ? 'pdf'
-                            : activeData.fileUrl.includes('pdf')
-                              ? 'pdf'
-                              : 'image'
-                        }
-                      />
-                    )}
-                  </div>
-                )}
+                  {activeData.labTestResults && activeData.labTestResults.length > 0 && (
+                    <DetailedFindings activeData={activeData} />
+                  )}
+                  {activeData.fileUrl && activeData.fileUrl.length > 0 && (
+                    <RenderImage
+                      activeData={activeData}
+                      type={
+                        activeData.testResultFiles &&
+                        activeData.testResultFiles.length &&
+                        activeData.testResultFiles[0].fileName &&
+                        activeData.testResultFiles[0].fileName.includes('pdf')
+                          ? 'pdf'
+                          : activeData.fileUrl.includes('pdf')
+                          ? 'pdf'
+                          : 'image'
+                      }
+                    />
+                  )}
+                </div>
+              )}
             </Scrollbars>
             <div className={classes.addReportActions}>
               <AphButton
                 color="primary"
-                onClick={() => {
-                  window.location.href = clientRoutes.addRecords();
-                }}
+                onClick={() => downloadTestReport(activeData.id)}
                 fullWidth
               >
-                DOWNLOAD TEST REPORT
+                {isDownloading ? (
+                  <CircularProgress size={22} color="secondary" />
+                ) : (
+                  'DOWNLOAD TEST REPORT'
+                )}
               </AphButton>
             </div>
           </>
         ) : (
-            <div className={classes.noRecordFoundWrapper}>
-              <img src={require('images/ic_records.svg')} />
-              <p>
-                You don’t have any records with us right now. Add a record to keep everything handy in
-                one place!
-            </p>
-            </div>
-          )}
+          <div className={classes.noRecordFoundWrapper}>
+            <img src={require('images/ic_records.svg')} />
+            <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
+          </div>
+        )}
       </div>
+      <Popover
+        open={showPopover}
+        onClose={() => setShowPopover(false)}
+        anchorEl={locationRef.current}
+        classes={{
+          paper: classes.locationPopRoot,
+        }}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <ul>
+          <li className={classes.disabled}>View by</li>
+          <li
+            className={filterApplied === FILTER_TYPE.DATE ? classes.filterActive : ''}
+            onClick={() => {
+              setFilterApplied(FILTER_TYPE.DATE);
+              setShowPopover(false);
+            }}
+          >
+            {FILTER_TYPE.DATE}
+          </li>
+          <li
+            className={filterApplied === FILTER_TYPE.TEST ? classes.filterActive : ''}
+            onClick={() => {
+              setFilterApplied(FILTER_TYPE.TEST);
+              setShowPopover(false);
+            }}
+          >
+            {FILTER_TYPE.TEST}
+          </li>
+          <li
+            className={filterApplied === FILTER_TYPE.PACKAGE ? classes.filterActive : ''}
+            onClick={() => {
+              setFilterApplied(FILTER_TYPE.PACKAGE);
+              setShowPopover(false);
+            }}
+          >
+            {FILTER_TYPE.PACKAGE}
+          </li>
+        </ul>
+      </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };

@@ -3147,7 +3147,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               {convertChatTime(rowData)}
             </Text>
           </View>
-          {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
+          {/* {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
             <View
               style={{
                 width: 244,
@@ -3273,7 +3273,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 {convertChatTime(rowData)}
               </Text>
             </View>
-          )}
+          )} */}
           {/* {checkReschudule && reschduleLoadView(rowData, index, 'Followup')} */}
         </View>
       </>

@@ -50,7 +50,6 @@ const addVoipPushToken: Resolver<
     > = async (parent, { voipPushTokenInput }, { profilesDb }) => {
 
     const {patientId, voipToken} = voipPushTokenInput;
-    console.log("patientId, voipToken > ", patientId, voipToken);
         
     const patientRepo = profilesDb.getCustomRepository(PatientRepository);
     const patient = await patientRepo.getPatientDetails(patientId.toString());

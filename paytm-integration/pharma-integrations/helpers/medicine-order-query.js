@@ -37,7 +37,7 @@ const getMedicineOrderQuery = (method, patientId, orderId) => {
               lastName
               emailAddress
               dateOfBirth
-              
+              mobileNumber
             }
             medicineOrderLineItems{
               medicineSKU
