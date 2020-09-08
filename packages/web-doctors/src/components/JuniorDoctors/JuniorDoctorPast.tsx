@@ -101,7 +101,7 @@ export const JuniorDoctorPast: React.FC = (props) => {
         doctorId: currentDoctor!.id,
         isActive: false,
       },
-      pollInterval: 10 * 1000,
+      pollInterval: 360 * 1000,
       notifyOnNetworkStatusChange: true,
     }
   );
