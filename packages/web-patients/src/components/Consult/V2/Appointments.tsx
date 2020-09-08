@@ -602,7 +602,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
             appointmentDetail.doctorInfo.fullName
               .toLowerCase()
               .includes(searchKeyword.toLowerCase()) ||
-            appointmentDetail.doctorInfo.specialty.name
+            appointmentDetail.doctorInfo.specialty.specialistSingularTerm
               .toLowerCase()
               .includes(searchKeyword.toLowerCase())
           );
