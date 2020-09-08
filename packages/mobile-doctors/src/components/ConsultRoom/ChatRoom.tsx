@@ -254,6 +254,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   height: 180,
                   borderTopLeftRadius: 10,
                   borderTopRightRadius: 10,
+                  backgroundColor: theme.colors.WHITE,
                 }}
               />
             ) : (

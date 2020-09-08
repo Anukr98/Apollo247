@@ -60,10 +60,12 @@ export const AudioVideoStyles = StyleSheet.create({
   patientImageStyle: {
     height: width,
     width: width,
+    backgroundColor: theme.colors.WHITE,
   },
   patientImageMinimizedStyle: {
     width: 155,
     height: 205,
+    backgroundColor: theme.colors.WHITE,
   },
   placeHolderLoaderStyle: {
     height: width,
