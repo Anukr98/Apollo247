@@ -503,9 +503,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 })
                 if (availableInventory && availableInventory.length) {
                   fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, availableInventory);
-                  const formattedDate = moment(deliveryDate, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT)
-                    .format("DD-MMM-YYYY HH:mm")
-                  updateserviceableItemsTat(formattedDate, lookUp);  
+                  updateserviceableItemsTat(deliveryDate, lookUp);  
                 } else {
                   showUnserviceableAlert(updatedCartItems)
                 }
