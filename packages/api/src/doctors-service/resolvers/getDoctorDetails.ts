@@ -114,6 +114,7 @@ export const getDoctorDetailsTypeDefs = gql`
     id: ID!
     languages: String
     lastName: String!
+    mobileNumber: String!
     onlineConsultationFees: String!
     onlineStatus: DOCTOR_ONLINE_STATUS!
     photoUrl: String
