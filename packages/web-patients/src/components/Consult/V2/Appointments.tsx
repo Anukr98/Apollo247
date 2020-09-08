@@ -371,6 +371,14 @@ const useStyles = makeStyles((theme: Theme) => {
         right: 0,
       },
     },
+    disableIcon: {
+      opacity: 0.7,
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        top: -35,
+        right: 0,
+      },
+    },
     modalDialog: {
       display: 'flex',
       alignItems: 'center',
@@ -1165,6 +1173,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                       onClick={() => setSearchClicked(true)}
                     />
                     <AphInput
+                      disabled={appointmentsList && appointmentsList.length === 0}
                       className={
                         searchClicked ? `${classes.searchInputActive}` : `${classes.searchInput}`
                       }
@@ -1201,7 +1210,16 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
 
               <div className={classes.appointmentOptions}>
                 {selectOtherMember('webDisplay')}
-                <div className={classes.filterIcon} onClick={() => setIsFilterOpen(true)}>
+                <div
+                  className={
+                    appointmentsList && appointmentsList.length > 0
+                      ? classes.filterIcon
+                      : classes.disableIcon
+                  }
+                  onClick={() =>
+                    appointmentsList && appointmentsList.length > 0 && setIsFilterOpen(true)
+                  }
+                >
                   <img src={require('images/ic_filterblack.svg')} alt="" />
                 </div>
               </div>
