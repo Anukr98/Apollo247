@@ -460,6 +460,8 @@ const removeGraphQLKeyword = (error: any) => {
   return error.message.replace('GraphQL error:', '');
 };
 
+const stripHtml = (originalString: any) => originalString.replace(/(<([^>]+)>)/gi, '');
+
 export {
   removeGraphQLKeyword,
   getCouponByUserMobileNumber,
@@ -511,4 +513,5 @@ export {
   OUT_OF_STOCK,
   NOTIFY_WHEN_IN_STOCK,
   PINCODE_MAXLENGTH,
+  stripHtml,
 };
