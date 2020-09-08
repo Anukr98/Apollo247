@@ -8,6 +8,7 @@ import { useAuth } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Pagination from '@material-ui/lab/Pagination';
 import { generateSitemap_generateSitemap } from 'graphql/types/generateSitemap';
+import { useParams } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -316,14 +317,13 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const Sitemap: React.FC = (props) => {
   const classes = useStyles({});
-  const [showMore, setShowMore] = useState<Boolean>(false);
-  const [showMore1, setShowMore1] = useState<Boolean>(false);
+  const params = useParams<{ sitemap: string; pageNo: string }>();
   const [sitemapData, setSitemapData] = useState<generateSitemap_generateSitemap | null>(null);
   const [doctorSitemapData, setDoctorSitemapData] = useState([]);
   const [medicineSitemapData, setMedicineSitemapData] = useState([]);
-  const [selected, setSelected] = useState<string>('apolloServices');
+  const [selected, setSelected] = useState<string>(params.sitemap);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
-  const [pageNo, setPageNo] = useState<number>(0);
+  const [pageNo, setPageNo] = useState<number>(parseInt(params.pageNo));
   const apolloClient = useApolloClient();
   const { setIsLoading } = useAuth();
 
@@ -345,21 +345,29 @@ export const Sitemap: React.FC = (props) => {
   }, []);
 
   useEffect(() => {
-    const next = pageNo * 100 - 1;
-    const prev = next - 99;
-    if (selected === 'doctorServices') {
+    const next = pageNo * 1000 - 1;
+    const prev = next - 999;
+    if (selected === 'doctors-sitemap') {
       setDoctorSitemapData(
-        sitemapData.doctorUrls.length > 0 && sitemapData.doctorUrls.slice(prev, next)
+        sitemapData &&
+          sitemapData.doctorUrls &&
+          sitemapData.doctorUrls.length > 0 &&
+          sitemapData.doctorUrls.slice(prev, next)
       );
-    } else if (selected === 'medicineServices') {
+      history.replaceState(null, '', clientRoutes.sitemap('doctors-sitemap', pageNo.toString()));
+    } else if (selected === 'medicines-sitemap') {
       setMedicineSitemapData(
-        sitemapData.medicinesUrls.length > 0 && sitemapData.medicinesUrls.slice(prev, next)
+        sitemapData &&
+          sitemapData.medicinesUrls &&
+          sitemapData.medicinesUrls.length > 0 &&
+          sitemapData.medicinesUrls.slice(prev, next)
       );
+      history.replaceState(null, '', clientRoutes.sitemap('medicines-sitemap', pageNo.toString()));
     }
-  }, [pageNo, selected]);
+  }, [pageNo, selected, sitemapData]);
 
   const currentServiceLength =
-    selected === 'doctorServices'
+    selected === 'doctors-sitemap'
       ? sitemapData && sitemapData.doctorUrls && sitemapData.doctorUrls.length
       : sitemapData && sitemapData.medicinesUrls && sitemapData.medicinesUrls.length;
 
@@ -402,9 +410,9 @@ export const Sitemap: React.FC = (props) => {
                       />
                     )}
                     <Typography>
-                      {selected === 'apolloServices'
+                      {selected === 'sitemap'
                         ? 'Apollo 24|7 Services'
-                        : selected === 'doctorServices'
+                        : selected === 'doctors-sitemap'
                         ? 'Doctor Sitemap'
                         : 'Medicine Sitemap'}
                     </Typography>
@@ -415,34 +423,43 @@ export const Sitemap: React.FC = (props) => {
                     }`}
                   >
                     <div className={classes.sitemapListContent}>
-                      <ul
-                        className={`${classes.sitemapList} ${showMore ? classes.heightFull : ''}`}
-                      >
+                      <ul className={`${classes.sitemapList}`}>
                         <li
-                          className={selected === 'apolloServices' ? 'active' : ''}
+                          className={selected === 'sitemap' ? 'active' : ''}
                           onClick={() => {
-                            setSelected('apolloServices');
+                            setSelected('sitemap');
                             setIsMenuOpen(false);
+                            history.replaceState(null, '', clientRoutes.sitemap('sitemap', '1'));
                           }}
                         >
                           <a>Apollo 24|7 Services</a>
                         </li>
                         <li
-                          className={selected === 'doctorServices' ? 'active' : ''}
+                          className={selected === 'doctors-sitemap' ? 'active' : ''}
                           onClick={() => {
-                            setSelected('doctorServices');
+                            setSelected('doctors-sitemap');
                             setPageNo(1);
                             setIsMenuOpen(false);
+                            history.replaceState(
+                              null,
+                              '',
+                              clientRoutes.sitemap('doctors-sitemap', '1')
+                            );
                           }}
                         >
                           <a>Doctor Sitemap</a>
                         </li>
                         <li
-                          className={selected === 'medicineServices' ? 'active' : ''}
+                          className={selected === 'medicines-sitemap' ? 'active' : ''}
                           onClick={() => {
-                            setSelected('medicineServices');
+                            setSelected('medicines-sitemap');
                             setPageNo(1);
                             setIsMenuOpen(false);
+                            history.replaceState(
+                              null,
+                              '',
+                              clientRoutes.sitemap('medicines-sitemap', '1')
+                            );
                           }}
                         >
                           <a>Medicine Sitemap</a>
@@ -454,10 +471,10 @@ export const Sitemap: React.FC = (props) => {
               </Grid>
               <Grid item xs={12} sm={8} className={classes.gridClass}>
                 <div className={classes.sitemapListContainer}>
-                  {selected !== 'apolloServices' && (
+                  {selected !== 'sitemap' && (
                     <div className={classes.paginationContainer}>
                       <Pagination
-                        count={Math.ceil(currentServiceLength / 100)}
+                        count={Math.ceil(currentServiceLength / 1000)}
                         classes={{ ul: classes.paginationUl }}
                         page={pageNo}
                         onChange={(e, value) => setPageNo(value)}
@@ -466,7 +483,7 @@ export const Sitemap: React.FC = (props) => {
                     </div>
                   )}
                   <div className={classes.sitemapLinkContainer}>
-                    {selected === 'apolloServices' ? (
+                    {selected === 'sitemap' ? (
                       <>
                         <div className={classes.sLinkContent}>
                           <Typography component="h3" className={classes.categoryTitle}>
@@ -544,9 +561,10 @@ export const Sitemap: React.FC = (props) => {
                             ))}
                         </div>
                       </>
-                    ) : selected === 'medicineServices' ? (
+                    ) : selected === 'medicines-sitemap' ? (
                       <div className={classes.sLinkContent}>
-                        {medicineSitemapData.length > 0 &&
+                        {medicineSitemapData &&
+                          medicineSitemapData.length > 0 &&
                           medicineSitemapData.map((key) => (
                             <ul className={classes.smLinkList}>
                               <li>
@@ -556,9 +574,10 @@ export const Sitemap: React.FC = (props) => {
                           ))}
                       </div>
                     ) : (
-                      selected === 'doctorServices' && (
+                      selected === 'doctors-sitemap' && (
                         <div className={classes.sLinkContent}>
-                          {doctorSitemapData.length > 0 &&
+                          {doctorSitemapData &&
+                            doctorSitemapData.length > 0 &&
                             doctorSitemapData.map((key) => (
                               <ul className={classes.smLinkList}>
                                 <li>
