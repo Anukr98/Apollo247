@@ -975,6 +975,7 @@ const getDoctorList: Resolver<
     body: {
       from: offset,
       size: pageSize,
+      _source: ["doctorId", "displayName", "specialty", "experience", "photoUrl", "thumbnailUrl", "qualification", "onlineConsultationFees",  "physicalConsultationFees","doctorType", "facility", "consultHours", "doctorSlots"],
       query: {
         bool: {
           must: elasticMatch,
