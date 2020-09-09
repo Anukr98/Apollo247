@@ -1340,12 +1340,12 @@ export const addPharmaItemToCart = (
   },
   onComplete?: () => void
 ) => {
-  const unServiceableMsg = 'Sorry, not serviceable in your area.';
+  const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
   const navigate = () => {
     navigation.navigate(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
-      deliveryError: unServiceableMsg,
+      deliveryError: outOfStockMsg,
     });
   };
 
