@@ -155,6 +155,7 @@ export interface GetTatResponse247 {
     tat: string;
     tatU: number;
     inventoryExist: boolean;
+    storeType: string;
   };
   errorMSG?: string;
 }

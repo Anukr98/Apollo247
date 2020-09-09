@@ -239,6 +239,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const scrollViewRef = useRef<ScrollView | null>();
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
   const [alertShown, setAlertShown] = useState<boolean>(false);
+  const [storeType, setStoreType] = useState('')
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
@@ -504,6 +505,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   }
                 })
                 if (availableInventory && availableInventory.length) {
+                  setStoreType(tatRes?.data?.response?.storeType)
                   fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, availableInventory);
                   updateserviceableItemsTat(deliveryDate, lookUp);  
                 } else {
@@ -1781,10 +1783,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
         deliveryTime,
         isChennaiOrder: true,
+        tatType: storeType
       });
     } else {
       props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
         deliveryTime,
+        tatType: storeType
       });
     }
   };
