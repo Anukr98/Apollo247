@@ -47,14 +47,27 @@ const howItWorksArrData = [
   'Choose doctor',
   'Book Appointment',
 ];
-let insertMessage: object[] = [];
+
+interface Message {
+  text: string;
+  isSentByPatient?: boolean;
+}
+
+let insertMessage: Message[] = [];
+
+interface Symptoms {
+  id: string;
+  name: string;
+}
+
+interface DefaultSymptoms {
+  name: string;
+  id: string;
+  description: string;
+  url?: string;
+}
 
 interface SymptomTrackerProps extends NavigationScreenProps {}
-interface Patient {
-  name: string;
-  gender: string;
-  age: number;
-}
 interface Symptoms {
   name: string;
   id: string;
@@ -67,11 +80,11 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [selectedPatient, setSelectedPatient] = useState<any>();
   const [showHowItWorks, setShowHowItWorks] = useState<boolean>(true);
-  const [messages, setMessages] = useState<any>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [symptoms, setSymptoms] = useState<Symptoms[]>([]);
-  const [specialities, setSpecialities] = useState<any>([]);
+  const [specialities, setSpecialities] = useState<Symptoms[]>([]);
   const [chatId, setChatId] = useState<string>('');
-  const [defaultSymptoms, setDefaultSymptoms] = useState<object[]>([]);
+  const [defaultSymptoms, setDefaultSymptoms] = useState<DefaultSymptoms[]>([]);
   const [chatEnded, setChatEnded] = useState<boolean>(false);
   const [restartVisible, setRestartVisible] = useState<boolean>(false);
   const [showInfo, setShowInfo] = useState<boolean>(false);
@@ -242,7 +255,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     };
     try {
       const res = await startSymptomTrackerChat(body);
-      if (res && res.data && res.data.dialogue) {
+      if (res?.data?.dialogue) {
         if (insertMessage.length === 0) {
           insertMessage = [{ text: res.data.dialogue.text }];
         } else {
@@ -534,7 +547,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const fetchSymptoms = async () => {
     try {
       const res = await getSymptomsFromTracker(chatId);
-      if (res && res.data && res.data.symptoms) {
+      if (res?.data?.symptoms) {
         setSymptoms(res.data.symptoms);
         setSpecialities(res.data.specialities);
         setTimeout(() => {
@@ -559,7 +572,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     };
     try {
       const res = await updateSymptomTrackerChat(chat_id, body);
-      if (res && res.data && res.data.dialogue) {
+      if (res?.data?.dialogue) {
         insertMessage = insertMessage.concat({ text: res.data.dialogue.text });
         setDefaultSymptoms(res.data.dialogue.options);
         setTimeout(() => {

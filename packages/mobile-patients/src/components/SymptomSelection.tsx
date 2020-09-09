@@ -103,7 +103,7 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
 
     try {
       const res = await autocompleteSymptoms(chatId, queryParams);
-      if (res && res.data && res.data.results) {
+      if (res?.data?.results) {
         setSymptoms(res.data.results);
         setLoading(false);
       }
