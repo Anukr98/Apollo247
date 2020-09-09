@@ -29,6 +29,7 @@ export interface RateCallProps {
     videoFeedbacks: {}[];
   }) => void;
   visible: boolean;
+  setGiveRating: (flag: boolean) => void;
 }
 
 const StyledRating = withStyles({
@@ -113,7 +114,6 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
   const [isOtherVideoFeedback, setIsOtherVideoFeedback] = useState<boolean>(false);
   const hasFeedbackIssue = rating !== 0 && rating < 3;
   const isBtnDisabled = rating < 3 && audioFeedbacks.length === 0 && videoFeedbacks.length === 0;
-  const [showDialog, setShowDialog] = useState<boolean>(props.visible);
 
   useEffect(() => {
     const otherAudioFeedback = audioFeedbacks.filter(
@@ -286,7 +286,7 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
       <AphButton
         title="CANCEL"
         className={classes.submitButton}
-        onClick={() => setShowDialog(false)}
+        onClick={() => props.setGiveRating(false)}
       >
         CANCEL
       </AphButton>
@@ -356,7 +356,7 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
   };
 
   return (
-    <Dialog open={showDialog}>
+    <Dialog open={props.visible}>
       <DialogContent className={classes.dialogContainer}>
         <div>
           <Typography className={classes.title}>
