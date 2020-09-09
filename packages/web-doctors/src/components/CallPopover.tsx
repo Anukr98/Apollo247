@@ -1051,7 +1051,7 @@ const useStyles = makeStyles((theme: Theme) => {
       left: 0,
       bottom: 0,
       padding: 20,
-      zIndex: 2,
+      zIndex: 999,
       borderRadius: '15px 15px 0 0',
     },
     joinPromptText: {
@@ -1070,7 +1070,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'fixed',
       width: '100%',
       height: '100%',
-      zIndex: 2,
+      zIndex: 999,
     },
   };
 });
