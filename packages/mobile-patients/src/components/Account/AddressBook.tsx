@@ -19,7 +19,7 @@ import { useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { formatAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { formatAddressWithLandmark } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 
@@ -38,6 +38,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(14),
     lineHeight: 20,
     color: theme.colors.SHERPA_BLUE,
+    paddingTop: 7,
   },
 });
 
@@ -109,7 +110,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
         onPress={() => updateDataAddres('Update', address)}
       >
         <View style={styles.cardStyle} key={index}>
-          <Text style={styles.textStyle}>{formatAddress(address)}</Text>
+          <Text style={styles.textStyle}>{formatAddressWithLandmark(address)}</Text>
           <CapsuleView
             title={
               address.addressType === PATIENT_ADDRESS_TYPE.OTHER
