@@ -125,7 +125,11 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .filter((item, idx, array) => array.indexOf(item) === idx)
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-  return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+    return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+};
+
+export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  return `${address.name}\n${address.mobileNumber}`;
 };
 
 export const followUpChatDaysCaseSheet = (
@@ -1340,12 +1344,12 @@ export const addPharmaItemToCart = (
   },
   onComplete?: () => void
 ) => {
-  const unServiceableMsg = 'Sorry, not serviceable in your area.';
+  const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
   const navigate = () => {
     navigation.navigate(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
-      deliveryError: unServiceableMsg,
+      deliveryError: outOfStockMsg,
     });
   };
 

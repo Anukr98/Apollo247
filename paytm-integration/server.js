@@ -1166,6 +1166,8 @@ app.get('/processOmsOrders', (req, res) => {
                   customercomment: orderDetails.customerComment || '',
                   landmark: landmark,
                   issubscribe: false,
+                  tattype: orderDetails.tatType || '',
+                  orderchannel: orderDetails.bookingSource || '',
                   customerdetails: {
                     billingaddress: deliveryAddress.trim(),
                     billingpincode: deliveryZipcode,

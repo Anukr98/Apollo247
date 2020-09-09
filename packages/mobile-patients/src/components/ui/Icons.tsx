@@ -898,7 +898,9 @@ export const OnlineHeader: React.FC<IconProps> = (props) => (
 export const CTDoctor: React.FC<IconProps> = (props) => (
   <IconBase size="sm_l" {...props} source={require('./icons/ct_doctor.png')} />
 );
-
+export const CTPhone: React.FC<IconProps> = (props) => (
+  <IconBase size="sm_l" {...props} source={require('./icons/ct_phone.png')} />
+);
 export const CTCalender: React.FC<IconProps> = (props) => (
   <IconBase size="sm_l" {...props} source={require('./icons/ct_calender.png')} />
 );
@@ -999,4 +1001,12 @@ export const PlusIconWhite: React.FC<IconProps> = (props) => (
 
 export const MinusIconWhite: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/minus-icon-white.png')} />
+);
+
+export const BotIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/bot.png')} />
+);
+
+export const InfoIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/info.png')} />
 );

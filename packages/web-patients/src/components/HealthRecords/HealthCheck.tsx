@@ -279,7 +279,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     reportsDetails: {
-      paddingLeft: 10,
+      paddingLeft: 0,
       paddingRight: 10,
       [theme.breakpoints.down('xs')]: {
         paddingLeft: 5,
@@ -334,11 +334,11 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 5,
     },
     testName: {
-      fontSize: 16,
+      fontSize: 20,
       color: '#01475b',
       fontWeight: 500,
       marginBottom: 12,
-      lineHeight: '21px',
+      lineHeight: '28px',
     },
     checkDate: {
       fontSize: 14,

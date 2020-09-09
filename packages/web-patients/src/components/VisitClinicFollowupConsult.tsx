@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem, CircularProgress, Grid } from '@material-ui/core';
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { AphButton, AphSelect, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
+import { AphButton, AphSelect } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
 import Scrollbars from 'react-custom-scrollbars';
@@ -26,6 +26,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import moment from 'moment';
 import { gtmTracking, _cbTracking } from '../gtmTracking';
+import { AppointmentType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -187,8 +188,8 @@ const getYyMmDd = (ddmmyyyy: string) => {
 
 interface VisitClinicFollowupConsultProps {
   doctorDetails: DoctorDetails;
-  setSelectedSlot: (selectedSlot: string) => void;
   setIsPopoverOpen: (isPopoverOpen: boolean) => void;
+  appointmentId: string;
 }
 
 export const VisitClinicFollowupConsult: React.FC<VisitClinicFollowupConsultProps> = (props) => {
@@ -196,7 +197,7 @@ export const VisitClinicFollowupConsult: React.FC<VisitClinicFollowupConsultProp
   let appointmentDateTime = '';
   const { currentPatient } = useAllCurrentPatients();
   const { currentLocation, currentLat, currentLong } = useContext(LocationContext);
-  const { doctorDetails, setSelectedSlot, setIsPopoverOpen } = props;
+  const { doctorDetails, setIsPopoverOpen, appointmentId } = props;
   const [dateSelected, setDateSelected] = useState<string>('');
   const [timeSelected, setTimeSelected] = useState<string>('');
   const [clinicSelected, setClinicSelected] = useState<string>('');
@@ -434,19 +435,57 @@ export const VisitClinicFollowupConsult: React.FC<VisitClinicFollowupConsultProp
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
-        <AphButton
-          color="primary"
-          disabled={disableSubmit || mutationLoading || !timeSelected}
+        {/* <AphButton
+
           onClick={() => {
             setMutationLoading(true);
             setSelectedSlot(appointmentDateTime);
             setMutationLoading(false);
             setIsPopoverOpen(false);
           }}
-          className={disableSubmit || mutationLoading || !timeSelected ? classes.buttonDisable : ''}
+
         >
           {mutationLoading ? <CircularProgress size={22} color="secondary" /> : 'Book Followup'}
-        </AphButton>
+        </AphButton> */}
+        <Link to={clientRoutes.payOnlineClinicConsult()}>
+          <AphButton
+            color="primary"
+            disabled={disableSubmit || mutationLoading || !timeSelected}
+            onClick={() => {
+              localStorage.setItem(
+                'consultBookDetails',
+                JSON.stringify({
+                  patientId: currentPatient ? currentPatient.id : '',
+                  doctorId: doctorDetails.id,
+                  doctorName: doctorDetails.fullName,
+                  appointmentDateTime: appointmentDateTime,
+                  appointmentType: AppointmentType.PHYSICAL,
+                  hospitalId:
+                    doctorDetails &&
+                    doctorDetails.doctorHospital[0] &&
+                    doctorDetails.doctorHospital[0].facility
+                      ? doctorDetails.doctorHospital[0].facility.id
+                      : '',
+                  couponCode: null,
+                  amount: doctorDetails.onlineConsultationFees,
+                  speciality:
+                    doctorDetails && doctorDetails.specialty ? doctorDetails.specialty.name : '',
+                  appointmentId,
+                  type: 'followup',
+                })
+              );
+            }}
+            className={
+              disableSubmit || mutationLoading || !timeSelected ? classes.buttonDisable : ''
+            }
+          >
+            {mutationLoading ? (
+              <CircularProgress size={22} color="secondary" />
+            ) : (
+              `PAY Rs. ${doctorDetails.onlineConsultationFees}`
+            )}
+          </AphButton>
+        </Link>
       </div>
     </div>
   );

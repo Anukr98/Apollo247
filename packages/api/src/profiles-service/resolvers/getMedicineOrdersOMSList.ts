@@ -41,6 +41,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     quoteId: String
     shopId: String
     shopAddress: String
+    tatType: String
     estimatedAmount: Float
     patientId: ID!
     deliveryType: MEDICINE_DELIVERY_TYPE!

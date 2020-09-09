@@ -787,19 +787,19 @@ const useStyles = makeStyles((theme: Theme) =>
       marginBottom: 10,
     },
     selectedList: {
-      height: 300,
-      overflow: 'auto',
+      // height: 300,
+      // overflow: 'auto',
 
-      '&::-webkit-scrollbar': {
-        width: 2,
-      },
-      '&::-webkit-scrollbar-track': {
-        background: 'transparent',
-        margin: '0 10px 0 0',
-      },
-      '&::-webkit-scrollbar-thumb': {
-        background: '#888',
-      },
+      // '&::-webkit-scrollbar': {
+      //   width: 2,
+      // },
+      // '&::-webkit-scrollbar-track': {
+      //   background: 'transparent',
+      //   margin: '0 10px 0 0',
+      // },
+      // '&::-webkit-scrollbar-thumb': {
+      //   background: '#888',
+      // },
       '& li': {
         padding: '10px 40px 10px 10px !important',
         background: 'rgba(0,0,0,0.02)',
@@ -2680,16 +2680,16 @@ export const MedicinePrescription: React.FC = () => {
                   <img src={require('images/add_doctor_white.svg')} alt="" />
                 </AphButton>,
               ];
-          const genericName = (
-            <span>
-              {medicine.includeGenericNameInPrescription!  &&
-                medicine.genericName &&
-                medicine.genericName !== null &&
-                medicine.genericName.trim().length > 0 && (
-                  <h6>{`Contains ${medicine.genericName}`}</h6>
-                )}
-            </span>
-          );
+        const genericName = (
+          <span>
+            {medicine.includeGenericNameInPrescription! &&
+              medicine.genericName &&
+              medicine.genericName !== null &&
+              medicine.genericName.trim().length > 0 && (
+                <h6>{`Contains ${medicine.genericName}`}</h6>
+              )}
+          </span>
+        );
         return (
           <li
             style={{ position: 'relative' }}

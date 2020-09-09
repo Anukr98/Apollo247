@@ -829,6 +829,7 @@ interface ChatWindowProps {
   jrDoctorJoined: boolean;
   setJrDoctorJoined: (jrDoctorJoined: boolean) => void;
   setSrDoctorJoined: (srDoctorJoined: boolean) => void;
+  setIsConsultCompleted: (isConsultCompleted: boolean) => void;
   appointmentDetails: AppointmentHistory;
 }
 
@@ -2149,6 +2150,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   ) {
                     props.setSrDoctorJoined(
                       messageDetails.message === autoMessageStrings.startConsultMsg
+                    );
+                    props.setIsConsultCompleted(
+                      messageDetails.message === autoMessageStrings.appointmentComplete
                     );
                     return null;
                   }

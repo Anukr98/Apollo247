@@ -11,7 +11,15 @@ module.exports = async (req, res) => {
   // variable to log order id in catch
   let orderId;
   try {
-    let { oid: orderAutoId, pid: patientId, amount, hc: healthCredits } = req.query;
+    let {
+      oid: orderAutoId,
+      pid: patientId,
+      amount,
+      hc: healthCredits,
+      paymentTypeID,
+      paymentModeOnly,
+      bankCode
+    } = req.query;
     orderId = orderAutoId;
 
     logger.info(`${orderId} - paymed-request-input -  ${JSON.stringify(req.query)}`);
@@ -54,16 +62,7 @@ module.exports = async (req, res) => {
       response.data.data.getMedicineOrderOMSDetails.medicineOrderDetails
     ) {
       logger.info(`${orderId} - getMedicineOrderDetails -  ${JSON.stringify(response.data)}`);
-      let addParams = {};
 
-      /**
-       * If paymentModeOnly key == 'YES' then add additional params
-       * I.E AUTH_MODE|BANK_CODE|PAYMENT_TYPE_ID
-       */
-      if (req.query.paymentModeOnly === PAYMENT_MODE_ONLY_TRUE) {
-        addParams = singlePaymentAdditionalParams(req.query.paymentTypeID, req.query.bankCode);
-        addParams['PAYMENT_MODE_ONLY'] = req.query.paymentModeOnly;
-      }
       const {
         orderAutoId: responseOrderId,
         estimatedAmount: responseAmount,
@@ -85,13 +84,35 @@ module.exports = async (req, res) => {
       }
       const merc_unq_ref = `${bookingSource}:${healthCredits}`;
 
+      if (!paymentTypeID.trim() && amount === 0) {
+        const response = await saveMedicineOrder({
+          orderId,
+          healthCredits,
+          paymentStatus: "TXN_SUCCESS",
+          amountPaid: amount
+        });
+        if (!response) {
+          return res.redirect(`/mob-error?status=failed`);
+        } else {
+          return res.redirect(`/mob?status=success`);
+        }
+      }
+      let addParams = {};
+      /**
+       * If paymentModeOnly key == 'YES' then add additional params
+       * I.E AUTH_MODE|BANK_CODE|PAYMENT_TYPE_ID
+       */
+      if (paymentModeOnly === PAYMENT_MODE_ONLY_TRUE && paymentTypeID.trim()) {
+        addParams = singlePaymentAdditionalParams(paymentTypeID, bankCode);
+        addParams['PAYMENT_MODE_ONLY'] = req.query.paymentModeOnly;
+      }
       const success = await initPayment(
         patientId,
         responseOrderId.toString(),
         amount,
         merc_unq_ref,
         addParams,
-        req.query.paymentTypeID
+        paymentTypeID
       );
       return res.render('paytmRedirect.ejs', {
         resultData: success,
@@ -117,3 +138,31 @@ module.exports = async (req, res) => {
     });
   }
 };
+
+async function saveMedicineOrder(payload) {
+  axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;;
+  // this needs to be altered later.
+  const requestJSON = {
+    query:
+      'mutation { SaveMedicineOrderPaymentMq(medicinePaymentMqInput: { orderId: "0", orderAutoId: ' +
+      payload.orderId +
+      ', paymentType: CASHLESS, amountPaid: ' +
+      payload.amountPaid +
+      ', paymentStatus: "' +
+      payload.paymentStatus +
+      '", paymentDateTime: "' +
+      new Date(new Date().toUTCString()).toISOString() +
+      '", responseCode: "",' +
+      'responseMessage: "",' +
+      'healthCredits: ' +
+      payload.healthCredits +
+      '}){ errorCode, errorMessage,orderStatus }}',
+  };
+
+  /// write medicineoirder
+  const response = await axios.post(process.env.API_URL, requestJSON);
+  if (response.data && response.data.errors) {
+    throw new Error(response.data.errors[0].message);
+  }
+  return response;
+}
