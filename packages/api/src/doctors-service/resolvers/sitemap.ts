@@ -91,7 +91,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
       const url = process.env.SITEMAP_BASE_URL + 'specialties/' + specialtyName;
       const urlInfo: SitemapUrls = {
         url,
-        urlName: specialtyName,
+        urlName: specialty.specialistPluralTerm,
       };
       specialityUrls.push(urlInfo);
       const specialtyStr =
@@ -130,7 +130,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
   );
   const textRes = await listResp.text();
   const cmsUrlsList = JSON.parse(textRes);
-
+  console.log(cmsUrlsList, 'cmsUrlsList');
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cmsUrlsList.data.forEach((link: any) => {
