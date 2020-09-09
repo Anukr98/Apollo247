@@ -410,10 +410,10 @@ interface SymptomsDiseases {
   url?: string;
 }
 
-interface SymptomsSpecialities {
-  departmentID: string[];
-  description: string;
-  diseases: string[];
+export interface SymptomsSpecialities {
+  departmentID?: string[];
+  description?: string;
+  diseases?: string[];
   name: string;
 }
 

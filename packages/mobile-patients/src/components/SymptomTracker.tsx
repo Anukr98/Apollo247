@@ -38,6 +38,7 @@ import {
   SymptomTrackerChatRequest,
   DefaultSymptoms,
   UpdateSymptomTrackerChatRequest,
+  SymptomsSpecialities,
 } from '../helpers/apiCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AlertPopup } from './ui/AlertPopup';
@@ -74,7 +75,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [showHowItWorks, setShowHowItWorks] = useState<boolean>(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [symptoms, setSymptoms] = useState<Symptoms[]>([]);
-  const [specialities, setSpecialities] = useState<Symptoms[]>([]);
+  const [specialities, setSpecialities] = useState<SymptomsSpecialities[]>([]);
   const [chatId, setChatId] = useState<string>('');
   const [defaultSymptoms, setDefaultSymptoms] = useState<DefaultSymptoms[]>([]);
   const [chatEnded, setChatEnded] = useState<boolean>(false);
@@ -617,7 +618,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
           title={string.symptomChecker.consultDoctor}
           style={[styles.proceedBtn, { marginTop: 0 }]}
           onPress={() => {
-            const filteredSpecialities = specialities.map((item: any) => {
+            const filteredSpecialities: string[] = specialities.map((item: any) => {
               return item.name;
             });
             props.navigation.navigate(AppRoutes.DoctorSearchListing, {
