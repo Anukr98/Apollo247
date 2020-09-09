@@ -25,7 +25,6 @@ import {
 import { Link, Route } from 'react-router-dom';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useMutation } from 'react-apollo-hooks';
-import { BOOK_FOLLOWUP_APPOINTMENT } from 'graphql/consult';
 import { OnlineConsult } from 'components/OnlineConsult';
 import { BookFollowupConsult } from 'components/BookFollowupConsult';
 import {
@@ -508,7 +507,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const client = useApolloClient();
   const mascotRef = useRef(null);
   const [appointmentData, setAppointmentData] = useState<AppointmentDetails | null>(null);
-  // const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [isChangeSlot, setIsChangeSlot] = useState<boolean>(false);
   const [openSlotPopup, setOpenSlotPopup] = useState<boolean>(false);
   const [alertMessage, setAlertMessage] = useState<string>('');
@@ -519,11 +517,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
   const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
   const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [followupSuccessPopup, setFollowupSuccessPopup] = useState<boolean>(false);
   const [doctorSelectedSlot, setDoctorSelectedSlot] = useState<string | null>(null);
   const [doctorSelectedSlotLoading, setDoctorSelectedSlotLoading] = useState<boolean>(false);
-  const [followupAppointmentType, setFollwupAppoitnmentType] = useState<number>(0);
 
   const otherDateMarkup = (appointmentTime: number) => {
     if (isToday(new Date(appointmentTime))) {
@@ -743,38 +738,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     rescheduleAPI(bookRescheduleInput, TRANSFER_INITIATED_TYPE.DOCTOR);
   };
 
-  const bookFollowupMutation = useMutation(BOOK_FOLLOWUP_APPOINTMENT);
-
   const bookFollowup = (appointmentDetails: AppointmentDetails) => {
     setAppointmentData(appointmentDetails);
     setOpenSlotPopup(true);
   };
-
-  useEffect(() => {
-    if (selectedSlot && appointmentData) {
-      const input = {
-        patientId: appointmentData.patientId,
-        doctorId: appointmentData.doctorId,
-        appointmentDateTime: selectedSlot,
-        appointmentType:
-          followupAppointmentType === 0 ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
-        hospitalId: appointmentData.hospitalId,
-        followUpParentId: appointmentData.id,
-      };
-      bookFollowupMutation({
-        variables: {
-          followUpAppointmentInput: input,
-        },
-        fetchPolicy: 'no-cache',
-      })
-        .then((_data: any) => {
-          setFollowupSuccessPopup(true);
-        })
-        .catch((e: any) => {
-          console.log('Error occured while BookFollowUpAppointment ', { e });
-        });
-    }
-  }, [selectedSlot]);
 
   const getAppointmentNextSlotInitiatedByDoctor = (appointmentDetails: AppointmentDetails) => {
     setAppointmentData(appointmentDetails);
@@ -1126,8 +1093,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
           <BookFollowupConsult
             setIsPopoverOpen={setOpenSlotPopup}
             doctorId={appointmentData.doctorId}
-            setSelectedSlot={setSelectedSlot}
-            setFollwupAppoitnmentType={setFollwupAppoitnmentType}
+            appointmentId={appointmentData.id}
           />
         </Modal>
       )}
@@ -1165,47 +1131,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
               <div className={classes.actions}>
                 <AphButton
                   onClick={() => {
-                    window.location.href = clientRoutes.appointments();
-                  }}
-                >
-                  OK, GOT IT
-                </AphButton>
-              </div>
-            </div>
-          </div>
-        </Popover>
-      )}
-      {appointmentData && selectedSlot && (
-        <Popover
-          open={followupSuccessPopup}
-          anchorEl={mascotRef.current}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          classes={{ paper: classes.bottomPopover }}
-        >
-          <div className={classes.successPopoverWindow}>
-            <div className={classes.windowWrap}>
-              <div className={classes.mascotIcon}>
-                <img src={require('images/ic-mascot.png')} alt="" />
-              </div>
-              <div className={classes.windowBody}>
-                <p>`Hi! :)`</p>
-                <p>
-                  Your followup appointment with Dr.
-                  {` ${appointmentData.doctorInfo && appointmentData.doctorInfo.fullName} `}
-                  booked on - {moment(selectedSlot).format('Do MMMM, dddd \nhh:mm a')}
-                </p>
-              </div>
-              <div className={classes.actions}>
-                <AphButton
-                  onClick={() => {
-                    setSelectedSlot(null);
                     window.location.href = clientRoutes.appointments();
                   }}
                 >
