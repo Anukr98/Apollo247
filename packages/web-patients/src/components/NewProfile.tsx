@@ -20,6 +20,7 @@ import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
 import { Alerts } from 'components/Alerts/Alerts';
 import { webengageUserLoginTracking, webengageUserDetailTracking } from '../webEngageTracking';
+import { LazyIntersection } from './lib/LazyIntersection';
 
 const isoDatePattern = 'yyyy-MM-dd';
 const clientDatePattern = 'dd/MM/yyyy';
@@ -298,7 +299,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
           return (
             <Form>
               <div className={classes.mascotIcon}>
-                <img src={require('images/ic-mascot.png')} alt="" />
+                <LazyIntersection src={require('images/ic-mascot.png')} alt="" />
               </div>
               <div className={classes.customScrollBar}>
                 <div className={classes.signinGroup}>

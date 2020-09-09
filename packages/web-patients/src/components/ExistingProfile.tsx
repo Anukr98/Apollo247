@@ -16,6 +16,7 @@ import format from 'date-fns/format';
 import parseISO from 'date-fns/parseISO';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Alerts } from 'components/Alerts/Alerts';
+import { LazyIntersection } from './lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -284,7 +285,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
   return (
     <div className={classes.signUpPop} data-cypress="ExistingProfile">
       <div className={classes.mascotIcon}>
-        <img src={require('images/ic-mascot.png')} alt="" />
+        <LazyIntersection src={require('images/ic-mascot.png')} alt="" />
       </div>
       <div className={classes.customScrollBar}>
         <div className={classes.signinGroup}>
