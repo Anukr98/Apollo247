@@ -89,6 +89,9 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 12,
       },
     },
+    backArrow: {
+      cursor: 'pointer',
+    },
   };
 });
 
@@ -212,6 +215,9 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
 
   return (
     <div className={`${classes.loginFormWrap}`}>
+      <div className={classes.backArrow}>
+        <img src={require('images/ic_loginback.svg')} />
+      </div>
       <Typography variant="h2">
         {(verifyOtpError && otpSubmitCount === 3) || otpExeedError ? 'oops!' : 'great'}
       </Typography>
