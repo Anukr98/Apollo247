@@ -55,17 +55,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-// import { WebView } from 'react-native-webview';
 import firebase from 'react-native-firebase';
 import Hyperlink from 'react-native-hyperlink';
 import SmsRetriever from 'react-native-sms-retriever';
 import { WebView } from 'react-native-webview';
-// import SmsListener from 'react-native-android-sms-listener';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { Relation } from '../graphql/types/globalTypes';
-import { resendOTP, verifyOTP } from '../helpers/loginCalls';
-import { ApolloLogo } from './ApolloLogo';
-import { BottomPopUp } from './ui/BottomPopUp';
+import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { resendOTP, verifyOTP } from '@aph/mobile-patients/src/helpers/loginCalls';
+import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 
 const { height, width } = Dimensions.get('window');
 
