@@ -676,7 +676,8 @@ export const ChatRoom: React.FC = () => {
                   {displayId && <span className={classes.caseNumber}>Case #{displayId} </span>}
                   {appointmentDetails &&
                     appointmentDetails.status !== STATUS.CANCELLED &&
-                    appointmentDetails.status !== STATUS.COMPLETED && (
+                    appointmentDetails.status !== STATUS.COMPLETED &&
+                    !srDoctorJoined && (
                       <div className={classes.headerActions}>
                         <AphButton
                           disabled={appointmentDetails.isSeniorConsultStarted || srDoctorJoined}
