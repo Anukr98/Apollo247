@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-const useIO = (options: any) => {
+export const useIO = (options: any) => {
   const [elements, setElements] = useState([]);
   const [entries, setEntries] = useState([]);
 
@@ -33,5 +33,3 @@ const useIO = (options: any) => {
 
   return [observer.current, setElements, entries];
 };
-
-export default useIO;

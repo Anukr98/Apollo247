@@ -11,7 +11,7 @@ export interface ImageInterface {
   srcSet?: any;
 }
 
-const Image: React.FC<ImageInterface> = ({
+export const Image: React.FC<ImageInterface> = ({
   src,
   srcSet,
   alt,
@@ -41,5 +41,3 @@ Image.defaultProps = {
   onClick: () => {},
   isLazy: false,
 };
-
-export default Image;
