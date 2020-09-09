@@ -407,7 +407,7 @@ export const Sitemap: React.FC = (props) => {
           <div className={classes.sitemapHeader}>
             <div className={classes.sectionTitle}>
               <Typography component="h2">
-                <span className={classes.font48}>A</span>PPOLO 24|7 SITE MAP
+                <span className={classes.font48}>A</span>POLLO 24|7 SITE MAP
               </Typography>
             </div>
             <ol className={classes.breadcrumbs}>
