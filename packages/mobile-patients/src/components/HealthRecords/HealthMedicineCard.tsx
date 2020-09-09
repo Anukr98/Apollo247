@@ -1,15 +1,12 @@
 import { More, TrackerBig } from '@aph/mobile-patients/src/components/ui/Icons';
-import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
 } from '../../graphql/types/getPatientPrismMedicalRecords';
@@ -72,28 +69,6 @@ const styles = StyleSheet.create({
   },
 });
 
-type rowData = {
-  id?: string;
-  salutation?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
-  fullName?: string | null;
-  qualification?: string | null;
-  mobileNumber?: string;
-  experience?: string | null;
-  specialization?: string | null;
-  languages?: string | null;
-  city?: string | null;
-  awards?: string | null;
-  photoUrl?: string | null;
-  specialty?: getDoctorDetailsById_getDoctorDetailsById_specialty;
-  registrationNumber?: string;
-  onlineConsultationFees?: string;
-  physicalConsultationFees?: string;
-  status: string;
-  desease: string;
-};
-
 export interface HealthMedicineCardProps {
   onPressDelete?: () => void;
   onPressOrder?: () => void;
@@ -101,10 +76,37 @@ export interface HealthMedicineCardProps {
   disableDelete?: boolean;
   datalab?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response;
   dataprescription?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response;
+  datahealthcheck?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response;
+  datahospitalization?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response;
 }
 
 export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => {
-  const { datalab, dataprescription, disableDelete } = props;
+  const { datalab, dataprescription, disableDelete, datahealthcheck, datahospitalization } = props;
+
+  const healthCheckName = datahealthcheck?.healthCheckName || datahealthcheck?.healthCheckType;
+  const hospitalizationDoctorName = datahospitalization?.doctorName;
+
+  const getDateFormatted = () => {
+    const date_text = (date_t: any) => {
+      return moment(date_t).format('DD MMM YYYY');
+    };
+    return dataprescription && dataprescription.date
+      ? date_text(dataprescription.date)
+      : datalab && datalab.date
+      ? moment().format('DD/MM/YYYY') === moment(datalab.date).format('DD/MM/YYYY')
+        ? `Today, ${date_text(datalab.date)}`
+        : date_text(datalab.date)
+      : datahealthcheck && datahealthcheck.date
+      ? moment().format('DD/MM/YYYY') === moment(datahealthcheck.date).format('DD/MM/YYYY')
+        ? `Today, ${date_text(datahealthcheck.date)}`
+        : date_text(datahealthcheck.date)
+      : datahospitalization && datahospitalization.dateOfHospitalization && datahospitalization.date
+      ? `From ${moment(datahospitalization.dateOfHospitalization).format(
+          'DD MMM, YYYY'
+        )} to ${moment(datahospitalization.date).format('DD MMM, YYYY')}`
+      : date_text(datahospitalization?.date || '') || '';
+  };
+
   return (
     <View style={styles.viewStyle}>
       <View style={styles.trackerViewStyle}>
@@ -112,11 +114,7 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
         <View style={styles.trackerLineStyle} />
       </View>
       <View style={styles.rightViewStyle}>
-        <Text style={styles.labelTextStyle}>
-          {moment((dataprescription && dataprescription.date) || (datalab && datalab.date)).format(
-            'DD MMM YYYY'
-          )}
-        </Text>
+        <Text style={styles.labelTextStyle}>{getDateFormatted()}</Text>
         <TouchableOpacity
           activeOpacity={1}
           style={[styles.cardContainerStyle]}
@@ -129,8 +127,10 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.doctorNameStyles}>
-                  {(dataprescription && dataprescription.prescriptionName) ||
-                    (datalab && datalab.labTestName)}
+                  {dataprescription?.prescriptionName ||
+                    datalab?.labTestName ||
+                    healthCheckName ||
+                    hospitalizationDoctorName}
                 </Text>
                 {disableDelete ? null : (
                   <TouchableOpacity onPress={props.onPressDelete}>
@@ -138,14 +138,17 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
                   </TouchableOpacity>
                 )}
               </View>
-              {datalab && !!datalab.labTestSource && (
-                <Text style={styles.descriptionTextStyles}>{datalab && datalab.labTestSource}</Text>
-              )}
-              {dataprescription && !!dataprescription.source && (
+              {datalab?.labTestSource ||
+              dataprescription?.source ||
+              datahealthcheck?.healthCheckSummary ||
+              datahospitalization?.hospitalName ? (
                 <Text style={styles.descriptionTextStyles}>
-                  {dataprescription && dataprescription.source}
+                  {datalab?.labTestSource ||
+                    dataprescription?.source ||
+                    datahealthcheck?.healthCheckSummary ||
+                    datahospitalization?.hospitalName}
                 </Text>
-              )}
+              ) : null}
             </View>
           </View>
         </TouchableOpacity>

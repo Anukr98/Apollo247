@@ -79,8 +79,13 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_lab
   id: string;
   labTestName: string;
   labTestSource: string;
+  packageId: string | null;
+  packageName: string | null;
   date: any;
   labTestRefferedBy: string | null;
+  siteDisplayName: string | null;
+  tag: string | null;
+  consultId: string | null;
   additionalNotes: string | null;
   observation: string | null;
   labTestResults: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_labTestResults | null)[] | null;

@@ -2053,9 +2053,14 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           id
           labTestName
           labTestSource
+          packageId
+          packageName
           # labTestDate
           date
           labTestRefferedBy
+          siteDisplayName
+          tag
+          consultId
           additionalNotes
           observation
           labTestResults {

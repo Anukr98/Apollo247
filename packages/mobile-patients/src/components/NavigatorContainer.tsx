@@ -44,6 +44,7 @@ import {
 import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordsHome';
 import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/ConsultDetails';
 import { RecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/RecordDetails';
+import { HealthRecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordDetails';
 import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
@@ -90,7 +91,7 @@ import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/
 import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
-import {Maps} from '@aph/mobile-patients/src/components/ui/Maps'
+import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
@@ -132,6 +133,7 @@ export enum AppRoutes {
   HealthRecordsHome = 'HealthRecordsHome',
   ConsultDetails = 'ConsultDetails',
   RecordDetails = 'RecordDetails',
+  HealthRecordDetails = 'HealthRecordDetails',
   SymptomChecker = 'SymptomChecker',
   AddressBook = 'AddressBook',
   NotificationSettings = 'NotificationSettings',
@@ -171,7 +173,7 @@ export enum AppRoutes {
   ConsultTypeScreen = 'ConsultTypeScreen',
   CommonWebView = 'CommonWebView',
   RefundStatus = 'RefundStatus',
-  Maps = 'Maps'
+  Maps = 'Maps',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -330,6 +332,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.RecordDetails]: {
     screen: RecordDetails,
   },
+  [AppRoutes.HealthRecordDetails]: {
+    screen: HealthRecordDetails,
+  },
   [AppRoutes.SymptomChecker]: {
     screen: SymptomChecker,
   },
@@ -448,9 +453,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.RefundStatus]: {
     screen: RefundStatus,
   },
-  [AppRoutes.Maps]:{
-    screen : Maps
-  }
+  [AppRoutes.Maps]: {
+    screen: Maps,
+  },
 };
 
 const logTabEvents = (routing: any) => {

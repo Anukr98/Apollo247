@@ -779,6 +779,15 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           {selectedTab === tabs[1].title && (
             <MedicalRecords navigation={props.navigation} labResultsData={labResults} />
           )}
+          {selectedTab === tabs[2].title && (
+            <MedicalRecords navigation={props.navigation} healthChecksNewData={healthChecksNew} />
+          )}
+          {selectedTab === tabs[3].title && (
+            <MedicalRecords
+              navigation={props.navigation}
+              hospitalizationsNewData={hospitalizationsNew}
+            />
+          )}
         </ScrollView>
       </SafeAreaView>
       {displayFilter && (

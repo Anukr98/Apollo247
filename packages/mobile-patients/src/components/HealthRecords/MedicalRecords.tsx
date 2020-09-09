@@ -58,12 +58,18 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   useEffect(() => {
     const mergeArray: { type: string; data: any }[] = [];
     console.log('combination before', mergeArray);
-    labResultsData!.forEach((item) => {
+    labResultsData?.forEach((item) => {
       mergeArray.push({ type: 'lab', data: item });
+    });
+    healthChecksNewData?.forEach((item) => {
+      mergeArray.push({ type: 'healthCheck', data: item });
+    });
+    hospitalizationsNewData?.forEach((item) => {
+      mergeArray.push({ type: 'hospitalization', data: item });
     });
     console.log('combination after', mergeArray);
     setCombination(sortByDate(mergeArray));
-  }, [labResultsData]);
+  }, [labResultsData, healthChecksNewData, hospitalizationsNewData]);
 
   const sortByDate = (array: { type: string; data: any }[]) => {
     return array.sort(({ data: data1 }, { data: data2 }) => {
@@ -96,9 +102,11 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
         >
           <AddFileIcon />
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-          <Filter />
-        </TouchableOpacity>
+        {labResultsData && labResultsData.length > 0 ? (
+          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            <Filter />
+          </TouchableOpacity>
+        ) : null}
       </View>
     );
   };
@@ -161,13 +169,19 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
                   data = { datalab: item.data, disableDelete: true };
                 } else if (item.type === 'prescription') {
                   data = { dataprescription: item.data, disableDelete: true };
+                } else if (item.type === 'healthCheck') {
+                  data = { datahealthcheck: item.data, disableDelete: true };
+                } else if (item.type === 'hospitalization') {
+                  data = { datahospitalization: item.data, disableDelete: true };
                 }
                 return (
                   <HealthMedicineCard
                     {...data}
                     onClickCard={() => {
-                      props.navigation.navigate(AppRoutes.RecordDetails, {
+                      props.navigation.navigate(AppRoutes.HealthRecordDetails, {
                         data: item.data,
+                        healthCheck: item.type === 'healthCheck' ? true : false,
+                        hospitalization: item.type === 'hospitalization' ? true : false,
                       });
                     }}
                     disableDelete={true}
@@ -182,8 +196,10 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   };
   return (
     <View>
-      {((labResultsData && labResultsData.length > 0) ||
-        (prescriptionsData && prescriptionsData.length > 0)) &&
+      {((labResultsData && labResultsData?.length > 0) ||
+        (prescriptionsData && prescriptionsData.length > 0) ||
+        (healthChecksNewData && healthChecksNewData.length > 0) ||
+        (hospitalizationsNewData && hospitalizationsNewData.length > 0)) &&
         renderFilter()}
       {renderCards()}
     </View>
