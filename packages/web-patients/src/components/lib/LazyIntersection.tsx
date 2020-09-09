@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Image } from 'components/lib/Image';
-import { useIO } from 'components/lib/useIO';
+import { UseIO } from 'components/lib/UseIO';
 
 const fallbackImage = require('images/ic_placeholder_circle.png');
 interface LazyIntersectionInterface {
@@ -13,7 +13,7 @@ interface LazyIntersectionInterface {
 export const LazyIntersection: React.FC<LazyIntersectionInterface> = (props) => {
   const [data, setData] = useState('');
 
-  const [observer, setElements, entries] = useIO({
+  const [observer, setElements, entries] = UseIO({
     threshold: 0.25,
     root: null,
   });

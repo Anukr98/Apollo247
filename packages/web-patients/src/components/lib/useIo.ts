@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-export const useIO = (options: any) => {
+export const UseIO = (options: any) => {
   const [elements, setElements] = useState([]);
   const [entries, setEntries] = useState([]);
 
