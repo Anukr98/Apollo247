@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import { Theme } from '@material-ui/core';
-import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -17,25 +16,37 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
+import { Header } from 'components/Header';
+import { ManageProfile } from 'components/ManageProfile';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
-import {
-  uploadPrescriptionTracking,
-  pharmacySearchEnterTracking,
-  pharmacyCategoryClickTracking,
-} from 'webEngageTracking';
-import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
+import { MedicineCard } from 'components/Medicine/MedicineCard';
+import { MedicineFilter } from 'components/Medicine/MedicineFilter';
+import { MedicinesCartContext, useShoppingCart } from 'components/MedicinesCartProvider';
+import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
-import { useCurrentPatient } from 'hooks/authHooks';
-import moment from 'moment';
-import { gtmTracking } from 'gtmTracking';
-import { MetaTagsComp } from 'MetaTagsComp';
-import { GET_RECOMMENDED_PRODUCTS_LIST } from 'graphql/profiles';
-import { useMutation } from 'react-apollo-hooks';
-import { Link } from 'react-router-dom';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
+import { GET_RECOMMENDED_PRODUCTS_LIST } from 'graphql/profiles';
 import { getRecommendedProductsList_getRecommendedProductsList_recommendedProducts as recommendedProductsType } from 'graphql/types/getRecommendedProductsList';
+import { gtmTracking } from 'gtmTracking';
+import { clientRoutes } from 'helpers/clientRoutes';
 import { getImageUrl } from 'helpers/commonHelpers';
+import { useCurrentPatient } from 'hooks/authHooks';
+import { useParams } from 'hooks/routerHooks';
+import _replace from 'lodash/replace';
+import { MetaTagsComp } from 'MetaTagsComp';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useMutation } from 'react-apollo-hooks';
+import Scrollbars from 'react-custom-scrollbars';
+import { Link } from 'react-router-dom';
+import {
+  pharmacyCategoryClickTracking,
+  pharmacySearchEnterTracking,
+  uploadPrescriptionTracking,
+} from 'webEngageTracking';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
+import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

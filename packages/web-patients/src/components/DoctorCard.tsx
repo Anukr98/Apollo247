@@ -1,15 +1,5 @@
-import React from 'react';
-import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, Avatar, Modal } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
-// import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
-// import {
-//   GetDoctorNextAvailableSlot,
-//   GetDoctorNextAvailableSlotVariables,
-// } from 'graphql/types/GetDoctorNextAvailableSlot';
-// import { useQueryWithSkip } from 'hooks/apolloHooks';
-// import LinearProgress from '@material-ui/core/LinearProgress';
 import _forEach from 'lodash/forEach';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
@@ -21,15 +11,26 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { BookConsult } from 'components/BookConsult';
 import moment from 'moment';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { Avatar, Modal, Theme } from '@material-ui/core';
+import { createStyles, makeStyles } from '@material-ui/styles';
+import { BookConsult } from 'components/BookConsult';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
-import { useAuth } from 'hooks/authHooks';
-import { useParams } from 'hooks/routerHooks';
+import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
+import { ConsultMode, SEARCH_TYPE } from 'graphql/types/globalTypes';
+import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
+import { clientRoutes } from 'helpers/clientRoutes';
 import {
-  readableParam,
   getDiffInDays,
   getDiffInHours,
   getDiffInMinutes,
+  readableParam,
 } from 'helpers/commonHelpers';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import _forEach from 'lodash/forEach';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
+import React from 'react';
+import { Mutation } from 'react-apollo';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -223,8 +224,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     }
   });
 
-  // console.log(clinics);
-
   const navigateToDoctorDetails = () => {
     const readableDoctorName = readableParam(doctorName);
     props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
@@ -236,11 +235,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         className={classes.topContent}
         onClick={() => {
           navigateToDoctorDetails();
-          // params.specialty
-          //   ? props.history.push(
-          //       clientRoutes.specialtyDoctorDetails(params.specialty, readableDoctorName, doctorId)
-          //     )
-          //   : props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
         }}
       >
         <Avatar
@@ -263,24 +257,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           className={classes.doctorInfo}
           onClick={() => {
             navigateToDoctorDetails();
-            // params.specialty
-            //   ? props.history.push(
-            //       clientRoutes.specialtyDoctorDetails(
-            //         params.specialty,
-            //         readableDoctorName,
-            //         doctorId
-            //       )
-            //     )
-            //   : props.history.push(clientRoutes.doctorDetails(readableDoctorName, doctorId));
           }}
         >
-          {/* {loading ? (
-            <div className={classes.cardLoader}>
-              <LinearProgress />
-            </div>
-          ) : ( */}
           {availabilityMarkup()}
-          {/* )} */}
           <div
             className={classes.doctorName}
             title={
@@ -399,66 +378,3 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     </div>
   );
 };
-
-// console.log(nextAvailability, 'in doctor card....');
-
-// let differenceInMinutes = 0;
-// if (nextAvailability && nextAvailability.length > 0) {
-//   const nextAvailabilityTime =
-//     nextAvailability &&
-//     moment
-//       .utc(nextAvailability)
-//       .local()
-//       .toDate();
-//   const currentTime = moment();
-//   const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
-// }
-
-// const { data, loading, error } = useQueryWithSkip<
-//   GetDoctorNextAvailableSlot,
-//   GetDoctorNextAvailableSlotVariables
-// >(GET_DOCTOR_NEXT_AVAILABILITY, {
-//   variables: {
-//     DoctorNextAvailableSlotInput: {
-//       doctorIds: [doctorId],
-//       availableDate: format(new Date(), 'yyyy-MM-dd'),
-//     },
-//   },
-//   fetchPolicy: 'no-cache',
-// });
-
-// if (error) {
-//   alert(error);
-// }
-
-// // console.log('doctor details.....', data);
-
-// let availableSlot = 0,
-//   differenceInMinutes = 0;
-
-// this should not be any type. we should remove in stabilization sprint.
-
-// it must be always one record or we return only first record.
-// if (
-//   data &&
-//   data.getDoctorNextAvailableSlot &&
-//   data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
-// ) {
-//   data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.forEach((availability) => {
-//     if (availability && availability.availableSlot !== '') {
-//       // const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
-//       // const slotTimeStamp =
-//       //   getIstTimestamp(new Date(), availability.availableSlot) + milliSeconds;
-//       //   const milliSeconds = 19800000; // this is GMT +5.30. Usually this is unnecessary if api is formatted correctly.
-//       const slotTimeStamp = new Date(availability.availableSlot).getTime();
-//       const currentTime = new Date(new Date().toISOString()).getTime();
-//       if (slotTimeStamp > currentTime) {
-//         availableSlot = slotTimeStamp;
-//         const difference = slotTimeStamp - currentTime;
-//         differenceInMinutes = Math.round(difference / 60000);
-//       }
-//     } else {
-//       differenceInMinutes = -1;
-//     }
-//   });
-// }
