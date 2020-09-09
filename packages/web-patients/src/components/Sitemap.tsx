@@ -9,6 +9,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import Pagination from '@material-ui/lab/Pagination';
 import { generateSitemap_generateSitemap } from 'graphql/types/generateSitemap';
 import { useParams } from 'react-router';
+import fetchUtil from 'helpers/fetch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -324,6 +325,7 @@ export const Sitemap: React.FC = (props) => {
   const [selected, setSelected] = useState<string>(params.sitemap);
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [pageNo, setPageNo] = useState<number>(parseInt(params.pageNo));
+  const [articleUrls, setArticleUrls] = useState([]);
   const apolloClient = useApolloClient();
   const { setIsLoading } = useAuth();
 
@@ -342,6 +344,14 @@ export const Sitemap: React.FC = (props) => {
       })
       .catch((err) => console.log(err))
       .finally(() => setIsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetchUtil(`${process.env.CMS_ARTICLES_SLUG_LIST_URL}`, 'GET', {}, '', true)
+      .then((res: any) => {
+        res && res.data && setArticleUrls(res.data.filter((key: any) => key.type !== 'VIDEO'));
+      })
+      .catch((err) => console.log(err));
   }, []);
 
   useEffect(() => {
@@ -557,13 +567,16 @@ export const Sitemap: React.FC = (props) => {
                           <Typography component="h3" className={classes.categoryTitle}>
                             Article URLs
                           </Typography>
-                          {sitemapData &&
-                            sitemapData.articleUrls &&
-                            sitemapData.articleUrls.length > 0 &&
-                            sitemapData.articleUrls.map((key) => (
+                          {articleUrls &&
+                            articleUrls.length > 0 &&
+                            articleUrls.map((key) => (
                               <ul className={classes.smLinkList}>
                                 <li>
-                                  <a href={key.url}>{key.urlName.replace('/', '')}</a>
+                                  <a
+                                    href={`${process.env.SITEMAP_BASE_URL}covid19/${key.type}${key.slug}`}
+                                  >
+                                    {key.title}
+                                  </a>
                                 </li>
                               </ul>
                             ))}
