@@ -404,6 +404,7 @@ interface ConsultDoctorProfileProps {
   setRescheduleCount: (rescheduleCount: number | null) => void;
   handleRescheduleOpen: any;
   srDoctorJoined: boolean;
+  isConsultCompleted: boolean;
 }
 
 type Params = { appointmentId: string; doctorId: string };
@@ -642,10 +643,10 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
               </div>
               <div className={classes.buttonGroup}>
                 {!isPastAppointment(appointmentDetails.appointmentDateTime) && // check for active and upcoming appointments
-                  (appointmentDetails.status === STATUS.COMPLETED ? (
+                  (appointmentDetails.status === STATUS.COMPLETED || props.isConsultCompleted ? (
                     <div className={classes.joinInSection}>
                       <span>
-                        {getAvailableFreeChatDays(appointmentDetails.appointmentDateTime)}!
+                        {getAvailableFreeChatDays(appointmentDetails.appointmentDateTime)}
                       </span>
                     </div>
                   ) : (
@@ -667,8 +668,9 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                   ))}
               </div>
               {appointmentDetails &&
-              !appointmentDetails.isConsultStarted &&
-              appointmentDetails.status !== STATUS.COMPLETED ? (
+              appointmentDetails.status !== STATUS.COMPLETED &&
+              !props.srDoctorJoined &&
+              !props.isConsultCompleted ? (
                 <div className={classes.appointmentDetails}>
                   <div className={classes.sectionHead}>
                     <div className={classes.appoinmentDetails}>Appointment Details</div>
