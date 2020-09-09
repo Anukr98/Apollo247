@@ -14,7 +14,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { colors } from '../theme/colors';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { CheckUnselectedIcon, CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import _ from 'lodash';
@@ -23,10 +23,10 @@ import {
   AutoCompleteSymptomsParams,
   DefaultSymptoms,
   AutoCompleteSymptoms,
-} from '../helpers/apiCalls';
-import { Message } from './SymptomTracker';
-import { CommonBugFender } from '../FunctionHelpers/DeviceHelper';
-import { Spinner } from './ui/Spinner';
+} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { Message } from '@aph/mobile-patients/src/components/SymptomTracker';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 interface SymptomSelectionProps extends NavigationScreenProps {
   chatId: string;

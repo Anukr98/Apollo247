@@ -3,7 +3,7 @@ import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { colors } from '../../theme/colors';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 
 interface AlertPopupProps {

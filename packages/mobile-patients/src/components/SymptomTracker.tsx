@@ -22,14 +22,17 @@ import {
   CrossPopup,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { colors } from '../theme/colors';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { ProfileList } from './ui/ProfileList';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { AppRoutes } from './NavigatorContainer';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import AsyncStorage from '@react-native-community/async-storage';
-import { CommonLogEvent, CommonBugFender } from '../FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import moment from 'moment';
 import {
   startSymptomTrackerChat,
@@ -39,9 +42,9 @@ import {
   DefaultSymptoms,
   UpdateSymptomTrackerChatRequest,
   SymptomsSpecialities,
-} from '../helpers/apiCalls';
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { AlertPopup } from './ui/AlertPopup';
+import { AlertPopup } from '@aph/mobile-patients/src/components/ui/AlertPopup';
 import { Overlay } from 'react-native-elements';
 
 const roundCountViewDimension = 30;
