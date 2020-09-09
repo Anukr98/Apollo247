@@ -551,6 +551,7 @@ export const PayMedicine: React.FC = (props) => {
                 ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
+            couponFree: cartItemDetails.couponFree || false,
             itemValue: Number((cartItemDetails.quantity * cartItemDetails.price).toFixed(2)),
             itemDiscount: Number(
               (
@@ -569,7 +570,9 @@ export const PayMedicine: React.FC = (props) => {
                 : _lowerCase(cartItemDetails.type_id) === 'pl'
                 ? '2'
                 : '0',
-            specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
+            specialPrice: cartItemDetails.couponFree
+              ? 0
+              : Number(getItemSpecialPrice(cartItemDetails)),
           };
         })
       : [];
