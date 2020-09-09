@@ -252,31 +252,39 @@ export interface GetPackageDataResponse {
 }
 
 export const checkServiceAvailability = (zipCode: string) => {
-  return axios.get(`${process.env.INVENTORY_SYNC_URL}/serviceable?pincode=${zipCode}`, {
-    headers: {
-      Authorization: process.env.INVENTORY_SYNC_TOKEN,
-      'Content-Type': 'application/json',
-    },
-  });
+  return axios.post(
+    `${process.env.INVENTORY_SYNC_URL}/serviceable?pincode=${zipCode}`,
+    {},
+    {
+      headers: {
+        Authorization: process.env.INVENTORY_SYNC_TOKEN,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
 };
 
 export const checkSkuAvailability = (sku: string, pincode: string) => {
-  return axios.get(`${process.env.INVENTORY_SYNC_URL}/availability?sku=${sku}&pincode=${pincode}`, {
-    headers: {
-      Authorization: process.env.INVENTORY_SYNC_TOKEN,
-      'Content-Type': 'application/json',
-    },
-  });
+  return axios.post(
+    `${process.env.INVENTORY_SYNC_URL}/availability?sku=${sku}&pincode=${pincode}`,
+    {},
+    {
+      headers: {
+        Authorization: process.env.INVENTORY_SYNC_TOKEN,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
 };
 
 export const checkTatAvailability = (items: Items[], pincode: string, lat: string, lng: string) => {
   return axios.post(
     `${process.env.INVENTORY_SYNC_URL}/tat`,
     {
+      items,
       pincode,
       lat,
       lng,
-      items,
     },
     {
       headers: {
