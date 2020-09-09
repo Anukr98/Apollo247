@@ -220,8 +220,7 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
           return (
             <div
               key={item.id}
-              className={`${classes.medicineStrip} ${
-                item.is_in_stock ? '' : classes.medicineStripDisabled
+              className={`${classes.medicineStrip} ${item.is_in_stock ? '' : classes.medicineStripDisabled
                 }`}
             >
               <div className={classes.medicineStripWrap}>
@@ -332,15 +331,16 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         ))}
                       </AphCustomDropdown>
                     </div>
-                    {validateCouponResult && validateCouponResult.products ? (
+                    {validateCouponResult && validateCouponResult.products && validateCouponResult.products[idx] && !validateCouponResult.products[idx].couponFree ? (
                       <>
+                        {/* {JSON.stringify(validateCouponResult.products[idx])} */}
                         <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
                           {validateCouponResult.products[idx].specialPrice !==
-                          validateCouponResult.products[idx].mrp ? (
-                            <span className={classes.lineThrough}>
-                              Rs. {validateCouponResult.products[idx].mrp}
-                            </span>
-                          ) : null}
+                            validateCouponResult.products[idx].mrp ? (
+                              <span className={classes.lineThrough}>
+                                Rs. {validateCouponResult.products[idx].mrp}
+                              </span>
+                            ) : null}
                           <div className={classes.mrpText}>(MRP)</div>
                         </div>
 
@@ -348,30 +348,30 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                           Rs.{' '}
                           {validateCouponResult.products[idx].onMrp
                             ? Number(
-                                (
-                                  validateCouponResult.products[idx].mrp -
-                                  validateCouponResult.products[idx].discountAmt
-                                ).toFixed(2)
-                              )
+                              (
+                                validateCouponResult.products[idx].mrp -
+                                validateCouponResult.products[idx].discountAmt
+                              ).toFixed(2)
+                            )
                             : Number(
-                                (
-                                  validateCouponResult.products[idx].specialPrice -
-                                  validateCouponResult.products[idx].discountAmt
-                                ).toFixed(2)
-                              )}
+                              (
+                                validateCouponResult.products[idx].specialPrice -
+                                validateCouponResult.products[idx].discountAmt
+                              ).toFixed(2)
+                            )}
                         </div>
                       </>
                     ) : (
                         <>
                           <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
-                            {item.special_price ? (
+                            {(item.special_price === 0 || item.special_price) ? (
                               <span className={classes.lineThrough}>Rs. {item.price}</span>
                             ) : null}
                             <div className={classes.mrpText}>(MRP)</div>
                           </div>
 
                           <div className={classes.medicinePrice}>
-                            Rs. {item.special_price || item.price}
+                            Rs. {(item.special_price === 0 || item.special_price) ? item.special_price : item.price}
                           </div>
                         </>
                       )}
