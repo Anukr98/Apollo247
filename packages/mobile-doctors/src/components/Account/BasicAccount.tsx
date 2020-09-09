@@ -57,13 +57,28 @@ import {
 const { width } = Dimensions.get('window');
 const styles = BasicAccountStyles;
 
-export interface MyAccountProps extends NavigationScreenProps {}
+export interface MyAccountProps extends NavigationScreenProps {
+  goToItem?: string;
+}
+
+interface menuItemType {
+  label: string;
+  navigation?: AppRoutes;
+  icon: JSX.Element;
+  navigationParams: {
+    ProfileData: GetDoctorDetails_getDoctorDetails | null;
+  };
+  isDataDependent: boolean;
+  onPress?: () => void;
+  goToName?: string;
+}
 
 export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   const scrollViewRef = useRef<KeyboardAwareScrollView | null>();
   const { doctorDetails, getDoctorDetailsApi, clearFirebaseUser } = useAuth();
   const client = useApolloClient();
   const { setLoading } = useUIElements();
+  const goToItem = props.navigation.getParam('goToItem');
 
   useEffect(() => {
     if (!doctorDetails) {
@@ -77,16 +92,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
     }
   }, [doctorDetails, getDoctorDetailsApi]);
 
-  const arrayData: {
-    label: string;
-    navigation?: AppRoutes;
-    icon: JSX.Element;
-    navigationParams: {
-      ProfileData: GetDoctorDetails_getDoctorDetails | null;
-    };
-    isDataDependent: boolean;
-    onPress?: () => void;
-  }[] = [
+  const arrayData: menuItemType[] = [
     // {
     //   label: strings.account.my_stats,
     //   navigation: AppRoutes.MyStats,
@@ -99,6 +105,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       icon: <Profile />,
       navigationParams: { ProfileData: doctorDetails },
       isDataDependent: true,
+      goToName: 'profile',
     },
     {
       label: strings.account.availability,
@@ -106,6 +113,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       icon: <AvailabilityIcon />,
       navigationParams: { ProfileData: doctorDetails },
       isDataDependent: true,
+      goToName: 'availability',
     },
     {
       label: strings.account.fees,
@@ -113,6 +121,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       icon: <FeeIcon />,
       navigationParams: { ProfileData: doctorDetails },
       isDataDependent: true,
+      goToName: 'fees',
     },
     {
       label: strings.account.smart_prescr,
@@ -120,6 +129,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       icon: <SmartPrescription />,
       navigationParams: { ProfileData: doctorDetails },
       isDataDependent: true,
+      goToName: 'smartPrescription',
     },
     {
       label: strings.account.settings,
@@ -127,6 +137,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       icon: <Settings />,
       navigationParams: { ProfileData: doctorDetails },
       isDataDependent: false,
+      goToName: 'settings',
     },
     {
       label: strings.account.logout,
@@ -138,6 +149,20 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       isDataDependent: false,
     },
   ];
+
+  useEffect(() => {
+    if (doctorDetails) {
+      if (goToItem) {
+        const isRouteExisting = arrayData.findIndex((item) => item.goToName == goToItem);
+        if (isRouteExisting > -1) {
+          onPressofMenuItem(arrayData[isRouteExisting]);
+        } else if (goToItem === 'sharelink') {
+          props.navigation.navigate(AppRoutes.SharingScreen);
+        }
+      }
+    }
+  }, [goToItem, doctorDetails]);
+
   const deleteDeviceToken = async () => {
     const deviceToken = JSON.parse((await AsyncStorage.getItem('deviceToken')) || '');
     setLoading && setLoading(true);
@@ -194,6 +219,24 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
     );
   };
 
+  const onPressofMenuItem = (item: menuItemType) => {
+    if (item.isDataDependent && doctorDetails === null) {
+      return;
+    }
+    if (item.navigation) {
+      if (item.label === strings.account.settings) {
+        postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED_SETTINGS, {
+          'Doctor Mobile number': g(doctorDetails, 'mobileNumber') || '',
+          'Doctor name': g(doctorDetails, 'fullName') || '',
+        } as WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED_SETTINGS]);
+        getDoctorDetailsApi && getDoctorDetailsApi();
+      }
+      props.navigation.navigate(item.navigation, item.navigationParams);
+    } else if (item.onPress) {
+      item.onPress();
+    }
+  };
+
   const renderData = () => {
     return (
       <View style={{ marginVertical: 16 }}>
@@ -201,20 +244,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
           <View style={[styles.cardContainer]}>
             <TouchableOpacity
               onPress={() => {
-                if (item.isDataDependent && doctorDetails === null) {
-                  return;
-                }
-                if (item.navigation) {
-                  if (item.label === strings.account.settings) {
-                    postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED_SETTINGS, {
-                      'Doctor Mobile number': g(doctorDetails, 'mobileNumber') || '',
-                      'Doctor name': g(doctorDetails, 'fullName') || '',
-                    } as WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED_SETTINGS]);
-                  }
-                  props.navigation.navigate(item.navigation, item.navigationParams);
-                } else if (item.onPress) {
-                  item.onPress();
-                }
+                onPressofMenuItem(item);
               }}
             >
               <View style={styles.iconview}>

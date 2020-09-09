@@ -13,6 +13,7 @@ import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
 import moment from 'moment';
+import { TabRoutes } from '@aph/mobile-doctors/src/components/TabBar';
 
 const styles = SplashScreenStyles;
 
@@ -58,8 +59,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const handleOpenURL = async (url: string) => {
     const route = url.replace('apollodoctors://', '');
     const data = route.split('?');
-    const multiData = data[1].split('&');
-
+    const multiData = data.length > 1 ? data[1].split('&') : '';
     console.log(url, data, 'deeplinkpress');
 
     const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
@@ -102,6 +102,20 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 goToDate: moment(data[1]).isValid() ? moment(data[1]).toDate() : new Date(),
               });
             }
+          }
+          break;
+        case 'myaccounts':
+          if (isLoggedIn) {
+            if (data.length == 1) {
+              props.navigation.navigate(TabRoutes.MyAccount);
+            } else if (data.length == 2) {
+              props.navigation.navigate(TabRoutes.MyAccount, { goToItem: data[1] });
+            }
+          }
+          break;
+        case 'patientlog':
+          if (isLoggedIn) {
+            props.navigation.navigate(TabRoutes.Patients);
           }
           break;
         default:
