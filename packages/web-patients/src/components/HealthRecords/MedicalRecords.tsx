@@ -346,11 +346,11 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 5,
     },
     testName: {
-      fontSize: 16,
+      fontSize: 20,
       color: '#01475b',
-      fontWeight: 500,
+      fontWeight: 600,
       marginBottom: 12,
-      lineHeight: '21px',
+      lineHeight: '28px',
     },
     checkDate: {
       fontSize: 14,
@@ -453,13 +453,17 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
       allCombinedData.sort((data1: LabResultsType, data2: LabResultsType) => {
         const filteredData1 =
           type === FILTER_TYPE.DATE
-            ? moment(data1.date).toDate().getTime()
+            ? moment(data1.date)
+                .toDate()
+                .getTime()
             : type === FILTER_TYPE.TEST
             ? data1.labTestName
             : data1.packageName;
         const filteredData2 =
           type === FILTER_TYPE.DATE
-            ? moment(data2.date).toDate().getTime()
+            ? moment(data2.date)
+                .toDate()
+                .getTime()
             : type === FILTER_TYPE.TEST
             ? data2.labTestName
             : data2.packageName;
