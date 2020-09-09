@@ -88,7 +88,7 @@ export const consultQueueTypeDefs = gql`
     addToConsultQueueWithAutomatedQuestions(
       consultQueueInput: ConsultQueueInput
     ): AddToConsultQueueResult!
-    cronForConsultQueue(appointmentStatuses: [String]): String!
+    removeInvalidConsultQueueItems(appointmentStatuses: [String]): String!
   }
 `;
 
@@ -334,12 +334,12 @@ const removeFromConsultQueue: Resolver<
   return { consultQueue };
 };
 
-type cronForConsultQueueInput = {
+type removeInvalidConsultQueueItemsInput = {
   appointmentStatuses: string[];
 };
-const cronForConsultQueue: Resolver<
+const removeInvalidConsultQueueItems: Resolver<
   null,
-  cronForConsultQueueInput,
+  removeInvalidConsultQueueItemsInput,
   ConsultServiceContext,
   String
 > = async (parent, { appointmentStatuses }, { consultsDb }) => {
@@ -682,6 +682,6 @@ export const consultQueueResolvers = {
     addToConsultQueue,
     removeFromConsultQueue,
     addToConsultQueueWithAutomatedQuestions,
-    cronForConsultQueue,
+    removeInvalidConsultQueueItems,
   },
 };

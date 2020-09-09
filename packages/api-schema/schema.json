@@ -31694,7 +31694,7 @@
             "deprecationReason": null
           },
           {
-            "name": "cronForConsultQueue",
+            "name": "removeInvalidConsultQueueItems",
             "description": null,
             "args": [
               {
@@ -34150,6 +34150,16 @@
           },
           {
             "name": "shopId",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "tatType",
             "description": null,
             "type": {
               "kind": "SCALAR",
