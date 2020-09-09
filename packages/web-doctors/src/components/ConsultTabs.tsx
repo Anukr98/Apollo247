@@ -1867,12 +1867,6 @@ export const ConsultTabs: React.FC = () => {
       });
   };
 
-  const showRateCallModal = () => {
-    return (
-      <RateCall visible={giveRating} submitRatingCallback={(data) => submitRatingHandler(data)} />
-    );
-  };
-
   const inEditMode =
     !isPdfPageOpen ||
     isSecretary ||
@@ -2006,7 +2000,11 @@ export const ConsultTabs: React.FC = () => {
             autoHide={true}
             style={{ height: 'calc(100vh - 65px)' }}
           >
-            {showRateCallModal()}
+            <RateCall
+              visible={giveRating}
+              setGiveRating={setGiveRating}
+              submitRatingCallback={(data) => submitRatingHandler(data)}
+            />
             <div className={classes.container}>
               <CallPopover
                 setGiveRating={setGiveRating}
