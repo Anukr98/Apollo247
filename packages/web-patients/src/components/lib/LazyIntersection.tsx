@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Image } from './Image';
-import { useIO } from './useIO';
+import { Image } from 'components/lib/Image';
+import { useIO } from 'components/lib/useIO';
 
 const fallbackImage = require('images/ic_placeholder_circle.png');
 interface LazyIntersectionInterface {
