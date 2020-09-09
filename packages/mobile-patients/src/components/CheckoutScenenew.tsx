@@ -380,7 +380,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             postwebEngageCheckoutCompletedEvent(
               `${orderAutoId}`,
               orderId,
-              orderType == 'COD',
+              // orderType == 'COD',
               isCOD
             );
             firePurchaseEvent(orderId);
@@ -760,7 +760,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       } catch (error) {
         CommonBugFender('CheckoutScene_renderPayButton_try', error);
       }
-      initiateOrder(chennaiOrderFormInfo[0], chennaiOrderFormInfo[1], isCashOnDelivery, false);
+      initiateOrder(chennaiOrderFormInfo[0], chennaiOrderFormInfo[1], isCashOnDelivery, HCorder);
     }
   };
 

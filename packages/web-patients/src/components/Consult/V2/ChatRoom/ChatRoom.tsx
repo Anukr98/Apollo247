@@ -515,6 +515,7 @@ export const ChatRoom: React.FC = () => {
   const [apiLoading, setApiLoading] = useState<boolean>(false);
   const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
   const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
+  const [isConsultCompleted, setIsConsultCompleted] = useState<boolean>(false);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const patientId = (currentPatient && currentPatient.id) || '';
@@ -668,6 +669,7 @@ export const ChatRoom: React.FC = () => {
                     doctorDetails={data}
                     appointmentDetails={appointmentDetails}
                     srDoctorJoined={srDoctorJoined}
+                    isConsultCompleted={isConsultCompleted}
                   />
                 )}
               </div>
@@ -676,7 +678,8 @@ export const ChatRoom: React.FC = () => {
                   {displayId && <span className={classes.caseNumber}>Case #{displayId} </span>}
                   {appointmentDetails &&
                     appointmentDetails.status !== STATUS.CANCELLED &&
-                    appointmentDetails.status !== STATUS.COMPLETED && (
+                    appointmentDetails.status !== STATUS.COMPLETED &&
+                    !srDoctorJoined && (
                       <div className={classes.headerActions}>
                         <AphButton
                           disabled={appointmentDetails.isSeniorConsultStarted || srDoctorJoined}
@@ -706,6 +709,7 @@ export const ChatRoom: React.FC = () => {
                     availableNextSlot={nextAvailableSlot}
                     rescheduleAPI={rescheduleAPI}
                     appointmentDetails={appointmentDetails}
+                    setIsConsultCompleted={setIsConsultCompleted}
                   />
                 )}
               </div>

@@ -1960,7 +1960,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       id: props.doctorId,
       message: startConsult,
       isTyping: true,
-      automatedText: currentPatient!.displayName + ' has joined your chat!',
+      automatedText: currentPatient!.displayName + ' has joined the consult room!',
       messageDate: new Date(),
       sentBy: REQUEST_ROLES.DOCTOR,
     };

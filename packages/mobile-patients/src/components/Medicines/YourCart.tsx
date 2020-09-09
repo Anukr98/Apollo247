@@ -1698,11 +1698,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     ({ isInStock, unserviceable }) => !isInStock || unserviceable
   );
 
-  const cartAfterDiscount = cartTotal - productDiscount;
+  const cartAfterDiscount = Number(cartTotal.toFixed(2)) - Number(productDiscount.toFixed(2));
 
   const disableProceedToPay = !!(
     cartItems.length === 0 ||
-    cartAfterDiscount === 0 ||
+    cartAfterDiscount <= 0 ||
     cartTotal === 0 ||
     isNotInStockOrUnserviceable ||
     (!deliveryAddressId && !storeId) ||
