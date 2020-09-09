@@ -3073,7 +3073,6 @@ export const MedicinePrescription: React.FC = () => {
                 color="primary"
                 classes={{ root: classes.updateSymptom }}
                 onClick={() => {
-                    //deletemedicine(index)
                     setMedicineCopyAddedArr(medicineCopyAddedArr.filter(item => item.medicineName.toLowerCase().trim() !== medicine.medicineName.toLowerCase().trim()))
                   }
                 }
