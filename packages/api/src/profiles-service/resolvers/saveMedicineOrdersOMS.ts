@@ -38,6 +38,7 @@ export const saveMedicineOrderOMSTypeDefs = gql`
   input MedicineCartOMSInput {
     quoteId: String
     shopId: String
+    tatType: String
     estimatedAmount: Float
     patientId: ID!
     medicineDeliveryType: MEDICINE_DELIVERY_TYPE!
@@ -138,6 +139,7 @@ export enum customerTypeInCoupons {
 type MedicineCartOMSInput = {
   quoteId: string;
   shopId: string;
+  tatType: string;
   estimatedAmount: number;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
@@ -318,6 +320,7 @@ const saveMedicineOrderOMS: Resolver<
     estimatedAmount: medicineCartOMSInput.estimatedAmount,
     orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
     shopId: medicineCartOMSInput.shopId,
+    tatType: medicineCartOMSInput.tatType || '',
     quoteDateTime: new Date(),
     devliveryCharges: medicineCartOMSInput.devliveryCharges,
     deliveryType: medicineCartOMSInput.medicineDeliveryType,
