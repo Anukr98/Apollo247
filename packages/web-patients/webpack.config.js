@@ -4,7 +4,7 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
-// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+//const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
 const DotenvWebpack = require('dotenv-webpack');
 const dotenv = require('dotenv');
@@ -47,7 +47,7 @@ const plugins = [
     favicon: './favicon.svg',
   }),
   new MomentLocalesPlugin(),
-  // new BundleAnalyzerPlugin(),
+  //new BundleAnalyzerPlugin(),
 
   // new WebpackPwaManifest({
   //   name: 'Apollo 247',

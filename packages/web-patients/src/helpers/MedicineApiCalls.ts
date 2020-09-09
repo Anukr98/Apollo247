@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
 import moment from 'moment';
@@ -251,7 +251,7 @@ export interface GetPackageDataResponse {
 }
 
 export const checkServiceAvailability = (zipCode: string) => {
-  return axios.post(
+  return fetchWrapper.post(
     apiDetails.service_url || '',
     {
       postalcode: zipCode || '',
@@ -262,9 +262,7 @@ export const checkServiceAvailability = (zipCode: string) => {
       ],
     },
     {
-      headers: {
-        Authorization: apiDetails.authToken,
-      },
+      Authorization: apiDetails.authToken,
     }
   );
 };
@@ -282,18 +280,14 @@ export interface MedCartItemsDetailsResponse {
   productdp: MedicineProduct[];
 }
 
-const medCartItemsDetailsApi = (
-  itemIds: string[]
-): Promise<AxiosResponse<MedCartItemsDetailsResponse>> => {
-  return axios.post(
+const medCartItemsDetailsApi = (itemIds: string[]): any => {
+  return fetchWrapper.post(
     apiDetails.cartItemDetails,
     {
       params: itemIds.toString(),
     },
     {
-      headers: {
-        Authorization: apiDetails.authToken,
-      },
+      Authorization: apiDetails.authToken,
     }
   );
 };
@@ -326,11 +320,11 @@ export const reOrderItems = async (
       : lineItems.filter((item) => item.medicineSKU).map((item) => item.medicineSKU!);
 
     const lineItemsDetails = (await medCartItemsDetailsApi(lineItemsSkus)).data.productdp.filter(
-      (lineItem) => lineItem.sku && lineItem.name
+      (lineItem: any) => lineItem.sku && lineItem.name
     );
-    const availableLineItemsSkus = lineItemsDetails.map((lineItem) => lineItem.sku);
+    const availableLineItemsSkus = lineItemsDetails.map((lineItem: any) => lineItem.sku);
     const cartItemsToAdd = lineItemsDetails.map(
-      (item, index) =>
+      (item: any, index: any) =>
         item.sku &&
         ({
           ...item,
@@ -368,9 +362,9 @@ export const reOrderItems = async (
         ({
           id: item,
           date: moment().format('DD MMM YYYY'),
-          doctorName: `Meds Rx ${
-            (orderDetails.id && orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) || ''
-          }`,
+          doctorName: `Meds Rx ${(orderDetails.id &&
+            orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) ||
+            ''}`,
           forPatient: patientName,
           medicines: medicineNames,
           uploadedUrl: item,
@@ -387,16 +381,12 @@ export const reOrderItems = async (
   }
 };
 
-export const getMedicineDetailsApi = (
-  productSku: string
-): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
-  return axios.post(
+export const getMedicineDetailsApi = (productSku: string): any => {
+  return fetchWrapper.post(
     apiDetails.medicineDetails,
     { params: productSku },
     {
-      headers: {
-        Authorization: apiDetails.authToken,
-      },
+      Authorization: apiDetails.authToken,
     }
   );
 };

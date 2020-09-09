@@ -14,7 +14,7 @@ import {
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
-import axios, { AxiosResponse, AxiosError, Canceler } from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -413,14 +413,12 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
 
   const fetchSubstitutes = async () => {
-    await axios
+    await fetchWrapper
       .post(
         apiDetails.url || '',
         { params: data.sku || params.sku },
         {
-          headers: {
-            Authorization: apiDetails.authToken,
-          },
+          Authorization: apiDetails.authToken,
         }
       )
       .then(({ data }) => {
@@ -473,7 +471,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
 
   const getPlaceDetails = (pincode: string) => {
-    axios
+    fetchWrapper
       .get(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
       )
@@ -484,12 +482,12 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             setAddressDetails(addrComponents);
           }
         } catch {
-          (e: AxiosError) => {
+          (e: any) => {
             console.log(e);
           };
         }
       })
-      .catch((e: AxiosError) => {
+      .catch((e: any) => {
         setIsAlertOpen(true);
         setAlertMessage('Something went wrong :(');
         console.log(e);
@@ -497,10 +495,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
 
   const fetchDeliveryTime = async (pinCode: string) => {
-    const CancelToken = axios.CancelToken;
-    let cancelGetDeliveryTimeApi: Canceler | undefined;
     setTatLoading(true);
-    await axios
+    await fetchWrapper
       .post(
         apiDetails.deliveryUrl || '',
         {
@@ -514,17 +510,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           ],
         },
         {
-          headers: {
-            Authentication: apiDetails.deliveryAuthToken,
-          },
-          timeout: TAT_API_TIMEOUT_IN_MILLI_SEC,
-          cancelToken: new CancelToken((c) => {
-            // An executor function receives a cancel function as a parameter
-            cancelGetDeliveryTimeApi = c;
-          }),
+          Authentication: apiDetails.deliveryAuthToken,
         }
       )
-      .then((res: AxiosResponse) => {
+      .then((res: any) => {
         try {
           if (res && res.data) {
             if (res.data.errorMsg) {
