@@ -352,6 +352,8 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
       lineHeight: 1.85,
       backgroundColor: '#fff',
+      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      minWidth: 135,
       '&:hover': {
         backgroundColor: '#fff',
       },
@@ -712,10 +714,10 @@ export const ChatRoom: React.FC = () => {
             </div>
           </div>
         ) : (
-          (appointmentError || error) && (
-            <div className={classes.doctorListingPage}>Unable to load appointment information.</div>
-          )
-        )}
+              (appointmentError || error) && (
+                <div className={classes.doctorListingPage}>Unable to load appointment information.</div>
+              )
+            )}
       </div>
       {!onePrimaryUser && <ManageProfile />}
       {data && (
@@ -746,68 +748,68 @@ export const ChatRoom: React.FC = () => {
                   rescheduleAPI={rescheduleAPI}
                 />
               ) : (
-                <div>
-                  <div className={classes.dialogContent}>
-                    {rescheduleCount < 3 ? (
+                  <div>
+                    <div className={classes.dialogContent}>
+                      {rescheduleCount < 3 ? (
+                        <h6>
+                          We’re sorry that you have to reschedule. You can reschedule up to 3 times
+                          for free.
+                        </h6>
+                      ) : (
+                          <h6>
+                            {'Since you have already rescheduled 3 times with Dr. '}
+                            {`${data &&
+                              data.getDoctorDetailsById &&
+                              data.getDoctorDetailsById.fullName}`}{' '}
+                            {`, We will consider this a new paid appointment.`}
+                          </h6>
+                        )}
+                      <br />
                       <h6>
-                        We’re sorry that you have to reschedule. You can reschedule up to 3 times
-                        for free.
-                      </h6>
-                    ) : (
-                      <h6>
-                        {'Since you have already rescheduled 3 times with Dr. '}
-                        {`${data &&
-                          data.getDoctorDetailsById &&
-                          data.getDoctorDetailsById.fullName}`}{' '}
-                        {`, We will consider this a new paid appointment.`}
-                      </h6>
-                    )}
-                    <br />
-                    <h6>
-                      Next slot for Dr.{' '}
-                      {`${data && data.getDoctorDetailsById && data.getDoctorDetailsById.fullName}`}{' '}
+                        Next slot for Dr.{' '}
+                        {`${data && data.getDoctorDetailsById && data.getDoctorDetailsById.fullName}`}{' '}
                       is available on -
                     </h6>
-                    <br />
-                    {!isNextSlotLoading && (
-                      <h6 className={classes.highlightedText}>
-                        {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
-                      </h6>
-                    )}
-                  </div>
-                  <div className={classes.dialogActions}>
-                    {isNextSlotLoading ? (
-                      <div className={classes.dialogActionsProgress}>
-                        <CircularProgress size={22} color="primary" />
-                      </div>
-                    ) : (
-                      <>
-                        <AphButton
-                          className={classes.secondaryBtn}
-                          color="primary"
-                          onClick={() => setIsChangeSlot(true)}
-                        >
-                          {'CHANGE SLOT'}
-                        </AphButton>
+                      <br />
+                      {!isNextSlotLoading && (
+                        <h6 className={classes.highlightedText}>
+                          {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
+                        </h6>
+                      )}
+                    </div>
+                    <div className={classes.dialogActions}>
+                      {isNextSlotLoading ? (
+                        <div className={classes.dialogActionsProgress}>
+                          <CircularProgress size={22} color="primary" />
+                        </div>
+                      ) : (
+                          <>
+                            <AphButton
+                              className={classes.secondaryBtn}
+                              color="primary"
+                              onClick={() => setIsChangeSlot(true)}
+                            >
+                              {'CHANGE SLOT'}
+                            </AphButton>
 
-                        <AphButton
-                          className={classes.primaryBtn}
-                          color="primary"
-                          onClick={() => {
-                            handleAcceptReschedule();
-                          }}
-                        >
-                          {apiLoading ? (
-                            <CircularProgress size={22} color="secondary" />
-                          ) : (
-                            <span>ACCEPT</span>
-                          )}
-                        </AphButton>
-                      </>
-                    )}
+                            <AphButton
+                              className={classes.primaryBtn}
+                              color="primary"
+                              onClick={() => {
+                                handleAcceptReschedule();
+                              }}
+                            >
+                              {apiLoading ? (
+                                <CircularProgress size={22} color="secondary" />
+                              ) : (
+                                  <span>ACCEPT</span>
+                                )}
+                            </AphButton>
+                          </>
+                        )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </Paper>
         </Modal>
