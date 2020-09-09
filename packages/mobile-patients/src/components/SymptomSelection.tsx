@@ -18,7 +18,7 @@ import { colors } from '../theme/colors';
 import { CheckUnselectedIcon, CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import _ from 'lodash';
-import { autocompleteSymptoms } from '../helpers/apiCalls';
+import { autocompleteSymptoms, AutoCompleteSymptomsParams } from '../helpers/apiCalls';
 import { CommonBugFender } from '../FunctionHelpers/DeviceHelper';
 import { Spinner } from './ui/Spinner';
 
@@ -96,7 +96,7 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
 
   const fetchSymptoms = async (searchString: string) => {
     setLoading(true);
-    const queryParams = {
+    const queryParams: AutoCompleteSymptomsParams = {
       text: searchString,
       filter: 'symptoms',
     };

@@ -34,7 +34,10 @@ import moment from 'moment';
 import {
   startSymptomTrackerChat,
   updateSymptomTrackerChat,
-  getSymptomsFromTracker,
+  getSymptomsTrackerResult,
+  SymptomTrackerChatRequest,
+  DefaultSymptoms,
+  UpdateSymptomTrackerChatRequest,
 } from '../helpers/apiCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AlertPopup } from './ui/AlertPopup';
@@ -56,22 +59,11 @@ interface Message {
 let insertMessage: Message[] = [];
 
 interface Symptoms {
-  id: string;
+  id?: string;
   name: string;
-}
-
-interface DefaultSymptoms {
-  name: string;
-  id: string;
-  description: string;
-  url?: string;
 }
 
 interface SymptomTrackerProps extends NavigationScreenProps {}
-interface Symptoms {
-  name: string;
-  id: string;
-}
 
 export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [showProfilePopUp, setShowProfilePopUp] = useState<boolean>(false);
@@ -245,7 +237,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     setChatEnded(false);
     insertMessage = [];
     const { uhid, id, gender } = patient;
-    const body = {
+    const body: SymptomTrackerChatRequest = {
       userID: uhid,
       profileID: id,
       userProfile: {
@@ -546,7 +538,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
 
   const fetchSymptoms = async () => {
     try {
-      const res = await getSymptomsFromTracker(chatId);
+      const res = await getSymptomsTrackerResult(chatId);
       if (res?.data?.symptoms) {
         setSymptoms(res.data.symptoms);
         setSpecialities(res.data.specialities);
@@ -562,7 +554,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const goBackCallback = async (data: any, chat_id: string, storedMessages: any) => {
     insertMessage = storedMessages.concat({ text: data.name, isSentByPatient: true });
     setMessages(insertMessage);
-    const body = {
+    const body: UpdateSymptomTrackerChatRequest = {
       dialogue: {
         text: data.id,
         options: [],

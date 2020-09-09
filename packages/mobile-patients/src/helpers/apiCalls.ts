@@ -333,6 +333,90 @@ export interface NotificationResponse {
   data: { data: [] };
 }
 
+export interface SymptomTrackerChatRequest {
+  userID: string;
+  profileID: string;
+  userProfile: SymptomTrackerUserProfile;
+}
+
+interface SymptomTrackerUserProfile {
+  age: number;
+  gender: string;
+}
+
+export interface SymptomTrackerChatResponse {
+  dialogue: SymptomTrackerInfo;
+  id: string;
+  msg?: string;
+}
+
+interface SymptomTrackerInfo {
+  options: DefaultSymptoms[];
+  sender?: string;
+  status?: string;
+  text: string;
+}
+
+export interface DefaultSymptoms {
+  name: string;
+  id: string;
+  description: string;
+  url?: string;
+}
+
+export interface AutoCompleteSymptomsParams {
+  text: string;
+  filter: string;
+}
+
+interface AutoCompleteSymptomsResponse {
+  hits?: number;
+  results: AutoCompleteSymptoms[];
+  status?: string;
+}
+
+interface AutoCompleteSymptoms {
+  name: string;
+  id: string;
+  description: string;
+  url?: string;
+  type?: string;
+}
+
+export interface UpdateSymptomTrackerChatRequest {
+  dialogue: {
+    text: string;
+    options: [];
+    status: string;
+    sender: string;
+  };
+}
+
+interface SymptomsTrackerResultResponse {
+  diseases: SymptomsDiseases[];
+  specialities: SymptomsSpecialities[];
+  symptoms: {
+    id: string;
+    name: string;
+  }[];
+}
+
+interface SymptomsDiseases {
+  description: string;
+  id: string;
+  name: string;
+  score: number;
+  speciality: string;
+  url?: string;
+}
+
+interface SymptomsSpecialities {
+  departmentID: string[];
+  description: string;
+  diseases: string[];
+  name: string;
+}
+
 const config = AppConfig.Configuration;
 
 export const getMedicineDetailsApi = (
@@ -735,12 +819,17 @@ export const userSpecificCoupon = (mobileNumber: string): Promise<AxiosResponse<
   return Axios.get(url);
 };
 
-export const startSymptomTrackerChat = async (data: any): Promise<AxiosResponse<any>> => {
+export const startSymptomTrackerChat = async (
+  data: SymptomTrackerChatRequest
+): Promise<AxiosResponse<SymptomTrackerChatResponse>> => {
   const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
   return Axios.post(baseUrl, data);
 };
 
-export const autocompleteSymptoms = (chatId: string, params: any): Promise<AxiosResponse<any>> => {
+export const autocompleteSymptoms = (
+  chatId: string,
+  params: AutoCompleteSymptomsParams
+): Promise<AxiosResponse<AutoCompleteSymptomsResponse>> => {
   const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
   const url = `${baseUrl}/${chatId}/autosuggest`;
   return Axios.get(url, {
@@ -750,14 +839,16 @@ export const autocompleteSymptoms = (chatId: string, params: any): Promise<Axios
 
 export const updateSymptomTrackerChat = async (
   chatId: string,
-  data: any
-): Promise<AxiosResponse<any>> => {
+  data: UpdateSymptomTrackerChatRequest
+): Promise<AxiosResponse<SymptomTrackerChatResponse>> => {
   const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
   const url = `${baseUrl}/${chatId}`;
   return Axios.patch(url, data);
 };
 
-export const getSymptomsFromTracker = (chatId: string): Promise<AxiosResponse<any>> => {
+export const getSymptomsTrackerResult = (
+  chatId: string
+): Promise<AxiosResponse<SymptomsTrackerResultResponse>> => {
   const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
   const url = `${baseUrl}/${chatId}/specialities`;
   return Axios.get(url);
