@@ -1124,6 +1124,7 @@ interface CallPopoverProps {
   showConfirmPrescription: boolean;
   setShowConfirmPrescription: (flag: boolean) => void;
   casesheetInfo: any;
+  setGiveRating: (flag: boolean) => void;
 }
 let countdowntimer: any;
 let intervalId: any;
@@ -1188,6 +1189,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setUpdatedDate,
   } = useContext(CaseSheetContext);
 
+  const exotelCall = '^^#exotelCall';
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
   const videoCallMsg = '^^callme`video^^';
@@ -1448,6 +1450,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [textOtherCancel, setTextOtherCancel] = useState(false);
   const [otherTextCancelValue, setOtherTextCancelValue] = useState('');
   const [isResendLoading, setIsResendLoading] = useState(false);
+  const [isNewprescriptionLoading, setIsNewprescriptionLoading] = useState(false);
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
@@ -1542,6 +1545,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setDisableOnCancel(false);
     clearInterval(intervalMissCall);
     setPlayRingtone(false);
+    props.setGiveRating(true);
     if (!isCallAccepted) sendCallDisconnectNotification();
 
     const cookieStr = `action=`;
@@ -1589,6 +1593,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const sendCallDisconnectNotification = () => {
     const variables = {
       appointmentId: props.appointmentId,
+      patientId: params.patientId,
       callType: isVideoCall ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO,
     };
     client
@@ -1891,7 +1896,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         lastMsg.message.message !== cancelConsultInitiated &&
         lastMsg.message.message !== callAbandonment &&
         lastMsg.message.message !== appointmentComplete &&
-        lastMsg.message.message !== doctorAutoResponse
+        lastMsg.message.message !== doctorAutoResponse &&
+        lastMsg.message.message !== exotelCall
       ) {
         setIsNewMsg(true);
       } else {
@@ -1954,7 +1960,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       id: props.doctorId,
       message: startConsult,
       isTyping: true,
-      automatedText: currentPatient!.displayName + ' has joined your chat!',
+      automatedText: currentPatient!.displayName + ' has joined the consult room!',
       messageDate: new Date(),
       sentBy: REQUEST_ROLES.DOCTOR,
     };
@@ -2839,7 +2845,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                                 onStopConsult(true);
                               }}
                             >
-                              {isResendLoading ? 'please wait...' : 'Resend Prescription'}
+                              {isResendLoading ? 'Please wait...' : 'Resend Prescription'}
                             </li>
                             <li
                               onClick={() => {
@@ -2850,10 +2856,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             </li>
                             <li
                               onClick={() => {
-                                props.createSDCasesheetCall(true);
+                                if (!isNewprescriptionLoading) {
+                                  setIsNewprescriptionLoading(true);
+                                  props.createSDCasesheetCall(true);
+                                }
                               }}
                             >
-                              Issue New Prescription
+                              {isNewprescriptionLoading
+                                ? 'Please wait...'
+                                : 'Issue New Prescription'}
                             </li>
                           </>
                         )}
@@ -2968,6 +2979,22 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         fetchPolicy: 'no-cache',
                       });
+                      const text = {
+                        id: props.doctorId,
+                        message: exotelCall,
+                        exotelNumber: process.env.EXOTEL_CALLER_ID,
+                        isTyping: true,
+                        messageDate: new Date(),
+                        sentBy: REQUEST_ROLES.DOCTOR,
+                      };
+                      pubnub.publish(
+                        {
+                          message: text,
+                          channel: channel,
+                          storeInHistory: true,
+                        },
+                        (status: any, response: any) => {}
+                      );
                       setShowToastMessage(true);
                     }}
                   >
@@ -3767,9 +3794,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </div>
       )}
 
-      {true && <div className={classes.fadedBgJoinPromt}></div>}
+      {joinPrompt && <div className={classes.fadedBgJoinPromt}></div>}
 
-      {true && (
+      {joinPrompt && (
         <Box boxShadow={5} borderRadius={15} className={classes.joinPrompt}>
           <img
             src={require('images/ic_joinPrompt.svg')}

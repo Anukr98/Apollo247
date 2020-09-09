@@ -495,10 +495,6 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             >
               {popupLoading ? <CircularProgress size={22} color="secondary" /> : 'BOOK APPOINTMENT'}
             </AphButton>
-            <p className={classes.noteInfo}>
-              Please note that after booking, you will need to download the Apollo 247 app to
-              continue with your consultation.
-            </p>
           </div>
         )}
       </ProtectedWithLoginPopup>

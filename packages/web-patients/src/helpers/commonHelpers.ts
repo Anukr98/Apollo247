@@ -7,6 +7,8 @@ import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
+import fetchUtil from 'helpers/fetch';
+import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentDetails } from 'graphql/types/GetPatientAllAppointments';
 
 declare global {
   interface Window {
@@ -166,8 +168,8 @@ const toBase64 = (file: any) =>
   });
 
 const getDiffInDays = (nextAvailability: string) => {
-  if (nextAvailability && nextAvailability.length > 0) {
-    const nextAvailabilityTime = moment(new Date(nextAvailability.replace(/-/g, ' ')));
+  if (nextAvailability) {
+    const nextAvailabilityTime = moment(new Date(nextAvailability));
     const currentTime = moment(new Date());
     const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
     return differenceInDays;
@@ -197,13 +199,18 @@ const getDiffInHours = (doctorAvailableSlots: string) => {
   }
 };
 const acceptedFilesNamesForFileUpload = ['png', 'jpg', 'jpeg', 'pdf'];
-const MAX_FILE_SIZE_FOR_UPLOAD = 2000000;
-const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 2MB';
+const MAX_FILE_SIZE_FOR_UPLOAD = 3000000;
+const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 3MB';
 const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
 const OUT_OF_STOCK_MESSAGE = 'Sorry, this item is out of stock in your area';
-const TAT_API_TIMEOUT_IN_MILLI_SEC = 10000; // in milli sec
+const TAT_API_TIMEOUT_IN_MILLI_SEC = 20000; // in milli sec
+const NO_ONLINE_SERVICE = 'NOT AVAILABLE FOR ONLINE SALE';
+const OUT_OF_STOCK = 'Out Of Stock';
+const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
+const PINCODE_MAXLENGTH = 6;
+const SPECIALTY_DETAIL_LISTING_PAGE_SIZE = 50;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -256,6 +263,13 @@ interface SearchObject {
   prakticeSpecialties: string | null;
 }
 
+interface AppointmentFilterObject {
+  appointmentStatus: string[] | null;
+  availability: string[] | null;
+  doctorsList: string[] | null;
+  specialtyList: string[] | null;
+}
+
 const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
 const experienceList = [
   { key: '0-5', value: '0 - 5' },
@@ -269,6 +283,15 @@ const genderList = [
 ];
 const languageList = ['English', 'Telugu'];
 const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
+const consultType = ['Online', 'Clinic Visit'];
+const appointmentStatus = [
+  'Active',
+  'Completed',
+  'Cancelled',
+  'Rescheduled',
+  'Follow-Up',
+  'Follow - Up Chat',
+];
 
 // End of doctors list based on specialty related changes
 
@@ -409,9 +432,58 @@ const getImageUrl = (imageUrl: string) => {
   );
 };
 
+const getCouponByUserMobileNumber = () => {
+  return fetchUtil(
+    `${process.env.GET_PHARMA_AVAILABLE_COUPONS}?mobile=${localStorage.getItem('userMobileNo')}`,
+    'GET',
+    {},
+    '',
+    false
+  );
+};
+
+const isPastAppointment = (appointmentDateTime: string) =>
+  moment(appointmentDateTime)
+    .add(7, 'days')
+    .isBefore(moment());
+
+const getAvailableFreeChatDays = (appointmentTime: string) => {
+  const followUpDayMoment = moment(appointmentTime).add(7, 'days');
+  const diffInDays = followUpDayMoment.diff(moment(), 'days');
+  if (diffInDays <= 0) {
+    const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
+    const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
+    return diffInHours > 0
+      ? `${diffInHours} hours free chat remaining`
+      : diffInMinutes > 0
+      ? `${diffInMinutes} minutes free chat remaining`
+      : '';
+  } else {
+    return `${diffInDays} days free chat remaining`;
+  }
+};
+
+const removeGraphQLKeyword = (error: any) => {
+  return error.message.replace('GraphQL error:', '');
+};
+
+const HEALTH_RECORDS_NO_DATA_FOUND =
+  'You don’t have any records with us right now. Add a record to keep everything handy in one place!';
+
+const HEALTH_RECORDS_NOTE =
+  'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
+
 export {
+  HEALTH_RECORDS_NO_DATA_FOUND,
+  removeGraphQLKeyword,
+  getCouponByUserMobileNumber,
   getPackOfMedicine,
   getImageUrl,
+  getAvailableFreeChatDays,
+  isPastAppointment,
+  AppointmentFilterObject,
+  consultType,
+  appointmentStatus,
   getStoreName,
   getAvailability,
   isRejectedStatus,
@@ -449,4 +521,10 @@ export {
   getTypeOfProduct,
   kavachHelpline,
   isActualUser,
+  NO_ONLINE_SERVICE,
+  OUT_OF_STOCK,
+  NOTIFY_WHEN_IN_STOCK,
+  PINCODE_MAXLENGTH,
+  SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
+  HEALTH_RECORDS_NOTE,
 };

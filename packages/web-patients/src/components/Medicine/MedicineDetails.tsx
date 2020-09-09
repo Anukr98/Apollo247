@@ -36,6 +36,7 @@ import { Link } from 'react-router-dom';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { getPackOfMedicine } from 'helpers/commonHelpers';
+import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -497,6 +498,84 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: 0,
       },
     },
+    similarProducts: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      textTransform: 'uppercase',
+      borderBottom: 'solid 0.5px rgba(2, 71, 91, 0.3)',
+      paddingBottom: 8,
+      marginBottom: 10,
+    },
+    sliderSection: {
+      padding: 20,
+      [theme.breakpoints.down('xs')]: {
+        padding: '0 20px 20px',
+        overflowX: 'hidden',
+      },
+    },
+    mobileResponseView: {
+      [theme.breakpoints.up(768)]: {
+        display: 'none',
+      },
+    },
+    webResponseView: {
+      [theme.breakpoints.down(768)]: {
+        display: 'none',
+      },
+    },
+    ppWrapper: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 999,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'none',
+      alignItems: 'center',
+      justifyContent: 'center',
+      [theme.breakpoints.down('sm')]: {
+        display: 'flex',
+      },
+    },
+    productPopup: {
+      position: 'relative',
+      width: 600,
+      height: 400,
+      background: '#fff',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        height: '100%',
+      },
+      '& h1': {
+        padding: '0 0 5px 10px',
+        fontSize: 16,
+        fontWeight: 700,
+        margin: 0,
+        width: 240,
+        whiteSpace: 'nowrap',
+        textOverflow: 'ellipsis',
+        overflow: 'hidden',
+      },
+    },
+    closePopup: {
+      // position: 'absolute',
+      // top: 20,
+      // borderBottomLeftRadius: 20,
+    },
+    ppContent: {
+      height: 'auto',
+      padding: 30,
+      '& >div': {
+        position: 'static',
+        width: 'auto',
+      },
+    },
+    ppHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      padding: 20,
+    },
   };
 });
 
@@ -519,6 +598,7 @@ export const MedicineDetails: React.FC = (props) => {
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [metaTagProps, setMetaTagProps] = React.useState(null);
+  const [imageClick, setImageClick] = React.useState<boolean>(false);
   const { cartItems } = useShoppingCart();
   const { diagnosticsCartItems } = useDiagnosticsCart();
 
@@ -574,6 +654,9 @@ export const MedicineDetails: React.FC = (props) => {
               url_key,
               mou,
               category_id,
+              is_in_stock,
+              MaxOrderQty,
+              is_prescription_required,
             } = data && data.productdp && data.productdp.length && data.productdp[0];
             let { description } = data.productdp[0];
             pharmacyProductViewTracking({
@@ -599,32 +682,97 @@ export const MedicineDetails: React.FC = (props) => {
             setProductSchemaJSON({
               '@context': 'https://schema.org/',
               '@type': 'Product',
-              name: name,
+              name,
+              sku,
               image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
+              alternateName: name,
+              brand: {
+                '@type': 'brand',
+                logo: '',
+              },
+              manufacturer: {
+                '@type': 'Organization',
+                name: manufacturer,
+              },
+              itemCondition: 'NewCondition',
               description,
-              brand: manufacturer,
-              sku: params.sku,
-              gtin8: id,
               offers: {
                 '@type': 'Offer',
-                url: `https://www.apollo247.com/medicine-details/${sku}`,
+                availability:
+                  is_in_stock == 1 ? 'http://schema.org/InStock' : 'http://schema.org/OutOfStock',
+                acceptedPaymentMethod: 'COD, Card, Paytm, UPI',
+                addOn: '',
+                advanceBookingRequirement: '',
+                areaServed: '',
                 priceCurrency: 'INR',
+                availabilityEnds: '',
+                availabilityStarts: '',
+                availableAtOrFrom: '',
+                availableDeliveryMethod: 'Home Delivery',
+                deliveryLeadTime: '',
+                eligibleCustomerType: '',
+                eligibleDuration: '',
+                eligibleQuantity: MaxOrderQty,
+                eligibleRegion: '',
+                eligibleTransactionVolume: '',
+                itemCondition: 'NewCondition',
+                ineligibleRegion: '',
                 price: special_price || price,
+                seller: 'APOLLO HOSPITALS ENTERPRISES LTD',
+                serialNumber: '',
+                validFrom: '',
+                validThrough: '',
+                warranty: '',
                 priceValidUntil: '2020-12-31',
-                availability: 'https://schema.org/InStock',
-                itemCondition: 'https://schema.org/NewCondition',
+                url: `https://www.apollo247.com/medicine/${sku}`,
               },
+              category: {
+                '@type': 'Thing',
+                image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
+              },
+              gtin8: id,
             });
             if (type_id && type_id.toLowerCase() === 'pharma') {
-              const { generic, Doseform } =
+              const { generic, Doseform, Strengh, Unit, Overview } =
                 PharmaOverview && PharmaOverview.length > 0 && PharmaOverview[0];
+              const renderContent = (reqKey: string) =>
+                Overview &&
+                Overview.length > 0 &&
+                Overview.filter((key: any) => key.Caption === reqKey);
               setDrugSchemaJSON({
                 '@context': 'https://schema.org/',
                 '@type': 'Drug',
-                name: name,
+                name,
+                mainEntityOfPage: `https://www.apollo247.com/medicine/${sku}`,
+                image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
                 description,
-                activeIngredient: generic && generic.length ? generic.split('+') : '',
+                activeIngredient: `${generic}-${Strengh}${Unit}`,
+                alcoholWarning: renderContent('DRUG ALCOHOL INTERACTION')[0].CaptionDesc,
+                availableStrength: {
+                  '@context': 'http://schema.org/',
+                  '@type': 'DrugStrength',
+                  activeIngredient: `${generic}-${Strengh}${Unit}`,
+                },
+                breastfeedingWarning: renderContent('DRUG BREAST FEEDING INTERACTION')[0]
+                  .CaptionDesc,
+                pregnancyWarning: renderContent('DRUG PREGNANCY INTERACTION')[0].CaptionDesc,
+                clinicalPharmacology: '',
                 dosageForm: Doseform,
+                drugUnit: Unit,
+                foodWarning: '',
+                isAvailableGenerically: 'True',
+                legalStatus: 'country: india, status: Approved',
+                overdosage: '',
+                manufacturer: {
+                  '@type': 'Organization',
+                  legalName: manufacturer,
+                },
+                mechanismOfAction: '',
+                nonProprietaryName: name,
+                isProprietary: true,
+                prescriptionStatus:
+                  is_prescription_required == 1 ? 'Available by prescription' : 'over-the-counter',
+                url: `https://www.apollo247.com/medicine/${sku}`,
               });
             }
             /**schema markup End */
@@ -691,10 +839,8 @@ export const MedicineDetails: React.FC = (props) => {
   const history = useHistory();
 
   useEffect(() => {
-    if (!medicineDetails) {
-      getMedicineDetails(params.sku);
-    }
-  }, [medicineDetails]);
+    getMedicineDetails(params.sku);
+  }, [params.sku]);
 
   useEffect(() => {
     if (params && params.searchText) {
@@ -707,6 +853,16 @@ export const MedicineDetails: React.FC = (props) => {
   if (medicineDetails && medicineDetails.PharmaOverview) {
     medicinePharmacyDetails = medicineDetails.PharmaOverview;
   }
+
+  const renderComposition = () => {
+    const generics = medicinePharmacyDetails[0].generic.split('+ ');
+    const strength = medicinePharmacyDetails[0].Strength
+      ? medicinePharmacyDetails[0].Strength.split('+ ')
+      : '';
+    const units = medicinePharmacyDetails[0].Unit.split('+ ');
+    const compositionArray = generics.map((key, ind) => `${key}-${strength[ind]}${units[ind]}`);
+    return compositionArray.join(' + ');
+  };
 
   const getHeader = (caption: string) => {
     switch (caption) {
@@ -830,20 +986,21 @@ export const MedicineDetails: React.FC = (props) => {
   const renderOverviewTabDesc = (overView: MedicineOverView) => {
     const data = getData(overView);
     if (typeof overView !== 'string') {
-      return data.map(
-        (item, index) =>
-          tabValue === index && (
-            <div key={index} className={classes.tabContainer}>
-              {item.value.split(';').map((description, idx) => {
-                if (item.key === 'Usage') {
-                  return <div key={index}>{getUsageDesc(description)}</div>;
-                } else {
-                  return <p key={idx}>{description}</p>;
-                }
-              })}
-            </div>
-          )
-      );
+      return data.map((item, index) => (
+        <div
+          style={{ display: tabValue === index ? 'block' : 'none' }}
+          key={index}
+          className={classes.tabContainer}
+        >
+          {item.value.split(';').map((description, idx) => {
+            if (item.key === 'Usage') {
+              return <div key={index}>{getUsageDesc(description)}</div>;
+            } else {
+              return <p key={idx}>{description}</p>;
+            }
+          })}
+        </div>
+      ));
     }
     return [];
   };
@@ -880,6 +1037,26 @@ export const MedicineDetails: React.FC = (props) => {
     );
   };
 
+  const similarProducts = { products: medicineDetails && medicineDetails.similar_products };
+
+  const renderSimilarProducts = (responseView: any) => {
+    return (
+      medicineDetails &&
+      medicineDetails.similar_products && (
+        <div
+          className={
+            responseView === 'webDisplay'
+              ? `${classes.sliderSection} ${classes.webResponseView}`
+              : `${classes.sliderSection} ${classes.mobileResponseView}`
+          }
+        >
+          <div className={classes.similarProducts}>{`SIMILAR TO ${medicineDetails.name}`}</div>
+          <HotSellers data={similarProducts} />
+        </div>
+      )
+    );
+  };
+
   return (
     <div className={classes.root}>
       <MetaTagsComp {...metaTagProps} />
@@ -892,7 +1069,13 @@ export const MedicineDetails: React.FC = (props) => {
             <div className={classes.container}>
               <div className={classes.medicineDetailsPage}>
                 <div className={classes.breadcrumbs}>
-                  <a onClick={() => history.push(clientRoutes.medicines())}>
+                  <a
+                    onClick={() => {
+                      sessionStorage.getItem('categoryClicked')
+                        ? history.goBack()
+                        : history.push(clientRoutes.medicines());
+                    }}
+                  >
                     <div className={classes.backArrow}>
                       <img
                         className={classes.blackArrow}
@@ -953,104 +1136,146 @@ export const MedicineDetails: React.FC = (props) => {
                     </div>
                   </div>
                 </div>
-
                 {medicineDetails ? (
-                  <div className={classes.medicineDetailsGroup}>
-                    <div className={classes.searchSection}>
-                      <Scrollbars
-                        className={classes.scrollResponsive}
-                        autoHide={true}
-                        autoHeight
-                        autoHeightMax={'calc(100vh - 215px'}
-                      >
-                        <div className={classes.productInformation}>
-                          {medicineDetails.image && medicineDetails.image.length > 0 ? (
-                            <MedicineImageGallery data={medicineDetails} />
-                          ) : (
-                            <div className={classes.noImageWrapper}>
-                              <img
-                                src={require('images/medicine.svg')}
-                                alt={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
-                                  medicineDetails
-                                )}`}
-                                title={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
-                                  medicineDetails
-                                )}`}
+                  <>
+                    <div className={classes.medicineDetailsGroup}>
+                      <div className={classes.searchSection}>
+                        <Scrollbars
+                          className={classes.scrollResponsive}
+                          autoHide={true}
+                          autoHeight
+                          autoHeightMax={'calc(100vh - 215px'}
+                        >
+                          <div className={classes.productInformation}>
+                            {medicineDetails.image && medicineDetails.image.length > 0 ? (
+                              <MedicineImageGallery
+                                data={medicineDetails}
+                                setImageClick={setImageClick}
                               />
-                            </div>
-                          )}
-                          <div className={classes.productDetails}>
-                            <div className={classes.productBasicInfo}>
-                              <h1>{medicineDetails.name}</h1>
-                              <div className={classes.textInfo}>
-                                <label>Manufacturer</label>
-                                {medicineDetails.manufacturer}
-                              </div>
-                              {medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
-                                <div className={classes.textInfo}>
-                                  <Typography component="h2">Composition</Typography>
-                                  <Typography component="h3">{`${medicinePharmacyDetails[0].generic}-${medicinePharmacyDetails[0].Strengh}${medicinePharmacyDetails[0].Unit}`}</Typography>
-                                </div>
-                              )}
-                              <div className={classes.textInfo}>
-                                <Typography component="h3" className={classes.packOfText}>
-                                  Pack Of
-                                </Typography>
-                                <Typography component="h3">
-                                  {getPackOfMedicine(medicineDetails)}
-                                </Typography>
-                              </div>
-                            </div>
-                            {Number(medicineDetails.is_prescription_required) !== 0 && (
-                              <div className={classes.prescriptionBox}>
-                                <span>This medicine requires doctor’s prescription</span>
-                                <span className={classes.preImg}>
-                                  <img src={require('images/ic_tablets.svg')} alt="" />
-                                </span>
+                            ) : (
+                              <div className={classes.noImageWrapper}>
+                                <img
+                                  src={require('images/medicine.svg')}
+                                  alt={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
+                                    medicineDetails
+                                  )}`}
+                                  title={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
+                                    medicineDetails
+                                  )}`}
+                                />
                               </div>
                             )}
-                            {medicinePharmacyDetails &&
-                            medicinePharmacyDetails.length > 0 &&
-                            medicinePharmacyDetails[0].Overview &&
-                            medicinePharmacyDetails[0].Overview.length > 0 ? (
-                              <div className={classes.tabWrapper}>
-                                <Tabs
-                                  value={tabValue}
-                                  variant="scrollable"
-                                  scrollButtons="on"
-                                  classes={{
-                                    root: classes.tabsRoot,
-                                    indicator: classes.tabsIndicator,
-                                  }}
-                                  onChange={(e, newValue) => {
-                                    setTabValue(newValue);
-                                    const overviewData = getData(
-                                      medicinePharmacyDetails[0].Overview
-                                    );
-                                    const tabName = overviewData[newValue].key;
-                                    pharmacyPdpOverviewTracking(tabName);
-                                  }}
-                                >
-                                  {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
-                                </Tabs>
-                                {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
-                              </div>
-                            ) : medicineDetails.description ? (
-                              <div className={classes.productDetailed}>
-                                <div className={classes.productInfo}>Product Information</div>
-                                <div className={classes.productDescription}>
-                                  {medicineDetails.description && (
-                                    <div dangerouslySetInnerHTML={{ __html: renderInfo() }}></div>
-                                  )}
+                            {imageClick && (
+                              <div className={classes.ppWrapper}>
+                                <div className={classes.productPopup}>
+                                  <div className={classes.ppHeader}>
+                                    <a
+                                      href="javascript:void(0);"
+                                      className={classes.closePopup}
+                                      onClick={() => setImageClick(false)}
+                                    >
+                                      <img src={require('images/ic_cross.svg')} alt="close" />
+                                    </a>
+                                    <h1>{medicineDetails.name}</h1>
+                                  </div>
+                                  <div className={classes.ppContent}>
+                                    {medicineDetails.image && medicineDetails.image.length > 0 ? (
+                                      <MedicineImageGallery
+                                        data={medicineDetails}
+                                        setImageClick={setImageClick}
+                                      />
+                                    ) : (
+                                      <div className={classes.noImageWrapper}>
+                                        <img
+                                          src={require('images/medicine.svg')}
+                                          alt={`${
+                                            medicineDetails.name
+                                          }, Pack of ${getPackOfMedicine(medicineDetails)}`}
+                                          title={`${
+                                            medicineDetails.name
+                                          }, Pack of ${getPackOfMedicine(medicineDetails)}`}
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                            ) : null}
+                            )}
+                            <div className={classes.productDetails}>
+                              <div className={classes.productBasicInfo}>
+                                <h1>{medicineDetails.name}</h1>
+                                <div className={classes.textInfo}>
+                                  <label>Manufacturer</label>
+                                  {medicineDetails.manufacturer}
+                                </div>
+                                {medicinePharmacyDetails && medicinePharmacyDetails.length > 0 && (
+                                  <div className={classes.textInfo}>
+                                    <Typography component="h2">Composition</Typography>
+                                    <Typography component="h3">{renderComposition()}</Typography>
+                                  </div>
+                                )}
+                                <div className={classes.textInfo}>
+                                  <Typography component="h3" className={classes.packOfText}>
+                                    Pack Of
+                                  </Typography>
+                                  <Typography component="h3">
+                                    {getPackOfMedicine(medicineDetails)}
+                                  </Typography>
+                                </div>
+                              </div>
+                              {Number(medicineDetails.is_prescription_required) !== 0 && (
+                                <div className={classes.prescriptionBox}>
+                                  <span>This medicine requires doctor’s prescription</span>
+                                  <span className={classes.preImg}>
+                                    <img src={require('images/ic_tablets.svg')} alt="" />
+                                  </span>
+                                </div>
+                              )}
+                              {medicinePharmacyDetails &&
+                              medicinePharmacyDetails.length > 0 &&
+                              medicinePharmacyDetails[0].Overview &&
+                              medicinePharmacyDetails[0].Overview.length > 0 ? (
+                                <div className={classes.tabWrapper}>
+                                  <Tabs
+                                    value={tabValue}
+                                    variant="scrollable"
+                                    scrollButtons="on"
+                                    classes={{
+                                      root: classes.tabsRoot,
+                                      indicator: classes.tabsIndicator,
+                                    }}
+                                    onChange={(e, newValue) => {
+                                      setTabValue(newValue);
+                                      const overviewData = getData(
+                                        medicinePharmacyDetails[0].Overview
+                                      );
+                                      const tabName = overviewData[newValue].key;
+                                      pharmacyPdpOverviewTracking(tabName);
+                                    }}
+                                  >
+                                    {renderOverviewTabs(medicinePharmacyDetails[0].Overview)}
+                                  </Tabs>
+                                  {renderOverviewTabDesc(medicinePharmacyDetails[0].Overview)}
+                                </div>
+                              ) : medicineDetails.description ? (
+                                <div className={classes.productDetailed}>
+                                  <div className={classes.productInfo}>Product Information</div>
+                                  <div className={classes.productDescription}>
+                                    {medicineDetails.description && (
+                                      <div dangerouslySetInnerHTML={{ __html: renderInfo() }}></div>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : null}
+                            </div>
                           </div>
-                        </div>
-                      </Scrollbars>
+                        </Scrollbars>
+                      </div>
+                      {renderSimilarProducts('mobileDisplay')}
+                      <MedicineInformation data={medicineDetails} />
                     </div>
-                    <MedicineInformation data={medicineDetails} />
-                  </div>
+                    {renderSimilarProducts('webDisplay')}
+                  </>
                 ) : (
                   <div className={classes.progressLoader}>
                     <CircularProgress size={30} />

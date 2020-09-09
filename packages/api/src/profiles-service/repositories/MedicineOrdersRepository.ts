@@ -17,9 +17,31 @@ import {
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addDays, differenceInMinutes, getUnixTime } from 'date-fns';
-import { getCache, setCache } from 'profiles-service/database/connectRedis';
+import { getCache, setCache, hmsetCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger';
+
+export type SaveMedicineInfoInput = {
+  sku: string;
+  name: string;
+  status: string;
+  price: string;
+  special_price: string;
+  special_price_from: string;
+  special_price_to: string;
+  qty: number;
+  description: string;
+  url_key: string;
+  base_image: string;
+  is_prescription_required: string;
+  category_name: string;
+  product_discount_category: string;
+  sell_online: string;
+  molecules: string;
+  mou: number;
+  gallery_images: string;
+  manufacturer: string;
+};
 
 const REDIS_ORDER_AUTO_ID_KEY_PREFIX: string = 'orderAutoId:';
 @EntityRepository(MedicineOrders)
@@ -85,6 +107,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getRefundsAndPaymentsByOrderId(id: MedicineOrders['id']) {
     const paymentType = MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS;
     return MedicineOrderPayments.createQueryBuilder('medicineOrderPayments')
+      .innerJoinAndSelect('medicineOrderPayments.medicineOrders', 'medicineOrders')
       .leftJoinAndSelect('medicineOrderPayments.medicineOrderRefunds', 'medicineOrderRefunds')
       .where('medicineOrderPayments.medicineOrders = :id', { id })
       .getOne();
@@ -158,7 +181,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrderLineItemByOrderId(id: MedicineOrders['id']) {
     return MedicineOrderLineItems.find({
       where: { medicineOrders: id },
-      select: ['medicineSKU', 'quantity'],
+      select: ['medicineSKU', 'quantity', 'mou'],
     });
   }
 
@@ -170,7 +193,16 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     const orderResponse = await getCache(`${REDIS_ORDER_AUTO_ID_KEY_PREFIX}${orderAutoId}`);
     if (!orderResponse) {
       return this.findOne({
-        select: ['id', 'currentStatus', 'orderAutoId', 'patientAddressId', 'isOmsOrder', 'patient'],
+        select: [
+          'id',
+          'currentStatus',
+          'orderAutoId',
+          'patientAddressId',
+          'isOmsOrder',
+          'patient',
+          'deviceType',
+          'bookingSource',
+        ],
         where: { orderAutoId },
         relations: ['patient'],
       });
@@ -182,6 +214,13 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     return this.findOne({
       where: { apOrderNo },
       relations: ['patient', 'medicineOrderLineItems', 'medicineOrderPayments'],
+    });
+  }
+
+  getMedicineOrderDetailsByOrderAutoId(orderAutoId: MedicineOrders['orderAutoId']) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: ['patient', 'medicineOrderShipments', 'medicineOrderPayments'],
     });
   }
 
@@ -521,7 +560,6 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         ]),
       },
     });
-    console.log('ordersList====>', ordersList.length);
     let totalCount = 0,
       deliveryCount = 0,
       vdcCount = 0,
@@ -529,50 +567,33 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
 
     if (ordersList.length > 0) {
       ordersList.map(async (orderDetails) => {
-        console.log('orderAutoId=>', orderDetails.orderAutoId);
         if (
           orderDetails.orderTat.toString() != null &&
           Date.parse(orderDetails.orderTat.toString())
         ) {
           const tatDate = new Date(orderDetails.orderTat.toString());
-          console.log('tatDate==>', tatDate);
           const istCreatedDate = orderDetails.createdDate;
-          console.log('istCreatedDate==>', istCreatedDate);
           const orderTat = Math.floor(Math.abs(differenceInMinutes(tatDate, istCreatedDate)));
-          console.log('orderTat==>', orderTat);
           if (orderTat <= 120) {
             totalCount++;
           } else {
             vdcCount++;
           }
-          console.log('counts==>', totalCount, vdcCount);
           if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED) {
-            console.log('inside condition');
             const orderStatusDetails = await MedicineOrdersStatus.findOne({
               where: { medicineOrders: orderDetails, orderStatus: MEDICINE_ORDER_STATUS.DELIVERED },
             });
-            console.log('orderStatusDetails=>', orderStatusDetails);
             if (orderStatusDetails) {
-              console.log('inside orderStatusDetails');
-              console.log(orderStatusDetails.statusDate, orderDetails.createdDate);
-              console.log(
-                'difference==>',
-                Math.abs(
-                  differenceInMinutes(orderStatusDetails.statusDate, orderDetails.createdDate)
-                )
-              );
               const deliveryTat = Math.floor(
                 Math.abs(
                   differenceInMinutes(orderStatusDetails.statusDate, orderDetails.createdDate)
                 )
               );
-              console.log('deliveryTat=>', deliveryTat);
               if (deliveryTat <= 120) {
                 deliveryCount++;
               } else {
                 vdcDeliveryCount++;
               }
-              console.log('delivery,VdcCounts=>', deliveryCount, vdcCount);
             }
           }
         }
@@ -647,6 +668,13 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrdersStatus',
       ],
+    });
+  }
+
+  getMedicineOrderWithStatus(orderAutoId: number) {
+    return this.findOne({
+      where: { orderAutoId },
+      relations: ['patient', 'medicineOrdersStatus'],
     });
   }
 
@@ -753,5 +781,44 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       });
     }
     return medicineOrderDetails;
+  }
+
+  async saveMedicneInfoRedis(saveMedicineInfoInput: SaveMedicineInfoInput) {
+    const skuKey = 'medicine:sku:' + saveMedicineInfoInput.sku;
+    return await hmsetCache(skuKey, {
+      sku: encodeURIComponent(saveMedicineInfoInput.sku),
+      name: encodeURIComponent(saveMedicineInfoInput.name),
+      status: encodeURIComponent(saveMedicineInfoInput.status),
+      price: encodeURIComponent(saveMedicineInfoInput.price),
+      special_price:
+        saveMedicineInfoInput.special_price != undefined
+          ? encodeURIComponent(saveMedicineInfoInput.special_price)
+          : '',
+      special_price_from:
+        saveMedicineInfoInput.special_price_from != undefined
+          ? encodeURIComponent(saveMedicineInfoInput.special_price_from)
+          : '',
+      special_price_to:
+        saveMedicineInfoInput.special_price_to != undefined
+          ? encodeURIComponent(saveMedicineInfoInput.special_price_to)
+          : '',
+      qty: encodeURIComponent(saveMedicineInfoInput.qty),
+      description: encodeURIComponent(saveMedicineInfoInput.description),
+      url_key: encodeURIComponent(saveMedicineInfoInput.url_key),
+      base_image: encodeURIComponent(saveMedicineInfoInput.base_image),
+      is_prescription_required: encodeURIComponent(saveMedicineInfoInput.is_prescription_required),
+      category_name: encodeURIComponent(saveMedicineInfoInput.category_name),
+      product_discount_category: encodeURIComponent(
+        saveMedicineInfoInput.product_discount_category
+      ),
+      sell_online: encodeURIComponent(saveMedicineInfoInput.sell_online),
+      molecules:
+        saveMedicineInfoInput.molecules != undefined
+          ? encodeURIComponent(saveMedicineInfoInput.molecules)
+          : '',
+      mou: encodeURIComponent(saveMedicineInfoInput.mou),
+      gallery_images: encodeURIComponent(saveMedicineInfoInput.gallery_images),
+      manufacturer: encodeURIComponent(saveMedicineInfoInput.manufacturer),
+    });
   }
 }

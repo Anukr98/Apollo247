@@ -170,7 +170,7 @@ type AddNewAddressProps = {
   currentAddress?: GetPatientAddressList_getPatientAddressList_addressList;
   disableActions?: boolean;
   forceRefresh?: (forceRefresh: boolean) => void;
-  checkServiceAvailability?: (zipCode: string | null) => AxiosPromise;
+  checkServiceAvailability?: (zipCode: string | null) => any;
   setDeliveryTime?: (deliveryTime: string) => void;
 };
 
@@ -518,8 +518,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       if (props.checkServiceAvailability) {
                         props
                           .checkServiceAvailability(pincode)
-                          .then((res: AxiosResponse) => {
-                            if (res && res.data && res.data.Availability) {
+                          .then((res: any) => {
+                            if (res && res.data && res.data.response) {
                               /**Gtm code start  */
                               gtmTracking({
                                 category: 'Profile',

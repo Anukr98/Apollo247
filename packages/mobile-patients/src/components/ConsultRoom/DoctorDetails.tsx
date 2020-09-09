@@ -22,6 +22,7 @@ import {
   getDoctorDetailsById,
   getDoctorDetailsById_getDoctorDetailsById,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
@@ -68,6 +69,7 @@ import {
   DoctorPlaceholderImage,
   RectangularIcon,
   VideoPlayIcon,
+  CTGrayChat,
 } from '../ui/Icons';
 // import { NotificationListener } from '../NotificationListener';
 
@@ -112,6 +114,23 @@ const styles = StyleSheet.create({
   separatorStyle: {
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
+  },
+  followUpChatMessageViewStyle: {
+    flexDirection: 'row',
+    marginTop: 18,
+    marginBottom: 8,
+  },
+  followUpChatImageStyle: {
+    marginTop: 4,
+    width: 15.5,
+    height: 13.5,
+  },
+  followUpChatMessageStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: '#225E6F',
+    lineHeight: 18,
+    flex: 1,
+    marginLeft: 11.5,
   },
   cardView: {
     width: '100%',
@@ -492,6 +511,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           openConsultPopup(ConsultMode.ONLINE);
         }}
         DoctorId={doctorId}
+        chatDays={g(doctorDetails, 'chatDays') ? g(doctorDetails, 'chatDays')!.toString() : '7'}
         DoctorName={doctorDetails ? doctorDetails.fullName : ''}
         nextAppointemntOnlineTime={availableTime}
         nextAppointemntInPresonTime={physicalAvailableTime}
@@ -528,6 +548,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               doctorClinics[0].facility.city
             }`
           : '';
+      const followUpChatMessage =
+        doctorDetails.salutation +
+        ' ' +
+        doctorDetails.firstName +
+        ' ' +
+        string.consultType.follow_up_chat_message.replace(
+          '{0}',
+          g(doctorDetails, 'chatDays') ? g(doctorDetails, 'chatDays')!.toString() : '7'
+        );
 
       return (
         <View style={styles.topView}>
@@ -580,6 +609,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 )}
               </View>
               <View style={styles.separatorStyle} />
+              <View style={styles.followUpChatMessageViewStyle}>
+                <CTGrayChat style={styles.followUpChatImageStyle} />
+                <Text style={styles.followUpChatMessageStyle}>{followUpChatMessage}</Text>
+              </View>
               <View style={styles.onlineConsultView}>
                 <View
                   style={[
@@ -630,7 +663,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     }}
                   >
                     <View>
-                      <Text style={styles.onlineConsultLabel}>Chat/Audio/Video</Text>
+                      <Text style={styles.onlineConsultLabel}>Consult In-App</Text>
                       <Text style={styles.onlineConsultAmount}>
                         {Number(VirtualConsultationFee) <= 0 ||
                         VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
@@ -1219,17 +1252,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             justifyContent: 'center',
           }}
         >
-          {!showVideo &&
-          doctorDetails &&
-          doctorDetails &&
-          doctorDetails.photoUrl &&
-          doctorDetails.photoUrl.match(
-            /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
-          ) ? (
+          {!showVideo && !!g(doctorDetails, 'photoUrl') ? (
             <>
               <View style={{ height: 20, width: '100%' }} />
               <Animated.Image
-                source={{ uri: doctorDetails.photoUrl }}
+                source={{ uri: doctorDetails!.photoUrl }}
                 style={{ top: 0, height: 140, width: 140, opacity: imgOp }}
               />
               {/* <TouchableOpacity

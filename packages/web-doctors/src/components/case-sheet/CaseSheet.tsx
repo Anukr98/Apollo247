@@ -28,6 +28,7 @@ import { UserCard } from 'components/case-sheet/UserCard';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { useParams } from 'hooks/routerHooks';
 import { getLocalStorageItem, updateLocalStorageItem } from './panels/LocalStorageUtils';
+import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -232,6 +233,10 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   const [refferalState, setRefferalState] = useState<boolean>(props.startAppointment);
   const [vitalsState, setVitalsState] = useState<boolean>(props.startAppointment);
   const [firstTimeLanding, setFirstTimeLanding] = useState<boolean>(true);
+
+  const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
+  const { chatDays } = useAuthContext();
+
   const items = [
     {
       key: 'symptoms',
@@ -289,9 +294,18 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     },
     {
       key: 'followup',
-      value: 'Follow up (Free)',
+      value: 'Follow Up Chat Days',
       state: followUpPanelState,
-      component: <FollowUp startAppointment={props.startAppointment} />,
+      component: (
+        <FollowUp
+          origin={'casesheet'}
+          header={'Set your patient follow up chat days limit.'}
+          value={followUpAfterInDays[0]}
+          onChange={setFollowUpAfterInDays}
+          disabled={!caseSheetEdit}
+          info={`The follow up chat days count will be changed for this individual patient. Your default follow up chat day count is set at ${chatDays}.`}
+        />
+      ),
     },
     {
       key: 'refferal',
@@ -366,7 +380,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         setMedicinePrescription(storageItem.medicinePrescription);
         setRemovedMedicinePrescription(storageItem.removedMedicinePrescription);
         setFollowUp(storageItem.followUp);
-        setFollowUpAfterInDays(storageItem.followUpAfterInDays);
+        // setFollowUpAfterInDays(storageItem.followUpAfterInDays);
         setFollowUpDate(storageItem.followUpDate);
         setDiagnosticPrescription(storageItem.diagnosticPrescription);
         setOtherInstructions(storageItem.otherInstructions);
@@ -439,7 +453,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
               key={item.key}
               expanded={item.state}
               onChange={handlePanelExpansion(item.key)}
-              className={`${classes.expandIcon} ${item.key === 'followup' && classes.none}`}
+              className={`${classes.expandIcon}`}
             >
               <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="h3">{item.value}</Typography>

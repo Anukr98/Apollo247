@@ -29,6 +29,7 @@ import {
   WebEngageEvent,
   ConsultMode,
   DoctorConsultEventInput,
+  CALL_FEEDBACK_RESPONSES_TYPES,
 } from 'graphql/types/globalTypes';
 import {
   GetJuniorDoctorCaseSheet,
@@ -68,8 +69,10 @@ import {
   MODIFY_CASESHEET,
   UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
   POST_WEB_ENGAGE,
+  SAVE_APPOINTMENT_CALL_FEEDBACK,
 } from 'graphql/profiles';
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
+
 import {
   PostDoctorConsultEvent,
   PostDoctorConsultEventVariables,
@@ -100,6 +103,12 @@ import {
   SendCallNotification,
   SendCallNotificationVariables,
 } from 'graphql/types/SendCallNotification';
+import { RateCall } from 'components/ConsultRoom/RateCall';
+import {
+  saveAppointmentCallFeedback,
+  saveAppointmentCallFeedbackVariables,
+} from 'graphql/types/saveAppointmentCallFeedback';
+import Alert from 'components/Alert';
 import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -326,6 +335,7 @@ interface MessagesObjectProps {
   sentBy: string;
   type: string;
   fileType: string;
+  exotelNumber: string;
 }
 let insertText: MessagesObjectProps[] = [];
 export const ConsultTabs: React.FC = () => {
@@ -375,7 +385,7 @@ export const ConsultTabs: React.FC = () => {
 
   const client = useApolloClient();
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
-  const { currentUserType } = useAuthContext();
+  const { currentUserType, chatDays } = useAuthContext();
   /* case sheet data*/
   const [symptoms, setSymptoms] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null
@@ -404,7 +414,9 @@ export const ConsultTabs: React.FC = () => {
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
-  const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
+  const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([
+    chatDays !== null ? chatDays.toString() : '',
+  ]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
   const [followUpConsultType, setFollowUpConsultType] = useState<string[]>([]);
 
@@ -442,6 +454,8 @@ export const ConsultTabs: React.FC = () => {
   const [isNewprescriptionEditable, setIsNewprescriptionEditable] = useState<boolean>(false);
   const [isNewPrescription, setIsNewPrescription] = useState<boolean>(false);
   const [showConfirmPrescription, setShowConfirmPrescription] = React.useState<boolean>(false);
+
+  const [giveRating, setGiveRating] = useState<boolean>(false);
 
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
@@ -739,11 +753,13 @@ export const ConsultTabs: React.FC = () => {
                   _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
                 ] as unknown) as boolean[])
               : setFollowUp([]);
-            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
-              ? setFollowUpAfterInDays(([
-                  _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
-                ] as unknown) as string[])
-              : setFollowUpAfterInDays([]);
+
+            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays &&
+              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays !== null &&
+              setFollowUpAfterInDays(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
+              ] as unknown) as string[]);
+
             _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
               ? setFollowUpDate(([
                   _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
@@ -1345,6 +1361,7 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
         variables: {
           appointmentId: appointmentId,
+          patientId: patientId,
           callType: callType,
           doctorType: DOCTOR_CALL_TYPE.SENIOR,
           deviceType: DEVICETYPE.DESKTOP,
@@ -1377,6 +1394,7 @@ export const ConsultTabs: React.FC = () => {
           api: 'SendCallNotification',
           inputParam: JSON.stringify({
             appointmentId: appointmentId,
+            patientId: patientId,
             callType: callType,
             doctorType: DOCTOR_CALL_TYPE.SENIOR,
             deviceType: DEVICETYPE.DESKTOP,
@@ -1400,28 +1418,9 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
-    pubnub
-      .hereNow({
-        channels: [appointmentId],
-        includeUUIDs: true,
-      })
-      .then((response: any) => {
-        const occupants = response.channels[appointmentId].occupants;
-        let doctorCount = 0;
-        let paientsCount = 0;
-        occupants.forEach((item: any) => {
-          if (item.uuid.indexOf('PATIENT') > -1) {
-            paientsCount = 1;
-          } else if (item.uuid.indexOf('DOCTOR') > -1) {
-            doctorCount = 1;
-          }
-        });
-
-        sendCallNotificationFnWithCheck(callType, isCall, doctorCount + paientsCount);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    pubnubPresence((patient: number, doctor: number) => {
+      sendCallNotificationFnWithCheck(callType, isCall, patient + doctor);
+    });
   };
 
   const sendToPatientAction = () => {
@@ -1542,16 +1541,17 @@ export const ConsultTabs: React.FC = () => {
       }
 
       setSaving(true);
-      const ModifyCaseSheetsdSaveStart = {
-        api: 'ModifyCaseSheetsdSaveStart',
-        appointmentId: appointmentId,
-        followUpDate: followUpDate ? followUpDate : '',
-        followupISODate:
-          followUpDate && followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '',
-      };
-      sessionClient.notify(JSON.stringify(ModifyCaseSheetsdSaveStart));
-      const followupISODate = new Date(followUpDate[0]).toISOString();
-      const followupDateArray = followupISODate.split('T');
+      // const ModifyCaseSheetsdSaveStart = {
+      //   api: 'ModifyCaseSheetsdSaveStart',
+      //   appointmentId: appointmentId,
+      //   followUpDate: followUpDate ? followUpDate : '',
+      //   followupISODate:
+      //     followUpDate && followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '',
+      // };
+      // console.log(ModifyCaseSheetsdSaveStart);
+      // sessionClient.notify(JSON.stringify(ModifyCaseSheetsdSaveStart));
+      // const followupISODate = new Date(followUpDate[0]).toISOString();
+      // const followupDateArray = followupISODate.split('T');
 
       const inputVariables = {
         symptoms: symptomsFinal,
@@ -1559,11 +1559,8 @@ export const ConsultTabs: React.FC = () => {
         diagnosis: diagnosisFinal,
         diagnosticPrescription: diagnosticPrescriptionFinal,
         followUp: followUp[0],
-        followUpDate: followupDateArray[0],
-        followUpAfterInDays:
-          followUp[0] && followUpAfterInDays[0] !== 'Custom'
-            ? parseInt(followUpAfterInDays[0], 10)
-            : 0,
+        followUpDate: '2020-08-31',
+        followUpAfterInDays: parseInt(followUpAfterInDays[0], 10),
         followUpConsultType:
           followUpConsultType[0] === APPOINTMENT_TYPE.PHYSICAL
             ? APPOINTMENT_TYPE.PHYSICAL
@@ -1791,13 +1788,16 @@ export const ConsultTabs: React.FC = () => {
   const startAppointmentClick = (startAppointment: boolean) => {
     setStartAppointment(startAppointment);
   };
-  const endCallNotificationAction = (isCall: boolean) => {
+
+  const endCallNotificationActionCheckFn = (isCall: boolean, numberOfParticipants: number) => {
     client
       .query<EndCallNotification, EndCallNotificationVariables>({
         query: END_CALL_NOTIFICATION,
         fetchPolicy: 'no-cache',
         variables: {
           appointmentCallId: isCall ? callId : chatRecordId,
+          patientId: params.patientId,
+          numberOfParticipants,
         },
       })
       .catch((error: ApolloError) => {
@@ -1824,6 +1824,74 @@ export const ConsultTabs: React.FC = () => {
         sessionClient.notify(JSON.stringify(logObject));
         console.log('Error in Call Notification', error.message);
       });
+  };
+
+  const endCallNotificationAction = (isCall: boolean) => {
+    pubnubPresence((patient: number, doctor: number) => {
+      endCallNotificationActionCheckFn(isCall, patient + doctor);
+    });
+  };
+
+  const pubnubPresence = (callBack: (patientCount: number, doctorCount: number) => void) => {
+    pubnub
+      .hereNow({ channels: [appointmentId], includeUUIDs: true })
+      .then((response: any) => {
+        const occupants = response.channels[appointmentId].occupants;
+        let doctorCount = 0;
+        let paientsCount = 0;
+        occupants.forEach((item: any) => {
+          if (item.uuid.indexOf('PATIENT') > -1) {
+            paientsCount = 1;
+          } else if (item.uuid.indexOf('DOCTOR') > -1) {
+            doctorCount = 1;
+          }
+        });
+        callBack(paientsCount, doctorCount);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const submitRatingHandler = (data: {
+    rating: number;
+    feedbackResponseType: CALL_FEEDBACK_RESPONSES_TYPES | null;
+    audioFeedbacks: {}[];
+    videoFeedbacks: {}[];
+  }) => {
+    setGiveRating(false);
+    const query = {
+      appointmentCallDetailsId: callId,
+      ratingValue: data.rating,
+      feedbackResponseType: data.feedbackResponseType,
+      feedbackResponses:
+        data.audioFeedbacks.length === 0 && data.videoFeedbacks.length === 0
+          ? null
+          : JSON.stringify({
+              audio: data.audioFeedbacks,
+              video: data.videoFeedbacks,
+            }),
+    };
+
+    client
+      .mutate<saveAppointmentCallFeedback, saveAppointmentCallFeedbackVariables>({
+        mutation: SAVE_APPOINTMENT_CALL_FEEDBACK,
+        variables: {
+          saveAppointmentCallFeedback: query,
+        },
+      })
+      .then((_data: any) => {
+        alert('Thank you for sharing your reviews.');
+      })
+      .catch((e: any) => {
+        alert('Error in giving feedback. Please try again!');
+      });
+  };
+
+  const showRateCallModal = () => {
+    return (
+      <RateCall visible={giveRating} submitRatingCallback={(data) => submitRatingHandler(data)} />
+    );
   };
 
   const inEditMode =
@@ -1959,8 +2027,10 @@ export const ConsultTabs: React.FC = () => {
             autoHide={true}
             style={{ height: 'calc(100vh - 65px)' }}
           > */}
+          {showRateCallModal()}
           <div className={classes.container}>
             <CallPopover
+              setGiveRating={setGiveRating}
               setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
               createSessionAction={createSessionAction}
               saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) =>

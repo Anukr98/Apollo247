@@ -98,6 +98,7 @@ interface Alertprops {
   setAlertMessage: (alertMessage: string) => void;
   setIsAlertOpen: (isAlertOpen: boolean) => void;
   consult?: boolean;
+  isPharmaFailure?: boolean;
 }
 
 export const Alerts: React.FC<Alertprops> = (props) => {
@@ -132,7 +133,8 @@ export const Alerts: React.FC<Alertprops> = (props) => {
                   onClick={() => {
                     if (props.consult) {
                       history.push(clientRoutes.specialityListing());
-                      props.setIsAlertOpen(false);
+                    } else if (props.isPharmaFailure) {
+                      history.push(clientRoutes.medicinesCart());
                     }
                     props.setIsAlertOpen(false);
                     props.setAlertMessage('');

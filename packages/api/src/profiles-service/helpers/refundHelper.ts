@@ -10,6 +10,7 @@ import {
   PAYTM_STATUS,
   REFUND_STATUS,
   MEDICINE_ORDER_PAYMENT_TYPE,
+  DEVICE_TYPE,
 } from 'profiles-service/entities';
 import { OneApollo } from 'helpers/oneApollo';
 import {
@@ -17,12 +18,13 @@ import {
   MedicineOrderPayments,
   MedicineOrders,
 } from 'profiles-service/entities/index';
-import { medicineOrderRefundNotification } from 'notifications-service/resolvers/notifications';
+import { medicineOrderRefundNotification } from 'notifications-service/handlers';
 
 import { log } from 'customWinstonLogger';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
-import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 import { ApiConstants } from 'ApiConstants';
+import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
 
 type RefundInput = {
   refundAmount: number;
@@ -178,7 +180,8 @@ export const calculateRefund = async (
   totalOrderBilling: number,
   profilesDb: Connection,
   medOrderRepo: MedicineOrdersRepository,
-  reasonCode?: string
+  reasonCode?: string,
+  deliveryCharges?: number
 ) => {
   const paymentInfo = await medOrderRepo.getRefundsAndPaymentsByOrderId(orderDetails.id);
   if (!paymentInfo) {
@@ -215,7 +218,7 @@ export const calculateRefund = async (
   let isRefundSuccessful = false;
 
   // Maximum possible refund
-  const maxRefundAmountPossible = +new Decimal(amountPaid).minus(totalRefundAmount);
+  let maxRefundAmountPossible = +new Decimal(amountPaid).minus(totalRefundAmount);
 
   /**
    * Preference would be given to health credits consumption
@@ -223,6 +226,17 @@ export const calculateRefund = async (
    */
   healthCreditsToRefund = +new Decimal(healthCreditsRedeemed).minus(totalOrderBilling);
 
+  /**
+   * We cannot refund money received for delivery
+   */
+  if (totalOrderBilling != 0 && deliveryCharges) {
+    maxRefundAmountPossible = +new Decimal(maxRefundAmountPossible)
+      .minus(+deliveryCharges)
+      .minus(+orderDetails.packagingCharges);
+    healthCreditsToRefund = +new Decimal(healthCreditsToRefund)
+      .plus(+deliveryCharges)
+      .plus(+orderDetails.packagingCharges);
+  }
   /**
    * Refund all the money if health credits blocked are more than the amended order billing
    * Otherwise, refund the difference.
@@ -262,6 +276,18 @@ export const calculateRefund = async (
      * We cannot refund less than 1 rs as per Paytm refunds policy
      */
     if (refundAmount >= 1) {
+      const postBody: Partial<WebEngageInput> = {
+        userId: orderDetails.patient.mobileNumber,
+        eventName: ApiConstants.MEDICINE_ORDER_REFUND_PROCESSED_EVENT_NAME.toString(),
+        eventData: {
+          orderId: orderDetails.orderAutoId,
+          orderStatus: paymentInfo.medicineOrders.currentStatus,
+          refundAmount: refundAmount,
+          healthCreditsToRefund: healthCreditsToRefund > 0 ? healthCreditsToRefund : 0,
+        },
+      };
+      postEvent(postBody);
+
       let refundResp = await initiateRefund(
         {
           refundAmount,
@@ -277,6 +303,16 @@ export const calculateRefund = async (
         isRefundSuccessful = true;
         const totalAmountRefunded = +new Decimal(refundAmount).plus(totalRefundAmount);
         updatePaymentRequest.refundAmount = totalAmountRefunded;
+
+        const postBody: Partial<WebEngageInput> = {
+          userId: orderDetails.patient.mobileNumber,
+          eventName: ApiConstants.MEDICINE_ORDER_REFUND_SUCCESSFUL_EVENT_NAME.toString(),
+          eventData: {
+            orderId: orderDetails.orderAutoId,
+            paymentRefundId: refundResp.refundId.toString(),
+          },
+        };
+        postEvent(postBody);
       } else {
         log(
           'profileServiceLogger',
@@ -297,13 +333,6 @@ export const calculateRefund = async (
         /**
          * StoreCode for the OneApollo is decided based on deviceType in order
          */
-        let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
-        if (orderDetails.deviceType) {
-          storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
-        }
-        if (orderDetails.deviceType) {
-          storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
-        }
 
         //Instantiate OneApollo helper class
         const oneApollo = new OneApollo();
@@ -312,7 +341,7 @@ export const calculateRefund = async (
         oneApollo.unblockHealthCredits({
           MobileNumber: orderDetails.patient.mobileNumber.slice(3),
           PointsToRelease: healthCreditsToRefund.toString(),
-          StoreCode: storeCode,
+          StoreCode: getStoreCodeFromDevice(orderDetails.deviceType, orderDetails.bookingSource),
           BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
           RedemptionRequestNumber: healthCreditsRedemptionRequest.RequestNumber.toString(),
         });

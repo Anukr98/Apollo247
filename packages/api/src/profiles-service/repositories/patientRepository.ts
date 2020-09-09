@@ -8,7 +8,7 @@ import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentTo
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
-import { debugLog } from 'customWinstonLogger';
+import { debugLog, log } from 'customWinstonLogger';
 import { createPrismUser } from 'helpers/phrV1Services';
 import {
   PrescriptionInputArgs,
@@ -16,7 +16,6 @@ import {
   uploadPrescriptions,
 } from 'profiles-service/resolvers/prescriptionUpload';
 import { LabResultsInputArgs, uploadLabResults } from 'profiles-service/resolvers/labResultsUpload';
-import { log } from 'customWinstonLogger';
 
 type DeviceCount = {
   mobilenumber: string;
@@ -98,12 +97,17 @@ export class PatientRepository extends Repository<Patient> {
       try {
         const patient: Patient | undefined = await this.getByIdCache(id);
         return resolve(patient);
-      }
-      catch (ex) {
-        console.log(`getPatientDetails`, ex);
+      } catch (ex) {
+        log(
+          'profileServiceLogger',
+          'getPatientDetails error',
+          'getPatientDetails()->CATCH_BLOCK',
+          '',
+          JSON.stringify(ex)
+        );
         return reject(ex);
       }
-    })
+    });
   }
 
   async findByMobileNumber(mobileNumber: string) {
@@ -303,6 +307,7 @@ export class PatientRepository extends Repository<Patient> {
           prescriptionFiles: prescriptionFiles,
           speciality: '',
           hospital_name: '',
+          hospitalId: '',
           address: '',
           city: '',
           pincode: '',
@@ -385,7 +390,6 @@ export class PatientRepository extends Repository<Patient> {
     } else return null;
   }
 
-
   updateLinkedUhidAccount(
     ids: string[],
     column: string,
@@ -398,8 +402,7 @@ export class PatientRepository extends Repository<Patient> {
     if (primaryUhid) {
       if (primaryUhid == 'null') {
         check = false;
-      }
-      else {
+      } else {
         fieldToUpdate.primaryUhid = primaryUhid;
         fieldToUpdate.primaryPatientId = primaryPatientId;
       }

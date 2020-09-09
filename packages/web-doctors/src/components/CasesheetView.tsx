@@ -680,8 +680,8 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
   }
   return (
     <div className={classes.root} id={'prescriptionWrapper'}>
-      <div className={classes.previewHeader}>Prescription</div>
       <div className={classes.prescriptionContent}>
+        <div className={classes.previewHeader}>Prescription</div>
         <div className={classes.prescriptionPreview}>
           <div className={classes.pageHeader}>
             <div className={classes.logo}>
@@ -697,7 +697,6 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                     {currentDoctor.qualification}
                   </p>
                 )}
-
                 <p className={classes.specialty}>
                   {`${
                     createdDoctorProfile.specialty.specialistSingularTerm
@@ -817,11 +816,11 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                     </div>
                   ) : null}
                   {/* <div className={classes.infoRow}>
-                  <div className={`${classes.label} ${classes.labelRight}`}>Consult Count</div>
-                  <div className={classes.labelContent}>
-                    <div className={classes.labelBlue}>2</div>
-                  </div>
-                </div> */}
+                <div className={`${classes.label} ${classes.labelRight}`}>Consult Count</div>
+                <div className={classes.labelContent}>
+                  <div className={classes.labelBlue}>2</div>
+                </div>
+              </div> */}
                 </div>
               </div>
             </div>
@@ -911,7 +910,6 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
               <>
                 {!loader &&
                 ((otherInstructions && otherInstructions.length > 0) ||
-                  (followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0) ||
                   !isEmpty(referralSpecialtyName) ||
                   !isEmpty(referralDescription)) ? (
                   <div className={classes.prescriptionSection}>
@@ -930,14 +928,12 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                           </div>
                         </div>
                       )}
-                      {followUp.length > 0 &&
-                      followUp[0] &&
-                      parseInt(followUpAfterInDays[0]) > 0 ? (
-                        <div className={classes.advice}>
-                          <span>Follow Up</span>
-                          <div className={classes.followContent}>{getFollowUpData()}</div>
-                        </div>
-                      ) : null}
+                      {/* {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
+                    <div className={classes.advice}>
+                      <span>Follow Up</span>
+                      <div className={classes.followContent}>{getFollowUpData()}</div>
+                    </div>
+                  ) : null} */}
                       {(!isEmpty(referralSpecialtyName) || !isEmpty(referralDescription)) && (
                         <div className={classes.advice}>
                           <span>Referral</span>
@@ -991,12 +987,11 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
                             {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
                           </h3>
                         )}
-
                         {/* {currentDoctor.qualification && (
-                      <p className={`${classes.specialty} ${classes.qualification}`}>
-                        {currentDoctor.qualification}
-                      </p>
-                    )} */}
+                    <p className={`${classes.specialty} ${classes.qualification}`}>
+                      {currentDoctor.qualification}
+                    </p>
+                  )} */}
                         {((createdDoctorProfile.specialty &&
                           createdDoctorProfile.specialty.specialistSingularTerm) ||
                           createdDoctorProfile.registrationNumber) && (

@@ -528,6 +528,11 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
             isActive
           }
         }
+        caseSheet {
+          followUpAfterInDays
+          version
+          doctorType
+        }
       }
     }
   }
@@ -707,6 +712,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       fullName
       displayName
       doctorType
+      chatDays
       qualification
       mobileNumber
       experience
@@ -929,6 +935,7 @@ export const SAVE_PATIENT_ADDRESS = gql`
         latitude
         longitude
         stateCode
+        name
       }
     }
   }
@@ -951,6 +958,8 @@ export const UPDATE_PATIENT_ADDRESS = gql`
         latitude
         longitude
         stateCode
+        mobileNumber
+        name
       }
     }
   }
@@ -972,6 +981,9 @@ export const GET_PATIENT_ADDRESS_BY_ID = gql`
         city
         state
         zipcode
+        landmark
+        mobileNumber
+        name
       }
     }
   }
@@ -1067,14 +1079,16 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         latitude
         longitude
         stateCode
+        mobileNumber
+        name
       }
     }
   }
 `;
 
-export const GET_CASESHEET_DETAILS = gql`
-  query getCaseSheet($appointmentId: String) {
-    getCaseSheet(appointmentId: $appointmentId) {
+export const GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS = gql`
+  query getSDLatestCompletedCaseSheet($appointmentId: String) {
+    getSDLatestCompletedCaseSheet(appointmentId: $appointmentId) {
       caseSheetDetails {
         appointment {
           id
@@ -1128,6 +1142,8 @@ export const GET_CASESHEET_DETAILS = gql`
           routeOfAdministration
           medicineCustomDosage
           medicineCustomDetails
+          includeGenericNameInPrescription
+          genericName
         }
         notes
         otherInstructions {
@@ -1140,6 +1156,9 @@ export const GET_CASESHEET_DETAILS = gql`
           howOften
           severity
         }
+        referralSpecialtyName
+        referralDescription
+        prescriptionGeneratedDate
       }
       patientDetails {
         id
@@ -1281,29 +1300,16 @@ export const GET_LATEST_MEDICINE_ORDER = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_SLOTS = gql`
-  query getDiagnosticSlots(
-    $patientId: String
-    $hubCode: String
-    $selectedDate: Date
-    $zipCode: Int
-  ) {
-    getDiagnosticSlots(
+export const GET_DIAGNOSTIC_IT_DOSE_SLOTS = gql`
+  query GetDiagnosticItDoseSlots($patientId: String, $selectedDate: Date, $zipCode: Int) {
+    getDiagnosticItDoseSlots(
       patientId: $patientId
-      hubCode: $hubCode
       selectedDate: $selectedDate
       zipCode: $zipCode
     ) {
-      diagnosticBranchCode
-      diagnosticSlot {
-        employeeCode
-        employeeName
-        slotInfo {
-          endTime
-          status
-          startTime
-          slot
-        }
+      slotInfo {
+        TimeslotID
+        Timeslot
       }
     }
   }
@@ -2066,6 +2072,11 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             # resultDate
           }
           fileUrl
+          testResultFiles {
+            id
+            fileName
+            mimeType
+          }
         }
         errorCode
         errorMsg
@@ -2084,6 +2095,13 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           prescriptionSource
           source
           fileUrl
+          prescriptionFiles {
+            id
+            fileName
+            mimeType
+          }
+          hospital_name
+          hospitalId
         }
         errorCode
         errorMsg
@@ -2197,6 +2215,12 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             name
             userFriendlyNomenclature
             image
+          }
+          doctorHospital {
+            facility {
+              id
+              name
+            }
           }
         }
       }
@@ -2539,6 +2563,17 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
   }
 `;
 
+export const SAVE_ITDOSE_HOME_COLLECTION_DIAGNOSTIC_ORDER = gql`
+  mutation SaveItdoseHomeCollectionDiagnosticOrder($diagnosticOrderInput: DiagnosticOrderInput) {
+    SaveItdoseHomeCollectionDiagnosticOrder(diagnosticOrderInput: $diagnosticOrderInput) {
+      errorCode
+      errorMessage
+      orderId
+      displayId
+    }
+  }
+`;
+
 export const UPLOAD_DOCUMENT = gql`
   mutation uploadDocument($UploadDocumentInput: UploadDocumentInput) {
     uploadDocument(uploadDocumentInput: $UploadDocumentInput) {
@@ -2861,6 +2896,8 @@ export const GET_ONEAPOLLO_USER = gql`
       earnedHC
       availableHC
       tier
+      burnedCredits
+      blockedCredits
     }
   }
 `;

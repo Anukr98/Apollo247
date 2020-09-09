@@ -15,11 +15,12 @@ import {
   validatePharmaCoupon_validatePharmaCoupon,
   validatePharmaCoupon,
 } from 'graphql/types/validatePharmaCoupon';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { gtmTracking } from '../../gtmTracking';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
 import fetchUtil from 'helpers/fetch';
 import { PharmaCoupon } from './MedicineCart';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -178,7 +179,7 @@ interface ApplyCouponProps {
 export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { cartItems, setCouponCode, cartTotal } = useShoppingCart();
+  const { cartItems, setCouponCode, cartTotal, addCartItems } = useShoppingCart();
   const [selectCouponCode, setSelectCouponCode] = useState<string>(props.couponCode);
   const [availableCoupons, setAvailableCoupons] = useState<(consult_coupon | null)[]>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -207,6 +208,14 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         .then((resp: any) => {
           if (resp.errorCode == 0) {
             if (resp.response.valid) {
+              const freeProductsSet = new Set(
+                resp.response.products && resp.response.products.length
+                  ? resp.response.products.filter((cartItem: any) => cartItem.mrp === 0)
+                  : []
+              );
+              if (freeProductsSet.size) {
+                addDiscountedProducts(resp.response);
+              }
               props.setValidateCouponResult(resp.response);
               setCouponCode && setCouponCode(selectCouponCode);
               props.close(false);
@@ -217,6 +226,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 label: `Coupon Applied - ${selectCouponCode}`,
                 value: resp.response.discount,
               });
+              return resp;
             } else {
               props.setValidateCouponResult(null);
               setErrorMessage(resp.response.reason);
@@ -232,6 +242,69 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           console.log(e);
         })
         .finally(() => setMuationLoading(false));
+    }
+  };
+
+  const apiDetails = {
+    url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
+    authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+  };
+
+  const addDiscountedProducts = (response: any) => {
+    const promises: Promise<any>[] = [];
+    if (response.products && Array.isArray(response.products) && response.products.length) {
+      try {
+        const cartSkuSet = new Set(
+          cartItems && cartItems.length ? cartItems.map((cartItem) => cartItem.sku) : []
+        );
+        response.products.forEach((data: any) => {
+          if (!cartSkuSet.has(data.sku))
+            promises.push(
+              axios.post(
+                apiDetails.url || '',
+                { params: data.sku },
+                {
+                  headers: {
+                    Authorization: apiDetails.authToken,
+                  },
+                }
+              )
+            );
+        });
+        const allData: MedicineCartItem[] = [];
+        Promise.all(promises)
+          .then((data: any) => {
+            data.forEach((e: any) => {
+              const cartItem: MedicineCartItem = {
+                MaxOrderQty: 1,
+                url_key: e.data.productdp[0].url_key,
+                description: e.data.productdp[0].description,
+                id: e.data.productdp[0].id,
+                image: e.data.productdp[0].image,
+                is_in_stock: e.data.productdp[0].is_in_stock,
+                is_prescription_required: e.data.productdp[0].is_prescription_required,
+                name: e.data.productdp[0].name,
+                price: 0,
+                sku: e.data.productdp[0].sku,
+                special_price: 0,
+                small_image: e.data.productdp[0].small_image,
+                status: e.data.productdp[0].status,
+                thumbnail: e.data.productdp[0].thumbnail,
+                type_id: e.data.productdp[0].type_id,
+                mou: e.data.productdp[0].mou,
+                quantity: 1,
+                isShippable: true,
+              };
+              allData.push(cartItem);
+            });
+          })
+          .then(() => {
+            addCartItems(allData);
+          });
+      } catch (e) {
+        console.error(e);
+        throw e;
+      }
     }
   };
 
@@ -269,42 +342,40 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           <div className={classes.customScrollBar}>
             <div className={classes.root}>
               <div className={classes.addressGroup}>
-                {availableCoupons && availableCoupons.length > 0 && (
-                  <div className={classes.pinSearch}>
-                    <AphTextField
-                      inputProps={{
-                        maxLength: 20,
-                      }}
-                      value={selectCouponCode}
-                      onChange={(e) => {
-                        setErrorMessage('');
-                        props.setValidityStatus(false);
-                        const value = e.target.value.replace(/\s/g, '');
-                        setSelectCouponCode(value);
-                      }}
-                      placeholder="Enter coupon code"
-                      error={errorMessage.length > 0 && true}
-                    />
-                    <div className={classes.pinActions}>
-                      {errorMessage.length === 0 && props.validityStatus ? (
-                        <div className={classes.tickMark}>
-                          <img src={require('images/ic_tickmark.svg')} alt="" />
-                        </div>
-                      ) : (
-                        <AphButton
-                          classes={{
-                            disabled: classes.buttonDisabled,
-                          }}
-                          className={classes.searchBtn}
-                          disabled={disableCoupon}
-                          onClick={() => verifyCoupon()}
-                        >
-                          <img src={require('images/ic_send.svg')} alt="" />
-                        </AphButton>
-                      )}
-                    </div>
+                <div className={classes.pinSearch}>
+                  <AphTextField
+                    inputProps={{
+                      maxLength: 20,
+                    }}
+                    value={selectCouponCode}
+                    onChange={(e) => {
+                      setErrorMessage('');
+                      props.setValidityStatus(false);
+                      const value = e.target.value.replace(/\s/g, '');
+                      setSelectCouponCode(value);
+                    }}
+                    placeholder="Enter coupon code"
+                    error={errorMessage.length > 0 && true}
+                  />
+                  <div className={classes.pinActions}>
+                    {errorMessage.length === 0 && props.validityStatus ? (
+                      <div className={classes.tickMark}>
+                        <img src={require('images/ic_tickmark.svg')} alt="" />
+                      </div>
+                    ) : (
+                      <AphButton
+                        classes={{
+                          disabled: classes.buttonDisabled,
+                        }}
+                        className={classes.searchBtn}
+                        disabled={disableCoupon}
+                        onClick={() => verifyCoupon()}
+                      >
+                        <img src={require('images/ic_send.svg')} alt="" />
+                      </AphButton>
+                    )}
                   </div>
-                )}
+                </div>
                 {errorMessage.length > 0 && (
                   <div className={classes.pinErrorMsg}>{errorMessage}</div>
                 )}

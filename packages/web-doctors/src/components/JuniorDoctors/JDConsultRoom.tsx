@@ -21,6 +21,7 @@ import {
   GET_CASESHEET_JRD,
   CREATE_CASESHEET_FOR_JRD,
   MODIFY_CASESHEET,
+  SAVE_APPOINTMENT_CALL_FEEDBACK,
 } from 'graphql/profiles';
 import {
   CreateJuniorDoctorCaseSheet,
@@ -46,6 +47,7 @@ import {
   STATUS,
   DEVICETYPE,
   BOOKINGSOURCE,
+  CALL_FEEDBACK_RESPONSES_TYPES,
 } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
@@ -87,6 +89,11 @@ import {
   SendCallNotificationVariables,
 } from 'graphql/types/SendCallNotification';
 import moment from 'moment';
+import { RateCall } from 'components/ConsultRoom/RateCall';
+import {
+  saveAppointmentCallFeedback,
+  saveAppointmentCallFeedbackVariables,
+} from 'graphql/types/saveAppointmentCallFeedback';
 import Alert from '../Alert';
 import {
   getLocalStorageItem,
@@ -526,6 +533,8 @@ export const JDConsultRoom: React.FC = () => {
   const [referralError, setReferralError] = useState<boolean>(false);
   const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
 
+  const [giveRating, setGiveRating] = useState<boolean>(false);
+
   //OT Error state
   const [sessionError, setSessionError] = React.useState<boolean>(null);
   const [publisherError, setPublisherError] = React.useState<boolean>(null);
@@ -710,8 +719,10 @@ export const JDConsultRoom: React.FC = () => {
           );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
-            ? setDiagnosis((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[])
+            ? setDiagnosis(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
+              )
             : setDiagnosis(
                 storageItem && storageItem.diagnosis && storageItem.diagnosis.length > 0
                   ? storageItem.diagnosis
@@ -719,8 +730,10 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.symptoms
-            ? setSymptoms((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[])
+            ? setSymptoms(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
+              )
             : setSymptoms(
                 storageItem && storageItem.symptoms && storageItem.symptoms.length > 0
                   ? storageItem.symptoms
@@ -728,8 +741,10 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
-            ? setOtherInstructions((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[])
+            ? setOtherInstructions(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[]
+              )
             : setOtherInstructions(
                 storageItem &&
                   storageItem.otherInstructions &&
@@ -739,8 +754,10 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
-            ? setDiagnosticPrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .diagnosticPrescription as unknown) as any[])
+            ? setDiagnosticPrescription(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .diagnosticPrescription as unknown) as any[]
+              )
             : setDiagnosticPrescription(
                 storageItem &&
                   storageItem.diagnosticPrescription &&
@@ -750,8 +767,10 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
-            ? setMedicinePrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[])
+            ? setMedicinePrescription(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .medicinePrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
+              )
             : setMedicinePrescription(
                 storageItem &&
                   storageItem.medicinePrescription &&
@@ -761,13 +780,16 @@ export const JDConsultRoom: React.FC = () => {
               );
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.notes
-            ? setNotes((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .notes as unknown) as string)
+            ? setNotes(
+                (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .notes as unknown) as string
+              )
             : setNotes(storageItem && storageItem.notes ? storageItem.notes : '');
 
           _data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes
-            ? setJuniorDoctorNotes((_data!.data!.getJuniorDoctorCaseSheet!
-                .juniorDoctorNotes as unknown) as string)
+            ? setJuniorDoctorNotes(
+                (_data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes as unknown) as string
+              )
             : setJuniorDoctorNotes('');
 
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType
@@ -1081,30 +1103,9 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
-    pubnub
-      .hereNow({
-        channels: [appointmentId],
-        includeUUIDs: true,
-      })
-      .then((response: any) => {
-        const occupants = response.channels[appointmentId].occupants;
-
-        let doctorCount = 0;
-        let paientsCount = 0;
-
-        occupants.forEach((item: any) => {
-          if (item.uuid.indexOf('PATIENT') > -1) {
-            paientsCount = 1;
-          } else if (item.uuid.indexOf('JUNIOR') > -1) {
-            doctorCount = 1;
-          }
-        });
-
-        sendCallNotificationFnWithCheck(callType, isCall, doctorCount + paientsCount);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    pubnubPresence((patient: number, doctor: number) => {
+      sendCallNotificationFnWithCheck(callType, isCall, patient + doctor);
+    });
   };
 
   const sendCallNotificationFnWithCheck = (
@@ -1118,6 +1119,7 @@ export const JDConsultRoom: React.FC = () => {
         fetchPolicy: 'no-cache',
         variables: {
           appointmentId: appointmentId,
+          patientId: patientId,
           callType: callType,
           doctorType: DOCTOR_CALL_TYPE.JUNIOR,
           deviceType: DEVICETYPE.DESKTOP,
@@ -1142,6 +1144,7 @@ export const JDConsultRoom: React.FC = () => {
           api: 'SendCallNotification',
           inputParam: JSON.stringify({
             appointmentId: appointmentId,
+            patientId: patientId,
             callType: callType,
             doctorType: DOCTOR_CALL_TYPE.JUNIOR,
             deviceType: DEVICETYPE.DESKTOP,
@@ -1441,13 +1444,16 @@ export const JDConsultRoom: React.FC = () => {
       ? true
       : false;
   };
-  const endCallNotificationAction = (isCall: boolean) => {
+
+  const endCallNotificationActionCheckFn = (isCall: boolean, numberOfParticipants: number) => {
     client
       .query<EndCallNotification, EndCallNotificationVariables>({
         query: END_CALL_NOTIFICATION,
         fetchPolicy: 'no-cache',
         variables: {
           appointmentCallId: isCall ? callId : chatRecordId,
+          patientId: patientId,
+          numberOfParticipants,
         },
       })
       .catch((error: ApolloError) => {
@@ -1471,6 +1477,75 @@ export const JDConsultRoom: React.FC = () => {
         console.log('Error in Call Notification', error.message);
       });
   };
+
+  const endCallNotificationAction = (isCall: boolean) => {
+    pubnubPresence((patient: number, doctor: number) => {
+      endCallNotificationActionCheckFn(isCall, patient + doctor);
+    });
+  };
+
+  const pubnubPresence = (callBack: (patientCount: number, doctorCount: number) => void) => {
+    pubnub
+      .hereNow({ channels: [appointmentId], includeUUIDs: true })
+      .then((response: any) => {
+        const occupants = response.channels[appointmentId].occupants;
+        let doctorCount = 0;
+        let paientsCount = 0;
+        occupants.forEach((item: any) => {
+          if (item.uuid.indexOf('PATIENT') > -1) {
+            paientsCount = 1;
+          } else if (item.uuid.indexOf('JUNIOR') > -1) {
+            doctorCount = 1;
+          }
+        });
+        callBack(paientsCount, doctorCount);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const submitRatingHandler = (data: {
+    rating: number;
+    feedbackResponseType: CALL_FEEDBACK_RESPONSES_TYPES | null;
+    audioFeedbacks: {}[];
+    videoFeedbacks: {}[];
+  }) => {
+    setGiveRating(false);
+    const query = {
+      appointmentCallDetailsId: callId,
+      ratingValue: data.rating,
+      feedbackResponseType: data.feedbackResponseType,
+      feedbackResponses:
+        data.audioFeedbacks.length === 0 && data.videoFeedbacks.length === 0
+          ? null
+          : JSON.stringify({
+              audio: data.audioFeedbacks,
+              video: data.videoFeedbacks,
+            }),
+    };
+
+    client
+      .mutate<saveAppointmentCallFeedback, saveAppointmentCallFeedbackVariables>({
+        mutation: SAVE_APPOINTMENT_CALL_FEEDBACK,
+        variables: {
+          saveAppointmentCallFeedback: query,
+        },
+      })
+      .then((_data: any) => {
+        alert('Thank you for sharing your reviews.');
+      })
+      .catch((e: any) => {
+        alert('Error in giving feedback. Please try again!');
+      });
+  };
+
+  const showRateCallModal = () => {
+    return (
+      <RateCall visible={giveRating} submitRatingCallback={(data) => submitRatingHandler(data)} />
+    );
+  };
+
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 1;
   // const assignedDoctor = {
@@ -1579,6 +1654,7 @@ export const JDConsultRoom: React.FC = () => {
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
+            {showRateCallModal()}
             <div className={classes.container}>
               <div className={classes.pageContainer}>
                 {/* patient and doctors details start */}
@@ -1668,6 +1744,7 @@ export const JDConsultRoom: React.FC = () => {
 
                 {!disableChat() && (
                   <JDCallPopover
+                    setGiveRating={setGiveRating}
                     setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                     createSessionAction={createSessionAction}
                     saveCasesheetAction={(flag: boolean, endConsult: boolean) =>

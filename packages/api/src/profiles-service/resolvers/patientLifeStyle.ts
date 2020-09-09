@@ -80,7 +80,6 @@ const getPatientLifeStyleList: Resolver<
 > = async (parent, args, { profilesDb }) => {
   const patientLifeStyleRepo = profilesDb.getCustomRepository(PatientLifeStyleRepository);
   const lifeStyleList = await patientLifeStyleRepo.getPatientLifeStyleList(args.patientId);
-  console.log(lifeStyleList, 'life style list');
   return { lifeStyleList };
 };
 

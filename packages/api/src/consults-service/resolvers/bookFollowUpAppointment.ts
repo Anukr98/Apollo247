@@ -96,13 +96,13 @@ const bookFollowUpAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
-  if (patientDetails.dateOfBirth == null || !patientDetails.dateOfBirth) {
+  /*if (patientDetails.dateOfBirth == null || !patientDetails.dateOfBirth) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
 
   if (patientDetails.lastName == null || !patientDetails.lastName) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
-  }
+  }*/
 
   //check if docotr id is valid
   const doctor = doctorsDb.getCustomRepository(DoctorRepository);
@@ -168,7 +168,7 @@ const bookFollowUpAppointment: Resolver<
   isFollowPaid = followUpCount > 1 ? true : false;
   const appointmentAttrs: Omit<FollowUpAppointmentBooking, 'id'> = {
     ...followUpAppointmentInput,
-    status: STATUS.PENDING,
+    status: STATUS.PAYMENT_PENDING,
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
     isFollowUp: true,
     isFollowPaid,

@@ -1,9 +1,8 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import {
-  sendReminderNotification,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
+import { sendReminderNotification } from 'notifications-service/handlers';
+
+import { NotificationType } from 'notifications-service/constants';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
@@ -157,7 +156,6 @@ const sendApptReminderNotification: Resolver<
     args.inNextMin,
     APPOINTMENT_TYPE.ONLINE
   );
-  console.log(apptsList);
   if (apptsList.length > 0) {
     apptsList.map((appt) => {
       const pushNotificationInput = {
@@ -214,7 +212,6 @@ const sendPhysicalApptReminderNotification: Resolver<
     args.inNextMin,
     APPOINTMENT_TYPE.PHYSICAL
   );
-  console.log(apptsList);
   if (apptsList.length > 0) {
     apptsList.map((appt) => {
       const pushNotificationInput = {
@@ -242,7 +239,6 @@ const sendPhysicalApptReminderNotification: Resolver<
         consultsDb,
         doctorsDb
       );
-      console.log(notificationResult, 'appt notification');
     });
   }
 

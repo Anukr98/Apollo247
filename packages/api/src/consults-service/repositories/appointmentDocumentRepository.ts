@@ -53,4 +53,11 @@ export class AppointmentDocumentRepository extends Repository<AppointmentDocumen
       .andWhere('appointment_document."prismFileId"= :prismFileId', { prismFileId })
       .getRawOne();
   }
+
+  async getDocumentDataByPrismFileIds(prismFileId: string[]) {
+    return this.createQueryBuilder('appointment_document')
+      .select(['appointment_document."prismFilePath"', 'appointment_document."prismFileId"'])
+      .andWhere('appointment_document."prismFileId" in(:...prismFileId)', { prismFileId })
+      .getRawMany();
+  }
 }

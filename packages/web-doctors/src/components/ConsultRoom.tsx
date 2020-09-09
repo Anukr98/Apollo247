@@ -357,6 +357,7 @@ interface MessagesObjectProps {
   sentBy: string;
   type: string;
   fileType: string;
+  exotelNumber: string;
 }
 
 interface ConsultRoomProps {
@@ -425,6 +426,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const doctorAutoResponse = '^^#doctorAutoResponse';
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
   const leaveChatRoom = '^^#leaveChatRoom';
+  const exotelCall = '^^#exotelCall';
 
   const { doctorId, patientId } = props;
   const channel = props.appointmentId;
@@ -495,7 +497,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         lastMsg.message.message !== appointmentComplete &&
         lastMsg.message.message !== doctorAutoResponse &&
         lastMsg.message.message !== patientJoinedMeetingRoom &&
-        lastMsg.message.message !== leaveChatRoom
+        lastMsg.message.message !== leaveChatRoom &&
+        lastMsg.message.message !== exotelCall
       ) {
         setIsNewMsg(true);
       } else {
@@ -637,7 +640,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message === jdThankyou
     ) {
       return rowData.automatedText;
-    } else {
+    }else if(rowData.id === doctorId && rowData.message === exotelCall){	
+      return 'A Telephonic Voice call is initiated from '+ rowData.exotelNumber+'. Request you to answer the call.';	
+    }  else {
       return rowData.message;
     }
   };

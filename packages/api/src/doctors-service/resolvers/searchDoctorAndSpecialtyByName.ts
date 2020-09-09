@@ -132,10 +132,11 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       query: {
         bool: {
           must: [
-            { match: { 'doctorSlots.slots.status': 'OPEN' } },
+            { nested: { path : 'doctorSlots.slots', query : { match: { 'doctorSlots.slots.status': "OPEN" } } } },
             { match: { isSearchable: true } },
-            {
-              multi_match: {
+            { query_string: {
+              fuzziness: 'AUTO',
+              query: `*${searchTextLowerCase}*`,
                 fields: [
                   `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
                   `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
@@ -143,9 +144,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                   `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                 ],
-                type: 'phrase_prefix',
-                query: searchTextLowerCase,
-              },
+              }
             },
           ],
         },
@@ -161,11 +160,12 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         query: {
           bool: {
             must: [
-              { match: { 'doctorSlots.slots.status': 'OPEN' } },
+              { nested: { path : 'doctorSlots.slots', query : { match: { 'doctorSlots.slots.status': "OPEN" } } } },
               { match: { 'facility.city': args.city } },
               { match: { isSearchable: true } },
-              {
-                multi_match: {
+              { query_string: {
+                fuzziness: 'AUTO',
+                query: `*${searchTextLowerCase}*`,
                   fields: [
                     `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
                     `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
@@ -173,9 +173,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                     `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                     `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                   ],
-                  type: 'phrase_prefix',
-                  query: searchTextLowerCase,
-                },
+                }
               },
             ],
           },
@@ -192,7 +190,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         query: {
           bool: {
             must: [
-              { match: { 'doctorSlots.slots.status': 'OPEN' } },
+              { nested: { path : 'doctorSlots.slots', query : { match: { 'doctorSlots.slots.status': "OPEN" } } } },
               { match: { isSearchable: true } },
               {
                 multi_match: {
@@ -298,10 +296,11 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       query: {
         bool: {
           must: [
-            { match: { 'doctorSlots.slots.status': 'OPEN' } },
+            { nested: { path : 'doctorSlots.slots', query : { match: { 'doctorSlots.slots.status': "OPEN" } } } },
             { match: { isSearchable: true } },
-            {
-              multi_match: {
+            { query_string: {
+              fuzziness: 'AUTO',
+              query: `*${searchTextLowerCase}*`,
                 fields: [
                   `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
                   `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
@@ -309,9 +308,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                   `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                 ],
-                fuzziness: 'AUTO',
-                query: searchTextLowerCase,
-              },
+              }
             },
           ],
           must_not: [
@@ -409,7 +406,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
   }
   const elasticMatch = [];
-  elasticMatch.push({ match: { 'doctorSlots.slots.status': 'OPEN' } });
+  elasticMatch.push({ nested: { path : 'doctorSlots.slots', query : { match: { 'doctorSlots.slots.status': "OPEN" } } } });
   elasticMatch.push({ match: { isSearchable: true } });
   elasticMatch.push({
     multi_match: {
@@ -495,11 +492,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         query: {
           bool: {
             must: [
-              {
-                match: {
-                  'doctorSlots.slots.status': 'OPEN',
-                },
-              },
+              { nested: { path : 'doctorSlots.slots', query : { match: { 'doctorSlots.slots.status': "OPEN" } } } },
               { match: { isSearchable: true } },
             ],
           },
@@ -598,48 +591,46 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
   }
 
-  finalMatchedDoctors = perfectMatchedDoctors
+  function fieldCompare(field: string, order: string = 'asc') {
+    return function sort(objectA: any, objectB: any) {
+      if (!objectA.hasOwnProperty(field) || !objectB.hasOwnProperty(field)) {
+        return 0;
+      }
+      const fieldA = parseFloat(objectA[field]);
+      const fieldB = parseFloat(objectB[field]);
+      let comparison = 0;
+      if (fieldA > fieldB) {
+        comparison = 1;
+      } else if (fieldA < fieldB) {
+        comparison = -1;
+      }
+      return (
+        (order === 'desc') ? (comparison * -1) : comparison
+      );
+    };
+  }
+
+  finalMatchedDoctors = perfectMatchedDoctors.sort(fieldCompare("earliestSlotavailableInMinutes"))
     .concat(
-      earlyAvailableApolloMatchedDoctors.sort(
-        (a, b) =>
-          parseFloat(a.earliestSlotavailableInMinutes) -
-          parseFloat(b.earliestSlotavailableInMinutes)
-      )
+      earlyAvailableApolloMatchedDoctors.sort(fieldCompare("earliestSlotavailableInMinutes"))
     )
     .concat(
-      earlyAvailableNonApolloMatchedDoctors.sort(
-        (a, b) =>
-          parseFloat(a.earliestSlotavailableInMinutes) -
-          parseFloat(b.earliestSlotavailableInMinutes)
-      )
+      earlyAvailableNonApolloMatchedDoctors.sort(fieldCompare("earliestSlotavailableInMinutes"))
     )
     .concat(
-      matchedDoctors.sort(
-        (a, b) =>
-          parseFloat(a.earliestSlotavailableInMinutes) -
-          parseFloat(b.earliestSlotavailableInMinutes)
-      )
+      matchedDoctors.sort(fieldCompare("earliestSlotavailableInMinutes"))
     );
 
-  finalPossibleDoctors = earlyAvailableApolloPossibleDoctors
-    .sort(
-      (a, b) =>
-        parseFloat(a.earliestSlotavailableInMinutes) - parseFloat(b.earliestSlotavailableInMinutes)
+  finalPossibleDoctors = earlyAvailableApolloPossibleDoctors.sort(fieldCompare("earliestSlotavailableInMinutes"))
+    .concat(
+      earlyAvailableNonApolloPossibleDoctors.sort(fieldCompare("earliestSlotavailableInMinutes"))
     )
     .concat(
-      earlyAvailableNonApolloPossibleDoctors.sort(
-        (a, b) =>
-          parseFloat(a.earliestSlotavailableInMinutes) -
-          parseFloat(b.earliestSlotavailableInMinutes)
-      )
-    )
-    .concat(
-      possibleDoctors.sort(
-        (a, b) =>
-          parseFloat(a.earliestSlotavailableInMinutes) -
-          parseFloat(b.earliestSlotavailableInMinutes)
-      )
+      possibleDoctors.sort(fieldCompare("earliestSlotavailableInMinutes"))
     );
+
+  matchedDoctorsNextAvailability.sort(fieldCompare("availableInMinutes"));
+  possibleDoctorsNextAvailability.sort(fieldCompare("availableInMinutes"));
 
   searchLogger(`API_CALL___END`);
   return {

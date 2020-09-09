@@ -11,7 +11,7 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { pinCodeServiceabilityApi247 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
@@ -71,9 +71,9 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
               isChanged(true, selectedId);
               props.navigation.goBack();
             } else {
-              pinCodeServiceabilityApi(selectedPinCode)
-                .then(({ data: { Availability } }) => {
-                  if (Availability) {
+              pinCodeServiceabilityApi247(selectedPinCode)
+                .then(({ data: { response } }) => {
+                  if (response) {
                     reArrangeAddresses();
                     setSelectedAddressId && setSelectedAddressId(selectedId);
                     props.navigation.goBack();
