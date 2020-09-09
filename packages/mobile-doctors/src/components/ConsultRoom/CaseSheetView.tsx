@@ -1540,21 +1540,27 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                                           i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
                                         ) =>
                                           ((i || {}).externalId || (i || {}).id) !==
-                                          (data.externalId || data.id)
+                                          (data.externalId || data.medicineName)
                                       ) || []),
-                                      data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                                      {
+                                        ...data,
+                                        externalId: data.externalId || data.medicineName,
+                                      } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
                                     ]);
                                   } else {
                                     setMedicinePrescriptionData([
-                                      data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                                      {
+                                        ...data,
+                                        externalId: data.externalId || data.medicineName,
+                                      } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
                                     ]);
                                   }
                                   setSelectedMedicinesId(
                                     [
                                       ...selectedMedicinesId.filter(
-                                        (i) => i !== (data.externalId || data.id)
+                                        (i) => i !== (data.externalId || data.medicineName)
                                       ),
-                                      data.externalId || data.id || '',
+                                      data.externalId || data.medicineName || '',
                                     ].filter((i) => i !== '')
                                   );
                                 }}

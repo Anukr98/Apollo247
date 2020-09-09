@@ -20,7 +20,15 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import _ from 'lodash';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { BackHandler, Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  BackHandler,
+  Dimensions,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  Platform,
+} from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -372,7 +380,7 @@ export const AddMedicinePrescriptionPopUp: React.FC<AddMedicinePrescriptionPopUp
             g(selectedAppointmentCaseSheet[0], 'medicinePrescription')) ||
           []
         ).length > 0 ? (
-          <View style={{ marginBottom: 110, marginTop: 24 }}>
+          <View style={{ marginTop: 24 }}>
             <TouchableOpacity
               onPress={() => {
                 if (selectedAppointmentCaseSheet) {
@@ -436,6 +444,7 @@ export const AddMedicinePrescriptionPopUp: React.FC<AddMedicinePrescriptionPopUp
             </TouchableOpacity>
             <ScrollView bounces={false} style={styles.scrollViewStyle}>
               {renderList()}
+              <View style={{ height: Platform.OS === 'android' ? 10 : 0 }} />
             </ScrollView>
           </View>
         ) : (
