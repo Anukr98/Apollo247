@@ -142,8 +142,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingBottom: 0,
     color: theme.colors.SHERPA_BLUE,
-    opacity: Platform.OS == 'ios' ? 0.5 : 0.4,
-    ...theme.fonts.IBMPlexSansMedium(14),
+    opacity: Platform.OS == 'ios' ? 0.6 : 0.5,
+    ...theme.fonts.IBMPlexSansMedium(14.75),
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
   },
   nameText: {
@@ -658,8 +658,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   borderBottomWidth: editProfile ? 1 : 2,
                   paddingBottom: editProfile ? 0 : 3,
                   color: theme.colors.SHERPA_BLUE,
-                  opacity: editProfile ? (Platform.OS == 'ios' ? 0.5 : 0.4) : 1,
-                  ...theme.fonts.IBMPlexSansMedium(14),
+                  opacity: editProfile ? (Platform.OS == 'ios' ? 0.6 : 0.5) : 1,
+                  ...theme.fonts.IBMPlexSansMedium(14.75),
                   borderColor: editProfile ? theme.colors.INPUT_BORDER_SUCCESS : 'transparent',
                 }}
               />
