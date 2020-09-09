@@ -16,9 +16,8 @@ import {
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      backgroundColor: theme.palette.common.white,
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-      borderRadius: 10,
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
       marginBottom: '12px !important',
       '&:before': {
         display: 'none',
@@ -39,8 +38,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     panelDetails: {
+      backgroundColor: theme.palette.common.white,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      borderRadius: 10,
       padding: 20,
-      paddingTop: 0,
       display: 'inline-block',
       width: '100%',
     },
@@ -52,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 8,
     },
     cardSection: {
-      padding: 16,
+      padding: '16px 10px',
       backgroundColor: 'transparent',
       borderRadius: 5,
       fontSize: 14,
@@ -78,10 +79,13 @@ const useStyles = makeStyles((theme: Theme) => {
     resultGroup: {
       display: 'flex',
       '& label': {
-        fontSize: 12,
-        fontWeight: 500,
+        fontSize: 14,
+        fontWeight: 'normal',
         color: '#01475b',
       },
+    },
+    resultGroupLastrow: {
+      display: 'block',
     },
     result: {
       fontSize: 14,
@@ -90,6 +94,14 @@ const useStyles = makeStyles((theme: Theme) => {
       letterSpacing: 0.04,
       color: '#0087ba',
       marginLeft: 'auto',
+      // float: 'right',
+    },
+    resultField: {
+      fontSize: 13,
+      fontWeight: 'normal',
+      float: 'none',
+      marginTop: 10,
+      paddingLeft: 17,
     },
     resultError: {
       color: '#d10001',
@@ -98,6 +110,14 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: 10,
       position: 'relative',
       top: 6,
+    },
+    bullet: {
+      width: 5,
+      height: 5,
+      borderRadius: '50%',
+      backgroundColor: 'rgba(2,71,91,0.6)',
+      display: 'inline-block',
+      marginRight: 12,
     },
   };
 });
@@ -122,28 +142,37 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
   const classes = useStyles({});
   const { activeData } = props;
   return (
-    <ExpansionPanel className={classes.root} defaultExpanded={true}>
-      <ExpansionPanelSummary
-        expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-        classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
-      >
-        Detailed Findings
-      </ExpansionPanelSummary>
-      <ExpansionPanelDetails className={classes.panelDetails}>
-        <Grid container spacing={2}>
-          {activeData &&
-            activeData.labTestResults &&
-            activeData.labTestResults.map((detail: LabTestResultsType) => {
+    activeData &&
+    activeData.labTestResults &&
+    activeData.labTestResults.length > 0 && (
+      <ExpansionPanel className={classes.root} defaultExpanded={true}>
+        <ExpansionPanelSummary
+          expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
+          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
+        >
+          Detailed Findings
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails className={classes.panelDetails}>
+          <Grid container spacing={2}>
+            {activeData.labTestResults.map((detail: LabTestResultsType) => {
               const unit = MedicalTest.find((item) => item.key === detail.unit);
               return (
                 <Grid item xs={12} sm={12}>
-                  {/* icon should come here */}
-                  <div className={classes.cardTitle}><img className={classes.labtest} src={require('images/ic_labtest.svg')} alt="" /> Impressions</div>
+                  <div className={classes.cardTitle}>
+                    <img
+                      className={classes.labtest}
+                      src={require('images/ic_labtest.svg')}
+                      alt=""
+                    />
+                    Impressions
+                  </div>
                   <div className={classes.cardSection}>
                     <Grid container spacing={2}>
                       <Grid item xs={12} sm={12}>
                         <div className={classes.resultGroup}>
-                          <label>Normal Range</label>
+                          <label>
+                            <span className={classes.bullet}></span>Normal Range
+                          </label>
                           <div className={`${classes.result}`}>
                             {detail.range ? detail.range : '-'}
                           </div>
@@ -151,16 +180,22 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
                       </Grid>
                       <Grid item xs={12} sm={12}>
                         <div className={classes.resultGroup}>
-                          <label>Units</label>
+                          <label>
+                            <span className={classes.bullet}></span>Units
+                          </label>
                           <div className={classes.result}>
                             {unit ? unit.value : detail.unit || 'N/A'}
                           </div>
                         </div>
                       </Grid>
                       <Grid item xs={12} sm={12}>
-                        <div className={classes.resultGroup}>
-                          <label>Result</label>
-                          <div className={classes.result}>{detail.result || 'N/A'}</div>
+                        <div className={`${classes.resultGroup} ${classes.resultGroupLastrow}`}>
+                          <label>
+                            <span className={classes.bullet}></span>Result
+                          </label>
+                          <div className={`${classes.result} ${classes.resultField}`}>
+                            {detail.result || 'N/A'}
+                          </div>
                         </div>
                       </Grid>
                     </Grid>
@@ -168,8 +203,9 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
                 </Grid>
               );
             })}
-        </Grid>
-      </ExpansionPanelDetails>
-    </ExpansionPanel>
+          </Grid>
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
+    )
   );
 };

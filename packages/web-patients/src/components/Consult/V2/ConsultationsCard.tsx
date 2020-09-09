@@ -421,6 +421,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       left: 0,
       top: -5,
+      width: '48%',
       '& h3': {
         fontSize: 13,
         lineHeight: '24px',
@@ -428,9 +429,9 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 0,
       },
       '& h6': {
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: '500',
-        lineHeight: '16px',
+        lineHeight: '14px',
         color: '#02475B',
         margin: 0,
       },
@@ -1124,7 +1125,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         >
           <BookFollowupConsult
             setIsPopoverOpen={setOpenSlotPopup}
-            doctorDetails={getDoctorDetails(appointmentData)}
+            doctorId={appointmentData.doctorId}
             setSelectedSlot={setSelectedSlot}
             setFollwupAppoitnmentType={setFollwupAppoitnmentType}
           />
@@ -1153,7 +1154,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 <p>Hi! :)</p>
                 <p>
                   Your appointment with Dr.
-                  {` ${appointmentData.doctorInfo && appointmentData.doctorInfo.firstName} `}
+                  {` ${appointmentData.doctorInfo && appointmentData.doctorInfo.fullName} `}
                   has been rescheduled for -{' '}
                   {rescheduledSlot && moment(rescheduledSlot).format('Do MMMM, dddd \nhh:mm a')}
                 </p>
@@ -1161,11 +1162,15 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   <p>You have {reschedulesRemaining} free reschedueles left</p>
                 )}
               </div>
-              <Link to={clientRoutes.appointments()}>
-                <div className={classes.actions}>
-                  <AphButton>OK, GOT IT</AphButton>
-                </div>
-              </Link>
+              <div className={classes.actions}>
+                <AphButton
+                  onClick={() => {
+                    window.location.href = clientRoutes.appointments();
+                  }}
+                >
+                  OK, GOT IT
+                </AphButton>
+              </div>
             </div>
           </div>
         </Popover>
@@ -1193,7 +1198,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 <p>`Hi! :)`</p>
                 <p>
                   Your followup appointment with Dr.
-                  {` ${appointmentData.doctorInfo && appointmentData.doctorInfo.firstName} `}
+                  {` ${appointmentData.doctorInfo && appointmentData.doctorInfo.fullName} `}
                   booked on - {moment(selectedSlot).format('Do MMMM, dddd \nhh:mm a')}
                 </p>
               </div>

@@ -183,9 +183,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     noPrevPresc: {
       backgroundColor: 'transparent',
-      //boxShadow: 'none',
       color: '#02475B',
-      textTransform: 'uppercase',
       fontSize: 13,
       fontWeight: 500,
       paddingLeft: 4,
@@ -334,6 +332,7 @@ const useStyles = makeStyles((theme: Theme) =>
         fontWeight: 600,
       },
       '& h2': {
+        textTransform: 'uppercase',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -357,7 +356,6 @@ const useStyles = makeStyles((theme: Theme) =>
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        textTransform: 'uppercase',
         '& button': {
           position: 'static',
           minWidth: 'auto',
@@ -789,19 +787,19 @@ const useStyles = makeStyles((theme: Theme) =>
       marginBottom: 10,
     },
     selectedList: {
-      height: 300,
-      overflow: 'auto',
+      // height: 300,
+      // overflow: 'auto',
 
-      '&::-webkit-scrollbar': {
-        width: 2,
-      },
-      '&::-webkit-scrollbar-track': {
-        background: 'transparent',
-        margin: '0 10px 0 0',
-      },
-      '&::-webkit-scrollbar-thumb': {
-        background: '#888',
-      },
+      // '&::-webkit-scrollbar': {
+      //   width: 2,
+      // },
+      // '&::-webkit-scrollbar-track': {
+      //   background: 'transparent',
+      //   margin: '0 10px 0 0',
+      // },
+      // '&::-webkit-scrollbar-thumb': {
+      //   background: '#888',
+      // },
       '& li': {
         padding: '10px 40px 10px 10px !important',
         background: 'rgba(0,0,0,0.02)',
@@ -820,6 +818,16 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 12,
       color: '#FC9916',
       fontWeight: 600,
+    },
+    addList: {
+      '& li': {
+        '& h5': {
+          width: 160,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        },
+      },
     },
   })
 );
@@ -2301,7 +2309,7 @@ export const MedicinePrescription: React.FC = () => {
     );
   });
 
-  const getMedicineCopy = (item: any, time: any) => {
+  const getMedicineCopy = (item: any) => {
     setSelectedDate(item.appointmentDateTime);
     const MedicineCopy = item.caseSheet.filter(function(e: any) {
       return e.doctorType !== 'JUNIOR';
@@ -2675,12 +2683,13 @@ export const MedicinePrescription: React.FC = () => {
         const genericName = (
           <span>
             {medicine.includeGenericNameInPrescription! &&
-              medicine.genericName!.trim().length > 0 && (
+              medicine.genericName &&
+              medicine.genericName !== null &&
+              medicine.genericName.trim().length > 0 && (
                 <h6>{`Contains ${medicine.genericName}`}</h6>
               )}
           </span>
         );
-
         return (
           <li
             style={{ position: 'relative' }}
@@ -3174,7 +3183,7 @@ export const MedicinePrescription: React.FC = () => {
                 </div>
               )}
 
-              {caseSheetEdit && <div className={classes.addRemove}>{actionButtons}</div>}
+              {caseSheetEdit && <div>{actionButtons}</div>}
             </li>
           );
         } else {
@@ -3404,20 +3413,16 @@ export const MedicinePrescription: React.FC = () => {
               onClick={() => {
                 handlePastMedicinesTabs(0);
                 setIsPrevMedDialogOpen(true);
+                if (pastAppointmentsArr && pastAppointmentsArr.length > 0) {
+                  getMedicineCopy(pastAppointmentsArr[0]);
+                }
               }}
             >
               <img src={require('images/ic_dark_plus.svg')} alt="" /> PREVIOUS R
               <span className={classes.lowercase}>x</span>
             </AphButton>
           ) : (
-            <span
-              className={classes.noPrevPresc}
-              // variant="contained"
-              //color="primary"
-              //classes={{ root: classes.noPrevPresc }}
-            >
-              No previous prescriptions
-            </span>
+            <span className={classes.noPrevPresc}>No previous prescriptions</span>
           )}
         </>
       )}
@@ -4040,13 +4045,7 @@ export const MedicinePrescription: React.FC = () => {
                           item.appointmentDateTime === selectedDate ? classes.dateTabsActive : ''
                         }`}
                         onClick={() => {
-                          getMedicineCopy(
-                            item,
-                            format(
-                              new Date(item.appointmentDateTime),
-                              'dd  MMMMMMMMMMMM yyyy, h:mm a'
-                            )
-                          );
+                          getMedicineCopy(item);
                         }}
                       >
                         {`${format(new Date(item.appointmentDateTime), 'dd  MMMMMMMMMMMM')}`}
@@ -4108,7 +4107,7 @@ export const MedicinePrescription: React.FC = () => {
                             <Typography>Added Medicine</Typography>
                           </div>
                           <div className={classes.medicineContent}>
-                            <ul className={classes.medicineList}>
+                            <ul className={`${classes.medicineList} ${classes.addList}`}>
                               {/* Add 'added' class to li of this ul for the color as per design  */}
                               {medicineAddedCopyHtml('present')}
                               {/* {medicineHtml('removed')} */}

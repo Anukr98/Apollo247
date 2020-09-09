@@ -149,7 +149,6 @@ const getPatientAddressList: Resolver<
 > = async (parent, args, { profilesDb }) => {
   const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
   const addressList = await patientAddressRepo.getPatientAddressList(args.patientId);
-  console.log(addressList, 'address list');
   return { addressList };
 };
 

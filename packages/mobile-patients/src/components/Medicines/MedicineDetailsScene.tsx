@@ -85,7 +85,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   mainView: {
-    backgroundColor: theme.colors.CARD_BG,
     paddingTop: 20,
   },
   doctorNameStyle: {
@@ -248,6 +247,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [medicineError, setMedicineError] = useState<string>('Product Details Not Available!');
   const [popupHeight, setpopupHeight] = useState<number>(60);
+  const [notServiceable, setNotServiceable] = useState<boolean>(false)
 
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
 
@@ -354,7 +354,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         source: movedFrom,
         ProductId: sku,
         ProductName: medicineName,
-        "Stock availability": isOutOfStock ? "No" : "Yes",
+        'Stock availability': isOutOfStock ? 'No' : 'Yes',
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
     }
@@ -479,24 +479,23 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
     try {
       let pinCodeNotServiceable =
-        isPharmacyLocationServiceable == undefined
+        isPharmacyLocationServiceable == undefined || pharmacyPincode != pincode
           ? !(await pinCodeServiceabilityApi247(pincode)).data.response
           : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
-
-      const checkAvailabilityRes = await availabilityApi247(pincode, sku)
-      const availabilityRes = g(checkAvailabilityRes, 'data', 'response')
-      if (availabilityRes) {
-        pinCodeNotServiceable = !availabilityRes[0].exist
-      } else {
+      setNotServiceable(pinCodeNotServiceable)
+      if (pinCodeNotServiceable) {
         setdeliveryTime('');
-        setdeliveryError(pincodeServiceableItemOutOfStockMsg);
+        setdeliveryError(unServiceableMsg);
         setshowDeliverySpinner(false);
         return;
       }
 
-      if (pinCodeNotServiceable) {
+      const checkAvailabilityRes = await availabilityApi247(pincode, sku)
+      const outOfStock = !(!!(checkAvailabilityRes?.data?.response[0]?.exist))
+     
+      if (outOfStock) {
         setdeliveryTime('');
-        setdeliveryError(unServiceableMsg);
+        setdeliveryError(pincodeServiceableItemOutOfStockMsg);
         setshowDeliverySpinner(false);
         return;
       }
@@ -616,11 +615,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const removeFromCart = () => removeCartItem!(sku);
     const { special_price, price } = medicineDetails;
     const discountPercent = getDiscountPercentage(price, special_price);
+    const showOutOfStockView = notServiceable ? false : medicineDetails?.sell_online
+      ? (!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock
+      : false;
 
     return (
       <StickyBottomComponent style={styles.stickyBottomComponent}>
         {!medicineDetails.sell_online && renderVisitPharmacyText()}
-        {(!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock ? (
+        {showOutOfStockView ? (
           <View
             style={{
               paddingTop: 8,
@@ -664,7 +666,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'flex-start',
-                  marginLeft: 15,
                 }}
               >
                 <Text style={theme.viewStyles.text('SB', 17, '#02475b', 1, 20, 0.35)}>
@@ -1351,9 +1352,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       ? `SIMILAR TO ${medicineDetails.name}`.toUpperCase()
       : 'SIMILAR PRODUCTS';
 
+    const marginTop =
+      !medicineOverview.length && !Substitutes.length && !medicineDetails.description ? 20 : 0;
+
     return (
       <>
-        <View style={styles.labelViewStyle}>
+        <View style={[styles.labelViewStyle, { marginTop }]}>
           <Text style={styles.labelStyle}>{sectionName}</Text>
         </View>
         <FlatList

@@ -278,7 +278,7 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: '75px',
         marginBottom: 15,
         borderLeft: '1px solid #00B38E',
-        padding: '0px 0 0px 10px !important',
+        padding: '0px 45px 0px 10px !important',
       },
     },
     consultRoom: {
@@ -687,7 +687,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     quesSubmitBtn: {
-      marginTop: 40,
+      marginTop: 50,
       background: 'transparent',
       border: 'none',
       cursor: 'pointer',
@@ -828,6 +828,8 @@ interface ChatWindowProps {
   rescheduleAPI: (bookRescheduleInput: BookRescheduleAppointmentInput) => void;
   jrDoctorJoined: boolean;
   setJrDoctorJoined: (jrDoctorJoined: boolean) => void;
+  setSrDoctorJoined: (srDoctorJoined: boolean) => void;
+  setIsConsultCompleted: (isConsultCompleted: boolean) => void;
   appointmentDetails: AppointmentHistory;
 }
 
@@ -1575,6 +1577,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             >
               No
             </AphButton>
+            <AphButton
+              className={`${classes.quesButton}  ${
+                smokeHabit === 'ex-smoker' ? classes.btnActive : ''
+              }`}
+              onClick={() => setSmokeHabit('ex-smoker')}
+            >
+              Ex-Smoker
+            </AphButton>
           </Grid>
           <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
@@ -1585,7 +1595,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   showNextSlide();
                   const composeMessage = {
                     id: currentPatient && currentPatient.id,
-                    message: `Smoke:\n${_startCase(smokeHabit)}`,
+                    message: `Smoke:\n${
+                      smokeHabit === 'ex-smoker' ? 'Ex-Smoker' : _startCase(smokeHabit) // needed for lodash
+                    }`,
                     automatedText: '',
                     duration: '',
                     url: '',
@@ -1594,8 +1606,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     cardType: 'patient',
                   };
                   publishMessage(appointmentId, composeMessage);
-                  if (smokeHabit === 'yes') showNextSlide();
-                  else slickGotoSlide(8);
+                  if (smokeHabit === 'yes') {
+                    showNextSlide();
+                  } else if (smokeHabit === 'ex-smoker') {
+                    setSmokes('Ex-Smoker');
+                    slickGotoSlide(8);
+                  } else {
+                    slickGotoSlide(8);
+                  }
                 }
               }}
             >
@@ -1882,7 +1900,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 if (temperature.length > 0) {
                   const composeMessage = {
                     id: currentPatient && currentPatient.id,
-                    message: `Temperature:\n${temperature}°F`,
+                    message: `Temperature:\n${temperature} ${
+                      temperature !== 'No Idea' ? '°F' : ''
+                    }`,
                     automatedText: '',
                     duration: '',
                     url: '',
@@ -2124,8 +2144,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.jdThankyou ||
                     messageDetails.message === autoMessageStrings.startConsultjr ||
                     messageDetails.message === autoMessageStrings.stopConsultJr ||
-                    messageDetails.message === autoMessageStrings.languageQue
+                    messageDetails.message === autoMessageStrings.languageQue ||
+                    messageDetails.message === autoMessageStrings.consultPatientStartedMsg ||
+                    messageDetails.message === autoMessageStrings.patientJoinedMeetingRoom
                   ) {
+                    props.setSrDoctorJoined(
+                      messageDetails.message === autoMessageStrings.startConsultMsg
+                    );
+                    props.setIsConsultCompleted(
+                      messageDetails.message === autoMessageStrings.appointmentComplete
+                    );
                     return null;
                   }
                   const duration = messageDetails.duration;

@@ -724,6 +724,7 @@ export const MedicineCart: React.FC = (props) => {
   const [validityStatus, setValidityStatus] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [shopId, setShopId] = useState<string>('');
+  const [tatType, setTatType] = useState<string>('');
   const [couponDiscount, setCouponDiscount] = useState<number>(0);
   const [latitude, setLatitude] = React.useState<string>('');
   const [longitude, setLongitude] = React.useState<string>('');
@@ -763,8 +764,15 @@ export const MedicineCart: React.FC = (props) => {
     }
   }, [showOrderPopup]);
 
-  const checkForPriceUpdate = (sId: string, pincode: string, lat: string, lng: string) => {
+  const checkForPriceUpdate = (
+    sId: string,
+    pincode: string,
+    lat: string,
+    lng: string,
+    tatType: string
+  ) => {
     setShopId(sId);
+    setTatType(tatType);
     checkForCartChanges(pincode, lat, lng);
   };
 
@@ -1739,14 +1747,14 @@ export const MedicineCart: React.FC = (props) => {
                               <div className={classes.appliedCoupon}>
                                 {Number(validateCouponResult.discount.toFixed(2)) >
                                   Number(productDiscount.toFixed(2)) ||
-                                  (validateCouponResult.products &&
-                                    validateCouponResult.products.length &&
-                                    validateCouponResult.products.filter(({ mrp }) => mrp === 0)
-                                      .length && (
-                                      <span className={classes.linkText}>
-                                        <span>{couponCode}</span> applied
-                                      </span>
-                                    ))}
+                                (validateCouponResult.products &&
+                                  validateCouponResult.products.length &&
+                                  validateCouponResult.products.filter(({ mrp }) => mrp === 0)
+                                    .length) ? (
+                                  <span className={classes.linkText}>
+                                    <span>{couponCode}</span> applied
+                                  </span>
+                                ) : null}
                                 <span className={classes.rightArrow}>
                                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                                 </span>
@@ -1875,6 +1883,8 @@ export const MedicineCart: React.FC = (props) => {
                                   deliveryTime: deliveryTime,
                                   validateCouponResult: validateCouponResult,
                                   shopId: shopId,
+                                  deliveryAddressId,
+                                  tatType,
                                 })
                               );
                               history.push(clientRoutes.payMedicine('pharmacy'));
@@ -1989,6 +1999,8 @@ export const MedicineCart: React.FC = (props) => {
                               deliveryTime: deliveryTime,
                               validateCouponResult: validateCouponResult,
                               shopId: shopId,
+                              deliveryAddressId,
+                              tatType,
                             })
                           );
                           history.push(clientRoutes.payMedicine('pharmacy'));

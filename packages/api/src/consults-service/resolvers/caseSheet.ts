@@ -869,7 +869,7 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
   }
 
-  if (inputArguments && inputArguments.followUpAfterInDays) {
+  if (inputArguments && !(inputArguments.followUpAfterInDays === undefined || inputArguments.followUpAfterInDays === null)) {
     if (
       inputArguments.followUpAfterInDays > ApiConstants.CHAT_DAYS_LIMIT ||
       inputArguments.followUpAfterInDays < 0
@@ -1341,7 +1341,7 @@ const submitJDCaseSheet: Resolver<
     fromState: appointmentData.appointmentState,
     toState: appointmentData.appointmentState,
     userName: virtualJDId,
-    reason: 'Virtaul ' + ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString(),
+    reason: 'Virtual ' + ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString(),
   };
   appointmentRepo.saveAppointmentHistory(historyAttrs);
 
@@ -1382,7 +1382,9 @@ const updatePatientPrescriptionSentStatus: Resolver<
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.getPatientDetails(getCaseSheetData.patientId);
+  const patientData = await patientRepo.findByIdWithRelations(getCaseSheetData.patientId, [
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   let caseSheetAttrs: Partial<CaseSheet> = {
@@ -1511,7 +1513,9 @@ const generatePrescriptionTemp: Resolver<
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.getPatientData(getCaseSheetData.patientId);
+  const patientData = await patientRepo.findByIdWithRelations(getCaseSheetData.patientId, [
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   let caseSheetAttrs: Partial<CaseSheet> = {
@@ -1621,7 +1625,6 @@ const getSDLatestCompletedCaseSheet: Resolver<
 
   //check whether there is a senior doctor case-sheet
   const caseSheetDetails = await caseSheetRepo.getSDLatestCompletedCaseSheet(appointmentData.id);
-  console.log('caseSheetDetails > ', caseSheetDetails);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);

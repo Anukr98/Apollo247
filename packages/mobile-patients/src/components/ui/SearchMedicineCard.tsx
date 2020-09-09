@@ -1,10 +1,4 @@
-import {
-  DropdownGreen,
-  MedicineIcon,
-  MedicineRxIcon,
-  TestsIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import { Doseform } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { MedicineIcon, MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
@@ -34,19 +28,6 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     lineHeight: 24,
   },
-  personNameTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    lineHeight: 20,
-    letterSpacing: 0.04,
-    color: theme.colors.LIGHT_BLUE,
-    marginRight: 4,
-  },
-  personSelectionView: {
-    alignSelf: 'flex-end',
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
   outOfStockStyle: {
     ...theme.fonts.IBMPlexSansMedium(12),
     lineHeight: 20,
@@ -62,33 +43,19 @@ const styles = StyleSheet.create({
 
 export interface SearchMedicineCardProps {
   isSellOnline: boolean;
-  isTest?: boolean;
   medicineName: string;
-  personName?: string;
   specialPrice?: number;
   price: number;
   imageUrl?: string;
-  type?: Doseform;
-  subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
-  packOfCount?: number;
-  unit?: number;
   quantity: number;
   isInStock: boolean;
-  unserviceable?: boolean; // If yes, card shows "Not serviceable in your area.", using for TAT API in cart.
-  showRemoveWhenOutOfStock?: boolean;
   isPrescriptionRequired: boolean;
-  isMedicineAddedToCart: boolean;
-  isCardExpanded: boolean;
   onPress: () => void;
-  onChangeUnit: (unit: number) => void;
-  onChangeSubscription: (status: SearchMedicineCardProps['subscriptionStatus']) => void;
   onPressRemove: () => void;
   onPressAdd: () => void;
   onNotifyMeClicked: () => void;
   onPressAddQuantity: () => void;
   onPressSubtractQuantity: () => void;
-  onEditPress: () => void;
-  onAddSubscriptionPress: () => void;
   containerStyle?: StyleProp<ViewStyle>;
   maxOrderQty: number;
   removeCartItem: () => void;
@@ -97,18 +64,14 @@ export interface SearchMedicineCardProps {
 export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => {
   const {
     isSellOnline,
-    isTest,
     medicineName,
-    personName,
     specialPrice,
     price,
     imageUrl,
     isInStock,
     quantity,
-    unserviceable,
     containerStyle,
     isPrescriptionRequired,
-    isMedicineAddedToCart,
     onNotifyMeClicked,
     onPressAddQuantity,
     onPressSubtractQuantity,
@@ -165,22 +128,12 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
       <View style={{ width: 40, marginRight: 12, alignItems: 'center', alignSelf: 'center' }}>
         {imageUrl ? (
           <Image
-            PlaceholderContent={
-              isTest ? (
-                <TestsIcon />
-              ) : isPrescriptionRequired ? (
-                <MedicineRxIcon />
-              ) : (
-                <MedicineIcon />
-              )
-            }
+            PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
             placeholderStyle={{ backgroundColor: 'transparent' }}
             source={{ uri: imageUrl }}
             style={{ height: 40, width: 40 }}
             resizeMode="contain"
           />
-        ) : isTest ? (
-          <TestsIcon />
         ) : isPrescriptionRequired ? (
           <MedicineRxIcon />
         ) : (
@@ -190,22 +143,9 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
     );
   };
 
-  const renderPersonSelectionView = () => {
-    return (
-      !!personName && (
-        <View style={styles.personSelectionView}>
-          <Text style={styles.personNameTextStyle}>{`For ${personName}`}</Text>
-          <DropdownGreen />
-        </View>
-      )
-    );
-  };
-
   const renderOutOfStock = () => {
-    return unserviceable || !isInStock ? (
-      <Text style={styles.outOfStockStyle}>
-        {unserviceable ? 'Not serviceable in your area.' : 'Out Of Stock'}
-      </Text>
+    return !isInStock && isSellOnline ? (
+      <Text style={styles.outOfStockStyle}>{'Out Of Stock'}</Text>
     ) : (
       <View style={{ flexDirection: 'row' }}>
         <Text style={styles.priceTextCollapseStyle}>Rs. {specialPrice || price}</Text>
@@ -226,14 +166,13 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
       style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >
-      {renderPersonSelectionView()}
       <View style={{ flexDirection: 'row' }}>
         {renderMedicineIcon()}
         <View style={styles.flexStyle}>{renderTitleAndIcon()}</View>
         <View style={{ width: 20 }}></View>
         {!isSellOnline
           ? renderNotForSaleTag()
-          : !isMedicineAddedToCart
+          : !quantity
           ? renderAddToCartView()
           : renderQuantityView()}
       </View>

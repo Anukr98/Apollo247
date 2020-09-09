@@ -50,6 +50,8 @@ import { SpecialtySearch } from 'components/SpecialtySearch';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
+import Pagination from '@material-ui/lab/Pagination';
+
 let currentPage = 1;
 let apolloDoctorCount = 0;
 let partnerDoctorCount = 0;
@@ -300,6 +302,24 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '4px 20px 0 20px',
       },
     },
+    paginationContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      padding: 20,
+    },
+    pagination: {},
+    paginationUl: {
+      '& li': {
+        '& button': {
+          fontsize: 14,
+          fontWeight: 700,
+          color: '#02475b',
+          '&:hover': {
+            background: '#00B38E',
+          },
+        },
+      },
+    },
   };
 });
 
@@ -309,19 +329,6 @@ interface Range {
     maximum: number;
   };
 }
-
-const searchObject: SearchObject = {
-  searchKeyword: '',
-  cityName: [],
-  experience: [],
-  availability: [],
-  fees: [],
-  gender: [],
-  language: [],
-  dateSelected: '',
-  specialtyName: '',
-  prakticeSpecialties: '',
-};
 
 let availableNow = {};
 const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilter: string) => {
@@ -382,6 +389,18 @@ interface SpecialityProps {
 }
 
 export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
+  const searchObject: SearchObject = {
+    searchKeyword: '',
+    cityName: [],
+    experience: [],
+    availability: [],
+    fees: [],
+    gender: [],
+    language: [],
+    dateSelected: '',
+    specialtyName: '',
+    prakticeSpecialties: '',
+  };
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
   const scrollToRef = useRef<HTMLDivElement>(null);
@@ -401,8 +420,8 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [filter, setFilter] = useState<SearchObject>(searchObject);
   const [filteredDoctorData, setFilteredDoctorData] = useState<any>(null);
   const [doctorData, setDoctorData] = useState<DoctorDetails[] | null>(null);
-  const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(false);
-  const [isPhysicalSelected, setIsPhysicalSelected] = useState<boolean>(false);
+  const [isOnlineSelected, setIsOnlineSelected] = useState<boolean>(true);
+  const [isPhysicalSelected, setIsPhysicalSelected] = useState<boolean>(true);
   const [doctorType, setDoctorType] = useState<DOCTOR_CATEGORY>(DOCTOR_CATEGORY.APOLLO);
   const [onlyFilteredCount, setOnlyFilteredCount] = useState<number>(0);
   const [pageNo, setPageNo] = useState<number>(1);
@@ -973,6 +992,18 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   'no results found'
                 )}
               </div>
+              {pageNo < Math.ceil((apolloDoctorCount + partnerDoctorCount) / PAGE_SIZE) && (
+                <div className={classes.paginationContainer}>
+                  <Pagination
+                    count={Math.ceil((apolloDoctorCount + partnerDoctorCount) / PAGE_SIZE)}
+                    color="primary"
+                    page={pageNo}
+                    onChange={() => window.location.reload()}
+                    classes={{ root: classes.pagination, ul: classes.paginationUl }}
+                  />
+                </div>
+              )}
+
               {faqData && faqData.length > 0 && (
                 <>
                   <BookBest faqData={faqData[0]} specialityName={specialtyName} />

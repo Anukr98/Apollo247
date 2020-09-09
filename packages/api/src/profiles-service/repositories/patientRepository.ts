@@ -8,7 +8,7 @@ import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentTo
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
-import { debugLog } from 'customWinstonLogger';
+import { debugLog, log } from 'customWinstonLogger';
 import { createPrismUser } from 'helpers/phrV1Services';
 import {
   PrescriptionInputArgs,
@@ -98,7 +98,13 @@ export class PatientRepository extends Repository<Patient> {
         const patient: Patient | undefined = await this.getByIdCache(id);
         return resolve(patient);
       } catch (ex) {
-        console.log(`getPatientDetails`, ex);
+        log(
+          'profileServiceLogger',
+          'getPatientDetails error',
+          'getPatientDetails()->CATCH_BLOCK',
+          '',
+          JSON.stringify(ex)
+        );
         return reject(ex);
       }
     });

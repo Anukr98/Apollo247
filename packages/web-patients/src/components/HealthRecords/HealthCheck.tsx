@@ -279,7 +279,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     reportsDetails: {
-      paddingLeft: 10,
+      paddingLeft: 0,
       paddingRight: 10,
       [theme.breakpoints.down('xs')]: {
         paddingLeft: 5,
@@ -334,11 +334,11 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 5,
     },
     testName: {
-      fontSize: 16,
+      fontSize: 20,
       color: '#01475b',
       fontWeight: 500,
       marginBottom: 12,
-      lineHeight: '21px',
+      lineHeight: '28px',
     },
     checkDate: {
       fontSize: 14,
@@ -448,14 +448,11 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
           {isSmallScreen && allCombinedData && allCombinedData.length === 0 && (
             <div className={classes.noRecordFoundWrapper}>
               <img src={require('images/ic_records.svg')} />
-              <p>
-                You don’t have any records with us right now. Add a record to keep everything handy
-                in one place!
-              </p>
+              <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
             </div>
           )}
         </Scrollbars>
-        <div className={classes.addReportActions}>
+        {/* <div className={classes.addReportActions}>
           <AphButton
             color="primary"
             onClick={() => {
@@ -465,7 +462,7 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
           >
             Add Record
           </AphButton>
-        </div>
+        </div> */}
       </div>
       <div
         className={`${classes.rightSection} ${
