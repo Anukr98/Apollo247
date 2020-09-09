@@ -4163,9 +4163,7 @@ export const MedicinePrescription: React.FC = () => {
                     saveMedicineAction(medicine);
                   }
                 });
-                //saveMedicineAction()
                 setIsPrevMedDialogOpen(false);
-                //setMedicineCopyAddedArr([]);
               }}
             >
               Proceed
