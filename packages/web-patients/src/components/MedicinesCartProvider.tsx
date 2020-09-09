@@ -80,11 +80,11 @@ export interface MedicineCartContextProps {
   removeCartItems: ((itemId: MedicineCartItem['arrSku']) => void) | null;
   removeFreeCartItems: (() => void) | null;
   updateCartItem:
-  | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
-  | null;
+    | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
+    | null;
   updateCartItemPrice:
-  | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
-  | null;
+    | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
+    | null;
   updateCartItemQty: ((item: MedicineCartItem) => void) | null;
   cartTotal: number;
   storePickupPincode: string | null;
@@ -97,8 +97,8 @@ export interface MedicineCartContextProps {
   setStoreAddressId: ((deliveryAddressId: string) => void) | null;
   deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[];
   setDeliveryAddresses:
-  | ((deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[]) => void)
-  | null;
+    | ((deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[]) => void)
+    | null;
   clearCartInfo: (() => void) | null;
   addMultipleCartItems: ((items: MedicineCartItem[]) => void) | null;
   prescriptions: PrescriptionFormat[] | null;
@@ -344,9 +344,9 @@ export const MedicinesCartProvider: React.FC = (props) => {
             res.data.response.length > 0 &&
             res.data.response[0].exist
           ) {
-            const result = [...cartItems, itemToAdd]
-            const freeProducts = result.filter((e) => e.couponFree)
-            const normalProducts = result.filter((e) => !e.couponFree)
+            const result = [...cartItems, itemToAdd];
+            const freeProducts = result.filter((e) => e.couponFree);
+            const normalProducts = result.filter((e) => !e.couponFree);
             setCartItems(normalProducts.concat(freeProducts));
             setIsCartUpdated(true);
           } else {
@@ -357,9 +357,9 @@ export const MedicinesCartProvider: React.FC = (props) => {
           console.log(e);
         });
     } else {
-      const result = [...cartItems, itemToAdd]
-      const freeProducts = result.filter((e) => e.couponFree)
-      const normalProducts = result.filter((e) => !e.couponFree)
+      const result = [...cartItems, itemToAdd];
+      const freeProducts = result.filter((e) => e.couponFree);
+      const normalProducts = result.filter((e) => !e.couponFree);
       setCartItems(normalProducts.concat(freeProducts));
       setIsCartUpdated(true);
     }
@@ -367,18 +367,18 @@ export const MedicinesCartProvider: React.FC = (props) => {
 
   const addCartItems = (itemsToAdd: Array<MedicineCartItem>) => {
     if (itemsToAdd && Array.isArray(itemsToAdd) && itemsToAdd.length) {
-      const result = [...cartItems].concat(itemsToAdd)
-      const freeProducts = result.filter((e) => e.couponFree)
-      const normalProducts = result.filter((e) => !e.couponFree)
+      const result = [...cartItems].concat(itemsToAdd);
+      const freeProducts = result.filter((e) => e.couponFree);
+      const normalProducts = result.filter((e) => !e.couponFree);
       setCartItems(normalProducts.concat(freeProducts));
       setIsCartUpdated(true);
     }
   };
 
   const removeCartItemSku: MedicineCartContextProps['removeCartItemSku'] = (sku: string) => {
-    const result = cartItems.filter((item) => item.sku !== sku)
-    const freeProducts = result.filter((e) => e.couponFree)
-    const normalProducts = result.filter((e) => !e.couponFree)
+    const result = cartItems.filter((item) => item.sku !== sku);
+    const freeProducts = result.filter((e) => e.couponFree);
+    const normalProducts = result.filter((e) => !e.couponFree);
     setCartItems(normalProducts.concat(freeProducts));
     setIsCartUpdated(true);
   };
@@ -470,16 +470,13 @@ export const MedicinesCartProvider: React.FC = (props) => {
 
   const cartTotal: MedicineCartContextProps['cartTotal'] = parseFloat(
     cartItems
-      .reduce(
-        (currTotal, currItem) => {
-          if (currItem.special_price == 0) {
-            return currTotal + currItem.quantity * currItem.special_price
-          } else {
-            return currTotal + currItem.quantity * (Number(currItem.special_price) || currItem.price)
-          }
-        },
-        0
-      )
+      .reduce((currTotal, currItem) => {
+        if (currItem.special_price == 0) {
+          return currTotal + currItem.quantity * currItem.special_price;
+        } else {
+          return currTotal + currItem.quantity * (Number(currItem.special_price) || currItem.price);
+        }
+      }, 0)
       .toFixed(2)
   );
 

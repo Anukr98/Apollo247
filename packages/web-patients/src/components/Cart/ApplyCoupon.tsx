@@ -253,59 +253,61 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   };
 
   const addDiscountedProducts = (response: any) => {
-    const skus: Array<string> = []
+    const skus: Array<string> = [];
     if (response.products && Array.isArray(response.products) && response.products.length) {
       try {
         const cartSkuSet = new Set(
           cartItems && cartItems.length ? cartItems.map((cartItem) => cartItem.sku) : []
         );
         response.products.forEach((data: any) => {
-          if (!cartSkuSet.has(data.sku) && data.couponFree)
-            skus.push(
-              data.sku
-            );
+          if (!cartSkuSet.has(data.sku) && data.couponFree) skus.push(data.sku);
         });
 
         const allData: MedicineCartItem[] = [];
         if (skus && skus.length) {
-          axios.post(
-            apiDetails.bulk_product_info_url || '',
-            { params: skus.join(',') },
-            {
-              headers: {
-                Authorization: apiDetails.authToken,
-              },
-            }
-          ).then((resp) => {
-            if (resp && resp.data && resp.data.productdp && resp.data.productdp.length) {
-              resp && resp.data && resp.data.productdp.forEach((e: any) => {
-                const cartItem: MedicineCartItem = {
-                  MaxOrderQty: 1,
-                  url_key: e.url_key,
-                  description: e.description,
-                  id: e.id,
-                  image: e.image,
-                  is_in_stock: e.is_in_stock,
-                  is_prescription_required: e.is_prescription_required,
-                  name: e.name,
-                  price: e.price,
-                  sku: e.sku,
-                  special_price: 0,
-                  couponFree: true,
-                  small_image: e.small_image,
-                  status: e.status,
-                  thumbnail: e.thumbnail,
-                  type_id: e.type_id,
-                  mou: e.mou,
-                  quantity: 1,
-                  isShippable: true,
-                };
-                allData.push(cartItem);
-              });
-            }
-          }).then(() => {
-            addCartItems(allData);
-          });
+          axios
+            .post(
+              apiDetails.bulk_product_info_url || '',
+              { params: skus.join(',') },
+              {
+                headers: {
+                  Authorization: apiDetails.authToken,
+                },
+              }
+            )
+            .then((resp) => {
+              if (resp && resp.data && resp.data.productdp && resp.data.productdp.length) {
+                resp &&
+                  resp.data &&
+                  resp.data.productdp.forEach((e: any) => {
+                    const cartItem: MedicineCartItem = {
+                      MaxOrderQty: 1,
+                      url_key: e.url_key,
+                      description: e.description,
+                      id: e.id,
+                      image: e.image,
+                      is_in_stock: e.is_in_stock,
+                      is_prescription_required: e.is_prescription_required,
+                      name: e.name,
+                      price: e.price,
+                      sku: e.sku,
+                      special_price: 0,
+                      couponFree: true,
+                      small_image: e.small_image,
+                      status: e.status,
+                      thumbnail: e.thumbnail,
+                      type_id: e.type_id,
+                      mou: e.mou,
+                      quantity: 1,
+                      isShippable: true,
+                    };
+                    allData.push(cartItem);
+                  });
+              }
+            })
+            .then(() => {
+              addCartItems(allData);
+            });
         }
       } catch (e) {
         console.error(e);
@@ -369,17 +371,17 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                         <img src={require('images/ic_tickmark.svg')} alt="" />
                       </div>
                     ) : (
-                        <AphButton
-                          classes={{
-                            disabled: classes.buttonDisabled,
-                          }}
-                          className={classes.searchBtn}
-                          disabled={disableCoupon}
-                          onClick={() => verifyCoupon()}
-                        >
-                          <img src={require('images/ic_send.svg')} alt="" />
-                        </AphButton>
-                      )}
+                      <AphButton
+                        classes={{
+                          disabled: classes.buttonDisabled,
+                        }}
+                        className={classes.searchBtn}
+                        disabled={disableCoupon}
+                        onClick={() => verifyCoupon()}
+                      >
+                        <img src={require('images/ic_send.svg')} alt="" />
+                      </AphButton>
+                    )}
                   </div>
                 </div>
                 {errorMessage.length > 0 && (
@@ -419,8 +421,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                   ) : isLoading ? (
                     <CircularProgress className={classes.loader} />
                   ) : (
-                        <div className={classes.noCoupons}>No available Coupons</div>
-                      )}
+                    <div className={classes.noCoupons}>No available Coupons</div>
+                  )}
                 </ul>
               </div>
             </div>

@@ -441,7 +441,7 @@ export const PayMedicine: React.FC = (props) => {
   } = cartValues;
   const deliveryCharges =
     cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
-      totalWithCouponDiscount <= 0
+    totalWithCouponDiscount <= 0
       ? 0
       : Number(pharmacyDeliveryCharges);
 
@@ -543,36 +543,38 @@ export const PayMedicine: React.FC = (props) => {
   const cartItemsForApi =
     cartItems.length > 0
       ? cartItems.map((cartItemDetails) => {
-        return {
-          medicineSKU: cartItemDetails.sku,
-          medicineName: cartItemDetails.name,
-          price:
-            couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-              ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
-              : Number(getItemSpecialPrice(cartItemDetails)),
-          quantity: cartItemDetails.quantity,
-          couponFree: cartItemDetails.couponFree || false,
-          itemValue: Number((cartItemDetails.quantity * cartItemDetails.price).toFixed(2)),
-          itemDiscount: Number(
-            (
-              cartItemDetails.quantity *
-              (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.sku))
-                : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
-            ).toFixed(2)
-          ),
-          mrp: cartItemDetails.price,
-          isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-          mou: parseInt(cartItemDetails.mou),
-          isMedicine:
-            _lowerCase(cartItemDetails.type_id) === 'pharma'
-              ? '1'
-              : _lowerCase(cartItemDetails.type_id) === 'pl'
+          return {
+            medicineSKU: cartItemDetails.sku,
+            medicineName: cartItemDetails.name,
+            price:
+              couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+                ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
+                : Number(getItemSpecialPrice(cartItemDetails)),
+            quantity: cartItemDetails.quantity,
+            couponFree: cartItemDetails.couponFree || false,
+            itemValue: Number((cartItemDetails.quantity * cartItemDetails.price).toFixed(2)),
+            itemDiscount: Number(
+              (
+                cartItemDetails.quantity *
+                (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+                  ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.sku))
+                  : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
+              ).toFixed(2)
+            ),
+            mrp: cartItemDetails.price,
+            isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
+            mou: parseInt(cartItemDetails.mou),
+            isMedicine:
+              _lowerCase(cartItemDetails.type_id) === 'pharma'
+                ? '1'
+                : _lowerCase(cartItemDetails.type_id) === 'pl'
                 ? '2'
                 : '0',
-          specialPrice: cartItemDetails.couponFree ? 0 : Number(getItemSpecialPrice(cartItemDetails)),
-        };
-      })
+            specialPrice: cartItemDetails.couponFree
+              ? 0
+              : Number(getItemSpecialPrice(cartItemDetails)),
+          };
+        })
       : [];
 
   const paymentMutation = useMutation<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>(
@@ -729,11 +731,13 @@ export const PayMedicine: React.FC = (props) => {
           });
           /* Webengage Code End */
           if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
-            const pgUrl = `${process.env.PHARMACY_PG_URL
-              }/paymed?amount=${totalWithCouponDiscount.toFixed(
-                2
-              )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES${sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
-              }`;
+            const pgUrl = `${
+              process.env.PHARMACY_PG_URL
+            }/paymed?amount=${totalWithCouponDiscount.toFixed(
+              2
+            )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES${
+              sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
+            }`;
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
@@ -805,9 +809,11 @@ export const PayMedicine: React.FC = (props) => {
   };
 
   const paymentNavigation = (appointmentId: string, value: string) => {
-    const pgUrl = `${'http://localhost:7000'}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatient ? currentPatient.id : ''
-      }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES${sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
-      }`;
+    const pgUrl = `${'http://localhost:7000'}/consultpayment?appointmentId=${appointmentId}&patientId=${
+      currentPatient ? currentPatient.id : ''
+    }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES${
+      sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
+    }`;
     window.location.href = pgUrl;
   };
 
@@ -967,8 +973,8 @@ export const PayMedicine: React.FC = (props) => {
                 params.payType === 'pharmacy'
                   ? clientRoutes.medicinesCart()
                   : appointmentType.toLowerCase() === 'online'
-                    ? clientRoutes.payOnlineConsult()
-                    : clientRoutes.payOnlineClinicConsult()
+                  ? clientRoutes.payOnlineConsult()
+                  : clientRoutes.payOnlineClinicConsult()
               }
             >
               <div className={classes.backArrow}>
@@ -1001,69 +1007,69 @@ export const PayMedicine: React.FC = (props) => {
                       color="secondary"
                     />
                   ) : (
-                      <ul className={classes.paymentOptions}>
-                        {sessionStorage.getItem('utm_source') === 'sbi' && (
-                          <li
-                            key={'sbiCashCard'}
-                            onClick={() =>
-                              params.payType === 'pharmacy'
-                                ? onClickPay(
+                    <ul className={classes.paymentOptions}>
+                      {sessionStorage.getItem('utm_source') === 'sbi' && (
+                        <li
+                          key={'sbiCashCard'}
+                          onClick={() =>
+                            params.payType === 'pharmacy'
+                              ? onClickPay(
                                   process.env.SBI_CASHCARD_PAY_TYPE,
                                   'SBI YONO CASHLESS CARD'
                                 )
-                                : onClickConsultPay(process.env.SBI_CASHCARD_PAY_TYPE)
+                              : onClickConsultPay(process.env.SBI_CASHCARD_PAY_TYPE)
+                          }
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <img
+                            src={
+                              'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
                             }
-                            style={{ cursor: 'pointer' }}
-                          >
-                            <img
-                              src={
-                                'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
-                              }
-                              alt=""
-                              style={{ height: 30, width: 30 }}
-                            />
-                            <div style={{ paddingLeft: 10 }}>
-                              SBI YONO CASHLESS CARD
+                            alt=""
+                            style={{ height: 30, width: 30 }}
+                          />
+                          <div style={{ paddingLeft: 10 }}>
+                            SBI YONO CASHLESS CARD
                             <div className={classes.offerMessage}>
-                                You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}% cashback
+                              You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}% cashback
                             </div>
-                            </div>
-                          </li>
-                        )}
-                        {paymentOptions.length > 0 &&
-                          paymentOptions.map((payType, index) => {
-                            return (
-                              <li
-                                key={index}
-                                onClick={() =>
-                                  params.payType === 'pharmacy'
-                                    ? onClickPay(payType.paymentMode, payType.name)
-                                    : onClickConsultPay(payType.paymentMode)
-                                }
-                                style={{ cursor: 'pointer' }}
-                              >
-                                <img
-                                  src={payType.imageUrl}
-                                  alt=""
-                                  style={{ height: 30, width: 30 }}
-                                />
-                                <span style={{ paddingLeft: 10 }}>{payType.name}</span>
-                              </li>
-                            );
-                          })}
-                        {params.payType === 'pharmacy' && (
-                          <li>
-                            <FormGroup>
-                              <FormControlLabel
-                                className={classes.checkbox}
-                                control={<Checkbox onChange={handleChange} name="checked" />}
-                                label="Cash On Delivery"
+                          </div>
+                        </li>
+                      )}
+                      {paymentOptions.length > 0 &&
+                        paymentOptions.map((payType, index) => {
+                          return (
+                            <li
+                              key={index}
+                              onClick={() =>
+                                params.payType === 'pharmacy'
+                                  ? onClickPay(payType.paymentMode, payType.name)
+                                  : onClickConsultPay(payType.paymentMode)
+                              }
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <img
+                                src={payType.imageUrl}
+                                alt=""
+                                style={{ height: 30, width: 30 }}
                               />
-                            </FormGroup>
-                          </li>
-                        )}
-                      </ul>
-                    )}
+                              <span style={{ paddingLeft: 10 }}>{payType.name}</span>
+                            </li>
+                          );
+                        })}
+                      {params.payType === 'pharmacy' && (
+                        <li>
+                          <FormGroup>
+                            <FormControlLabel
+                              className={classes.checkbox}
+                              control={<Checkbox onChange={handleChange} name="checked" />}
+                              label="Cash On Delivery"
+                            />
+                          </FormGroup>
+                        </li>
+                      )}
+                    </ul>
+                  )}
                   {checked && (
                     <AphButton
                       className={classes.payBtn}
@@ -1074,9 +1080,9 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                          `Pay Rs.${totalWithCouponDiscount &&
+                        `Pay Rs.${totalWithCouponDiscount &&
                           totalWithCouponDiscount.toFixed(2)} on delivery`
-                        )}
+                      )}
                     </AphButton>
                   )}
                   {params.payType === 'consults' && revisedAmount === 0 && (
@@ -1112,20 +1118,20 @@ export const PayMedicine: React.FC = (props) => {
                             </span>
                           </div>
                         ) : (
-                            <>
-                              <div className={classes.appliedCoupon}>
-                                <span className={classes.linkText}>
-                                  <span>{consultCouponCode}</span> applied
+                          <>
+                            <div className={classes.appliedCoupon}>
+                              <span className={classes.linkText}>
+                                <span>{consultCouponCode}</span> applied
                               </span>
-                                <span className={classes.rightArrow}>
-                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
-                                </span>
-                              </div>
-                              <div className={classes.couponText}>
-                                {validateConsultCouponResult ? 'Coupon succefully applied' : ''}
-                              </div>
-                            </>
-                          )}
+                              <span className={classes.rightArrow}>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </span>
+                            </div>
+                            <div className={classes.couponText}>
+                              {validateConsultCouponResult ? 'Coupon succefully applied' : ''}
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                     {consultCouponCode.length > 0 && (
@@ -1168,34 +1174,34 @@ export const PayMedicine: React.FC = (props) => {
                     </div>
                   </Paper>
                 ) : (
-                    <Paper className={classes.paper}>
-                      <div className={classes.charges}>
-                        {' '}
-                        <p>Subtotal</p> <p>Rs.{amount && parseFloat(amount).toFixed(2)}</p>
-                      </div>
-                      <div className={`${classes.charges} ${classes.discount}`}>
-                        <p>Coupon Applied</p>{' '}
-                        <p>
-                          - Rs.
+                  <Paper className={classes.paper}>
+                    <div className={classes.charges}>
+                      {' '}
+                      <p>Subtotal</p> <p>Rs.{amount && parseFloat(amount).toFixed(2)}</p>
+                    </div>
+                    <div className={`${classes.charges} ${classes.discount}`}>
+                      <p>Coupon Applied</p>{' '}
+                      <p>
+                        - Rs.
                         {validateConsultCouponResult && validateConsultCouponResult.valid
-                            ? validateConsultCouponResult.discount.toFixed(2)
-                            : consultCouponValue.toFixed(2)}
-                        </p>
-                      </div>
-                      <div className={`${classes.charges} ${classes.total}`}>
-                        <p>To Pay</p>{' '}
-                        <p>
-                          Rs.
+                          ? validateConsultCouponResult.discount.toFixed(2)
+                          : consultCouponValue.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className={`${classes.charges} ${classes.total}`}>
+                      <p>To Pay</p>{' '}
+                      <p>
+                        Rs.
                         {validateConsultCouponResult && validateConsultCouponResult.valid
-                            ? (
+                          ? (
                               validateConsultCouponResult.billAmount -
                               validateConsultCouponResult.discount
                             ).toFixed(2)
-                            : revisedAmount.toFixed(2)}
-                        </p>
-                      </div>
-                    </Paper>
-                  )}
+                          : revisedAmount.toFixed(2)}
+                      </p>
+                    </div>
+                  </Paper>
+                )}
               </Grid>
             </Grid>
           </div>
