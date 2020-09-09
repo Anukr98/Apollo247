@@ -2285,7 +2285,7 @@ export const ConsultTabs: React.FC = () => {
                 setShowConfirmPrescription(flag)
               }
             />
-            <div className={classes.tabcontainer}>
+            <div className={classes.tabContainer}>
               <div
                 className={
                   (inEditMode || isClickedOnEdit) && !isClickedOnPriview
