@@ -1073,6 +1073,7 @@ const searchDiagnostic: Resolver<
   return result;
 };
 
+const REDIS_JDCASESHEET_LOCK_PREFIX = `jdcasesheet:lock:`;
 const createJuniorDoctorCaseSheet: Resolver<
   null,
   { appointmentId: string },
@@ -1095,7 +1096,18 @@ const createJuniorDoctorCaseSheet: Resolver<
 
   //check if junior doctor case-sheet exists already
   caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
-  if (caseSheetDetails != null) return caseSheetDetails;
+
+  const lockKey = `${REDIS_JDCASESHEET_LOCK_PREFIX}${args.appointmentId}`;
+  const lockedAppointment = await getCache(lockKey);
+  if (lockedAppointment && typeof lockedAppointment == 'string') {
+    throw new Error(AphErrorMessages.CASESHEET_CREATION_IN_PROGRESS);
+  }
+  await setCache(lockKey, 'true', ApiConstants.CACHE_EXPIRATION_120);
+
+  if (caseSheetDetails != null) {
+    await delCache(lockKey);
+    return caseSheetDetails;
+  }
 
   const caseSheetAttrs: Partial<CaseSheet> = {
     consultType: appointmentData.appointmentType,
@@ -1136,6 +1148,7 @@ const createJuniorDoctorCaseSheet: Resolver<
     reason: 'JD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + doctorData.id,
   };
   appointmentRepo.saveAppointmentHistory(historyAttrs);
+  await delCache(lockKey);
   return caseSheetDetails;
 };
 
