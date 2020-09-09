@@ -344,7 +344,10 @@ export const MedicinesCartProvider: React.FC = (props) => {
             res.data.response.length > 0 &&
             res.data.response[0].exist
           ) {
-            setCartItems([...cartItems, itemToAdd]);
+            const result = [...cartItems, itemToAdd]
+            const freeProducts = result.filter((e) => e.couponFree)
+            const normalProducts = result.filter((e) => !e.couponFree)
+            setCartItems(normalProducts.concat(freeProducts));
             setIsCartUpdated(true);
           } else {
             window.location.href = clientRoutes.medicineDetails(itemToAdd.url_key);
@@ -354,20 +357,29 @@ export const MedicinesCartProvider: React.FC = (props) => {
           console.log(e);
         });
     } else {
-      setCartItems([...cartItems, itemToAdd]);
+      const result = [...cartItems, itemToAdd]
+      const freeProducts = result.filter((e) => e.couponFree)
+      const normalProducts = result.filter((e) => !e.couponFree)
+      setCartItems(normalProducts.concat(freeProducts));
       setIsCartUpdated(true);
     }
   };
 
   const addCartItems = (itemsToAdd: Array<MedicineCartItem>) => {
     if (itemsToAdd && Array.isArray(itemsToAdd) && itemsToAdd.length) {
-      setCartItems([...cartItems].concat(itemsToAdd));
+      const result = [...cartItems].concat(itemsToAdd)
+      const freeProducts = result.filter((e) => e.couponFree)
+      const normalProducts = result.filter((e) => !e.couponFree)
+      setCartItems(normalProducts.concat(freeProducts));
       setIsCartUpdated(true);
     }
   };
 
   const removeCartItemSku: MedicineCartContextProps['removeCartItemSku'] = (sku: string) => {
-    setCartItems(cartItems.filter((item) => item.sku !== sku));
+    const result = cartItems.filter((item) => item.sku !== sku)
+    const freeProducts = result.filter((e) => e.couponFree)
+    const normalProducts = result.filter((e) => !e.couponFree)
+    setCartItems(normalProducts.concat(freeProducts));
     setIsCartUpdated(true);
   };
 
