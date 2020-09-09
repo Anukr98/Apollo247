@@ -736,12 +736,13 @@ export const userSpecificCoupon = (mobileNumber: string): Promise<AxiosResponse<
 };
 
 export const startSymptomTrackerChat = async (data: any): Promise<AxiosResponse<any>> => {
-  const url = 'https://sympai.apollo247.com/api/v1/chatbot';
-  return Axios.post(url, data);
+  const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
+  return Axios.post(baseUrl, data);
 };
 
 export const autocompleteSymptoms = (chatId: string, params: any): Promise<AxiosResponse<any>> => {
-  const url = `https://sympai.apollo247.com/api/v1/chatbot/${chatId}/autosuggest`;
+  const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
+  const url = `${baseUrl}/${chatId}/autosuggest`;
   return Axios.get(url, {
     params: params,
   });
@@ -751,11 +752,13 @@ export const updateSymptomTrackerChat = async (
   chatId: string,
   data: any
 ): Promise<AxiosResponse<any>> => {
-  const url = `https://sympai.apollo247.com/api/v1/chatbot/${chatId}`;
+  const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
+  const url = `${baseUrl}/${chatId}`;
   return Axios.patch(url, data);
 };
 
 export const getSymptomsFromTracker = (chatId: string): Promise<AxiosResponse<any>> => {
-  const url = `https://sympai.apollo247.com/api/v1/chatbot/${chatId}/specialities`;
+  const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
+  const url = `${baseUrl}/${chatId}/specialities`;
   return Axios.get(url);
 };
