@@ -83,6 +83,7 @@ import {
   View,
   ViewStyle,
   Platform,
+  AsyncStorage,
 } from 'react-native';
 import {
   NavigationActions,
@@ -92,6 +93,7 @@ import {
 } from 'react-navigation';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
+import _ from 'lodash';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -237,6 +239,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   const [filterMode, setfilterMode] = useState<ConsultMode>(ConsultMode.BOTH);
+  const [searchQuery, setSearchQuery] = useState({});
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -293,6 +296,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   ]);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
 
+  useEffect(() => {
+    async function fetchFilter() {
+      const retrievedFilterOptions: any = await AsyncStorage.getItem('FilterOptions');
+      retrievedFilterOptions && setDocFilterOptions(JSON.parse(retrievedFilterOptions));
+    }
+    fetchFilter();
+  }, []);
   useEffect(() => {
     checkLocation();
     setDeepLinkFilter();
@@ -663,6 +673,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         // filterOptions(data.getDoctorsBySpecialtyAndFilters.filters);
         setDocFilterOptions(data.getDoctorsBySpecialtyAndFilters.filters);
         setFilterData(filterOptions(data.getDoctorsBySpecialtyAndFilters.filters));
+        AsyncStorage.setItem(
+          'FilterOptions',
+          JSON.stringify(data.getDoctorsBySpecialtyAndFilters.filters)
+        );
         setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(doctorInfo));
         //end log data
       })
@@ -1307,7 +1321,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onChangeText={(value) => {
             if (isValidSearch(value)) {
               setDoctorSearch(value);
-              filterDoctors(doctorsList, doctorsType, value);
+              const search = _.debounce(filterDoctors, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
+              search(doctorsList, doctorsType, value);
             }
           }}
         />
@@ -1508,7 +1529,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               activeOpacity={1}
               onPress={() => {
                 CommonLogEvent(AppRoutes.DoctorSearchListing, 'Filter view opened');
-                fetchSpecialityFilterData(filterMode, FilterData, latlng);
                 setDisplayFilter(true);
               }}
             >

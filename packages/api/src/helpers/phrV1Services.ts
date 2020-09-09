@@ -13,7 +13,11 @@ import {
   CreateNewUsersResponse,
   GetAuthTokenResponse,
   HealthChecksResponse,
-  DischargeSummaryResponse
+  HealthCheckUploadRequest,
+  HealthCheckUploadResponse,
+  DischargeSummaryResponse,
+  DischargeSummaryUploadRequest,
+  DischargeSummaryUploadResponse
 } from 'types/phrv1';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -560,7 +564,7 @@ export async function downloadDocumentAndSaveToBlob(
       : format(new Date(), 'ddmmyyyy-HHmmss') + '.jpeg';
 
   let apiUrl = process.env.PHR_V1_DONLOAD_PRESCRIPTION_DOCUMENT.toString();
-  if (fileUrl.indexOf('labresults=') > 0)
+  if (fileUrl.indexOf('labresults') > 0)
     apiUrl = process.env.PHR_V1_DONLOAD_LABRESULT_DOCUMENT.toString();
   apiUrl = apiUrl.replace('{AUTH_KEY}', getToken.response);
   apiUrl = apiUrl.replace('{UHID}', uhid);
@@ -724,3 +728,112 @@ export async function getDischargeSummary(uhid: string): Promise<DischargeSummar
       clearTimeout(timeout);
     });
 }
+
+/* Save health check data in PRISM */
+export async function saveHealthCheckToPrism(
+  uhid: string,
+  uploadParams: HealthCheckUploadRequest
+): Promise<HealthCheckUploadResponse> {
+  if (!process.env.PHR_V1_SAVE_HEALTHCHECK || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_SAVE_HEALTHCHECK.toString();
+  apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
+  apiUrl = apiUrl.replace('{UHID}', uhid);
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+  return await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+    body: JSON.stringify(uploadParams),
+  })
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'uploadHealthCheckToPrism PRISM_UPLOAD_RECORDS_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${JSON.stringify(data)}`
+        );
+        if (data.errorCode) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'uploadHealthCheckToPrism PRISM_UPLOAD_RECORDS_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+
+/* Save health check data in PRISM */
+export async function saveDischargeSummaryToPrism(
+  uhid: string,
+  uploadParams: DischargeSummaryUploadRequest
+): Promise<DischargeSummaryUploadResponse> {
+  if (!process.env.PHR_V1_SAVE_DISCHARGESUMMARY || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_SAVE_DISCHARGESUMMARY.toString();
+  apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
+  apiUrl = apiUrl.replace('{UHID}', uhid);
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+  return await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+    body: JSON.stringify(uploadParams),
+  })
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'uploadDischargeSummaryToPrism PRISM_UPLOAD_RECORDS_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${JSON.stringify(data)}`
+        );
+        if (data.errorCode) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'uploadDischargeSummaryToPrism PRISM_UPLOAD_RECORDS_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(uploadParams)} --- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+

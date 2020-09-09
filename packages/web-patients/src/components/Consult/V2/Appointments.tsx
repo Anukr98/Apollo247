@@ -602,7 +602,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
             appointmentDetail.doctorInfo.fullName
               .toLowerCase()
               .includes(searchKeyword.toLowerCase()) ||
-            appointmentDetail.doctorInfo.specialty.name
+            appointmentDetail.doctorInfo.specialty.specialistSingularTerm
               .toLowerCase()
               .includes(searchKeyword.toLowerCase())
           );
@@ -869,7 +869,9 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     }
     if (appointmentStatus.includes('Follow-Up')) {
       const filteredList = localFilteredAppointmentsList.filter(
-        (appointment) => appointment.isFollowUp !== 'false'
+        (appointment) =>
+          appointment.status === STATUS.COMPLETED &&
+          !isPastAppointment(appointment.appointmentDateTime)
       );
       finalList = [...finalList, ...filteredList];
     }

@@ -936,6 +936,7 @@ export const SAVE_PATIENT_ADDRESS = gql`
         latitude
         longitude
         stateCode
+        name
       }
     }
   }
@@ -958,6 +959,8 @@ export const UPDATE_PATIENT_ADDRESS = gql`
         latitude
         longitude
         stateCode
+        mobileNumber
+        name
       }
     }
   }
@@ -979,6 +982,9 @@ export const GET_PATIENT_ADDRESS_BY_ID = gql`
         city
         state
         zipcode
+        landmark
+        mobileNumber
+        name
       }
     }
   }
@@ -1074,6 +1080,8 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         latitude
         longitude
         stateCode
+        mobileNumber
+        name
       }
     }
   }
@@ -1135,6 +1143,8 @@ export const GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS = gql`
           routeOfAdministration
           medicineCustomDosage
           medicineCustomDetails
+          includeGenericNameInPrescription
+          genericName
         }
         notes
         otherInstructions {
@@ -1147,6 +1157,9 @@ export const GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS = gql`
           howOften
           severity
         }
+        referralSpecialtyName
+        referralDescription
+        prescriptionGeneratedDate
       }
       patientDetails {
         id
@@ -2884,6 +2897,8 @@ export const GET_ONEAPOLLO_USER = gql`
       earnedHC
       availableHC
       tier
+      burnedCredits
+      blockedCredits
     }
   }
 `;

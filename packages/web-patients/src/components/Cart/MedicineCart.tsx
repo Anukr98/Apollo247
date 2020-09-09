@@ -878,7 +878,7 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult &&
     validateCouponResult.discount &&
     validateCouponResult.discount >= productDiscount
-      ? Number(cartTotal) - Number(validateCouponResult.discount)
+      ? Number(cartTotal) - couponDiscount
       : Number(cartTotal);
   const deliveryCharges =
     modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
@@ -891,8 +891,7 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult &&
     validateCouponResult.discount &&
     Number(validateCouponResult.discount.toFixed(2)) > Number(productDiscount.toFixed(2))
-      ? Number(totalAmount) -
-        (Number(validateCouponResult.discount.toFixed(2)) - Number(productDiscount.toFixed(2)))
+      ? Number(totalAmount) - couponDiscount
       : Number(totalAmount);
 
   const disableSubmit =
@@ -931,7 +930,9 @@ export const MedicineCart: React.FC = (props) => {
   const getDiscountedLineItemPrice = (sku: string) => {
     if (couponCode.length > 0 && validateCouponResult && validateCouponResult.products) {
       const item: any = validateCouponResult.products.find((item: any) => item.sku === sku);
-      return item.specialPrice.toFixed(2);
+      return item.onMrp
+        ? (item.mrp - item.discountAmt).toFixed(2)
+        : (item.specialPrice - item.discountAmt).toFixed(2);
     }
   };
 
@@ -993,6 +994,17 @@ export const MedicineCart: React.FC = (props) => {
         .then((resp: any) => {
           if (resp.errorCode == 0) {
             if (resp.response.valid) {
+              const freeProductsSet = new Set(
+                resp.response.products && resp.response.products.length
+                  ? resp.response.products.filter((cartItem: any) => cartItem.mrp === 0)
+                  : []
+              );
+              if (freeProductsSet.size) {
+                addDiscountedProducts(resp.response);
+                setValidateCouponResult(resp.response);
+                setErrorMessage('');
+                return;
+              }
               if (Number(resp.response.discount.toFixed(2)) <= Number(productDiscount.toFixed(2))) {
                 setErrorMessage(
                   'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
@@ -1018,9 +1030,6 @@ export const MedicineCart: React.FC = (props) => {
             localStorage.removeItem('pharmaCoupon');
             setCouponCode && setCouponCode('');
           }
-        })
-        .then((resp: any) => {
-          addDiscountedProducts(resp.response);
         })
         .catch((e: any) => {
           console.log(e);
@@ -1317,7 +1326,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function(el) {
+          const filtered = uploadUrlscheck.filter(function (el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1729,11 +1738,15 @@ export const MedicineCart: React.FC = (props) => {
                             <>
                               <div className={classes.appliedCoupon}>
                                 {Number(validateCouponResult.discount.toFixed(2)) >
-                                  Number(productDiscount.toFixed(2)) && (
+                                  Number(productDiscount.toFixed(2)) ||
+                                (validateCouponResult.products &&
+                                  validateCouponResult.products.length &&
+                                  validateCouponResult.products.filter(({ mrp }) => mrp === 0)
+                                    .length) ? (
                                   <span className={classes.linkText}>
                                     <span>{couponCode}</span> applied
                                   </span>
-                                )}
+                                ) : null}
                                 <span className={classes.rightArrow}>
                                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                                 </span>
@@ -1747,7 +1760,7 @@ export const MedicineCart: React.FC = (props) => {
                       </div>
                       {couponCode.length > 0 &&
                         validateCouponResult &&
-                        validateCouponResult.discount &&
+                        !!validateCouponResult.discount &&
                         validateCouponResult.discount > 0 &&
                         Number(validateCouponResult.discount.toFixed(2)) >
                           Number(productDiscount.toFixed(2)) && (
@@ -1857,13 +1870,12 @@ export const MedicineCart: React.FC = (props) => {
                                   couponValue: couponDiscount,
                                   totalWithCouponDiscount:
                                     validateCouponResult && validateCouponResult.discount
-                                      ? Number(totalAmount) -
-                                        (Number(validateCouponResult.discount.toFixed(2)) -
-                                          Number(productDiscount.toFixed(2)))
+                                      ? totalWithCouponDiscount
                                       : Number(totalAmount),
                                   deliveryTime: deliveryTime,
                                   validateCouponResult: validateCouponResult,
                                   shopId: shopId,
+                                  deliveryAddressId,
                                 })
                               );
                               history.push(clientRoutes.payMedicine('pharmacy'));
@@ -1973,13 +1985,12 @@ export const MedicineCart: React.FC = (props) => {
                               couponValue: couponDiscount,
                               totalWithCouponDiscount:
                                 validateCouponResult && validateCouponResult.discount
-                                  ? Number(totalAmount) -
-                                    (Number(validateCouponResult.discount.toFixed(2)) -
-                                      Number(productDiscount.toFixed(2)))
+                                  ? totalWithCouponDiscount
                                   : Number(totalAmount),
                               deliveryTime: deliveryTime,
                               validateCouponResult: validateCouponResult,
                               shopId: shopId,
+                              deliveryAddressId,
                             })
                           );
                           history.push(clientRoutes.payMedicine('pharmacy'));

@@ -40,6 +40,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { GET_APPOINTMENT_DATA } from 'graphql/consult';
 import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import { removeGraphQLKeyword } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -560,7 +561,9 @@ export const ChatRoom: React.FC = () => {
         console.log(e);
         setApiLoading(false);
         setIsAlertOpen(true);
-        setAlertMessage(`Error occured while rescheduling the appointment, ${e}`);
+        setAlertMessage(
+          `Error occured while rescheduling the appointment(${removeGraphQLKeyword(e)})`
+        );
       });
   };
 
@@ -577,7 +580,10 @@ export const ChatRoom: React.FC = () => {
 
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
     setIsNextSlotLoading(true);
-    const todayDate = moment.utc(date).local().format('YYYY-MM-DD');
+    const todayDate = moment
+      .utc(date)
+      .local()
+      .format('YYYY-MM-DD');
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
         try {
@@ -674,7 +680,7 @@ export const ChatRoom: React.FC = () => {
                     appointmentDetails.status !== STATUS.COMPLETED && (
                       <div className={classes.headerActions}>
                         <AphButton
-                          disabled={jrDoctorJoined}
+                          disabled={appointmentDetails.isSeniorConsultStarted}
                           classes={{
                             root: classes.viewButton,
                             disabled: classes.disabledButton,
@@ -750,18 +756,16 @@ export const ChatRoom: React.FC = () => {
                     ) : (
                       <h6>
                         {'Since you have already rescheduled 3 times with Dr. '}
-                        {`${
-                          data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName
-                        }`}{' '}
+                        {`${data &&
+                          data.getDoctorDetailsById &&
+                          data.getDoctorDetailsById.fullName}`}{' '}
                         {`, We will consider this a new paid appointment.`}
                       </h6>
                     )}
                     <br />
                     <h6>
                       Next slot for Dr.{' '}
-                      {`${
-                        data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName
-                      }`}
+                      {`${data && data.getDoctorDetailsById && data.getDoctorDetailsById.fullName}`}{' '}
                       is available on -
                     </h6>
                     <br />

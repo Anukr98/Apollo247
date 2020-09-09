@@ -10,6 +10,7 @@ import { log } from 'customWinstonLogger';
 import { Connection } from 'typeorm';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { isNotificationAllowed } from 'notifications-service/handlers/common';
+import fetch from 'node-fetch';
 
 type MedicineOrderRefundNotificationInput = {
   refundAmount: number;
@@ -21,7 +22,8 @@ type MedicineOrderRefundNotificationInput = {
 };
 
 export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
-  if (!isNotificationAllowed(mobileNumber)) {
+  const isWhitelisted = await isNotificationAllowed(mobileNumber);
+  if (!isWhitelisted) {
     return;
   }
   //Adding Apollo 247 string at starting of the body
@@ -33,16 +35,24 @@ export const sendNotificationSMS = async (mobileNumber: string, message: string)
 
   const apiUrl = `${apiUrlWithKey}${queryParams}`;
   //logging api call data here
-  log('smsOtpAPILogger', `OPT_API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
+  log('smsAPILogger', `API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
   const smsResponse = await fetch(apiUrl)
     .then((res) => res.json())
     .catch((error) => {
       //logging error here
       log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(error));
+      console.log(`Error while sending sms`, JSON.stringify(error, null, 1));
       throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
     });
 
-  console.log('smsResponse================', smsResponse);
+  log(
+    'smsAPILogger',
+    `API_CALL_RESPONSE: ${JSON.stringify(smsResponse)}`,
+    'sendSMS()->API_CALL_ENDING',
+    '',
+    ''
+  );
+  console.log('smsResponse:', JSON.stringify(smsResponse, null, 1));
   return smsResponse;
 };
 

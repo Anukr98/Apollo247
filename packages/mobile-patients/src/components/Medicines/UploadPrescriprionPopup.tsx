@@ -14,7 +14,10 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  storagePermissions,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -611,7 +614,13 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
               }, 100);
             } else if (index === 1) {
               setTimeout(() => {
-                onBrowseClicked();
+                if (Platform.OS === 'android') {
+                  storagePermissions(() => {
+                    onBrowseClicked();
+                  });
+                } else {
+                  onBrowseClicked();
+                }
               }, 100);
             }
           }}

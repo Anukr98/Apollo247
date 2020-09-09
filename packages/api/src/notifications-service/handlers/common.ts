@@ -29,7 +29,7 @@ type validCheckOutput = {
   patientDetails: Patient;
 };
 
-export const checkForValidAppointmentDoctorAndPatient = async function (
+export const checkForValidAppointmentDoctorAndPatient = async function(
   args: validCheckInput
 ): Promise<validCheckOutput> {
   const { consultsDb, doctorsDb, patientsDb, appointmentId } = args;
@@ -40,7 +40,7 @@ export const checkForValidAppointmentDoctorAndPatient = async function (
   //get doctor details
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
 
-  const doctorDetails = await doctorRepo.findById(appointment.doctorId);
+  const doctorDetails = await doctorRepo.getDoctorSecretary(appointment.doctorId);
   if (doctorDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
   //check patient existence and get his details
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
@@ -118,11 +118,21 @@ export function getNotificationLogFileName(notificationType: NotificationType) {
 
 const isWhitelisted = async (mobileNumber: string) => {
   const whiteListedContacts = await getCache(`${REDIS_PREFIX_WHITELISTED_KEY}${mobileNumber}`);
-  const isWhiteListedBool: boolean = whiteListedContacts && typeof whiteListedContacts == 'string' ? true : false
-  log('notificationServiceLogger', `isWhitelisted tracker, isWhiteListed: ${isWhiteListedBool} for number ${mobileNumber}`, 'common.ts/isWhitelisted', '', '');
+  const isWhiteListedBool: boolean =
+    whiteListedContacts && typeof whiteListedContacts == 'string' ? true : false;
+  log(
+    'notificationServiceLogger',
+    `isWhitelisted tracker, isWhiteListed: ${isWhiteListedBool} for number ${mobileNumber}`,
+    'common.ts/isWhitelisted',
+    '',
+    ''
+  );
+  console.log(
+    `isWhitelisted tracker, isWhiteListed: ${isWhiteListedBool} for number ${mobileNumber}`
+  );
   return isWhiteListedBool; //should always retrun boolean
 };
 
-export function isNotificationAllowed(mobileNumber: string) {
-  return process.env.NODE_ENV == 'production' || isWhitelisted(mobileNumber);
+export async function isNotificationAllowed(mobileNumber: string) {
+  return process.env.NODE_ENV == 'production' || (await isWhitelisted(mobileNumber));
 }

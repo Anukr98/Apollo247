@@ -1,9 +1,13 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Avatar, Button } from '@material-ui/core';
-import React from 'react';
+import { Theme, Avatar, Popover } from '@material-ui/core';
+import React, { useState, useRef, useEffect } from 'react';
 import { ViewPrescriptionCard } from 'components/Consult/V2/ChatRoom/ViewPrescriptionCard';
 import format from 'date-fns/format';
 import isToday from 'date-fns/isToday';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { AphButton } from '@aph/web-ui-components';
+import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -91,6 +95,78 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#890000',
       marginLeft: 10,
     },
+    actions: {
+      padding: '0 20px 20px 20px',
+      display: 'flex',
+      '& button': {
+        borderRadius: 10,
+        color: '#fc9916',
+        padding: 0,
+        boxShadow: 'none',
+        '&:last-child': {
+          marginLeft: 'auto',
+        },
+      },
+    },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    popoverBottom: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: 'auto !important',
+        bottom: 0,
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        marginBottom: 0,
+      },
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
   };
 });
 
@@ -101,15 +177,23 @@ interface DoctorCardProps {
   setModalOpen: (flag: boolean) => void;
   setImgPrevUrl: (url: string) => void;
   chatTime: string;
+  doctorName: string;
+  appointmentDetails: AppointmentHistory;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles({});
+  const mascotRef = useRef(null);
   const message = props.message.replace(/\n/g, '<br />');
   const chatDate = new Date(props.chatTime);
   const chatTime = isToday(chatDate)
     ? format(chatDate, 'hh:mm a')
     : format(chatDate, 'do MMMM yyyy, hh:mm a');
+  const { appointmentDetails } = props;
+
+  const isCancelledByDoctor =
+    props.messageDetails && props.messageDetails.message === '^^#cancelConsultInitiated';
+
   return (
     <div className={classes.doctorCardMain}>
       <div className={classes.doctorAvatar}>
@@ -160,27 +244,60 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             )}
           </div>
         </div>
-      ) : props.messageDetails.message === '^^#followupconsult' ? (
-        // <div className={`${classes.blueBubble} ${classes.petient} `}>
-        //   <Link
-        //     to={clientRoutes.prescription(props.messageDetails.transferInfo.appointmentId)}
-        //   ></Link>
-        //   <Button>Download</Button>
-        // </div>
+      ) : props.messageDetails.message === '^^#followupconsult' ||
+        props.messageDetails.message === '^^#rescheduleconsult' ? (
         <ViewPrescriptionCard
           message={props.message}
           duration={props.duration}
           messageDetails={props.messageDetails}
           chatTime={chatTime}
+          appointmentDetails={appointmentDetails}
         />
       ) : (
-        <>
-          <div
-            className={`${classes.blueBubble} ${classes.petient} `}
-            dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}
-          ></div>
-        </>
+        !isCancelledByDoctor && (
+          <>
+            <div
+              className={`${classes.blueBubble} ${classes.petient} `}
+              dangerouslySetInnerHTML={{ __html: message.replace(/\<(?!br).*?\>/g, '') }}
+            ></div>
+          </>
+        )
       )}
+      <Popover
+        open={isCancelledByDoctor}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.windowBody}>
+              <p>Hi! :)</p>
+              <p>
+                we’re really sorry. Dr. {props.doctorName} will not be able to make it for this
+                appointment. Any payment that you have made for this consultation would be refunded
+                in 2-4 working days. We request you to please book appointment with any of our other
+                Apollo certified doctors
+              </p>
+            </div>
+            <Link to={clientRoutes.appointments()}>
+              <div className={classes.actions}>
+                <AphButton>OK, GOT IT</AphButton>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };

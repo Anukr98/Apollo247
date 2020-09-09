@@ -3147,7 +3147,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               {convertChatTime(rowData)}
             </Text>
           </View>
-          {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
+          {/* {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
             <View
               style={{
                 width: 244,
@@ -3273,7 +3273,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 {convertChatTime(rowData)}
               </Text>
             </View>
-          )}
+          )} */}
           {/* {checkReschudule && reschduleLoadView(rowData, index, 'Followup')} */}
         </View>
       </>
@@ -5576,9 +5576,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             width: width - 116,
           }}
         >
-          {/* <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-            <SpeakerOn style={{ width: 60, height: 60 }} />
-          </TouchableOpacity> */}
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
@@ -6914,9 +6911,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     setDropdownVisible(false);
                   }}
                   onFocus={() => setDropdownVisible(false)}
-                  onSubmitEditing={() => {
-                    Keyboard.dismiss();
-                  }}
                   editable={!disableChat}
                 />
                 <View

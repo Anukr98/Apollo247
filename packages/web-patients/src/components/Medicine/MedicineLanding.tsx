@@ -26,7 +26,7 @@ import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescri
 import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
 import {
   uploadPrescriptionTracking,
-  // pharmacyUploadPresClickTracking,
+  pharmacyUploadPresClickTracking,
   uploadPhotoTracking,
 } from '../../webEngageTracking';
 import moment from 'moment';
@@ -577,7 +577,7 @@ const MedicineLanding: React.FC = (props: any) => {
       .then((res: any) => {
         setData(res.data);
         if (res.data && res.data.metadata && res.data.metadata.length > 0) {
-          const removableData = ['banners', 'orders', 'upload_prescription', 'recommended_for_you'];
+          const removableData = ['banners', 'orders', 'upload_prescription'];
           let position = 0;
           let updatedMetadata: any[] = [];
           res.data.metadata.forEach((section: any) => {
@@ -603,7 +603,7 @@ const MedicineLanding: React.FC = (props: any) => {
                 section_key: section.section_key,
                 section_name: section.section_name,
                 section_position: position,
-                visible: section.visible,
+                visible: sectionData ? section.visible : false,
                 value: renderValue(),
                 viewAll: sectionData && sectionData.products && sectionData.url_key ? true : false,
                 viewAllUrlKey: sectionData && sectionData.url_key ? sectionData.url_key : '',
@@ -642,7 +642,7 @@ const MedicineLanding: React.FC = (props: any) => {
 
   const handleUploadPrescription = () => {
     uploadPrescriptionTracking({ ...patient, age });
-    // pharmacyUploadPresClickTracking('Home');
+    pharmacyUploadPresClickTracking('Home');
     setIsUploadPreDialogOpen(true);
   };
   const metaTagProps = {
@@ -835,34 +835,37 @@ const MedicineLanding: React.FC = (props: any) => {
                 </div>
               )}
               {metadata &&
-                metadata.map((item: any, index: number) => (
-                  <div key={index} className={classes.sliderSection}>
-                    <div className={classes.sectionTitle}>
-                      {item.section_key === 'shop_by_brand' || item.viewAll ? (
-                        <>
-                          <span>{item.section_name}</span>
-                          <div className={classes.viewAllLink}>
-                            <Link
-                              to={
-                                item.section_key === 'shop_by_brand'
-                                  ? clientRoutes.medicineAllBrands()
-                                  : clientRoutes.searchByMedicine(
-                                      'shop-by-category',
-                                      item.viewAllUrlKey
-                                    )
-                              }
-                            >
-                              View All
-                            </Link>
-                          </div>
-                        </>
-                      ) : (
-                        item.section_name
-                      )}
-                    </div>
-                    {item.value}
-                  </div>
-                ))}
+                metadata.map(
+                  (item: any, index: number) =>
+                    item.visible && (
+                      <div key={index} className={classes.sliderSection}>
+                        <div className={classes.sectionTitle}>
+                          {item.section_key === 'shop_by_brand' || item.viewAll ? (
+                            <>
+                              <span>{item.section_name}</span>
+                              <div className={classes.viewAllLink}>
+                                <Link
+                                  to={
+                                    item.section_key === 'shop_by_brand'
+                                      ? clientRoutes.medicineAllBrands()
+                                      : clientRoutes.searchByMedicine(
+                                          'shop-by-category',
+                                          item.viewAllUrlKey
+                                        )
+                                  }
+                                >
+                                  View All
+                                </Link>
+                              </div>
+                            </>
+                          ) : (
+                            item.section_name
+                          )}
+                        </div>
+                        {item.value}
+                      </div>
+                    )
+                )}
             </div>
           )}
         </div>

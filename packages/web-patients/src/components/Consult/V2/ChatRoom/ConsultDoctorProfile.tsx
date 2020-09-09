@@ -481,7 +481,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         id && clearInterval(id);
         if (
           differenceInMinutes >= -15 &&
-          (differenceInMinutes <= 30 || appointmentDetails.isConsultStarted)
+          (differenceInMinutes <= 30 || appointmentDetails.isSeniorConsultStarted)
         ) {
           setRefreshTimer(!refreshTimer);
         }
@@ -551,7 +551,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
               alt={firstName || ''}
             />
             {appointmentDetails.status !== STATUS.COMPLETED &&
-              appointmentDetails.status !== STATUS.CANCELLED && (
+              appointmentDetails.status !== STATUS.CANCELLED &&
+              !appointmentDetails.isSeniorConsultStarted && (
                 <div
                   onClick={() => setIsCancelPopoverOpen(true)}
                   ref={cancelAppointRef}
@@ -647,7 +648,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                     </div>
                   ) : (
                     differenceInMinutes > -16 && // enables only for upcoming and active  appointments
-                    (appointmentDetails.isConsultStarted ? (
+                    (appointmentDetails.isSeniorConsultStarted ? (
                       <div className={`${classes.joinInSection} ${classes.doctorjoinSection}`}>
                         <span>Doctor has joined!</span>
                       </div>
@@ -715,6 +716,10 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           transformOrigin={{
             vertical: 'top',
             horizontal: 'right',
+          }}
+          onBlur={() => {
+            setShowCancelPopup(false);
+            setIsCancelPopoverOpen(false);
           }}
           classes={{ paper: classes.bottomPopover }}
         >

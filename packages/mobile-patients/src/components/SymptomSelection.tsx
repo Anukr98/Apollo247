@@ -177,9 +177,7 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
       <Button
         title={string.symptomChecker.addSelectedSymptom}
         style={styles.bottomBtn}
-        // disabledStyle={styles.bottomBtn}
         titleTextStyle={styles.bottomBtnTxt}
-        // disabled={selectedSymptoms.length === 0}
         onPress={() => {
           const newObj = {
             name: selectedSymptoms.join(', '),

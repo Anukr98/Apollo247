@@ -47,6 +47,7 @@ import {
   MEDICINE_TIMINGS,
   MEDICINE_TO_BE_TAKEN,
   MEDICINE_UNIT,
+  ConsultMode,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
@@ -130,11 +131,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
   },
+  bottomPaddingTwelve: {
+    paddingBottom: 12
+  },
   labelStyle: {
     paddingBottom: 4,
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 24,
     ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  skyBluelabelStyle: {
+    paddingBottom: 4,
+    color: theme.colors.SKY_BLUE,
+    lineHeight: 24,
+    ...theme.fonts.IBMPlexSansMedium(14),
+  },
+  subLabelStyle: {
+    paddingBottom: 4,
+    color: 'rgba(0,0,0,0.4)',
+    ...theme.fonts.IBMPlexSansMedium(9),
+  },
+  prescDateTextStyle: {
+    marginTop: 7,
+    marginBottom:10,
+    color: theme.colors.LIGHT_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(12),
   },
   dataTextStyle: {
     color: theme.colors.SKY_BLUE,
@@ -209,6 +230,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const [testShow, setTestShow] = useState<boolean>(true);
   const [showNotExistAlert, setshowNotExistAlert] = useState<boolean>(false);
   const [APICalled, setAPICalled] = useState<boolean>(false);
+  const [showReferral, setShowReferral] = useState<boolean>(true);
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -343,6 +365,12 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             </View>
           </View>
         )}
+        {!!(caseSheetDetails?.prescriptionGeneratedDate) &&
+          <Text style={styles.prescDateTextStyle}>Prescription generated on {moment(caseSheetDetails!.prescriptionGeneratedDate).format(
+            AppConfig.Configuration.CASESHEET_PRESCRIPTION_DATE_FORMAT
+          )} at {moment(caseSheetDetails!.prescriptionGeneratedDate).format(
+            AppConfig.Configuration.CASESHEET_PRESCRIPTION_TIME_FORMAT
+          )}</Text>}
         {caseSheetDetails && caseSheetDetails.followUp ? (
           <View>
             {/* <Text style={styles.descriptionStyle}>
@@ -393,9 +421,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         <View style={styles.labelViewStyle}>
                           <Text style={styles.labelStyle}>{item.symptom}</Text>
                         </View>
-                        <Text style={styles.dataTextStyle}>
-                          {`Since: ${item.since}\nHow Often: ${item.howOften}\nSeverity: ${item.severity}`}
-                        </Text>
+                        {!!(item?.since) && <Text style={styles.dataTextStyle}>
+                          Since: {item.since}
+                        </Text>}
+                        {!!(item?.howOften) && <Text style={styles.dataTextStyle}>
+                          How Often: {item.howOften}
+                        </Text>}
+                        {!!(item?.severity) && <Text style={styles.dataTextStyle}>
+                          Severity: {item.severity}
+                        </Text>}
                       </View>
                     );
                 })}
@@ -804,8 +838,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       <View>
                         <View style={styles.labelViewStyle}>
                           <Text style={styles.labelStyle}>{item.medicineName}</Text>
+                          {!!(item?.includeGenericNameInPrescription)
+                          && <Text style={styles.subLabelStyle}>{item.genericName}</Text>}
                         </View>
-
                         <Text style={styles.dataTextStyle}>{medicineDescription(item)}</Text>
                       </View>
                     );
@@ -863,6 +898,44 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       </View>
     );
   };
+
+  const renderReferral = () => {
+    return (
+      <View>
+        <CollapseCard
+          heading={`Referral`}
+          collapse={showReferral}
+          onPress={() => setShowReferral(!showReferral)}
+        >
+          <View style={[styles.cardViewStyle, styles.bottomPaddingTwelve]}>
+            {!!(caseSheetDetails?.referralSpecialtyName) ? (
+              <View>
+                <Text style={styles.labelStyle}>
+                  {caseSheetDetails!.referralSpecialtyName}
+                </Text>
+                {!!(caseSheetDetails?.referralDescription) &&
+                  <Text style={styles.dataTextStyle}>{caseSheetDetails!.referralDescription}</Text>}
+                <TouchableOpacity style={{ marginTop: 12 }}
+                  onPress={() => {
+                    props.navigation.navigate(AppRoutes.DoctorSearch);
+                  }}
+                >
+                  <Text style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 },]}>
+                   {strings.common.book_apointment}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View>
+                <Text style={styles.labelStyle}>No referral</Text>
+              </View>
+            )}
+          </View>
+        </CollapseCard>
+      </View>
+    );
+  };
+
   const renderGenerealAdvice = () => {
     // if (
     //   caseSheetDetails &&
@@ -879,7 +952,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails!.otherInstructions && caseSheetDetails!.otherInstructions !== null ? (
               <View>
-                <Text style={styles.labelStyle}>
+                <Text style={[styles.skyBluelabelStyle]}>
                   {caseSheetDetails!
                     .otherInstructions!.map((item, i) => {
                       if (item && item.instruction !== '') {
@@ -908,18 +981,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           collapse={showFollowUp}
           onPress={() => setshowFollowUpl(!showFollowUp)}
         >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
+          <View style={[styles.cardViewStyle, styles.bottomPaddingTwelve]}>
             {caseSheetDetails &&
             caseSheetDetails!.followUp &&
             caseSheetDetails!.doctorType !== 'JUNIOR' ? (
               <View>
                 <View>
                   <View style={styles.labelViewStyle}>
-                    <Text style={styles.labelStyle}>
-                      {caseSheetDetails!.consultType === 'PHYSICAL'
-                        ? 'Clinic Visit'
-                        : 'Online Consult '}
-                    </Text>
+                      <Text style={styles.labelStyle}>
+                        {caseSheetDetails!.consultType === ConsultMode.PHYSICAL
+                          ? 'Clinic Visit'
+                          : 'Online Consult'} with {'\n'}{props.navigation.state.params!.DoctorInfo?.displayName}
+                      </Text>
                   </View>
                   {caseSheetDetails!.followUpAfterInDays! <= '7' ? (
                     <Text style={styles.dataTextStyle}>
@@ -1076,10 +1149,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         '_' +
         props.navigation.state.params!.DoctorInfo.displayName +
         '_Apollo 247' +
+        new Date().getTime() +
         '.pdf'
       );
     } else {
-      return 'Prescription_Apollo 247.pdf';
+      return 'Prescription_Apollo 247' + new Date().getTime() + '.pdf';
     }
   };
 
@@ -1091,6 +1165,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           {renderPrescriptions()}
           {renderTestNotes()}
           {renderDiagnosis()}
+          {renderReferral()}
           {renderGenerealAdvice()}
           {renderFollowUp()}
         </View>
@@ -1131,9 +1206,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                           ? (dirs.DocumentDir || dirs.MainBundleDir) +
                             '/' +
                             (fileName || 'Apollo_Prescription.pdf')
-                          : dirs.DownloadDir +
-                            '/' +
-                            (fileName + new Date().getTime() || 'Apollo_Prescription.pdf');
+                          : dirs.DownloadDir + '/' + (fileName || 'Apollo_Prescription.pdf');
                       setLoading && setLoading(true);
                       RNFetchBlob.config({
                         fileCache: true,

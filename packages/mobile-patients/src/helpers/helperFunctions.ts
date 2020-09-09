@@ -659,6 +659,15 @@ export const isValidName = (value: string) =>
     : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
     ? true
     : false;
+  
+export const isValidPhoneNumber = (value: string) =>{
+    const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
+      ? !/^(234){1}\d{0,9}$/.test(value)
+        ? false
+        : true
+      : true;
+    return isValidNumber;
+}
 
 export const extractUrlFromString = (text: string): string | undefined => {
   const urlRegex = /(https?:\/\/[^ ]*)/;
@@ -1019,16 +1028,20 @@ export const callPermissions = (doRequest?: () => void) => {
       'microphone',
       'Enable microphone from settings for calls during consultation.',
       () => {
-        permissionHandler(
-          'storage',
-          'Enable storage from settings for uploading documents during consultation.',
-          () => {
-            doRequest && doRequest();
-          }
-        );
+        doRequest && doRequest();
       }
     );
   });
+};
+
+export const storagePermissions = (doRequest?: () => void) => {
+  permissionHandler(
+    'storage',
+    'Enable storage from settings for uploading documents during consultation.',
+    () => {
+      doRequest && doRequest();
+    }
+  );
 };
 
 export const InitiateAppsFlyer = (
@@ -1325,7 +1338,7 @@ export const addPharmaItemToCart = (
     section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'];
     categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
   },
-  onComplete?: () => void,
+  onComplete?: () => void
 ) => {
   const unServiceableMsg = 'Sorry, not serviceable in your area.';
 
@@ -1377,7 +1390,7 @@ export const addPharmaItemToCart = (
   setLoading && setLoading(true);
   availabilityApi247(pincode, cartItem.id)
     .then((res) => {
-      const availability = g(res, 'data', 'response', '0' as any, 'exist')
+      const availability = g(res, 'data', 'response', '0' as any, 'exist');
       if (availability) {
         addToCart();
       } else {

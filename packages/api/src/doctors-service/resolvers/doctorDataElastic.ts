@@ -44,7 +44,6 @@ const deleteDocumentElastic: Resolver<null, { id: string }, DoctorsServiceContex
     index: process.env.ELASTIC_INDEX_DOCTORS,
   };
   const delResp = await client.delete(deleteParams);
-  console.log(delResp, 'delete resp');
   return 'Document deleted';
 };
 
@@ -91,7 +90,6 @@ const updateApptDoctorSlotStatus: Resolver<
       };
       slotsUpdated += '{' + appt.doctorId + ' - ' + sl + '},';
       const updateResp = await client.update(doc1);
-      console.log(updateResp, 'updateResp');
     });
   }
   return 'slot status updated ' + slotsUpdated;
@@ -126,7 +124,6 @@ const updateDoctorSlotStatus: Resolver<
     },
   };
   const updateResp = await client.update(doc1);
-  console.log(updateResp, 'updateResp');
   return 'slot status updated ' + args.id;
 };
 
@@ -146,7 +143,6 @@ const addAllDoctorSlotsElastic: Resolver<
     for (let k = 0; k < allDocsInfo.length; k++) {
       stDate = new Date(args.fromSlotDate);
       slotsAdded += '{';
-      console.log('came here');
 
       if (!process.env.ELASTIC_INDEX_DOCTORS) {
         throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
@@ -164,8 +160,6 @@ const addAllDoctorSlotsElastic: Resolver<
         },
       };
       const getDetails = await client.search(searchParams);
-
-      console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length, 'hitCount');
       if (getDetails.body.hits.hits.length == 0) {
         await addDoctorElastic(allDocsInfo[k]);
       } else {
@@ -179,7 +173,6 @@ const addAllDoctorSlotsElastic: Resolver<
           index: process.env.ELASTIC_INDEX_DOCTORS,
         };
         const delResp = await client.delete(deleteParams);
-        console.log(delResp, 'delete resp');
         await addDoctorElastic(allDocsInfo[k]);
       }
       for (let i = 0; i <= daysDiff; i++) {
@@ -208,7 +201,6 @@ const addAllDoctorSlotsElastic: Resolver<
         };
         slotsAdded += allDocsInfo[k].id + ' - ' + format(stDate, 'yyyy-MM-dd') + ',';
         const updateResp = await client.update(doc1);
-        console.log(updateResp, 'updateResp');
         stDate = addDays(stDate, 1);
       }
     }
@@ -252,8 +244,6 @@ const addDoctorSlotsElastic: Resolver<
   };
   const getDetails = await client.search(searchParams);
 
-  console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length, 'searchhitCount');
-
   if (getDetails.body.hits.hits.length == 0) {
     const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
     const doctorSlots = await docRepo.getDoctorSlots(
@@ -262,7 +252,6 @@ const addDoctorSlotsElastic: Resolver<
       consultsDb,
       doctorsDb
     );
-    console.log(doctorSlots, 'doctor slots');
 
     if (!process.env.ELASTIC_INDEX_DOCTORS) {
       throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
@@ -284,7 +273,6 @@ const addDoctorSlotsElastic: Resolver<
       },
     };
     const updateResp = await client.update(doc1);
-    console.log(updateResp, 'updateResp');
   }
   return 'Document updated: ' + args.id;
 };
@@ -319,8 +307,6 @@ const insertDataElastic: Resolver<
         },
       };
       const getDetails = await client.search(searchParams);
-
-      console.log(getDetails.body.hits.hits, getDetails.body.hits.hits.length, 'hitCount');
       if (getDetails.body.hits.hits.length == 0) {
         newDocData += allDocsInfo[i].id + ',';
         await addDoctorElastic(allDocsInfo[i]);

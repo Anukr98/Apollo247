@@ -9,7 +9,6 @@ import { NotificationListener } from '@aph/mobile-patients/src/components/Notifi
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import {
-  Ambulance,
   CartIcon,
   ConsultationRoom,
   CovidRiskLevel,

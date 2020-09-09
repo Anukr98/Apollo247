@@ -22,9 +22,9 @@ import { medicineOrderRefundNotification } from 'notifications-service/handlers'
 
 import { log } from 'customWinstonLogger';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
-import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 import { ApiConstants } from 'ApiConstants';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
+import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
 
 type RefundInput = {
   refundAmount: number;
@@ -180,7 +180,8 @@ export const calculateRefund = async (
   totalOrderBilling: number,
   profilesDb: Connection,
   medOrderRepo: MedicineOrdersRepository,
-  reasonCode?: string
+  reasonCode?: string,
+  deliveryCharges?: number
 ) => {
   const paymentInfo = await medOrderRepo.getRefundsAndPaymentsByOrderId(orderDetails.id);
   if (!paymentInfo) {
@@ -228,12 +229,12 @@ export const calculateRefund = async (
   /**
    * We cannot refund money received for delivery
    */
-  if (totalOrderBilling != 0) {
+  if (totalOrderBilling != 0 && deliveryCharges) {
     maxRefundAmountPossible = +new Decimal(maxRefundAmountPossible)
-      .minus(+orderDetails.devliveryCharges)
+      .minus(+deliveryCharges)
       .minus(+orderDetails.packagingCharges);
     healthCreditsToRefund = +new Decimal(healthCreditsToRefund)
-      .plus(+orderDetails.devliveryCharges)
+      .plus(+deliveryCharges)
       .plus(+orderDetails.packagingCharges);
   }
   /**
@@ -280,7 +281,7 @@ export const calculateRefund = async (
         eventName: ApiConstants.MEDICINE_ORDER_REFUND_PROCESSED_EVENT_NAME.toString(),
         eventData: {
           orderId: orderDetails.orderAutoId,
-          orderStatus:paymentInfo.medicineOrders.currentStatus,
+          orderStatus: paymentInfo.medicineOrders.currentStatus,
           refundAmount: refundAmount,
           healthCreditsToRefund: healthCreditsToRefund > 0 ? healthCreditsToRefund : 0,
         },
@@ -308,11 +309,10 @@ export const calculateRefund = async (
           eventName: ApiConstants.MEDICINE_ORDER_REFUND_SUCCESSFUL_EVENT_NAME.toString(),
           eventData: {
             orderId: orderDetails.orderAutoId,
-            paymentRefundId: refundResp.refundId.toString()
+            paymentRefundId: refundResp.refundId.toString(),
           },
         };
         postEvent(postBody);
-
       } else {
         log(
           'profileServiceLogger',
@@ -333,13 +333,6 @@ export const calculateRefund = async (
         /**
          * StoreCode for the OneApollo is decided based on deviceType in order
          */
-        let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
-        if (orderDetails.deviceType == DEVICE_TYPE.IOS) {
-          storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
-        }
-        if (orderDetails.deviceType == DEVICE_TYPE.ANDROID) {
-          storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
-        }
 
         //Instantiate OneApollo helper class
         const oneApollo = new OneApollo();
@@ -348,7 +341,7 @@ export const calculateRefund = async (
         oneApollo.unblockHealthCredits({
           MobileNumber: orderDetails.patient.mobileNumber.slice(3),
           PointsToRelease: healthCreditsToRefund.toString(),
-          StoreCode: storeCode,
+          StoreCode: getStoreCodeFromDevice(orderDetails.deviceType, orderDetails.bookingSource),
           BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
           RedemptionRequestNumber: healthCreditsRedemptionRequest.RequestNumber.toString(),
         });

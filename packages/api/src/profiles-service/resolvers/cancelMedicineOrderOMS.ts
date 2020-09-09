@@ -129,7 +129,6 @@ const cancelMedicineOrderOMS: Resolver<
     }
 
     const textRes = await pharmaResp.text();
-    console.log(textRes);
     log(
       'profileServiceLogger',
       'API_CALL_RESPONSE',

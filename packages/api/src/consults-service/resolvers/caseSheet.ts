@@ -46,7 +46,7 @@ import { PatientLifeStyleRepository } from 'profiles-service/repositories/patien
 import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/patientMedicalHistory';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { SymptomsList } from 'types/appointmentTypes';
-import { differenceInSeconds } from 'date-fns';
+import { differenceInSeconds, addDays } from 'date-fns';
 import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 import { sendNotification } from 'notifications-service/handlers';
 import { NotificationType } from 'notifications-service/constants';
@@ -54,7 +54,7 @@ import { NotificationBinRepository } from 'notifications-service/repositories/no
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
-import { addDays } from 'date-fns';
+
 
 export type DiagnosisJson = {
   name: string;
@@ -575,7 +575,7 @@ const getJuniorDoctorCaseSheet: Resolver<
 
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (
     doctorData == null &&
     secretaryDetails != null &&
@@ -676,7 +676,7 @@ const getCaseSheet: Resolver<
 
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (
     doctorData == null &&
     mobileNumber != patientDetails.mobileNumber &&
@@ -869,7 +869,7 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
   }
 
-  if (!(inputArguments.followUpAfterInDays === undefined)) {
+  if (inputArguments && !(inputArguments.followUpAfterInDays === undefined || inputArguments.followUpAfterInDays === null)) {
     if (
       inputArguments.followUpAfterInDays > ApiConstants.CHAT_DAYS_LIMIT ||
       inputArguments.followUpAfterInDays < 0
@@ -878,14 +878,14 @@ const modifyCaseSheet: Resolver<
     }
 
     getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
-    getCaseSheetData.followUp = true;
+    // getCaseSheetData.followUp = true;
 
-    if (getCaseSheetData.appointment.sdConsultationDate) {
-      getCaseSheetData.followUpDate = addDays(
-        getCaseSheetData.appointment.sdConsultationDate,
-        getCaseSheetData.followUpAfterInDays
-      );
-    }
+    // if (getCaseSheetData.appointment.sdConsultationDate) {
+    //   getCaseSheetData.followUpDate = addDays(
+    //     getCaseSheetData.appointment.sdConsultationDate,
+    //     getCaseSheetData.followUpAfterInDays
+    //   );
+    // }
   }
 
   if (!(inputArguments.status === undefined)) {
@@ -1089,7 +1089,7 @@ const createJuniorDoctorCaseSheet: Resolver<
 
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   if (doctorData.doctorType != DoctorType.JUNIOR) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
@@ -1148,7 +1148,7 @@ const createSeniorDoctorCaseSheet: Resolver<
 > = async (parent, args, { mobileNumber, consultsDb, doctorsDb }) => {
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   if (doctorData.doctorType == DoctorType.JUNIOR) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
@@ -1341,7 +1341,7 @@ const submitJDCaseSheet: Resolver<
     fromState: appointmentData.appointmentState,
     toState: appointmentData.appointmentState,
     userName: virtualJDId,
-    reason: 'Virtaul ' + ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString(),
+    reason: 'Virtual ' + ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString(),
   };
   appointmentRepo.saveAppointmentHistory(historyAttrs);
 
@@ -1382,7 +1382,9 @@ const updatePatientPrescriptionSentStatus: Resolver<
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.getPatientDetails(getCaseSheetData.patientId);
+  const patientData = await patientRepo.findByIdWithRelations(getCaseSheetData.patientId, [
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   let caseSheetAttrs: Partial<CaseSheet> = {
@@ -1421,13 +1423,11 @@ const updatePatientPrescriptionSentStatus: Resolver<
       getCaseSheetData
     );
 
+
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
-      data: {
-        caseSheetId: getCaseSheetData.id,
-      },
     };
 
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
@@ -1513,7 +1513,9 @@ const generatePrescriptionTemp: Resolver<
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.getPatientData(getCaseSheetData.patientId);
+  const patientData = await patientRepo.findByIdWithRelations(getCaseSheetData.patientId, [
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   let caseSheetAttrs: Partial<CaseSheet> = {
@@ -1555,9 +1557,6 @@ const generatePrescriptionTemp: Resolver<
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
-      data: {
-        caseSheetId: getCaseSheetData.id,
-      },
     };
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
     caseSheetAttrs = {
@@ -1612,7 +1611,7 @@ const getSDLatestCompletedCaseSheet: Resolver<
 
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (
     doctorData == null &&
     mobileNumber != patientDetails.mobileNumber &&
@@ -1626,7 +1625,6 @@ const getSDLatestCompletedCaseSheet: Resolver<
 
   //check whether there is a senior doctor case-sheet
   const caseSheetDetails = await caseSheetRepo.getSDLatestCompletedCaseSheet(appointmentData.id);
-  console.log('caseSheetDetails > ', caseSheetDetails);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);

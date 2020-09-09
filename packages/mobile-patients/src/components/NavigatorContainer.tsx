@@ -93,6 +93,7 @@ import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
 import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTracker';
 import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSelection';
 
+import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
@@ -174,7 +175,8 @@ export enum AppRoutes {
   CommonWebView = 'CommonWebView',
   RefundStatus = 'RefundStatus',
   SymptomTracker = 'SymptomTracker',
-  SymptomSelection = 'SymptomSelection'
+  SymptomSelection = 'SymptomSelection',
+  Maps = 'Maps',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -456,7 +458,10 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SymptomSelection]: {
     screen: SymptomSelection,
-  }
+  },
+  [AppRoutes.Maps]: {
+    screen: Maps,
+  },
 };
 
 const logTabEvents = (routing: any) => {

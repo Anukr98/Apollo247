@@ -59,6 +59,7 @@ export interface TextInputComponentProps {
   onFocus?: TextInputProps['onFocus'];
   onBlur?: TextInputProps['onBlur'];
   onChangeText?: TextInputProps['onChangeText'];
+  selection?: TextInputProps['selection'];
   underlineColorAndroid?: string;
   autoCorrect?: boolean;
   editable?: boolean;
@@ -69,7 +70,7 @@ export interface TextInputComponentProps {
   keyboardType?: TextInputProps['keyboardType'];
   icon?: ReactNode;
   autoCapitalize?: TextInputProps['autoCapitalize'];
-  autoFocus?: boolean
+  autoFocus?: boolean;
 }
 
 export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => {
@@ -95,6 +96,7 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
         returnKeyType={props.keyboardType === 'numeric' ? 'done' : 'default'}
         autoCapitalize={props.autoCapitalize}
         autoFocus={props.autoFocus}
+        selection={props.selection}
       />
     );
   };

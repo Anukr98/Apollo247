@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, CircularProgress } from '@material-ui/core';
-import { useApolloClient } from 'react-apollo-hooks';
-import { useAllCurrentPatients } from 'hooks/authHooks';
+import { Theme } from '@material-ui/core';
 
 type RenderImageProps = {
   activeData: any;
+  type: string;
 };
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -15,11 +14,11 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
     },
     prescriptionImage: {
-      backgroundColor: theme.palette.common.white,
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
       borderRadius: 10,
       marginBottom: 12,
-      padding: 40,
+      padding: 20,
       textAlign: 'center',
       [theme.breakpoints.down('xs')]: {
         padding: 20,
@@ -34,15 +33,15 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const RenderImage: React.FC<RenderImageProps> = (props) => {
   const classes = useStyles({});
-  const { data } = props.activeData;
+  const { activeData, type } = props;
 
-  return data.fileUrl.includes('.pdf') ? (
+  return type === 'pdf' ? (
     <div className={classes.prescriptionImage}>
-      <a href={data.fileUrl}>Download the file</a>
+      <a href={activeData.fileUrl}>Download the file</a>
     </div>
   ) : (
-    <div className={classes.prescriptionImage}>
-      <img src={data.fileUrl} alt="Preview is not available" />
-    </div>
-  );
+      <div className={classes.prescriptionImage}>
+        <img src={activeData.fileUrl} alt="Preview is not available" />
+      </div>
+    );
 };

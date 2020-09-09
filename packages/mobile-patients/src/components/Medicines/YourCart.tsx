@@ -468,15 +468,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             showUnServiceableItemsAlert(updatedCartItems);
           }
 
-          const availableItems = tatItems.filter(
-            ({ sku }) => !unserviceableSkus.find((item) => sku == item)
-          ).map(({ sku }) => sku);
+          const availableItems = updatedCartItems.filter(
+            ({ id }) => !unserviceableSkus.find((item) => id === item)
+          ).map((item) => { return { sku: item.id, qty: item.quantity } });
 
           const tatApiInput247: TatApiInput247 = {
             pincode: selectedAddress.zipcode || '',
             lat: selectedAddress?.latitude!,
             lng: selectedAddress?.longitude!,
-            sku: availableItems.join(",")
+            items: availableItems
           }
           const tatRes = await getDeliveryTAT247(tatApiInput247)
 
@@ -503,7 +503,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 })
                 if (availableInventory && availableInventory.length) {
                   fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, availableInventory);
-                  updateserviceableItemsTat(moment(deliveryDate, "DD-MM-YYYY hh:mm:ss a").format(AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT), lookUp);  
+                  updateserviceableItemsTat(deliveryDate, lookUp);  
                 } else {
                   showUnserviceableAlert(updatedCartItems)
                 }
@@ -1692,6 +1692,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const disableProceedToPay = !!(
     cartItems.length === 0 ||
+    cartTotal === 0 ||
     isNotInStockOrUnserviceable ||
     (!deliveryAddressId && !storeId) ||
     isPrescriptionRequired ||

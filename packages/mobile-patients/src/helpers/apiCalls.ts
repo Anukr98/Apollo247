@@ -13,6 +13,7 @@ export interface MedicineProduct {
   mou: string; // minimum order unit
   name: string;
   price: number;
+  sell_online: 0 | 1;
   sku: string;
   small_image: string;
   special_price?: string | number;
@@ -123,7 +124,10 @@ export interface TatApiInput247 {
   pincode: string;
   lat: number;
   lng: number;
-  sku: string;
+  items: {
+    sku: string;
+    qty: number;
+  }[];
 }
 
 export interface ServiceAbilityApiInput {
@@ -145,10 +149,12 @@ export interface GetTatResponse247 {
       sku: string;
       qty: number;
       mrp: number;
+      exist: boolean;
     }[];
     storeCode: string;
     tat: string;
     tatU: number;
+    inventoryExist: boolean;
   };
   errorMSG?: string;
 }
@@ -555,6 +561,13 @@ export const getPlaceInfoByPlaceId = (
   return Axios.get(url);
 };
 
+export const getLatLongFromAddress = (
+  address: string
+): Promise<AxiosResponse<PlacesApiResponse>> => {
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}`;
+  return Axios.get(url);
+};
+
 // let cancelAutoCompletePlaceSearchApi: Canceler | undefined;
 
 export const autoCompletePlaceSearch = (
@@ -579,20 +592,16 @@ export const getDeliveryTAT247 = (
 ): Promise<AxiosResponse<GetTatResponse247>> => {
   const CancelToken = Axios.CancelToken;
   cancelGetDeliveryTAT247 && cancelGetDeliveryTAT247();
-  const url = `${config.UATTAT_CONFIG[0]}/tat?sku=${params.sku}&pincode=${params.pincode}&lat=${params.lat}&lng=${params.lng}`;
-  return Axios.post(
-    url,
-    {},
-    {
-      headers: {
-        Authorization: config.UATTAT_CONFIG[1],
-      },
-      timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
-      cancelToken: new CancelToken((c) => {
-        cancelGetDeliveryTAT247 = c;
-      }),
-    }
-  );
+  const url = `${config.UATTAT_CONFIG[0]}/tat`;
+  return Axios.post(url, params, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
+    cancelToken: new CancelToken((c) => {
+      cancelGetDeliveryTAT247 = c;
+    }),
+  });
 };
 
 export const getSubstitutes = async (
