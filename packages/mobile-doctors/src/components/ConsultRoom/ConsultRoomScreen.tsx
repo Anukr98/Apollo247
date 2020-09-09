@@ -1618,6 +1618,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             case messageCodes.exotelCall:
               addMessages(message);
               break;
+            case messageCodes.startConsultMsg:
+              addMessages(message);
+              break;
             default:
           }
         } else if (
@@ -2406,9 +2409,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             pubnub.publish(
               {
                 message: {
+                  id: g(doctorDetails, 'id'),
                   isTyping: true,
                   message: messageCodes.startConsultMsg,
+                  automatedText: g(doctorDetails, 'displayName') + ' has joined the consult room!',
                   messageDate: new Date(),
+                  sentBy: REQUEST_ROLES.DOCTOR,
                 },
                 channel: channel,
                 storeInHistory: true,
