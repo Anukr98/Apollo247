@@ -159,6 +159,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         } else if (goToItem === 'sharelink') {
           props.navigation.navigate(AppRoutes.SharingScreen);
         }
+        props.navigation.setParams({ goToItem: '' });
       }
     }
   }, [goToItem, doctorDetails]);
