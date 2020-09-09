@@ -960,6 +960,7 @@ export const MedicinePrescription: React.FC = () => {
   const [medicineCopyArr, setMedicineCopyArr] = React.useState<
     (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null
   >([]);
+  const [medicineCopyAddedArr, setMedicineCopyAddedArr] = React.useState<GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList[]>([]);
 
   const [favMedicineName, setFavMedicineName] = React.useState<string>('');
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
@@ -2589,7 +2590,13 @@ export const MedicinePrescription: React.FC = () => {
   const medicineCopyHtml = (type: string) => {
     const isPresent = type === 'present';
     const existedMedicineArr =
-      selectedMedicinesArr && selectedMedicinesArr.length > 0
+    medicineCopyAddedArr && medicineCopyAddedArr.length > 0
+        ? medicineCopyAddedArr.map(function(e: any) {
+            return e.medicineName;
+          })
+        : [];
+    const existedAddedMedicineArr =
+    selectedMedicinesArr && selectedMedicinesArr.length > 0
         ? selectedMedicinesArr.map(function(e: any) {
             return e.medicineName;
           })
@@ -2662,7 +2669,7 @@ export const MedicinePrescription: React.FC = () => {
         }
 
         const actionButtons =
-          existedMedicineArr.indexOf(medicine.medicineName) > -1
+          existedMedicineArr.indexOf(medicine.medicineName) > -1 || existedAddedMedicineArr.indexOf(medicine.medicineName) > -1
             ? [
                 <AphButton variant="contained" color="primary" classes={{ root: classes.addedBtn }}>
                   Added
@@ -2674,7 +2681,7 @@ export const MedicinePrescription: React.FC = () => {
                   color="primary"
                   classes={{ root: classes.updateSymptom }}
                   onClick={() => {
-                    saveMedicineAction(medicine);
+                    setMedicineCopyAddedArr([...medicineCopyAddedArr, medicine]);
                   }}
                 >
                   <img src={require('images/add_doctor_white.svg')} alt="" />
@@ -2690,6 +2697,7 @@ export const MedicinePrescription: React.FC = () => {
               )}
           </span>
         );
+
         return (
           <li
             style={{ position: 'relative' }}
@@ -2992,9 +3000,9 @@ export const MedicinePrescription: React.FC = () => {
         : [];
 
     return (
-      medicines &&
-      medicines.length > 0 &&
-      medicines!.map((_medicine: any, index: number) => {
+      medicineCopyAddedArr &&
+      medicineCopyAddedArr.length > 0 &&
+      medicineCopyAddedArr!.map((_medicine: any, index: number) => {
         const medicine = _medicine!;
         const forHtml = medicine.medicineConsumptionDurationInDays
           ? ` for ${Number(medicine.medicineConsumptionDurationInDays)}`
@@ -3064,7 +3072,10 @@ export const MedicinePrescription: React.FC = () => {
                 variant="contained"
                 color="primary"
                 classes={{ root: classes.updateSymptom }}
-                onClick={() => deletemedicine(index)}
+                onClick={() => {
+                    setMedicineCopyAddedArr(medicineCopyAddedArr.filter(item => item.medicineName.toLowerCase().trim() !== medicine.medicineName.toLowerCase().trim()))
+                  }
+                }
               >
                 <Typography className={classes.removeBtn}>REMOVE</Typography>
               </AphButton>,
@@ -3105,7 +3116,6 @@ export const MedicinePrescription: React.FC = () => {
               )}
           </span>
         );
-        if (addedMedicineArr.indexOf(medicine.medicineName) > -1) {
           return (
             <li style={{ position: 'relative' }} className={classes.added} key={index}>
               {medicine.medicineCustomDetails ? (
@@ -3186,9 +3196,6 @@ export const MedicinePrescription: React.FC = () => {
               {caseSheetEdit && <div>{actionButtons}</div>}
             </li>
           );
-        } else {
-          return null;
-        }
       })
     );
   };
@@ -4077,19 +4084,22 @@ export const MedicinePrescription: React.FC = () => {
                             className={classes.selectedDate}
                             onClick={() => {
                               const addedMedicineArr =
-                                selectedMedicinesArr && selectedMedicinesArr.length > 0
+                              medicineCopyAddedArr && medicineCopyAddedArr.length > 0
+                                  ? medicineCopyAddedArr.map(function(e: any) {
+                                      return e.medicineName.toLowerCase();
+                                    })
+                                  : [];
+                              const existedAddedMedicineArr =
+                              selectedMedicinesArr && selectedMedicinesArr.length > 0
                                   ? selectedMedicinesArr.map(function(e: any) {
                                       return e.medicineName;
                                     })
                                   : [];
-                              medicineCopyArr.forEach((medicine: any, index: number) => {
-                                if (
-                                  medicine &&
-                                  addedMedicineArr.indexOf(medicine.medicineName) < 0
-                                ) {
-                                  saveMedicineAction(medicine);
-                                }
-                              });
+                                  const medicineFilterCopyArr =  medicineCopyArr && medicineCopyArr.length > 0 ? medicineCopyArr.filter(function(e: any) {
+                                    return addedMedicineArr!.indexOf(e.medicineName.toLowerCase()) < 0 && existedAddedMedicineArr!.indexOf(e.medicineName.toLowerCase()) < 0;
+                                  }) : [];   
+                              const medCopyAddedArray = medicineCopyAddedArr.concat(medicineFilterCopyArr);
+                              setMedicineCopyAddedArr(medCopyAddedArray);
                             }}
                           >
                             <img src={require('images/selected.svg')} alt="" />
@@ -4138,6 +4148,20 @@ export const MedicinePrescription: React.FC = () => {
               variant="contained"
               color="primary"
               onClick={() => {
+                const addedMedicineArr =
+                                selectedMedicinesArr && selectedMedicinesArr.length > 0
+                                  ? selectedMedicinesArr.map(function(e: any) {
+                                      return e.medicineName;
+                                    })
+                                  : [];
+                medicineCopyAddedArr.forEach((medicine: any, index: number) => {
+                  if (
+                    medicine &&
+                    addedMedicineArr.indexOf(medicine.medicineName) < 0
+                  ) {
+                    saveMedicineAction(medicine);
+                  }
+                });
                 setIsPrevMedDialogOpen(false);
               }}
             >
