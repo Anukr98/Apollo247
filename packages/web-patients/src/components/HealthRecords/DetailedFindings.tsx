@@ -107,10 +107,9 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#d10001',
     },
     labtest: {
-      marginRight: 18,
+      marginRight: 10,
       position: 'relative',
       top: 6,
-      left: 3,
     },
     bullet: {
       width: 5,
@@ -119,12 +118,6 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: 'rgba(2,71,91,0.6)',
       display: 'inline-block',
       marginRight: 12,
-    },
-    cardTitleName: {
-      fontSize: 14,
-      fontWeight: 600,
-      color: '#02475b',
-      paddingLeft: 27,
     },
   };
 });
@@ -161,19 +154,18 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.panelDetails}>
           <Grid container spacing={2}>
-            <div className={classes.cardTitle}>
-              <img
-                className={classes.labtest}
-                src={require('images/ic_labtest.svg')}
-                alt=""
-              />
-              Impressions
-            </div>
             {activeData.labTestResults.map((detail: LabTestResultsType) => {
               const unit = MedicalTest.find((item) => item.key === detail.unit);
               return (
                 <Grid item xs={12} sm={12}>
-                  <div className={classes.cardTitleName}> {detail.parameterName} </div>
+                  <div className={classes.cardTitle}>
+                    <img
+                      className={classes.labtest}
+                      src={require('images/ic_labtest.svg')}
+                      alt=""
+                    />
+                    Impressions
+                  </div>
                   <div className={classes.cardSection}>
                     <Grid container spacing={2}>
                       <Grid item xs={12} sm={12}>
