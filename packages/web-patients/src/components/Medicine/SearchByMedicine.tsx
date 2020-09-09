@@ -2,27 +2,16 @@ import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-u
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import { clientRoutes } from 'helpers/clientRoutes';
-import Scrollbars from 'react-custom-scrollbars';
-import { MedicineFilter } from 'components/Medicine/MedicineFilter';
-import { MedicinesCartContext } from 'components/MedicinesCartProvider';
-import { MedicineProduct } from './../../helpers/MedicineApiCalls';
-import { useParams } from 'hooks/routerHooks';
 import fetchWrapper from 'helpers/fetchWrapper';
 import _lowerCase from 'lodash/lowerCase';
-import _replace from 'lodash/replace';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
-import { Header } from 'components/Header';
-import { ManageProfile } from 'components/ManageProfile';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
-import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { MedicineFilter } from 'components/Medicine/MedicineFilter';
 import { MedicinesCartContext, useShoppingCart } from 'components/MedicinesCartProvider';
-import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
@@ -45,7 +34,6 @@ import {
   pharmacySearchEnterTracking,
   uploadPrescriptionTracking,
 } from 'webEngageTracking';
-import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
