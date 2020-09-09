@@ -88,6 +88,7 @@ export const consultQueueTypeDefs = gql`
     addToConsultQueueWithAutomatedQuestions(
       consultQueueInput: ConsultQueueInput
     ): AddToConsultQueueResult!
+    cronForConsultQueue(appointmentStatuses: [String]): String!
   }
 `;
 
@@ -331,6 +332,26 @@ const removeFromConsultQueue: Resolver<
   await cqRepo.update(consultQueueItemToDeactivate.id, { isActive: false });
   const consultQueue = await buildGqlConsultQueue(doctorId, context);
   return { consultQueue };
+};
+
+type cronForConsultQueueInput = {
+  appointmentStatuses: string[];
+};
+const cronForConsultQueue: Resolver<
+  null,
+  cronForConsultQueueInput,
+  ConsultServiceContext,
+  String
+> = async (parent, { appointmentStatuses }, { consultsDb }) => {
+  const cqRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
+  let cQueue: any =  await cqRepo.getInvalidConsultQueueItems(appointmentStatuses, true);
+  cQueue = cQueue.map((queue: any) => {
+    return queue.id;
+  });
+  if(cQueue.length){
+    await cqRepo.bulkUpdateInvalidConsultQueueItems(cQueue);
+  }
+  return <String>'success';
 };
 
 type ConsultQueueInput = {
@@ -661,5 +682,6 @@ export const consultQueueResolvers = {
     addToConsultQueue,
     removeFromConsultQueue,
     addToConsultQueueWithAutomatedQuestions,
+    cronForConsultQueue,
   },
 };

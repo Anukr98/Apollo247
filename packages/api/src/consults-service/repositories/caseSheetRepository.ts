@@ -111,11 +111,10 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
 
   async updateJDCaseSheet(appointmentId: string) {
     const JDCaseSheetDetails = await this.getJuniorDoctorCaseSheet(appointmentId);
+    if (!JDCaseSheetDetails) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined);
     Object.assign(JDCaseSheetDetails, {
       status: CASESHEET_STATUS.COMPLETED,
     });
-    if (!JDCaseSheetDetails) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined);
-
     return JDCaseSheetDetails.save().catch((appointmentError) => {
       throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { appointmentError });
     });
