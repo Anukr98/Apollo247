@@ -746,6 +746,7 @@ export const PrescriptionReview: React.FC = (props: any) => {
                           href={`mailto:${pharmacologistEmail}`}
                           target="_blank"
                           className={classes.bold}
+                          rel="noopener noreferrer"
                         >
                           {pharmacologistEmail}
                         </a>
