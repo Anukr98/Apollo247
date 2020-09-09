@@ -18,15 +18,21 @@ import { colors } from '../theme/colors';
 import { CheckUnselectedIcon, CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import _ from 'lodash';
-import { autocompleteSymptoms, AutoCompleteSymptomsParams } from '../helpers/apiCalls';
+import {
+  fetchAutocompleteSymptoms,
+  AutoCompleteSymptomsParams,
+  DefaultSymptoms,
+  AutoCompleteSymptoms,
+} from '../helpers/apiCalls';
+import { Message } from './SymptomTracker';
 import { CommonBugFender } from '../FunctionHelpers/DeviceHelper';
 import { Spinner } from './ui/Spinner';
 
 interface SymptomSelectionProps extends NavigationScreenProps {
   chatId: string;
   goBackCallback: () => void;
-  defaultSymptoms: object[];
-  storedMessages: object[];
+  defaultSymptoms: DefaultSymptoms[];
+  storedMessages: Message[];
 }
 interface Symptoms {
   name: string;
@@ -45,7 +51,7 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
   const [selectedSymptomsIds, setSelectedSymptomsIds] = useState<string[]>([]);
   const [refreshFlatList, setRefreshFlatList] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<any>({});
-  const [symptoms, setSymptoms] = useState<{}[]>([]);
+  const [symptoms, setSymptoms] = useState<AutoCompleteSymptoms[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -102,7 +108,7 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
     };
 
     try {
-      const res = await autocompleteSymptoms(chatId, queryParams);
+      const res = await fetchAutocompleteSymptoms(chatId, queryParams);
       if (res?.data?.results) {
         setSymptoms(res.data.results);
         setLoading(false);

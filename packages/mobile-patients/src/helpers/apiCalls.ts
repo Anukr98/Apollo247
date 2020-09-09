@@ -375,7 +375,7 @@ interface AutoCompleteSymptomsResponse {
   status?: string;
 }
 
-interface AutoCompleteSymptoms {
+export interface AutoCompleteSymptoms {
   name: string;
   id: string;
   description: string;
@@ -826,7 +826,7 @@ export const startSymptomTrackerChat = async (
   return Axios.post(baseUrl, data);
 };
 
-export const autocompleteSymptoms = (
+export const fetchAutocompleteSymptoms = (
   chatId: string,
   params: AutoCompleteSymptomsParams
 ): Promise<AxiosResponse<AutoCompleteSymptomsResponse>> => {

@@ -51,7 +51,7 @@ const howItWorksArrData = [
   'Book Appointment',
 ];
 
-interface Message {
+export interface Message {
   text: string;
   isSentByPatient?: boolean;
 }
