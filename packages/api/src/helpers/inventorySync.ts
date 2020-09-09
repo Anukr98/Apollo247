@@ -30,6 +30,7 @@ export async function syncInventory(orderDatails: MedicineOrders, syncType: SYNC
     };
   });
   const reqBody: InventorySyncRequest = {
+    orderId: orderDatails.orderAutoId.toString(),
     storeCode: orderDatails.shopId,
     items: itemdetails,
   };
