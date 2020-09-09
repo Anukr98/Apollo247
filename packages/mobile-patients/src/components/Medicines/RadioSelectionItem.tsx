@@ -30,13 +30,16 @@ const styles = StyleSheet.create({
 
 export interface RadioSelectionItemProps {
   isSelected: boolean;
+  showMultiLine?: boolean;
   onPress: (isSelected: boolean) => void;
   title: string;
+  subtitle?: string;
+  subtitleStyle?: StyleProp<TextStyle>;
   hideSeparator?: boolean;
   containerStyle?: StyleProp<ViewStyle>;
   separatorStyle?: StyleProp<ViewStyle>;
-  textStyle?:StyleProp<TextStyle>;
-  radioSubBody?:React.ReactNode;
+  textStyle?: StyleProp<TextStyle>;
+  radioSubBody?: React.ReactNode;
 }
 
 export const RadioSelectionItem: React.FC<RadioSelectionItemProps> = (props) => {
@@ -49,6 +52,7 @@ export const RadioSelectionItem: React.FC<RadioSelectionItemProps> = (props) => 
       >
         {props.isSelected ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
         <View style={styles.radioButtonTextView}>
+          {props.showMultiLine && <Text style={props.subtitleStyle}>{props.subtitle}</Text>}
           <Text style={[styles.radioButtonTitle, props.textStyle]}>{props.title}</Text>
           {!props.hideSeparator && <View style={[styles.separator, props.separatorStyle]} />}
         </View>

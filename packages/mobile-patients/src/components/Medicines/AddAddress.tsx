@@ -792,6 +792,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           Address
         </Text> */}
         {/** 1. House # */}
+        <Text style={styles.addressLabel}>*House Number & Apartment/Society</Text>
         <TextInputComponent
           value={addressLine1}
           onChangeText={(addressLine1) => {
@@ -818,6 +819,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           placeholder={'*House no | Apartment name'}
           inputStyle={styles.addressFieldsText}
         />
+        <Text style={styles.addressLabel}>*Area Details</Text>
         <TextInputComponent
           value={areaDetails}
           onChangeText={(areaDetails) => {
@@ -843,12 +845,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           placeholder={'*Area Details'}
           inputStyle={styles.addressHeadingText}
         />
-
+        <Text style={[styles.addressLabel, { marginTop: '3%' }]}>LandMark</Text>
         <TextInputComponent
           value={landMark}
           onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
           placeholder={'Landmark (Optional)'}
-          inputStyle={[styles.addressHeadingText, { marginTop: '3%' }]}
+          inputStyle={styles.addressHeadingText}
         />
         <View style={[styles.viewRowStyle, { marginTop: 12 }]}>
           <View style={styles.pincodeView}>

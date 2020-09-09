@@ -125,7 +125,11 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .filter((item, idx, array) => array.indexOf(item) === idx)
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-  return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+    return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+};
+
+export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  return `${address.name}\n${address.mobileNumber}`;
 };
 
 export const followUpChatDaysCaseSheet = (
