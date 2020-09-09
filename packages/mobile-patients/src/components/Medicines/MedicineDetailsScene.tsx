@@ -353,7 +353,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         source: movedFrom,
         ProductId: sku,
         ProductName: medicineName,
-        "Stock availability": isOutOfStock ? "No" : "Yes",
+        'Stock availability': isOutOfStock ? 'No' : 'Yes',
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
     }
@@ -615,11 +615,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const removeFromCart = () => removeCartItem!(sku);
     const { special_price, price } = medicineDetails;
     const discountPercent = getDiscountPercentage(price, special_price);
+    const showOutOfStockView = medicineDetails?.sell_online
+      ? (!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock
+      : false;
 
     return (
       <StickyBottomComponent style={styles.stickyBottomComponent}>
         {!medicineDetails.sell_online && renderVisitPharmacyText()}
-        {(!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock ? (
+        {showOutOfStockView ? (
           <View
             style={{
               paddingTop: 8,
@@ -663,7 +666,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'flex-start',
-                  marginLeft: 15,
                 }}
               >
                 <Text style={theme.viewStyles.text('SB', 17, '#02475b', 1, 20, 0.35)}>
