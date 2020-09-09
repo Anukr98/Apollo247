@@ -405,7 +405,13 @@ export const Sitemap: React.FC = (props) => {
                 <a href={clientRoutes.welcome()}>Home</a>
               </li>
               <li className="active">
-                <a href="">Sitemap</a>
+                <a>
+                  {selected === 'sitemap'
+                    ? 'sitemap'
+                    : selected === 'doctors-sitemap'
+                    ? 'doctors sitemap'
+                    : 'medicines sitemap'}
+                </a>
               </li>
             </ol>
           </div>
@@ -429,7 +435,7 @@ export const Sitemap: React.FC = (props) => {
                     )}
                     <Typography>
                       {selected === 'sitemap'
-                        ? 'Apollo 24|7 Services'
+                        ? 'Apollo 24|7 Sitemap Index'
                         : selected === 'doctors-sitemap'
                         ? 'Doctor Sitemap'
                         : 'Medicine Sitemap'}
@@ -450,7 +456,7 @@ export const Sitemap: React.FC = (props) => {
                             history.replaceState(null, '', clientRoutes.sitemap('sitemap'));
                           }}
                         >
-                          <a>Apollo 24|7 Services</a>
+                          <a>Apollo 24|7 Sitemap Index</a>
                         </li>
                         <li
                           className={selected === 'doctors-sitemap' ? 'active' : ''}
