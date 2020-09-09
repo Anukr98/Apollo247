@@ -20,7 +20,8 @@ const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
 const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
 const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
-const uattatToken = 'GWjKtviqHa4r4kiQmcVH';
+const tatTokenDev = 'GWjKtviqHa4r4kiQmcVH';
+const tatTokenProd = '8nBs8ucvbqlCGShwDr7oHv0mePqwhE';
 const apolloProdBaseUrl = 'https://magento.apollo247.com';
 const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
 const tagalysBaseUrl = 'https://api-r1.tagalys.com/v1';
@@ -171,10 +172,10 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
 
 const Apollo247Config = {
   dev: {
-    UATTAT_CONFIG: ['https://uattat.apollo247.com', uattatToken],
+    UATTAT_CONFIG: ['https://uattat.apollo247.com', tatTokenDev],
   },
   prod: {
-    UATTAT_CONFIG: ['https://tat.apollo247.com', uattatToken],
+    UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
   }
 }
 
