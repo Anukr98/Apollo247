@@ -597,7 +597,7 @@ export const PayMedicine: React.FC = (props) => {
           coupon: couponCode ? couponCode : null,
           deviceType: getDeviceType(),
           shopId: shopId,
-          // tatType,
+          tatType,
         },
       },
     }

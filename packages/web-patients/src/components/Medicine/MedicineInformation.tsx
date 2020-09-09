@@ -640,7 +640,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const notAvailableContext = () => {
     return sell_online ? (
       <div className={classes.outOfStock}>
-        <div className={classes.medicineNoStock}>{OUT_OF_STOCK_MESSAGE}</div>
+        <div className={classes.medicineNoStock}>{OUT_OF_STOCK}</div>
         <AphButton
           fullWidth
           className={classes.notifyBtn}
