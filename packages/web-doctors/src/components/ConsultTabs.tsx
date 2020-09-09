@@ -732,21 +732,13 @@ export const ConsultTabs: React.FC = () => {
                   _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
                 ] as unknown) as boolean[])
               : setFollowUp([]);
-            console.log(
-              'follow up old var',
-              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
-            );
-            console.log(
-              'follow up old var type',
-              typeof _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
-            );
 
             _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays &&
-            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays !== null
-              ? setFollowUpAfterInDays(([
-                  _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
-                ] as unknown) as string[])
-              : setFollowUpAfterInDays([]);
+              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays !== null &&
+              setFollowUpAfterInDays(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
+              ] as unknown) as string[]);
+
             _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
               ? setFollowUpDate(([
                   _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
@@ -1811,7 +1803,6 @@ export const ConsultTabs: React.FC = () => {
         sessionClient.notify(JSON.stringify(logObject));
         console.log('Error in Call Notification', error.message);
       });
-    setGiveRating(true);
   };
 
   const endCallNotificationAction = (isCall: boolean) => {
@@ -2018,6 +2009,7 @@ export const ConsultTabs: React.FC = () => {
             {showRateCallModal()}
             <div className={classes.container}>
               <CallPopover
+                setGiveRating={setGiveRating}
                 setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                 createSessionAction={createSessionAction}
                 saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) =>

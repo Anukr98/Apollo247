@@ -663,7 +663,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     }}
                   >
                     <View>
-                      <Text style={styles.onlineConsultLabel}>Chat/Audio/Video</Text>
+                      <Text style={styles.onlineConsultLabel}>Consult In-App</Text>
                       <Text style={styles.onlineConsultAmount}>
                         {Number(VirtualConsultationFee) <= 0 ||
                         VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (

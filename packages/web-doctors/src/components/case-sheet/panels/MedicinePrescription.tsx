@@ -332,6 +332,7 @@ const useStyles = makeStyles((theme: Theme) =>
         fontWeight: 600,
       },
       '& h2': {
+        textTransform: 'uppercase',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -355,7 +356,6 @@ const useStyles = makeStyles((theme: Theme) =>
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        textTransform: 'uppercase',
         '& button': {
           position: 'static',
           minWidth: 'auto',
@@ -818,6 +818,16 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 12,
       color: '#FC9916',
       fontWeight: 600,
+    },
+    addList: {
+      '& li': {
+        '& h5': {
+          width: 160,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        },
+      },
     },
   })
 );
@@ -2670,15 +2680,16 @@ export const MedicinePrescription: React.FC = () => {
                   <img src={require('images/add_doctor_white.svg')} alt="" />
                 </AphButton>,
               ];
-        const genericName = (
-          <span>
-            {medicine.includeGenericNameInPrescription! &&
-              medicine.genericName!.trim().length > 0 && (
-                <h6>{`Contains ${medicine.genericName}`}</h6>
-              )}
-          </span>
-        );
-
+          const genericName = (
+            <span>
+              {medicine.includeGenericNameInPrescription!  &&
+                medicine.genericName &&
+                medicine.genericName !== null &&
+                medicine.genericName.trim().length > 0 && (
+                  <h6>{`Contains ${medicine.genericName}`}</h6>
+                )}
+            </span>
+          );
         return (
           <li
             style={{ position: 'relative' }}
@@ -3172,7 +3183,7 @@ export const MedicinePrescription: React.FC = () => {
                 </div>
               )}
 
-              {caseSheetEdit && <div className={classes.addRemove}>{actionButtons}</div>}
+              {caseSheetEdit && <div>{actionButtons}</div>}
             </li>
           );
         } else {
@@ -3402,7 +3413,7 @@ export const MedicinePrescription: React.FC = () => {
               onClick={() => {
                 handlePastMedicinesTabs(0);
                 setIsPrevMedDialogOpen(true);
-                if(pastAppointmentsArr && pastAppointmentsArr.length > 0){
+                if (pastAppointmentsArr && pastAppointmentsArr.length > 0) {
                   getMedicineCopy(pastAppointmentsArr[0]);
                 }
               }}
@@ -3411,11 +3422,7 @@ export const MedicinePrescription: React.FC = () => {
               <span className={classes.lowercase}>x</span>
             </AphButton>
           ) : (
-            <span
-              className={classes.noPrevPresc}
-            >
-              No previous prescriptions
-            </span>
+            <span className={classes.noPrevPresc}>No previous prescriptions</span>
           )}
         </>
       )}
@@ -4038,9 +4045,7 @@ export const MedicinePrescription: React.FC = () => {
                           item.appointmentDateTime === selectedDate ? classes.dateTabsActive : ''
                         }`}
                         onClick={() => {
-                          getMedicineCopy(
-                            item
-                          );
+                          getMedicineCopy(item);
                         }}
                       >
                         {`${format(new Date(item.appointmentDateTime), 'dd  MMMMMMMMMMMM')}`}
@@ -4102,7 +4107,7 @@ export const MedicinePrescription: React.FC = () => {
                             <Typography>Added Medicine</Typography>
                           </div>
                           <div className={classes.medicineContent}>
-                            <ul className={classes.medicineList}>
+                            <ul className={`${classes.medicineList} ${classes.addList}`}>
                               {/* Add 'added' class to li of this ul for the color as per design  */}
                               {medicineAddedCopyHtml('present')}
                               {/* {medicineHtml('removed')} */}

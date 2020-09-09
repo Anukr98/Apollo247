@@ -62,6 +62,8 @@ export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_cas
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
   medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_otherInstructions {
@@ -95,6 +97,9 @@ export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_cas
   otherInstructions: (getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_otherInstructions | null)[] | null;
   patientId: string | null;
   symptoms: (getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_symptoms | null)[] | null;
+  referralSpecialtyName: string | null;
+  referralDescription: string | null;
+  prescriptionGeneratedDate: any | null;
 }
 
 export interface getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_patientDetails {

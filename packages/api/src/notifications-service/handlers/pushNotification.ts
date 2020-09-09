@@ -150,7 +150,6 @@ export async function sendCallsNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
-      sound: 'incallmanager_ringtone.mp3',
       android_channel_id: 'fcm_FirebaseNotifiction_call_channel',
     },
     data: {
@@ -285,6 +284,7 @@ export async function sendCallsNotification(
     dataOnlyPayloadResponse: dataOnlyPayloadResponse,
   };
 }
+
 export async function sendReminderNotification(
   pushNotificationInput: PushNotificationInput,
   patientsDb: Connection,
@@ -1369,9 +1369,10 @@ export async function sendNotification(
     sendBrowserNotitication(doctorDetails.id, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.PRESCRIPTION_READY) {
     notificationTitle = ApiConstants.PRESCRIPTION_READY_TITLE;
-    notificationBody = ApiConstants.PRESCRIPTION_READY_BODY
-      .replace('{0}', patientDetails.firstName)
-      .replace('{1}', doctorDetails.firstName);
+    notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace(
+      '{0}',
+      patientDetails.firstName
+    ).replace('{1}', doctorDetails.firstName);
 
     if (!process.env.DEEPLINK_PRESCRIPTION) {
       log(

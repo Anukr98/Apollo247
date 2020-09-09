@@ -385,7 +385,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, [cartTotal]);
 
   const removeFreeProductsFromCart = () => {
-    const updatedCartItems = cartItems.filter((item) => item.price != 0);
+    const updatedCartItems = cartItems.filter(
+      (item) => !couponProducts.find((val) => val.sku == item.id)
+    );
     setCartItems!(updatedCartItems);
     setCouponProducts!([]);
   };
@@ -412,8 +414,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             id: medicineDetails!.sku!,
             mou: medicineDetails.mou,
             name: medicineDetails!.name,
-            price: couponProducts[index]!.mrp,
-            specialPrice: Number(medicineDetails.special_price) || undefined,
+            price: medicineDetails.price,
+            specialPrice: Number(couponProducts[index]!.mrp), // special price as coupon product price
             quantity: couponProducts[index]!.quantity,
             prescriptionRequired: medicineDetails.is_prescription_required == '1',
             isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
@@ -503,9 +505,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 })
                 if (availableInventory && availableInventory.length) {
                   fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, availableInventory);
-                  const formattedDate = moment(deliveryDate, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT)
-                    .format("DD-MMM-YYYY HH:mm")
-                  updateserviceableItemsTat(formattedDate, lookUp);  
+                  updateserviceableItemsTat(deliveryDate, lookUp);  
                 } else {
                   showUnserviceableAlert(updatedCartItems)
                 }
@@ -803,7 +803,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         categoryId: item.productType,
         mrp: item.price,
         quantity: item.quantity,
-        specialPrice: item.specialPrice || item.price,
+        specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
       })),
     };
     validateConsultCoupon(data)
@@ -902,6 +902,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
+                setCoupon!(null);
+                if (couponProducts.length) {
+                  removeFreeProductsFromCart();
+                }
                 if (navigatedFrom === 'registration') {
                   props.navigation.dispatch(
                     StackActions.reset({
@@ -916,10 +920,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   );
                 } else {
                   props.navigation.navigate('MEDICINES', { focusSearch: true });
-                  setCoupon!(null);
-                  if (couponProducts.length) {
-                    removeFreeProductsFromCart();
-                  }
                   // to stop triggering useEffect on every change in cart items
                   setStoreId!('');
                   setselectedTab(tabs[0].title);
@@ -939,6 +939,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         }
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
+          setCoupon!(null);
+          if (couponProducts.length) {
+            removeFreeProductsFromCart();
+          }
           props.navigation.goBack();
         }}
       />
@@ -1692,8 +1696,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     ({ isInStock, unserviceable }) => !isInStock || unserviceable
   );
 
+  const cartAfterDiscount = cartTotal - productDiscount;
+
   const disableProceedToPay = !!(
     cartItems.length === 0 ||
+    cartAfterDiscount === 0 ||
     cartTotal === 0 ||
     isNotInStockOrUnserviceable ||
     (!deliveryAddressId && !storeId) ||

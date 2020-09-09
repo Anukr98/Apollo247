@@ -525,6 +525,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               type_id:
                 (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1 ? 'Pharma' : 'FMCG',
               mou: item!.mou!,
+              sell_online: 1,
             } as MedicineProduct)
         );
       if (formattedRecommendedProducts.length >= 5) {

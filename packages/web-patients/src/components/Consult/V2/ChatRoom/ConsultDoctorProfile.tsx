@@ -403,6 +403,7 @@ interface ConsultDoctorProfileProps {
   appointmentDetails: AppointmentHistory;
   setRescheduleCount: (rescheduleCount: number | null) => void;
   handleRescheduleOpen: any;
+  srDoctorJoined: boolean;
 }
 
 type Params = { appointmentId: string; doctorId: string };
@@ -552,7 +553,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             />
             {appointmentDetails.status !== STATUS.COMPLETED &&
               appointmentDetails.status !== STATUS.CANCELLED &&
-              !appointmentDetails.isSeniorConsultStarted && (
+              !appointmentDetails.isSeniorConsultStarted &&
+              !props.srDoctorJoined && (
                 <div
                   onClick={() => setIsCancelPopoverOpen(true)}
                   ref={cancelAppointRef}

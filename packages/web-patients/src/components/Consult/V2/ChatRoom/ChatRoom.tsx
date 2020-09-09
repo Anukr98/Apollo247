@@ -506,6 +506,7 @@ export const ChatRoom: React.FC = () => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
   const [jrDoctorJoined, setJrDoctorJoined] = useState<boolean>(false);
+  const [srDoctorJoined, setSrDoctorJoined] = useState<boolean>(false);
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
   const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
@@ -580,10 +581,7 @@ export const ChatRoom: React.FC = () => {
 
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
     setIsNextSlotLoading(true);
-    const todayDate = moment
-      .utc(date)
-      .local()
-      .format('YYYY-MM-DD');
+    const todayDate = moment.utc(date).local().format('YYYY-MM-DD');
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
         try {
@@ -669,6 +667,7 @@ export const ChatRoom: React.FC = () => {
                     handleRescheduleOpen={handleRescheduleOpen}
                     doctorDetails={data}
                     appointmentDetails={appointmentDetails}
+                    srDoctorJoined={srDoctorJoined}
                   />
                 )}
               </div>
@@ -680,7 +679,7 @@ export const ChatRoom: React.FC = () => {
                     appointmentDetails.status !== STATUS.COMPLETED && (
                       <div className={classes.headerActions}>
                         <AphButton
-                          disabled={appointmentDetails.isSeniorConsultStarted}
+                          disabled={appointmentDetails.isSeniorConsultStarted || srDoctorJoined}
                           classes={{
                             root: classes.viewButton,
                             disabled: classes.disabledButton,
@@ -699,6 +698,7 @@ export const ChatRoom: React.FC = () => {
                   <ChatWindow
                     doctorDetails={data}
                     jrDoctorJoined={jrDoctorJoined}
+                    setSrDoctorJoined={setSrDoctorJoined}
                     setJrDoctorJoined={setJrDoctorJoined}
                     isModalOpen={isModalOpen}
                     setIsModalOpen={setIsModalOpen}
@@ -756,9 +756,9 @@ export const ChatRoom: React.FC = () => {
                     ) : (
                       <h6>
                         {'Since you have already rescheduled 3 times with Dr. '}
-                        {`${data &&
-                          data.getDoctorDetailsById &&
-                          data.getDoctorDetailsById.fullName}`}{' '}
+                        {`${
+                          data && data.getDoctorDetailsById && data.getDoctorDetailsById.fullName
+                        }`}{' '}
                         {`, We will consider this a new paid appointment.`}
                       </h6>
                     )}
