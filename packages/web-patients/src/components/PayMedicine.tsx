@@ -44,7 +44,7 @@ import {
   makeAppointmentPayment,
   makeAppointmentPaymentVariables,
 } from 'graphql/types/makeAppointmentPayment';
-import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
+import { MAKE_APPOINTMENT_PAYMENT, BOOK_FOLLOWUP_APPOINTMENT } from 'graphql/consult';
 import { Alerts } from 'components/Alerts/Alerts';
 import { validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice as pharmaCouponItem } from 'graphql/types/validatePharmaCoupon';
 import { Redirect } from 'react-router-dom';
@@ -448,6 +448,8 @@ export const PayMedicine: React.FC = (props) => {
     ? JSON.parse(localStorage.getItem('consultBookDetails'))
     : {};
   const {
+    patientId,
+    appointmentId,
     amount,
     appointmentDateTime,
     appointmentType,
@@ -457,6 +459,7 @@ export const PayMedicine: React.FC = (props) => {
     doctorName,
     hospitalId,
     speciality,
+    type,
   } = consultBookDetails;
 
   const { city, currentPincode } = useLocationDetails();
@@ -761,9 +764,86 @@ export const PayMedicine: React.FC = (props) => {
   };
 
   const paymentMutationConsult = useMutation(BOOK_APPOINTMENT);
+  const paymentBookFollowupConsult = useMutation(BOOK_FOLLOWUP_APPOINTMENT);
   const makePaymentMutation = useMutation<makeAppointmentPayment, makeAppointmentPaymentVariables>(
     MAKE_APPOINTMENT_PAYMENT
   );
+
+  const triggerPaymentMutation = (appointmentDateTime: string, appointmentId: string) => {
+    makePaymentMutation({
+      variables: {
+        paymentInput: {
+          amountPaid: 0,
+          paymentRefId: '',
+          paymentStatus: 'TXN_SUCCESS',
+          paymentDateTime: appointmentDateTime,
+          responseCode: couponCode ? couponCode : '',
+          responseMessage: 'Coupon applied',
+          bankTxnId: '',
+          orderId: appointmentId,
+        },
+      },
+      fetchPolicy: 'no-cache',
+    })
+      .then((res) => {
+        if (
+          res &&
+          res.data &&
+          res.data.makeAppointmentPayment &&
+          res.data.makeAppointmentPayment.appointment
+        ) {
+          const bookingId = res.data.makeAppointmentPayment.appointment.orderId;
+          window.location.href = `${clientRoutes.appointments()}/?apptid=${bookingId}&status=success`;
+          localStorage.setItem('consultBookDetails', '');
+        }
+      })
+      .catch((error) => {
+        setIsAlertOpen(true);
+        setAlertMessage(error);
+      });
+  };
+
+  const paymentNavigation = (appointmentId: string, value: string) => {
+    const pgUrl = `${'http://localhost:7000'}/consultpayment?appointmentId=${appointmentId}&patientId=${
+      currentPatient ? currentPatient.id : ''
+    }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES${
+      sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
+    }`;
+    window.location.href = pgUrl;
+  };
+
+  const triggerTracking = () => {
+    _cbTracking({
+      specialty: speciality,
+      bookingType: appointmentType,
+      scheduledDate: `${appointmentDateTime}`,
+      couponCode: consultCouponCode ? consultCouponCode : null,
+      couponValue:
+        validateConsultCouponResult && validateConsultCouponResult.valid
+          ? validateConsultCouponResult.discount
+          : consultCouponValue || null,
+      finalBookingValue: revisedAmount,
+      ecommObj: {
+        ecommerce: {
+          items: [
+            {
+              item_name: doctorName,
+              item_id: doctorId,
+              price: revisedAmount,
+              item_brand: 'Apollo',
+              item_category: 'Consultations',
+              item_category_2: speciality,
+              item_category_3: city || '',
+              // 'item_category_4': '', // for future
+              item_variant: appointmentType.toLowerCase() === 'online' ? 'Virtual' : 'Physical',
+              index: 1,
+              quantity: 1,
+            },
+          ],
+        },
+      },
+    });
+  };
 
   const onClickConsultPay = (value: string) => {
     setShowZeroPaymentButton(false);
@@ -784,115 +864,97 @@ export const PayMedicine: React.FC = (props) => {
       patientGender: currentPatient && currentPatient.gender,
     };
     consultPayInitiateTracking(eventData);
-    paymentMutationConsult({
-      variables: {
-        bookAppointment: {
-          patientId: currentPatient ? currentPatient.id : '',
-          doctorId: doctorId,
-          appointmentDateTime: moment(appointmentDateTime).utc(),
-          bookingSource: BOOKINGSOURCE.WEB,
-          appointmentType: appointmentType,
-          hospitalId: hospitalId,
-          couponCode: consultCouponCode,
-          deviceType: getDeviceType(),
-          actualAmount: Number(amount),
-          discountedAmount:
-            validateConsultCouponResult && validateConsultCouponResult.valid
-              ? Number(validateConsultCouponResult.amount - validateConsultCouponResult.discount)
-              : Number(revisedAmount),
-          pinCode: currentPincode || '',
-          // couponDiscount: couponValue,
-        },
-      },
-    })
-      .then((res: any) => {
-        /* Gtm code start */
-        _cbTracking({
-          specialty: speciality,
-          bookingType: appointmentType,
-          scheduledDate: `${appointmentDateTime}`,
-          couponCode: consultCouponCode ? consultCouponCode : null,
-          couponValue:
-            validateConsultCouponResult && validateConsultCouponResult.valid
-              ? validateConsultCouponResult.discount
-              : consultCouponValue || null,
-          finalBookingValue: revisedAmount,
-          ecommObj: {
-            ecommerce: {
-              items: [
-                {
-                  item_name: doctorName,
-                  item_id: doctorId,
-                  price: revisedAmount,
-                  item_brand: 'Apollo',
-                  item_category: 'Consultations',
-                  item_category_2: speciality,
-                  item_category_3: city || '',
-                  // 'item_category_4': '', // for future
-                  item_variant: appointmentType.toLowerCase() === 'online' ? 'Virtual' : 'Physical',
-                  index: 1,
-                  quantity: 1,
-                },
-              ],
-            },
+    if (type === 'consult') {
+      paymentMutationConsult({
+        variables: {
+          bookAppointment: {
+            patientId: currentPatient ? currentPatient.id : '',
+            doctorId: doctorId,
+            appointmentDateTime: moment(appointmentDateTime).utc(),
+            bookingSource: BOOKINGSOURCE.WEB,
+            appointmentType: appointmentType,
+            hospitalId: hospitalId,
+            couponCode: consultCouponCode,
+            deviceType: getDeviceType(),
+            actualAmount: Number(amount),
+            discountedAmount:
+              validateConsultCouponResult && validateConsultCouponResult.valid
+                ? Number(validateConsultCouponResult.amount - validateConsultCouponResult.discount)
+                : Number(revisedAmount),
+            pinCode: currentPincode || '',
+            // couponDiscount: couponValue,
           },
-        });
-        /* Gtm code END */
-        if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {
-          if (revisedAmount == 0) {
-            makePaymentMutation({
-              variables: {
-                paymentInput: {
-                  amountPaid: 0,
-                  paymentRefId: '',
-                  paymentStatus: 'TXN_SUCCESS',
-                  paymentDateTime: res.data.bookAppointment.appointment.appointmentDateTime,
-                  responseCode: couponCode ? couponCode : '',
-                  responseMessage: 'Coupon applied',
-                  bankTxnId: '',
-                  orderId: res.data.bookAppointment.appointment.id,
-                },
-              },
-              fetchPolicy: 'no-cache',
-            })
-              .then((res) => {
-                if (
-                  res &&
-                  res.data &&
-                  res.data.makeAppointmentPayment &&
-                  res.data.makeAppointmentPayment.appointment
-                ) {
-                  const bookingId = res.data.makeAppointmentPayment.appointment.orderId;
-                  window.location.href = `${clientRoutes.appointments()}/?apptid=${bookingId}&status=success`;
-                  localStorage.setItem('consultBookDetails', '');
-                }
-              })
-              .catch((error) => {
-                setIsAlertOpen(true);
-                setAlertMessage(error);
-              });
-          } else {
-            const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
-              res.data.bookAppointment.appointment.id
-            }&patientId=${
-              currentPatient ? currentPatient.id : ''
-            }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES${
-              sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
-            }`;
-            window.location.href = pgUrl;
-          }
-          // setMutationLoading(false);
-          // setIsDialogOpen(true);
-        }
-        setIsLoading(false);
+        },
       })
-      .catch((errorResponse) => {
-        setConsult(true);
-        setIsAlertOpen(true);
-        setAlertMessage('Selected time slot is no longer availble.');
-        setMutationLoading(false);
-        setIsLoading(false);
-      });
+        .then((res: any) => {
+          /* Gtm code start */
+          triggerTracking();
+          /* Gtm code END */
+          if (res && res.data && res.data.bookAppointment && res.data.bookAppointment.appointment) {
+            if (revisedAmount == 0) {
+              triggerPaymentMutation(
+                res.data.bookAppointment.appointment.appointmentDateTime,
+                res.data.bookAppointment.appointment.id
+              );
+            } else {
+              paymentNavigation(res.data.bookAppointment.appointment.id, value);
+            }
+          }
+          setIsLoading(false);
+        })
+        .catch((errorResponse) => {
+          setConsult(true);
+          setIsAlertOpen(true);
+          setAlertMessage('Selected time slot is no longer availble.');
+          setMutationLoading(false);
+          setIsLoading(false);
+        });
+    } else if (type === 'followup') {
+      const input = {
+        patientId,
+        doctorId,
+        appointmentDateTime,
+        appointmentType,
+        hospitalId,
+        followUpParentId: appointmentId,
+      };
+      paymentBookFollowupConsult({
+        variables: {
+          followUpAppointmentInput: input,
+        },
+        fetchPolicy: 'no-cache',
+      })
+        .then((res: any) => {
+          /* Gtm code start */
+          triggerTracking();
+          /* Gtm code END */
+          if (
+            res &&
+            res.data &&
+            res.data.bookFollowUpAppointment &&
+            res.data.bookFollowUpAppointment.appointment
+          ) {
+            if (revisedAmount == 0) {
+              triggerPaymentMutation(
+                res.data.bookFollowUpAppointment.appointment.appointmentDateTime,
+                res.data.bookFollowUpAppointment.appointment.id
+              );
+            } else {
+              paymentNavigation(res.data.bookFollowUpAppointment.appointment.id, value);
+            }
+            // setMutationLoading(false);
+            // setIsDialogOpen(true);
+          }
+          setIsLoading(false);
+        })
+        .catch((errorResponse) => {
+          setConsult(true);
+          setIsAlertOpen(true);
+          setAlertMessage('Selected time slot is no longer availble.');
+          setMutationLoading(false);
+          setIsLoading(false);
+        });
+    }
   };
 
   return (
