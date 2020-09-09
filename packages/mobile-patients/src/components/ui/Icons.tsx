@@ -1001,10 +1001,6 @@ export const MinusIconWhite: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/minus-icon-white.png')} />
 );
 
-export const MinusIconOrange: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/minus-icon-orange.png')} />
-);
-
 export const BotIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/bot.png')} />
 );
