@@ -31,8 +31,8 @@ import { getLocalStorageItem, updateLocalStorageItem } from './panels/LocalStora
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    container: {
-      padding: 20,
+    casesheetContainer: {
+      padding: '0 0 60px',
     },
     caseSheet: {
       minHeight: 'calc(100vh - 360px)',
@@ -428,7 +428,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
 
   return (
-    <div className={classes.container}>
+    <div className={classes.casesheetContainer}>
       <div className={classes.caseSheet}>
         <section className={`${classes.column} ${classes.right}`}>
           <UserCard />

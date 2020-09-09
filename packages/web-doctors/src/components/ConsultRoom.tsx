@@ -521,7 +521,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessageText('');
         srollToBottomAction();
         if (props.appointmentStatus === 'COMPLETED') {
-          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE, (appointmentInfo && appointmentInfo.displayId) || '');
+          props.postDoctorConsultEventAction(
+            WebEngageEvent.DOCTOR_SENT_MESSAGE,
+            (appointmentInfo && appointmentInfo.displayId) || ''
+          );
         }
       }
     );
@@ -617,7 +620,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (status: any, response: any) => {
         resetMessagesAction();
         if (props.appointmentStatus === 'COMPLETED') {
-          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE, (appointmentInfo && appointmentInfo.displayId) || '');
+          props.postDoctorConsultEventAction(
+            WebEngageEvent.DOCTOR_SENT_MESSAGE,
+            (appointmentInfo && appointmentInfo.displayId) || ''
+          );
         }
       }
     );
