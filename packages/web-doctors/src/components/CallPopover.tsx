@@ -1539,13 +1539,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     timerIntervalId && clearInterval(timerIntervalId);
   };
   const stopAudioVideoCall = () => {
+    props.setGiveRating(true);
     setIsCallAccepted(false);
     setShowVideo(false);
     setShowVideoChat(false);
     setDisableOnCancel(false);
     clearInterval(intervalMissCall);
     setPlayRingtone(false);
-    props.setGiveRating(true);
+
     if (!isCallAccepted) sendCallDisconnectNotification();
 
     const cookieStr = `action=`;

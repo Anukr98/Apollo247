@@ -518,7 +518,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           if (res && res.data) {
             if (res && res.data.errorMsg) {
               setDeliveryTime('');
-              setErrorMessage(NO_SERVICEABLE_MESSAGE);
+              setErrorMessage(OUT_OF_STOCK_MESSAGE);
             }
             setTatLoading(false);
             if (
@@ -528,15 +528,10 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               res.data.response.tatU &&
               res.data.response.tatU != -1
             ) {
-              if (getDiffInDays(res.data.response.tatU) < 10) {
-                setDeliveryTime(res.data.response.tat);
-                setErrorMessage('');
-                if (pharmaAddressDetails.pincode !== pinCode) {
-                  getPlaceDetails(pinCode);
-                }
-              } else {
-                setDeliveryTime('');
-                setErrorMessage(OUT_OF_STOCK_MESSAGE);
+              setDeliveryTime(res.data.response.tat);
+              setErrorMessage('');
+              if (pharmaAddressDetails.pincode !== pinCode) {
+                getPlaceDetails(pinCode);
               }
             } else if (typeof res.data.errorMSG === 'string') {
               setDefaultDeliveryTime(pinCode);
@@ -585,11 +580,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           fetchDeliveryTime(pinCode);
         } else {
           setDeliveryTime('');
-          setErrorMessage(NO_SERVICEABLE_MESSAGE);
+          setErrorMessage(OUT_OF_STOCK_MESSAGE);
         }
       })
       .catch((e) => {
-        setErrorMessage(NO_SERVICEABLE_MESSAGE);
+        setErrorMessage(OUT_OF_STOCK_MESSAGE);
         setDeliveryTime('');
       });
   };
@@ -807,7 +802,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       <div className={sell_online ? classes.bottomGroupResponsive : classes.bottomGroupResponse}>
         {!errorMessage ? (
           <>
-            {is_in_stock && sell_online ? (
+            {sell_online ? (
               <div className={classes.priceGroup}>
                 <div className={classes.priceWrap}>
                   <div className={classes.leftGroup}>
@@ -885,7 +880,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               notAvailableContext()
             )}
 
-            {is_in_stock && sell_online ? (
+            {sell_online ? (
               <div className={classes.bottomActions}>
                 <AphButton
                   disabled={addMutationLoading || updateMutationLoading}

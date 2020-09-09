@@ -1,23 +1,23 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Theme, Button, Modal } from '@material-ui/core';
-import { useParams } from 'hooks/routerHooks';
-import { makeStyles } from '@material-ui/styles';
-import { Header } from 'components/Header';
-import Paper from '@material-ui/core/Paper';
-import { CallPopover } from 'components/CallPopover';
-import ApolloClient from 'apollo-client';
-import Pubnub from 'pubnub';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Typography from '@material-ui/core/Typography';
-import { ConsultRoom } from 'components/ConsultRoom';
-import { Unauthorized } from 'components/Unauthorized';
-import { AuthContext, AuthContextProps } from 'components/AuthProvider';
-import { useApolloClient } from 'react-apollo-hooks';
-import { LoggedInUserType } from 'graphql/types/globalTypes';
-import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import { DOWNLOAD_DOCUMENTS } from 'graphql/profiles';
-import { downloadDocuments } from 'graphql/types/downloadDocuments';
+import React, { useState, useEffect, useContext } from "react";
+import { Theme, Button, Modal } from "@material-ui/core";
+import { useParams } from "hooks/routerHooks";
+import { makeStyles } from "@material-ui/styles";
+import { Header } from "components/Header";
+import Paper from "@material-ui/core/Paper";
+import { CallPopover } from "components/CallPopover";
+import ApolloClient from "apollo-client";
+import Pubnub from "pubnub";
+import Tabs from "@material-ui/core/Tabs";
+import Tab from "@material-ui/core/Tab";
+import Typography from "@material-ui/core/Typography";
+import { ConsultRoom } from "components/ConsultRoom";
+import { Unauthorized } from "components/Unauthorized";
+import { AuthContext, AuthContextProps } from "components/AuthProvider";
+import { useApolloClient } from "react-apollo-hooks";
+import { LoggedInUserType } from "graphql/types/globalTypes";
+import { AphStorageClient } from "@aph/universal/dist/AphStorageClient";
+import { DOWNLOAD_DOCUMENTS } from "graphql/profiles";
+import { downloadDocuments } from "graphql/types/downloadDocuments";
 import {
   REQUEST_ROLES,
   Gender,
@@ -30,36 +30,36 @@ import {
   ConsultMode,
   DoctorConsultEventInput,
   CALL_FEEDBACK_RESPONSES_TYPES,
-} from 'graphql/types/globalTypes';
+} from "graphql/types/globalTypes";
 import {
   GetJuniorDoctorCaseSheet,
   GetJuniorDoctorCaseSheetVariables,
-} from 'graphql/types/GetJuniorDoctorCaseSheet';
+} from "graphql/types/GetJuniorDoctorCaseSheet";
 import {
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription,
-} from 'graphql/types/GetJuniorDoctorCaseSheet';
+} from "graphql/types/GetJuniorDoctorCaseSheet";
 import {
   EndCallNotification,
   EndCallNotificationVariables,
-} from 'graphql/types/EndCallNotification';
-import { CasesheetView } from 'components/CasesheetView';
-import { APPOINTMENT_TYPE } from '../graphql/types/globalTypes';
-import _omit from 'lodash/omit';
+} from "graphql/types/EndCallNotification";
+import { CasesheetView } from "components/CasesheetView";
+import { APPOINTMENT_TYPE } from "../graphql/types/globalTypes";
+import _omit from "lodash/omit";
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
-} from 'graphql/types/CreateAppointmentSession';
+} from "graphql/types/CreateAppointmentSession";
 import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
-} from 'graphql/types/EndAppointmentSession';
+} from "graphql/types/EndAppointmentSession";
 import {
   UpdatePatientPrescriptionSentStatus,
   UpdatePatientPrescriptionSentStatusVariables,
-} from 'graphql/types/UpdatePatientPrescriptionSentStatus';
+} from "graphql/types/UpdatePatientPrescriptionSentStatus";
 import {
   CREATE_APPOINTMENT_SESSION,
   GET_CASESHEET,
@@ -70,14 +70,17 @@ import {
   UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
   POST_WEB_ENGAGE,
   SAVE_APPOINTMENT_CALL_FEEDBACK,
-} from 'graphql/profiles';
-import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
+} from "graphql/profiles";
+import {
+  ModifyCaseSheet,
+  ModifyCaseSheetVariables,
+} from "graphql/types/ModifyCaseSheet";
 
 import {
   PostDoctorConsultEvent,
   PostDoctorConsultEventVariables,
-} from 'graphql/types/PostDoctorConsultEvent';
-import { CircularProgress } from '@material-ui/core';
+} from "graphql/types/PostDoctorConsultEvent";
+import { CircularProgress } from "@material-ui/core";
 import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
@@ -85,39 +88,42 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-} from 'graphql/types/GetCaseSheet';
+} from "graphql/types/GetCaseSheet";
 import {
   CreateSeniorDoctorCaseSheet,
   CreateSeniorDoctorCaseSheetVariables,
-} from 'graphql/types/CreateSeniorDoctorCaseSheet';
-import { CaseSheet } from 'components/case-sheet/CaseSheet';
-import { useAuth } from 'hooks/authHooks';
-import { CaseSheetContext, VitalErrorProps } from 'context/CaseSheetContext';
-import Scrollbars from 'react-custom-scrollbars';
-import { useMutation } from 'react-apollo-hooks';
-import { ApolloError } from 'apollo-client';
-import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { clientRoutes } from 'helpers/clientRoutes';
-import { SEND_CALL_NOTIFICATION, END_CALL_NOTIFICATION } from 'graphql/consults';
+} from "graphql/types/CreateSeniorDoctorCaseSheet";
+import { CaseSheet } from "components/case-sheet/CaseSheet";
+import { useAuth } from "hooks/authHooks";
+import { CaseSheetContext, VitalErrorProps } from "context/CaseSheetContext";
+import Scrollbars from "react-custom-scrollbars";
+import { useMutation } from "react-apollo-hooks";
+import { ApolloError } from "apollo-client";
+import { AphErrorMessages } from "@aph/universal/dist/AphErrorMessages";
+import { clientRoutes } from "helpers/clientRoutes";
+import {
+  SEND_CALL_NOTIFICATION,
+  END_CALL_NOTIFICATION,
+} from "graphql/consults";
 import {
   SendCallNotification,
   SendCallNotificationVariables,
-} from 'graphql/types/SendCallNotification';
-import { RateCall } from 'components/ConsultRoom/RateCall';
+} from "graphql/types/SendCallNotification";
+import { RateCall } from "components/ConsultRoom/RateCall";
 import {
   saveAppointmentCallFeedback,
   saveAppointmentCallFeedbackVariables,
-} from 'graphql/types/saveAppointmentCallFeedback';
-import Alert from 'components/Alert';
-import moment from 'moment';
+} from "graphql/types/saveAppointmentCallFeedback";
+import Alert from "components/Alert";
+import moment from "moment";
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     consultRoom: {
       paddingTop: 64,
-      height: '100vh',
-      overflow: 'hidden',
-      [theme.breakpoints.down('xs')]: {
+      height: "100vh",
+      overflow: "hidden",
+      [theme.breakpoints.down("xs")]: {
         paddingTop: 64,
       },
     },
@@ -125,18 +131,18 @@ const useStyles = makeStyles((theme: Theme) => {
       // minHeight: 'calc(100vh - 360px)',
     },
     headerSticky: {
-      position: 'fixed',
-      width: '100%',
+      position: "fixed",
+      width: "100%",
       zIndex: 999,
       top: 0,
     },
     container: {
       maxWidth: 1064,
-      margin: 'auto',
-      position: 'relative',
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-      backgroundColor: '#f7f7f7',
-      height: '100%',
+      margin: "auto",
+      position: "relative",
+      boxShadow: "0 5px 20px 0 rgba(128, 128, 128, 0.3)",
+      backgroundColor: "#f7f7f7",
+      height: "100%",
     },
     tabsRoot: {
       backgroundColor: theme.palette.common.white,
@@ -146,78 +152,78 @@ const useStyles = makeStyles((theme: Theme) => {
     tabRoot: {
       fontSize: 16,
       fontWeight: theme.typography.fontWeightMedium,
-      textAlign: 'center',
-      color: '#02475b',
-      padding: '14px 10px',
-      textTransform: 'none',
-      width: '50%',
+      textAlign: "center",
+      color: "#02475b",
+      padding: "14px 10px",
+      textTransform: "none",
+      width: "50%",
       opacity: 1,
-      lineHeight: 'normal',
-      [theme.breakpoints.down('xs')]: {
-        width: '50%',
+      lineHeight: "normal",
+      [theme.breakpoints.down("xs")]: {
+        width: "50%",
       },
     },
     tabSelected: {
       fontWeight: theme.typography.fontWeightBold,
-      color: '#02475b',
+      color: "#02475b",
     },
     tabsIndicator: {
-      backgroundColor: '#00b38e',
+      backgroundColor: "#00b38e",
       height: 4,
     },
     DisplayNone: {
-      display: 'none !important',
+      display: "none !important",
     },
     typography: {
       padding: theme.spacing(2),
     },
     pointerNone: {
-      pointerEvents: 'none',
+      pointerEvents: "none",
     },
     none: {
-      display: 'none',
+      display: "none",
     },
     block: {
-      display: 'block',
-      height: '100%',
+      display: "block",
+      height: "100%",
     },
     modalBox: {
       maxWidth: 320,
-      margin: 'auto',
+      margin: "auto",
       marginTop: 50,
-      backgroundColor: '#fff',
+      backgroundColor: "#fff",
       borderRadius: 10,
-      padding: '0 20px 20px 20px',
-      position: 'relative',
-      outline: 'none',
-      '& h3': {
+      padding: "0 20px 20px 20px",
+      position: "relative",
+      outline: "none",
+      "& h3": {
         fontSize: 20,
         fontWeight: 600,
         marginBottom: 30,
         marginTop: 0,
-        color: '#02475b',
+        color: "#02475b",
       },
     },
     modalPdfBox: {
-      maxWidth: '90%',
-      height: '80%',
-      margin: 'auto',
+      maxWidth: "90%",
+      height: "80%",
+      margin: "auto",
       marginTop: 88,
-      backgroundColor: '#eeeeee',
-      position: 'relative',
+      backgroundColor: "#eeeeee",
+      position: "relative",
     },
     tabHeader: {
       height: 30,
-      borderTopLeftRadius: '10px',
-      borderTopRightRadius: '10px',
+      borderTopLeftRadius: "10px",
+      borderTopRightRadius: "10px",
     },
     loading: {
-      position: 'absolute',
-      left: '50%',
-      top: '45%',
+      position: "absolute",
+      left: "50%",
+      top: "45%",
     },
     fadedBg: {
-      position: 'fixed',
+      position: "fixed",
       top: 0,
       bottom: 0,
       right: 0,
@@ -227,57 +233,57 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     tabBody: {
       minHeight: 60,
-      marginTop: '10px',
+      marginTop: "10px",
       padding: 15,
-      '& p': {
+      "& p": {
         margin: 0,
         width: 180,
         fontSize: 16,
         fontWeight: 700,
         lineHeight: 1.4,
-        color: '#01475b',
+        color: "#01475b",
       },
     },
     tabPdfBody: {
-      display: 'none',
-      height: '100%',
-      marginTop: '10px',
-      paddingLeft: '15px',
-      paddingTop: '10px',
-      paddingRight: '15px',
-      textAlign: 'center',
+      display: "none",
+      height: "100%",
+      marginTop: "10px",
+      paddingLeft: "15px",
+      paddingTop: "10px",
+      paddingRight: "15px",
+      textAlign: "center",
     },
     cross: {
-      position: 'absolute',
+      position: "absolute",
       right: 0,
-      top: '10px',
-      fontSize: '18px',
-      color: '#02475b',
+      top: "10px",
+      fontSize: "18px",
+      color: "#02475b",
     },
     consultButton: {
       fontSize: 14,
       fontWeight: 600,
-      color: '#fff',
-      padding: '8px 16px',
-      backgroundColor: '#fc9916',
+      color: "#fff",
+      padding: "8px 16px",
+      backgroundColor: "#fc9916",
       width: 110,
       borderRadius: 10,
-      boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
-      '&:hover': {
-        backgroundColor: '#e28913',
+      boxShadow: "0 2px 4px 0 rgba(0,0,0,0.2)",
+      "&:hover": {
+        backgroundColor: "#e28913",
       },
     },
     cancelConsult: {
       width: 120,
       fontSize: 14,
-      padding: '8px 16px',
+      padding: "8px 16px",
       marginRight: 15,
       fontWeight: 600,
-      color: '#fc9916',
-      backgroundColor: '#fff',
-      boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
-      '&:hover': {
-        backgroundColor: '#fff',
+      color: "#fc9916",
+      backgroundColor: "#fff",
+      boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.2)",
+      "&:hover": {
+        backgroundColor: "#fff",
       },
     },
     popupDialog: {
@@ -285,12 +291,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     headingTxt: {
       fontSize: 20,
-      color: '#02475b',
+      color: "#02475b",
       fontWeight: 600,
     },
     contentTxt: {
       marginTop: 30,
-      color: '#02475b',
+      color: "#02475b",
       fontSize: 14,
     },
     stickyConsultTabs: {
@@ -299,20 +305,20 @@ const useStyles = makeStyles((theme: Theme) => {
       // zIndex: 2,
     },
     tabContainer: {
-      height: 'calc(100% - 68px)',
+      height: "calc(100% - 68px)",
     },
     tabContent: {
-      height: 'calc(100% - 48px)',
-      overflow: 'auto',
+      height: "calc(100% - 48px)",
+      overflow: "auto",
       padding: 20,
-      '&::-webkit-scrollbar': {
+      "&::-webkit-scrollbar": {
         width: 6,
       },
-      '&::-webkit-scrollbar-track': {
-        background: 'transparent',
+      "&::-webkit-scrollbar-track": {
+        background: "transparent",
       },
-      '&::-webkit-scrollbar-thumb': {
-        background: '#ccc',
+      "&::-webkit-scrollbar-thumb": {
+        background: "#ccc",
         borderRadius: 5,
       },
     },
@@ -357,31 +363,38 @@ export const ConsultTabs: React.FC = () => {
   const [patientId, setpatientId] = useState<string>(params.patientId);
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
   const [tabValue, setTabValue] = useState<number>(
-    params && params!.tabValue && params!.tabValue !== null && params!.tabValue !== ''
+    params &&
+      params!.tabValue &&
+      params!.tabValue !== null &&
+      params!.tabValue !== ""
       ? parseInt(params!.tabValue, 10)
       : 0
   );
   const [urlToPatient, setUrlToPatient] = useState<boolean>(false);
-  const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
-  const [startConsult, setStartConsult] = useState<string>('');
+  const [prescriptionPdf, setPrescriptionPdf] = useState<string>("");
+  const [startConsult, setStartConsult] = useState<string>("");
 
   const [isPdfPageOpen, setIsPdfPageOpen] = useState<boolean>(false);
-  const [sessionId, setsessionId] = useState<string>('');
-  const [token, settoken] = useState<string>('');
-  const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
-  const [sdConsultationDate, setSdConsultationDate] = useState<string>('');
-  const [doctorId, setdoctorId] = useState<string>(currentPatient ? currentPatient.id : '');
+  const [sessionId, setsessionId] = useState<string>("");
+  const [token, settoken] = useState<string>("");
+  const [appointmentDateTime, setappointmentDateTime] = useState<string>("");
+  const [sdConsultationDate, setSdConsultationDate] = useState<string>("");
+  const [doctorId, setdoctorId] = useState<string>(
+    currentPatient ? currentPatient.id : ""
+  );
 
-  const [caseSheetId, setCaseSheetId] = useState<string>('');
+  const [caseSheetId, setCaseSheetId] = useState<string>("");
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
-  const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
+  const [startAppointment, setStartAppointment] = React.useState<boolean>(
+    false
+  );
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
-  const [callId, setcallId] = useState<string>('');
-  const [chatRecordId, setChatRecordId] = useState<string>('');
+  const [callId, setcallId] = useState<string>("");
+  const [chatRecordId, setChatRecordId] = useState<string>("");
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
   const client = useApolloClient();
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
@@ -397,12 +410,17 @@ export const ConsultTabs: React.FC = () => {
   const [otherInstructions, setOtherInstructions] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null
   >(null);
-  const [diagnosticPrescription, setDiagnosticPrescription] = useState<any[] | null>(null);
+  const [diagnosticPrescription, setDiagnosticPrescription] = useState<
+    any[] | null
+  >(null);
   const [favouriteTests, setFavouriteTests] = useState<any[] | null>(null);
   const [medicinePrescription, setMedicinePrescription] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
-  const [removedMedicinePrescription, setRemovedMedicinePrescription] = useState<
+  const [
+    removedMedicinePrescription,
+    setRemovedMedicinePrescription,
+  ] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
   const [favouriteMedicines, setFavouriteMedicines] = useState<
@@ -410,60 +428,77 @@ export const ConsultTabs: React.FC = () => {
   >(null);
 
   const [notes, setSRDNotes] = useState<string | null>(null);
-  const [juniorDoctorNotes, setJuniorDoctorNotes] = useState<string | null>(null);
+  const [juniorDoctorNotes, setJuniorDoctorNotes] = useState<string | null>(
+    null
+  );
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([
-    chatDays !== null ? chatDays.toString() : '',
+    chatDays !== null ? chatDays.toString() : "",
   ]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
   const [followUpConsultType, setFollowUpConsultType] = useState<string[]>([]);
 
-  const [bp, setBp] = useState<string>('');
-  const [height, setHeight] = useState<string>('');
-  const [temperature, setTemperature] = useState<string>('');
-  const [weight, setWeight] = useState<string>('');
-  const [drugAllergies, setDrugAllergies] = useState<string>('');
-  const [dietAllergies, setDietAllergies] = useState<string>('');
-  const [menstrualHistory, setMenstrualHistory] = useState<string>('');
-  const [pastMedicalHistory, setPastMedicalHistory] = useState<string>('');
-  const [pastSurgicalHistory, setPastSurgicalHistory] = useState<string>('');
-  const [lifeStyle, setLifeStyle] = useState<string>('');
-  const [familyHistory, setFamilyHistory] = useState<string>('');
-  const [gender, setGender] = useState<string>('');
-  const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
-  const [referralSpecialtyName, setReferralSpecialtyName] = useState<string>('');
-  const [referralDescription, setReferralDescription] = useState<string>('');
-  const [medicationHistory, setMedicationHistory] = useState<string>('');
-  const [occupationHistory, setOccupationHistory] = useState<string>('');
+  const [bp, setBp] = useState<string>("");
+  const [height, setHeight] = useState<string>("");
+  const [temperature, setTemperature] = useState<string>("");
+  const [weight, setWeight] = useState<string>("");
+  const [drugAllergies, setDrugAllergies] = useState<string>("");
+  const [dietAllergies, setDietAllergies] = useState<string>("");
+  const [menstrualHistory, setMenstrualHistory] = useState<string>("");
+  const [pastMedicalHistory, setPastMedicalHistory] = useState<string>("");
+  const [pastSurgicalHistory, setPastSurgicalHistory] = useState<string>("");
+  const [lifeStyle, setLifeStyle] = useState<string>("");
+  const [familyHistory, setFamilyHistory] = useState<string>("");
+  const [gender, setGender] = useState<string>("");
+  const [vitalError, setVitalError] = useState<VitalErrorProps>({
+    height: "",
+    weight: "",
+  });
+  const [referralSpecialtyName, setReferralSpecialtyName] = useState<string>(
+    ""
+  );
+  const [referralDescription, setReferralDescription] = useState<string>("");
+  const [medicationHistory, setMedicationHistory] = useState<string>("");
+  const [occupationHistory, setOccupationHistory] = useState<string>("");
   const [referralError, setReferralError] = useState<boolean>(false);
-  const [updatedDate, setUpdatedDate] = useState<string>('');
+  const [updatedDate, setUpdatedDate] = useState<string>("");
   const [casesheetVersion, setCasesheetVersion] = useState<number>(1);
 
-  const [appointmentStatus, setAppointmentStatus] = useState<string>('');
+  const [appointmentStatus, setAppointmentStatus] = useState<string>("");
   const [sentToPatient, setSentToPatient] = useState<boolean>(false);
   const [isAppointmentEnded, setIsAppointmentEnded] = useState<boolean>(false);
-  const [jrdName, setJrdName] = useState<string>('');
-  const [jrdSubmitDate, setJrdSubmitDate] = useState<string>('');
+  const [jrdName, setJrdName] = useState<string>("");
+  const [jrdSubmitDate, setJrdSubmitDate] = useState<string>("");
   const isSecretary = currentUserType === LoggedInUserType.SECRETARY;
   const [lastMsg, setLastMsg] = useState<any>(null);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   //const [presenceEventObject, setPresenceEventObject] = useState<any>(null);
-  const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(true);
-  const [isNewprescriptionEditable, setIsNewprescriptionEditable] = useState<boolean>(false);
+  const [hasCameraMicPermission, setCameraMicPermission] = useState<boolean>(
+    true
+  );
+  const [isNewprescriptionEditable, setIsNewprescriptionEditable] = useState<
+    boolean
+  >(false);
   const [isNewPrescription, setIsNewPrescription] = useState<boolean>(false);
-  const [showConfirmPrescription, setShowConfirmPrescription] = React.useState<boolean>(false);
+  const [showConfirmPrescription, setShowConfirmPrescription] = React.useState<
+    boolean
+  >(false);
 
   const [giveRating, setGiveRating] = useState<boolean>(false);
 
-  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
-  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
+  const subscribekey: string = process.env.SUBSCRIBE_KEY
+    ? process.env.SUBSCRIBE_KEY
+    : "";
+  const publishkey: string = process.env.PUBLISH_KEY
+    ? process.env.PUBLISH_KEY
+    : "";
 
   const config: Pubnub.PubnubConfig = {
     subscribeKey: subscribekey,
     publishKey: publishkey,
-    origin: 'apollo.pubnubapi.com',
+    origin: "apollo.pubnubapi.com",
     ssl: true,
     restore: true,
     keepAlive: true,
@@ -479,18 +514,18 @@ export const ConsultTabs: React.FC = () => {
     }
   }, [startAppointment]);
   function getCookieValue(cookieName: string) {
-    const name = cookieName + '=';
-    const ca = document.cookie.split(';');
+    const name = cookieName + "=";
+    const ca = document.cookie.split(";");
     for (let i = 0; i < ca.length; i++) {
       let c = ca[i];
-      while (c.charAt(0) === ' ') {
+      while (c.charAt(0) === " ") {
         c = c.substring(1);
       }
       if (c.indexOf(name) === 0) {
         return c.substring(name.length, c.length);
       }
     }
-    return '';
+    return "";
   }
   useEffect(() => {
     pubnub.subscribe({
@@ -506,7 +541,7 @@ export const ConsultTabs: React.FC = () => {
         if (
           message.message.url &&
           message.message.fileType &&
-          message.message.fileType === 'image' &&
+          message.message.fileType === "image" &&
           message.message.id !== doctorId
         ) {
           const data = {
@@ -514,7 +549,11 @@ export const ConsultTabs: React.FC = () => {
           };
           setDocumentArray(data);
         }
-        if (message.message.url && message.message.fileType && message.message.fileType === 'pdf') {
+        if (
+          message.message.url &&
+          message.message.fileType &&
+          message.message.fileType === "pdf"
+        ) {
           const data = {
             documentPath: message.message.url,
           };
@@ -541,13 +580,16 @@ export const ConsultTabs: React.FC = () => {
     return () => {
       postDoctorConsultEventAction(
         WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW,
-        getCookieValue('displayId')
+        getCookieValue("displayId")
       );
       pubnub.unsubscribe({ channels: [appointmentId] });
     };
   }, []);
 
-  const postDoctorConsultEventAction = (eventType: WebEngageEvent, displayId: string) => {
+  const postDoctorConsultEventAction = (
+    eventType: WebEngageEvent,
+    displayId: string
+  ) => {
     console.log(eventType, displayId);
     let consultTypeMode: ConsultMode = ConsultMode.BOTH;
     if (consultType.includes(ConsultMode.ONLINE)) {
@@ -556,12 +598,15 @@ export const ConsultTabs: React.FC = () => {
       consultTypeMode = ConsultMode.PHYSICAL;
     }
     const inputParam: DoctorConsultEventInput = {
-      mobileNumber: getCookieValue('patientMobile'),
+      mobileNumber: getCookieValue("patientMobile"),
       eventName: eventType,
       consultID: appointmentId,
       displayId: displayId,
       consultMode: consultTypeMode,
-      doctorFullName: currentPatient && currentPatient.mobileNumber ? currentPatient.fullName : '',
+      doctorFullName:
+        currentPatient && currentPatient.mobileNumber
+          ? currentPatient.fullName
+          : "",
     };
     client
       .mutate<PostDoctorConsultEvent, PostDoctorConsultEventVariables>({
@@ -577,19 +622,19 @@ export const ConsultTabs: React.FC = () => {
         console.log(`${eventType} webengage event registration failed.`);
         const patientName =
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
+          " " +
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
         const logObject = {
-          api: 'PostDoctorConsultEvent',
+          api: "PostDoctorConsultEvent",
           inputParam: JSON.stringify(inputParam),
           appointmentId: appointmentId,
           doctorId: currentPatient!.id,
           doctorDisplayName: currentPatient!.displayName,
           patientId: params.patientId,
           patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          currentTime: moment(new Date()).format("MMMM DD YYYY h:mm:ss a"),
           appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
+            "MMMM DD YYYY h:mm:ss a"
           ),
           error: JSON.stringify(error),
         };
@@ -597,12 +642,16 @@ export const ConsultTabs: React.FC = () => {
         sessionClient.notify(JSON.stringify(logObject));
       });
   };
-  const getPrismUrls = (client: ApolloClient<object>, patientId: string, fileIds: string[]) => {
+  const getPrismUrls = (
+    client: ApolloClient<object>,
+    patientId: string,
+    fileIds: string[]
+  ) => {
     return new Promise((res, rej) => {
       client
         .query<downloadDocuments>({
           query: DOWNLOAD_DOCUMENTS,
-          fetchPolicy: 'no-cache',
+          fetchPolicy: "no-cache",
           variables: {
             downloadDocumentsInput: {
               patientId: patientId,
@@ -650,32 +699,38 @@ export const ConsultTabs: React.FC = () => {
     );
   };
   const createSDCasesheetCall = (flag: boolean) => {
-    setError('Creating Casesheet. Please wait....');
+    setError("Creating Casesheet. Please wait....");
     mutationCreateSrdCaseSheet()
       .then((response) => {
-        window.location.href = clientRoutes.ConsultTabs(appointmentId, patientId, String(tabValue));
+        window.location.href = clientRoutes.ConsultTabs(
+          appointmentId,
+          patientId,
+          String(tabValue)
+        );
       })
       .catch((e: ApolloError) => {
         const patientName =
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
+          " " +
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
         const logObject = {
-          api: 'CreateSeniorDoctorCaseSheet',
+          api: "CreateSeniorDoctorCaseSheet",
           appointmentId: appointmentId,
           doctorId: currentPatient!.id,
           doctorDisplayName: currentPatient!.displayName,
           patientId: params.patientId,
           patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          currentTime: moment(new Date()).format("MMMM DD YYYY h:mm:ss a"),
           appointmentDateTime: appointmentDateTime
-            ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
-            : '',
+            ? moment(new Date(appointmentDateTime)).format(
+                "MMMM DD YYYY h:mm:ss a"
+              )
+            : "",
           error: JSON.stringify(e),
         };
 
         sessionClient.notify(JSON.stringify(logObject));
-        setError('Unable to load Consult.');
+        setError("Unable to load Consult.");
       });
   };
   /* case sheet data*/
@@ -684,19 +739,22 @@ export const ConsultTabs: React.FC = () => {
       client
         .query<GetCaseSheet>({
           query: GET_CASESHEET,
-          fetchPolicy: 'no-cache',
+          fetchPolicy: "no-cache",
           variables: { appointmentId: appointmentId },
         })
         .then((_data) => {
           setCasesheetInfo(_data.data);
-          setError('');
-          if (_data!.data!.getCaseSheet!.caseSheetDetails.doctorId !== doctorId && !isSecretary) {
+          setError("");
+          if (
+            _data!.data!.getCaseSheet!.caseSheetDetails.doctorId !== doctorId &&
+            !isSecretary
+          ) {
             setIsUnauthorized(true);
           } else {
             _data!.data!.getCaseSheet!.caseSheetDetails &&
             _data!.data!.getCaseSheet!.caseSheetDetails.id
               ? setCaseSheetId(_data!.data!.getCaseSheet!.caseSheetDetails.id)
-              : '';
+              : "";
             _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
               ? setDiagnosis(
                   (_data!.data!.getCaseSheet!.caseSheetDetails!
@@ -727,7 +785,8 @@ export const ConsultTabs: React.FC = () => {
                     .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
                 )
               : setMedicinePrescription([]);
-            _data!.data!.getCaseSheet!.caseSheetDetails!.removedMedicinePrescription
+            _data!.data!.getCaseSheet!.caseSheetDetails!
+              .removedMedicinePrescription
               ? setRemovedMedicinePrescription(
                   (_data!.data!.getCaseSheet!.caseSheetDetails!
                     .removedMedicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
@@ -735,14 +794,16 @@ export const ConsultTabs: React.FC = () => {
               : setRemovedMedicinePrescription([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.notes
               ? setSRDNotes(
-                  (_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string
+                  (_data!.data!.getCaseSheet!.caseSheetDetails!
+                    .notes as unknown) as string
                 )
-              : setSRDNotes('');
+              : setSRDNotes("");
             _data!.data!.getCaseSheet!.juniorDoctorNotes
               ? setJuniorDoctorNotes(
-                  (_data!.data!.getCaseSheet!.juniorDoctorNotes as unknown) as string
+                  (_data!.data!.getCaseSheet!
+                    .juniorDoctorNotes as unknown) as string
                 )
-              : setJuniorDoctorNotes('');
+              : setJuniorDoctorNotes("");
             _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
               ? setConsultType(([
                   _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
@@ -755,9 +816,11 @@ export const ConsultTabs: React.FC = () => {
               : setFollowUp([]);
 
             _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays &&
-              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays !== null &&
+              _data!.data!.getCaseSheet!.caseSheetDetails!
+                .followUpAfterInDays !== null &&
               setFollowUpAfterInDays(([
-                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
+                _data!.data!.getCaseSheet!.caseSheetDetails!
+                  .followUpAfterInDays,
               ] as unknown) as string[]);
 
             _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
@@ -767,25 +830,33 @@ export const ConsultTabs: React.FC = () => {
               : setFollowUpDate([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.followUpConsultType
               ? setFollowUpConsultType(([
-                  _data!.data!.getCaseSheet!.caseSheetDetails!.followUpConsultType,
+                  _data!.data!.getCaseSheet!.caseSheetDetails!
+                    .followUpConsultType,
                 ] as unknown) as string[])
               : setFollowUpConsultType([]);
             _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
               ? setAppointmentStatus(
-                  _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
+                  _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!
+                    .status
                 )
-              : setAppointmentStatus('');
+              : setAppointmentStatus("");
 
-            _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
+            _data!.data!.getCaseSheet!.caseSheetDetails!
+              .prescriptionGeneratedDate
               ? setSdConsultationDate(
-                  _data!.data!.getCaseSheet!.caseSheetDetails!.prescriptionGeneratedDate
+                  _data!.data!.getCaseSheet!.caseSheetDetails!
+                    .prescriptionGeneratedDate
                 )
-              : setSdConsultationDate('');
+              : setSdConsultationDate("");
             _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
-              ? setSentToPatient(_data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient)
+              ? setSentToPatient(
+                  _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
+                )
               : setSentToPatient(false);
             _data!.data!.getCaseSheet!.caseSheetDetails!.version
-              ? setCasesheetVersion(_data.data.getCaseSheet.caseSheetDetails.version)
+              ? setCasesheetVersion(
+                  _data.data.getCaseSheet.caseSheetDetails.version
+                )
               : setCasesheetVersion(1);
             if (
               _data.data &&
@@ -793,7 +864,8 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet.caseSheetDetails &&
               _data.data.getCaseSheet.caseSheetDetails.appointment &&
               _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
-              _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED' &&
+              _data.data.getCaseSheet.caseSheetDetails.appointment.status ===
+                "COMPLETED" &&
               _data.data.getCaseSheet.caseSheetDetails.version === 1
             ) {
               setIsPdfPageOpen(true);
@@ -806,7 +878,8 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet.caseSheetDetails &&
               _data.data.getCaseSheet.caseSheetDetails.appointment &&
               _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
-              _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED' &&
+              _data.data.getCaseSheet.caseSheetDetails.appointment.status ===
+                "COMPLETED" &&
               _data.data.getCaseSheet.caseSheetDetails.version > 1
             ) {
               if (_data.data.getCaseSheet.caseSheetDetails.sentToPatient) {
@@ -824,8 +897,9 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet &&
               _data.data.getCaseSheet.caseSheetDetails &&
               _data.data.getCaseSheet.caseSheetDetails!.blobName &&
-              _data.data.getCaseSheet.caseSheetDetails!.blobName !== undefined &&
-              _data.data.getCaseSheet.caseSheetDetails!.blobName !== ''
+              _data.data.getCaseSheet.caseSheetDetails!.blobName !==
+                undefined &&
+              _data.data.getCaseSheet.caseSheetDetails!.blobName !== ""
             ) {
               const url = storageClient.getBlobUrl(
                 _data.data.getCaseSheet.caseSheetDetails.blobName
@@ -837,10 +911,12 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet &&
               _data.data.getCaseSheet.caseSheetDetails &&
               _data.data.getCaseSheet.caseSheetDetails.appointment &&
-              _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
+              _data.data.getCaseSheet.caseSheetDetails.appointment
+                .appointmentDateTime
             ) {
               setappointmentDateTime(
-                _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
+                _data.data.getCaseSheet.caseSheetDetails.appointment
+                  .appointmentDateTime
               );
             }
 
@@ -850,7 +926,9 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet.caseSheetDetails &&
               _data.data.getCaseSheet.caseSheetDetails.updatedDate
             ) {
-              setUpdatedDate(_data.data.getCaseSheet.caseSheetDetails.updatedDate);
+              setUpdatedDate(
+                _data.data.getCaseSheet.caseSheetDetails.updatedDate
+              );
             }
 
             // Refferal
@@ -862,7 +940,8 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet.caseSheetDetails.referralSpecialtyName
             ) {
               setReferralSpecialtyName(
-                _data.data.getCaseSheet.caseSheetDetails.referralSpecialtyName || ''
+                _data.data.getCaseSheet.caseSheetDetails
+                  .referralSpecialtyName || ""
               );
             }
 
@@ -874,7 +953,8 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet.caseSheetDetails.referralDescription
             ) {
               setReferralDescription(
-                _data.data.getCaseSheet.caseSheetDetails.referralDescription || ''
+                _data.data.getCaseSheet.caseSheetDetails.referralDescription ||
+                  ""
               );
             }
 
@@ -886,32 +966,46 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet.patientDetails &&
               _data.data.getCaseSheet.patientDetails.patientMedicalHistory
             ) {
-              setBp(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.bp || '');
+              setBp(
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory
+                  .bp || ""
+              );
               setDietAllergies(
-                _data.data.getCaseSheet.patientDetails.patientMedicalHistory.dietAllergies || ''
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory
+                  .dietAllergies || ""
               );
               setDrugAllergies(
-                _data.data.getCaseSheet.patientDetails.patientMedicalHistory.drugAllergies || ''
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory
+                  .drugAllergies || ""
               );
-              setHeight(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.height || '');
+              setHeight(
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory
+                  .height || ""
+              );
               setMenstrualHistory(
-                _data.data.getCaseSheet.patientDetails.patientMedicalHistory.menstrualHistory || ''
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory
+                  .menstrualHistory || ""
               );
               setPastMedicalHistory(
-                _data.data.getCaseSheet.patientDetails.patientMedicalHistory.pastMedicalHistory ||
-                  ''
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory
+                  .pastMedicalHistory || ""
               );
               setMedicationHistory(
-                _data.data.getCaseSheet.patientDetails.patientMedicalHistory.medicationHistory || ''
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory
+                  .medicationHistory || ""
               );
               setPastSurgicalHistory(
-                _data.data.getCaseSheet.patientDetails.patientMedicalHistory.pastSurgicalHistory ||
-                  ''
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory
+                  .pastSurgicalHistory || ""
               );
               setTemperature(
-                _data.data.getCaseSheet.patientDetails.patientMedicalHistory.temperature || ''
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory
+                  .temperature || ""
               );
-              setWeight(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.weight || '');
+              setWeight(
+                _data.data.getCaseSheet.patientDetails.patientMedicalHistory
+                  .weight || ""
+              );
             }
 
             const patientFamilyHistory =
@@ -929,22 +1023,24 @@ export const ConsultTabs: React.FC = () => {
             setFamilyHistory(
               patientFamilyHistory && patientFamilyHistory!.description
                 ? patientFamilyHistory!.description
-                : ''
+                : ""
             );
 
             setLifeStyle(
-              patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
+              patientLifeStyle && patientLifeStyle!.description
+                ? patientLifeStyle!.description
+                : ""
             );
 
             setOccupationHistory(
               patientLifeStyle && patientLifeStyle!.occupationHistory
                 ? patientLifeStyle!.occupationHistory
-                : ''
+                : ""
             );
 
             // set Jrd name and Jrd Casesheet submit date.
-            let jrdFirstName = '',
-              jrdLastName = '';
+            let jrdFirstName = "",
+              jrdLastName = "";
             if (
               _data &&
               _data.data &&
@@ -952,7 +1048,9 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet.juniorDoctorCaseSheet &&
               _data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate
             ) {
-              setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate);
+              setJrdSubmitDate(
+                _data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate
+              );
             }
 
             if (
@@ -960,11 +1058,14 @@ export const ConsultTabs: React.FC = () => {
               _data.data &&
               _data.data.getCaseSheet &&
               _data.data.getCaseSheet.juniorDoctorCaseSheet &&
-              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
-              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.firstName
+              _data.data.getCaseSheet.juniorDoctorCaseSheet
+                .createdDoctorProfile &&
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile
+                .firstName
             ) {
               jrdFirstName =
-                _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.firstName;
+                _data.data.getCaseSheet.juniorDoctorCaseSheet
+                  .createdDoctorProfile.firstName;
             }
 
             if (
@@ -972,11 +1073,14 @@ export const ConsultTabs: React.FC = () => {
               _data.data &&
               _data.data.getCaseSheet &&
               _data.data.getCaseSheet.juniorDoctorCaseSheet &&
-              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
-              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName
+              _data.data.getCaseSheet.juniorDoctorCaseSheet
+                .createdDoctorProfile &&
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile
+                .lastName
             ) {
               jrdLastName =
-                _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName;
+                _data.data.getCaseSheet.juniorDoctorCaseSheet
+                  .createdDoctorProfile.lastName;
             }
             setJrdName(`${jrdFirstName} ${jrdLastName}`);
             if (
@@ -986,46 +1090,56 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet.juniorDoctorCaseSheet &&
               _data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate
             ) {
-              setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate);
+              setJrdSubmitDate(
+                _data.data.getCaseSheet.juniorDoctorCaseSheet.updatedDate
+              );
             }
             // -------------------------------------------------------------- //
             navigator.mediaDevices
               .getUserMedia({ audio: true, video: false })
               .then((stream) => {
-                console.log('Got stream', stream);
+                console.log("Got stream", stream);
                 setCameraMicPermission(true);
               })
               .catch((err) => {
                 setCameraMicPermission(false);
-                console.log('GUM failed with error', err);
+                console.log("GUM failed with error", err);
               });
             // -------------------------------------------------------------- //
             const displayIdStr = `displayId=${
-              _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.displayId
+              _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!
+                .displayId
             }`;
-            document.cookie = displayIdStr + ';path=/;';
+            document.cookie = displayIdStr + ";path=/;";
             const patientMobileStr = `patientMobile=${
               _data!.data!.getCaseSheet!.patientDetails!.mobileNumber
             }`;
-            document.cookie = patientMobileStr + ';path=/;';
+            document.cookie = patientMobileStr + ";path=/;";
             postDoctorConsultEventAction(
               WebEngageEvent.DOCTOR_IN_CHAT_WINDOW,
-              _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.displayId
+              _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!
+                .displayId
             );
           }
-          console.log(_data!.data!.getCaseSheet, '9999');
+          console.log(_data!.data!.getCaseSheet, "9999");
         })
         .catch((error: ApolloError) => {
-          const networkErrorMessage = error.networkError ? error.networkError.message : null;
+          const networkErrorMessage = error.networkError
+            ? error.networkError.message
+            : null;
           const allMessages = error.graphQLErrors
             .map((e) => e.message)
             .concat(networkErrorMessage ? networkErrorMessage : []);
-          const isCasesheetNotExists = allMessages.includes(AphErrorMessages.NO_CASESHEET_EXIST);
+          const isCasesheetNotExists = allMessages.includes(
+            AphErrorMessages.NO_CASESHEET_EXIST
+          );
           if (isCasesheetNotExists) {
             //setError('Creating Casesheet. Please wait....');
             createSDCasesheetCall(true);
           }
-          const isUnauthorized = allMessages.includes(AphErrorMessages.UNAUTHORIZED);
+          const isUnauthorized = allMessages.includes(
+            AphErrorMessages.UNAUTHORIZED
+          );
           if (isUnauthorized) setIsUnauthorized(true);
         })
         .finally(() => {
@@ -1033,7 +1147,7 @@ export const ConsultTabs: React.FC = () => {
         });
       return () => {
         const cookieStr = `action=`;
-        document.cookie = cookieStr + ';path=/;';
+        document.cookie = cookieStr + ";path=/;";
       };
     }
 
@@ -1041,46 +1155,53 @@ export const ConsultTabs: React.FC = () => {
       client
         .query<GetJuniorDoctorCaseSheet, GetJuniorDoctorCaseSheetVariables>({
           query: GET_CASESHEET_JRD,
-          fetchPolicy: 'no-cache',
+          fetchPolicy: "no-cache",
           variables: { appointmentId: appointmentId },
         })
         .then((_data) => {
           setCasesheetInfo(_data.data);
-          setError('');
+          setError("");
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails &&
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id
-            ? setCaseSheetId(_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id)
-            : '';
+            ? setCaseSheetId(
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id
+              )
+            : "";
 
           const patientFamilyHistory =
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails &&
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.familyHistory
-              ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.familyHistory[0]
+              ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
+                  .familyHistory[0]
               : null;
 
           const patientLifeStyle =
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails &&
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.lifeStyle
-              ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.lifeStyle[0]
+              ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
+                  .lifeStyle[0]
               : null;
 
           setFamilyHistory(
             patientFamilyHistory && patientFamilyHistory!.description
               ? patientFamilyHistory!.description
-              : ''
+              : ""
           );
 
           setLifeStyle(
-            patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
+            patientLifeStyle && patientLifeStyle!.description
+              ? patientLifeStyle!.description
+              : ""
           );
 
           setOccupationHistory(
             patientLifeStyle && patientLifeStyle!.occupationHistory
               ? patientLifeStyle!.occupationHistory
-              : ''
+              : ""
           );
 
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !== null
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosis !==
+          null
             ? setDiagnosis(
                 (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
                   .diagnosis as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
@@ -1092,19 +1213,22 @@ export const ConsultTabs: React.FC = () => {
                   .symptoms as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
               )
             : setSymptoms([]);
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.otherInstructions
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+            .otherInstructions
             ? setOtherInstructions(
                 (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
                   .otherInstructions as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[]
               )
             : setOtherInstructions([]);
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+            .diagnosticPrescription
             ? setDiagnosticPrescription(
                 (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
                   .diagnosticPrescription as unknown) as any[]
               )
             : setDiagnosticPrescription([]);
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+            .medicinePrescription
             ? setMedicinePrescription(
                 (_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
                   .medicinePrescription as unknown) as any
@@ -1113,34 +1237,41 @@ export const ConsultTabs: React.FC = () => {
 
           _data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes
             ? setJuniorDoctorNotes(
-                (_data!.data!.getJuniorDoctorCaseSheet!.juniorDoctorNotes as unknown) as string
+                (_data!.data!.getJuniorDoctorCaseSheet!
+                  .juniorDoctorNotes as unknown) as string
               )
-            : setJuniorDoctorNotes('');
+            : setJuniorDoctorNotes("");
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.consultType,
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .consultType,
               ] as unknown) as string[])
             : setConsultType([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUp
             ? setFollowUp(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUp,
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .followUp,
               ] as unknown) as boolean[])
             : setFollowUp([]);
-          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpAfterInDays
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+            .followUpAfterInDays
             ? setFollowUpAfterInDays(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpAfterInDays,
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .followUpAfterInDays,
               ] as unknown) as string[])
             : setFollowUpAfterInDays([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate
             ? setFollowUpDate(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate,
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
 
           /* patient personal data state vars */
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate
             ? setFollowUpDate(([
-                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.followUpDate,
+                _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
           if (
@@ -1148,17 +1279,22 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet &&
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
             _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment &&
-            _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.appointmentDateTime
+            _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment
+              .appointmentDateTime
           ) {
             setappointmentDateTime(
-              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.appointmentDateTime
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.appointment
+                .appointmentDateTime
             );
           }
           const cardStripArr = [];
           if (
-            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth &&
-            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth !== null &&
-            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth !== ''
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
+              .dateOfBirth &&
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
+              .dateOfBirth !== null &&
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!
+              .dateOfBirth !== ""
           ) {
             cardStripArr.push(
               Math.abs(
@@ -1171,16 +1307,26 @@ export const ConsultTabs: React.FC = () => {
           }
           if (
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender &&
-            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender !== null
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender !==
+              null
           ) {
-            if (_data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender === Gender.FEMALE) {
-              cardStripArr.push('F');
+            if (
+              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender ===
+              Gender.FEMALE
+            ) {
+              cardStripArr.push("F");
             }
-            if (_data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender === Gender.MALE) {
-              cardStripArr.push('M');
+            if (
+              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender ===
+              Gender.MALE
+            ) {
+              cardStripArr.push("M");
             }
-            if (_data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender === Gender.OTHER) {
-              cardStripArr.push('O');
+            if (
+              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender ===
+              Gender.OTHER
+            ) {
+              cardStripArr.push("O");
             }
           }
 
@@ -1193,7 +1339,9 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getJuniorDoctorCaseSheet.patientDetails &&
             _data.data.getJuniorDoctorCaseSheet.patientDetails.gender
           ) {
-            setGender(_data.data.getJuniorDoctorCaseSheet.patientDetails.gender);
+            setGender(
+              _data.data.getJuniorDoctorCaseSheet.patientDetails.gender
+            );
           }
 
           // patient medical and family history
@@ -1202,44 +1350,48 @@ export const ConsultTabs: React.FC = () => {
             _data.data &&
             _data.data.getJuniorDoctorCaseSheet &&
             _data.data.getJuniorDoctorCaseSheet.patientDetails &&
-            _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
+            _data.data.getJuniorDoctorCaseSheet.patientDetails
+              .patientMedicalHistory
           ) {
             setBp(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.bp || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails
+                .patientMedicalHistory.bp || ""
             );
             setDietAllergies(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
-                .dietAllergies || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails
+                .patientMedicalHistory.dietAllergies || ""
             );
             setDrugAllergies(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
-                .drugAllergies || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails
+                .patientMedicalHistory.drugAllergies || ""
             );
             setHeight(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.height || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails
+                .patientMedicalHistory.height || ""
             );
             setMenstrualHistory(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
-                .menstrualHistory || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails
+                .patientMedicalHistory.menstrualHistory || ""
             );
             setPastMedicalHistory(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
-                .medicationHistory || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails
+                .patientMedicalHistory.medicationHistory || ""
             );
             setMedicationHistory(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
-                .pastMedicalHistory || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails
+                .patientMedicalHistory.pastMedicalHistory || ""
             );
             setPastSurgicalHistory(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
-                .pastSurgicalHistory || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails
+                .patientMedicalHistory.pastSurgicalHistory || ""
             );
             setTemperature(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory
-                .temperature || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails
+                .patientMedicalHistory.temperature || ""
             );
             setWeight(
-              _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.weight || ''
+              _data.data.getJuniorDoctorCaseSheet.patientDetails
+                .patientMedicalHistory.weight || ""
             );
 
             // Refferal
@@ -1248,10 +1400,12 @@ export const ConsultTabs: React.FC = () => {
               _data.data &&
               _data.data.getJuniorDoctorCaseSheet &&
               _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
-              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails
+                .referralSpecialtyName
             ) {
               setReferralSpecialtyName(
-                _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralSpecialtyName || ''
+                _data.data.getJuniorDoctorCaseSheet.caseSheetDetails
+                  .referralSpecialtyName || ""
               );
             }
 
@@ -1260,25 +1414,29 @@ export const ConsultTabs: React.FC = () => {
               _data.data &&
               _data.data.getJuniorDoctorCaseSheet &&
               _data.data.getJuniorDoctorCaseSheet.caseSheetDetails &&
-              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription
+              _data.data.getJuniorDoctorCaseSheet.caseSheetDetails
+                .referralDescription
             ) {
               setReferralDescription(
-                _data.data.getJuniorDoctorCaseSheet.caseSheetDetails.referralDescription || ''
+                _data.data.getJuniorDoctorCaseSheet.caseSheetDetails
+                  .referralDescription || ""
               );
             }
 
             // set Jrd name and Jrd Casesheet submit date.
-            let jrdFirstName = '',
-              jrdLastName = '';
+            let jrdFirstName = "",
+              jrdLastName = "";
             if (
               _data &&
               _data.data &&
               _data.data.getJuniorDoctorCaseSheet &&
               _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet &&
-              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.updatedDate
+              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
+                .updatedDate
             ) {
               setJrdSubmitDate(
-                _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.updatedDate
+                _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
+                  .updatedDate
               );
             }
 
@@ -1287,13 +1445,14 @@ export const ConsultTabs: React.FC = () => {
               _data.data &&
               _data.data.getJuniorDoctorCaseSheet &&
               _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet &&
-              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
-              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile
-                .firstName
+              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
+                .createdDoctorProfile &&
+              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
+                .createdDoctorProfile.firstName
             ) {
               jrdFirstName =
-                _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile
-                  .firstName;
+                _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
+                  .createdDoctorProfile.firstName;
             }
 
             if (
@@ -1301,43 +1460,48 @@ export const ConsultTabs: React.FC = () => {
               _data.data &&
               _data.data.getJuniorDoctorCaseSheet &&
               _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet &&
-              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
-              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile
-                .lastName
+              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
+                .createdDoctorProfile &&
+              _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
+                .createdDoctorProfile.lastName
             ) {
               jrdLastName =
-                _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile
-                  .lastName;
+                _data.data.getJuniorDoctorCaseSheet.juniorDoctorCaseSheet
+                  .createdDoctorProfile.lastName;
             }
           }
         })
         .catch((error: ApolloError) => {
           const patientName =
             casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-            ' ' +
+            " " +
             casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
           const logObject = {
-            api: 'GetJuniorDoctorCaseSheet',
+            api: "GetJuniorDoctorCaseSheet",
             appointmentId: appointmentId,
             doctorId: currentPatient!.id,
             doctorDisplayName: currentPatient!.displayName,
             patientId: params.patientId,
             patientName: patientName,
-            currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+            currentTime: moment(new Date()).format("MMMM DD YYYY h:mm:ss a"),
             appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-              'MMMM DD YYYY h:mm:ss a'
+              "MMMM DD YYYY h:mm:ss a"
             ),
             error: JSON.stringify(error),
           };
 
           sessionClient.notify(JSON.stringify(logObject));
-          const networkErrorMessage = error.networkError ? error.networkError.message : null;
+          const networkErrorMessage = error.networkError
+            ? error.networkError.message
+            : null;
           const allMessages = error.graphQLErrors
             .map((e) => e.message)
             .concat(networkErrorMessage ? networkErrorMessage : []);
-          const isCasesheetNotExists = allMessages.includes(AphErrorMessages.NO_CASESHEET_EXIST);
+          const isCasesheetNotExists = allMessages.includes(
+            AphErrorMessages.NO_CASESHEET_EXIST
+          );
           if (isCasesheetNotExists) {
-            setError('Casesheet is not created by Doctor.....');
+            setError("Casesheet is not created by Doctor.....");
           }
         })
         .finally(() => {
@@ -1345,7 +1509,7 @@ export const ConsultTabs: React.FC = () => {
         });
       return () => {
         const cookieStr = `action=`;
-        document.cookie = cookieStr + ';path=/;';
+        document.cookie = cookieStr + ";path=/;";
       };
     }
   }, []);
@@ -1358,7 +1522,7 @@ export const ConsultTabs: React.FC = () => {
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
         query: SEND_CALL_NOTIFICATION,
-        fetchPolicy: 'no-cache',
+        fetchPolicy: "no-cache",
         variables: {
           appointmentId: appointmentId,
           patientId: patientId,
@@ -1378,7 +1542,7 @@ export const ConsultTabs: React.FC = () => {
         ) {
           if (isCall) {
             const cookieStr = `doctorCallId=${_data.data.sendCallNotification.callDetails.id}`;
-            document.cookie = cookieStr + ';path=/;';
+            document.cookie = cookieStr + ";path=/;";
             setcallId(_data.data.sendCallNotification.callDetails.id);
           } else {
             setChatRecordId(_data.data.sendCallNotification.callDetails.id);
@@ -1388,10 +1552,10 @@ export const ConsultTabs: React.FC = () => {
       .catch((error: ApolloError) => {
         const patientName =
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
+          " " +
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
         const logObject = {
-          api: 'SendCallNotification',
+          api: "SendCallNotification",
           inputParam: JSON.stringify({
             appointmentId: appointmentId,
             patientId: patientId,
@@ -1405,19 +1569,22 @@ export const ConsultTabs: React.FC = () => {
           doctorDisplayName: currentPatient!.displayName,
           patientId: params.patientId,
           patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          currentTime: moment(new Date()).format("MMMM DD YYYY h:mm:ss a"),
           appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
+            "MMMM DD YYYY h:mm:ss a"
           ),
           error: JSON.stringify(error),
         };
 
         sessionClient.notify(JSON.stringify(logObject));
-        console.log('An error occurred while sending notification to Client.');
+        console.log("An error occurred while sending notification to Client.");
       });
   };
 
-  const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
+  const sendCallNotificationFn = (
+    callType: APPT_CALL_TYPE,
+    isCall: boolean
+  ) => {
     pubnubPresence((patient: number, doctor: number) => {
       sendCallNotificationFnWithCheck(callType, isCall, patient + doctor);
     });
@@ -1425,7 +1592,10 @@ export const ConsultTabs: React.FC = () => {
 
   const sendToPatientAction = () => {
     client
-      .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
+      .mutate<
+        UpdatePatientPrescriptionSentStatus,
+        UpdatePatientPrescriptionSentStatusVariables
+      >({
         mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
         variables: {
           caseSheetId: caseSheetId,
@@ -1453,13 +1623,15 @@ export const ConsultTabs: React.FC = () => {
         if (
           _data &&
           _data!.data!.updatePatientPrescriptionSentStatus &&
-          _data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate
+          _data!.data!.updatePatientPrescriptionSentStatus
+            .prescriptionGeneratedDate
         ) {
           setSdConsultationDate(
-            _data!.data!.updatePatientPrescriptionSentStatus.prescriptionGeneratedDate
+            _data!.data!.updatePatientPrescriptionSentStatus
+              .prescriptionGeneratedDate
           );
         }
-        setAppointmentStatus('COMPLETED');
+        setAppointmentStatus("COMPLETED");
         setSentToPatient(true);
         setIsPdfPageOpen(true);
         setUrlToPatient(true);
@@ -1467,10 +1639,10 @@ export const ConsultTabs: React.FC = () => {
       .catch((e) => {
         const patientName =
           casesheetInfo.getCaseSheet.patientDetails.firstName +
-          ' ' +
+          " " +
           casesheetInfo.getCaseSheet.patientDetails.lastName;
         const logObject = {
-          api: 'UpdatePatientPrescriptionSentStatus',
+          api: "UpdatePatientPrescriptionSentStatus",
           inputParam: JSON.stringify({
             caseSheetId: caseSheetId,
             sentToPatient: true,
@@ -1480,16 +1652,16 @@ export const ConsultTabs: React.FC = () => {
           doctorDisplayName: currentPatient!.displayName,
           patientId: params.patientId,
           patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          currentTime: moment(new Date()).format("MMMM DD YYYY h:mm:ss a"),
           appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
+            "MMMM DD YYYY h:mm:ss a"
           ),
           error: JSON.stringify(error),
         };
 
         sessionClient.notify(JSON.stringify(logObject));
-        alert('Error occured while sending prescription to patient');
-        console.log('Error occured while sending prescription to patient', e);
+        alert("Error occured while sending prescription to patient");
+        console.log("Error occured while sending prescription to patient", e);
         setSaving(false);
       });
   };
@@ -1504,39 +1676,50 @@ export const ConsultTabs: React.FC = () => {
         removedMedicinePrescriptionFinal = null;
       if (symptoms && symptoms.length > 0) {
         symptomsFinal = symptoms.map((symptom) => {
-          return _omit(symptom, '__typename');
+          return _omit(symptom, "__typename");
         });
       }
       if (diagnosis && diagnosis.length > 0) {
         diagnosisFinal = diagnosis.map((diagnosis) => {
-          return _omit(diagnosis, ['__typename', 'id']);
+          return _omit(diagnosis, ["__typename", "id"]);
         });
       }
       if (diagnosticPrescription && diagnosticPrescription.length > 0) {
-        const diagnosticPrescriptionFinal1 = diagnosticPrescription.map((prescription) => {
-          return _omit(prescription, ['__typename']);
-        });
+        const diagnosticPrescriptionFinal1 = diagnosticPrescription.map(
+          (prescription) => {
+            return _omit(prescription, ["__typename"]);
+          }
+        );
         // convert itemName to itemname
-        diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
-          return {
-            itemname: prescription.itemName ? prescription.itemName : prescription.itemname,
-            testInstruction: prescription.testInstruction,
-          };
-        });
+        diagnosticPrescriptionFinal = diagnosticPrescription.map(
+          (prescription) => {
+            return {
+              itemname: prescription.itemName
+                ? prescription.itemName
+                : prescription.itemname,
+              testInstruction: prescription.testInstruction,
+            };
+          }
+        );
       }
       if (medicinePrescription && medicinePrescription.length > 0) {
         medicinePrescriptionFinal = medicinePrescription.map((prescription) => {
-          return _omit(prescription, ['__typename']);
+          return _omit(prescription, ["__typename"]);
         });
       }
-      if (removedMedicinePrescription && removedMedicinePrescription.length > 0) {
-        removedMedicinePrescriptionFinal = removedMedicinePrescription.map((prescription) => {
-          return _omit(prescription, ['__typename']);
-        });
+      if (
+        removedMedicinePrescription &&
+        removedMedicinePrescription.length > 0
+      ) {
+        removedMedicinePrescriptionFinal = removedMedicinePrescription.map(
+          (prescription) => {
+            return _omit(prescription, ["__typename"]);
+          }
+        );
       }
       if (otherInstructions && otherInstructions.length > 0) {
         otherInstructionsFinal = otherInstructions.map((instruction) => {
-          return _omit(instruction, ['__typename']);
+          return _omit(instruction, ["__typename"]);
         });
       }
 
@@ -1555,11 +1738,11 @@ export const ConsultTabs: React.FC = () => {
 
       const inputVariables = {
         symptoms: symptomsFinal,
-        notes: notes || '',
+        notes: notes || "",
         diagnosis: diagnosisFinal,
         diagnosticPrescription: diagnosticPrescriptionFinal,
         followUp: followUp[0],
-        followUpDate: '2020-08-31',
+        followUpDate: "2020-08-31",
         followUpAfterInDays: parseInt(followUpAfterInDays[0], 10),
         followUpConsultType:
           followUpConsultType[0] === APPOINTMENT_TYPE.PHYSICAL
@@ -1569,21 +1752,21 @@ export const ConsultTabs: React.FC = () => {
         medicinePrescription: medicinePrescriptionFinal,
         removedMedicinePrescription: removedMedicinePrescriptionFinal,
         id: caseSheetId,
-        lifeStyle: lifeStyle || '',
-        familyHistory: familyHistory || '',
-        dietAllergies: dietAllergies || '',
-        drugAllergies: drugAllergies || '',
-        menstrualHistory: menstrualHistory || '',
-        pastMedicalHistory: pastMedicalHistory || '',
-        pastSurgicalHistory: pastSurgicalHistory || '',
-        height: height || '',
-        temperature: temperature || '',
-        weight: weight || '',
-        bp: bp || '',
-        medicationHistory: medicationHistory || '',
-        occupationHistory: occupationHistory || '',
-        referralSpecialtyName: referralSpecialtyName || '',
-        referralDescription: referralDescription || '',
+        lifeStyle: lifeStyle || "",
+        familyHistory: familyHistory || "",
+        dietAllergies: dietAllergies || "",
+        drugAllergies: drugAllergies || "",
+        menstrualHistory: menstrualHistory || "",
+        pastMedicalHistory: pastMedicalHistory || "",
+        pastSurgicalHistory: pastSurgicalHistory || "",
+        height: height || "",
+        temperature: temperature || "",
+        weight: weight || "",
+        bp: bp || "",
+        medicationHistory: medicationHistory || "",
+        occupationHistory: occupationHistory || "",
+        referralSpecialtyName: referralSpecialtyName || "",
+        referralDescription: referralDescription || "",
       };
       client
         .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
@@ -1591,7 +1774,7 @@ export const ConsultTabs: React.FC = () => {
           variables: {
             ModifyCaseSheetInput: inputVariables,
           },
-          fetchPolicy: 'no-cache',
+          fetchPolicy: "no-cache",
         })
         .then((_data) => {
           setUpdatedDate(_data.data.modifyCaseSheet.updatedDate);
@@ -1605,7 +1788,9 @@ export const ConsultTabs: React.FC = () => {
           }
         })
         .catch((e) => {
-          const networkErrorMessage = e.networkError ? e.networkError.message : null;
+          const networkErrorMessage = e.networkError
+            ? e.networkError.message
+            : null;
           const allMessages = e.graphQLErrors
             .map((error: any) => error.message)
             .concat(networkErrorMessage ? networkErrorMessage : []);
@@ -1614,28 +1799,32 @@ export const ConsultTabs: React.FC = () => {
           );
           setSaving(false);
           if (isCasesheetSentToPAtientAlready) {
-            alert('Case sheet cannot be modified now as the consult is already completed');
+            alert(
+              "Case sheet cannot be modified now as the consult is already completed"
+            );
             window.location.reload();
           } else {
             const error = e
               ? JSON.parse(JSON.stringify(e))
-              : 'Error occured while update casesheet';
+              : "Error occured while update casesheet";
             const errorMessage = e ? error.message : error;
 
-            console.error('Error occured while update casesheet', e);
+            console.error("Error occured while update casesheet", e);
             alert(errorMessage);
             const logObject = {
-              api: 'ModifyCaseSheet',
+              api: "ModifyCaseSheet",
               inputParam: JSON.stringify(inputVariables),
               appointmentId: appointmentId,
               doctorId: currentPatient!.id,
               doctorDisplayName: currentPatient!.displayName,
               patientId: params.patientId,
-              currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+              currentTime: moment(new Date()).format("MMMM DD YYYY h:mm:ss a"),
               appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-                'MMMM DD YYYY h:mm:ss a'
+                "MMMM DD YYYY h:mm:ss a"
               ),
-              error: e ? JSON.stringify(e) : 'Error occured while update casesheet',
+              error: e
+                ? JSON.stringify(e)
+                : "Error occured while update casesheet",
             };
 
             sessionClient.notify(JSON.stringify(logObject));
@@ -1643,9 +1832,9 @@ export const ConsultTabs: React.FC = () => {
         });
     } catch (error) {
       setSaving(false);
-      alert('Something went wrong, please try again.');
+      alert("Something went wrong, please try again.");
       const ModifyCaseSheetsdUncaughtErr = {
-        api: 'ModifyCaseSheetsdUncaughtErr',
+        api: "ModifyCaseSheetsdUncaughtErr",
         appointmentId: appointmentId,
         error: JSON.stringify(error),
       };
@@ -1670,16 +1859,16 @@ export const ConsultTabs: React.FC = () => {
             callType: APPT_CALL_TYPE.CHAT,
           },
         },
-        fetchPolicy: 'no-cache',
+        fetchPolicy: "no-cache",
       })
       .then((_data) => {
         endCallNotificationAction(false);
-        setAppointmentStatus('COMPLETED');
+        setAppointmentStatus("COMPLETED");
         setIsClickedOnPriview(true);
         setIsClickedOnEdit(false);
         const text = {
           id: doctorId,
-          message: '^^#appointmentComplete',
+          message: "^^#appointmentComplete",
           isTyping: true,
           messageDate: new Date(),
           sentBy: REQUEST_ROLES.DOCTOR,
@@ -1697,10 +1886,10 @@ export const ConsultTabs: React.FC = () => {
       .catch((e) => {
         const patientName =
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
+          " " +
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
         const logObject = {
-          api: 'EndAppointmentSession',
+          api: "EndAppointmentSession",
           inputParam: JSON.stringify({
             appointmentId: appointmentId,
             status: STATUS.COMPLETED,
@@ -1710,9 +1899,9 @@ export const ConsultTabs: React.FC = () => {
           doctorDisplayName: currentPatient!.displayName,
           patientId: params.patientId,
           patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          currentTime: moment(new Date()).format("MMMM DD YYYY h:mm:ss a"),
           appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
+            "MMMM DD YYYY h:mm:ss a"
           ),
           error: JSON.stringify(e),
         };
@@ -1720,7 +1909,7 @@ export const ConsultTabs: React.FC = () => {
         sessionClient.notify(JSON.stringify(logObject));
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
-        console.log('Error occured while End casesheet', errorMessage, error);
+        console.log("Error occured while End casesheet", errorMessage, error);
         alert(errorMessage);
       });
   };
@@ -1742,16 +1931,16 @@ export const ConsultTabs: React.FC = () => {
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
         sendCallNotificationFn(APPT_CALL_TYPE.CHAT, false);
-        setError('');
+        setError("");
         setSaving(false);
       })
       .catch((e: any) => {
         const patientName =
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
+          " " +
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
         const logObject = {
-          api: 'CreateAppointmentSession',
+          api: "CreateAppointmentSession",
           inputParam: JSON.stringify({
             appointmentId: paramId,
             requestRole: REQUEST_ROLES.DOCTOR,
@@ -1761,27 +1950,30 @@ export const ConsultTabs: React.FC = () => {
           doctorDisplayName: currentPatient!.displayName,
           patientId: params.patientId,
           patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          currentTime: moment(new Date()).format("MMMM DD YYYY h:mm:ss a"),
           appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
+            "MMMM DD YYYY h:mm:ss a"
           ),
           error: JSON.stringify(error),
         };
 
         sessionClient.notify(JSON.stringify(logObject));
-        setError('Error occured creating session');
-        console.log('Error occured creating session', e);
+        setError("Error occured creating session");
+        console.log("Error occured creating session", e);
         setSaving(false);
       });
   };
 
   const setStartConsultAction = (flag: boolean) => {
-    setStartConsult('');
-    const cookieStr = `action=${flag ? 'videocall' : 'audiocall'}`;
-    document.cookie = cookieStr + ';path=/;';
+    setStartConsult("");
+    const cookieStr = `action=${flag ? "videocall" : "audiocall"}`;
+    document.cookie = cookieStr + ";path=/;";
     setTimeout(() => {
-      setStartConsult(flag ? 'videocall' : 'audiocall');
-      sendCallNotificationFn(flag ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO, true);
+      setStartConsult(flag ? "videocall" : "audiocall");
+      sendCallNotificationFn(
+        flag ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO,
+        true
+      );
     }, 10);
   };
 
@@ -1789,11 +1981,14 @@ export const ConsultTabs: React.FC = () => {
     setStartAppointment(startAppointment);
   };
 
-  const endCallNotificationActionCheckFn = (isCall: boolean, numberOfParticipants: number) => {
+  const endCallNotificationActionCheckFn = (
+    isCall: boolean,
+    numberOfParticipants: number
+  ) => {
     client
       .query<EndCallNotification, EndCallNotificationVariables>({
         query: END_CALL_NOTIFICATION,
-        fetchPolicy: 'no-cache',
+        fetchPolicy: "no-cache",
         variables: {
           appointmentCallId: isCall ? callId : chatRecordId,
           patientId: params.patientId,
@@ -1803,10 +1998,10 @@ export const ConsultTabs: React.FC = () => {
       .catch((error: ApolloError) => {
         const patientName =
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
+          " " +
           casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
         const logObject = {
-          api: 'EndCallNotification',
+          api: "EndCallNotification",
           inputParam: JSON.stringify({
             appointmentCallId: isCall ? callId : chatRecordId,
           }),
@@ -1815,14 +2010,14 @@ export const ConsultTabs: React.FC = () => {
           doctorDisplayName: currentPatient!.displayName,
           patientId: params.patientId,
           patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
+          currentTime: moment(new Date()).format("MMMM DD YYYY h:mm:ss a"),
           appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
+            "MMMM DD YYYY h:mm:ss a"
           ),
           error: JSON.stringify(error),
         };
         sessionClient.notify(JSON.stringify(logObject));
-        console.log('Error in Call Notification', error.message);
+        console.log("Error in Call Notification", error.message);
       });
   };
 
@@ -1832,7 +2027,9 @@ export const ConsultTabs: React.FC = () => {
     });
   };
 
-  const pubnubPresence = (callBack: (patientCount: number, doctorCount: number) => void) => {
+  const pubnubPresence = (
+    callBack: (patientCount: number, doctorCount: number) => void
+  ) => {
     pubnub
       .hereNow({ channels: [appointmentId], includeUUIDs: true })
       .then((response: any) => {
@@ -1840,9 +2037,9 @@ export const ConsultTabs: React.FC = () => {
         let doctorCount = 0;
         let paientsCount = 0;
         occupants.forEach((item: any) => {
-          if (item.uuid.indexOf('PATIENT') > -1) {
+          if (item.uuid.indexOf("PATIENT") > -1) {
             paientsCount = 1;
-          } else if (item.uuid.indexOf('DOCTOR') > -1) {
+          } else if (item.uuid.indexOf("DOCTOR") > -1) {
             doctorCount = 1;
           }
         });
@@ -1874,24 +2071,21 @@ export const ConsultTabs: React.FC = () => {
     };
 
     client
-      .mutate<saveAppointmentCallFeedback, saveAppointmentCallFeedbackVariables>({
+      .mutate<
+        saveAppointmentCallFeedback,
+        saveAppointmentCallFeedbackVariables
+      >({
         mutation: SAVE_APPOINTMENT_CALL_FEEDBACK,
         variables: {
           saveAppointmentCallFeedback: query,
         },
       })
       .then((_data: any) => {
-        alert('Thank you for sharing your reviews.');
+        alert("Thank you for sharing your reviews.");
       })
       .catch((e: any) => {
-        alert('Error in giving feedback. Please try again!');
+        alert("Error in giving feedback. Please try again!");
       });
-  };
-
-  const showRateCallModal = () => {
-    return (
-      <RateCall visible={giveRating} submitRatingCallback={(data) => submitRatingHandler(data)} />
-    );
   };
 
   const inEditMode =
@@ -1918,9 +2112,11 @@ export const ConsultTabs: React.FC = () => {
         </span>
       )}
 
-      {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
-      {loaded && error === '' && isUnauthorized && <Unauthorized />}
-      {loaded && error === '' && !isUnauthorized && (
+      {error && error !== "" && (
+        <Typography className={classes.tabRoot}>{error}</Typography>
+      )}
+      {loaded && error === "" && isUnauthorized && <Unauthorized />}
+      {loaded && error === "" && !isUnauthorized && (
         <CaseSheetContext.Provider
           value={{
             loading: !loaded,
@@ -1933,10 +2129,13 @@ export const ConsultTabs: React.FC = () => {
               ? casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails
               : casesheetInfo!.getCaseSheet!.patientDetails,
             appointmentInfo: isSecretary
-              ? casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment
+              ? casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .appointment
               : casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment,
             createdDoctorProfile:
-              !isSecretary && casesheetInfo!.getCaseSheet!.caseSheetDetails!.createdDoctorProfile,
+              !isSecretary &&
+              casesheetInfo!.getCaseSheet!.caseSheetDetails!
+                .createdDoctorProfile,
             followUpConsultType,
             setFollowUpConsultType,
             symptoms,
@@ -1970,12 +2169,14 @@ export const ConsultTabs: React.FC = () => {
             followUpDate,
             setFollowUpDate,
             healthVault: isSecretary
-              ? casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.healthVault
+              ? casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!
+                  .healthVault
               : casesheetInfo!.getCaseSheet!.patientDetails!.healthVault,
             appointmentDocuments: isSecretary
-              ? casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!
-                  .appointmentDocuments
-              : casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment!.appointmentDocuments,
+              ? casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .appointment!.appointmentDocuments
+              : casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment!
+                  .appointmentDocuments,
             pastAppointments: isSecretary
               ? casesheetInfo!.getJuniorDoctorCaseSheet!.pastAppointments
               : casesheetInfo!.getCaseSheet!.pastAppointments,
@@ -2026,16 +2227,24 @@ export const ConsultTabs: React.FC = () => {
             }}
             autoHide={true}
             style={{ height: 'calc(100vh - 65px)' }}
+
           > */}
-          {showRateCallModal()}
+          <RateCall
+            visible={giveRating}
+            setGiveRating={setGiveRating}
+            submitRatingCallback={(data) => submitRatingHandler(data)}
+          />
           <div className={classes.container}>
             <CallPopover
               setGiveRating={setGiveRating}
-              setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-              createSessionAction={createSessionAction}
-              saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) =>
-                saveCasesheetAction(flag, sendToPatientFlag)
+              setStartConsultAction={(flag: boolean) =>
+                setStartConsultAction(flag)
               }
+              createSessionAction={createSessionAction}
+              saveCasesheetAction={(
+                flag: boolean,
+                sendToPatientFlag: boolean
+              ) => saveCasesheetAction(flag, sendToPatientFlag)}
               endConsultAction={endConsultAction}
               appointmentId={appointmentId}
               appointmentDateTime={appointmentDateTime}
@@ -2057,9 +2266,13 @@ export const ConsultTabs: React.FC = () => {
               sessionClient={sessionClient}
               lastMsg={lastMsg}
               //presenceEventObject={presenceEventObject}
-              endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
+              endCallNotificationAction={(callId: boolean) =>
+                endCallNotificationAction(callId)
+              }
               hasCameraMicPermission={hasCameraMicPermission}
-              createSDCasesheetCall={(flag: boolean) => createSDCasesheetCall(flag)}
+              createSDCasesheetCall={(flag: boolean) =>
+                createSDCasesheetCall(flag)
+              }
               isNewprescriptionEditable={isNewprescriptionEditable}
               isNewPrescription={isNewPrescription}
               isClickedOnEdit={isClickedOnEdit}
@@ -2068,9 +2281,11 @@ export const ConsultTabs: React.FC = () => {
               setIsClickedOnPriview={setIsClickedOnPriview}
               tabValue={tabValue}
               showConfirmPrescription={showConfirmPrescription}
-              setShowConfirmPrescription={(flag: boolean) => setShowConfirmPrescription(flag)}
+              setShowConfirmPrescription={(flag: boolean) =>
+                setShowConfirmPrescription(flag)
+              }
             />
-            <div className={classes.tabContainer}>
+            <div className={classes.tabcontainer}>
               <div
                 className={
                   (inEditMode || isClickedOnEdit) && !isClickedOnPriview
@@ -2111,11 +2326,21 @@ export const ConsultTabs: React.FC = () => {
                     label="Chat"
                   />
                 </Tabs>
+
                 <div className={classes.tabContent}>
-                  <div className={tabValue !== 0 ? classes.none : classes.block}>
-                    {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
+                  <div
+                    className={tabValue !== 0 ? classes.none : classes.block}
+                  >
+                    {casesheetInfo ? (
+                      <CaseSheet startAppointment={startAppointment} />
+                    ) : (
+                      ""
+                    )}
                   </div>
-                  <div className={tabValue !== 1 ? classes.none : classes.block}>
+
+                  <div
+                    className={tabValue !== 1 ? classes.none : classes.block}
+                  >
                     <div className={classes.chatContainer}>
                       <ConsultRoom
                         startConsult={startConsult}
@@ -2138,6 +2363,7 @@ export const ConsultTabs: React.FC = () => {
                   </div>
                 </div>
               </div>
+
               <div
                 className={
                   inEditMode && isClickedOnPriview && !isClickedOnEdit
@@ -2162,7 +2388,7 @@ export const ConsultTabs: React.FC = () => {
           <div className={classes.tabHeader}>
             <Button className={classes.cross}>
               <img
-                src={require('images/ic_cross.svg')}
+                src={require("images/ic_cross.svg")}
                 alt=""
                 onClick={() => setIsConfirmDialogOpen(false)}
               />
@@ -2171,7 +2397,10 @@ export const ConsultTabs: React.FC = () => {
           <div className={classes.tabBody}>
             <h3>Are you sure you want to end your consult?</h3>
 
-            <Button className={classes.cancelConsult} onClick={() => setIsConfirmDialogOpen(false)}>
+            <Button
+              className={classes.cancelConsult}
+              onClick={() => setIsConfirmDialogOpen(false)}
+            >
               No
             </Button>
             <Button
@@ -2186,8 +2415,8 @@ export const ConsultTabs: React.FC = () => {
           </div>
           <div className={classes.contentTxt}>
             <span>
-              After ending the consult you will get the option to preview/edit case sheet and send
-              prescription to the patient
+              After ending the consult you will get the option to preview/edit
+              case sheet and send prescription to the patient
             </span>
           </div>
         </Paper>

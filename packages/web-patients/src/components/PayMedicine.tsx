@@ -437,6 +437,7 @@ export const PayMedicine: React.FC = (props) => {
     validateCouponResult,
     shopId,
     deliveryAddressId,
+    tatType,
   } = cartValues;
   const deliveryCharges =
     cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
@@ -596,6 +597,7 @@ export const PayMedicine: React.FC = (props) => {
           coupon: couponCode ? couponCode : null,
           deviceType: getDeviceType(),
           shopId: shopId,
+          tatType,
         },
       },
     }

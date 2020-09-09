@@ -389,6 +389,16 @@ export const Sitemap: React.FC = (props) => {
       ? sitemapData && sitemapData.doctorUrls && sitemapData.doctorUrls.length
       : sitemapData && sitemapData.medicinesUrls && sitemapData.medicinesUrls.length;
 
+  const doctorSitemapPages = Math.ceil(
+    sitemapData && sitemapData.doctorUrls && sitemapData.doctorUrls.length / 1000
+  );
+  const doctorSitemapArray = Array.from(Array(Number(doctorSitemapPages)), (_, x) => x + 1);
+
+  const medicineSitemapPages = Math.ceil(
+    sitemapData && sitemapData.medicinesUrls && sitemapData.medicinesUrls.length / 1000
+  );
+  const medicineSitemapArray = Array.from(Array(Number(medicineSitemapPages)), (_, x) => x + 1);
+
   return (
     <div className={classes.sitemapContainer}>
       <Header />
@@ -397,7 +407,7 @@ export const Sitemap: React.FC = (props) => {
           <div className={classes.sitemapHeader}>
             <div className={classes.sectionTitle}>
               <Typography component="h2">
-                <span className={classes.font48}>A</span>PPOLO 24|7 SITE MAP
+                <span className={classes.font48}>A</span>POLLO 24|7 SITE MAP
               </Typography>
             </div>
             <ol className={classes.breadcrumbs}>
@@ -405,7 +415,13 @@ export const Sitemap: React.FC = (props) => {
                 <a href={clientRoutes.welcome()}>Home</a>
               </li>
               <li className="active">
-                <a href="">Sitemap</a>
+                <a>
+                  {selected === 'sitemap'
+                    ? 'sitemap'
+                    : selected === 'doctors-sitemap'
+                    ? 'doctors sitemap'
+                    : 'medicines sitemap'}
+                </a>
               </li>
             </ol>
           </div>
@@ -429,7 +445,7 @@ export const Sitemap: React.FC = (props) => {
                     )}
                     <Typography>
                       {selected === 'sitemap'
-                        ? 'Apollo 24|7 Services'
+                        ? 'Apollo 24|7 Sitemap Index'
                         : selected === 'doctors-sitemap'
                         ? 'Doctor Sitemap'
                         : 'Medicine Sitemap'}
@@ -450,7 +466,7 @@ export const Sitemap: React.FC = (props) => {
                             history.replaceState(null, '', clientRoutes.sitemap('sitemap'));
                           }}
                         >
-                          <a>Apollo 24|7 Services</a>
+                          <a>Apollo 24|7 Sitemap Index</a>
                         </li>
                         <li
                           className={selected === 'doctors-sitemap' ? 'active' : ''}
@@ -576,6 +592,48 @@ export const Sitemap: React.FC = (props) => {
                                     href={`${process.env.SITEMAP_BASE_URL}covid19/${key.type}${key.slug}`}
                                   >
                                     {key.title}
+                                  </a>
+                                </li>
+                              </ul>
+                            ))}
+                        </div>
+                        <div className={classes.sLinkContent}>
+                          <Typography component="h3" className={classes.categoryTitle}>
+                            Doctor Sitemap
+                          </Typography>
+                          {doctorSitemapArray &&
+                            doctorSitemapArray.length > 0 &&
+                            doctorSitemapArray.map((key) => (
+                              <ul className={classes.smLinkList}>
+                                <li>
+                                  <a
+                                    href={clientRoutes.childSitemap(
+                                      'doctors-sitemap',
+                                      key.toString()
+                                    )}
+                                  >
+                                    {`Doctor Sitemap${key}`}
+                                  </a>
+                                </li>
+                              </ul>
+                            ))}
+                        </div>
+                        <div className={classes.sLinkContent}>
+                          <Typography component="h3" className={classes.categoryTitle}>
+                            Medicine Sitemap
+                          </Typography>
+                          {medicineSitemapArray &&
+                            medicineSitemapArray.length > 0 &&
+                            medicineSitemapArray.map((key) => (
+                              <ul className={classes.smLinkList}>
+                                <li>
+                                  <a
+                                    href={clientRoutes.childSitemap(
+                                      'medicines-sitemap',
+                                      key.toString()
+                                    )}
+                                  >
+                                    {`Medicine Sitemap${key}`}
                                   </a>
                                 </li>
                               </ul>
