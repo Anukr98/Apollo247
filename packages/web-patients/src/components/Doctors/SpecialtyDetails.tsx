@@ -38,12 +38,12 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import _lowerCase from 'lodash/lowerCase';
-import axios from 'axios';
 import { gtmTracking } from 'gtmTracking';
 import { SpecialtySearch } from 'components/SpecialtySearch';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
+import fetchWrapper from 'helpers/fetchWrapper';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -302,19 +302,6 @@ interface Range {
   };
 }
 
-const searchObject: SearchObject = {
-  searchKeyword: '',
-  cityName: [],
-  experience: [],
-  availability: [],
-  fees: [],
-  gender: [],
-  language: [],
-  dateSelected: '',
-  specialtyName: '',
-  prakticeSpecialties: '',
-};
-
 let availableNow = {};
 const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilter: string) => {
   if (availability.length === 0) {
@@ -374,6 +361,18 @@ interface SpecialityProps {
 }
 
 export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
+  const searchObject: SearchObject = {
+    searchKeyword: '',
+    cityName: [],
+    experience: [],
+    availability: [],
+    fees: [],
+    gender: [],
+    language: [],
+    dateSelected: '',
+    specialtyName: '',
+    prakticeSpecialties: '',
+  };
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
   const scrollToRef = useRef<HTMLDivElement>(null);
@@ -486,9 +485,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
   useEffect(() => {
     if (slugName !== '') {
-      axios
+      fetchWrapper
         .get(`${process.env.CMS_BASE_URL}/api/specialty-details/${readableParam(specialtyName)}`, {
-          headers: { 'Content-Type': 'application/json', Authorization: process.env.CMS_TOKEN },
+          Authorization: process.env.CMS_TOKEN,
         })
         .then((res: any) => {
           if (res && res.data && res.data.success) {

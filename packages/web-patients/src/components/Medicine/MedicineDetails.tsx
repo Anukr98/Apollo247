@@ -6,9 +6,8 @@ import Scrollbars from 'react-custom-scrollbars';
 import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
 import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { useParams } from 'hooks/routerHooks';
-import axios from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
-import stripHtml from 'string-strip-html';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -35,7 +34,7 @@ import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
-import { getPackOfMedicine } from 'helpers/commonHelpers';
+import { getPackOfMedicine, stripHtml } from 'helpers/commonHelpers';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -563,25 +562,21 @@ export const MedicineDetails: React.FC = (props) => {
   };
 
   const getMedicineDetails = async (sku: string) => {
-    await axios
+    await fetchWrapper
       .post(
         apiDetails.skuUrl || '',
         { params: sku, level: 'product' },
         {
-          headers: {
-            Authorization: apiDetails.authToken,
-          },
+          Authorization: apiDetails.authToken,
         }
       )
       .then(async ({ data }) => {
-        await axios
+        await fetchWrapper
           .post(
             apiDetails.url || '',
             { params: data.sku || sku },
             {
-              headers: {
-                Authorization: apiDetails.authToken,
-              },
+              Authorization: apiDetails.authToken,
             }
           )
           .then(({ data }) => {
@@ -695,9 +690,8 @@ export const MedicineDetails: React.FC = (props) => {
                 title: `${name} Price, Uses, Side Effects - Apollo 247`,
                 description: `Buy ${name}, Pack of ${getPackOfMedicine(
                   data.productdp[0]
-                )} at &#8377;${
-                  special_price || price
-                } in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
+                )} at &#8377;${special_price ||
+                  price} in India. Order ${name} online and get the medicine delivered within 4 hours at your doorsteps. Know the uses, side effects, precautions and more about ${name}. `,
                 canonicalLink:
                   typeof window !== 'undefined' &&
                   window.location &&

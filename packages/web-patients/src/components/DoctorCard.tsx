@@ -1,6 +1,17 @@
 import { AphButton } from '@aph/web-ui-components';
-import { Avatar, Modal, Theme } from '@material-ui/core';
+import { clientRoutes } from 'helpers/clientRoutes';
+import _forEach from 'lodash/forEach';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
+import { Mutation } from 'react-apollo';
+import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
+import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
+import { SEARCH_TYPE, ConsultMode } from 'graphql/types/globalTypes';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { BookConsult } from 'components/BookConsult';
+import moment from 'moment';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { Avatar, Modal, Theme } from '@material-ui/core';
 import { createStyles, makeStyles } from '@material-ui/styles';
 import { BookConsult } from 'components/BookConsult';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';

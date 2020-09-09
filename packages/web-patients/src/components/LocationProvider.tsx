@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import axios, { AxiosError } from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 
 export interface LocationContextProps {
   currentLocation: string | null;
@@ -112,7 +112,7 @@ export const LocationProvider: React.FC = (props) => {
   };
 
   const getCurrentLocationPincode = async (currentLat: string, currentLong: string) => {
-    await axios
+    await fetchWrapper
       .get(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentLat},${currentLong}&key=${process.env.GOOGLE_API_KEY}`
       )
@@ -135,10 +135,10 @@ export const LocationProvider: React.FC = (props) => {
             }
           }
         } catch {
-          (e: AxiosError) => console.log(e);
+          (e: any) => console.log(e);
         }
       })
-      .catch((e: AxiosError) => {
+      .catch((e: any) => {
         console.log(e);
       });
   };
@@ -159,7 +159,7 @@ export const LocationProvider: React.FC = (props) => {
     const currentAddress = localStorage.getItem('currentAddress');
     if (currentAddress) {
       const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${currentAddress}&components=country:in&key=${process.env.GOOGLE_API_KEY}`;
-      axios.get(url).then((res) => {
+      fetchWrapper.get(url).then((res: any) => {
         if (res && res.data && res.data.results[0]) {
           const { lat, lng } = res.data.results[0].geometry.location;
           const addrComponents =

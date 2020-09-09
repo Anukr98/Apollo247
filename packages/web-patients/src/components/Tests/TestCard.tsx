@@ -4,11 +4,11 @@ import { Theme } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { stripHtml } from 'helpers/commonHelpers';
 import { searchDiagnostics_searchDiagnostics_diagnostics } from 'graphql/types/searchDiagnostics';
 import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics } from 'graphql/types/getDiagnosticsData';
 import { useDiagnosticsCart, DiagnosticsCartItem } from 'components/Tests/DiagnosticsCartProvider';
-import stripHtml from 'string-strip-html';
-import axios from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -175,7 +175,7 @@ export const TestCard: React.FC<TestListCardProps> = (props) => {
 
   const getPackageDetails = async () => {
     setLoading(true);
-    axios
+    fetchWrapper
       .post(apiDetails.url || '', {
         ...TestApiCredentials,
         ItemID: testData && testData.itemId,

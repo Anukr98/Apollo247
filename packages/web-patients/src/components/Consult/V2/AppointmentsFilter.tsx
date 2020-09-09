@@ -10,7 +10,7 @@ import {
   AppointmentFilterObject,
 } from 'helpers/commonHelpers';
 import _uniq from 'lodash/uniq';
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -212,7 +212,7 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
   const classes = useStyles({});
   const { filter, setFilter, setIsFilterOpen, filterDoctorsList } = props;
 
-  const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(_.cloneDeep(filter));
+  const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(cloneDeep(filter));
 
   const applyClass = (type: Array<string>, value: string) => {
     return type.includes(value) ? classes.filterActive : '';
