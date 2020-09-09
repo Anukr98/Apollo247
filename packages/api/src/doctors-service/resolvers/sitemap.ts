@@ -174,9 +174,12 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
   const healthAreaTextRes = await healthAreaListResp.text();
   const healthAreasUrlsList = JSON.parse(healthAreaTextRes);
   let healthAreaUrls = '\n<!--Health Area links-->\n';
-  if (healthAreasUrlsList.healthareas && healthAreasUrlsList.healthareas.length > 0) {
+  if (
+    healthAreasUrlsList.shop_by_healthareas &&
+    healthAreasUrlsList.shop_by_healthareas.length > 0
+  ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    healthAreasUrlsList.healthareas.forEach((link: any) => {
+    healthAreasUrlsList.shop_by_healthareas.forEach((link: any) => {
       const url = process.env.SITEMAP_BASE_URL + 'medicine/healthareas/' + link.url_key;
       const urlInfo: SitemapUrls = {
         url,
