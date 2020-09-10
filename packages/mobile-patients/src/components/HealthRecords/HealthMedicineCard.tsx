@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 8,
     ...theme.fonts.IBMPlexSansMedium(16),
+    lineHeight: 21,
     color: theme.colors.SHERPA_BLUE,
   },
   separatorStyles: {
@@ -60,6 +61,7 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.TEXT_LIGHT_BLUE,
+    lineHeight: 20,
   },
   profileImageStyle: { width: 40, height: 40, borderRadius: 20 },
   yellowTextStyle: {

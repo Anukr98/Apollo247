@@ -1,6 +1,10 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Download, LabTestIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Download,
+  LabTestIcon,
+  RoundGreenTickIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -68,6 +72,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 20,
+  },
+  greenTickIconStyle: {
+    width: 14,
+    height: 14,
+    alignSelf: 'center',
+    marginLeft: 6,
+    marginTop: 2.5,
   },
   cardViewStyle: {
     ...theme.viewStyles.cardViewStyle,
@@ -352,6 +363,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             <Text style={{ ...viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
               {data?.labTestName || data?.healthCheckType || data?.healthCheckName}
             </Text>
+            <RoundGreenTickIcon style={styles.greenTickIconStyle} />
           </View>
         ) : null}
         {data?.labTestRefferedBy ? (

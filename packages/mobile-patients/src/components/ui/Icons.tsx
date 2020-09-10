@@ -815,6 +815,10 @@ export const LabTestIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/lab_test_icon.png')} />
 );
 
+export const RoundGreenTickIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/green_tick.png')} />
+);
+
 export const CheckBoxFilled: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/checkboxfilled.png')} />
 );

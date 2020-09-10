@@ -4,7 +4,6 @@ import { AddFileIcon, NoData, Filter } from '@aph/mobile-patients/src/components
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, FlatList } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -13,9 +12,14 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
-} from '../../graphql/types/getPatientPrismMedicalRecords';
-import { postWebEngageEvent } from '../../helpers/helperFunctions';
-import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -28,6 +32,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 });
+
+enum FILTER_TYPE {
+  VIEW_BY = 'View By',
+  DATE = 'Date',
+  TEST = 'Test',
+  PACKAGE = 'Package',
+}
+
+type FilterArray = {
+  key: FILTER_TYPE;
+  title: string;
+};
+
+const TestFilterArray: FilterArray[] = [
+  { key: FILTER_TYPE.VIEW_BY, title: FILTER_TYPE.VIEW_BY },
+  { key: FILTER_TYPE.DATE, title: FILTER_TYPE.DATE },
+  { key: FILTER_TYPE.TEST, title: FILTER_TYPE.TEST },
+  { key: FILTER_TYPE.PACKAGE, title: FILTER_TYPE.PACKAGE },
+];
 
 export interface MedicalRecordsProps extends NavigationScreenProps {
   healthChecksNewData?:
@@ -49,11 +72,12 @@ export interface MedicalRecordsProps extends NavigationScreenProps {
 }
 
 export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
-  const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const { healthChecksNewData, hospitalizationsNewData, labResultsData, prescriptionsData } = props;
   const [combination, setCombination] = useState<{ type: string; data: any }[]>();
+  const [filterApplied, setFilterApplied] = useState<FILTER_TYPE | string>(FILTER_TYPE.DATE);
+  const [listRefersh, setListRefersh] = useState<boolean>(false);
 
   useEffect(() => {
     const mergeArray: { type: string; data: any }[] = [];
@@ -79,6 +103,34 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
     });
   };
 
+  const sortByTypeRecords = (type: FILTER_TYPE | string) => {
+    return (
+      combination &&
+      combination.sort(({ data: data1 }, { data: data2 }) => {
+        const filteredData1 =
+          type === FILTER_TYPE.DATE
+            ? moment(data1.date)
+                .toDate()
+                .getTime()
+            : type === FILTER_TYPE.TEST
+            ? data1.labTestName
+            : data1.packageName;
+        const filteredData2 =
+          type === FILTER_TYPE.DATE
+            ? moment(data2.date)
+                .toDate()
+                .getTime()
+            : type === FILTER_TYPE.TEST
+            ? data2.labTestName
+            : data2.packageName;
+        if (type === FILTER_TYPE.DATE) {
+          return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
+        }
+        return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
+      })
+    );
+  };
+
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
@@ -86,10 +138,17 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    //props.onTabCount(props.MedicalRecordData.length);
-  }, [currentPatient, client]);
+    const filteredData = sortByTypeRecords(filterApplied);
+    if (filteredData) {
+      setCombination(filteredData);
+      setListRefersh(!listRefersh);
+    }
+  }, [filterApplied]);
 
   const renderFilter = () => {
+    const testFilterData = TestFilterArray.map((i) => {
+      return { key: i.key, value: i.title };
+    });
     return (
       <View style={styles.filterViewStyle}>
         <TouchableOpacity
@@ -103,9 +162,33 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
           <AddFileIcon />
         </TouchableOpacity>
         {labResultsData && labResultsData.length > 0 ? (
-          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+          <MaterialMenu
+            options={testFilterData}
+            selectedText={filterApplied}
+            menuContainerStyle={{
+              alignItems: 'flex-end',
+              marginTop: 25,
+            }}
+            itemContainer={{ height: 44.8, marginHorizontal: 12, width: 260 / 2 }}
+            itemTextStyle={{
+              ...theme.viewStyles.text('M', 16, '#01475b'),
+              paddingHorizontal: 0,
+            }}
+            firstOptionText={true}
+            selectedTextStyle={{
+              ...theme.viewStyles.text('M', 16, '#00b38e'),
+              alignSelf: 'flex-start',
+            }}
+            bottomPadding={{ paddingBottom: 20 }}
+            onPress={(selectedFilter) => {
+              if (selectedFilter.key !== FILTER_TYPE.VIEW_BY) {
+                console.log('selectedFilter', selectedFilter);
+                setFilterApplied(selectedFilter.key);
+              }
+            }}
+          >
             <Filter />
-          </TouchableOpacity>
+          </MaterialMenu>
         ) : null}
       </View>
     );
@@ -114,10 +197,9 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const renderCards = () => {
     return (
       <View>
-        {labResultsData &&
-        labResultsData.length == 0 &&
-        prescriptionsData &&
-        prescriptionsData.length == 0 ? (
+        {(labResultsData && labResultsData.length == 0) ||
+        (healthChecksNewData && healthChecksNewData.length == 0) ||
+        (hospitalizationsNewData && hospitalizationsNewData.length == 0) ? (
           <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
             <View
               style={{
@@ -163,6 +245,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
               bounces={false}
               data={combination || []}
               removeClippedSubviews={false}
+              extraData={listRefersh}
               renderItem={({ item, index }) => {
                 let data;
                 if (item.type === 'lab') {
