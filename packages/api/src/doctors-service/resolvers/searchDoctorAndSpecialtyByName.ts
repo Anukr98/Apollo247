@@ -140,9 +140,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             },
             { match: { isSearchable: true } },
             {
-              phrase_prefix: {
-                fuzziness: 0,
-                query: `*${searchTextLowerCase}*`,
+              multi_match: {
                 fields: [
                   `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
                   `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
@@ -150,6 +148,8 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                   `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                 ],
+                type: 'phrase_prefix',
+                query: `*${searchTextLowerCase}*`,
               },
             },
           ],
@@ -256,7 +256,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   const docSearchParams: RequestParams.Search = {
     index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
-      size: 100,
+      size: 50,
       query: {
         bool: {
           must: [
@@ -457,7 +457,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     const PossibleDoctorParams: RequestParams.Search = {
       index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
-        size: 200,
+        size: 100,
         query: {
           bool: {
             must: [
