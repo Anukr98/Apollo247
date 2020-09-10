@@ -35,13 +35,13 @@ export const RenderImage: React.FC<RenderImageProps> = (props) => {
   const classes = useStyles({});
   const { activeData, type } = props;
 
-  return type === 'pdf' ? (
+  return (
     <div className={classes.prescriptionImage}>
-      <a href={activeData.fileUrl}>Download the file</a>
-    </div>
-  ) : (
-      <div className={classes.prescriptionImage}>
+      {type === 'pdf' ? (
+        <img src={require('images/pdf-file-format-symbol.svg')} width="200" height="130" />
+      ) : (
         <img src={activeData.fileUrl} alt="Preview is not available" />
-      </div>
-    );
+      )}
+    </div>
+  );
 };

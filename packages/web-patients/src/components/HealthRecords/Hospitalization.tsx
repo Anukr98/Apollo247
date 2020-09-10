@@ -543,13 +543,15 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
               )}
             </Scrollbars>
             {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
-              <a href={activeData.fileUrl}>
-                <div className={classes.addReportActions}>
-                  <AphButton color="primary" fullWidth>
-                    DOWNLOAD DISCHARGE SUMMARY
-                  </AphButton>
-                </div>
-              </a>
+              <div className={classes.addReportActions}>
+                <AphButton
+                  onClick={() => window.open(activeData.fileUrl, '_blank')}
+                  color="primary"
+                  fullWidth
+                >
+                  DOWNLOAD DISCHARGE SUMMARY
+                </AphButton>
+              </div>
             )}
           </>
         ) : (
