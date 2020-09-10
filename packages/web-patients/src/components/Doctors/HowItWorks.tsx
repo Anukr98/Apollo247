@@ -267,6 +267,10 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 14,
         textTransform: 'uppercase',
         fontWeight: 600,
+        paddingRight: 30,
+        [theme.breakpoints.down('xs')]: {
+          paddingRight: 0,
+        },
       },
     },
     tabBody: {
@@ -406,7 +410,7 @@ export const HowItWorks: React.FC = (props) => {
             <div className={classes.chatContainer}>
               <div className={classes.tabHead}>
                 <img src={require('images/video-calling.svg')} />
-                <Typography component="h6">How to consult via chat/audio/video?</Typography>
+                <Typography component="h6">How to consult ON WEB via audio/video?</Typography>
               </div>
               <div className={classes.tabBody}>
                 <ul className={classes.tabList}>
@@ -422,17 +426,19 @@ export const HowItWorks: React.FC = (props) => {
                     <img src={require('images/ic-payment.svg')} />
                     <Typography>Make payment</Typography>
                   </li>
-                  <li className={classes.highlight}>
-                    <img src={require('images/ic-video.svg')} />
-                    <Typography>Speak to the doctor via video/audio/chat</Typography>
+                  <li>
+                    <img src={require('images/ic-mobile.svg')} />
+                    <Typography>
+                      Be present in the consult room on apollo247.com at the time of consult
+                    </Typography>
                   </li>
                   <li>
                     <img src={require('images/prescription.svg')} />
                     <Typography>Receive prescriptions instantly </Typography>
                   </li>
-                  <li className={classes.highlight}>
-                    <img src={require('images/chat.svg')} />
-                    <Typography>Chat with the doctor for 7 days after your consult</Typography>
+                  <li>
+                    <img src={require('images/ic-followchat.svg')} />
+                    <Typography>Follow Up via text - validity 7 days</Typography>
                   </li>
                 </ul>
               </div>
@@ -487,7 +493,7 @@ export const HowItWorks: React.FC = (props) => {
         <AphDialogTitle>
           <div className={classes.tabHead}>
             <img src={require('images/video-calling.svg')} />
-            <span>How to consult via chat/audio/video?</span>
+            <span>How to consult ON WEB via audio/video?</span>
           </div>
         </AphDialogTitle>
         <div className={classes.consultContainer}>
