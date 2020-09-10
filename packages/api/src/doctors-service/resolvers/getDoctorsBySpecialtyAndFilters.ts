@@ -426,6 +426,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     body: {
       from: offset,
       size: pageSize,
+      sort: elasticSort,
       query: {
         bool: {
           must: elasticMatch,
@@ -440,7 +441,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       },
     },
   };
-  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+  const client = new Client({ node: 'http://104.211.242.175:9200' });
 
   const getDetails = await client.search(searchParams);
   const doctorTypeCount = getDetails.body.aggregations.doctorTypeCount.buckets;
@@ -1112,7 +1113,7 @@ const getDoctorList: Resolver<
       },
     },
   };
-  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+  const client = new Client({ node: 'http://104.211.242.175:9200' });
 
   const getDetails = await client.search(searchParams);
   const doctorTypeCount = getDetails.body.aggregations.doctorTypeCount.buckets;
