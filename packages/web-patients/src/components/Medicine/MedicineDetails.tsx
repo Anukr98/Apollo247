@@ -532,7 +532,7 @@ type MedicineOverViewDetails = {
 
 type MedicineOverView = MedicineOverViewDetails[] | string;
 
-export const MedicineDetails: React.FC = (props) => {
+const MedicineDetails: React.FC = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = React.useState<number>(0);
   const params = useParams<{ sku: string; searchText: string }>();
@@ -1148,3 +1148,5 @@ export const MedicineDetails: React.FC = (props) => {
     </div>
   );
 };
+
+export default MedicineDetails;

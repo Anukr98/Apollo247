@@ -421,3 +421,5 @@ export const ViewAllBrands: React.FC = (props) => {
     </div>
   );
 };
+
+export default ViewAllBrands;

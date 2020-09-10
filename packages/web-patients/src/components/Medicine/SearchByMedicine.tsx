@@ -261,7 +261,7 @@ type Params = { searchMedicineType: string; searchText: string };
 type PriceFilter = { fromPrice: string; toPrice: string };
 type DiscountFilter = { fromDiscount: string; toDiscount: string };
 
-export const SearchByMedicine: React.FC = (props) => {
+const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const patient = useCurrentPatient();
   const recommendedProductsMutation = useMutation(GET_RECOMMENDED_PRODUCTS_LIST);
@@ -768,3 +768,5 @@ export const SearchByMedicine: React.FC = (props) => {
     </div>
   );
 };
+
+export default SearchByMedicine;

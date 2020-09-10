@@ -360,7 +360,7 @@ interface SpecialityProps {
   history: any;
 }
 
-export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
+const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const searchObject: SearchObject = {
     searchKeyword: '',
     cityName: [],
@@ -866,3 +866,5 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     </div>
   );
 };
+
+export default SpecialtyDetails;

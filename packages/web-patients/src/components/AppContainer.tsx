@@ -4,50 +4,9 @@ import loadable from '@loadable/component';
 import { createMuiTheme, Theme } from '@material-ui/core';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { makeStyles } from '@material-ui/styles';
-import { AboutUs } from 'components/AboutUs';
 import { AuthProvider } from 'components/AuthProvider';
 import { AuthRouted } from 'components/AuthRouted';
-import { MedicineCartLanding } from 'components/Cart/MedicineCartLanding';
-import { CartPoc } from 'components/CartPoc';
-import { OnlineCheckout } from 'components/Checkout/OnlineCheckout';
-import { Appointments } from 'components/Consult/V2/Appointments';
-import { ChatRoom } from 'components/Consult/V2/ChatRoom/ChatRoom';
-import { Prescription } from 'components/Consult/V2/Prescription';
-import { ContactUs } from 'components/ContactUs';
-import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
-import { SpecialtyDetails } from 'components/Doctors/SpecialtyDetails';
-import { Faq } from 'components/Faq';
-import { AddRecords } from 'components/HealthRecords/AddRecords';
-import { PHRLanding } from 'components/HealthRecords/PHRLanding';
-import { Help } from 'components/Help/Help';
-import { Loader } from 'components/Loader';
 import { LocationProvider } from 'components/LocationProvider';
-import { MedicineDetails } from 'components/Medicine/MedicineDetails';
-import { SearchByBrand } from 'components/Medicine/SearchByBrand';
-import { SearchByMedicine } from 'components/Medicine/SearchByMedicine';
-import { ViewAllBrands } from 'components/Medicine/ViewAllBrands';
-import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
-import { AddressBook } from 'components/MyAccount/AddressBook';
-import { MyAccount } from 'components/MyAccount/MyAccount';
-import { MyPayments } from 'components/MyAccount/MyPayments';
-import { NotificationSettings } from 'components/Notifications/NotificationSettings';
-import { OrdersLanding } from 'components/Orders/OrdersLanding';
-import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
-import PatientsList from 'components/PatientsList';
-import { PayMedicine } from 'components/PayMedicine';
-import { PrescriptionReview } from 'components/PrescriptionReview';
-import { PrescriptionsLanding } from 'components/Prescriptions/PrescriptionsLanding';
-import { Privacy } from 'components/Privacy';
-import { StoragePoc } from 'components/StoragePoc';
-import { SymptomsTrackerSDK } from 'components/SymptomsTracker/SymptomsTrackerSDK';
-import { TermsAndConditions } from 'components/TermsAndConditions';
-import { TestsCartLanding } from 'components/Tests/Cart/TestsCartLanding';
-import { OrderDetails } from 'components/Tests/OrderDetails';
-import { OrderSummary } from 'components/Tests/OrderSummary';
-import { SearchByTest } from 'components/Tests/SearchByTest';
-import { TestDetails } from 'components/Tests/TestDetails';
-import { TestsLanding } from 'components/Tests/TestsLanding';
-import { Welcome } from 'components/Welcome';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useAuth } from 'hooks/authHooks';
 import React, { useEffect } from 'react';
@@ -55,10 +14,29 @@ import { Helmet } from 'react-helmet';
 import { Config, setConfig } from 'react-hot-loader';
 import { hot } from 'react-hot-loader/root';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
-import { ClinicCheckout } from './Checkout/ClinicCheckout';
-import { MedicineSearch } from './Medicine/MedicineSearch';
-import { MedicinePrescriptions } from './Prescriptions/MedicinePrescriptions';
 import { DiagnosticsCartProvider } from './Tests/DiagnosticsCartProvider';
+import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
+
+const Welcome = loadable(() => import('components/Welcome'));
+
+const NotificationSettings = loadable(() =>
+  import('components/Notifications/NotificationSettings')
+);
+const SbiLandingPage = loadable(() => import('components/Partners/SBI/SbiLandingPage'));
+const PatientsList = loadable(() => import('components/PatientsList'));
+const PrescriptionReview = loadable(() => import('components/PrescriptionReview'));
+const Privacy = loadable(() => import('components/Privacy'));
+const TermsAndConditions = loadable(() => import('components/TermsAndConditions'));
+const SymptomsTrackerSDK = loadable(() => import('components/SymptomsTracker/SymptomsTrackerSDK'));
+const ContactUs = loadable(() => import('components/ContactUs'));
+
+const AboutUs = loadable(() => import('components/AboutUs'));
+const Faq = loadable(() => import('components/Faq'));
+const Help = loadable(() => import('components/Help/Help'));
+const Loader = loadable(() => import('components/Loader'));
+
+const ClinicCheckout = loadable(() => import('./Checkout/ClinicCheckout'));
+const OnlineCheckout = loadable(() => import('components/Checkout/OnlineCheckout'));
 
 const DoctorDetails = loadable(() => import('components/DoctorDetails'));
 const MedicineLanding = loadable(() => import('components/Medicine/MedicineLanding'));
@@ -66,8 +44,42 @@ const SymptomsTracker = loadable(() => import('components/SymptomsTracker/Sympto
 const CovidLanding = loadable(() => import('components/Covid/CovidLanding'));
 const KavachLanding = loadable(() => import('components/Covid/KavachLanding'));
 const CovidArticleDetails = loadable(() => import('components/Covid/CovidArticleDetails'));
+const covidProtocolLanding = loadable(() => import('components/Covid/CovidProtocolLanding'));
 const SpecialityListing = loadable(() => import('components/SpecialityListing'));
 const DoctorsLanding = loadable(() => import('components/DoctorsLanding'));
+const SpecialtyDetails = loadable(() => import('components/Doctors/SpecialtyDetails'));
+
+const Appointments = loadable(() => import('components/Consult/V2/Appointments'));
+const ChatRoom = loadable(() => import('components/Consult/V2/ChatRoom/ChatRoom'));
+const Prescription = loadable(() => import('components/Consult/V2/Prescription'));
+
+const OrdersLanding = loadable(() => import('components/Orders/OrdersLanding'));
+const PayMedicine = loadable(() => import('components/PayMedicine'));
+
+const AddRecords = loadable(() => import('components/HealthRecords/AddRecords'));
+const PHRLanding = loadable(() => import('components/HealthRecords/PHRLanding'));
+
+const MedicinePrescriptions = loadable(() => import('./Prescriptions/MedicinePrescriptions'));
+const PrescriptionsLanding = loadable(() => import('./Prescriptions/PrescriptionsLanding'));
+
+const MedicineDetails = loadable(() => import('components/Medicine/MedicineDetails'));
+const SearchByBrand = loadable(() => import('components/Medicine/SearchByBrand'));
+const SearchByMedicine = loadable(() => import('components/Medicine/SearchByMedicine'));
+const ViewAllBrands = loadable(() => import('components/Medicine/ViewAllBrands'));
+const MedicineSearch = loadable(() => import('components/Medicine/MedicineSearch'));
+
+const TestsCartLanding = loadable(() => import('components/Tests/Cart/TestsCartLanding'));
+const MedicineCartLanding = loadable(() => import('components/Cart/MedicineCartLanding'));
+
+const OrderDetails = loadable(() => import('components/Tests/OrderDetails'));
+const OrderSummary = loadable(() => import('components/Tests/OrderSummary'));
+const SearchByTest = loadable(() => import('components/Tests/SearchByTest'));
+const TestDetails = loadable(() => import('components/Tests/TestDetails'));
+const TestsLanding = loadable(() => import('components/Tests/TestsLanding'));
+
+const AddressBook = loadable(() => import('components/MyAccount/AddressBook'));
+const MyAccount = loadable(() => import('components/MyAccount/MyAccount'));
+const MyPayments = loadable(() => import('components/MyAccount/MyPayments'));
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -117,8 +129,6 @@ const App: React.FC = () => {
         <Route exact path={clientRoutes.kavachLanding()} component={KavachLanding} />
         <Route exact path={clientRoutes.covidDetails()} component={CovidArticleDetails} />
         <Route exact path={clientRoutes.patients()} component={PatientsList} />
-        <Route exact path={clientRoutes.cartPoc()} component={CartPoc} />
-        <Route exact path={clientRoutes.storagePoc()} component={StoragePoc} />
         <Route exact path={clientRoutes.termsConditions()} component={TermsAndConditions} />
         <Route exact path={clientRoutes.privacy()} component={Privacy} />
         <Route exact path={clientRoutes.FAQ()} component={Faq} />

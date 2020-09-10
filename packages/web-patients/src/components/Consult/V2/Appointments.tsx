@@ -384,7 +384,7 @@ interface statusMap {
   [name: string]: statusActionInterface;
 }
 
-export const Appointments: React.FC<AppointmentProps> = (props) => {
+const Appointments: React.FC<AppointmentProps> = (props) => {
   const classes = useStyles({});
   const initialAppointmentFilterObject: AppointmentFilterObject = {
     consultType: [],
@@ -1170,3 +1170,5 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     </div>
   );
 };
+
+export default Appointments;

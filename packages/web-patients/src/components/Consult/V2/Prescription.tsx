@@ -503,7 +503,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-export const Prescription: React.FC = (props) => {
+const Prescription: React.FC = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const mascotRef = useRef(null);
@@ -1307,3 +1307,5 @@ export const Prescription: React.FC = (props) => {
     </div>
   );
 };
+
+export default Prescription;
