@@ -1594,9 +1594,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               break;
             case 'Audio call ended':
               audioVideoMethod();
+              setGiveRating(true);
               break;
             case 'Video call ended':
               audioVideoMethod();
+              setGiveRating(true);
               break;
             case messageCodes.patientJoined:
               AsyncStorage.multiGet(['isAudio', 'isVideo']).then((data) => {
@@ -1906,9 +1908,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               sendEndCallNotificationAPI(
                 callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO
               );
-            } else {
-              setGiveRating(true);
             }
+            setGiveRating(true);
             firebase
               .analytics()
               .logEvent(callType == 'A' ? 'Doctor_audio_call_end' : 'Doctor_video_call_end', {
@@ -2002,6 +2003,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               if (response) {
                 callOptions.startMissedCallTimer(45, (count) => {
                   stopAllCalls(callType);
+                  setGiveRating(true);
                   // if (missedCallCounter < 2) {
 
                   // } else {
