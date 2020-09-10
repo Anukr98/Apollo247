@@ -10,6 +10,8 @@ import Pagination from '@material-ui/lab/Pagination';
 import { generateSitemap_generateSitemap } from 'graphql/types/generateSitemap';
 import { useParams } from 'react-router';
 import fetchUtil from 'helpers/fetch';
+import { BottomLinks } from 'components/BottomLinks';
+import { NavigationBottom } from 'components/NavigationBottom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -412,17 +414,24 @@ export const Sitemap: React.FC = (props) => {
             </div>
             <ol className={classes.breadcrumbs}>
               <li>
-                <a href={clientRoutes.welcome()}>Home</a>
+                <a href={clientRoutes.welcome()}>HOME</a>
               </li>
-              <li className="active">
-                <a>
-                  {selected === 'sitemap'
-                    ? 'sitemap'
-                    : selected === 'doctors-sitemap'
-                    ? 'doctors sitemap'
-                    : 'medicines sitemap'}
-                </a>
+              <li className={selected === 'sitemap' ? 'active' : ''}>
+                <a href={clientRoutes.sitemap('sitemap')}>SITEMAP</a>
               </li>
+              {selected !== 'sitemap' && (
+                <li className={selected !== 'sitemap' ? 'active' : ''}>
+                  <a
+                    href={
+                      selected === 'doctors-sitemap'
+                        ? clientRoutes.childSitemap('doctors-sitemap', pageNo.toString())
+                        : clientRoutes.childSitemap('medicines-sitemap', pageNo.toString())
+                    }
+                  >
+                    {selected === 'doctors-sitemap' ? 'doctors sitemap' : 'medicines sitemap'}
+                  </a>
+                </li>
+              )}
             </ol>
           </div>
           <div className={classes.slWrapper}>
@@ -447,8 +456,8 @@ export const Sitemap: React.FC = (props) => {
                       {selected === 'sitemap'
                         ? 'Apollo 24|7 Sitemap Index'
                         : selected === 'doctors-sitemap'
-                        ? 'Doctor Sitemap'
-                        : 'Medicine Sitemap'}
+                        ? 'Doctors Sitemap'
+                        : 'Medicines Sitemap'}
                     </Typography>
                   </div>
                   <div
@@ -481,7 +490,7 @@ export const Sitemap: React.FC = (props) => {
                             );
                           }}
                         >
-                          <a>Doctor Sitemap</a>
+                          <a>Doctors Sitemap</a>
                         </li>
                         <li
                           className={selected === 'medicines-sitemap' ? 'active' : ''}
@@ -496,7 +505,7 @@ export const Sitemap: React.FC = (props) => {
                             );
                           }}
                         >
-                          <a>Medicine Sitemap</a>
+                          <a>Medicines Sitemap</a>
                         </li>
                       </ul>
                     </div>
@@ -599,7 +608,7 @@ export const Sitemap: React.FC = (props) => {
                         </div>
                         <div className={classes.sLinkContent}>
                           <Typography component="h3" className={classes.categoryTitle}>
-                            Doctor Sitemap
+                            Doctors Sitemap
                           </Typography>
                           {doctorSitemapArray &&
                             doctorSitemapArray.length > 0 &&
@@ -612,7 +621,7 @@ export const Sitemap: React.FC = (props) => {
                                       key.toString()
                                     )}
                                   >
-                                    {`Doctor Sitemap${key}`}
+                                    {`Doctors Sitemap ${key}`}
                                   </a>
                                 </li>
                               </ul>
@@ -620,7 +629,7 @@ export const Sitemap: React.FC = (props) => {
                         </div>
                         <div className={classes.sLinkContent}>
                           <Typography component="h3" className={classes.categoryTitle}>
-                            Medicine Sitemap
+                            Medicines Sitemap
                           </Typography>
                           {medicineSitemapArray &&
                             medicineSitemapArray.length > 0 &&
@@ -633,7 +642,7 @@ export const Sitemap: React.FC = (props) => {
                                       key.toString()
                                     )}
                                   >
-                                    {`Medicine Sitemap${key}`}
+                                    {`Medicines Sitemap ${key}`}
                                   </a>
                                 </li>
                               </ul>
@@ -674,6 +683,8 @@ export const Sitemap: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <BottomLinks />
+      <NavigationBottom />
     </div>
   );
 };

@@ -598,7 +598,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderVisitPharmacyText = () => (
-    <Text style={styles.visitPharmacyText}>{'Visit nearest pharmacy with valid prescription'}</Text>
+    <Text style={styles.visitPharmacyText}>{'Please visit nearest Apollo pharmacy store'}</Text>
   );
 
   const renderNotForSaleTag = () => (
