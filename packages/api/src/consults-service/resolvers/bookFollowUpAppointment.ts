@@ -89,113 +89,130 @@ const bookFollowUpAppointment: Resolver<
   ConsultServiceContext,
   BookFollowUpAppointmentResult
 > = async (parent, { followUpAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
-  //check if patient id is valid
-  const patient = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patient.getPatientDetails(followUpAppointmentInput.patientId);
-  if (!patientDetails) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-  }
-
-  /*if (patientDetails.dateOfBirth == null || !patientDetails.dateOfBirth) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
-  }
-
-  if (patientDetails.lastName == null || !patientDetails.lastName) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
-  }*/
-
-  //check if docotr id is valid
-  const doctor = doctorsDb.getCustomRepository(DoctorRepository);
-  const docDetails = await doctor.findById(followUpAppointmentInput.doctorId);
-  if (!docDetails) {
-    throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
-  }
-
-  //check if docotr and hospital are matched
-  const facilityId = followUpAppointmentInput.hospitalId;
-  if (facilityId) {
-    const doctorHospRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
-    const docHospital = await doctorHospRepo.findDoctorHospital(
-      followUpAppointmentInput.doctorId,
-      facilityId
-    );
-    if (!docHospital) {
-      throw new AphError(AphErrorMessages.INVALID_FACILITY_ID, undefined, {});
+  // intentionally put the below returning-code by Asad 
+  return {
+    appointment: {
+      id: '',
+      patientId: '',
+      doctorId: '',
+      appointmentDateTime: new Date(),
+      appointmentType: APPOINTMENT_TYPE.BOTH,
+      status: STATUS.COMPLETED,
+      patientName: '',
+      appointmentState: APPOINTMENT_STATE.RESCHEDULE,
+      isFollowUp: false,
+      followUpParentId: '',
+      isFollowPaid: false
     }
-  }
-
-  //check if given appointment datetime is greater than current date time
-  if (followUpAppointmentInput.appointmentDateTime <= new Date()) {
-    throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
-  }
-
-  const appts = consultsDb.getCustomRepository(AppointmentRepository);
-  //check parent appointment
-  const parentApptDetails = await appts.findById(followUpAppointmentInput.followUpParentId);
-  if (!parentApptDetails) {
-    throw new AphError(AphErrorMessages.INVALID_PARENT_APPOINTMENT_ID, undefined, {});
-  }
-
-  //check if doctor slot is blocked
-  const blockRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
-  const slotDetails = await blockRepo.checkIfSlotBlocked(
-    followUpAppointmentInput.appointmentDateTime,
-    followUpAppointmentInput.doctorId
-  );
-  if (slotDetails[0]) {
-    throw new AphError(AphErrorMessages.DOCTOR_SLOT_BLOCKED, undefined, {});
-  }
-
-  const apptCount = await appts.checkIfAppointmentExist(
-    followUpAppointmentInput.doctorId,
-    followUpAppointmentInput.appointmentDateTime
-  );
-
-  if (apptCount > 0) {
-    throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
-  }
-
-  const patientConsults = await appts.checkPatientConsults(
-    followUpAppointmentInput.patientId,
-    followUpAppointmentInput.appointmentDateTime
-  );
-  if (patientConsults) {
-    throw new AphError(AphErrorMessages.ANOTHER_DOCTOR_APPOINTMENT_EXIST, undefined, {});
-  }
-
-  let isFollowPaid: Boolean = false;
-  const followUpCount = await appts.followUpBookedCount(followUpAppointmentInput.followUpParentId);
-  isFollowPaid = followUpCount > 1 ? true : false;
-  const appointmentAttrs: Omit<FollowUpAppointmentBooking, 'id'> = {
-    ...followUpAppointmentInput,
-    status: STATUS.PAYMENT_PENDING,
-    patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
-    isFollowUp: true,
-    isFollowPaid,
-    appointmentState: APPOINTMENT_STATE.NEW,
-    appointmentDateTime: new Date(followUpAppointmentInput.appointmentDateTime.toISOString()),
   };
-  const appointment = await appts.saveAppointment(appointmentAttrs);
 
-  //copy parent case-sheet details
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const caseSheetDetails = await caseSheetRepo.getCaseSheetByAppointmentId(
-    followUpAppointmentInput.followUpParentId
-  );
+  // //check if patient id is valid
+  // const patient = patientsDb.getCustomRepository(PatientRepository);
+  // const patientDetails = await patient.getPatientDetails(followUpAppointmentInput.patientId);
+  // if (!patientDetails) {
+  //   throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  // }
 
-  if (caseSheetDetails != null) {
-    caseSheetDetails.forEach(async (caseSheetRecord) => {
-      const caseSheetRow = {
-        ...caseSheetRecord,
-        appointment,
-      };
-      delete caseSheetRow.id;
-      await caseSheetRepo.savecaseSheet(caseSheetRow);
-    });
-  }
-  //case-sheet copy ends
+  // /*if (patientDetails.dateOfBirth == null || !patientDetails.dateOfBirth) {
+  //   throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  // }
 
-  return { appointment };
+  // if (patientDetails.lastName == null || !patientDetails.lastName) {
+  //   throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  // }*/
+
+  // //check if docotr id is valid
+  // const doctor = doctorsDb.getCustomRepository(DoctorRepository);
+  // const docDetails = await doctor.findById(followUpAppointmentInput.doctorId);
+  // if (!docDetails) {
+  //   throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+  // }
+
+  // //check if docotr and hospital are matched
+  // const facilityId = followUpAppointmentInput.hospitalId;
+  // if (facilityId) {
+  //   const doctorHospRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
+  //   const docHospital = await doctorHospRepo.findDoctorHospital(
+  //     followUpAppointmentInput.doctorId,
+  //     facilityId
+  //   );
+  //   if (!docHospital) {
+  //     throw new AphError(AphErrorMessages.INVALID_FACILITY_ID, undefined, {});
+  //   }
+  // }
+
+  // //check if given appointment datetime is greater than current date time
+  // if (followUpAppointmentInput.appointmentDateTime <= new Date()) {
+  //   throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
+  // }
+
+  // const appts = consultsDb.getCustomRepository(AppointmentRepository);
+  // //check parent appointment
+  // const parentApptDetails = await appts.findById(followUpAppointmentInput.followUpParentId);
+  // if (!parentApptDetails) {
+  //   throw new AphError(AphErrorMessages.INVALID_PARENT_APPOINTMENT_ID, undefined, {});
+  // }
+
+  // //check if doctor slot is blocked
+  // const blockRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
+  // const slotDetails = await blockRepo.checkIfSlotBlocked(
+  //   followUpAppointmentInput.appointmentDateTime,
+  //   followUpAppointmentInput.doctorId
+  // );
+  // if (slotDetails[0]) {
+  //   throw new AphError(AphErrorMessages.DOCTOR_SLOT_BLOCKED, undefined, {});
+  // }
+
+  // const apptCount = await appts.checkIfAppointmentExist(
+  //   followUpAppointmentInput.doctorId,
+  //   followUpAppointmentInput.appointmentDateTime
+  // );
+
+  // if (apptCount > 0) {
+  //   throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
+  // }
+
+  // const patientConsults = await appts.checkPatientConsults(
+  //   followUpAppointmentInput.patientId,
+  //   followUpAppointmentInput.appointmentDateTime
+  // );
+  // if (patientConsults) {
+  //   throw new AphError(AphErrorMessages.ANOTHER_DOCTOR_APPOINTMENT_EXIST, undefined, {});
+  // }
+
+  // let isFollowPaid: Boolean = false;
+  // const followUpCount = await appts.followUpBookedCount(followUpAppointmentInput.followUpParentId);
+  // isFollowPaid = followUpCount > 1 ? true : false;
+  // const appointmentAttrs: Omit<FollowUpAppointmentBooking, 'id'> = {
+  //   ...followUpAppointmentInput,
+  //   status: STATUS.PAYMENT_PENDING,
+  //   patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
+  //   isFollowUp: true,
+  //   isFollowPaid,
+  //   appointmentState: APPOINTMENT_STATE.NEW,
+  //   appointmentDateTime: new Date(followUpAppointmentInput.appointmentDateTime.toISOString()),
+  // };
+  // const appointment = await appts.saveAppointment(appointmentAttrs);
+
+  // //copy parent case-sheet details
+  // const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  // const caseSheetDetails = await caseSheetRepo.getCaseSheetByAppointmentId(
+  //   followUpAppointmentInput.followUpParentId
+  // );
+
+  // if (caseSheetDetails != null) {
+  //   caseSheetDetails.forEach(async (caseSheetRecord) => {
+  //     const caseSheetRow = {
+  //       ...caseSheetRecord,
+  //       appointment,
+  //     };
+  //     delete caseSheetRow.id;
+  //     await caseSheetRepo.savecaseSheet(caseSheetRow);
+  //   });
+  // }
+  // //case-sheet copy ends
+
+  // return { appointment };
 };
 
 const checkIfFollowUpBooked: Resolver<
