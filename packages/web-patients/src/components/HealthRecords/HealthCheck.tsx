@@ -261,7 +261,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       marginBottom: 12,
-      padding: 14,
+      padding: '14px 14px 14px 18px',
       '& hr': {
         opacity: '0.2',
       },
@@ -339,6 +339,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       marginBottom: 12,
       lineHeight: '28px',
+      wordBreak: 'break-all',
     },
     checkDate: {
       fontSize: 14,
@@ -379,10 +380,10 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
   const getFormattedDate = (combinedData: HealthCheckType, dateFor: string) => {
     return dateFor === 'title' &&
       moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY') ? (
-      <span>Today , {moment(combinedData.date).format('DD MMM YYYY')}</span>
-    ) : (
-      <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
-    );
+        <span>Today , {moment(combinedData.date).format('DD MMM YYYY')}</span>
+      ) : (
+        <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
+      );
   };
 
   if (loading) {
@@ -413,8 +414,8 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 240px)'
               : isSmallScreen
-              ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 310px)'
+                ? 'calc(100vh - 230px)'
+                : 'calc(100vh - 310px)'
           }
         >
           <div className={classes.consultationsList}>
@@ -467,7 +468,7 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
       <div
         className={`${classes.rightSection} ${
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
-        }`}
+          }`}
       >
         {allCombinedData && allCombinedData.length > 0 ? (
           <>
@@ -492,47 +493,47 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 287px)'
                   : isSmallScreen
-                  ? 'calc(100vh - 55px)'
-                  : 'calc(100vh - 322px)'
+                    ? 'calc(100vh - 55px)'
+                    : 'calc(100vh - 322px)'
               }
             >
               {((!isSmallScreen && activeData) ||
                 (isSmallScreen && showMobileDetails && activeData)) && (
-                <div className={classes.medicalRecordsDetails}>
-                  <div className={classes.cbcDetails}>
-                    <div className={classes.reportsDetails}>
-                      <div className={classes.testName}>
-                        {activeData.healthCheckType || activeData.healthCheckName || '-'}
+                  <div className={classes.medicalRecordsDetails}>
+                    <div className={classes.cbcDetails}>
+                      <div className={classes.reportsDetails}>
+                        <div className={classes.testName}>
+                          {activeData.healthCheckType || activeData.healthCheckName || '-'}
+                        </div>
+                      </div>
+                      <hr />
+                      <div className={classes.reportsDetails}>
+                        <label>Uploaded Date</label>
+                        <p>
+                          On{' '}
+                          <span className={classes.checkDate}>
+                            {getFormattedDate(activeData, 'checkUp')}
+                          </span>
+                        </p>
                       </div>
                     </div>
-                    <hr />
-                    <div className={classes.reportsDetails}>
-                      <label>Uploaded Date</label>
-                      <p>
-                        On{' '}
-                        <span className={classes.checkDate}>
-                          {getFormattedDate(activeData, 'checkUp')}
-                        </span>
-                      </p>
-                    </div>
+                    {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
+                      <RenderImage
+                        activeData={activeData}
+                        type={
+                          activeData.healthCheckFiles &&
+                            activeData.healthCheckFiles.length &&
+                            activeData.healthCheckFiles[0].fileName &&
+                            activeData.healthCheckFiles[0].fileName.includes('pdf')
+                            ? 'pdf'
+                            : activeData.fileUrl.includes('pdf')
+                              ? 'pdf'
+                              : 'image'
+                        }
+                      />
+                    )}
                   </div>
-                  {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
-                    <RenderImage
-                      activeData={activeData}
-                      type={
-                        activeData.healthCheckFiles &&
-                        activeData.healthCheckFiles.length &&
-                        activeData.healthCheckFiles[0].fileName &&
-                        activeData.healthCheckFiles[0].fileName.includes('pdf')
-                          ? 'pdf'
-                          : activeData.fileUrl.includes('pdf')
-                          ? 'pdf'
-                          : 'image'
-                      }
-                    />
-                  )}
-                </div>
-              )}
+                )}
             </Scrollbars>
             {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
               <a href={activeData.fileUrl}>
@@ -545,11 +546,11 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
             )}
           </>
         ) : (
-          <div className={classes.noRecordFoundWrapper}>
-            <img src={require('images/ic_records.svg')} />
-            <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
-          </div>
-        )}
+            <div className={classes.noRecordFoundWrapper}>
+              <img src={require('images/ic_records.svg')} />
+              <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
+            </div>
+          )}
       </div>
     </div>
   );

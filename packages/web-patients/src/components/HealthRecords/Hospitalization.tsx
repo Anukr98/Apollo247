@@ -261,7 +261,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       marginBottom: 12,
-      padding: 14,
+      padding: '14px 14px 14px 18px',
       '& hr': {
         opacity: '0.2',
       },
@@ -279,7 +279,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     reportsDetails: {
-      paddingLeft: 10,
+      paddingLeft: 0,
       paddingRight: 10,
       [theme.breakpoints.down('xs')]: {
         paddingLeft: 5,
@@ -332,6 +332,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#0087BA',
       fontWeight: 500,
       marginBottom: 5,
+      wordBreak: 'break-all',
     },
     testName: {
       fontSize: 16,
@@ -383,8 +384,8 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
         {moment(combinedData.date).format('DD MMM, YYYY')}
       </span>
     ) : (
-      <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
-    );
+        <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
+      );
   };
 
   if (loading) {
@@ -415,8 +416,8 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 240px)'
               : isSmallScreen
-              ? 'calc(100vh - 230px)'
-              : 'calc(100vh - 310px)'
+                ? 'calc(100vh - 230px)'
+                : 'calc(100vh - 310px)'
           }
         >
           <div className={classes.consultationsList}>
@@ -469,7 +470,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
       <div
         className={`${classes.rightSection} ${
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
-        }`}
+          }`}
       >
         {allCombinedData && allCombinedData.length > 0 ? (
           <>
@@ -494,52 +495,52 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 287px)'
                   : isSmallScreen
-                  ? 'calc(100vh - 55px)'
-                  : 'calc(100vh - 322px)'
+                    ? 'calc(100vh - 55px)'
+                    : 'calc(100vh - 322px)'
               }
             >
               {((!isSmallScreen && activeData) ||
                 (isSmallScreen && showMobileDetails && activeData)) && (
-                <div className={classes.medicalRecordsDetails}>
-                  <div className={classes.cbcDetails}>
-                    <div className={classes.reportsDetails}>
-                      <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
-                        {activeData.doctorName ? `Dr. ${activeData.doctorName}` : '-'}
+                  <div className={classes.medicalRecordsDetails}>
+                    <div className={classes.cbcDetails}>
+                      <div className={classes.reportsDetails}>
+                        <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
+                          {activeData.doctorName ? `Dr. ${activeData.doctorName}` : '-'}
+                        </div>
+                      </div>
+                      {activeData.hospitalName && (
+                        <div className={`${classes.reportsDetails} ${classes.sitedisplayName}`}>
+                          <div>{activeData.hospitalName}</div>
+                        </div>
+                      )}
+                      <hr />
+                      <div className={classes.reportsDetails}>
+                        <label>Discharge Date</label>
+                        <p>
+                          On{' '}
+                          <span className={classes.checkDate}>
+                            {getFormattedDate(activeData, 'dischargeDate')}
+                          </span>
+                        </p>
                       </div>
                     </div>
-                    {activeData.hospitalName && (
-                      <div className={`${classes.reportsDetails} ${classes.sitedisplayName}`}>
-                        <div>{activeData.hospitalName}</div>
-                      </div>
+                    {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
+                      <RenderImage
+                        activeData={activeData}
+                        type={
+                          activeData.hospitalizationFiles &&
+                            activeData.hospitalizationFiles.length &&
+                            activeData.hospitalizationFiles[0].fileName &&
+                            activeData.hospitalizationFiles[0].fileName.includes('pdf')
+                            ? 'pdf'
+                            : activeData.fileUrl.includes('pdf')
+                              ? 'pdf'
+                              : 'image'
+                        }
+                      />
                     )}
-                    <hr />
-                    <div className={classes.reportsDetails}>
-                      <label>Discharge Date</label>
-                      <p>
-                        On{' '}
-                        <span className={classes.checkDate}>
-                          {getFormattedDate(activeData, 'dischargeDate')}
-                        </span>
-                      </p>
-                    </div>
                   </div>
-                  {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
-                    <RenderImage
-                      activeData={activeData}
-                      type={
-                        activeData.hospitalizationFiles &&
-                        activeData.hospitalizationFiles.length &&
-                        activeData.hospitalizationFiles[0].fileName &&
-                        activeData.hospitalizationFiles[0].fileName.includes('pdf')
-                          ? 'pdf'
-                          : activeData.fileUrl.includes('pdf')
-                          ? 'pdf'
-                          : 'image'
-                      }
-                    />
-                  )}
-                </div>
-              )}
+                )}
             </Scrollbars>
             {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
               <a href={activeData.fileUrl}>
@@ -552,11 +553,11 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
             )}
           </>
         ) : (
-          <div className={classes.noRecordFoundWrapper}>
-            <img src={require('images/ic_records.svg')} />
-            <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
-          </div>
-        )}
+            <div className={classes.noRecordFoundWrapper}>
+              <img src={require('images/ic_records.svg')} />
+              <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
+            </div>
+          )}
       </div>
     </div>
   );
