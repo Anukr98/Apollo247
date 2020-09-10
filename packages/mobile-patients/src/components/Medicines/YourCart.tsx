@@ -511,7 +511,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               if (serviceableSkus.length && !unserviceableSkus.length) {
                 const inventoryDataRes = g(tatRes, 'data', 'response', 'items') || [];
                 const availableInventory = inventoryDataRes
-                  .filter(({ mrp }) => mrp > 0)
                   .map((item) => {
                     const availableItem = availableItems.filter(({sku}) => sku === item.sku)[0]
                     return {
