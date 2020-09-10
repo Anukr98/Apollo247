@@ -570,12 +570,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 5,
-      title: 'Track Symptoms',
+      title: 'Understand Symptoms',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.TRACK_SYMPTOMS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.TRACK_SYMPTOMS);
-        props.navigation.navigate(AppRoutes.SymptomTracker);
+        props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' });
       },
     },
     {
