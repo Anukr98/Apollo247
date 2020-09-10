@@ -393,6 +393,8 @@ export enum ApiConstants {
   PATIENT_APPT_DEEPLINK = 'apollopatients://Consult',
   PATIENT_CHATROOM_DEEPLINK = 'apollopatients://ChatRoom?',
   PATIENT_PRESCRIPTION_DEEPLINK = 'apollopatients://ConsultDetails?',
+  DOCTOR_DEEPLINK_WEB_URL = 'https://www.apollo247.com/doctors/<DoctorID>',
+
   // whatsapp constants
   WEB_ENGAGE_AUTHORIZATION = 'fe30a7fd-5dd7-48a8-9ce0-be85b5eb4de7',
 
