@@ -876,14 +876,6 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       (faqData && faqData[0].canonicalUrl) || (window && window.location && window.location.href),
   };
 
-  const getDoctorCardData = () => {
-    return filteredDoctorData.filter((doctor: DoctorDetails) =>
-      doctorType.toLowerCase() === 'apollo'
-        ? doctor.doctorType.toLowerCase() !== 'doctor_connect'
-        : doctor.doctorType.toLowerCase() === 'doctor_connect'
-    );
-  };
-
   return (
     <div className={classes.root}>
       <MetaTagsComp {...metaTagProps} />
