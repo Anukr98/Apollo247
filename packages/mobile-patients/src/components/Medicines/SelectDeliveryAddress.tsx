@@ -19,6 +19,7 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import {
   formatAddressWithLandmark,
   formatNameNumber,
+  formatAddress,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
