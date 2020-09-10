@@ -141,7 +141,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             { match: { isSearchable: true } },
             {
               query_string: {
-                fuzziness: 'AUTO', //need to check with asad
+                fuzziness: 0,
                 query: `*${searchTextLowerCase}*`,
                 fields: [
                   `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
