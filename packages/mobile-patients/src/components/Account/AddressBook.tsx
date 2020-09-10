@@ -128,19 +128,6 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
               <Text style={styles.headingTextStyle}>Number: </Text>
               <Text style={[styles.textStyle, { margin: 2 }]}>{address.mobileNumber}</Text>
             </View>
-
-            {/* <Text style={styles.textStyle}>
-              <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansSemiBold(14),
-                  lineHeight: 20,
-                  color: theme.colors.SHERPA_BLUE,
-                }}
-              >
-                Address:{' '}
-              </Text>
-              {formatAddress(address)}
-            </Text> */}
             <View style={styles.headingTextView}>
               <Text style={styles.headingTextStyle}>Address: </Text>
               <Text style={styles.textStyle}>{formatAddressWithLandmark(address)}</Text>
