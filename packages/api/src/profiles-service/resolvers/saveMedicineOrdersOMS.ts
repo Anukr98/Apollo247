@@ -224,7 +224,10 @@ const saveMedicineOrderOMS: Resolver<
   ) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
   }
-  const medicineOrderAddressDetails: Partial<MedicineOrderAddress> = {};
+  const medicineOrderAddressDetails: Partial<MedicineOrderAddress> = {
+    name: patientDetails.firstName,
+    mobileNumber: patientDetails.mobileNumber,
+  };
   if (medicineCartOMSInput.patientAddressId) {
     const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
     const patientAddressDetails = await patientAddressRepo.findById(
@@ -247,14 +250,10 @@ const saveMedicineOrderOMS: Resolver<
 
       if (patientAddressDetails.name) {
         medicineOrderAddressDetails.name = patientAddressDetails.name;
-      } else {
-        medicineOrderAddressDetails.name = patientDetails.firstName;
       }
 
       if (patientAddressDetails.mobileNumber) {
         medicineOrderAddressDetails.mobileNumber = patientAddressDetails.mobileNumber;
-      } else {
-        medicineOrderAddressDetails.mobileNumber = patientDetails.mobileNumber;
       }
     }
   }

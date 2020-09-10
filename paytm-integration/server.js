@@ -1006,7 +1006,7 @@ app.get('/processOmsOrders', (req, res) => {
                   deliveryStateCode = 'TS',
                   lat = 0,
                   long = 0;
-                const patientAddressDetails = orderDetails.medicineOrderAddress;
+                const patientAddressDetails = orderDetails.medicineOrderAddress || {};
                 if (orderDetails.deliveryType == 'STORE_PICKUP') {
                   if (!orderDetails.shopAddress) {
                     logger.error(

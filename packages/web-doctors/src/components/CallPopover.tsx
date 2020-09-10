@@ -3394,6 +3394,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         <div className={showVideo ? '' : classes.audioVideoContainer}>
           {showVideo && (
             <Consult
+              setGiveRating={props.setGiveRating}
               toggelChatVideo={() => toggelChatVideo()}
               stopAudioVideoCall={() => stopAudioVideoCall()}
               stopAudioVideoCallpatient={() => stopAudioVideoCallpatient()}

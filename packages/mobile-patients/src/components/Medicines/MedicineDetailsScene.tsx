@@ -347,17 +347,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     if (!_deliveryError) {
       fetchDeliveryTime(false);
     }
-
-    if (typeof movedFrom !== 'undefined') {
-      // webengage event when page is opened from different sources
-      const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
-        source: movedFrom,
-        ProductId: sku,
-        ProductName: medicineName,
-        'Stock availability': isOutOfStock ? 'No' : 'Yes',
-      };
-      postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
-    }
   }, []);
 
   useEffect(() => {
@@ -367,6 +356,16 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         const productDetails = g(data, 'productdp', '0' as any);
         if (productDetails) {
           setmedicineDetails(productDetails || {});
+          if (typeof movedFrom !== 'undefined' && typeof isOutOfStock !== 'undefined') {
+            // webengage event when page is opened from different sources
+            const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
+              source: movedFrom,
+              ProductId: sku,
+              ProductName: medicineName,
+              'Stock availability': productDetails!.is_in_stock ? 'Yes' : 'No',
+            };
+            postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
+          }
           trackTagalysViewEvent(productDetails);
           if (_deliveryError) {
             setTimeout(() => {
@@ -615,12 +614,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const removeFromCart = () => removeCartItem!(sku);
     const { special_price, price } = medicineDetails;
     const discountPercent = getDiscountPercentage(price, special_price);
-    const showOutOfStockView = notServiceable ? false : medicineDetails?.sell_online
+    const showOutOfStockView = medicineDetails?.sell_online
       ? (!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock
       : false;
 
     return (
-      <StickyBottomComponent style={styles.stickyBottomComponent}>
+      notServiceable ? null :
+       <StickyBottomComponent style={styles.stickyBottomComponent}>
         {!medicineDetails.sell_online && renderVisitPharmacyText()}
         {showOutOfStockView ? (
           <View

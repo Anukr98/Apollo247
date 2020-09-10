@@ -140,7 +140,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             },
             { match: { isSearchable: true } },
             {
-              query_string: {
+              phrase_prefix: {
                 fuzziness: 0,
                 query: `*${searchTextLowerCase}*`,
                 fields: [
