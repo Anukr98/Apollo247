@@ -530,7 +530,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 setshowDeliverySpinner(false);
                 setLoading!(false);
               }
-              ß;
             } else {
               showUnserviceableAlert(updatedCartItems);
             }
