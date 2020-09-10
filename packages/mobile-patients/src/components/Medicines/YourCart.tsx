@@ -2,7 +2,7 @@ import {
   dataSavedUserID,
   doRequestAndAccessLocationModified,
   findAddrComponents,
-  formatAddress,
+  formatAddressWithLandmark,
   g,
   postWebEngageEvent,
   postWEGWhatsAppEvent,
@@ -1172,7 +1172,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           return (
             <RadioSelectionItem
               key={item.id}
-              title={formatAddress(item)}
+              title={formatAddressWithLandmark(item)}
               showMultiLine={true}
               subtitle={formatNameNumber(item)}
               subtitleStyle={styles.subtitleStyle}

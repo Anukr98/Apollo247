@@ -1,10 +1,19 @@
 import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
+  EditIconNewOrange,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleProp, StyleSheet, TouchableOpacity, View, ViewStyle, TextStyle } from 'react-native';
+import {
+  StyleProp,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+  TextStyle,
+  TouchableOpacityProps,
+} from 'react-native';
 import { Text } from 'react-native-elements';
 
 const styles = StyleSheet.create({
@@ -40,6 +49,8 @@ export interface RadioSelectionItemProps {
   separatorStyle?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
   radioSubBody?: React.ReactNode;
+  showEditIcon?: boolean;
+  onPressEdit?: TouchableOpacityProps['onPress'];
 }
 
 export const RadioSelectionItem: React.FC<RadioSelectionItemProps> = (props) => {
@@ -56,8 +67,12 @@ export const RadioSelectionItem: React.FC<RadioSelectionItemProps> = (props) => 
           <Text style={[styles.radioButtonTitle, props.textStyle]}>{props.title}</Text>
           {!props.hideSeparator && <View style={[styles.separator, props.separatorStyle]} />}
         </View>
+        {props.showEditIcon ? (
+          <TouchableOpacity onPress={props.onPressEdit}>
+            <EditIconNewOrange style={{ height: 18, width: 18, resizeMode: 'contain' }} />
+          </TouchableOpacity>
+        ) : null}
       </TouchableOpacity>
-      {props.radioSubBody}
     </>
   );
 };

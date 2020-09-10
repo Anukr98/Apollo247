@@ -16,7 +16,10 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { formatAddress, formatNameNumber } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  formatAddressWithLandmark,
+  formatNameNumber,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
@@ -112,7 +115,7 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
   const renderRadioButtonList = () => {
     return addressList.map((address, i) => (
       <RadioSelectionItem
-        title={formatAddress(address)}
+        title={formatAddressWithLandmark(address)}
         showMultiLine={true}
         subtitle={formatNameNumber(address)}
         subtitleStyle={styles.subtitleStyle}
