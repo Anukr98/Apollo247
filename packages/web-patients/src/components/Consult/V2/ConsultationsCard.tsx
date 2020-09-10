@@ -916,7 +916,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                     <h3
                                       style={{ cursor: 'pointer' }}
                                       onClick={() => {
-                                        if (props.pastOrCurrent !== 'past') {
+                                        if (props.pastOrCurrent === 'past') {
                                           history.push(
                                             clientRoutes.chatRoom(appointmentId, doctorId)
                                           );
