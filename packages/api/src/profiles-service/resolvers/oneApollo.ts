@@ -5,7 +5,7 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { OneApollo } from 'helpers/oneApollo';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-
+import { format } from 'date-fns';
 import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 
 export const oneApolloTypeDefs = gql`
@@ -27,11 +27,27 @@ export const oneApolloTypeDefs = gql`
     grossAmount: Float!
   }
 
+  type CreateOneApolloUserResult {
+    success: Boolean
+    message: String
+    referenceNumber: String
+  }
+
+  extend type Mutation {
+    createOneApolloUser(patientId: String!): CreateOneApolloUserResult
+  }
+
   extend type Query {
     getOneApolloUser(patientId: String): UserDetailResponse
     getOneApolloUserTransactions: [TransactionDetails]
   }
 `;
+
+type CreateOneApolloUserResult = {
+  message: string;
+  success: boolean;
+  referenceNumber: string;
+};
 
 type UserDetailResponse = {
   name: string | null;
@@ -143,9 +159,66 @@ const getOneApolloUserTransactions: Resolver<
   }
 };
 
+const createOneApolloUser: Resolver<
+  null,
+  { patientId: string },
+  ProfilesServiceContext,
+  CreateOneApolloUserResult
+> = async (parent, { patientId }, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const oneApollo = new OneApollo();
+  if (!patientId) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  //check patient in apollo247
+  const patient = await patientRepo.getPatientDetails(patientId);
+  if (patient) {
+    let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
+    if (patient.iosVersion) {
+      storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
+    }
+    if (patient.androidVersion) {
+      storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
+    }
+    let mobileNumber = '';
+    if (patient.mobileNumber.length === 13) {
+      mobileNumber = patient.mobileNumber.slice(3);
+    } else {
+      mobileNumber = patient.mobileNumber;
+    }
+
+    const userCreateResponse = await oneApollo.createOneApolloUser({
+      FirstName: patient.firstName,
+      LastName: patient.lastName,
+      BusinessUnit: <string>process.env.ONEAPOLLO_BUSINESS_UNIT,
+      MobileNumber: mobileNumber,
+      DOB: format(patient.dateOfBirth, 'yyyy-MM-dd'),
+      Gender: patient.gender,
+      Email: patient.emailAddress,
+      StoreCode: storeCode,
+      CustomerId: patient.uhid,
+    });
+
+    if (userCreateResponse.Success) {
+      return {
+        success: userCreateResponse.Success,
+        message: userCreateResponse.Message,
+        referenceNumber: userCreateResponse.ReferenceNumber,
+      };
+    } else {
+      throw new AphError(userCreateResponse.Message, undefined, {});
+    }
+  } else {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+};
+
 export const oneApolloResolvers = {
   Query: {
     getOneApolloUser,
     getOneApolloUserTransactions,
+  },
+  Mutation: {
+    createOneApolloUser,
   },
 };
