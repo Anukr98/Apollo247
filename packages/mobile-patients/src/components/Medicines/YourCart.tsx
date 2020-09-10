@@ -409,14 +409,21 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           if (medicineDetails.id == 0) {
             return null;
           }
+          const existingCartItem = cartItems.filter(
+            (item) => item.id == medicineDetails.sku
+          );
+          let quantity = couponProducts[index]!.quantity;
+          if (existingCartItem.length) {
+            quantity += existingCartItem[0].quantity;
+          }
 
           return {
             id: medicineDetails!.sku!,
             mou: medicineDetails.mou,
             name: medicineDetails!.name,
             price: medicineDetails.price,
-            specialPrice: Number(couponProducts[index]!.mrp), // special price as coupon product price
-            quantity: couponProducts[index]!.quantity,
+            specialPrice: Number(couponProducts[index]!.mrp),
+            quantity,
             prescriptionRequired: medicineDetails.is_prescription_required == '1',
             isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
             thumbnail: medicineDetails.thumbnail || medicineDetails.image,

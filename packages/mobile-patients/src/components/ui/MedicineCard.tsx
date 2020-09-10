@@ -179,7 +179,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     maxQty,
   } = props;
 
-  const isSpecialPrice = specialPrice !== undefined;
+  const isSpecialPrice = !!specialPrice || specialPrice === 0;
   const priceToBeDisplayed = isSpecialPrice ? specialPrice : price;
 
   const renderTitleAndIcon = () => {
@@ -252,7 +252,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   };
 
   const renderUnitDropdownAndPrice = () => {
-    const maxQuantity = priceToBeDisplayed === 0 ? 1 : getMaxQtyForMedicineItem(maxQty);
+    const maxQuantity = priceToBeDisplayed === 0 ? unit : getMaxQtyForMedicineItem(maxQty);
     const opitons = Array.from({
       length: maxQuantity,
     }).map((_, i) => {
