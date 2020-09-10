@@ -486,28 +486,23 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
     for (const slots of doc._source.doctorSlots) {
       for (const slot of slots['slots']) {
-        if (
-          slot.status == 'OPEN' &&
-          differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
-        ) {
-          doctor['openSlotDates'].push(slots.slotDate);
-          if (doctor['activeSlotCount'] === 0) {
-            doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
-              new Date(slot.slot),
-              callStartTime
-            );
-            doctor['earliestSlotavailable'] = new Date(slot.slot);
-            finalDoctorNextAvailSlots.push({
-              availableInMinutes: Math.abs(differenceInMinutes(callStartTime, new Date(slot.slot))),
-              physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
-              currentDateTime: callStartTime,
-              doctorId: doc._source.doctorId,
-              onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
-              referenceSlot: slot.slot,
-            });
+        if (slot.status == 'OPEN') {
+          const nextAvailable = differenceInMinutes(new Date(slot.slot), callStartTime);
+          if (nextAvailable > bufferTime) {
+            if (doctor['activeSlotCount'] === 0) {
+              doctor['earliestSlotavailableInMinutes'] = nextAvailable;
+              matchedDoctorsNextAvailability.push({
+                availableInMinutes: Math.abs(nextAvailable),
+                physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
+                currentDateTime: callStartTime,
+                doctorId: doctor.doctorId,
+                onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
+                referenceSlot: slot.slot,
+              });
+            }
+            doctor['activeSlotCount'] += 1;
+            break;
           }
-          doctor['activeSlotCount'] += 1;
-          break;
         }
       }
     }
