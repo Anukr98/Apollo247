@@ -615,12 +615,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const removeFromCart = () => removeCartItem!(sku);
     const { special_price, price } = medicineDetails;
     const discountPercent = getDiscountPercentage(price, special_price);
-    const showOutOfStockView = notServiceable ? false : medicineDetails?.sell_online
+    const showOutOfStockView = medicineDetails?.sell_online
       ? (!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock
       : false;
 
     return (
-      <StickyBottomComponent style={styles.stickyBottomComponent}>
+      notServiceable ? null :
+       <StickyBottomComponent style={styles.stickyBottomComponent}>
         {!medicineDetails.sell_online && renderVisitPharmacyText()}
         {showOutOfStockView ? (
           <View
