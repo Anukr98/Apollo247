@@ -7,6 +7,7 @@ import { OneApollo } from 'helpers/oneApollo';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format } from 'date-fns';
 import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+import { Patient } from 'profiles-service/entities';
 
 export const oneApolloTypeDefs = gql`
   type UserDetailResponse {
@@ -82,20 +83,13 @@ const getOneApolloUser: Resolver<
     const patient = await patientRepo.getPatientDetails(args.patientId);
 
     if (patient) {
-      let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
-      if (patient.iosVersion) {
-        storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
-      }
-      if (patient.androidVersion) {
-        storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
-      }
       const userCreateResponse = await oneApollo.createOneApolloUser({
         FirstName: patient.firstName,
         LastName: patient.lastName,
         BusinessUnit: <string>process.env.ONEAPOLLO_BUSINESS_UNIT,
         MobileNumber: mobNumberIN,
         Gender: patient.gender,
-        StoreCode: storeCode,
+        StoreCode: getStoreCode(patient),
         CustomerId: patient.uhid,
       });
       if (userCreateResponse.Success) {
@@ -173,20 +167,12 @@ const createOneApolloUser: Resolver<
   //check patient in apollo247
   const patient = await patientRepo.getPatientDetails(patientId);
   if (patient) {
-    let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
-    if (patient.iosVersion) {
-      storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
-    }
-    if (patient.androidVersion) {
-      storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
-    }
     let mobileNumber = '';
     if (patient.mobileNumber.length === 13) {
       mobileNumber = patient.mobileNumber.slice(3);
     } else {
       mobileNumber = patient.mobileNumber;
     }
-
     const userCreateResponse = await oneApollo.createOneApolloUser({
       FirstName: patient.firstName,
       LastName: patient.lastName,
@@ -195,7 +181,7 @@ const createOneApolloUser: Resolver<
       DOB: format(patient.dateOfBirth, 'yyyy-MM-dd'),
       Gender: patient.gender,
       Email: patient.emailAddress,
-      StoreCode: storeCode,
+      StoreCode: getStoreCode(patient),
       CustomerId: patient.uhid,
     });
 
@@ -213,6 +199,22 @@ const createOneApolloUser: Resolver<
   }
 };
 
+/**
+ * helper fn
+ */
+const getStoreCode = (patient: Patient) => {
+  let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
+  if (patient.iosVersion) {
+    storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
+  }
+  if (patient.androidVersion) {
+    storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
+  }
+  return storeCode;
+};
+/**
+ * expose one apollo resolvers
+ */
 export const oneApolloResolvers = {
   Query: {
     getOneApolloUser,
