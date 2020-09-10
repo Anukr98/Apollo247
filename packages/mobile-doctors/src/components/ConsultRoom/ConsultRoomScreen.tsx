@@ -269,7 +269,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [selectedReason, setselectedReason] = useState<string>(reasons[0]);
   const [otherReason, setotherReason] = useState<string>('');
   const [isAutoSaved, setIsAutoSaved] = useState<boolean>(false);
-  const [giveRating, setGiveRating] = useState<boolean>(false);
 
   const [savedTime, setSavedTime] = useState<string>('');
   const mutationCancelSrdConsult = useMutation<cancelAppointment, cancelAppointmentVariables>(
@@ -288,7 +287,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     // favTestError,
   } = CaseSheetAPI();
 
-  const { setOpenTokKeys, setCallBacks, callData, callOptions, errorPopup } = useAudioVideo();
+  const {
+    setOpenTokKeys,
+    setCallBacks,
+    callData,
+    callOptions,
+    errorPopup,
+    setGiveRating,
+    giveRating,
+  } = useAudioVideo();
   useEffect(() => {
     getSpecialties();
     // callAbandonmentCall();
