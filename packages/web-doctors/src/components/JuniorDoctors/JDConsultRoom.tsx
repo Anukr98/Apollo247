@@ -1085,6 +1085,7 @@ export const JDConsultRoom: React.FC = () => {
           _data.data.sendCallNotification &&
           _data.data.sendCallNotification.status
         ) {
+          setcallId(_data.data.sendCallNotification.callDetails.id);
           isCall
             ? setcallId(_data.data.sendCallNotification.callDetails.id)
             : setChatRecordId(_data.data.sendCallNotification.callDetails.id);
