@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -34,6 +34,8 @@ import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { SchemaMarkup } from 'SchemaMarkup';
+import _ from 'lodash';
+import _ from 'lodash';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -691,41 +693,43 @@ const SpecialityListing: React.FC = (props) => {
     }
   }, [faqs]);
 
+  const fetchData = (searchKeyword: any, selectedCity: any) => {
+    apolloClient
+      .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
+        query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
+        variables: {
+          searchText: searchKeyword,
+          patientId: currentPatient ? currentPatient.id : '',
+          city: selectedCity,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        const specialtiesAndDoctorsList =
+          response && response.data && response.data.SearchDoctorAndSpecialtyByName;
+        if (specialtiesAndDoctorsList) {
+          const doctorsArray = specialtiesAndDoctorsList.doctors || [];
+          const specialtiesArray = specialtiesAndDoctorsList.specialties || [];
+          setSearchSpecialty(specialtiesArray);
+          setSearchDoctors(doctorsArray);
+          setSearchDoctorsNextAvailability(specialtiesAndDoctorsList.doctorsNextAvailability || []);
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+        setSearchSpecialty([]);
+        setSearchDoctors([]);
+        setSearchDoctorsNextAvailability([]);
+      })
+      .finally(() => {
+        setSearchLoading(false);
+      });
+  };
+  const debounceLoadData = useCallback(_.debounce(fetchData, 300), []);
   useEffect(() => {
     if (searchKeyword.length > 2 || selectedCity.length) {
       setSearchLoading(true);
-      apolloClient
-        .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
-          query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
-          variables: {
-            searchText: searchKeyword,
-            patientId: currentPatient ? currentPatient.id : '',
-            city: selectedCity,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((response) => {
-          const specialtiesAndDoctorsList =
-            response && response.data && response.data.SearchDoctorAndSpecialtyByName;
-          if (specialtiesAndDoctorsList) {
-            const doctorsArray = specialtiesAndDoctorsList.doctors || [];
-            const specialtiesArray = specialtiesAndDoctorsList.specialties || [];
-            setSearchSpecialty(specialtiesArray);
-            setSearchDoctors(doctorsArray);
-            setSearchDoctorsNextAvailability(
-              specialtiesAndDoctorsList.doctorsNextAvailability || []
-            );
-          }
-        })
-        .catch((e) => {
-          console.log(e);
-          setSearchSpecialty([]);
-          setSearchDoctors([]);
-          setSearchDoctorsNextAvailability([]);
-        })
-        .finally(() => {
-          setSearchLoading(false);
-        });
+      debounceLoadData(searchKeyword, selectedCity);
     }
   }, [searchKeyword, selectedCity]);
 
