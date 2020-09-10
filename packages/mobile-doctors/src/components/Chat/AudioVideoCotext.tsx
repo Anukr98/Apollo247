@@ -134,6 +134,8 @@ export interface AudioVideoContextPorps {
   callBacks: CallBackOptions;
   setCallBacks: (value: CallBackOptions) => void;
   errorPopup: (message: string, color: string, time?: number) => void;
+  giveRating: boolean;
+  setGiveRating: (rating: boolean) => void;
 }
 
 export const AudioVideoContext = createContext<AudioVideoContextPorps>({
@@ -173,6 +175,8 @@ export const AudioVideoContext = createContext<AudioVideoContextPorps>({
   },
   setCallBacks: () => {},
   errorPopup: (message: string, color: string, time?: number) => {},
+  giveRating: false,
+  setGiveRating: () => {},
 });
 let timerId: NodeJS.Timeout;
 let missedCallTimer: NodeJS.Timeout;
@@ -214,6 +218,7 @@ export const AudioVideoProvider: React.FC = (props) => {
   const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>('front');
   const otSessionRef = React.createRef();
   const callType = isAudio ? 'Audio' : isVideo ? 'Video' : '';
+  const [giveRating, setGiveRating] = useState<boolean>(false);
 
   const setPrevVolume = async () => {
     // InCallManager.setSpeakerphoneOn(false);
@@ -706,6 +711,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     connectionDestroyed: (event: string) => {
       AsyncStorage.getItem('callDisconnected').then((data) => {
         if (!JSON.parse(data || 'false')) {
+          setGiveRating(true);
           errorPopup(strings.toastMessages.callDisconnected, theme.colors.APP_RED);
         }
       });
@@ -859,6 +865,8 @@ export const AudioVideoProvider: React.FC = (props) => {
         callBacks,
         setCallBacks,
         errorPopup,
+        giveRating,
+        setGiveRating,
       }}
     >
       <View style={{ flex: 1 }}>
