@@ -665,7 +665,6 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                   couponCode: couponCode ? couponCode : null,
                   amount: revisedAmount,
                   speciality: getSpeciality(),
-                  type: 'consult',
                 })
               );
             }}

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, Route } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import {
@@ -41,7 +41,14 @@ import { ShareWidget } from 'components/ShareWidget';
 import { useShoppingCart, MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { readableParam } from 'helpers/commonHelpers';
+import { useMutation } from 'react-apollo-hooks';
+import { BOOK_FOLLOWUP_APPOINTMENT } from 'graphql/consult';
 import { BookFollowupConsult } from 'components/BookFollowupConsult';
+import {
+  GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails,
+  GetDoctorDetailsById_getDoctorDetailsById_starTeam,
+  GetDoctorDetailsById_getDoctorDetailsById_consultHours,
+} from 'graphql/types/GetDoctorDetailsById';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -489,7 +496,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: '20px !important',
       '&:hover': {
         backgroundColor: 'transparent',
-      },
+      }
     },
     followUpRow: {
       width: '70% !important',
@@ -506,7 +513,11 @@ export const Prescription: React.FC = (props) => {
   // const [showShareWidget, setShowShareWidget] = useState<boolean>(false);
   const [cartItemsLoading, setCartItemsLoading] = useState<boolean>(false);
   const [showInstockItemsPopup, setShowInstockItemsPopup] = useState<boolean>(false);
+  const [followUpLoading, setFollowUpLoading] = useState<boolean>(false);
   const [openSlotPopup, setOpenSlotPopup] = useState<boolean>(false);
+  const [followupAppointmentType, setFollwupAppoitnmentType] = useState<number>(0);
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [followupSuccessPopup, setFollowupSuccessPopup] = useState<boolean>(false);
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -554,8 +565,8 @@ export const Prescription: React.FC = (props) => {
       ? 30
       : type == MEDICINE_CONSUMPTION_DURATION.WEEKS ||
         type == MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
-      ? 7
-      : 1;
+        ? 7
+        : 1;
   };
 
   const getQuantity = (
@@ -570,19 +581,19 @@ export const Prescription: React.FC = (props) => {
     if (medicineUnit == MEDICINE_UNIT.TABLET || medicineUnit == MEDICINE_UNIT.CAPSULE) {
       const medicineDosageMapping = medicineCustomDosage
         ? medicineCustomDosage.split('-').map((item) => {
-            if (item.indexOf('/') > -1) {
-              const dosage = item.split('/').map((item) => Number(item));
-              return (dosage[0] || 1) / (dosage[1] || 1);
-            } else if (item.indexOf('\\') > -1) {
-              const dosage = item.split('\\').map((item) => Number(item));
-              return (dosage[0] || 1) / (dosage[1] || 1);
-            } else {
-              return Number(item);
-            }
-          })
+          if (item.indexOf('/') > -1) {
+            const dosage = item.split('/').map((item) => Number(item));
+            return (dosage[0] || 1) / (dosage[1] || 1);
+          } else if (item.indexOf('\\') > -1) {
+            const dosage = item.split('\\').map((item) => Number(item));
+            return (dosage[0] || 1) / (dosage[1] || 1);
+          } else {
+            return Number(item);
+          }
+        })
         : medicineDosage
-        ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
-        : [1, 1, 1, 1];
+          ? Array.from({ length: 4 }).map(() => Number(medicineDosage))
+          : [1, 1, 1, 1];
 
       const medicineTimingsPerDayCount =
         (medicineTimings || []).reduce(
@@ -591,12 +602,12 @@ export const Prescription: React.FC = (props) => {
             (currItem == MEDICINE_TIMINGS.MORNING
               ? medicineDosageMapping[0]
               : currItem == MEDICINE_TIMINGS.NOON
-              ? medicineDosageMapping[1]
-              : currItem == MEDICINE_TIMINGS.EVENING
-              ? medicineDosageMapping[2]
-              : currItem == MEDICINE_TIMINGS.NIGHT
-              ? medicineDosageMapping[3]
-              : (medicineDosage && Number(medicineDosage)) || 1),
+                ? medicineDosageMapping[1]
+                : currItem == MEDICINE_TIMINGS.EVENING
+                  ? medicineDosageMapping[2]
+                  : currItem == MEDICINE_TIMINGS.NIGHT
+                    ? medicineDosageMapping[3]
+                    : (medicineDosage && Number(medicineDosage)) || 1),
           0
         ) || 1;
 
@@ -688,9 +699,9 @@ export const Prescription: React.FC = (props) => {
               medicinesAll.length == 0
                 ? 0
                 : medicinesAll.filter(
-                    (medicineItem: MedicineCartItem) =>
-                      medicineItem && medicineItem.is_prescription_required
-                  ).length;
+                  (medicineItem: MedicineCartItem) =>
+                    medicineItem && medicineItem.is_prescription_required
+                ).length;
 
             const presToAdd = {
               id: caseSheetDetails.id,
@@ -742,38 +753,71 @@ export const Prescription: React.FC = (props) => {
 
     return `${type} ${medicineDosage} ${_lowerCase(medicineUnit)}${
       type === 'Take' ? '(s)' : ''
-    } ${_lowerCase(medicineFrequency)} ${
+      } ${_lowerCase(medicineFrequency)} ${
       medicineConsumptionDurationInDays
         ? `for ${medicineConsumptionDurationInDays} ${
-            medicineConsumptionDurationUnit
-              ? `${medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
-              : ``
-          }`
+        medicineConsumptionDurationUnit
+          ? `${medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+          : ``
+        }`
         : ''
-    } ${
+      } ${
       medicineToBeTaken && medicineToBeTaken.length
         ? medicineToBeTaken
-            .map((medicineToTake: MEDICINE_TO_BE_TAKEN) => _lowerCase(medicineToTake || ''))
-            .join(', ')
+          .map((medicineToTake: MEDICINE_TO_BE_TAKEN) => _lowerCase(medicineToTake || ''))
+          .join(', ')
         : ''
-    } ${
+      } ${
       medicineTimings && medicineTimings.length
         ? `${
-            medicineTimings.includes(MEDICINE_TIMINGS.AS_NEEDED) && medicineTimings.length === 1
-              ? ''
-              : 'in the '
-          }` +
-          (medicineTimings.length > 1
-            ? medicineTimings
-                .slice(0, -1)
-                .map((timing: MEDICINE_TIMINGS | null) => _lowerCase(timing))
-                .join(', ')
-            : medicineTimings
-                .map((timing: MEDICINE_TIMINGS | null) => _lowerCase(timing))
-                .join(', ') + ' ')
+        medicineTimings.includes(MEDICINE_TIMINGS.AS_NEEDED) && medicineTimings.length === 1
+          ? ''
+          : 'in the '
+        }` +
+        (medicineTimings.length > 1
+          ? medicineTimings
+            .slice(0, -1)
+            .map((timing: MEDICINE_TIMINGS | null) => _lowerCase(timing))
+            .join(', ')
+          : medicineTimings
+            .map((timing: MEDICINE_TIMINGS | null) => _lowerCase(timing))
+            .join(', ') + ' ')
         : ''
-    }`;
+      }`;
   };
+
+  const bookFollowupMutation = useMutation(BOOK_FOLLOWUP_APPOINTMENT);
+
+  useEffect(() => {
+    if (selectedSlot && caseSheetDetails && caseSheetDetails.appointment) {
+      const { appointment } = caseSheetDetails;
+      setFollowUpLoading(true);
+      const input = {
+        patientId: appointment.patientId,
+        doctorId: appointment.doctorId,
+        appointmentDateTime: selectedSlot,
+        appointmentType:
+          followupAppointmentType === 0 ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
+        hospitalId: appointment.hospitalId,
+        followUpParentId: appointment.id,
+      };
+      bookFollowupMutation({
+        variables: {
+          followUpAppointmentInput: input,
+        },
+        fetchPolicy: 'no-cache',
+      })
+        .then((_data: any) => {
+          setFollowupSuccessPopup(true);
+        })
+        .catch((e: any) => {
+          console.log('Error occured while BookFollowUpAppointment ', { e });
+        })
+        .finally(() => {
+          setFollowUpLoading(false);
+        });
+    }
+  }, [selectedSlot]);
 
   return (
     <div className={classes.prescriptionContainer}>
@@ -894,8 +938,8 @@ export const Prescription: React.FC = (props) => {
                             </div>
                           ))
                         ) : (
-                          <div className={classes.cdContainer}> No Symptoms </div>
-                        )}
+                            <div className={classes.cdContainer}> No Symptoms </div>
+                          )}
                       </div>
                     </ExpansionPanelDetails>
                   </ExpansionPanel>
@@ -915,22 +959,22 @@ export const Prescription: React.FC = (props) => {
                     <ExpansionPanelDetails className={classes.panelDetails}>
                       <div className={classes.detailsContent}>
                         {caseSheetDetails.medicinePrescription &&
-                        caseSheetDetails.medicinePrescription.length > 0 ? (
-                          <>
-                            {caseSheetDetails.medicinePrescription.map((prescription) => (
-                              <div className={classes.cdContainer}>
-                                <Typography>{prescription.medicineName}</Typography>
-                                {prescription.medicineCustomDetails ? (
-                                  <ul className={classes.consultList}>
-                                    <li>{prescription.medicineCustomDetails}</li>
-                                  </ul>
-                                ) : (
-                                  <ul className={classes.consultList}>
-                                    {/* <li>
+                          caseSheetDetails.medicinePrescription.length > 0 ? (
+                            <>
+                              {caseSheetDetails.medicinePrescription.map((prescription) => (
+                                <div className={classes.cdContainer}>
+                                  <Typography>{prescription.medicineName}</Typography>
+                                  {prescription.medicineCustomDetails ? (
+                                    <ul className={classes.consultList}>
+                                      <li>{prescription.medicineCustomDetails}</li>
+                                    </ul>
+                                  ) : (
+                                      <ul className={classes.consultList}>
+                                        {/* <li>
                                       {prescription.medicineDosage}{' '}
                                       {_upperFirst(_lowerCase(prescription.medicineUnit))}
                                     </li> */}
-                                    {/* <li>
+                                        {/* <li>
                                       {prescription.medicineTimings &&
                                       prescription.medicineTimings.length
                                         ? prescription.medicineTimings
@@ -954,46 +998,46 @@ export const Prescription: React.FC = (props) => {
                                             .join(', ')
                                         : ''}
                                     </li> */}
-                                    <li>{getMedicineDescription(prescription)}</li>
-                                    <li>
-                                      {prescription.routeOfAdministration
-                                        ? `To be taken: 
+                                        <li>{getMedicineDescription(prescription)}</li>
+                                        <li>
+                                          {prescription.routeOfAdministration
+                                            ? `To be taken: 
                                       ${_upperFirst(
-                                        _lowerCase(prescription.routeOfAdministration)
-                                      )}`
-                                        : ''}
-                                    </li>
-                                    <li>
-                                      {prescription.medicineInstructions
-                                        ? `Instructions: ${prescription.medicineInstructions}`
-                                        : ' '}
-                                    </li>
-                                  </ul>
-                                )}
-                              </div>
-                            ))}
-                            <div className={classes.summaryDownloads}>
-                              <Route
-                                render={({ history }) => (
-                                  <AphButton
-                                    className={classes.orderButton}
-                                    onClick={() =>
-                                      orderMedicines(caseSheetDetails.medicinePrescription, history)
-                                    }
-                                  >
-                                    {cartItemsLoading ? (
-                                      <CircularProgress color="primary" size={22} />
-                                    ) : (
-                                      'Order Medicines'
+                                              _lowerCase(prescription.routeOfAdministration)
+                                            )}`
+                                            : ''}
+                                        </li>
+                                        <li>
+                                          {prescription.medicineInstructions
+                                            ? `Instructions: ${prescription.medicineInstructions}`
+                                            : ' '}
+                                        </li>
+                                      </ul>
                                     )}
-                                  </AphButton>
-                                )}
-                              />
-                            </div>
-                          </>
-                        ) : (
-                          <div className={classes.cdContainer}>No Medicines</div>
-                        )}
+                                </div>
+                              ))}
+                              <div className={classes.summaryDownloads}>
+                                <Route
+                                  render={({ history }) => (
+                                    <AphButton
+                                      className={classes.orderButton}
+                                      onClick={() =>
+                                        orderMedicines(caseSheetDetails.medicinePrescription, history)
+                                      }
+                                    >
+                                      {cartItemsLoading ? (
+                                        <CircularProgress color="primary" size={22} />
+                                      ) : (
+                                          'Order Medicines'
+                                        )}
+                                    </AphButton>
+                                  )}
+                                />
+                              </div>
+                            </>
+                          ) : (
+                            <div className={classes.cdContainer}>No Medicines</div>
+                          )}
                       </div>
                     </ExpansionPanelDetails>
                   </ExpansionPanel>
@@ -1013,15 +1057,15 @@ export const Prescription: React.FC = (props) => {
                     <ExpansionPanelDetails className={classes.panelDetails}>
                       <div className={classes.detailsContent}>
                         {caseSheetDetails.diagnosticPrescription &&
-                        caseSheetDetails.diagnosticPrescription.length > 0
+                          caseSheetDetails.diagnosticPrescription.length > 0
                           ? caseSheetDetails.diagnosticPrescription.map((prescription) => (
-                              <div className={classes.cdContainer}>
-                                <Typography>{prescription.itemname}</Typography>
-                                {prescription.testInstruction && (
-                                  <p>{prescription.testInstruction}</p>
-                                )}
-                              </div>
-                            ))
+                            <div className={classes.cdContainer}>
+                              <Typography>{prescription.itemname}</Typography>
+                              {prescription.testInstruction && (
+                                <p>{prescription.testInstruction}</p>
+                              )}
+                            </div>
+                          ))
                           : 'No Prescribed Tests'}
                       </div>
                     </ExpansionPanelDetails>
@@ -1048,8 +1092,8 @@ export const Prescription: React.FC = (props) => {
                               .join(', ')}
                           </Typography>
                         ) : (
-                          'No diagnosis'
-                        )}
+                            'No diagnosis'
+                          )}
                       </div>
                     </ExpansionPanelDetails>
                   </ExpansionPanel>
@@ -1101,15 +1145,15 @@ export const Prescription: React.FC = (props) => {
                     <ExpansionPanelDetails className={classes.panelDetails}>
                       <div className={classes.detailsContent}>
                         {caseSheetDetails.otherInstructions &&
-                        caseSheetDetails.otherInstructions.length > 0 ? (
-                          <ul className={classes.adviceList}>
-                            {caseSheetDetails.otherInstructions.map((instruction) => (
-                              <li>{instruction.instruction}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          'No Advice'
-                        )}
+                          caseSheetDetails.otherInstructions.length > 0 ? (
+                            <ul className={classes.adviceList}>
+                              {caseSheetDetails.otherInstructions.map((instruction) => (
+                                <li>{instruction.instruction}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            'No Advice'
+                          )}
                       </div>
                     </ExpansionPanelDetails>
                   </ExpansionPanel>
@@ -1134,16 +1178,17 @@ export const Prescription: React.FC = (props) => {
                                 Online Consult/ Clinic Visit with Dr.
                                 {caseSheetDetails.appointment.doctorInfo.displayName}
                               </Typography>
-                              <AphButton
-                                className={classes.bookConsultBtn}
-                                onClick={() => setOpenSlotPopup(true)}
-                              >
-                                Book Follow-Up
+                              <AphButton className={classes.bookConsultBtn} onClick={() => setOpenSlotPopup(true)}>
+                                {followUpLoading ? (
+                                  <CircularProgress color="primary" size={22} />
+                                ) : (
+                                    'Book Follow-Up'
+                                  )}
                               </AphButton>
                             </>
                           ) : (
-                            'No Followup'
-                          )}
+                              'No Followup'
+                            )}
                         </div>
                       </div>
                     </ExpansionPanelDetails>
@@ -1186,8 +1231,8 @@ export const Prescription: React.FC = (props) => {
           <LinearProgress />
         </div>
       ) : (
-        error && <div className={classes.container}>No data found...:(</div>
-      )}
+            error && <div className={classes.container}>No data found...:(</div>
+          )}
       <AphDialog open={showInstockItemsPopup} maxWidth="sm">
         <AphDialogClose onClick={() => setShowInstockItemsPopup(false)} title={'Close'} />
         <AphDialogTitle></AphDialogTitle>
@@ -1208,14 +1253,55 @@ export const Prescription: React.FC = (props) => {
           <BookFollowupConsult
             setIsPopoverOpen={setOpenSlotPopup}
             doctorId={caseSheetDetails.doctorId}
-            appointmentId={
-              caseSheetDetails.appointment && caseSheetDetails.appointment.id
-                ? caseSheetDetails.appointment.id
-                : ''
-            }
+            setSelectedSlot={setSelectedSlot}
+            setFollwupAppoitnmentType={setFollwupAppoitnmentType}
           />
         </Modal>
       )}
+      <Popover
+        open={followupSuccessPopup}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic-mascot.png')} alt="" />
+            </div>
+            <div className={classes.windowBody}>
+              <p>Hi! :)</p>
+              <p>
+                Your followup appointment with Dr.
+                {` ${
+                  caseSheetDetails &&
+                  caseSheetDetails.appointment &&
+                  caseSheetDetails.appointment.doctorInfo &&
+                  caseSheetDetails.appointment.doctorInfo.displayName
+                  } `}
+                booked on - {moment(selectedSlot).format('Do MMMM, dddd \nhh:mm a')}
+              </p>
+            </div>
+            <div className={classes.actions}>
+              <AphButton
+                onClick={() => {
+                  setSelectedSlot(null);
+                  window.location.href = clientRoutes.appointments();
+                }}
+              >
+                OK, GOT IT
+              </AphButton>
+            </div>
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };

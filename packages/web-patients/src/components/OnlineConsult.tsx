@@ -747,7 +747,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     couponCode: couponCode ? couponCode : null,
                     amount: revisedAmount,
                     speciality: getSpeciality(),
-                    type: 'consult',
                   })
                 );
               }}

@@ -75,13 +75,14 @@ const TabContainer: React.FC = (props) => {
 interface DoctorCardProps {
   setIsPopoverOpen: (popover: boolean) => void;
   doctorId: string;
-  appointmentId: string;
+  setSelectedSlot: (selectedSlot: string) => void;
+  setFollwupAppoitnmentType: (followupAppointmentType: number) => void;
 }
 
 export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles({});
 
-  const { doctorId, setIsPopoverOpen, appointmentId } = props;
+  const { doctorId, setIsPopoverOpen, setSelectedSlot, setFollwupAppoitnmentType } = props;
   const [tabValue, setTabValue] = useState<number>(0);
 
   const { data, loading, error } = useQueryWithSkip<
@@ -144,6 +145,7 @@ export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
           }}
           onChange={(e, newValue) => {
             setTabValue(newValue);
+            setFollwupAppoitnmentType(newValue);
           }}
         >
           {availableForVirtualConsultation && (
@@ -171,7 +173,7 @@ export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
             <OnlineFollwupConsult
               setIsPopoverOpen={setIsPopoverOpen}
               doctorDetails={doctorDetails}
-              appointmentId={appointmentId}
+              setSelectedSlot={props.setSelectedSlot}
             />
           </TabContainer>
         )}
@@ -181,7 +183,7 @@ export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
               <VisitClinicFollowupConsult
                 setIsPopoverOpen={setIsPopoverOpen}
                 doctorDetails={doctorDetails}
-                appointmentId={appointmentId}
+                setSelectedSlot={setSelectedSlot}
               />
             </LocationProvider>
           </TabContainer>
