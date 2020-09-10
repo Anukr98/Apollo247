@@ -273,7 +273,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       marginBottom: 12,
-      padding: 14,
+      padding: '14px 14px 14px 18px',
       '& hr': {
         opacity: '0.2',
       },
@@ -351,6 +351,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       marginBottom: 12,
       lineHeight: '28px',
+      wordBreak: 'break-all',
     },
     checkDate: {
       fontSize: 14,
