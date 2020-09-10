@@ -816,6 +816,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       QA: 'QA_Doctor_Partner_Text',
       PROD: 'Doctor_Partner_Text',
     },
+    Doctors_Page_Size: {
+      PROD: 'Doctors_Page_Size',
+    },
   };
 
   const getConfigStringBasedOnEnv = (
@@ -899,6 +902,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', snapshot);
 
+          setAppConfig('Doctors_Page_Size', 'Doctors_Page_Size', snapshot);
           setAppConfig('top6_specailties', 'TOP_SPECIALITIES', snapshot, (val: any) =>
             JSON.parse(val)
           );

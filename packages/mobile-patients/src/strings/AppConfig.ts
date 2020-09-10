@@ -65,6 +65,7 @@ const appStaticVariables = {
   CART_ITEM_MAX_QUANTITY: 10, // max. allowed qty to add to cart
   HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
   MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
+  Doctors_Page_Size: 25,
 };
 
 const DEV_top6_specailties = [
@@ -176,8 +177,8 @@ const Apollo247Config = {
   },
   prod: {
     UATTAT_CONFIG: ['https://tat.apollo247.com', tatTokenProd],
-  }
-}
+  },
+};
 
 const PharmaApiConfig = {
   dev: {
