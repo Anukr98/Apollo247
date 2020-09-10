@@ -247,6 +247,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
   const [alertShown, setAlertShown] = useState<boolean>(false);
   const [storeType, setStoreType] = useState('');
+  const [shopId, setShopId] = useState('');
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
@@ -510,16 +511,18 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               if (serviceableSkus.length && !unserviceableSkus.length) {
                 const inventoryDataRes = g(tatRes, 'data', 'response', 'items') || [];
                 const availableInventory = inventoryDataRes
-                  .filter(({ qty }) => qty > 0)
+                  .filter(({ mrp }) => mrp > 0)
                   .map((item) => {
+                    const availableItem = availableItems.filter(({sku}) => sku === item.sku)[0]
                     return {
                       itemId: item.sku,
-                      qty: item.qty,
-                      mrp: item.qty,
+                      qty: availableItem ? availableItem.qty : item.qty,
+                      mrp: item.mrp,
                     };
                   });
                 if (availableInventory && availableInventory.length) {
                   setStoreType(tatRes?.data?.response?.storeType);
+                  setShopId(tatRes?.data?.response?.storeCode)
                   fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, availableInventory);
                   updateserviceableItemsTat(deliveryDate, lookUp);
                 } else {
@@ -671,7 +674,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       .add(2, 'days')
       .set('hours', 20)
       .set('minutes', 0)
-      .format(AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT);
+      .format(AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT);
     setdeliveryTime(genericServiceableDate);
     setshowDeliverySpinner(false);
     setLoading!(false);
@@ -1803,11 +1806,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         deliveryTime,
         isChennaiOrder: true,
         tatType: storeType,
+        shopId: shopId
       });
     } else {
       props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
         deliveryTime,
         tatType: storeType,
+        shopId: shopId
       });
     }
   };
