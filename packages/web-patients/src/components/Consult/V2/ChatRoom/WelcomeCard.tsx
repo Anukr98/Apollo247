@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 4px 0 #00000026',
       backgroundColor: '#0087ba',
       fontSize: 15,
-      maxWidth: 240,
+      maxWidth: 300,
       margin: '0 0 10px 45px',
       '& p': {
         margin: 0,

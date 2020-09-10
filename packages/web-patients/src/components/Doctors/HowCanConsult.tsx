@@ -130,6 +130,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         textTransform: 'uppercase',
         lineHeight: 'normal',
+        paddingRight: 20,
       },
       '& p': {
         margin: 0,
@@ -289,10 +290,10 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
     doctorAvailableOnlineSlot.length > 0 && doctorAvailablePhysicalSlots.length > 0
       ? ConsultMode.BOTH
       : doctorAvailableOnlineSlot.length > 0
-      ? ConsultMode.ONLINE
-      : doctorAvailablePhysicalSlots.length > 0
-      ? ConsultMode.PHYSICAL
-      : null;
+        ? ConsultMode.ONLINE
+        : doctorAvailablePhysicalSlots.length > 0
+          ? ConsultMode.PHYSICAL
+          : null;
 
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
 
@@ -334,7 +335,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span
                   className={`${classes.availability} ${
                     differenceInOnlineMinutes < 15 ? classes.availableNow : null
-                  }`}
+                    }`}
                 >
                   {availabilityMarkup('online')}
                 </span>
@@ -356,7 +357,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span
                   className={`${classes.availability} ${
                     differenceInPhysicalMinutes < 15 ? classes.availableNow : null
-                  }`}
+                    }`}
                 >
                   {availabilityMarkup('physical')}
                 </span>
@@ -376,7 +377,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             />
           </span>
           <div className={classes.groupDetails}>
-            <h4>{physicalDirection ? 'Meet in person' : 'How to consult via chat/audio/video?'}</h4>
+            <h4>{physicalDirection ? 'Meet in person' : 'How to consult ON WEB via  audio/video ?'}</h4>
             {(physicalDirection || (isSmallScreen && onlineDirection)) && (
               <p
                 className={
@@ -385,8 +386,8 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                       ? classes.availableSoon
                       : ''
                     : differenceInOnlineMinutes < 15
-                    ? classes.availableSoon
-                    : ''
+                      ? classes.availableSoon
+                      : ''
                 }
               >
                 {availabilityMarkup(physicalDirection ? 'physical' : 'online')}
@@ -417,11 +418,11 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             </li>
 
             {onlineDirection && (
-              <li className={classes.blueText}>
+              <li>
                 <span>
                   <img
                     src={require(onlineDirection
-                      ? 'images/ic_video-blue.svg'
+                      ? 'images/ic-mobile.svg'
                       : 'images/ic_hospital.svg')}
                     alt=""
                   />
@@ -430,11 +431,11 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               </li>
             )}
 
-            <li className={classes.blueText}>
+            <li>
               <span>
                 <img
                   src={require(onlineDirection
-                    ? 'images/ic_video-blue.svg'
+                    ? 'images/ic-video.svg'
                     : 'images/ic_hospital.svg')}
                   alt=""
                 />
@@ -453,9 +454,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               <span>Receive prescriptions instantly </span>
             </li>
             {onlineDirection && (
-              <li className={classes.blueText}>
+              <li>
                 <span>
-                  <img src={require('images/ic_chat.svg')} alt="" />
+                  <img src={require('images/ic-followchat.svg')} alt="" />
                 </span>
                 <span>Follow Up via text - validity 7 days</span>
               </li>
@@ -507,7 +508,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               }}
               // fullWidth
               color="primary"
-              // className={classes.bottomActions}
+            // className={classes.bottomActions}
             >
               {popupLoading ? <CircularProgress size={22} color="secondary" /> : 'BOOK APPOINTMENT'}
             </AphButton>
