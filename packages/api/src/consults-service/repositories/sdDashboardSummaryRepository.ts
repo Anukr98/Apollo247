@@ -351,7 +351,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         doctorId: doctorId,
         status: CASESHEET_STATUS.COMPLETED,
         createdDate: Between(newStartDate, newEndDate),
-        doctorType: Not('JUNIOR'),
+        doctorType: Not(DoctorType.JUNIOR),
       },
     });
   }
@@ -428,7 +428,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         toDate: endDate,
       })
       .andWhere('appointment_call_details.endTime is not null')
-      .andWhere('appointment_call_details."doctorType" != :docType', { docType: 'JUNIOR' })
+      .andWhere('appointment_call_details."doctorType" != :docType', { docType: DoctorType.JUNIOR })
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
       .andWhere('appointment."status" = :status', { status: STATUS.COMPLETED })
       .getMany();
@@ -514,7 +514,7 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       return new Promise<number>((resolve, reject) => {
         appointmentList.forEach(async (appt, index, array) => {
           const calldetails = await AppointmentCallDetails.find({
-            where: { appointment: appt.id, doctorType: Not('JUNIOR') },
+            where: { appointment: appt.id, doctorType: Not(DoctorType.JUNIOR) },
             order: { startTime: 'ASC' },
             take: 1,
           });

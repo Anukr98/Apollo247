@@ -497,7 +497,7 @@ const sendPatientAcknowledgements = async (
   const apptTime = format(istDateTime, 'hh:mm');
 
   let subjectLine = ApiConstants.APPOINTMENT_PAYMENT_SUBJECT.replace('{0}', hospitalCity);
-  if (docDetails.doctorType == DoctorType.PAYROLL) {
+  if (docDetails.doctorType == DoctorType.APOLLO) {
     if (hospitalCity) {
       subjectLine = ApiConstants.APPOINTMENT_PAYMENT_SUBJECT.replace(
         '{0}',
@@ -508,7 +508,7 @@ const sendPatientAcknowledgements = async (
       subjectLine = ApiConstants.APPOINTMENT_PAYMENT_SUBJECT.replace('{0}', 'ATHS');
       displayHospitalCity = hospitalCity;
     }
-  } else if (docDetails.doctorType == DoctorType.APOLLO) {
+  } else if (docDetails.doctorType == DoctorType.APOLLO_HOSPITALS) {
     subjectLine = ApiConstants.APPOINTMENT_PAYMENT_SUBJECT.replace('{0}', hospitalCity);
     displayHospitalCity = hospitalCity;
   }
