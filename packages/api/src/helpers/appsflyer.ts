@@ -61,6 +61,7 @@ export async function getPatientDeeplink(appDeepLink: string) {
       af_dp: appDeepLink,
       af_sub1: '',
       af_force_deeplink: 'true',
+      af_web_dp: '',
     },
   };
   const reqStartTime = new Date();
@@ -97,6 +98,10 @@ export async function refreshLink(existingDeeplinkDetails: Deeplink, doctorType:
 
   //doctor deeplink
   const af_dp = ApiConstants.DOCTOR_DEEPLINK_CONSTANT.toString() + existingDeeplinkDetails.doctorId;
+  const webLink = ApiConstants.DOCTOR_DEEPLINK_WEB_URL.replace(
+    '<DoctorID>',
+    existingDeeplinkDetails.doctorId
+  );
   const deepLinkInput: DeepLinkInput = {
     //brand_domain: ApiConstants.BRAND_DOMAIN.toString(),
     ttl: ApiConstants.LINK_TTL.toString(),
@@ -107,6 +112,7 @@ export async function refreshLink(existingDeeplinkDetails: Deeplink, doctorType:
       af_dp: af_dp,
       af_sub1: existingDeeplinkDetails.referralCode,
       af_force_deeplink: 'true',
+      af_web_dp: webLink,
     },
   };
 
@@ -173,6 +179,8 @@ export function generateDeepLinkBody(doctordata: Partial<Doctor>): DeepLinkInput
       ? ApiConstants.CHANNEL_NAME_NON_APOLLO.toString()
       : ApiConstants.CHANNEL_NAME_APOLLO.toString();
 
+  const webLink = ApiConstants.DOCTOR_DEEPLINK_WEB_URL.replace('<DoctorID>', doctordata.id!);
+
   const deepLinkAttrs: DeepLinkInput = {
     //brand_domain: ApiConstants.BRAND_DOMAIN.toString(),
     ttl: ApiConstants.LINK_TTL.toString(),
@@ -183,6 +191,7 @@ export function generateDeepLinkBody(doctordata: Partial<Doctor>): DeepLinkInput
       af_dp: af_dp,
       af_sub1: referralCode,
       af_force_deeplink: 'true',
+      af_web_dp: webLink,
     },
   };
   return deepLinkAttrs;
