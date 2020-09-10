@@ -454,17 +454,13 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
       allCombinedData.sort((data1: LabResultsType, data2: LabResultsType) => {
         const filteredData1 =
           type === FILTER_TYPE.DATE
-            ? moment(data1.date)
-                .toDate()
-                .getTime()
+            ? moment(data1.date).toDate().getTime()
             : type === FILTER_TYPE.TEST
             ? data1.labTestName
             : data1.packageName;
         const filteredData2 =
           type === FILTER_TYPE.DATE
-            ? moment(data2.date)
-                .toDate()
-                .getTime()
+            ? moment(data2.date).toDate().getTime()
             : type === FILTER_TYPE.TEST
             ? data2.labTestName
             : data2.packageName;
@@ -588,7 +584,11 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                         ? getFormattedDate(combinedData, 'title')
                         : filterApplied === FILTER_TYPE.TEST
                         ? combinedData.labTestName
-                        : combinedData.packageName}
+                        : combinedData.packageName &&
+                          combinedData.packageName.length > 0 &&
+                          combinedData.packageName !== '-'
+                        ? combinedData.packageName
+                        : combinedData.labTestName}
                     </span>
                   </div>
                   <MedicalCard
