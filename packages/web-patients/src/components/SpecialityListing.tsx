@@ -34,7 +34,7 @@ import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { SchemaMarkup } from 'SchemaMarkup';
-import { _debounce } from 'lodash';
+import _debounce from 'lodash/debounce';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
