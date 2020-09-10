@@ -98,11 +98,13 @@ const useStyles = makeStyles((theme: Theme) => {
 const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
 
-const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }> = (
-  props: any
-) => {
+const OtpInput: React.FC<{
+  mobileNumber: string;
+  setOtp: (otp: string) => void;
+  setDisplayOtpInput: (displayOtpInput: boolean) => void;
+}> = (props: any) => {
   const classes = useStyles({});
-  const { mobileNumber, setOtp: setOtpMain } = props;
+  const { mobileNumber, setOtp: setOtpMain, setDisplayOtpInput } = props;
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
   const initialOTPMessage = 'Now type in the OTP sent to you for authentication';
   const resentOTPMessage = 'Type in the OTP that has been resent to your mobile number';
@@ -215,7 +217,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
 
   return (
     <div className={`${classes.loginFormWrap}`}>
-      <div className={classes.backArrow}>
+      <div className={classes.backArrow} onClick={() => setDisplayOtpInput(false)}>
         <img src={require('images/ic_loginback.svg')} />
       </div>
       <Typography variant="h2">
@@ -378,7 +380,13 @@ export const SignIn: React.FC<signInProps> = (props) => {
         }}
         render={({ errors, values }: FormikProps<{ mobileNumber: string }>) => {
           if (displayOtpInput)
-            return <OtpInput mobileNumber={mobileNumber} setOtp={(otp: string) => setOtp(otp)} />;
+            return (
+              <OtpInput
+                mobileNumber={mobileNumber}
+                setOtp={(otp: string) => setOtp(otp)}
+                setDisplayOtpInput={setDisplayOtpInput}
+              />
+            );
           return (
             <div className={classes.loginFormWrap}>
               <Typography variant="h2">hi</Typography>
