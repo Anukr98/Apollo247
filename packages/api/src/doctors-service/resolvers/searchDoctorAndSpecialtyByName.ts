@@ -125,7 +125,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
   }
 
-  const PerfectdocSearchParams: any = {
+  type NewType = any;
+
+  const PerfectdocSearchParams: NewType = {
     index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
       size: 100,
@@ -140,7 +142,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             },
             { match: { isSearchable: true } },
             {
-              query_string: {
+              phrase_prefix: {
                 fuzziness: 0,
                 query: `*${searchTextLowerCase}*`,
                 fields: [
