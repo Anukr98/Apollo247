@@ -12,6 +12,8 @@ const getMedicineOrderQuery = (method, patientId, orderId) => {
             devliveryCharges
             deliveryType
             patientAddressId
+            tatType
+            bookingSource
             prescriptionImageUrl
             orderType
             currentStatus

@@ -28,6 +28,8 @@ import {
   g,
   handleGraphQlError,
   postWebEngageEvent,
+  doRequestAndAccessLocationModified,
+  distanceBwTwoLatLng,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   getLatLongFromAddress,
@@ -144,6 +146,7 @@ const styles = StyleSheet.create({
     height: 25,
     alignSelf: 'center',
     justifyContent: 'center',
+    tintColor: theme.colors.SHERPA_BLUE,
   },
   markerTitleView: {
     backgroundColor: theme.colors.SHERPA_BLUE,
@@ -260,10 +263,12 @@ export const Maps: React.FC<MapProps> = (props) => {
           /**added so that, it always picks the one from the address entered.
            * if we want to show the location wherever he has left, then remove this code.
            */
-          // setRegion({ latitude: latLang.lat,
-          //   longitude: latLang.lng,
-          //   latitudeDelta: 0.01,
-          //   longitudeDelta: 0.01})
+          setRegion({
+            latitude: latLang.lat,
+            longitude: latLang.lng,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
         } catch (e) {
           //show current location
           showCurrentLocation();
@@ -282,34 +287,22 @@ export const Maps: React.FC<MapProps> = (props) => {
       variables: { PatientAddressInput: addressInput },
     });
 
-  /** haversine formula */
-  const calcuteDiffInMeters = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    var R = 6378.137; // Radius of earth in KM
-    var dLat = (lat2 * Math.PI) / 180 - (lat1 * Math.PI) / 180;
-    var dLon = (lon2 * Math.PI) / 180 - (lon1 * Math.PI) / 180;
-    var a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    var d = R * c;
-    return d * 1000; // meters
-  };
-
   const sendWebEngageEvent = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const diff = calcuteDiffInMeters(lat1, lon1, lat2, lon2);
+    const diff = distanceBwTwoLatLng(lat1, lon1, lat2, lon2);
+    const diffInMeters = diff * 1000;
     const eventAttributes: WebEngageEvents[WebEngageEventName.CONFIRM_LOCATION] = {
-      isMarkerModified: diff === 0 ? false : true,
-      changedByInMeters: diff,
+      isMarkerModified: diffInMeters === 0 ? false : true,
+      changedByInMeters: diffInMeters,
     };
     postWebEngageEvent(WebEngageEventName.CONFIRM_LOCATION, eventAttributes);
   };
 
   const onConfirmLocation = async () => {
     setshowSpinner(true);
-    sendWebEngageEvent(addressObject.latitude, addressObject.longitude, latitude, longitude);
+    if (addressObject?.latitude && addressObject?.longitude) {
+      sendWebEngageEvent(addressObject?.latitude, addressObject.longitude, latitude, longitude);
+    }
+
     CommonLogEvent(AppRoutes.Maps, 'On Confirm Location Clicked');
     if (props.navigation.getParam('KeyName') == 'Update' && addressObject) {
       const updateaddressInput: UpdatePatientAddressInput = {
@@ -479,22 +472,26 @@ export const Maps: React.FC<MapProps> = (props) => {
 
   /** for getting current position */
   const showCurrentLocation = () => {
-    Geolocation.getCurrentPosition(
-      ({ coords }) => {
-        const { latitude, longitude } = coords;
-        const currentRegion = {
-          latitude,
-          longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.001,
-        };
-        setRegion(currentRegion);
-        //create the address from latlong
-        createAddressFromCurrentPos(coords.latitude, coords.longitude);
-      },
-      (error) => console.log(error.code, error.message, 'getCurrentPosition error')
-    ),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 };
+    doRequestAndAccessLocationModified()
+      .then((response) => {
+        if (response) {
+          const currentRegion = {
+            latitude: response.latitude,
+            longitude: response.longitude,
+            latitudeDelta: 0.005,
+            longitudeDelta: 0.001,
+          };
+          setRegion(currentRegion);
+          if (response?.latitude && response?.longitude) {
+            setLatitude(response.longitude);
+            setLongitude(response.latitude);
+          }
+          // createAddressFromCurrentPos(response?.latitude,response?.longitude)
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('MapAddress_doRequestAndAccessLocationModified', e);
+      });
   };
 
   const createAddressFromCurrentPos = (lat: number, long: number) => {

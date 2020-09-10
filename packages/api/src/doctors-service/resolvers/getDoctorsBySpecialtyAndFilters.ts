@@ -20,7 +20,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   scalar Object
-  
+
   enum SpecialtySearchType {
     ID
     NAME
@@ -29,7 +29,6 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   type DefaultfilterType {
     name: String
   }
-
 
   type brandType {
     name: String
@@ -114,29 +113,29 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
 `;
 
 type DefaultfilterType = {
-  name: string
-}
+  name: string;
+};
 
 type cityType = {
-  state: string
-  data: [string]
-}
+  state: string;
+  data: [string];
+};
 
 type brandType = {
-  name: string
-  image: string
-  brandName: string
-}
+  name: string;
+  image: string;
+  brandName: string;
+};
 
 type filters = {
-  city: [cityType]
-  brands: [brandType]
-  language: [DefaultfilterType]
-  experience: [DefaultfilterType]
-  availability: [DefaultfilterType]
-  fee: [DefaultfilterType]
-  gender: [DefaultfilterType]
-}
+  city: [cityType];
+  brands: [brandType];
+  language: [DefaultfilterType];
+  experience: [DefaultfilterType];
+  availability: [DefaultfilterType];
+  fee: [DefaultfilterType];
+  gender: [DefaultfilterType];
+};
 
 type FilterDoctorsResult = {
   doctors: Doctor[];
@@ -154,7 +153,7 @@ type DoctorsListResult = {
   doctors: Doctor[];
   apolloDoctorCount: number;
   partnerDoctorCount: number;
-}
+};
 
 export type DoctorConsultModeAvailability = {
   doctorId: string;
@@ -222,7 +221,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   { filterInput: FilterDoctorInput },
   DoctorsServiceContext,
   FilterDoctorsResult
-> = async (parent, args, { }) => {
+> = async (parent, args, {}) => {
   apiCallId = Math.floor(Math.random() * 1000000);
   callStartTime = new Date();
   identifier = args.filterInput.patientId;
@@ -251,8 +250,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     earlyAvailableNonStarApolloDoctors = [],
     starDoctor = [],
     nonStarDoctor = [];
-  let apolloDoctorCount:number = 0,
-    partnerDoctorCount:number = 0;
+  let apolloDoctorCount: number = 0,
+    partnerDoctorCount: number = 0;
 
   const facilityIds: string[] = [];
   const facilityLatLongs: number[][] = [];
@@ -264,7 +263,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const elasticSlotDateAvailability: { [index: string]: any } = [];
   const elasticSlotAvailabileNow: { [index: string]: any } = [];
- // check elastic search index  /package/api/helpers/elasticIndex.ts
+  // check elastic search index  /package/api/helpers/elasticIndex.ts
   if (args.filterInput.availability && args.filterInput.availability.length > 0) {
     args.filterInput.availability.forEach((availability) => {
       elasticSlotDateAvailability.push({
@@ -278,7 +277,13 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
                   bool: {
                     must: [
                       { match: { 'doctorSlots.slots.slot': availability } },
-                      { range: { 'doctorSlots.slots.slotThreshold': { gt: 'now', lt: availability + 'T18:30:00.000Z' }, },
+                      {
+                        range: {
+                          'doctorSlots.slots.slotThreshold': {
+                            gt: 'now',
+                            lt: availability + 'T18:30:00.000Z',
+                          },
+                        },
                       },
                     ],
                   },
@@ -411,7 +416,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       },
     });
   }
-  
+
   if (!process.env.ELASTIC_INDEX_DOCTORS) {
     throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
   }
@@ -426,21 +431,21 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
           must: elasticMatch,
         },
       },
-      aggs:{
+      aggs: {
         doctorTypeCount: {
           terms: {
             field: 'doctorType.keyword',
-          }
+          },
         },
-      }
+      },
     },
   };
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
 
   const getDetails = await client.search(searchParams);
   const doctorTypeCount = getDetails.body.aggregations.doctorTypeCount.buckets;
-  for(const doctorCount of doctorTypeCount) {
-    if(doctorCount.key === 'DOCTOR_CONNECT'){
+  for (const doctorCount of doctorTypeCount) {
+    if (doctorCount.key === 'DOCTOR_CONNECT') {
       partnerDoctorCount = doctorCount.doc_count;
     } else {
       apolloDoctorCount += doctorCount.doc_count;
@@ -481,27 +486,23 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
     for (const slots of doc._source.doctorSlots) {
       for (const slot of slots['slots']) {
-        if (
-          slot.status == 'OPEN' &&
-          differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
-        ) {
-          doctor['openSlotDates'].push(slots.slotDate);
-          if (doctor['activeSlotCount'] === 0) {
-            doctor['earliestSlotavailableInMinutes'] = differenceInMinutes(
-              new Date(slot.slot),
-              callStartTime
-            );
-            doctor['earliestSlotavailable'] = new Date(slot.slot);
-            finalDoctorNextAvailSlots.push({
-              availableInMinutes: Math.abs(differenceInMinutes(callStartTime, new Date(slot.slot))),
-              physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
-              currentDateTime: callStartTime,
-              doctorId: doc._source.doctorId,
-              onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
-              referenceSlot: slot.slot,
-            });
+        if (slot.status == 'OPEN') {
+          const nextAvailable = differenceInMinutes(new Date(slot.slot), callStartTime);
+          if (nextAvailable > bufferTime) {
+            if (doctor['activeSlotCount'] === 0) {
+              doctor['earliestSlotavailableInMinutes'] = nextAvailable;
+              finalDoctorNextAvailSlots.push({
+                availableInMinutes: Math.abs(nextAvailable),
+                physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
+                currentDateTime: callStartTime,
+                doctorId: doctor.doctorId,
+                onlineSlot: slot.slotType === 'PHYSICAL' ? '' : slot.slot,
+                referenceSlot: slot.slot,
+              });
+            }
+            doctor['activeSlotCount'] += 1;
+            break;
           }
-          doctor['activeSlotCount'] += 1;
         }
       }
     }
@@ -641,7 +642,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         i < earlyAvailableStarApolloDoctors.length &&
         (j >= earlyAvailableNonStarApolloDoctors.length ||
           earlyAvailableStarApolloDoctors[i].earliestSlotavailableInMinutes <=
-          earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes)
+            earlyAvailableNonStarApolloDoctors[j].earliestSlotavailableInMinutes)
       ) {
         earlyAvailableApolloDoctors.push(earlyAvailableStarApolloDoctors[i]);
         i++;
@@ -665,7 +666,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         i < starDoctor.length &&
         (j >= nonStarDoctor.length ||
           starDoctor[i].earliestSlotavailableInMinutes <=
-          nonStarDoctor[j].earliestSlotavailableInMinutes)
+            nonStarDoctor[j].earliestSlotavailableInMinutes)
       ) {
         docs.push(starDoctor[i]);
         i++;
@@ -685,7 +686,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       .concat(docs);
   }
 
-  const aggnDocumentsSpan = 10000; 
+  const aggnDocumentsSpan = 10000;
   const searchFilters: RequestParams.Search = {
     index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
@@ -694,75 +695,75 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
           must: [
             {
               match: {
-                "isSearchable": "true"
-              }
+                isSearchable: 'true',
+              },
             },
             {
               match: {
-                "isActive": "true"
-              }
-            }
-          ]
-        }
+                isActive: 'true',
+              },
+            },
+          ],
+        },
       },
       size: 0,
       aggs: {
         brands: {
           terms: {
-            field: "doctorType.keyword",
+            field: 'doctorType.keyword',
             size: aggnDocumentsSpan,
-            order: {"_term": "asc"}
-          }
+            order: { _term: 'asc' },
+          },
         },
         state: {
           terms: {
-            field: "facility.state.keyword",
+            field: 'facility.state.keyword',
             size: aggnDocumentsSpan,
             min_doc_count: 1,
-            order: {"_term": "asc"}
+            order: { _term: 'asc' },
           },
           aggs: {
             city: {
               terms: {
-                field: "facility.city.keyword",
+                field: 'facility.city.keyword',
                 size: aggnDocumentsSpan,
                 min_doc_count: 1,
-                order: {"_term": "asc"}
-              }
-            }
-          }
+                order: { _term: 'asc' },
+              },
+            },
+          },
         },
         language: {
           terms: {
-            field: "languages.keyword",
+            field: 'languages.keyword',
             size: aggnDocumentsSpan,
             min_doc_count: 1,
-            order: {"_term": "asc"}
-          }
+            order: { _term: 'asc' },
+          },
         },
         experience: {
           terms: {
-            field: "experience_range.keyword",
+            field: 'experience_range.keyword',
             size: aggnDocumentsSpan,
-            order: {"_term": "asc"}
-          }
+            order: { _term: 'asc' },
+          },
         },
         fee: {
           terms: {
-            field: "fee_range.keyword",
+            field: 'fee_range.keyword',
             size: aggnDocumentsSpan,
-            order: {"_term": "asc"}
-          }
+            order: { _term: 'asc' },
+          },
         },
         gender: {
           terms: {
-            field: "gender.keyword",
+            field: 'gender.keyword',
             size: aggnDocumentsSpan,
-            order: {"_term": "asc"}
-          }
-        }
-      }
-    }
+            order: { _term: 'asc' },
+          },
+        },
+      },
+    },
   };
 
   const aggnData = await client.search(searchFilters);
@@ -770,7 +771,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   function ifKeyExist(arr: any[], key: string, value: string) {
     if (arr.length) {
       arr = arr.filter((elem: any) => {
-        return elem[key] === value
+        return elem[key] === value;
       });
       if (arr.length) {
         return arr[0];
@@ -785,22 +786,39 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     const words = input.split('_');
     const CapitalizedWords: string[] = [];
     words.forEach((element: string) => {
-      if(element.length >=1){
-        CapitalizedWords.push((element[0].toUpperCase() + element.slice(1, element.length).toLowerCase()).trim());
+      if (element.length >= 1) {
+        CapitalizedWords.push(
+          (element[0].toUpperCase() + element.slice(1, element.length).toLowerCase()).trim()
+        );
       }
     });
     return CapitalizedWords.join(' ');
   }
 
-  const filters: any = { city: [], brands: [], language: [], experience: [], availability: [], fee: [], gender: [] };
+  const filters: any = {
+    city: [],
+    brands: [],
+    language: [],
+    experience: [],
+    availability: [],
+    fee: [],
+    gender: [],
+  };
 
-  function pushInFilters(esObject: any, field: string){
-    esObject[field]['buckets'].forEach((element: { key: 'string', doc_count: number }) => {
-      if(element['key'] && !("name" in ifKeyExist(filters[field], 'name', capitalize(element['key'])))){
-        if(field != 'brands'){
+  function pushInFilters(esObject: any, field: string) {
+    esObject[field]['buckets'].forEach((element: { key: 'string'; doc_count: number }) => {
+      if (
+        element['key'] &&
+        !('name' in ifKeyExist(filters[field], 'name', capitalize(element['key'])))
+      ) {
+        if (field != 'brands') {
           filters[field].push({ name: capitalize(element['key']) });
         } else {
-          filters[field].push({ name: element['key'], brandName: capitalize(element['key']), image: '' });
+          filters[field].push({
+            name: element['key'],
+            brandName: capitalize(element['key']),
+            image: '',
+          });
         }
       }
     });
@@ -813,10 +831,13 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   pushInFilters(aggnData.body.aggregations, 'experience');
 
   aggnData.body.aggregations.state.buckets.forEach((state: any) => {
-    if(state['key'] && !("name" in ifKeyExist(filters['city'], 'state', capitalize(state['key'])))){
-      const cityObject: { state: string, data: string[] } = {state: '', data: [] };
-      state.city.buckets.forEach((city:any) => {
-        if(city['key'] && !cityObject.data.includes(capitalize(city['key']))){
+    if (
+      state['key'] &&
+      !('name' in ifKeyExist(filters['city'], 'state', capitalize(state['key'])))
+    ) {
+      const cityObject: { state: string; data: string[] } = { state: '', data: [] };
+      state.city.buckets.forEach((city: any) => {
+        if (city['key'] && !cityObject.data.includes(capitalize(city['key']))) {
           cityObject.data.push(capitalize(city['key']));
         }
       });
@@ -825,27 +846,30 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
   });
 
-  filters.availability = [{ 'name': 'Now' }, { 'name': 'Today' }, { 'name': 'Tomorrow' }, { 'name': 'Next 3 Days' }]
+  filters.availability = [
+    { name: 'Now' },
+    { name: 'Today' },
+    { name: 'Tomorrow' },
+    { name: 'Next 3 Days' },
+  ];
 
   function rangeCompare(field: string, order: string = 'asc') {
     return function sort(objectA: any, objectB: any) {
       if (!objectA.hasOwnProperty(field) || !objectB.hasOwnProperty(field)) {
         return 0;
       }
-      const fieldA = parseInt(objectA[field].split("-")[0], 10);
-      const fieldB = parseInt(objectB[field].split("-")[0], 10);
+      const fieldA = parseInt(objectA[field].split('-')[0], 10);
+      const fieldB = parseInt(objectB[field].split('-')[0], 10);
       let comparison = 0;
       if (fieldA > fieldB) {
         comparison = 1;
       } else if (fieldA < fieldB) {
         comparison = -1;
       }
-      return (
-        (order === 'desc') ? (comparison * -1) : comparison
-      );
+      return order === 'desc' ? comparison * -1 : comparison;
     };
   }
-  
+
   filters.experience.sort(rangeCompare('name'));
   filters.fee.sort(rangeCompare('name'));
 
@@ -858,17 +882,16 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     sort: args.filterInput.sort,
     filters: filters,
     apolloDoctorCount,
-    partnerDoctorCount
+    partnerDoctorCount,
   };
 };
-
 
 const getDoctorList: Resolver<
   null,
   { filterInput: FilterDoctorInput },
   DoctorsServiceContext,
   DoctorsListResult
-> = async (parent, args, { }) => {
+> = async (parent, args, {}) => {
   apiCallId = Math.floor(Math.random() * 1000000);
   callStartTime = new Date();
   identifier = args.filterInput.patientId;
@@ -887,8 +910,8 @@ const getDoctorList: Resolver<
   const elasticMatch = [];
   const elasticSort = [];
 
-  let apolloDoctorCount:number = 0,
-    partnerDoctorCount:number = 0;
+  let apolloDoctorCount: number = 0,
+    partnerDoctorCount: number = 0;
 
   args.filterInput.sort = args.filterInput.sort || 'availablity';
   const pageNo = args.filterInput.pageNo ? args.filterInput.pageNo : 1;
@@ -897,7 +920,7 @@ const getDoctorList: Resolver<
 
   const elasticSlotDateAvailability: { [index: string]: any } = [];
   const elasticSlotAvailabileNow: { [index: string]: any } = [];
- // check elastic search index  /package/api/helpers/elasticIndex.ts
+  // check elastic search index  /package/api/helpers/elasticIndex.ts
   if (args.filterInput.availability && args.filterInput.availability.length > 0) {
     args.filterInput.availability.forEach((availability) => {
       elasticSlotDateAvailability.push({
@@ -911,7 +934,13 @@ const getDoctorList: Resolver<
                   bool: {
                     must: [
                       { match: { 'doctorSlots.slots.slot': availability } },
-                      { range: { 'doctorSlots.slots.slotThreshold': { gt: 'now', lt: availability + 'T18:30:00.000Z' }, },
+                      {
+                        range: {
+                          'doctorSlots.slots.slotThreshold': {
+                            gt: 'now',
+                            lt: availability + 'T18:30:00.000Z',
+                          },
+                        },
                       },
                     ],
                   },
@@ -1044,7 +1073,7 @@ const getDoctorList: Resolver<
       },
     });
   }
-  
+
   if (!process.env.ELASTIC_INDEX_DOCTORS) {
     throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
   }
@@ -1054,27 +1083,41 @@ const getDoctorList: Resolver<
     body: {
       from: offset,
       size: pageSize,
-      _source: ["doctorId", "displayName", "specialty", "experience", "photoUrl", "thumbnailUrl", "qualification", "onlineConsultationFees",  "physicalConsultationFees","doctorType", "facility", "consultHours", "doctorSlots"],
+      _source: [
+        'doctorId',
+        'displayName',
+        'specialty',
+        'experience',
+        'photoUrl',
+        'thumbnailUrl',
+        'qualification',
+        'onlineConsultationFees',
+        'physicalConsultationFees',
+        'doctorType',
+        'facility',
+        'consultHours',
+        'doctorSlots',
+      ],
       query: {
         bool: {
           must: elasticMatch,
         },
       },
-      aggs:{
+      aggs: {
         doctorTypeCount: {
           terms: {
             field: 'doctorType.keyword',
-          }
+          },
         },
-      }
+      },
     },
   };
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
 
   const getDetails = await client.search(searchParams);
   const doctorTypeCount = getDetails.body.aggregations.doctorTypeCount.buckets;
-  for(const doctorCount of doctorTypeCount) {
-    if(doctorCount.key === 'DOCTOR_CONNECT'){
+  for (const doctorCount of doctorTypeCount) {
+    if (doctorCount.key === 'DOCTOR_CONNECT') {
       partnerDoctorCount = doctorCount.doc_count;
     } else {
       apolloDoctorCount += doctorCount.doc_count;
@@ -1083,7 +1126,7 @@ const getDoctorList: Resolver<
 
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
-    const doctorObj:any = {};
+    const doctorObj: any = {};
     doctorObj['id'] = doctor.doctorId;
     doctorObj['displayName'] = doctor.displayName;
     doctorObj['specialtydisplayName'] = doctor.specialty.userFriendlyNomenclature;
@@ -1091,7 +1134,10 @@ const getDoctorList: Resolver<
     doctorObj['photoUrl'] = doctor.photoUrl;
     doctorObj['thumbnailUrl'] = doctor.thumbnailUrl;
     doctorObj['qualification'] = doctor.qualification;
-    doctorObj['fee'] = doctor.onlineConsultationFees > doctor.physicalConsultationFees ? doctor.physicalConsultationFees : doctor.onlineConsultationFees;
+    doctorObj['fee'] =
+      doctor.onlineConsultationFees > doctor.physicalConsultationFees
+        ? doctor.physicalConsultationFees
+        : doctor.onlineConsultationFees;
     doctorObj['doctorType'] = doctor.doctorType;
     doctorObj['doctorfacility'] = doctor.facility[0].name + ' ' + doctor.facility[0].city;
     doctorObj['specialistSingularTerm'] = doctor.specialty.specialistSingularTerm;
@@ -1129,7 +1175,7 @@ const getDoctorList: Resolver<
   return {
     doctors: doctors,
     apolloDoctorCount,
-    partnerDoctorCount
+    partnerDoctorCount,
   };
 };
 
