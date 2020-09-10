@@ -40,14 +40,7 @@ const getToken = async () => {
     .then((res) => res.json())
     .catch((error) => {
       console.log(error);
-      log(
-        'profileServiceLogger',
-        'ITdose_LOGIN_API',
-        'getTokenWithExpiry()->CATCH_BLOCK',
-        '',
-        JSON.stringify(error)
-      );
-      throw new Error(error);
+      process.kill(process.pid);
     });
   if (getToken.status != true) {
     throw new Error(`unexpected status, want: true; got: ${getToken.status}`);
@@ -86,15 +79,6 @@ const updateItem = async (client, items, stateId, cityId, state, city) => {
   let rowsCreated = 0;
   for (const item of items) {
     let itemInDB = await getDiagnosticItem(client, item.itemid, stateId, cityId, item.LabCode);
-    if (itemInDB.length > 1) {
-      let skip = false;
-      for (const i of itemInDB) {
-        if (i.testPreparationData != '') {
-          skip = true;
-          itemInDB = [i];
-        }
-      }
-    }
     if (itemInDB.length > 0) {
       itemInDB = itemInDB[0]; // not considering labid and labcode
 
