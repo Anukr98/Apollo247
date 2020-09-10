@@ -2175,6 +2175,14 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
   }
 `;
 
+export const GET_LAB_RESULT_PDF = gql`
+  query getLabResultpdf($patientId: ID!, $recordId: String!) {
+    getLabResultpdf(patientId: $patientId, recordId: $recordId) {
+      url
+    }
+  }
+`;
+
 export const CANCEL_APPOINTMENT = gql`
   mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
     cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {

@@ -20,7 +20,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { GET_LAB_RESULT_PDF } from '@aph/mobile-patients/src/graphql/profiles';
 import Pdf from 'react-native-pdf';
+import { useApolloClient } from 'react-apollo-hooks';
 import { Image } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -32,8 +34,12 @@ import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp'
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { MedicalTest } from '@aph/mobile-patients/src/components/HealthRecords/AddRecord';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
+import {
+  getLabResultpdf,
+  getLabResultpdfVariables,
+} from '@aph/mobile-patients/src/graphql/types/getLabResultpdf';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -127,6 +133,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
+  const labResults = props.navigation.state.params
+    ? props.navigation.state.params.labResults
+    : false;
   const healthCheck = props.navigation.state.params
     ? props.navigation.state.params.healthCheck
     : false;
@@ -136,6 +145,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const { setLoading } = useUIElements();
+  const client = useApolloClient();
 
   useEffect(() => {
     !!data.fileUrl ? setshowPopUp(false) : setshowPopUp(true);
@@ -192,6 +202,34 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     );
   };
 
+  const downloadPDFTestReport = () => {
+    if (currentPatient?.id) {
+      setLoading && setLoading(true);
+      client
+        .query<getLabResultpdf, getLabResultpdfVariables>({
+          query: GET_LAB_RESULT_PDF,
+          variables: {
+            patientId: currentPatient?.id,
+            recordId: data?.id,
+          },
+        })
+        .then(({ data }: any) => {
+          console.log('data', data);
+          if (data && data.getLabResultpdf && data.getLabResultpdf.url) {
+            downloadDocument(data.getLabResultpdf.url);
+          }
+        })
+        .catch((e: any) => {
+          console.log(e);
+          currentPatient &&
+            handleGraphQlError(
+              e,
+              'Something went wrong while downloading test report. Please try again.'
+            );
+        });
+    }
+  };
+
   const renderDownloadButton = () => {
     const buttonTitle = healthCheck
       ? 'HEALTH SUMMARY'
@@ -200,7 +238,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : 'TEST REPORT';
     return (
       <View style={{ marginHorizontal: 40, marginBottom: 15, marginTop: 33 }}>
-        <Button title={'DOWNLOAD ' + buttonTitle} onPress={downloadDocument}></Button>
+        <Button
+          title={'DOWNLOAD ' + buttonTitle}
+          onPress={() => (labResults ? downloadPDFTestReport() : downloadDocument())}
+        ></Button>
       </View>
     );
   };
@@ -345,7 +386,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           ? renderDetailsFinding()
           : null}
         {!!data.fileUrl ? renderImage() : null}
-        {!!data.fileUrl ? renderDownloadButton() : null}
+        {!!data.fileUrl || labResults ? renderDownloadButton() : null}
       </View>
     );
   };
@@ -404,16 +445,20 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : hospitalization
       ? 'DischargeSummary_'
       : 'TestReport_';
-    return (
-      file_name_text +
-      moment(data?.date).format('DD MM YYYY') +
-      '_Apollo 247' +
-      new Date().getTime() +
-      file_name
-    );
+    return labResults
+      ? file_name_text +
+          moment(data?.date).format('DD MM YYYY') +
+          '_Apollo 247' +
+          new Date().getTime() +
+          '.pdf'
+      : file_name_text +
+          moment(data?.date).format('DD MM YYYY') +
+          '_Apollo 247' +
+          new Date().getTime() +
+          file_name;
   };
 
-  const downloadDocument = () => {
+  const downloadDocument = (pdfUrl: string = '') => {
     const file_name = g(data, 'testResultFiles', '0', 'fileName')
       ? g(data, 'testResultFiles', '0', 'fileName')
       : g(data, 'healthCheckFiles', '0', 'fileName')
@@ -424,7 +469,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     const dirs = RNFetchBlob.fs.dirs;
 
     const fileName: string = getFileName(file_name);
-
     const downloadPath =
       Platform.OS === 'ios'
         ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + (fileName || 'Apollo_TestReport.pdf')
@@ -442,7 +486,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         description: 'File downloaded by download manager.',
       },
     })
-      .fetch('GET', data.fileUrl, {
+      .fetch('GET', labResults ? pdfUrl : data.fileUrl, {
         //some headers ..
       })
       .then((res) => {
@@ -455,12 +499,18 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         CommonBugFender('ConsultDetails_renderFollowUp', err);
         console.log('error ', err);
         setLoading && setLoading(false);
+      })
+      .finally(() => {
+        setLoading && setLoading(false);
       });
   };
 
   const headerRightComponent = () => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={downloadDocument}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => (labResults ? downloadPDFTestReport() : downloadDocument())}
+      >
         <Download />
       </TouchableOpacity>
     );
@@ -482,7 +532,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           <Header
             title={headerTitle}
             leftIcon="backArrow"
-            rightComponent={!!data.fileUrl ? headerRightComponent() : null}
+            rightComponent={!!data.fileUrl || labResults ? headerRightComponent() : null}
             onPressLeftIcon={() => props.navigation.goBack()}
           />
           <ScrollView bounces={false}>

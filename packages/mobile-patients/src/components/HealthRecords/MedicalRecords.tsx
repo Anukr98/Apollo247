@@ -265,6 +265,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
                         data: item.data,
                         healthCheck: item.type === 'healthCheck' ? true : false,
                         hospitalization: item.type === 'hospitalization' ? true : false,
+                        labResults: item.type === 'lab' ? true : false,
                       });
                     }}
                     disableDelete={true}
