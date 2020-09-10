@@ -422,17 +422,19 @@ export const HowItWorks: React.FC = (props) => {
                     <img src={require('images/ic-payment.svg')} />
                     <Typography>Make payment</Typography>
                   </li>
-                  <li className={classes.highlight}>
+                  <li>
                     <img src={require('images/ic-video.svg')} />
-                    <Typography>Speak to the doctor via video/audio/chat</Typography>
+                    <Typography>
+                      Be present in the consult room on apollo247.com at the time of consult
+                    </Typography>
                   </li>
                   <li>
                     <img src={require('images/prescription.svg')} />
                     <Typography>Receive prescriptions instantly </Typography>
                   </li>
-                  <li className={classes.highlight}>
+                  <li>
                     <img src={require('images/chat.svg')} />
-                    <Typography>Chat with the doctor for 7 days after your consult</Typography>
+                    <Typography>Follow Up via text - validity 7 days</Typography>
                   </li>
                 </ul>
               </div>

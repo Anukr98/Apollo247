@@ -329,7 +329,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                   setPhysicalDirection(false);
                 }}
               >
-                <span>Chat/Audio/Video</span>
+                <span>Consult on Web</span>
                 <span className={classes.price}>Rs. {onlineFee}</span>
                 <span
                   className={`${classes.availability} ${
@@ -415,6 +415,21 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               </span>
               <span>Make payment</span>
             </li>
+
+            {onlineDirection && (
+              <li className={classes.blueText}>
+                <span>
+                  <img
+                    src={require(onlineDirection
+                      ? 'images/ic_video-blue.svg'
+                      : 'images/ic_hospital.svg')}
+                    alt=""
+                  />
+                </span>
+                <span>Be present in the consult room on apollo247.com at the time of consult</span>
+              </li>
+            )}
+
             <li className={classes.blueText}>
               <span>
                 <img
@@ -430,6 +445,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                   : 'Visit the doctor at Hospital/Clinic'}
               </span>
             </li>
+
             <li>
               <span>
                 <img src={require('images/ic_prescription-sm.svg')} alt="" />
@@ -441,7 +457,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span>
                   <img src={require('images/ic_chat.svg')} alt="" />
                 </span>
-                <span>Chat with the doctor for 6 days after your consult</span>
+                <span>Follow Up via text - validity 7 days</span>
               </li>
             )}
           </ul>
