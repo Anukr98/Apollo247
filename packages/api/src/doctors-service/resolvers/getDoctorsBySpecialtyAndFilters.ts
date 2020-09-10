@@ -491,7 +491,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
           if (nextAvailable > bufferTime) {
             if (doctor['activeSlotCount'] === 0) {
               doctor['earliestSlotavailableInMinutes'] = nextAvailable;
-              matchedDoctorsNextAvailability.push({
+              finalDoctorNextAvailSlots.push({
                 availableInMinutes: Math.abs(nextAvailable),
                 physicalSlot: slot.slotType === 'ONLINE' ? '' : slot.slot,
                 currentDateTime: callStartTime,

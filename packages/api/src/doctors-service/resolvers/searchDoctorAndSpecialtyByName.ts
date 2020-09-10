@@ -125,7 +125,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
   }
 
-  let PerfectdocSearchParams: RequestParams.Search = {
+  const PerfectdocSearchParams: any = {
     index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
       size: 100,
