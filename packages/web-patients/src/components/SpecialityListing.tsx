@@ -35,7 +35,6 @@ import { Relation } from 'graphql/types/globalTypes';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { SchemaMarkup } from 'SchemaMarkup';
 import _ from 'lodash';
-import _ from 'lodash';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
