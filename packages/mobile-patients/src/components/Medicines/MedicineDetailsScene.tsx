@@ -362,7 +362,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               source: movedFrom,
               ProductId: sku,
               ProductName: medicineName,
-              'Stock availability': !productDetails!.is_in_stock ? 'No' : 'Yes',
+              'Stock availability': productDetails!.is_in_stock ? 'Yes' : 'No',
             };
             postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
           }
