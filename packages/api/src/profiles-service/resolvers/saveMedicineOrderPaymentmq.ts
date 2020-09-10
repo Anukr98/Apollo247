@@ -24,11 +24,7 @@ import { sendMail } from 'notifications-service/resolvers/email';
 import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
-import {
-  BlockOneApolloPointsRequest,
-  BlockUserPointsResponse,
-  ONE_APOLLO_STORE_CODE,
-} from 'types/oneApolloTypes';
+import { BlockOneApolloPointsRequest, BlockUserPointsResponse } from 'types/oneApolloTypes';
 import { OneApollo } from 'helpers/oneApollo';
 import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
@@ -432,15 +428,6 @@ const blockOneApolloUserPoints = async (
   userDetailInput: userDetailInput,
   profilesDb: Connection
 ) => {
-  let storeCode = ONE_APOLLO_STORE_CODE.WEBCUS;
-  switch (userDetailInput.deviceType) {
-    case DEVICE_TYPE.ANDROID:
-      storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
-      break;
-    case DEVICE_TYPE.IOS:
-      storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
-      break;
-  }
   const blockUserPointsInput: BlockOneApolloPointsRequest = {
     MobileNumber: +userDetailInput.mobileNumber,
     CreditsRedeemed: userDetailInput.creditsToBlock,
@@ -463,7 +450,7 @@ const handleOneApolloFailure = async (
   medicineOrdersRepo: MedicineOrdersRepository,
   profilesDb: Connection
 ) => {
-  let cancelOrderUpdates: Promise<MedicineOrdersStatus | UpdateResult>[] = [];
+  const cancelOrderUpdates: Promise<MedicineOrdersStatus | UpdateResult>[] = [];
 
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
     orderStatus: MEDICINE_ORDER_STATUS.CANCELLED,

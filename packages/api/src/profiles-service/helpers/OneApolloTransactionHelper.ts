@@ -122,11 +122,12 @@ const generateTransactions = async (
   oneApollo: OneApollo,
   medicineOrdersRepo: MedicineOrdersRepository
 ) => {
-  let transactions: OneApollTransaction[] = [];
+  const transactions: OneApollTransaction[] = [];
   let index = 0;
   return processInvoices(invoiceDetails[index]);
   async function processInvoices(val: MedicineOrderInvoice) {
     const itemDetails = JSON.parse(val.itemDetails);
+    // eslint-disable-next-line prefer-const
     let { transactionLineItemsPartial, totalDiscount, netAmount, itemSku } = createLineItems(
       itemDetails
     );
@@ -152,7 +153,7 @@ const generateTransactions = async (
       );
     }
 
-    let [actualCreditsRedeemed, transactionLineItems] = addProductNameAndCat(
+    const [actualCreditsRedeemed, transactionLineItems] = addProductNameAndCat(
       transactionLineItemsPartial,
       itemTypemap,
       healthCreditsRedeemed
@@ -238,39 +239,36 @@ const addProductNameAndCat = (
   const plItems: TransactionLineItems[] = [];
   let availableCredits = totalCreditsRedeemed;
   transactionLineItems.forEach((val, i, arr) => {
-    const productType = itemTypemap[val.ProductCode].toLowerCase();
+    const lineItem = _consumePointsForDiscountedItems(val);
+    const productType = itemTypemap[lineItem.ProductCode].toLowerCase();
     switch (productType) {
       case 'fmcg':
-        let pointsRedeemed = 0;
-        if (availableCredits) {
-          pointsRedeemed = val.NetAmount > availableCredits ? availableCredits : val.NetAmount;
-          let netAmount = +new Decimal(val.NetAmount).minus(pointsRedeemed);
-          arr[i].NetAmount = netAmount;
-          availableCredits = +new Decimal(availableCredits).minus(pointsRedeemed);
-        }
         fmcgItems.push({
-          ...arr[i],
+          ...lineItem,
           ProductName: ProductTypes.FMCG,
           ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY.NON_PHARMA,
-          PointsRedeemed: pointsRedeemed,
         });
         break;
       case 'pl':
         plItems.push({
-          ...arr[i],
+          ...lineItem,
           ProductName: ProductTypes.PL,
           ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY.PRIVATE_LABEL,
         });
         break;
       case 'pharma':
         pharmaItems.push({
-          ...arr[i],
+          ...lineItem,
           ProductName: ProductTypes.PHARMA,
           ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY.PHARMA,
         });
         break;
     }
   });
+
+  if (availableCredits && fmcgItems.length) {
+    fmcgItems.forEach(_updatePointsNetAmount);
+  }
   if (availableCredits && pharmaItems.length) {
     pharmaItems.forEach(_updatePointsNetAmount);
   }
@@ -279,19 +277,49 @@ const addProductNameAndCat = (
     plItems.forEach(_updatePointsNetAmount);
   }
 
+  /**
+   * Once points are consumed in discounted Items, consume points in non discounted items with following priority
+   * #1 fmcg #2 pharma #3 private label
+   * @param curItem TransactionLineItem
+   * @param i
+   * @param arr
+   */
   function _updatePointsNetAmount(
     curItem: TransactionLineItems,
     i: number,
     arr: TransactionLineItems[]
   ) {
-    if (availableCredits) {
-      let pointsRedeemed =
+    if (availableCredits && !curItem.PointsRedeemed) {
+      const pointsRedeemed =
         curItem.NetAmount > availableCredits ? availableCredits : curItem.NetAmount;
-      let netAmount = +new Decimal(curItem.NetAmount).minus(pointsRedeemed);
+      const netAmount = +new Decimal(curItem.NetAmount).minus(pointsRedeemed);
       availableCredits = +new Decimal(availableCredits).minus(pointsRedeemed);
-      arr[i].PointsRedeemed = pointsRedeemed;
-      arr[i].NetAmount = netAmount;
+      if (arr && arr[i]) {
+        arr[i].PointsRedeemed = pointsRedeemed;
+        arr[i].NetAmount = netAmount;
+      }
     }
+  }
+
+  /**
+   * First consume all the points for discounted Items as those items will not yield any health credits
+   * @param curItem TransactionLineItemsPartial
+   * @returns TransactionLineItemsPartial|TransactionLineItemsPartial & {PointsRedeemed: number}
+   */
+  function _consumePointsForDiscountedItems(curItem: TransactionLineItemsPartial) {
+    if (curItem.DiscountAmount > 0 && availableCredits > 0) {
+      const pointsRedeemed =
+        curItem.NetAmount > availableCredits ? availableCredits : curItem.NetAmount;
+      const netAmount = +new Decimal(curItem.NetAmount).minus(pointsRedeemed);
+      availableCredits = +new Decimal(availableCredits).minus(pointsRedeemed);
+      curItem.NetAmount = netAmount;
+      const itemWithPoints = Object.assign({}, curItem, {
+        PointsRedeemed: pointsRedeemed,
+      });
+
+      return itemWithPoints;
+    }
+    return curItem;
   }
 
   totalCreditsRedeemed = +new Decimal(totalCreditsRedeemed).minus(availableCredits);
@@ -301,7 +329,7 @@ const addProductNameAndCat = (
 };
 
 const getSkuMap = async (itemSku: string[], orderId: MedicineOrders['orderAutoId']) => {
-  let itemTypemap: ItemsSkuTypeMap = {};
+  const itemTypemap: ItemsSkuTypeMap = {};
   itemSku.forEach((val) => {
     itemTypemap[val] = PharmaProductTypes.FMCG;
   });
@@ -358,11 +386,11 @@ const getSkuMap = async (itemSku: string[], orderId: MedicineOrders['orderAutoId
   }
 };
 
-const createLineItems = (itemDetails: Array<ItemDetails>) => {
+const createLineItems = (itemDetails: ItemDetails[]) => {
   const itemSku: string[] = [];
   let netAmount: number = 0;
   let totalDiscount: number = 0;
-  let transactionLineItemsPartial: TransactionLineItemsPartial[] = [];
+  const transactionLineItemsPartial: TransactionLineItemsPartial[] = [];
   itemDetails.forEach((item: ItemDetails) => {
     itemSku.push(item.itemId);
     const netMrp = Number(new Decimal(item.mrp).times(item.issuedQty).toFixed(2));
