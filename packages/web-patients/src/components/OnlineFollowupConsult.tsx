@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Grid } from '@material-ui/core';
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -10,11 +10,18 @@ import {
   GetDoctorAvailableSlots,
   GetDoctorAvailableSlotsVariables,
 } from 'graphql/types/GetDoctorAvailableSlots';
-import { GET_DOCTOR_AVAILABLE_SLOTS } from 'graphql/doctors';
-import { AppointmentType } from 'graphql/types/globalTypes';
+import { GET_DOCTOR_AVAILABLE_SLOTS, BOOK_APPOINTMENT } from 'graphql/doctors';
+import { useMutation } from 'react-apollo-hooks';
+import { AppointmentType, BOOKINGSOURCE, TRANSFER_INITIATED_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { getDeviceType, getDiffInMinutes, getAvailability } from 'helpers/commonHelpers';
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
+import {
+  makeAppointmentPayment,
+  makeAppointmentPaymentVariables,
+} from 'graphql/types/makeAppointmentPayment';
+import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
 import { format } from 'date-fns';
 import {
   GetDoctorNextAvailableSlot,
@@ -23,6 +30,12 @@ import {
 import { usePrevious } from 'hooks/reactCustomHooks';
 import moment from 'moment';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { VALIDATE_CONSULT_COUPON } from 'graphql/consult';
+import {
+  ValidateConsultCoupon,
+  ValidateConsultCouponVariables,
+} from 'graphql/types/ValidateConsultCoupon';
+import { Alerts } from 'components/Alerts/Alerts';
 import { gtmTracking, _cbTracking } from '../gtmTracking';
 import { useApolloClient } from 'react-apollo-hooks';
 import { ShowSlots } from './ShowSlots';
@@ -184,13 +197,12 @@ const getYyMmDd = (ddmmyyyy: string) => {
 interface OnlineFollwupConsultProps {
   setIsPopoverOpen: (openPopup: boolean) => void;
   doctorDetails: DoctorDetails;
-  appointmentId: string;
+  setSelectedSlot: (selectedSlot: string) => void;
 }
 
 export const OnlineFollwupConsult: React.FC<OnlineFollwupConsultProps> = (props) => {
   const classes = useStyles({});
   const apolloClient = useApolloClient();
-  const { currentPatient } = useAllCurrentPatients();
   const [dateSelected, setDateSelected] = useState<string>('');
   const [timeSelected, setTimeSelected] = useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
@@ -203,7 +215,7 @@ export const OnlineFollwupConsult: React.FC<OnlineFollwupConsultProps> = (props)
   const [availableSlotsError, setAvailableSlotsError] = useState<boolean>(false);
   const [availableSlotsLoading, setAvailableSlotsLoading] = useState<boolean>(false);
 
-  const { doctorDetails, setIsPopoverOpen, appointmentId } = props;
+  const { doctorDetails, setIsPopoverOpen, setSelectedSlot } = props;
 
   const prevDateSelected = usePrevious(dateSelected);
   useEffect(() => {
@@ -345,46 +357,24 @@ export const OnlineFollwupConsult: React.FC<OnlineFollwupConsultProps> = (props)
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
-        <Link to={clientRoutes.payOnlineConsult()}>
+        {setSelectedSlot && (
           <AphButton
             color="primary"
             disabled={disableSubmit || mutationLoading || timeSelected === ''}
             onClick={() => {
-              localStorage.setItem(
-                'consultBookDetails',
-                JSON.stringify({
-                  patientId: currentPatient ? currentPatient.id : '',
-                  doctorId: doctorDetails.id,
-                  doctorName: doctorDetails.fullName,
-                  appointmentDateTime: appointmentDateTime,
-                  appointmentType: AppointmentType.ONLINE,
-                  hospitalId:
-                    doctorDetails &&
-                    doctorDetails.doctorHospital[0] &&
-                    doctorDetails.doctorHospital[0].facility
-                      ? doctorDetails.doctorHospital[0].facility.id
-                      : '',
-                  couponCode: null,
-                  amount: doctorDetails.onlineConsultationFees,
-                  speciality:
-                    doctorDetails && doctorDetails.specialty ? doctorDetails.specialty.name : '',
-                  appointmentId,
-                  type: 'followup',
-                })
-              );
+              setMutationLoading(true);
+              setSelectedSlot(appointmentDateTime);
+              setMutationLoading(false);
+              setIsPopoverOpen(false);
             }}
             className={
               disableSubmit || mutationLoading || timeSelected === '' ? classes.buttonDisable : ''
             }
-            title={'Pay'}
+            title={'Book Followup'}
           >
-            {mutationLoading ? (
-              <CircularProgress size={22} color="secondary" />
-            ) : (
-              `PAY Rs. ${doctorDetails.onlineConsultationFees}`
-            )}
+            {mutationLoading ? <CircularProgress size={22} color="secondary" /> : 'Book Followup'}
           </AphButton>
-        </Link>
+        )}
       </div>
     </div>
   );

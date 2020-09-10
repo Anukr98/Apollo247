@@ -477,12 +477,12 @@ export const OnlineCheckout: React.FC = () => {
         <div className={classes.container}>
           <div className={classes.pageContainer}>
             <div className={classes.pageHeader}>
-              <a onClick={() => window.history.back()}>
+              <Link to={clientRoutes.specialityListing()}>
                 <div className={classes.backArrow}>
                   <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
-              </a>
+              </Link>
               Checkout
             </div>
             <div className={classes.pageContent}>
