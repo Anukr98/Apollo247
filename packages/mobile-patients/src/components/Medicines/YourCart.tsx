@@ -3,6 +3,7 @@ import {
   doRequestAndAccessLocationModified,
   findAddrComponents,
   formatAddressWithLandmark,
+  formatAddress,
   g,
   postWebEngageEvent,
   postWEGWhatsAppEvent,
