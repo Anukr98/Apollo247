@@ -30,6 +30,7 @@ export async function syncInventory(orderDatails: MedicineOrders, syncType: SYNC
     };
   });
   const reqBody: InventorySyncRequest = {
+    orderId: orderDatails.orderAutoId.toString(),
     storeCode: orderDatails.shopId,
     items: itemdetails,
   };
@@ -41,11 +42,11 @@ export async function syncInventory(orderDatails: MedicineOrders, syncType: SYNC
   let apiUrl = baseUrl;
 
   if (syncType == SYNC_TYPE.BLOCK) {
-    apiUrl = `${apiUrl}orderplaced`;
+    apiUrl = `${apiUrl}/orderplaced`;
   } else if (syncType == SYNC_TYPE.RELEASE) {
-    apiUrl = `${apiUrl}orderfulfilled`;
+    apiUrl = `${apiUrl}/orderfulfilled`;
   } else if (syncType == SYNC_TYPE.CANCEL) {
-    apiUrl = `${apiUrl}ordercancelled`;
+    apiUrl = `${apiUrl}/ordercancelled`;
   }
 
   const resp = await fetch(apiUrl, {

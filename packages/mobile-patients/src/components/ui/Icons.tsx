@@ -906,7 +906,9 @@ export const OnlineHeader: React.FC<IconProps> = (props) => (
 export const CTDoctor: React.FC<IconProps> = (props) => (
   <IconBase size="sm_l" {...props} source={require('./icons/ct_doctor.png')} />
 );
-
+export const CTPhone: React.FC<IconProps> = (props) => (
+  <IconBase size="sm_l" {...props} source={require('./icons/ct_phone.png')} />
+);
 export const CTCalender: React.FC<IconProps> = (props) => (
   <IconBase size="sm_l" {...props} source={require('./icons/ct_calender.png')} />
 );

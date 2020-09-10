@@ -201,7 +201,7 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
   };
 
   const renderOutOfStock = () => {
-    return !isInStock ? (
+    return !isInStock && isSellOnline ? (
       <Text style={styles.outOfStockStyle} numberOfLines={2}>
         {'Out Of Stock'}
       </Text>

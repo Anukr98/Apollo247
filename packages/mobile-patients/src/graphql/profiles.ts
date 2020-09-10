@@ -879,6 +879,8 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
           name
         }
       }
+      apolloDoctorCount
+      partnerDoctorCount
     }
   }
 `;
@@ -1142,6 +1144,8 @@ export const GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS = gql`
           routeOfAdministration
           medicineCustomDosage
           medicineCustomDetails
+          includeGenericNameInPrescription
+          genericName
         }
         notes
         otherInstructions {
@@ -1154,6 +1158,9 @@ export const GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS = gql`
           howOften
           severity
         }
+        referralSpecialtyName
+        referralDescription
+        prescriptionGeneratedDate
       }
       patientDetails {
         id
@@ -2953,6 +2960,8 @@ export const GET_ONEAPOLLO_USER = gql`
       earnedHC
       availableHC
       tier
+      burnedCredits
+      blockedCredits
     }
   }
 `;

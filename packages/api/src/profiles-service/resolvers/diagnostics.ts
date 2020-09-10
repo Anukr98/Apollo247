@@ -278,7 +278,6 @@ const getDiagnosticSlots: Resolver<
       return res
     }
     if (res.status == 401) { // res.status >= 200 && res.status < 300
-      console.log('updating token value')
       updateToken()
       throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, { "cause": "cache is being updated" })
     }
@@ -361,7 +360,6 @@ const getDiagnosticItDoseSlots: Resolver<
       return res
     }
     if (res.status == 401) { // res.status >= 200 && res.status < 300
-      console.log('updating token value')
       updateToken()
       throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, { "cause": "cache is being updated" })
     }

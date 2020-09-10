@@ -214,9 +214,9 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                   <Route
                     render={({ history }) => (
                       <a
-                        href=""
+                        href={clientRoutes.medicineDetails(hotSeller.url_key)}
                         onClick={() => {
-                          history.push(clientRoutes.medicineDetails(hotSeller.url_key));
+                          // history.push(clientRoutes.medicineDetails(hotSeller.url_key));
                           pharmacyConfigSectionTracking({
                             sectionName: props.section,
                             productId: hotSeller.sku,

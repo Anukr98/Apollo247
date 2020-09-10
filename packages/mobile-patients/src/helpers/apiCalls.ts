@@ -155,6 +155,7 @@ export interface GetTatResponse247 {
     tat: string;
     tatU: number;
     inventoryExist: boolean;
+    storeType: string;
   };
   errorMSG?: string;
 }
@@ -422,25 +423,31 @@ export const getStoreInventoryApi = (
   );
 };
 
-export const pinCodeServiceabilityApi247 = (pincode: string): Promise<AxiosResponse<{ response: boolean }>> => {
-  const url = `${config.UATTAT_CONFIG[0]}/serviceable?pincode=${pincode}`
-  return Axios.post(url, {}, {
-    headers: {
-      Authorization: config.UATTAT_CONFIG[1],
-    },
-  });
+export const pinCodeServiceabilityApi247 = (
+  pincode: string
+): Promise<AxiosResponse<{ response: boolean }>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/serviceable?pincode=${pincode}`;
+  return Axios.get(url,
+    {
+      headers: {
+        Authorization: config.UATTAT_CONFIG[1],
+      },
+    }
+  );
 };
 
 export const availabilityApi247 = (
   pincode: string,
   sku: string
 ): Promise<AxiosResponse<GetAvailabilityResponse247>> => {
-  const url = `${config.UATTAT_CONFIG[0]}/availability?sku=${sku}&pincode=${pincode}`
-  return Axios.post(url, {}, {
-    headers: {
-      Authorization: config.UATTAT_CONFIG[1],
-    },
-  });
+  const url = `${config.UATTAT_CONFIG[0]}/availability?sku=${sku}&pincode=${pincode}`;
+  return Axios.get(url,
+    {
+      headers: {
+        Authorization: config.UATTAT_CONFIG[1],
+      },
+    }
+  );
 };
 
 export const medCartItemsDetailsApi = (

@@ -179,6 +179,9 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     maxQty,
   } = props;
 
+  const isSpecialPrice = !!specialPrice || specialPrice === 0;
+  const priceToBeDisplayed = isSpecialPrice ? specialPrice : price;
+
   const renderTitleAndIcon = () => {
     return (
       <View style={styles.rowSpaceBetweenView}>
@@ -249,8 +252,9 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   };
 
   const renderUnitDropdownAndPrice = () => {
+    const maxQuantity = priceToBeDisplayed === 0 ? 1 : getMaxQtyForMedicineItem(maxQty);
     const opitons = Array.from({
-      length: getMaxQtyForMedicineItem(maxQty),
+      length: maxQuantity,
     }).map((_, i) => {
       return { key: (i + 1).toString(), value: i + 1 };
     });
@@ -294,7 +298,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
             },
           ]}
         >
-          {specialPrice ? (
+          {isSpecialPrice ? (
             <>
               <View
                 style={[
@@ -325,7 +329,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
             <Text style={[styles.unitAndRupeeText, { flex: 1 }]}>MRP</Text>
           )}
           <Text style={[styles.unitAndRupeeText, { flex: 0, alignSelf: 'center' }]}>{`Rs. ${(
-            specialPrice || price
+            priceToBeDisplayed
           ).toFixed(2)}`}</Text>
         </View>
       </View>

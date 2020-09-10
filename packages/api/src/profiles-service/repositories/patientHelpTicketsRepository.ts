@@ -20,7 +20,6 @@ export class PatientHelpTicketRepository extends Repository<PatientHelpTickets> 
     const inputDate = format(ticketDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(ticketDate, -1), 'yyyy-MM-dd');
-    console.log(inputStartDate, 'inputStartDate find by date doctor id - calls count');
     const startDate = new Date(inputStartDate + 'T18:30');
     return this.count({
       where: {

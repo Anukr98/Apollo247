@@ -75,6 +75,7 @@ export enum CouponCategoryApplicable {
   FMCG = "FMCG",
   PHARMA = "PHARMA",
   PHARMA_FMCG = "PHARMA_FMCG",
+  PL = "PL",
 }
 
 export enum CustomerType {
@@ -766,6 +767,7 @@ export interface MedicineCartOMSInput {
   showPrescriptionAtStore?: boolean | null;
   shopAddress?: ShopAddress | null;
   customerComment?: string | null;
+  tatType?: string | null;
 }
 
 export interface MedicineCartOMSItem {

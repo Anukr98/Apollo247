@@ -239,7 +239,10 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     afternoonSlots: number[] = [],
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
-  const doctorAvailableTime = moment().add(props.doctorAvailableIn, 'm').toDate() || new Date();
+  const doctorAvailableTime =
+    moment()
+      .add(props.doctorAvailableIn, 'm')
+      .toDate() || new Date();
   const apiDateFormat =
     dateSelected === ''
       ? moment(doctorAvailableTime).format('YYYY-MM-DD')
@@ -560,10 +563,6 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
         <div className={classes.customScrollBar}>
-          <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
-            Please note that after booking, you will need to download the Apollo 247 app to continue
-            with your consultation.
-          </p>
           <Grid container spacing={2}>
             <Grid item sm={6} xs={12}>
               <div className={classes.consultGroup}>
