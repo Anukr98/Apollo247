@@ -412,10 +412,10 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
   const showDate = (date: string) => {
     return moment(new Date()).format('DD/MM/YYYY') ===
       moment(new Date(date)).format('DD/MM/YYYY') ? (
-        <span>Today , {moment(new Date(date)).format('DD MMM YYYY')}</span>
-      ) : (
-        <span>{moment(new Date(date)).format('DD MMM YYYY')}</span>
-      );
+      <span>Today , {moment(new Date(date)).format('DD MMM YYYY')}</span>
+    ) : (
+      <span>{moment(new Date(date)).format('DD MMM YYYY')}</span>
+    );
   };
 
   const downloadPrescription = () => {
@@ -485,8 +485,8 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 364px)'
               : isSmallScreen
-                ? 'calc(100vh - 230px)'
-                : 'calc(100vh - 280px)'
+              ? 'calc(100vh - 230px)'
+              : 'calc(100vh - 280px)'
           }
         >
           <div className={classes.consultationsList}>
@@ -535,7 +535,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
       <div
         className={`${classes.rightSection} ${
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
-          }`}
+        }`}
       >
         {filteredData && filteredData.length > 0 ? (
           <>
@@ -568,86 +568,86 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 287px)'
                   : isSmallScreen
-                    ? 'calc(100vh - 96px)'
-                    : 'calc(100vh - 250px)'
+                  ? 'calc(100vh - 96px)'
+                  : 'calc(100vh - 250px)'
               }
             >
               <div className={classes.consultationDetails}>
                 {(!isSmallScreen && activeConsult && activeConsult.patientId) ||
-                  (isSmallScreen && showMobileDetails && activeConsult.patientId) ? (
-                    <>
-                      <Symptoms caseSheetList={activeConsult.caseSheet} />
-                      <Prescription caseSheetList={activeConsult.caseSheet} />
-                      <PrescribedTests caseSheetList={activeConsult.caseSheet} />
-                      <Diagnosis caseSheetList={activeConsult.caseSheet} />
-                      <GeneralAdvice caseSheetList={activeConsult.caseSheet} />
-                      <FollowUp caseSheetList={activeConsult.caseSheet} />
-                      {/* <PaymentInvoice />
+                (isSmallScreen && showMobileDetails && activeConsult.patientId) ? (
+                  <>
+                    <Symptoms caseSheetList={activeConsult.caseSheet} />
+                    <Prescription caseSheetList={activeConsult.caseSheet} />
+                    <PrescribedTests caseSheetList={activeConsult.caseSheet} />
+                    <Diagnosis caseSheetList={activeConsult.caseSheet} />
+                    <GeneralAdvice caseSheetList={activeConsult.caseSheet} />
+                    <FollowUp caseSheetList={activeConsult.caseSheet} />
+                    {/* <PaymentInvoice />
                 <PrescriptionPreview /> */}
-                    </>
-                  ) : // when it is prescription
-                  activeConsult && activeConsult.prescriptionName ? (
-                    <div className={classes.medicalRecordsDetails}>
-                      <div className={classes.cbcDetails}>
-                        <div className={classes.reportsDetails}>
-                          <label>Check-up Date</label>
-                          <p>{moment(activeConsult.date).format('DD MMM YYYY')}</p>
-                        </div>
-                        <div className={classes.reportsDetails}>
-                          <label>Source</label>
-                          <p>{activeConsult.prescriptionSource || '-'}</p>
-                        </div>
-                        <div className={classes.reportsDetails}>
-                          <label>Referring Doctor</label>
-                          <p>{!!activeConsult.prescribedBy ? activeConsult.prescribedBy : '-'}</p>
-                        </div>
+                  </>
+                ) : // when it is prescription
+                activeConsult && activeConsult.prescriptionName ? (
+                  <div className={classes.medicalRecordsDetails}>
+                    <div className={classes.cbcDetails}>
+                      <div className={classes.reportsDetails}>
+                        <label>Check-up Date</label>
+                        <p>{moment(activeConsult.date).format('DD MMM YYYY')}</p>
                       </div>
-                      {(activeConsult.observations || activeConsult.additionalNotes) && (
-                        <ToplineReport activeData={activeConsult} />
-                      )}
-                      {activeConsult.fileUrl &&
-                        activeConsult.fileUrl.length > 0 &&
-                        (activeConsult.fileUrl.includes('.pdf') ? (
-                          <div className={classes.prescriptionImage}>
-                            <a href={activeConsult.prescriptionImageUrl}>Download File</a>
-                          </div>
-                        ) : (
-                            <div className={classes.prescriptionImage}>
-                              <img src={activeConsult.fileUrl} alt="Prescription Preview" />
-                            </div>
-                          ))}
+                      <div className={classes.reportsDetails}>
+                        <label>Source</label>
+                        <p>{activeConsult.prescriptionSource || '-'}</p>
+                      </div>
+                      <div className={classes.reportsDetails}>
+                        <label>Referring Doctor</label>
+                        <p>{!!activeConsult.prescribedBy ? activeConsult.prescribedBy : '-'}</p>
+                      </div>
                     </div>
-                  ) : (
-                      // when it is med record
-                      activeConsult &&
-                      activeConsult.prescriptionImageUrl &&
-                      (activeConsult.prescriptionImageUrl.includes('.pdf') ? (
+                    {(activeConsult.observations || activeConsult.additionalNotes) && (
+                      <ToplineReport activeData={activeConsult} />
+                    )}
+                    {activeConsult.fileUrl &&
+                      activeConsult.fileUrl.length > 0 &&
+                      (activeConsult.fileUrl.includes('.pdf') ? (
                         <div className={classes.prescriptionImage}>
                           <a href={activeConsult.prescriptionImageUrl}>Download File</a>
                         </div>
-                      ) : activeConsult.prescriptionImageUrl.includes(',') ? (
-                        activeConsult.prescriptionImageUrl.split(',').map((imageUrl: any) => {
-                          return (
-                            <div className={classes.prescriptionImage}>
-                              <img src={imageUrl} alt="Prescription Preview" />
-                            </div>
-                          );
-                        })
                       ) : (
-                            <div className={classes.prescriptionImage}>
-                              <img src={activeConsult.prescriptionImageUrl} alt="Prescription Preview" />
-                            </div>
-                          ))
-                    )}
+                        <div className={classes.prescriptionImage}>
+                          <img src={activeConsult.fileUrl} alt="Prescription Preview" />
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  // when it is med record
+                  activeConsult &&
+                  activeConsult.prescriptionImageUrl &&
+                  (activeConsult.prescriptionImageUrl.includes('.pdf') ? (
+                    <div className={classes.prescriptionImage}>
+                      <a href={activeConsult.prescriptionImageUrl}>Download File</a>
+                    </div>
+                  ) : activeConsult.prescriptionImageUrl.includes(',') ? (
+                    activeConsult.prescriptionImageUrl.split(',').map((imageUrl: any) => {
+                      return (
+                        <div className={classes.prescriptionImage}>
+                          <img src={imageUrl} alt="Prescription Preview" />
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className={classes.prescriptionImage}>
+                      <img src={activeConsult.prescriptionImageUrl} alt="Prescription Preview" />
+                    </div>
+                  ))
+                )}
               </div>
             </Scrollbars>
           </>
         ) : (
-            <div className={classes.noRecordFoundWrapper}>
-              <img src={require('images/ic_records.svg')} />
-              <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
-            </div>
-          )}
+          <div className={classes.noRecordFoundWrapper}>
+            <img src={require('images/ic_records.svg')} />
+            <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
+          </div>
+        )}
       </div>
     </div>
   );

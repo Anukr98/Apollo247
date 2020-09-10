@@ -384,8 +384,8 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
         {moment(combinedData.date).format('DD MMM, YYYY')}
       </span>
     ) : (
-        <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
-      );
+      <span>{moment(combinedData.date).format('DD MMM YYYY')}</span>
+    );
   };
 
   if (loading) {
@@ -416,8 +416,8 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
             isMediumScreen
               ? 'calc(100vh - 240px)'
               : isSmallScreen
-                ? 'calc(100vh - 230px)'
-                : 'calc(100vh - 310px)'
+              ? 'calc(100vh - 230px)'
+              : 'calc(100vh - 310px)'
           }
         >
           <div className={classes.consultationsList}>
@@ -470,7 +470,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
       <div
         className={`${classes.rightSection} ${
           isSmallScreen && !showMobileDetails ? '' : classes.mobileOverlay
-          }`}
+        }`}
       >
         {allCombinedData && allCombinedData.length > 0 ? (
           <>
@@ -495,52 +495,52 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
                 isMediumScreen
                   ? 'calc(100vh - 287px)'
                   : isSmallScreen
-                    ? 'calc(100vh - 55px)'
-                    : 'calc(100vh - 322px)'
+                  ? 'calc(100vh - 55px)'
+                  : 'calc(100vh - 322px)'
               }
             >
               {((!isSmallScreen && activeData) ||
                 (isSmallScreen && showMobileDetails && activeData)) && (
-                  <div className={classes.medicalRecordsDetails}>
-                    <div className={classes.cbcDetails}>
-                      <div className={classes.reportsDetails}>
-                        <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
-                          {activeData.doctorName ? `Dr. ${activeData.doctorName}` : '-'}
-                        </div>
-                      </div>
-                      {activeData.hospitalName && (
-                        <div className={`${classes.reportsDetails} ${classes.sitedisplayName}`}>
-                          <div>{activeData.hospitalName}</div>
-                        </div>
-                      )}
-                      <hr />
-                      <div className={classes.reportsDetails}>
-                        <label>Discharge Date</label>
-                        <p>
-                          On{' '}
-                          <span className={classes.checkDate}>
-                            {getFormattedDate(activeData, 'dischargeDate')}
-                          </span>
-                        </p>
+                <div className={classes.medicalRecordsDetails}>
+                  <div className={classes.cbcDetails}>
+                    <div className={classes.reportsDetails}>
+                      <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
+                        {activeData.doctorName ? `Dr. ${activeData.doctorName}` : '-'}
                       </div>
                     </div>
-                    {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
-                      <RenderImage
-                        activeData={activeData}
-                        type={
-                          activeData.hospitalizationFiles &&
-                            activeData.hospitalizationFiles.length &&
-                            activeData.hospitalizationFiles[0].fileName &&
-                            activeData.hospitalizationFiles[0].fileName.includes('pdf')
-                            ? 'pdf'
-                            : activeData.fileUrl.includes('pdf')
-                              ? 'pdf'
-                              : 'image'
-                        }
-                      />
+                    {activeData.hospitalName && (
+                      <div className={`${classes.reportsDetails} ${classes.sitedisplayName}`}>
+                        <div>{activeData.hospitalName}</div>
+                      </div>
                     )}
+                    <hr />
+                    <div className={classes.reportsDetails}>
+                      <label>Discharge Date</label>
+                      <p>
+                        On{' '}
+                        <span className={classes.checkDate}>
+                          {getFormattedDate(activeData, 'dischargeDate')}
+                        </span>
+                      </p>
+                    </div>
                   </div>
-                )}
+                  {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
+                    <RenderImage
+                      activeData={activeData}
+                      type={
+                        activeData.hospitalizationFiles &&
+                        activeData.hospitalizationFiles.length &&
+                        activeData.hospitalizationFiles[0].fileName &&
+                        activeData.hospitalizationFiles[0].fileName.includes('pdf')
+                          ? 'pdf'
+                          : activeData.fileUrl.includes('pdf')
+                          ? 'pdf'
+                          : 'image'
+                      }
+                    />
+                  )}
+                </div>
+              )}
             </Scrollbars>
             {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
               <a href={activeData.fileUrl}>
@@ -553,11 +553,11 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
             )}
           </>
         ) : (
-            <div className={classes.noRecordFoundWrapper}>
-              <img src={require('images/ic_records.svg')} />
-              <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
-            </div>
-          )}
+          <div className={classes.noRecordFoundWrapper}>
+            <img src={require('images/ic_records.svg')} />
+            <p>{HEALTH_RECORDS_NO_DATA_FOUND}</p>
+          </div>
+        )}
       </div>
     </div>
   );
