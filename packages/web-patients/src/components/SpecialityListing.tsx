@@ -34,7 +34,7 @@ import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { SchemaMarkup } from 'SchemaMarkup';
-import _ from 'lodash';
+import { _debounce } from 'lodash';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -724,7 +724,7 @@ const SpecialityListing: React.FC = (props) => {
         setSearchLoading(false);
       });
   };
-  const debounceLoadData = useCallback(_.debounce(fetchData, 300), []);
+  const debounceLoadData = useCallback(_debounce(fetchData, 300), []);
   useEffect(() => {
     if (searchKeyword.length > 2 || selectedCity.length) {
       setSearchLoading(true);
