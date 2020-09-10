@@ -263,10 +263,12 @@ export const Maps: React.FC<MapProps> = (props) => {
           /**added so that, it always picks the one from the address entered.
            * if we want to show the location wherever he has left, then remove this code.
            */
-          setRegion({ latitude: latLang.lat,
+          setRegion({
+            latitude: latLang.lat,
             longitude: latLang.lng,
             latitudeDelta: 0.01,
-            longitudeDelta: 0.01})
+            longitudeDelta: 0.01,
+          });
         } catch (e) {
           //show current location
           showCurrentLocation();

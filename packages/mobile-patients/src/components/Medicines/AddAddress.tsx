@@ -203,6 +203,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [optionalAddress, setOptionalAddress] = useState<string>('');
   const [editProfile, setEditProfile] = useState<boolean>(false);
   const [isFocus, setIsFocus] = useState<boolean>(false);
+  const [isStateEdit, setStateEditable] = useState<boolean>(false);
+  const [isCityEdit, setCityEditable] = useState<boolean>(false);
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
@@ -299,6 +301,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     pincode.length === 6 &&
     city &&
     city.length > 1 &&
+    state &&
+    state.length > 1 &&
     addressType !== undefined &&
     (addressType !== PATIENT_ADDRESS_TYPE.OTHER ||
       (addressType === PATIENT_ADDRESS_TYPE.OTHER && optionalAddress));
@@ -437,6 +441,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       setStateCode('');
       setLatitude(0);
       setLongitude(0);
+      setStateEditable(true);
+      setCityEditable(true);
       CommonBugFender('AddAddress_updateCityStateByPincode', e);
     };
     const pincodeAndAddress = [pincode, addressLine1].filter((v) => (v || '').trim()).join(',');
@@ -459,6 +465,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           setStateCode(finalStateCode);
           setLatitude(response.latitude!);
           setLongitude(response.longitude!);
+          city === '' ? setCityEditable(true) : setCityEditable(false);
+          state === '' ? setStateEditable(true) : setStateEditable(false);
         } catch (e) {
           resetValues(e);
         }
@@ -816,7 +824,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               setaddressLine1(addressLine1);
             }
           }}
-          placeholder={'*House no | Apartment name'}
+          placeholder={'Enter House & Society Details'}
           inputStyle={styles.addressFieldsText}
         />
         <Text style={styles.addressLabel}>*Area Details</Text>
@@ -842,14 +850,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               setareaDetails(areaDetails);
             }
           }}
-          placeholder={'*Area Details'}
+          placeholder={'Enter Area Details'}
           inputStyle={styles.addressHeadingText}
         />
         <Text style={[styles.addressLabel, { marginTop: '3%' }]}>LandMark</Text>
         <TextInputComponent
           value={landMark}
           onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
-          placeholder={'Landmark (Optional)'}
+          placeholder={'Enter LandMark'}
           inputStyle={styles.addressHeadingText}
         />
         <View style={[styles.viewRowStyle, { marginTop: 12 }]}>
@@ -875,10 +883,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             />
           </View>
           <View style={{ flex: 0.55 }}>
-            <Text style={styles.addressLabel}>City</Text>
+            <Text style={styles.addressLabel}>*City</Text>
             <TextInputComponent
               value={city}
-              textInputprops={{ editable: false }}
+              textInputprops={{ editable: isCityEdit }}
               onChangeText={(city) =>
                 city.startsWith(' ') || city.startsWith('.') || city.startsWith(',')
                   ? null
@@ -891,10 +899,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           </View>
         </View>
         {/* state*/}
-        <Text style={[styles.addressLabel, { marginTop: 12 }]}>State</Text>
+        <Text style={[styles.addressLabel, { marginTop: 12 }]}>*State</Text>
         <TextInputComponent
           value={(state || '').startsWith(',') ? state.replace(', ', '') : state}
-          textInputprops={{ editable: false }}
+          textInputprops={{ editable: isStateEdit }}
           onChangeText={(state) =>
             state.startsWith(' ') || state.startsWith('.')
               ? null
