@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 import { PatientProfileInput, Gender } from "./globalTypes";
@@ -18,7 +17,6 @@ export interface addNewProfile_addNewProfile_patient {
   lastName: string | null;
   emailAddress: string | null;
   gender: Gender | null;
-  dateOfBirth: any | null;
 }
 
 export interface addNewProfile_addNewProfile {

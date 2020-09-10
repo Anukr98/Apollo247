@@ -268,6 +268,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     consultButtonContainer: {
       flex: '1 0 auto',
+      display: 'flex',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
     },
     cross: {
       position: 'absolute',
@@ -1040,6 +1043,7 @@ const useStyles = makeStyles((theme: Theme) => {
       right: '7%',
       color: '#FFF',
       padding: '15px 25px',
+      zIndex: 999,
     },
     joinPrompt: {
       display: 'flex',

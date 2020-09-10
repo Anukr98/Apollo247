@@ -310,7 +310,6 @@ const relationArray1: RelationArray[] = [
 export interface EditProfileProps extends NavigationScreenProps {
   isEdit: boolean;
   isPoptype?: boolean;
-  screenName?: string;
 }
 {
 }
@@ -321,7 +320,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   );
   const relationArray: RelationArray[] = getRelations() || selectedGenderRelationArray;
   const isEdit = props.navigation.getParam('isEdit');
-  const screenName = props.navigation.getParam('screenName');
   const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
@@ -728,13 +726,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       .then((data) => {
         setLoading && setLoading(false);
         getPatientApiCall();
-        if (screenName === string.symptomChecker.symptomTracker) {
-          const { navigation } = props;
-          navigation.goBack();
-          navigation.state.params!.goBackCallback(data.data!.addNewProfile.patient);
-        } else {
-          props.navigation.goBack();
-        }
+        props.navigation.goBack();
         selectUser(data.data!.addNewProfile.patient);
       })
       .catch((e) => {
