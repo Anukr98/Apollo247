@@ -50,7 +50,7 @@ import { SpecialtySearch } from 'components/SpecialtySearch';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
-import Pagination from '@material-ui/lab/Pagination';
+// import Pagination from '@material-ui/lab/Pagination';
 
 let currentPage = 1;
 let apolloDoctorCount = 0;
@@ -307,19 +307,19 @@ const useStyles = makeStyles((theme: Theme) => {
       justifyContent: 'center',
       padding: 20,
     },
-    pagination: {},
-    paginationUl: {
-      '& li': {
-        '& button': {
-          fontsize: 14,
-          fontWeight: 700,
-          color: '#02475b',
-          '&:hover': {
-            background: '#00B38E',
-          },
-        },
-      },
-    },
+    // pagination: {},
+    // paginationUl: {
+    //   '& li': {
+    //     '& button': {
+    //       fontsize: 14,
+    //       fontWeight: 700,
+    //       color: '#02475b',
+    //       '&:hover': {
+    //         background: '#00B38E',
+    //       },
+    //     },
+    //   },
+    // },
   };
 });
 
@@ -992,7 +992,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   'no results found'
                 )}
               </div>
-              {pageNo < Math.ceil((apolloDoctorCount + partnerDoctorCount) / PAGE_SIZE) && (
+              {/* {pageNo < Math.ceil((apolloDoctorCount + partnerDoctorCount) / PAGE_SIZE) && (
                 <div className={classes.paginationContainer}>
                   <Pagination
                     count={Math.ceil((apolloDoctorCount + partnerDoctorCount) / PAGE_SIZE)}
@@ -1002,7 +1002,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                     classes={{ root: classes.pagination, ul: classes.paginationUl }}
                   />
                 </div>
-              )}
+              )} */}
 
               {faqData && faqData.length > 0 && (
                 <>
