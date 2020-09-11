@@ -13,7 +13,6 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GetOrderInvoice } from 'graphql/types/GetOrderInvoice';
 import { STATUS } from 'graphql/types/globalTypes';
-import { string } from 'prop-types';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
