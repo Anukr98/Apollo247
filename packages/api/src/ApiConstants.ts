@@ -453,7 +453,7 @@ export enum ApiConstants {
   WHATSAPP_SD_OTP = 'inf_sd_otp_message_namaste',
   WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation_namaste1',
   WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
-  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_namaste1',
+  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_namaste3',
 
   ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE = 'R000247',
 
