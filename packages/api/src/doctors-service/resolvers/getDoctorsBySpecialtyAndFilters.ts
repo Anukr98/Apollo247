@@ -452,7 +452,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       apolloDoctorCount += doctorCount.doc_count;
     }
   }
-  console.log(getDetails.body.hits.hits);
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
@@ -485,9 +484,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     if (doctor.languages instanceof Array) {
       doctor.languages = doctor.languages.join(', ');
     }
-    console.log(doc.inner_hits['doctorSlots.slots'].hits.hits);
     for (const slot of doc.inner_hits['doctorSlots.slots'].hits.hits) {
-      console.log(slot);
       const nextAvailable = differenceInMinutes(new Date(slot._source.slot), callStartTime);
       if (nextAvailable > bufferTime) {
         if (doctor['activeSlotCount'] === 0) {
