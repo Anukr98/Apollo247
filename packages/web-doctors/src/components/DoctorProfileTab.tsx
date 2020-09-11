@@ -6,7 +6,7 @@ import Popover from '@material-ui/core/Popover';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-import { LoggedInUserType } from 'graphql/types/globalTypes';
+import { LoggedInUserType, DoctorType } from 'graphql/types/globalTypes';
 import { ApolloError } from 'apollo-client';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/profiles';
@@ -621,7 +621,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             <Paper className={classes.serviceItem}>
               <div className={classes.avatarBlock}>
                 <img alt="" src={require('images/no_photo.png')} className={classes.bigAvatar} />
-                {doctor.doctorType === 'STAR_APOLLO' ? (
+                {doctor.doctorType === DoctorType.STAR_APOLLO ? (
                   <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
                 ) : (
                   ''
@@ -694,7 +694,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   </Paper>
                 </Grid>
               )}
-              {doctor.doctorType !== 'APOLLO' && (
+              {doctor.doctorType !== DoctorType.APOLLO && (
                 <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">In-person Consult Location</Typography>
@@ -782,7 +782,7 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
       {doctorProfile && (
         <DoctorDetails doctor={doctorProfile!} clinics={doctorProfile!.doctorHospital!} />
       )}
-      {doctorProfile && doctorProfile!.doctorType === 'STAR_APOLLO' && (
+      {doctorProfile && doctorProfile!.doctorType === DoctorType.STAR_APOLLO && (
         <div>
           <Typography className={classes.starDoctorHeading}>
             Your Star Doctors Team (

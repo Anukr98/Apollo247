@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { MoreVert } from '@material-ui/icons';
 import React, { useState, useContext, useEffect } from 'react';
-import { LoggedInUserType } from 'graphql/types/globalTypes';
+import { LoggedInUserType, DoctorType } from 'graphql/types/globalTypes';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { AphButton } from '@aph/web-ui-components';
 import { ApolloError } from 'apollo-client';
@@ -921,7 +921,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
               </Grid>
             )}
 
-            {doctorProfile.doctorType !== 'APOLLO' && (
+            {doctorProfile.doctorType !== DoctorType.APOLLO && (
               <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                 <Paper className={classes.serviceItem}>
                   <Typography variant="h5">In-person Consult Location</Typography>
