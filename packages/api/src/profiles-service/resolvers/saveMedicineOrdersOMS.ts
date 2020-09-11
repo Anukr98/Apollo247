@@ -28,7 +28,6 @@ import { CouponServiceContext } from 'coupons-service/couponServiceContext';
 import { log } from 'customWinstonLogger';
 import {
   PharmaItemsResponse,
-  StoreInventoryResp,
   PharmaLineItemResult,
   StoreItemDetail,
 } from 'types/medicineOrderTypes';
@@ -395,7 +394,7 @@ const validateStoreItems = async (medicineCartOMSInput: MedicineCartOMSInput) =>
   }
   medicineCartOMSInput.items.map((item) => {
     const storeItem = storeItemDetails.find((productItem: StoreItemDetail) => {
-      return productItem.itemId == item.medicineSKU;
+      return productItem.sku == item.medicineSKU;
     });
     const magentoItem = magentoItemDetails.find((productItem: PharmaLineItemResult) => {
       return productItem.sku == item.medicineSKU;
@@ -497,34 +496,27 @@ const getMagentoItems = async (items: MedicineCartOMSItem[]) => {
 };
 
 const getStoreItems = async (items: MedicineCartOMSItem[], shopId: string) => {
-  const storeInventoryCheck = process.env.PHARMACY_MED_STORE_INVENTORY_URL || '';
-  const authToken = process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN || '';
-  const itemdetails = items.map((item) => {
-    return {
-      ItemId: item.medicineSKU,
-    };
-  });
-  const reqBody = JSON.stringify({
-    shopId: shopId,
-    itemdetails,
-  });
+  const inventoryBaseUrl = process.env.INVENTORY_SYNC_URL || '';
+  const authToken = process.env.INVENTORY_SYNC_TOKEN || '';
+  const itemdetails = items.map((item) => item.medicineSKU);
+  const apiUrl = `${inventoryBaseUrl}/pricecheck?storecode=${shopId}&sku=${itemdetails.join(',')}`;
+
   log(
     'profileServiceLogger',
-    `EXTERNAL_API_CALL_TO_PHARMACY: ${storeInventoryCheck}`,
+    `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
     'FETCH_STORE_INVENTORY_FROM_PHARMACY__API_CALL_STARTING',
-    reqBody,
+    '',
     ''
   );
 
-  const pharmaResp = await fetch(storeInventoryCheck, {
-    method: 'POST',
-    body: reqBody,
-    headers: { 'Content-Type': 'application/json', Authentication: authToken },
+  const pharmaResp = await fetch(apiUrl, {
+    headers: { 'Content-Type': 'application/json', Authorization: authToken },
   });
+
   if (pharmaResp.status != 200) {
     log(
       'profileServiceLogger',
-      `EXTERNAL_API_CALL_TO_PHARMACY: ${storeInventoryCheck}`,
+      `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
       'FETCH_STORE_INVENTORY_FROM_PHARMACY__API_CALL_FAILED',
       JSON.stringify(pharmaResp),
       ''
@@ -532,19 +524,26 @@ const getStoreItems = async (items: MedicineCartOMSItem[], shopId: string) => {
     return [];
   }
 
-  const storeItemsDetails: StoreInventoryResp = await pharmaResp.json();
-  if (!storeItemsDetails.requestStatus) {
+  const storeItemsDetails = await pharmaResp.json();
+
+  if (storeItemsDetails.errorMsg) {
     log(
       'profileServiceLogger',
-      `EXTERNAL_API_CALL_TO_PHARMACY: ${storeInventoryCheck}`,
+      `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
       'FETCH_STORE_INVENTORY_FROM_PHARMACY__API_CALL_FAILED',
       JSON.stringify(pharmaResp),
       ''
     );
     return [];
   }
-
-  return storeItemsDetails.itemDetails;
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
+    'FETCH_STORE_INVENTORY_FROM_PHARMACY_API_CALL_SUCCESS',
+    JSON.stringify(storeItemsDetails),
+    ''
+  );
+  return storeItemsDetails.response || [];
 };
 
 const isDiffLessThan25Percent = (num1: number, num2: number) => {
