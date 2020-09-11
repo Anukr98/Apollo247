@@ -12,7 +12,12 @@ import {
   buyNowTracking,
 } from 'webEngageTracking';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
-import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
+import {
+  MedicineProductDetails,
+  MedicineProduct,
+  checkSkuAvailability,
+  checkTatAvailability,
+} from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
 import axios, { AxiosResponse, AxiosError, Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
@@ -32,12 +37,13 @@ import {
   NOTIFY_WHEN_IN_STOCK,
   PINCODE_MAXLENGTH,
 } from 'helpers/commonHelpers';
-import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import moment from 'moment';
 import { Alerts } from 'components/Alerts/Alerts';
 import { CartTypes } from 'components/MedicinesCartProvider';
 import _lowerCase from 'lodash/lowerCase';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import fetchUtil from 'helpers/fetch';
+import _get from 'lodash/get';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -348,6 +354,9 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    disableButton: {
+      opacity: 0.7,
+    },
     mobileView: {
       display: 'none',
       [theme.breakpoints.down('xs')]: {
@@ -376,14 +385,13 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     setMedicineAddress,
     setPharmaAddressDetails,
     setHeaderPincodeError,
+    deliveryAddresses,
   } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
   const itemIndexInCart = (item: MedicineProduct) => {
-    return cartItems.findIndex((cartItem) => cartItem.id == item.id);
+    return cartItems.findIndex((cartItem) => cartItem.sku == item.sku);
   };
-  const [medicineQty, setMedicineQty] = React.useState(
-    itemIndexInCart(data) !== -1 ? cartItems[itemIndexInCart(data)].quantity : 1
-  );
+  const [medicineQty, setMedicineQty] = React.useState(1);
   const notifyPopRef = useRef(null);
   const addToCartRef = useRef(null);
   const subDrugsRef = useRef(null);
@@ -454,7 +462,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     }
   };
 
-  const setAddressDetails = (addrComponents: any) => {
+  const setAddressDetails = (addrComponents: any, lat: string, lng: string) => {
     const pincode = findAddrComponents('postal_code', addrComponents);
     const city =
       findAddrComponents('administrative_area_level_2', addrComponents) ||
@@ -467,6 +475,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       state,
       pincode,
       country,
+      lat,
+      lng,
     });
     setHeaderPincodeError('0');
   };
@@ -480,7 +490,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         try {
           if (data && data.results[0] && data.results[0].address_components) {
             const addrComponents = data.results[0].address_components || [];
-            setAddressDetails(addrComponents);
+            setAddressDetails(
+              addrComponents,
+              _get(data.results[0], 'geometry.location.lat', ''),
+              _get(data.results[0], 'geometry.location.lng', '')
+            );
           }
         } catch {
           (e: AxiosError) => {
@@ -496,60 +510,30 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
 
   const fetchDeliveryTime = async (pinCode: string) => {
-    const CancelToken = axios.CancelToken;
-    let cancelGetDeliveryTimeApi: Canceler | undefined;
     setTatLoading(true);
-    await axios
-      .post(
-        apiDetails.deliveryUrl || '',
-        {
-          postalcode: pinCode,
-          ordertype: _lowerCase(data.type_id) === 'pharma' ? CartTypes.PHARMA : CartTypes.FMCG,
-          lookup: [
-            {
-              sku: data.sku || params.sku,
-              qty: 1,
-            },
-          ],
-        },
-        {
-          headers: {
-            Authentication: apiDetails.deliveryAuthToken,
-          },
-          timeout: TAT_API_TIMEOUT_IN_MILLI_SEC,
-          cancelToken: new CancelToken((c) => {
-            // An executor function receives a cancel function as a parameter
-            cancelGetDeliveryTimeApi = c;
-          }),
-        }
-      )
-      .then((res: AxiosResponse) => {
+    const items = [{ sku: data.sku, qty: medicineQty }];
+    await checkTatAvailability(items, pinCode, pharmaAddressDetails.lat, pharmaAddressDetails.lng)
+      .then((res: any) => {
         try {
           if (res && res.data) {
-            if (res.data.errorMsg) {
+            if (res && res.data.errorMsg) {
               setDeliveryTime('');
-              setErrorMessage(NO_SERVICEABLE_MESSAGE);
+              setErrorMessage(OUT_OF_STOCK_MESSAGE);
             }
             setTatLoading(false);
             if (
-              typeof res.data === 'object' &&
-              Array.isArray(res.data.tat) &&
-              res.data.tat.length
+              res.data.response &&
+              res.data.response.tat &&
+              res.data.response.tat.length &&
+              res.data.response.tatU &&
+              res.data.response.tatU != -1
             ) {
-              if (getDiffInDays(res.data.tat[0].deliverydate) < 10) {
-                setDeliveryTime(res.data.tat[0].deliverydate);
-                setErrorMessage('');
-                if (pharmaAddressDetails.pincode !== pinCode) {
-                  getPlaceDetails(pinCode);
-                }
-              } else {
-                setDeliveryTime('');
-                setErrorMessage(OUT_OF_STOCK_MESSAGE);
+              setDeliveryTime(res.data.response.tat);
+              setErrorMessage('');
+              if (pharmaAddressDetails.pincode !== pinCode) {
+                getPlaceDetails(pinCode);
               }
-            } else if (
-              typeof res.data.errorMSG === 'string' ||
-              typeof res.data.errorMsg === 'string'
-            ) {
+            } else if (typeof res.data.errorMSG === 'string') {
               setDefaultDeliveryTime(pinCode);
             }
           }
@@ -571,36 +555,61 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   }, [substitutes]);
 
   useEffect(() => {
+    if (cartItems && cartItems.length > 0) {
+      setMedicineQty(itemIndexInCart(data) !== -1 ? cartItems[itemIndexInCart(data)].quantity : 1);
+    }
+  }, [cartItems]);
+
+  useEffect(() => {
     if (pharmaAddressDetails.pincode && pharmaAddressDetails.pincode.length > 0) {
       setPinCode(pharmaAddressDetails.pincode);
-      checkDeliveryTime(pharmaAddressDetails.pincode);
+      checkDeliveryTime(pharmaAddressDetails.pincode, sku);
     }
   }, [pharmaAddressDetails]);
 
-  const checkDeliveryTime = (pinCode: string) => {
-    checkServiceAvailability(pinCode)
-      .then(({ data }: any) => {
-        if (data && data.Availability) {
+  const checkDeliveryTime = (pinCode: string, sku: string) => {
+    checkSkuAvailability(sku, pinCode)
+      .then((res: any) => {
+        if (
+          res &&
+          res.data &&
+          res.data.response &&
+          res.data.response.length > 0 &&
+          res.data.response[0].exist
+        ) {
           fetchDeliveryTime(pinCode);
         } else {
           setDeliveryTime('');
-          setErrorMessage(NO_SERVICEABLE_MESSAGE);
+          setErrorMessage(OUT_OF_STOCK_MESSAGE);
         }
       })
       .catch((e) => {
-        setErrorMessage(NO_SERVICEABLE_MESSAGE);
+        setErrorMessage(OUT_OF_STOCK_MESSAGE);
         setDeliveryTime('');
       });
   };
 
+  const getItemIndexInCart = (cartItem: MedicineCartItem) => {
+    return cartItems.findIndex((item) => item.sku === cartItem.sku);
+  };
+
+  const isQtyUpdated = (cartItem: MedicineCartItem, index: number) => {
+    return index >= 0 && cartItems[index].quantity !== cartItem.quantity;
+  };
+
   const applyCartOperations = (cartItem: MedicineCartItem) => {
-    const index = cartItems.findIndex((item) => item.id === cartItem.id);
-    if (index >= 0) {
+    const index = getItemIndexInCart(cartItem);
+    if (cartItems && cartItems.length > 0 && isQtyUpdated(cartItem, index)) {
       updateCartItemQty && updateCartItemQty(cartItem);
-    } else {
+    } else if (index === -1) {
       addCartItem && addCartItem(cartItem);
     }
   };
+
+  // const disableAddCartItem = (cartItem: MedicineCartItem) => {
+  //   const index = getItemIndexInCart(cartItem);
+  //   return !isQtyUpdated(cartItem, index);
+  // };
   const isSmallScreen = useMediaQuery('(max-width:767px)');
 
   const options = Array.from(
@@ -759,8 +768,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                           disabled: classes.checkBtnDisabled,
                         }}
                         onClick={() => {
-                          checkDeliveryTime(pinCode);
                           const { sku, name } = data;
+                          checkDeliveryTime(pinCode, sku);
                           const eventData = {
                             pinCode,
                             productId: sku,
@@ -793,7 +802,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       <div className={sell_online ? classes.bottomGroupResponsive : classes.bottomGroupResponse}>
         {!errorMessage ? (
           <>
-            {is_in_stock && sell_online ? (
+            {sell_online ? (
               <div className={classes.priceGroup}>
                 <div className={classes.priceWrap}>
                   <div className={classes.leftGroup}>
@@ -871,10 +880,13 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               notAvailableContext()
             )}
 
-            {is_in_stock && sell_online ? (
+            {sell_online ? (
               <div className={classes.bottomActions}>
                 <AphButton
                   disabled={addMutationLoading || updateMutationLoading}
+                  className={
+                    addMutationLoading || updateMutationLoading ? classes.disableButton : ''
+                  }
                   onClick={() => {
                     setIsUpdateQuantity(false);
                     setClickAddCart(true);
@@ -935,6 +947,9 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
 
                 <AphButton
                   color="primary"
+                  className={
+                    addMutationLoading || updateMutationLoading ? classes.disableButton : ''
+                  }
                   disabled={addMutationLoading || updateMutationLoading}
                   onClick={() => {
                     setUpdateMutationLoading(true);

@@ -91,7 +91,6 @@ const getPatientFamilyHistoryList: Resolver<
   const familyHistoryList = await patientFamilyHistoryRepo.getPatientFamilyHistoryList(
     args.patientId
   );
-  console.log(familyHistoryList, 'life style list');
   return { familyHistoryList };
 };
 

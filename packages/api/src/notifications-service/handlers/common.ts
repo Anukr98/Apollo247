@@ -13,6 +13,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { getCache } from 'notifications-service/database/connectRedis';
+import { log } from 'customWinstonLogger';
 
 const REDIS_PREFIX_WHITELISTED_KEY = 'whitelisted:mobilenumber:';
 type validCheckInput = {
@@ -117,9 +118,21 @@ export function getNotificationLogFileName(notificationType: NotificationType) {
 
 const isWhitelisted = async (mobileNumber: string) => {
   const whiteListedContacts = await getCache(`${REDIS_PREFIX_WHITELISTED_KEY}${mobileNumber}`);
-  return whiteListedContacts && typeof whiteListedContacts == 'string';
+  const isWhiteListedBool: boolean =
+    whiteListedContacts && typeof whiteListedContacts == 'string' ? true : false;
+  log(
+    'notificationServiceLogger',
+    `isWhitelisted tracker, isWhiteListed: ${isWhiteListedBool} for number ${mobileNumber}`,
+    'common.ts/isWhitelisted',
+    '',
+    ''
+  );
+  console.log(
+    `isWhitelisted tracker, isWhiteListed: ${isWhiteListedBool} for number ${mobileNumber}`
+  );
+  return isWhiteListedBool; //should always retrun boolean
 };
 
-export function isNotificationAllowed(mobileNumber: string) {
-  return process.env.NODE_ENV == 'production' || isWhitelisted(mobileNumber);
+export async function isNotificationAllowed(mobileNumber: string) {
+  return process.env.NODE_ENV == 'production' || (await isWhitelisted(mobileNumber));
 }

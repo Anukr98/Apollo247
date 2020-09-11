@@ -31,6 +31,17 @@ export interface ShoppingCartItem {
   productType?: 'FMCG' | 'Pharma' | 'PL';
 }
 
+export interface CouponProducts {
+  categoryId: any;
+  discountAmt: number;
+  mrp: number;
+  onMrp: boolean;
+  quantity: number;
+  sku: string;
+  specialPrice: number;
+  subCategoryId: any;
+}
+
 export interface PhysicalPrescription {
   title: string;
   fileType: string;
@@ -47,6 +58,7 @@ export interface EPrescription {
   forPatient: string;
   date: string;
   medicines: string;
+  fileName?: string;
   doctorName: string;
   prismPrescriptionFileId: string;
   message?: string;
@@ -85,6 +97,8 @@ export interface ShoppingCartContextProps {
   cartTotal: number;
   cartTotalOfRxProducts: number;
   couponDiscount: number;
+  couponProducts: CouponProducts[];
+  setCouponProducts: ((items: CouponProducts[]) => void) | null;
   productDiscount: number;
   deliveryCharges: number;
   packagingCharges: number;
@@ -152,6 +166,9 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   packagingCharges: 0,
   grandTotal: 0,
   uploadPrescriptionRequired: false,
+
+  couponProducts: [],
+  setCouponProducts: null,
 
   ePrescriptions: [],
   addEPrescription: null,
@@ -229,6 +246,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [showPrescriptionAtStore, setShowPrescriptionAtStore] = useState<
     ShoppingCartContextProps['showPrescriptionAtStore']
   >(false);
+
+  const [couponProducts, _setCouponProducts] = useState<ShoppingCartContextProps['couponProducts']>([]);
 
   const [physicalPrescriptions, _setPhysicalPrescriptions] = useState<
     ShoppingCartContextProps['physicalPrescriptions']
@@ -328,6 +347,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   };
 
+  const setCouponProducts: ShoppingCartContextProps['setCouponProducts'] = (items) => {
+    _setCouponProducts(items);
+  };
+
   const cartTotal: ShoppingCartContextProps['cartTotal'] = parseFloat(
     cartItems
       .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
@@ -419,6 +442,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setStores([]);
     setAddresses([]);
     setCoupon(null);
+    setCouponProducts([]);
   };
 
   useEffect(() => {
@@ -464,6 +488,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       setCouponDiscount(0);
       setProductDiscount(0);
       setCoupon(null);
+      setCouponProducts([]);
       return;
     }
 
@@ -558,6 +583,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
         deliveryCharges,
         packagingCharges,
         uploadPrescriptionRequired,
+
+        couponProducts,
+        setCouponProducts,
 
         ePrescriptions,
         addEPrescription,

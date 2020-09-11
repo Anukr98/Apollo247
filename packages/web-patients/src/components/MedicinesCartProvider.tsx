@@ -5,8 +5,9 @@ import _isEmpty from 'lodash/isEmpty';
 import _uniq from 'lodash/uniq';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
+import axios from 'axios';
+import { checkSkuAvailability } from 'helpers/MedicineApiCalls';
 
 export interface MedicineCartItem {
   url_key: string;
@@ -29,6 +30,7 @@ export interface MedicineCartItem {
   mou: string;
   isShippable: boolean;
   MaxOrderQty: number;
+  couponFree?: boolean;
 }
 
 export interface StoreAddresses {
@@ -54,6 +56,8 @@ export interface PharmaAddressDetails {
   pincode: string;
   state: string;
   country: string;
+  lat: string;
+  lng: string;
 }
 
 export interface EPrescription {
@@ -71,8 +75,10 @@ export interface MedicineCartContextProps {
   cartItems: MedicineCartItem[];
   setCartItems: ((cartItems: MedicineCartItem[]) => void) | null;
   addCartItem: ((item: MedicineCartItem) => void) | null;
+  addCartItems: ((item: Array<MedicineCartItem>) => void) | null;
   removeCartItemSku: ((sku: MedicineCartItem['sku']) => void) | null;
   removeCartItems: ((itemId: MedicineCartItem['arrSku']) => void) | null;
+  removeFreeCartItems: (() => void) | null;
   updateCartItem:
     | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
     | null;
@@ -129,8 +135,10 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   cartItems: [],
   setCartItems: null,
   addCartItem: null,
+  addCartItems: null,
   removeCartItemSku: null,
   removeCartItems: null,
+  removeFreeCartItems: null,
   updateCartItem: null,
   updateCartItemPrice: null,
   updateCartItemQty: null,
@@ -197,6 +205,8 @@ export const MedicinesCartProvider: React.FC = (props) => {
     pincode: localStorage.getItem('pharmaPincode') || '',
     state: '',
     country: '',
+    lat: '',
+    lng: '',
   };
   const { currentPatient } = useAllCurrentPatients();
 
@@ -325,10 +335,19 @@ export const MedicinesCartProvider: React.FC = (props) => {
 
   const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
     if (pharmaAddressDetails && pharmaAddressDetails.pincode) {
-      checkServiceAvailability(pharmaAddressDetails.pincode)
-        .then(({ data }: any) => {
-          if (data && data.Availability) {
-            setCartItems([...cartItems, itemToAdd]);
+      checkSkuAvailability(itemToAdd.sku, pharmaAddressDetails.pincode)
+        .then((res: any) => {
+          if (
+            res &&
+            res.data &&
+            res.data.response &&
+            res.data.response.length > 0 &&
+            res.data.response[0].exist
+          ) {
+            const result = [...cartItems, itemToAdd];
+            const freeProducts = result.filter((e) => e.couponFree);
+            const normalProducts = result.filter((e) => !e.couponFree);
+            setCartItems(normalProducts.concat(freeProducts));
             setIsCartUpdated(true);
           } else {
             window.location.href = clientRoutes.medicineDetails(itemToAdd.url_key);
@@ -338,18 +357,40 @@ export const MedicinesCartProvider: React.FC = (props) => {
           console.log(e);
         });
     } else {
-      setCartItems([...cartItems, itemToAdd]);
+      const result = [...cartItems, itemToAdd];
+      const freeProducts = result.filter((e) => e.couponFree);
+      const normalProducts = result.filter((e) => !e.couponFree);
+      setCartItems(normalProducts.concat(freeProducts));
+      setIsCartUpdated(true);
+    }
+  };
+
+  const addCartItems = (itemsToAdd: Array<MedicineCartItem>) => {
+    if (itemsToAdd && Array.isArray(itemsToAdd) && itemsToAdd.length) {
+      const result = [...cartItems].concat(itemsToAdd);
+      const freeProducts = result.filter((e) => e.couponFree);
+      const normalProducts = result.filter((e) => !e.couponFree);
+      setCartItems(normalProducts.concat(freeProducts));
       setIsCartUpdated(true);
     }
   };
 
   const removeCartItemSku: MedicineCartContextProps['removeCartItemSku'] = (sku: string) => {
-    setCartItems(cartItems.filter((item) => item.sku !== sku));
+    const result = cartItems.filter((item) => item.sku !== sku);
+    const freeProducts = result.filter((e) => e.couponFree);
+    const normalProducts = result.filter((e) => !e.couponFree);
+    setCartItems(normalProducts.concat(freeProducts));
     setIsCartUpdated(true);
   };
 
   const removeCartItems: MedicineCartContextProps['removeCartItems'] = (arrSku) => {
-    const items = cartItems.filter((item) => !arrSku.includes(item.id || Number(item.sku)));
+    const items = cartItems.filter((item) => !arrSku.includes(item.sku));
+    setCartItems(items);
+    setIsCartUpdated(true);
+  };
+
+  const removeFreeCartItems: any = () => {
+    const items = cartItems.filter((item) => item.special_price !== 0);
     setCartItems(items);
     setIsCartUpdated(true);
   };
@@ -429,11 +470,13 @@ export const MedicinesCartProvider: React.FC = (props) => {
 
   const cartTotal: MedicineCartContextProps['cartTotal'] = parseFloat(
     cartItems
-      .reduce(
-        (currTotal, currItem) =>
-          currTotal + currItem.quantity * (Number(currItem.special_price) || currItem.price),
-        0
-      )
+      .reduce((currTotal, currItem) => {
+        if (currItem.special_price == 0) {
+          return currTotal + currItem.quantity * currItem.special_price;
+        } else {
+          return currTotal + currItem.quantity * (Number(currItem.special_price) || currItem.price);
+        }
+      }, 0)
       .toFixed(2)
   );
 
@@ -479,8 +522,10 @@ export const MedicinesCartProvider: React.FC = (props) => {
         setCartItems,
         itemsStr,
         addCartItem,
+        addCartItems,
         removeCartItemSku,
         removeCartItems,
+        removeFreeCartItems,
         updateCartItem,
         updateCartItemPrice,
         updateCartItemQty,
@@ -535,8 +580,10 @@ export const useShoppingCart = () => ({
   cartItems: useShoppingCartContext().cartItems,
   setCartItems: useShoppingCartContext().setCartItems,
   addCartItem: useShoppingCartContext().addCartItem,
+  addCartItems: useShoppingCartContext().addCartItems,
   removeCartItemSku: useShoppingCartContext().removeCartItemSku,
   removeCartItems: useShoppingCartContext().removeCartItems,
+  removeFreeCartItems: useShoppingCartContext().removeFreeCartItems,
   updateCartItem: useShoppingCartContext().updateCartItem,
 
   updateCartItemPrice: useShoppingCartContext().updateCartItemPrice,

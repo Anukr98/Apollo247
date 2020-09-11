@@ -5,13 +5,6 @@ import { AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import _forEach from 'lodash/forEach';
-import { GET_PATIENT_APPOINTMENTS } from 'graphql/doctors';
-import {
-  GetPatientAppointments,
-  GetPatientAppointmentsVariables,
-} from 'graphql/types/GetPatientAppointments';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
-import LinearProgress from '@material-ui/core/LinearProgress';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import _find from 'lodash/find';
 import { format } from 'date-fns';
@@ -34,6 +27,8 @@ import {
 } from 'helpers/commonHelpers';
 import { useApolloClient } from 'react-apollo-hooks';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { useParams } from 'hooks/routerHooks';
+import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -405,28 +400,23 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface ConsultDoctorProfileProps {
   doctorDetails: DoctorDetails;
-  appointmentId: string;
-  jrDoctorJoined: boolean;
-  setDisplayId: (displayId: number | null) => void;
+  appointmentDetails: AppointmentHistory;
   setRescheduleCount: (rescheduleCount: number | null) => void;
   handleRescheduleOpen: any;
+  srDoctorJoined: boolean;
+  isConsultCompleted: boolean;
 }
+
+type Params = { appointmentId: string; doctorId: string };
 
 export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props) => {
   const classes = useStyles({});
-
+  const params = useParams<Params>();
+  const appointmentId = params.appointmentId;
   const cancelAppointRef = useRef(null);
   const [isCancelPopoverOpen, setIsCancelPopoverOpen] = React.useState<boolean>(false);
 
-  const {
-    doctorDetails,
-    appointmentId,
-    jrDoctorJoined,
-    setDisplayId,
-    setRescheduleCount,
-    handleRescheduleOpen,
-  } = props;
-  const currentDate = new Date().toISOString().substring(0, 10);
+  const { doctorDetails, setRescheduleCount, handleRescheduleOpen, appointmentDetails } = props;
 
   const [showMore, setShowMore] = useState<boolean>(true);
   const [moreOrLessMessage, setMoreOrLessMessage] = useState<string>('MORE');
@@ -441,26 +431,6 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const patientId = currentPatient ? currentPatient.id : '';
-
-  const { data, loading, error } = useQueryWithSkip<
-    GetPatientAppointments,
-    GetPatientAppointmentsVariables
-  >(GET_PATIENT_APPOINTMENTS, {
-    variables: {
-      patientAppointmentsInput: {
-        patientId: patientId || '',
-        appointmentDate: currentDate,
-      },
-    },
-  });
-
-  if (loading) {
-    return <LinearProgress />;
-  }
-  if (error) {
-    return <div>Unable to load appointment information.</div>;
-  }
-
   let hospitalLocation = '';
 
   const downloadInvoice = (patientId: string, appointmentId: string) => {
@@ -483,363 +453,340 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       });
   };
 
-  if (data && data.getPatinetAppointments && data.getPatinetAppointments.patinetAppointments) {
-    const previousAppointments = data.getPatinetAppointments.patinetAppointments;
-    const appointmentDetails = _find(previousAppointments, (appointment) => {
-      return appointment.id === appointmentId;
-    });
+  // redirect the user to consult room if any mismatch in appointment id.
+  if (!appointmentDetails) {
+    window.location.href = clientRoutes.appointments();
+  } else {
+    if (appointmentDetails.rescheduleCount) {
+      setRescheduleCount(appointmentDetails.rescheduleCount);
+    }
+    const currentTime = new Date().getTime();
+    const appointmentTime = new Date(appointmentDetails.appointmentDateTime);
+    const differenceInWords = formatDistanceStrict(appointmentTime, currentTime);
 
-    // redirect the user to consult room if any mismatch in appointment id.
-    if (!appointmentDetails) {
-      window.location.href = clientRoutes.appointments();
-    } else {
-      if (appointmentDetails.displayId) {
-        setDisplayId(appointmentDetails.displayId);
-      }
-      if (appointmentDetails.rescheduleCount) {
-        setRescheduleCount(appointmentDetails.rescheduleCount);
-      }
-      const currentTime = new Date().getTime();
-      const appointmentTime = new Date(appointmentDetails.appointmentDateTime);
-      const differenceInWords = formatDistanceStrict(appointmentTime, currentTime);
+    const {
+      firstName,
+      fullName,
+      specialty,
+      experience,
+      qualification,
+      awards,
+      languages,
+      photoUrl,
+      onlineConsultationFees,
+      physicalConsultationFees,
+      doctorHospital,
+    } = doctorDetails && doctorDetails.getDoctorDetailsById;
 
-      const {
-        firstName,
-        fullName,
-        specialty,
-        experience,
-        qualification,
-        awards,
-        languages,
-        photoUrl,
-        onlineConsultationFees,
-        physicalConsultationFees,
-        doctorHospital,
-      } = doctorDetails && doctorDetails.getDoctorDetailsById;
-
-      const shouldRefreshComponent = (differenceInMinutes: number) => {
-        const id = setInterval(() => {
-          id && clearInterval(id);
-          if (
-            differenceInMinutes >= -15 &&
-            (differenceInMinutes <= 30 || appointmentDetails.isConsultStarted)
-          ) {
-            setRefreshTimer(!refreshTimer);
-          }
-        }, 60000);
-      };
-
-      const differenceInMinutes = getDiffInMinutes(appointmentDetails.appointmentDateTime);
-      shouldRefreshComponent(differenceInMinutes);
-      const specialityName = (specialty && specialty.name) || '';
-
-      if (doctorHospital) {
-        _forEach(doctorHospital, (hospitalDetails) => {
-          if (
-            hospitalDetails.facility.facilityType === 'HOSPITAL' ||
-            hospitalDetails.facility.facilityType === 'CLINIC'
-          ) {
-            hospitalLocation = hospitalDetails.facility.name;
-          }
-        });
-      }
-
-      const otherDateMarkup = (appointmentTime: Date) => {
-        if (isTomorrow(appointmentTime)) {
-          return `Tomorrow ${format(appointmentTime, 'h:mm a')}`;
-        } else {
-          return format(appointmentTime, 'dd MMM yyyy, h:mm a');
+    const shouldRefreshComponent = (differenceInMinutes: number) => {
+      const id = setInterval(() => {
+        id && clearInterval(id);
+        if (
+          differenceInMinutes >= -15 &&
+          (differenceInMinutes <= 30 || appointmentDetails.isSeniorConsultStarted)
+        ) {
+          setRefreshTimer(!refreshTimer);
         }
-      };
+      }, 60000);
+    };
 
-      const cancelMutation = useMutation<cancelAppointment, cancelAppointmentVariables>(
-        CANCEL_APPOINTMENT,
-        {
-          variables: {
-            cancelAppointmentInput: {
-              appointmentId: appointmentId,
-              cancelReason: '',
-              cancelledBy: REQUEST_ROLES.PATIENT,
-              cancelledById: patientId,
-            },
+    const differenceInMinutes = getDiffInMinutes(appointmentDetails.appointmentDateTime);
+    shouldRefreshComponent(differenceInMinutes);
+    const specialityName = (specialty && specialty.name) || '';
+
+    if (doctorHospital) {
+      _forEach(doctorHospital, (hospitalDetails) => {
+        if (
+          hospitalDetails.facility.facilityType === 'HOSPITAL' ||
+          hospitalDetails.facility.facilityType === 'CLINIC'
+        ) {
+          hospitalLocation = hospitalDetails.facility.name;
+        }
+      });
+    }
+
+    const otherDateMarkup = (appointmentTime: Date) => {
+      if (isTomorrow(appointmentTime)) {
+        return `Tomorrow ${format(appointmentTime, 'h:mm a')}`;
+      } else {
+        return format(appointmentTime, 'dd MMM yyyy, h:mm a');
+      }
+    };
+
+    const cancelMutation = useMutation<cancelAppointment, cancelAppointmentVariables>(
+      CANCEL_APPOINTMENT,
+      {
+        variables: {
+          cancelAppointmentInput: {
+            appointmentId: appointmentId,
+            cancelReason: '',
+            cancelledBy: REQUEST_ROLES.PATIENT,
+            cancelledById: patientId,
           },
-          fetchPolicy: 'no-cache',
-        }
-      );
+        },
+        fetchPolicy: 'no-cache',
+      }
+    );
 
-      const cancelAppointmentApi = () => {
-        setApiLoading(true);
-        cancelMutation()
-          .then((data: any) => {
-            setApiLoading(false);
-            setShowCancelPopup(false);
-            window.location.href = clientRoutes.appointments();
-          })
-          .catch((e: string) => {
-            setShowCancelPopup(false);
-            setApiLoading(false);
-            setIsAlertOpen(true);
-            setAlertMessage(`Error occured while cancelling the appointment, ${e}`);
-          });
-      };
+    const cancelAppointmentApi = () => {
+      setApiLoading(true);
+      cancelMutation()
+        .then((data: any) => {
+          setApiLoading(false);
+          setShowCancelPopup(false);
+          window.location.href = clientRoutes.appointments();
+        })
+        .catch((e: string) => {
+          setShowCancelPopup(false);
+          setApiLoading(false);
+          setIsAlertOpen(true);
+          setAlertMessage(`Error occured while cancelling the appointment, ${e}`);
+        });
+    };
 
-      return (
-        <div className={classes.root}>
-          <div className={classes.doctorProfile}>
-            <div className={classes.doctorImage}>
-              <img
-                src={photoUrl !== null ? photoUrl || '' : require('images/no_photo.png')}
-                alt={firstName || ''}
-              />
-              {appointmentDetails.status !== STATUS.COMPLETED &&
-                appointmentDetails.status !== STATUS.CANCELLED && (
-                  <div
-                    onClick={() => setIsCancelPopoverOpen(true)}
-                    ref={cancelAppointRef}
-                    className={classes.moreProfileActions}
-                  >
-                    <img src={require('images/ic_more.svg')} alt="" />
-                  </div>
-                )}
-            </div>
-            <div className={classes.doctorInfo}>
-              <div className={classes.doctorName}>{_startCase(_toLower(fullName || ''))}</div>
-              <div className={classes.specialits}>
-                {specialityName} <span className={classes.lineDivider}>|</span> {experience}
-                {parseInt(experience || '0', 10) > 1 ? ' Yrs' : ' Year'}
+    return (
+      <div className={classes.root}>
+        <div className={classes.doctorProfile}>
+          <div className={classes.doctorImage}>
+            <img
+              src={photoUrl !== null ? photoUrl || '' : require('images/no_photo.png')}
+              alt={firstName || ''}
+            />
+            {appointmentDetails.status !== STATUS.COMPLETED &&
+              appointmentDetails.status !== STATUS.CANCELLED &&
+              !appointmentDetails.isSeniorConsultStarted &&
+              !props.srDoctorJoined && (
                 <div
-                  className={classes.moreToggle}
-                  onClick={(e) => {
-                    const currentShowMore = showMore;
-                    const currentMoreOrLessMessage = moreOrLessMessage;
-                    setShowMore(!currentShowMore);
-                    setMoreOrLessMessage(currentMoreOrLessMessage === 'MORE' ? 'LESS' : 'MORE');
-                  }}
+                  onClick={() => setIsCancelPopoverOpen(true)}
+                  ref={cancelAppointRef}
+                  className={classes.moreProfileActions}
                 >
-                  {moreOrLessMessage}
+                  <img src={require('images/ic_more.svg')} alt="" />
                 </div>
+              )}
+          </div>
+          <div className={classes.doctorInfo}>
+            <div className={classes.doctorName}>{_startCase(_toLower(fullName || ''))}</div>
+            <div className={classes.specialits}>
+              {specialityName} <span className={classes.lineDivider}>|</span> {experience}
+              {parseInt(experience || '0', 10) > 1 ? ' Yrs' : ' Year'}
+              <div
+                className={classes.moreToggle}
+                onClick={(e) => {
+                  const currentShowMore = showMore;
+                  const currentMoreOrLessMessage = moreOrLessMessage;
+                  setShowMore(!currentShowMore);
+                  setMoreOrLessMessage(currentMoreOrLessMessage === 'MORE' ? 'LESS' : 'MORE');
+                }}
+              >
+                {moreOrLessMessage}
               </div>
-              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 405px)'}>
-                <div
-                  className={`${classes.doctorEducationInfo} ${showMore ? classes.hideMore : ''}`}
-                >
-                  <div className={classes.doctorInfoGroup}>
-                    {qualification && (
-                      <div className={classes.infoRow}>
-                        <div className={classes.iconType}>
-                          <img src={require('images/ic-edu.svg')} alt="" />
-                        </div>
-                        <div className={classes.details}>{qualification}</div>
+            </div>
+            <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 405px)'}>
+              <div className={`${classes.doctorEducationInfo} ${showMore ? classes.hideMore : ''}`}>
+                <div className={classes.doctorInfoGroup}>
+                  {qualification && (
+                    <div className={classes.infoRow}>
+                      <div className={classes.iconType}>
+                        <img src={require('images/ic-edu.svg')} alt="" />
                       </div>
-                    )}
-                    {awards && (
-                      <div className={classes.infoRow}>
-                        <div className={classes.iconType}>
-                          <img src={require('images/ic-awards.svg')} alt="" />
-                        </div>
-                        <div className={classes.details}>
-                          {awards.replace(/<\/?[^>]+(>|$)/g, '')}
-                        </div>
+                      <div className={classes.details}>{qualification}</div>
+                    </div>
+                  )}
+                  {awards && (
+                    <div className={classes.infoRow}>
+                      <div className={classes.iconType}>
+                        <img src={require('images/ic-awards.svg')} alt="" />
                       </div>
-                    )}
+                      <div className={classes.details}>{awards.replace(/<\/?[^>]+(>|$)/g, '')}</div>
+                    </div>
+                  )}
+                </div>
+                <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
+                  {hospitalLocation && (
+                    <div className={classes.infoRow}>
+                      <div className={classes.iconType}>
+                        <img src={require('images/ic-location.svg')} alt="" />
+                      </div>
+                      <div className={classes.details}>{hospitalLocation}</div>
+                    </div>
+                  )}
+                  {languages && (
+                    <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                      <div className={classes.iconType}>
+                        <img src={require('images/ic-language.svg')} alt="" />
+                      </div>
+                      <div className={classes.details}>{languages}</div>
+                    </div>
+                  )}
+                </div>
+                <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
+                  <div className={classes.consultGroup}>
+                    <div className={classes.infoRow}>
+                      <div className={classes.iconType}>
+                        <img src={require('images/ic-rupee.svg')} alt="" />
+                      </div>
+                      <div className={classes.details}>Online Consultation</div>
+                      <div className={classes.doctorPrice}>Rs. {onlineConsultationFees || 0}</div>
+                    </div>
                   </div>
-                  <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
-                    {hospitalLocation && (
-                      <div className={classes.infoRow}>
-                        <div className={classes.iconType}>
-                          <img src={require('images/ic-location.svg')} alt="" />
-                        </div>
-                        <div className={classes.details}>{hospitalLocation}</div>
-                      </div>
-                    )}
-                    {languages && (
-                      <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                        <div className={classes.iconType}>
-                          <img src={require('images/ic-language.svg')} alt="" />
-                        </div>
-                        <div className={classes.details}>{languages}</div>
-                      </div>
-                    )}
-                  </div>
-                  <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
+                  {physicalConsultationFees && (
                     <div className={classes.consultGroup}>
                       <div className={classes.infoRow}>
-                        <div className={classes.iconType}>
-                          <img src={require('images/ic-rupee.svg')} alt="" />
-                        </div>
-                        <div className={classes.details}>Online Consultation</div>
-                        <div className={classes.doctorPrice}>Rs. {onlineConsultationFees || 0}</div>
+                        <div className={classes.iconType}></div>
+                        <div className={classes.details}>Clinic visit</div>
+                        <div className={classes.doctorPrice}>Rs. {physicalConsultationFees}</div>
                       </div>
                     </div>
-                    {physicalConsultationFees && (
-                      <div className={classes.consultGroup}>
-                        <div className={classes.infoRow}>
-                          <div className={classes.iconType}></div>
-                          <div className={classes.details}>Clinic visit</div>
-                          <div className={classes.doctorPrice}>Rs. {physicalConsultationFees}</div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
-                <div className={classes.buttonGroup}>
-                  {!isPastAppointment(appointmentDetails.appointmentDateTime) && // check for active and upcoming appointments
-                    (appointmentDetails.status === STATUS.COMPLETED ? (
+              </div>
+              <div className={classes.buttonGroup}>
+                {!isPastAppointment(appointmentDetails.appointmentDateTime) && // check for active and upcoming appointments
+                  (appointmentDetails.status === STATUS.COMPLETED || props.isConsultCompleted ? (
+                    <div className={classes.joinInSection}>
+                      <span>
+                        {getAvailableFreeChatDays(appointmentDetails.appointmentDateTime)}
+                      </span>
+                    </div>
+                  ) : (
+                    differenceInMinutes > -16 && // enables only for upcoming and active  appointments
+                    (appointmentDetails.isSeniorConsultStarted || props.srDoctorJoined ? (
+                      <div className={`${classes.joinInSection} ${classes.doctorjoinSection}`}>
+                        <span>Doctor has joined!</span>
+                      </div>
+                    ) : (
                       <div className={classes.joinInSection}>
-                        <span>
-                          {getAvailableFreeChatDays(appointmentDetails.appointmentDateTime)}!
+                        <span>Doctor Joining In</span>
+                        <span className={classes.joinTime}>
+                          {differenceInMinutes > 0 && differenceInMinutes <= 15
+                            ? `${differenceInMinutes} minutes`
+                            : differenceInWords}
                         </span>
                       </div>
-                    ) : (
-                      differenceInMinutes > -16 && // enables only for upcoming and active  appointments
-                      (appointmentDetails.isConsultStarted ? (
-                        <div className={`${classes.joinInSection} ${classes.doctorjoinSection}`}>
-                          <span>Doctor has joined!</span>
-                        </div>
-                      ) : (
-                        <div className={classes.joinInSection}>
-                          <span>Doctor Joining In</span>
-                          <span className={classes.joinTime}>
-                            {differenceInMinutes > 0 && differenceInMinutes <= 15
-                              ? `${differenceInMinutes} minutes`
-                              : differenceInWords}
-                          </span>
-                        </div>
-                      ))
-                    ))}
-                </div>
-                {appointmentDetails &&
-                !appointmentDetails.isConsultStarted &&
-                appointmentDetails.status !== STATUS.COMPLETED ? (
-                  <div className={classes.appointmentDetails}>
-                    <div className={classes.sectionHead}>
-                      <div className={classes.appoinmentDetails}>Appointment Details</div>
-                    </div>
-                    <div className={`${classes.doctorInfoGroup} ${classes.noBorder}`}>
-                      <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                        <div className={classes.iconType}>
-                          <img src={require('images/ic_calendar_show.svg')} alt="" />
-                        </div>
-                        <div className={classes.details}>
-                          {differenceInMinutes <= 15 && differenceInMinutes > 0
-                            ? `in ${differenceInMinutes} mins`
-                            : otherDateMarkup(appointmentTime)}
-                        </div>
+                    ))
+                  ))}
+              </div>
+              {appointmentDetails &&
+              appointmentDetails.status !== STATUS.COMPLETED &&
+              !props.srDoctorJoined &&
+              !props.isConsultCompleted ? (
+                <div className={classes.appointmentDetails}>
+                  <div className={classes.sectionHead}>
+                    <div className={classes.appoinmentDetails}>Appointment Details</div>
+                  </div>
+                  <div className={`${classes.doctorInfoGroup} ${classes.noBorder}`}>
+                    <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                      <div className={classes.iconType}>
+                        <img src={require('images/ic_calendar_show.svg')} alt="" />
                       </div>
-                    </div>
-                    <div className={classes.consultGroup}>
-                      <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                        <div className={classes.iconType}>
-                          <img src={require('images/ic-rupee.svg')} alt="" />
-                        </div>
-                        <div className={classes.consultationDetails}>
-                          <div className={classes.details}>
-                            <div>Amount Paid</div>
-                            <div> Rs. {onlineConsultationFees || 0}</div>
-                          </div>
-                        </div>
+                      <div className={classes.details}>
+                        {differenceInMinutes <= 15 && differenceInMinutes > 0
+                          ? `in ${differenceInMinutes} mins`
+                          : otherDateMarkup(appointmentTime)}
                       </div>
-                    </div>
-                    <div className={classes.summaryDownloads}>
-                      <AphButton onClick={() => downloadInvoice(patientId, appointmentId)}>
-                        Invoice
-                      </AphButton>
                     </div>
                   </div>
-                ) : null}
-              </Scrollbars>
+                  <div className={classes.consultGroup}>
+                    <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                      <div className={classes.iconType}>
+                        <img src={require('images/ic-rupee.svg')} alt="" />
+                      </div>
+                      <div className={classes.consultationDetails}>
+                        <div className={classes.details}>
+                          <div>Amount Paid</div>
+                          <div> Rs. {onlineConsultationFees || 0}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={classes.summaryDownloads}>
+                    <AphButton onClick={() => downloadInvoice(patientId, appointmentId)}>
+                      Invoice
+                    </AphButton>
+                  </div>
+                </div>
+              ) : null}
+            </Scrollbars>
+          </div>
+        </div>
+        <Popover
+          open={showCancelPopup}
+          // anchorEl={mascotRef.current}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          onBlur={() => {
+            setShowCancelPopup(false);
+            setIsCancelPopoverOpen(false);
+          }}
+          classes={{ paper: classes.bottomPopover }}
+        >
+          <div className={classes.successPopoverWindow}>
+            <div className={classes.windowWrap}>
+              <div className={classes.mascotIcon}>
+                <img src={require('images/ic-mascot.png')} alt="" />
+              </div>
+              <div className={classes.windowBody}>
+                <Typography variant="h2">hi! :)</Typography>
+                <p>
+                  Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full
+                  refund!
+                </p>
+              </div>
+              <div className={classes.actions}>
+                <AphButton
+                  onClick={() => {
+                    handleRescheduleOpen();
+                    setShowCancelPopup(false);
+                  }}
+                >
+                  Reschedule Instead
+                </AphButton>
+
+                <AphButton onClick={() => cancelAppointmentApi()}>
+                  {apiLoading ? (
+                    <CircularProgress size={22} color="secondary" />
+                  ) : (
+                    <span>Cancel Consult</span>
+                  )}
+                </AphButton>
+              </div>
             </div>
           </div>
-          <Popover
-            open={showCancelPopup}
-            // anchorEl={mascotRef.current}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            classes={{ paper: classes.bottomPopover }}
-          >
-            <div className={classes.successPopoverWindow}>
-              <div className={classes.windowWrap}>
-                <div className={classes.mascotIcon}>
-                  <img src={require('images/ic-mascot.png')} alt="" />
-                </div>
-                <div className={classes.windowBody}>
-                  <Typography variant="h2">hi! :)</Typography>
-                  <p>
-                    Since you’re cancelling 15 minutes before your appointment, we’ll issue you a
-                    full refund!
-                  </p>
-                </div>
-                <div className={classes.actions}>
-                  <AphButton
-                    onClick={() => {
-                      handleRescheduleOpen();
-                      setShowCancelPopup(false);
-                    }}
-                  >
-                    Reschedule Instead
-                  </AphButton>
-
-                  <AphButton onClick={() => cancelAppointmentApi()}>
-                    {apiLoading ? (
-                      <CircularProgress size={22} color="secondary" />
-                    ) : (
-                      <span>Cancel Consult</span>
-                    )}
-                  </AphButton>
-                </div>
-              </div>
-            </div>
-          </Popover>
-          <Popover
-            open={isCancelPopoverOpen}
-            anchorEl={cancelAppointRef.current}
-            onClose={() => setIsCancelPopoverOpen(false)}
-            classes={{
-              paper: classes.cancelPopover,
-            }}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-          >
-            <AphButton onClick={() => setShowCancelPopup(true)} className={classes.cancelBtn}>
-              Cancel Appointment
-            </AphButton>
-          </Popover>
-          <Alerts
-            setAlertMessage={setAlertMessage}
-            alertMessage={alertMessage}
-            isAlertOpen={isAlertOpen}
-            setIsAlertOpen={setIsAlertOpen}
-          />
-        </div>
-      );
-    }
+        </Popover>
+        <Popover
+          open={isCancelPopoverOpen}
+          anchorEl={cancelAppointRef.current}
+          onClose={() => setIsCancelPopoverOpen(false)}
+          classes={{
+            paper: classes.cancelPopover,
+          }}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+        >
+          <AphButton onClick={() => setShowCancelPopup(true)} className={classes.cancelBtn}>
+            Cancel Appointment
+          </AphButton>
+        </Popover>
+        <Alerts
+          setAlertMessage={setAlertMessage}
+          alertMessage={alertMessage}
+          isAlertOpen={isAlertOpen}
+          setIsAlertOpen={setIsAlertOpen}
+        />
+      </div>
+    );
   }
 };
-
-{
-  /* {appointmentDetails.isConsultStarted ? (
-              <div className={classes.bottomActions}>
-                <AphButton className={classes.joinBtn} fullWidth>
-                  Senior Doctor has joined!
-                </AphButton>
-              </div>
-            ) : jrDoctorJoined ? (
-              <div className={classes.bottomActions}>
-                <AphButton className={classes.joinBtn} fullWidth>
-                  Junior Doctor has joined!
-                </AphButton>
-              </div>
-            ) : null} */
-}

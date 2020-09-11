@@ -205,15 +205,15 @@ const saveOrderShipmentInvoice: Resolver<
     }),
     itemDetails: JSON.stringify(
       saveOrderShipmentInvoiceInput.itemDetails.map((item) => {
-        const quantity = item.quantity / item.packSize;
+        const quantity = +new Decimal(item.quantity).dividedBy(item.packSize).toFixed(4);
         return {
           itemId: item.articleCode,
           itemName: item.articleName,
           batchId: item.batch,
-          issuedQty: Number(quantity.toFixed(2)),
+          issuedQty: quantity,
           mou: item.packSize,
-          discountPrice: Number((item.discountPrice / quantity).toFixed(2)),
-          mrp: Number((item.packSize * item.unitPrice).toFixed(2)),
+          discountPrice: +new Decimal(item.discountPrice).dividedBy(quantity).toFixed(4),
+          mrp: +new Decimal(item.packSize).times(item.unitPrice).toFixed(4),
         };
       })
     ),
@@ -240,11 +240,14 @@ const saveOrderShipmentInvoice: Resolver<
 
   if (!unBilledShipments) {
     const invoices = await medicineOrdersRepo.getInvoiceDetailsByOrderId(orderDetails.orderAutoId);
-
+    let deliveryCharges = 0;
     const totalOrderBilling = invoices.reduce(
       (acc: number, curValue: Partial<MedicineOrderInvoice>) => {
         if (curValue.billDetails) {
-          const invoiceValue: number = JSON.parse(curValue.billDetails).invoiceValue;
+          const billDetails = JSON.parse(curValue.billDetails);
+          const invoiceValue = billDetails.invoiceValue;
+
+          deliveryCharges = +new Decimal(deliveryCharges).plus(billDetails.deliveryCharges);
           return +new Decimal(acc).plus(invoiceValue);
         }
         return acc;
@@ -275,7 +278,14 @@ const saveOrderShipmentInvoice: Resolver<
         profilesDb
       );
     }
-    calculateRefund(orderDetails, totalOrderBilling, profilesDb, medicineOrdersRepo);
+    calculateRefund(
+      orderDetails,
+      totalOrderBilling,
+      profilesDb,
+      medicineOrdersRepo,
+      '',
+      deliveryCharges
+    );
   }
 
   //post order billed and packed event event to webEngage

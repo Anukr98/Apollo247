@@ -64,6 +64,8 @@ export interface GetAppointmentData_getAppointmentData_appointmentsHistory {
   appointmentState: APPOINTMENT_STATE | null;
   isJdQuestionsComplete: boolean | null;
   isSeniorConsultStarted: boolean | null;
+  isConsultStarted: boolean | null;
+  symptoms: string | null;
   doctorInfo: GetAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo | null;
 }
 

@@ -14,7 +14,10 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  storagePermissions,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -24,6 +27,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import {
   Alert,
+  Platform,
   SafeAreaView,
   StyleProp,
   StyleSheet,
@@ -31,14 +35,14 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  Platform,
 } from 'react-native';
+import { ActionSheetCustom as ActionSheet } from 'react-native-actionsheet';
 import DocumentPicker, { DocumentPickerResponse } from 'react-native-document-picker';
 import { Overlay } from 'react-native-elements';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
+import ImageResizer from 'react-native-image-resizer';
 import { ScrollView } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
-import ImageResizer from 'react-native-image-resizer';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -117,6 +121,7 @@ export interface UploadPrescriprionPopupProps {
 
 export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  let actionSheetRef: ActionSheet;
 
   const postUPrescriptionWEGEvent = (
     source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
@@ -208,8 +213,8 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   };
 
   const getBase64 = (response: DocumentPickerResponse[]): Promise<string>[] => {
-    return response.map(async ({ fileCopyUri: uri, type }) => {
-      const isPdf = uri.toLowerCase().endsWith('.pdf'); // TODO: check here if valid image by mime
+    return response.map(async ({ fileCopyUri: uri, name: fileName, type }) => {
+      const isPdf = fileName.toLowerCase().endsWith('.pdf'); // TODO: check here if valid image by mime
       uri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
       let compressedImageUri = '';
       if (!isPdf) {
@@ -224,8 +229,15 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   };
 
   const onClickGallery = async () => {
+    if (!props.isProfileImage) {
+      actionSheetRef.show();
+    } else {
+      openGallery();
+    }
+  };
+
+  const onBrowseClicked = async () => {
     postUPrescriptionWEGEvent('Choose Gallery');
-    setshowSpinner(true);
     CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Gallery opened');
 
     const eventAttributes: WebEngageEvents['Upload Photo'] = {
@@ -234,8 +246,10 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     postWebEngageEvent('Upload Photo', eventAttributes);
 
     try {
+      setshowSpinner(true);
+
       const documents = await DocumentPicker.pickMultiple({
-        type: [DocumentPicker.types.allFiles],
+        type: [DocumentPicker.types.pdf],
         copyTo: 'documentDirectory',
       });
 
@@ -272,6 +286,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       );
 
       props.onResponse('CAMERA_AND_GALLERY', formatResponse(base64FormattedArray));
+
       setshowSpinner(false);
     } catch (e) {
       setshowSpinner(false);
@@ -279,6 +294,46 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
       }
     }
+  };
+
+  const openGallery = () => {
+    postUPrescriptionWEGEvent('Choose Gallery');
+    CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Gallery opened');
+
+    const eventAttributes: WebEngageEvents['Upload Photo'] = {
+      Source: 'Gallery',
+    };
+    postWebEngageEvent('Upload Photo', eventAttributes);
+
+    setshowSpinner(true);
+    console.log('openGallery');
+    ImagePicker.openPicker({
+      cropping: true,
+      hideBottomControls: true,
+      width: props.isProfileImage ? 2096 : undefined,
+      height: props.isProfileImage ? 2096 : undefined,
+      includeBase64: true,
+      multiple: props.isProfileImage ? false : true,
+      compressImageQuality: 0.5,
+      compressImageMaxHeight: 2096,
+      compressImageMaxWidth: 2096,
+      writeTempFile: false,
+    })
+      .then((response) => {
+        //console.log('res', response);
+
+        setshowSpinner(false);
+        props.onResponse(
+          'CAMERA_AND_GALLERY',
+          formatResponse(response as ImageCropPickerResponse[]),
+          'Gallery'
+        );
+      })
+      .catch((e: Error) => {
+        CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
+        //aphConsole.log({ e });
+        setshowSpinner(false);
+      });
   };
 
   const isOptionDisabled = (type: EPrescriptionDisableOption) => props.disabledOption == type;
@@ -486,6 +541,12 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     );
   };
 
+  const options = [
+    <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Photo Library</Text>,
+    <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Browse</Text>,
+    <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Cancel</Text>,
+  ];
+
   return (
     <Overlay
       onRequestClose={() => props.onClickClose()}
@@ -539,6 +600,31 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           </ScrollView>
         </SafeAreaView>
         {showSpinner && <Spinner />}
+        <ActionSheet
+          ref={(o: ActionSheet) => (actionSheetRef = o)}
+          title={''}
+          options={options}
+          cancelButtonIndex={2}
+          onPress={(index: number) => {
+            /* do something */
+            console.log('index', index);
+            if (index === 0) {
+              setTimeout(() => {
+                openGallery();
+              }, 100);
+            } else if (index === 1) {
+              setTimeout(() => {
+                if (Platform.OS === 'android') {
+                  storagePermissions(() => {
+                    onBrowseClicked();
+                  });
+                } else {
+                  onBrowseClicked();
+                }
+              }, 100);
+            }
+          }}
+        />
       </View>
     </Overlay>
   );

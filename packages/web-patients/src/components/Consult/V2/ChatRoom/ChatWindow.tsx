@@ -41,7 +41,6 @@ import {
   UpdateAppointmentSession,
   UpdateAppointmentSessionVariables,
 } from 'graphql/types/UpdateAppointmentSession';
-import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
 import {
   GetPastAppointmentsCount,
   GetPastAppointmentsCountVariables,
@@ -56,6 +55,8 @@ import { UploadChatEPrescriptionCard } from 'components/Consult/V2/ChatRoom/Uplo
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { BookAppointmentCard } from 'components/Consult/V2/ChatRoom/BookAppointmentCard';
 import { isPastAppointment } from 'helpers/commonHelpers';
+import { useParams } from 'hooks/routerHooks';
+import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -277,7 +278,7 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: '75px',
         marginBottom: 15,
         borderLeft: '1px solid #00B38E',
-        padding: '0px 0 0px 10px !important',
+        padding: '0px 45px 0px 10px !important',
       },
     },
     consultRoom: {
@@ -593,8 +594,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     modalClose: {
       position: 'absolute',
-      right: 16,
-      top: 16,
+      right: 10,
+      top: 10,
       width: 24,
       height: 24,
       cursor: 'pointer',
@@ -686,7 +687,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     quesSubmitBtn: {
-      marginTop: 40,
+      marginTop: 50,
       background: 'transparent',
       border: 'none',
       cursor: 'pointer',
@@ -819,8 +820,6 @@ interface AutoMessageStrings {
 }
 
 interface ChatWindowProps {
-  appointmentId: string;
-  doctorId: string;
   doctorDetails: DoctorDetails;
   isModalOpen: boolean;
   setIsModalOpen: (isModalOpen: boolean) => void;
@@ -829,7 +828,9 @@ interface ChatWindowProps {
   rescheduleAPI: (bookRescheduleInput: BookRescheduleAppointmentInput) => void;
   jrDoctorJoined: boolean;
   setJrDoctorJoined: (jrDoctorJoined: boolean) => void;
-  setAppointmentStatus: (appointmentStatus: STATUS) => void;
+  setSrDoctorJoined: (srDoctorJoined: boolean) => void;
+  setIsConsultCompleted: (isConsultCompleted: boolean) => void;
+  appointmentDetails: AppointmentHistory;
 }
 
 interface MessagesObjectProps {
@@ -875,8 +876,13 @@ const autoMessageStrings: AutoMessageStrings = {
   patientJoinedMeetingRoom: '^^#patientJoinedMeetingRoom',
 };
 
+type Params = { appointmentId: string; doctorId: string };
+
 export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const classes = useStyles({});
+  const params = useParams<Params>();
+  const { appointmentDetails } = props;
+  const { appointmentId, doctorId } = params;
   const [height, setHeight] = useState<string>('');
   const [weight, setWeight] = useState<string>('');
   const [temperature, setTemperature] = useState<string>('');
@@ -897,24 +903,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [drugAllergyError, setDrugAllergyError] = useState<boolean>(false);
   const [dietAllergyError, setDietAllergyError] = useState<boolean>(false);
   const [bpError, setBpError] = useState<boolean>(false);
-  const [appointmentDetails, setAppointmentDetails] = useState(null);
-  const [autoQuestionsCompleted, setAutoQuestionsCompleted] = useState(false);
+  const [autoQuestionsCompleted, setAutoQuestionsCompleted] = useState(
+    appointmentDetails ? appointmentDetails.isJdQuestionsComplete : false
+  );
   const [userMessage, setUserMessage] = useState<string>('');
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
-  const [appDataLoading, setAppDataLoading] = useState<boolean>(true);
   const [appHistoryLoading, setAppHistoryLoading] = useState<boolean>(true);
   const [consultQMutationLoading, setConsultQMutationLoading] = useState<boolean>(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
-  // const [appointmentsCount, setAppointmentsCount] = useState<any>(null);
   const [doctorInteractionModal, setDoctorInteractionModal] = useState(true);
-
-  // console.log(appointmentsCount, '------------------------');
 
   const { currentPatient } = useAllCurrentPatients();
   const doctorDisplayName = props.doctorDetails.getDoctorDetailsById.displayName;
-  const appointmentId = props.appointmentId;
   const scrollDivRef = useRef(null);
   const apolloClient = useApolloClient();
 
@@ -968,7 +970,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           },
         })
         .then(({ data }) => {
-          res({ urls: data && data.downloadDocuments && data.downloadDocuments.downloadPaths });
+          res({
+            urls: data && data.downloadDocuments && data.downloadDocuments.downloadPaths,
+          });
         })
         .catch((err: any) => {
           console.log(err);
@@ -991,41 +995,47 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   };
 
   // subscribe for any udpates
+
   useEffect(() => {
-    const getAppointmentDetails = (appointmentId: string) => {
-      apolloClient
-        .query<GetAppointmentData, GetAppointmentDataVariables>({
-          query: GET_APPOINTMENT_DATA,
-          variables: {
-            appointmentId: appointmentId,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((response) => {
-          if (
-            response &&
-            response.data.getAppointmentData.appointmentsHistory &&
-            response.data.getAppointmentData.appointmentsHistory.length > 0
-          ) {
-            const isJdCompleted =
-              response.data.getAppointmentData.appointmentsHistory[0].isJdQuestionsComplete;
-            props.setAppointmentStatus(
-              response.data.getAppointmentData.appointmentsHistory[0].status
-            );
-            setAppointmentDetails(response.data.getAppointmentData.appointmentsHistory[0]);
-            setAutoQuestionsCompleted(isJdCompleted);
-            setAppDataLoading(false);
-          }
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    };
+    if (appointmentDetails) {
+      const getPastAppointmentsWithTheDoctor = (
+        doctorId: string,
+        patientId: string,
+        appointmentId: string
+      ) => {
+        setAppHistoryLoading(true);
+        apolloClient
+          .query<GetPastAppointmentsCount, GetPastAppointmentsCountVariables>({
+            query: PAST_APPOINTMENTS_COUNT,
+            variables: {
+              doctorId: doctorId,
+              patientId: patientId,
+              appointmentId: appointmentId,
+            },
+            fetchPolicy: 'no-cache',
+          })
+          .then((response) => {
+            setAppHistoryLoading(false);
+            if (response && response.data && response.data.getPastAppointmentsCount) {
+              const appointmentsCount = response.data.getPastAppointmentsCount;
+              const yesCount = appointmentsCount.yesCount;
+              if (yesCount > 0) {
+                setDoctorInteractionModal(false);
+              } else {
+                setDoctorInteractionModal(true);
+              }
+            }
+          })
+          .catch((e) => {
+            setAppHistoryLoading(false);
+            console.log(e);
+          });
+      };
 
-    if (appointmentId.length > 0) {
-      // get appointment details
-      getAppointmentDetails(appointmentId);
-
+      if (appointmentDetails) {
+        getPastAppointmentsWithTheDoctor(doctorId, currentPatient.id, appointmentDetails.id);
+        // console.log(appointmentDetails, '===========================');
+      }
       // subscribe to channel
       pubnubClient.subscribe({
         channels: [appointmentId],
@@ -1089,61 +1099,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         pubnubClient.unsubscribe({ channels: [appointmentId] });
       };
     }
-  }, [appointmentId]);
-
-  useEffect(() => {
-    const getPastAppointmentsWithTheDoctor = (
-      doctorId: string,
-      patientId: string,
-      appointmentId: string
-    ) => {
-      setAppHistoryLoading(true);
-      apolloClient
-        .query<GetPastAppointmentsCount, GetPastAppointmentsCountVariables>({
-          query: PAST_APPOINTMENTS_COUNT,
-          variables: {
-            doctorId: doctorId,
-            patientId: patientId,
-            appointmentId: appointmentId,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((response) => {
-          setAppHistoryLoading(false);
-          if (response && response.data && response.data.getPastAppointmentsCount) {
-            const appointmentsCount = response.data.getPastAppointmentsCount;
-            const yesCount = appointmentsCount.yesCount;
-            if (yesCount > 0) {
-              setDoctorInteractionModal(false);
-            } else {
-              setDoctorInteractionModal(true);
-            }
-          }
-        })
-        .catch((e) => {
-          setAppHistoryLoading(false);
-          console.log(e);
-        });
-    };
-
-    if (appointmentDetails) {
-      getPastAppointmentsWithTheDoctor(
-        appointmentDetails.doctorId,
-        currentPatient.id,
-        appointmentDetails.id
-      );
-      // console.log(appointmentDetails, '===========================');
-    }
   }, [appointmentDetails]);
-
-  // useEffect(() => {
-  //   // console.log(newMessage, 'new message in useeffect is.......');
-  //   if (Object.keys(newMessage).length > 0) {
-  //     const exisitingMessages = messages;
-  //     exisitingMessages.push(newMessage);
-  //     setMessages([...exisitingMessages]);
-  //   }
-  // }, [newMessage]);
 
   // publish a message to pubnub channel
   const publishMessage = (channelName: string, message: any) => {
@@ -1373,7 +1329,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 if (
                   (heightIn === 'cm' && height.match(/^[0-9]+\.{0,1}[0-9]{0,3}$/)) ||
                   (heightIn === 'ft' &&
-                    height.match(/^[0-9]{1,2}('|’)(?:\s*(?:1[01]|[0-9])(''|"|’’|”))?$/))
+                    height.match(/^[0-9]{1,2}('|’)(?:\s*(?:1[01]|[0-9])(''|"|’’|”))?$/)) ||
+                  !height.length
                 ) {
                   setHeightError(false);
                 } else if (height.length >= 4) {
@@ -1439,7 +1396,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         </Grid>
         {heightError && (
           <FormHelperText component="div" error={true}>
-            Enter height in valid format (eg. 5'8" ft or 172.5 cm)
+            Enter height in valid format (eg. 5'8" ft or 172 cm)
           </FormHelperText>
         )}
       </div>
@@ -1620,6 +1577,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             >
               No
             </AphButton>
+            <AphButton
+              className={`${classes.quesButton}  ${
+                smokeHabit === 'ex-smoker' ? classes.btnActive : ''
+              }`}
+              onClick={() => setSmokeHabit('ex-smoker')}
+            >
+              Ex-Smoker
+            </AphButton>
           </Grid>
           <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
@@ -1630,7 +1595,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   showNextSlide();
                   const composeMessage = {
                     id: currentPatient && currentPatient.id,
-                    message: `Smoke:\n${_startCase(smokeHabit)}`,
+                    message: `Smoke:\n${
+                      smokeHabit === 'ex-smoker' ? 'Ex-Smoker' : _startCase(smokeHabit) // needed for lodash
+                    }`,
                     automatedText: '',
                     duration: '',
                     url: '',
@@ -1639,8 +1606,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     cardType: 'patient',
                   };
                   publishMessage(appointmentId, composeMessage);
-                  if (smokeHabit === 'yes') showNextSlide();
-                  else slickGotoSlide(8);
+                  if (smokeHabit === 'yes') {
+                    showNextSlide();
+                  } else if (smokeHabit === 'ex-smoker') {
+                    setSmokes('Ex-Smoker');
+                    slickGotoSlide(8);
+                  } else {
+                    slickGotoSlide(8);
+                  }
                 }
               }}
             >
@@ -1802,7 +1775,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               className={`${classes.quesButton}  ${smokes === '10' ? classes.btnActive : ''}`}
               onClick={() => setSmokes('10')}
             >
-              &gt; 10
+              &lt; 10
             </AphButton>
             <AphButton
               className={`${classes.quesButton}  ${smokes === '10-20' ? classes.btnActive : ''}`}
@@ -1927,7 +1900,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 if (temperature.length > 0) {
                   const composeMessage = {
                     id: currentPatient && currentPatient.id,
-                    message: `Temperature:\n${temperature}°F`,
+                    message: `Temperature:\n${temperature} ${
+                      temperature !== 'No Idea' ? '°F' : ''
+                    }`,
                     automatedText: '',
                     duration: '',
                     url: '',
@@ -2046,6 +2021,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     );
   };
 
+  console.log(autoQuestionsCompleted);
+
   const showNextSlide = () => {
     sliderRef.current.slickNext();
   };
@@ -2153,9 +2130,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
                   const message =
                     messageDetails && messageDetails.message ? messageDetails.message : '';
-                  if (messageDetails.message === '^^#DocumentUpload') {
-                    console.log(messageDetails);
-                  }
                   if (
                     messageDetails.message === autoMessageStrings.typingMsg ||
                     messageDetails.message === autoMessageStrings.endCallMsg ||
@@ -2165,8 +2139,21 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.stopConsultMsg ||
                     messageDetails.message === autoMessageStrings.startConsultMsg ||
                     messageDetails.message === autoMessageStrings.covertVideoMsg ||
-                    messageDetails.message === autoMessageStrings.covertAudioMsg
+                    messageDetails.message === autoMessageStrings.covertAudioMsg ||
+                    messageDetails.message === autoMessageStrings.appointmentComplete ||
+                    messageDetails.message === autoMessageStrings.jdThankyou ||
+                    messageDetails.message === autoMessageStrings.startConsultjr ||
+                    messageDetails.message === autoMessageStrings.stopConsultJr ||
+                    messageDetails.message === autoMessageStrings.languageQue ||
+                    messageDetails.message === autoMessageStrings.consultPatientStartedMsg ||
+                    messageDetails.message === autoMessageStrings.patientJoinedMeetingRoom
                   ) {
+                    props.setSrDoctorJoined(
+                      messageDetails.message === autoMessageStrings.startConsultMsg
+                    );
+                    props.setIsConsultCompleted(
+                      messageDetails.message === autoMessageStrings.appointmentComplete
+                    );
                     return null;
                   }
                   const duration = messageDetails.duration;
@@ -2180,6 +2167,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         messageDetails={messageDetails}
                         setModalOpen={(flag: boolean) => setModalOpen(flag)}
                         setImgPrevUrl={(url: string) => setImgPrevUrl(url)}
+                        chatTime={messageDetails.messageDate}
+                        doctorName={
+                          (appointmentDetails &&
+                            appointmentDetails.doctorInfo &&
+                            appointmentDetails.doctorInfo.displayName) ||
+                          ''
+                        }
+                        appointmentDetails={appointmentDetails}
                       />
                     );
                   } else {
@@ -2198,15 +2193,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 <span id="scrollDiv" ref={scrollDivRef}></span>
               </Scrollbars>
             </div>
-            {autoQuestionsCompleted ? (
+            {autoQuestionsCompleted ||
+            appointmentDetails.isConsultStarted ||
+            appointmentDetails.isJdQuestionsComplete ? (
               <>
                 {pastAppointment && appointmentDetails && (
                   <BookAppointmentCard
                     doctorName={
-                      (appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.fullName) ||
-                      ''
+                      (appointmentDetails && appointmentDetails.doctorInfo.fullName) || ''
                     }
-                    doctorId={appointmentDetails.doctorId}
+                    doctorId={doctorId}
                   />
                 )}
                 <div className={`${classes.chatWindowFooter} ${classes.chatWindowFooterInput}`}>
@@ -2273,7 +2269,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   </AphButton>
                 </div>
               </>
-            ) : !appDataLoading ? (
+            ) : appointmentDetails ? (
               consultQMutationLoading || appHistoryLoading ? (
                 <div className={classes.circlularProgress}>
                   <CircularProgress />
@@ -2309,7 +2305,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 closeDialog={() => {
                   setIsUploadPreDialogOpen(false);
                 }}
-                appointmentId={props.appointmentId}
+                appointmentId={appointmentId}
                 displayName={doctorDisplayName}
                 setIsEPrescriptionOpen={setIsEPrescriptionOpen}
               />
@@ -2324,7 +2320,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               <AphDialogTitle className={classes.ePrescriptionTitle}>E Prescription</AphDialogTitle>
               <UploadChatEPrescriptionCard
                 setIsEPrescriptionOpen={setIsEPrescriptionOpen}
-                appointmentId={props.appointmentId}
+                appointmentId={appointmentId}
               />
             </AphDialog>
           </div>
@@ -2336,7 +2332,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               <div className={classes.modalWindow}>
                 <div className={classes.modalHeader}>
                   <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
-                    <img src={require('images/ic_round_clear.svg')} alt="" />
+                    <img src={require('images/ic_cross.svg')} alt="" />
                   </div>
                 </div>
                 <div className={classes.modalContent}>
@@ -2351,7 +2347,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         {/* model popup for image preview ends */}
       </div>
       {/* modal popup for doctor interaciton questions */}
-      {!appHistoryLoading ? (
+      {!appHistoryLoading && appointmentDetails.status === STATUS.PENDING ? (
         <Modal open={doctorInteractionModal} onClose={() => setDoctorInteractionModal(false)}>
           <div
             className={
@@ -2384,7 +2380,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         mutationUpdateSaveExternalConnect({
                           variables: {
                             appointmentId: appointmentId,
-                            doctorId: appointmentDetails.doctorId,
+                            doctorId: doctorId,
                             externalConnect: false,
                             patientId: currentPatient && currentPatient.id,
                           },
@@ -2403,7 +2399,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         mutationUpdateSaveExternalConnect({
                           variables: {
                             appointmentId: appointmentId,
-                            doctorId: appointmentDetails.doctorId,
+                            doctorId: doctorId,
                             externalConnect: true,
                             patientId: currentPatient && currentPatient.id,
                           },

@@ -244,7 +244,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
       {recommendedProductsList && recommendedProductsList.length >= 5 ? (
         <>
           <div className={classes.sectionTitle}>
-            <span>Recomended Products</span>
+            <span>RECOMMENDED PRODUCTS</span>
             <div className={classes.viewAllLink}>
               <Link to={clientRoutes.searchByMedicine('shop-by-category', 'recommended-products')}>
                 View All
@@ -307,7 +307,8 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                               id: Number(productList.categoryName),
                               image: imageList,
                               is_in_stock: true,
-                              is_prescription_required: '1',
+                              is_prescription_required:
+                                productList.isPrescriptionNeeded === '0' ? '0' : '1',
                               name: productList.productName,
                               price: Number(productList.productPrice),
                               sku: productList.productSku,
@@ -362,7 +363,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                               },
                             });
                             /**Gtm code End  */
-                            const index = cartItems.findIndex((item) => item.id === cartItem.id);
+                            const index = cartItems.findIndex((item) => item.sku === cartItem.sku);
                             if (index >= 0) {
                               updateCartItem && updateCartItem(cartItem);
                             } else {

@@ -57,7 +57,7 @@ export class AppointmentCallFeedback extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @OneToOne(() => AppointmentCallDetails, (appointmentCallDetailss: AppointmentCallDetails) => appointmentCallDetailss.appointmentCallFeedback)
+    @OneToOne(() => AppointmentCallDetails, (appointmentCallDetails: AppointmentCallDetails) => appointmentCallDetails.appointmentCallFeedback)
     @JoinColumn({ name: 'appointmentCallDetailsId' })
     appointmentCallDetails: AppointmentCallDetails
 
@@ -71,7 +71,7 @@ export class AppointmentCallFeedback extends BaseEntity {
     feedbackResponseType: CALL_FEEDBACK_RESPONSES_TYPES
 
     /* Type JSON of format - 
-    {"audio":[{"responseName":"AUDIO_ECHO"},{"responseName":"OTHER","comment":"Patient voice was muffled"}],"video":[{"responseName":"VIDEO_NOT_CLEAR"},{"responseName":"VIDEO_NOT_RECEIVED"}]} 
+    "{"audio":[{"responseName":"AUDIO_ECHO","responseValue": "Audio echo was heard"},{"responseName":"OTHER","responseValue": "Other","comment":"Patient voice was muffled"}],"video":[{"responseName":"VIDEO_NOT_CLEAR","responseValue": "Video was working but video was not clear"},{"responseName":"VIDEO_NOT_RECEIVED","responseValue":"Patient could not see my video"}]}"
     */
     @Column({ nullable: true, type: 'json' })
     feedbackResponses: string

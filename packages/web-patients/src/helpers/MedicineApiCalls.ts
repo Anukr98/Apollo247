@@ -3,6 +3,7 @@ import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAdd
 import { MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
 import moment from 'moment';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as LatestOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
+import fetchUtil from 'helpers/fetch';
 
 const apiDetails = {
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -251,23 +252,45 @@ export interface GetPackageDataResponse {
 }
 
 export const checkServiceAvailability = (zipCode: string) => {
+  return axios.get(`${process.env.INVENTORY_SYNC_URL}/serviceable?pincode=${zipCode}`, {
+    headers: {
+      Authorization: process.env.INVENTORY_SYNC_TOKEN,
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const checkSkuAvailability = (sku: string, pincode: string) => {
+  return axios.get(`${process.env.INVENTORY_SYNC_URL}/availability?sku=${sku}&pincode=${pincode}`, {
+    headers: {
+      Authorization: process.env.INVENTORY_SYNC_TOKEN,
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const checkTatAvailability = (items: Items[], pincode: string, lat: string, lng: string) => {
   return axios.post(
-    apiDetails.service_url || '',
+    `${process.env.INVENTORY_SYNC_URL}/tat`,
     {
-      postalcode: zipCode || '',
-      skucategory: [
-        {
-          SKU: 'PHARMA',
-        },
-      ],
+      items,
+      pincode,
+      lat,
+      lng,
     },
     {
       headers: {
-        Authorization: apiDetails.authToken,
+        Authorization: process.env.INVENTORY_SYNC_TOKEN,
+        'Content-Type': 'application/json',
       },
     }
   );
 };
+
+export interface Items {
+  sku: string;
+  qty: number;
+}
 
 export interface MedicineOrderBilledItem {
   itemId: string;
@@ -368,9 +391,9 @@ export const reOrderItems = async (
         ({
           id: item,
           date: moment().format('DD MMM YYYY'),
-          doctorName: `Meds Rx ${
-            (orderDetails.id && orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) || ''
-          }`,
+          doctorName: `Meds Rx ${(orderDetails.id &&
+            orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) ||
+            ''}`,
           forPatient: patientName,
           medicines: medicineNames,
           uploadedUrl: item,

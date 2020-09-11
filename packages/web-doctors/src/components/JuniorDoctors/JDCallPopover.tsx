@@ -775,6 +775,7 @@ interface CallPopoverProps {
   isCall: boolean;
   setRejectedByPatientBeforeAnswer: (value: string) => void;
   rejectedByPatientBeforeAnswer: string | null;
+  setGiveRating: (flag: boolean) => void;
 }
 
 let intervalId: any;
@@ -809,6 +810,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     medicationHistory,
     setReferralError,
   } = useContext(CaseSheetContextJrd);
+
+  const exotelCall = '^^#exotelCall';
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
   const videoCallMsg = '^^callme`video^^';
@@ -926,6 +929,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     setShowVideo(false);
     setShowVideoChat(false);
     setPlayRingtone(false);
+    props.setGiveRating(true);
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
     props.isAudioVideoCallEnded(false);
@@ -1289,7 +1293,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== cancelConsultInitiated &&
           message.message.message !== callAbandonment &&
           message.message.message !== appointmentComplete &&
-          message.message.message !== doctorAutoResponse
+          message.message.message !== doctorAutoResponse &&
+          message.message.message !== exotelCall
         ) {
           setIsNewMsg(true);
         } else {
@@ -2229,6 +2234,22 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                       },
                       fetchPolicy: 'no-cache',
                     });
+                    const text = {
+                      id: props.doctorId,
+                      message: exotelCall,
+                      exotelNumber: process.env.EXOTEL_CALLER_ID,
+                      isTyping: true,
+                      messageDate: new Date(),
+                      sentBy: REQUEST_ROLES.JUNIOR,
+                    };
+                    pubnub.publish(
+                      {
+                        message: text,
+                        channel: channel,
+                        storeInHistory: true,
+                      },
+                      (status: any, response: any) => {}
+                    );
                     setShowToastMessage(true);
                   }}
                 >
@@ -2245,6 +2266,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         <div className={showVideo ? '' : classes.audioVideoContainer}>
           {showVideo && (
             <JDConsult
+              setGiveRating={props.setGiveRating}
               toggelChatVideo={() => toggelChatVideo()}
               stopAudioVideoCall={() => stopAudioVideoCall()}
               stopAudioVideoCallpatient={() => stopAudioVideoCallpatient()}

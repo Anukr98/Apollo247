@@ -528,6 +528,11 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
             isActive
           }
         }
+        caseSheet {
+          followUpAfterInDays
+          version
+          doctorType
+        }
       }
     }
   }
@@ -707,6 +712,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       fullName
       displayName
       doctorType
+      chatDays
       qualification
       mobileNumber
       experience
@@ -873,6 +879,8 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
           name
         }
       }
+      apolloDoctorCount
+      partnerDoctorCount
     }
   }
 `;
@@ -929,6 +937,7 @@ export const SAVE_PATIENT_ADDRESS = gql`
         latitude
         longitude
         stateCode
+        name
       }
     }
   }
@@ -951,6 +960,8 @@ export const UPDATE_PATIENT_ADDRESS = gql`
         latitude
         longitude
         stateCode
+        mobileNumber
+        name
       }
     }
   }
@@ -972,6 +983,9 @@ export const GET_PATIENT_ADDRESS_BY_ID = gql`
         city
         state
         zipcode
+        landmark
+        mobileNumber
+        name
       }
     }
   }
@@ -1067,14 +1081,16 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         latitude
         longitude
         stateCode
+        mobileNumber
+        name
       }
     }
   }
 `;
 
-export const GET_CASESHEET_DETAILS = gql`
-  query getCaseSheet($appointmentId: String) {
-    getCaseSheet(appointmentId: $appointmentId) {
+export const GET_SD_LATEST_COMPLETED_CASESHEET_DETAILS = gql`
+  query getSDLatestCompletedCaseSheet($appointmentId: String) {
+    getSDLatestCompletedCaseSheet(appointmentId: $appointmentId) {
       caseSheetDetails {
         appointment {
           id
@@ -1128,6 +1144,8 @@ export const GET_CASESHEET_DETAILS = gql`
           routeOfAdministration
           medicineCustomDosage
           medicineCustomDetails
+          includeGenericNameInPrescription
+          genericName
         }
         notes
         otherInstructions {
@@ -1140,6 +1158,9 @@ export const GET_CASESHEET_DETAILS = gql`
           howOften
           severity
         }
+        referralSpecialtyName
+        referralDescription
+        prescriptionGeneratedDate
       }
       patientDetails {
         id
@@ -2877,6 +2898,8 @@ export const GET_ONEAPOLLO_USER = gql`
       earnedHC
       availableHC
       tier
+      burnedCredits
+      blockedCredits
     }
   }
 `;

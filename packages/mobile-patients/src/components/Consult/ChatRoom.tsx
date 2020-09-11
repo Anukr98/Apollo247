@@ -143,6 +143,7 @@ import {
   g,
   postWebEngageEvent,
   nameFormater,
+  followUpChatDaysCaseSheet,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -370,10 +371,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
 
   let appointmentData: any = props.navigation.getParam('data');
+  const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
+  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+  const followUpAfterInDays =
+    caseSheetChatDays || caseSheetChatDays === '0'
+      ? caseSheetChatDays === '0'
+        ? 0
+        : Number(caseSheetChatDays) - 1
+      : 6;
   const disableChat =
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
-      .add(6, 'days')
+      .add(followUpAfterInDays, 'days')
       .startOf('day')
       .isBefore(moment(new Date()).startOf('day'));
   // console.log('appointmentData >>>>', appointmentData);
@@ -512,6 +521,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   ]);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const [showPDF, setShowPDF] = useState<boolean>(false);
+  const [fileNamePDF, setFileNamePDF] = useState<string>('');
   const [textChange, setTextChange] = useState(false);
   const [sendMessageToDoctor, setSendMessageToDoctor] = useState<boolean>(false);
   const [callerAudio, setCallerAudio] = useState<boolean>(true);
@@ -610,6 +620,48 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         'Download Screen'
       ] = 'Chat';
     }
+    postWebEngageEvent(type, eventAttributes);
+  };
+
+  const consultWebEngageEvents = (
+    type:
+      | WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM
+      | WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM
+      | WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM
+      | WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM
+  ) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM]
+      | WebEngageEvents[WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM]
+      | WebEngageEvents[WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM]
+      | WebEngageEvents[WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM] = {
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Doctor ID': doctorId,
+      'Speciality name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
+      'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
+      'Hospital Name': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'name'
+      )!,
+      'Hospital City': g(
+        appointmentData,
+        'doctorInfo',
+        'doctorHospital',
+        '0' as any,
+        'facility',
+        'city'
+      )!,
+    };
     postWebEngageEvent(type, eventAttributes);
   };
 
@@ -2200,9 +2252,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const successSteps = [
     'Let’s get you feeling better by following simple steps :)\n',
     '1. Answer some quick questions\n',
-    '2. Connect with your doctor\n',
-    '3. Get a prescription and meds, if necessary\n',
-    '4. Chat with your doctor for 7 days\n\n',
+    '2. Please be present in this consult room at the time of consult\n',
+    '3. Connect with your doctor via In-App Audio/Video call\n',
+    '4. Get a prescription and meds, if necessary\n',
+    '5. Follow up via text (valid for 7 days)\n\n',
     `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
   ];
 
@@ -3095,7 +3148,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               {convertChatTime(rowData)}
             </Text>
           </View>
-          {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
+          {/* {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
             <View
               style={{
                 width: 244,
@@ -3221,7 +3274,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 {convertChatTime(rowData)}
               </Text>
             </View>
-          )}
+          )} */}
           {/* {checkReschudule && reschduleLoadView(rowData, index, 'Followup')} */}
         </View>
       </>
@@ -3494,6 +3547,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const openImageZoomViewer = (imageUrl: string, imageName: string) => {
+    props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+      images: [imageUrl],
+      heading: imageName,
+    });
+  };
+
   const openPopUp = (rowData: any) => {
     setLoading(true);
     if (rowData.url.match(/\.(pdf)$/) || rowData.fileType === 'pdf') {
@@ -3508,10 +3568,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           })
           .finally(() => {
             setLoading(false);
+            setFileNamePDF(rowData.fileName || '');
             setShowPDF(true);
           });
       } else {
         setUrl(rowData.url);
+        setFileNamePDF(rowData.fileName || '');
         setLoading(false);
         setShowPDF(true);
       }
@@ -3519,38 +3581,42 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (rowData.prismId) {
         getPrismUrls(client, patientId, rowData.prismId)
           .then((data: any) => {
+            openImageZoomViewer((data && data.urls[0]) || rowData.url, rowData.fileName || 'Image');
             setUrl((data && data.urls[0]) || rowData.url);
           })
           .catch((e) => {
             CommonBugFender('ChatRoom_OPEN_IMAGE', e);
+            openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
             setUrl(rowData.url);
           })
           .finally(() => {
             setLoading(false);
-            setPatientImageshow(true);
+            setPatientImageshow(false);
           });
       } else {
+        openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
         setUrl(rowData.url);
         setLoading(false);
-        setPatientImageshow(true);
+        setPatientImageshow(false);
       }
     } else {
       if (rowData.prismId) {
         getPrismUrls(client, patientId, rowData.prismId)
           .then((data: any) => {
             console.log(data, 'finaldata');
-
+            openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
             setUrl(rowData.url);
             setLoading(false);
-            setPatientImageshow(true);
+            setPatientImageshow(false);
             // Linking.openURL((data && data.urls[0]) || rowData.url).catch((err) =>
             // console.error('An error occurred', err)
             // );
           })
           .catch(() => {
+            openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
             setUrl(rowData.url);
             setLoading(false);
-            setPatientImageshow(true);
+            setPatientImageshow(false);
             //Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
           })
           .finally(() => {
@@ -3558,9 +3624,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setPatientImageshow(true);
           });
       } else {
+        openImageZoomViewer(rowData.url, rowData.fileName || 'Image');
         setUrl(rowData.url);
         setLoading(false);
-        setPatientImageshow(true);
+        setPatientImageshow(false);
         // Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
       }
     }
@@ -5138,6 +5205,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             )}
 
             <Text style={timerStyles}>{callAccepted ? callTimerStarted : 'INCOMING'}</Text>
+            {waitAndEndCall()}
             {patientJoinedCall.current && !subscriberConnected.current && (
               <Text style={styles.centerTxt}>
                 {strings.common.waitForDoctirToJoinCall.replace('doctor_name', doctorName)}
@@ -5509,9 +5577,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             width: width - 116,
           }}
         >
-          {/* <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-            <SpeakerOn style={{ width: 60, height: 60 }} />
-          </TouchableOpacity> */}
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
@@ -5816,6 +5881,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const waitAndEndCall = () => {
+    if (patientJoinedCall.current && !subscriberConnected.current && callMinutes === 5) {
+      handleEndCall();
+    }
+  };
+
   const handleEndCall = () => {
     AsyncStorage.setItem('callDisconnected', 'true');
     setIsCall(false);
@@ -6100,6 +6171,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     id: patientId,
                     message: imageconsult,
                     fileType: item.fileType == 'pdf' ? 'pdf' : 'image',
+                    fileName: item.title + '.' + item.fileType,
                     prismId: recordId,
                     url: (data.urls && data.urls[0]) || '',
                     messageDate: new Date(),
@@ -6255,16 +6327,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
         hideTAndCs={true}
         onClickClose={() => setDropdownVisible(false)}
-        onResponse={(selectedType, response) => {
+        onResponse={(selectedType, response, type) => {
           console.log('res', response);
           setDropdownVisible(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             console.log('ca');
-
+            if (type !== undefined) {
+              if (type === 'Camera')
+                consultWebEngageEvents(WebEngageEventName.TAKE_PHOTO_CLICK_CHATROOM);
+              if (type === 'Gallery')
+                consultWebEngageEvents(WebEngageEventName.GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM);
+            }
             uploadDocument(response, response[0].base64, response[0].fileType);
             //updatePhysicalPrescriptions(response);
           } else {
             setSelectPrescriptionVisible(true);
+            consultWebEngageEvents(WebEngageEventName.UPLOAD_PHR_CLICK_CHATROOM);
           }
         }}
       />
@@ -6286,6 +6364,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
               const url = item.uploadedUrl ? item.uploadedUrl : '';
               const prism = item.prismPrescriptionFileId ? item.prismPrescriptionFileId : '';
+              const fileName = item.fileName ? item.fileName : '';
               // url &&
               //   url.map((item, index) => {
               if (url) {
@@ -6308,9 +6387,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     const text = {
                       id: patientId,
                       message: imageconsult,
-                      fileType: (documentPath ? documentPath : url).match(/\.(pdf)$/)
+                      fileType: fileName
+                        ? fileName.toLowerCase().endsWith('.pdf')
+                          ? 'pdf'
+                          : 'image'
+                        : (documentPath ? documentPath : url).match(/\.(pdf)$/)
                         ? 'pdf'
                         : 'image',
+                      fileName: fileName,
                       prismId: (prismFieldId ? prismFieldId : prism) || '',
                       url: documentPath ? documentPath : url,
                       messageDate: new Date(),
@@ -6713,9 +6797,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     setDropdownVisible(false);
                   }}
                   onFocus={() => setDropdownVisible(false)}
-                  onSubmitEditing={() => {
-                    Keyboard.dismiss();
-                  }}
                   editable={!disableChat}
                 />
                 <View
@@ -6792,6 +6873,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }}
                 onPress={async () => {
                   if (!disableChat) {
+                    consultWebEngageEvents(WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM);
                     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
                     setDropdownVisible(!isDropdownVisible);
                   }
@@ -6830,9 +6912,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     setDropdownVisible(false);
                   }}
                   onFocus={() => setDropdownVisible(false)}
-                  onSubmitEditing={() => {
-                    Keyboard.dismiss();
-                  }}
                   editable={!disableChat}
                 />
                 <View
@@ -7185,13 +7264,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       {showPDF && (
         <RenderPdf
           uri={url}
-          title={
-            url
-              .split('/')
-              .pop()!
-              .split('=')
-              .pop() || 'Document'
-          }
+          title={fileNamePDF || 'Document.pdf'}
           isPopup={true}
           setDisplayPdf={() => {
             setShowPDF(false);

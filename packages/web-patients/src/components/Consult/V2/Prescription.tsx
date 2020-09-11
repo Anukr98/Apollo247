@@ -1,7 +1,14 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, Route } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, LinearProgress, CircularProgress } from '@material-ui/core';
+import {
+  Theme,
+  Typography,
+  LinearProgress,
+  CircularProgress,
+  Modal,
+  Popover,
+} from '@material-ui/core';
 import { Header } from 'components/Header';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
@@ -22,6 +29,7 @@ import {
   MEDICINE_TIMINGS,
   MEDICINE_UNIT,
   MEDICINE_CONSUMPTION_DURATION,
+  MEDICINE_FORM_TYPES,
 } from 'graphql/types/globalTypes';
 import moment from 'moment';
 import _lowerCase from 'lodash/lowerCase';
@@ -33,6 +41,7 @@ import { ShareWidget } from 'components/ShareWidget';
 import { useShoppingCart, MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { readableParam } from 'helpers/commonHelpers';
+import { useMutation } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -261,14 +270,15 @@ const useStyles = makeStyles((theme: Theme) => {
     panelDetails: {
       padding: 0,
       '& p': {
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: 500,
       },
     },
     panelHeading: {
       margin: 0,
-      fontSize: 14,
-      fontWeight: 500,
+      fontSize: 13,
+      fontWeight: 'bold',
+      textTransform: 'uppercase',
     },
     detailsContent: {
       background: '#fff',
@@ -322,7 +332,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '&:last-child': {
         paddingBottom: 0,
-        border: 'none',
+        borderBottom: 'none',
       },
 
       '& a': {
@@ -359,11 +369,17 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'space-between',
       flex: '1 0 auto',
+      width: '75%',
       '& li': {
         fontSize: 14,
         fontWeight: 500,
         color: '#0087BA',
         minWidth: '20%',
+        width: '28%',
+        textAlign: 'left',
+        '&:first-child': {
+          maxWidth: '35%',
+        },
       },
       [theme.breakpoints.down('xs')]: {
         flexDirection: 'column',
@@ -396,17 +412,100 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        marginBottom: 0,
+      },
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 80,
+      },
+    },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    actions: {
+      padding: '0 20px 20px 20px',
+      display: 'flex',
+      '& button': {
+        borderRadius: 10,
+        color: '#fc9916',
+        padding: 0,
+        boxShadow: 'none',
+        '&:last-child': {
+          marginLeft: 'auto',
+        },
+      },
+    },
+    bookConsultBtn: {
+      fontSize: 14,
+      color: '#FC9916',
+      fontWeight: 700,
+      textTransform: 'uppercase',
+      display: 'block',
+      textAlign: 'right',
+      margin: '10px 0 0',
+      boxShadow: 'none',
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    orderButton: {
+      paddingTop: '20px !important',
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    followUpRow: {
+      width: '70% !important',
+    },
   };
 });
 export const Prescription: React.FC = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
+  const mascotRef = useRef(null);
   const { addMultipleCartItems, setEPrescriptionData, ePrescriptionData } = useShoppingCart();
   const params = useParams<{ appointmentId: string }>();
-  const [expanded, setExpanded] = React.useState<string | false>(false);
-  const [showShareWidget, setShowShareWidget] = React.useState<boolean>(false);
-  const [cartItemsLoading, setCartItemsLoading] = React.useState<boolean>(false);
-  const [showInstockItemsPopup, setShowInstockItemsPopup] = React.useState<boolean>(false);
+  const [expanded, setExpanded] = useState<string | false>(false);
+  // const [showShareWidget, setShowShareWidget] = useState<boolean>(false);
+  const [cartItemsLoading, setCartItemsLoading] = useState<boolean>(false);
+  const [showInstockItemsPopup, setShowInstockItemsPopup] = useState<boolean>(false);
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -429,9 +528,9 @@ export const Prescription: React.FC = (props) => {
   const getConsultType = (consultType: string) => {
     switch (consultType) {
       case APPOINTMENT_TYPE.ONLINE:
-        return 'Online';
+        return 'Online Consult';
       case APPOINTMENT_TYPE.PHYSICAL:
-        return 'Physical';
+        return 'Clinic Visit';
       case APPOINTMENT_TYPE.BOTH:
         return 'Both';
     }
@@ -594,7 +693,7 @@ export const Prescription: React.FC = (props) => {
 
             const presToAdd = {
               id: caseSheetDetails.id,
-              uploadedUrl: `${process.env.REACT_APP_CASESHEET_LINK}${caseSheetDetails.blobName}`,
+              uploadedUrl: `${process.env.AZURE_PDF_BASE_URL}${caseSheetDetails.blobName}`,
               forPatient: (currentPatient && currentPatient.firstName) || '',
               date: moment(caseSheetDetails.appointment.appointmentDateTime).format('DD MMM YYYY'),
               medicines: (medicinesAll || [])
@@ -621,6 +720,58 @@ export const Prescription: React.FC = (props) => {
       .finally(() => {
         setCartItemsLoading(false);
       });
+  };
+
+  const getMedicineDescription = (prescription: PrescriptionType) => {
+    const {
+      medicineCustomDetails,
+      medicineToBeTaken,
+      medicineFormTypes,
+      medicineTimings,
+      medicineDosage,
+      medicineUnit,
+      medicineConsumptionDurationInDays,
+      medicineConsumptionDurationUnit,
+      medicineFrequency,
+    } = prescription;
+    const type =
+      medicineFormTypes === MEDICINE_FORM_TYPES.OTHERS && medicineCustomDetails === null
+        ? 'Take'
+        : 'Apply';
+
+    return `${type} ${medicineDosage} ${_lowerCase(medicineUnit)}${
+      type === 'Take' ? '(s)' : ''
+    } ${_lowerCase(medicineFrequency)} ${
+      medicineConsumptionDurationInDays
+        ? `for ${medicineConsumptionDurationInDays} ${
+            medicineConsumptionDurationUnit
+              ? `${medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+              : ``
+          }`
+        : ''
+    } ${
+      medicineToBeTaken && medicineToBeTaken.length
+        ? medicineToBeTaken
+            .map((medicineToTake: MEDICINE_TO_BE_TAKEN) => _lowerCase(medicineToTake || ''))
+            .join(', ')
+        : ''
+    } ${
+      medicineTimings && medicineTimings.length
+        ? `${
+            medicineTimings.includes(MEDICINE_TIMINGS.AS_NEEDED) && medicineTimings.length === 1
+              ? ''
+              : 'in the '
+          }` +
+          (medicineTimings.length > 1
+            ? medicineTimings
+                .slice(0, -1)
+                .map((timing: MEDICINE_TIMINGS | null) => _lowerCase(timing))
+                .join(', ')
+            : medicineTimings
+                .map((timing: MEDICINE_TIMINGS | null) => _lowerCase(timing))
+                .join(', ') + ' ')
+        : ''
+    }`;
   };
 
   return (
@@ -700,17 +851,15 @@ export const Prescription: React.FC = (props) => {
                         />
                       )}
                     </div> */}
-                    <div
-                      className={classes.shareIcon}
-                      onClick={() =>
-                        window.open(
-                          `${process.env.REACT_APP_CASESHEET_LINK}${caseSheetDetails.blobName}`,
-                          '_blank'
-                        )
-                      }
+
+                    <a
+                      href={`${process.env.AZURE_PDF_BASE_URL}${caseSheetDetails.blobName}`}
+                      target="_blank"
                     >
-                      <img src={require('images/ic_download.svg')} alt="download" />
-                    </div>
+                      <div className={classes.shareIcon}>
+                        <img src={require('images/ic_download.svg')} alt="download" />
+                      </div>
+                    </a>
                   </>
                 )}
               </div>
@@ -760,7 +909,7 @@ export const Prescription: React.FC = (props) => {
                         expanded: classes.panelExpanded,
                       }}
                     >
-                      <Typography className={classes.panelHeading}>Medicines</Typography>
+                      <Typography className={classes.panelHeading}>Prescription</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails className={classes.panelDetails}>
                       <div className={classes.detailsContent}>
@@ -770,42 +919,35 @@ export const Prescription: React.FC = (props) => {
                             {caseSheetDetails.medicinePrescription.map((prescription) => (
                               <div className={classes.cdContainer}>
                                 <Typography>{prescription.medicineName}</Typography>
-                                <ul className={classes.consultList}>
-                                  <li>
-                                    {prescription.medicineDosage} {prescription.medicineUnit}
-                                  </li>
-                                  <li>
-                                    {prescription.medicineTimings &&
-                                    prescription.medicineTimings.length
-                                      ? prescription.medicineTimings
-                                          .map((timing: MEDICINE_TIMINGS | null) =>
-                                            _upperFirst(_lowerCase(timing))
-                                          )
-                                          .join(', ') +
-                                        `${
-                                          prescription.medicineToBeTaken &&
-                                          prescription.medicineToBeTaken.length
-                                            ? ', '
-                                            : ''
-                                        }`
-                                      : ''}
-                                    {prescription.medicineToBeTaken &&
-                                    prescription.medicineToBeTaken.length
-                                      ? prescription.medicineToBeTaken
-                                          .map((medicineTobeTaken: MEDICINE_TO_BE_TAKEN) =>
-                                            _upperFirst(_lowerCase(medicineTobeTaken || ''))
-                                          )
-                                          .join(', ') + '.'
-                                      : ''}
-                                  </li>
-                                  <li>{prescription.medicineConsumptionDurationInDays} days</li>
-                                </ul>
+                                {prescription.medicineCustomDetails ? (
+                                  <ul className={classes.consultList}>
+                                    <li>{prescription.medicineCustomDetails}</li>
+                                  </ul>
+                                ) : (
+                                  <ul className={classes.consultList}>
+                                    <li>{getMedicineDescription(prescription)}</li>
+                                    <li>
+                                      {prescription.routeOfAdministration
+                                        ? `To be taken: 
+                                      ${_upperFirst(
+                                        _lowerCase(prescription.routeOfAdministration)
+                                      )}`
+                                        : ''}
+                                    </li>
+                                    <li>
+                                      {prescription.medicineInstructions
+                                        ? `Instructions: ${prescription.medicineInstructions}`
+                                        : ' '}
+                                    </li>
+                                  </ul>
+                                )}
                               </div>
                             ))}
                             <div className={classes.summaryDownloads}>
                               <Route
                                 render={({ history }) => (
                                   <AphButton
+                                    className={classes.orderButton}
                                     onClick={() =>
                                       orderMedicines(caseSheetDetails.medicinePrescription, history)
                                     }
@@ -837,6 +979,35 @@ export const Prescription: React.FC = (props) => {
                         expanded: classes.panelExpanded,
                       }}
                     >
+                      <Typography className={classes.panelHeading}>Prescribed tests</Typography>
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails className={classes.panelDetails}>
+                      <div className={classes.detailsContent}>
+                        {caseSheetDetails.diagnosticPrescription &&
+                        caseSheetDetails.diagnosticPrescription.length > 0
+                          ? caseSheetDetails.diagnosticPrescription.map((prescription) => (
+                              <div className={classes.cdContainer}>
+                                <Typography>{prescription.itemname}</Typography>
+                                {prescription.testInstruction && (
+                                  <p>{prescription.testInstruction}</p>
+                                )}
+                              </div>
+                            ))
+                          : 'No Prescribed Tests'}
+                      </div>
+                    </ExpansionPanelDetails>
+                  </ExpansionPanel>
+
+                  <ExpansionPanel defaultExpanded className={classes.panelRoot}>
+                    <ExpansionPanelSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      classes={{
+                        root: classes.panelHeader,
+                        content: classes.summaryContent,
+                        expandIcon: classes.expandIcon,
+                        expanded: classes.panelExpanded,
+                      }}
+                    >
                       <Typography className={classes.panelHeading}>Diagnosis</Typography>
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails className={classes.panelDetails}>
@@ -853,6 +1024,38 @@ export const Prescription: React.FC = (props) => {
                       </div>
                     </ExpansionPanelDetails>
                   </ExpansionPanel>
+                  {caseSheetDetails &&
+                    caseSheetDetails.referralDescription &&
+                    caseSheetDetails.referralSpecialtyName && (
+                      <ExpansionPanel defaultExpanded className={classes.panelRoot}>
+                        <ExpansionPanelSummary
+                          expandIcon={<ExpandMoreIcon />}
+                          classes={{
+                            root: classes.panelHeader,
+                            content: classes.summaryContent,
+                            expandIcon: classes.expandIcon,
+                            expanded: classes.panelExpanded,
+                          }}
+                        >
+                          <Typography className={classes.panelHeading}>REFERRAL</Typography>
+                        </ExpansionPanelSummary>
+                        <ExpansionPanelDetails className={classes.panelDetails}>
+                          <div className={classes.detailsContent}>
+                            <Typography>{caseSheetDetails.referralSpecialtyName}</Typography>
+                            <Typography>
+                              Reason for Referral : {caseSheetDetails.referralDescription}
+                            </Typography>
+                            <Link
+                              to={clientRoutes.specialties(
+                                readableParam(caseSheetDetails.referralSpecialtyName)
+                              )}
+                            >
+                              Book Appointment
+                            </Link>
+                          </div>
+                        </ExpansionPanelDetails>
+                      </ExpansionPanel>
+                    )}
 
                   <ExpansionPanel defaultExpanded className={classes.panelRoot}>
                     <ExpansionPanelSummary
@@ -896,33 +1099,12 @@ export const Prescription: React.FC = (props) => {
                     <ExpansionPanelDetails className={classes.panelDetails}>
                       <div className={classes.detailsContent}>
                         <div className={classes.cdContainer}>
-                          {caseSheetDetails.followUp &&
-                          caseSheetDetails!.doctorType !== 'JUNIOR' ? (
+                          {caseSheetDetails!.doctorType !== 'JUNIOR' ? (
                             <>
-                              <Typography>
-                                {getConsultType(caseSheetDetails.consultType)}
+                              <Typography className={classes.followUpRow}>
+                                Online Consult/ Clinic Visit with Dr.
+                                {caseSheetDetails.appointment.doctorInfo.displayName}
                               </Typography>
-                              <ul className={classes.consultList}>
-                                {Number(caseSheetDetails.followUpAfterInDays || 0) <= 7 ? (
-                                  <li>
-                                    Recommended after {caseSheetDetails.followUpAfterInDays || 0}{' '}
-                                    days
-                                  </li>
-                                ) : (
-                                  <li>
-                                    Follow up on{' '}
-                                    {moment(caseSheetDetails!.followUpDate).format('DD MMM YYYY')}
-                                  </li>
-                                )}
-                              </ul>
-                              <Link
-                                to={clientRoutes.doctorDetails(
-                                  readableParam(caseSheetDetails.appointment.doctorInfo.fullName),
-                                  caseSheetDetails.doctorId
-                                )}
-                              >
-                                Book Follow Up{' '}
-                              </Link>
                             </>
                           ) : (
                             'No Followup'
@@ -931,34 +1113,6 @@ export const Prescription: React.FC = (props) => {
                       </div>
                     </ExpansionPanelDetails>
                   </ExpansionPanel>
-                  {/* As of now we do not have payment information in API so commenting below code */}
-                  {/* <ExpansionPanel defaultExpanded className={classes.panelRoot}>
-                      <ExpansionPanelSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        classes={{
-                          root: classes.panelHeader,
-                          content: classes.summaryContent,
-                          expandIcon: classes.expandIcon,
-                          expanded: classes.panelExpanded,
-                        }}
-                      >
-                        <Typography className={classes.panelHeading}>
-                          Payment &amp; Invoice
-                        </Typography>
-                      </ExpansionPanelSummary>
-                      <ExpansionPanelDetails className={classes.panelDetails}>
-                        <div className={classes.detailsContent}>
-                          <div className={classes.cdContainer}>
-                            <Typography>Paid — Rs. 299 </Typography>
-                            <ul className={classes.consultList}>
-                              <li>Debit Card</li>
-                              <li>5546 **** **** ***1</li>
-                            </ul>
-                            <Link to="#">Order Summary </Link>
-                          </div>
-                        </div>
-                      </ExpansionPanelDetails>
-                    </ExpansionPanel> */}
                 </>
               )}
             </div>

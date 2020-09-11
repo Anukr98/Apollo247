@@ -9,7 +9,6 @@ import { NotificationListener } from '@aph/mobile-patients/src/components/Notifi
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import {
-  Ambulance,
   CartIcon,
   ConsultationRoom,
   CovidRiskLevel,
@@ -58,7 +57,7 @@ import {
 import {
   GenerateTokenforCM,
   notifcationsApi,
-  pinCodeServiceabilityApi,
+  pinCodeServiceabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import {
@@ -394,9 +393,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   async function isserviceable() {
     if (locationDetails && locationDetails.pincode) {
-      await pinCodeServiceabilityApi(locationDetails.pincode!)
-        .then(({ data: { Availability } }) => {
-          if (Availability) {
+      await pinCodeServiceabilityApi247(locationDetails.pincode!)
+        .then(({ data: { response } }) => {
+          if (response) {
             setserviceable('Yes');
           } else {
             setserviceable('No');

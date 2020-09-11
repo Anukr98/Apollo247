@@ -114,6 +114,8 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_pre
   source: string;
   fileUrl: string;
   prescriptionFiles: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response_prescriptionFiles | null)[] | null;
+  hospital_name: string | null;
+  hospitalId: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions {

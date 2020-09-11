@@ -263,7 +263,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
             </div>
             <div className={classes.doctorName}>{`${doctorInfo.fullName}`}</div>
             <div className={classes.doctorType}>
-              <span title={'Specialty'}>{doctorInfo.specialty.userFriendlyNomenclature}</span>
+              <span title={'Specialty'}>{doctorInfo.specialty.name}</span>
               <span className={classes.doctorExp} title={'Experience'}>
                 {doctorInfo.experience} {doctorInfo.experience === '1' ? 'YR' : 'YRS'} Exp.
               </span>

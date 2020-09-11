@@ -6,7 +6,7 @@ import { History } from 'history';
 import { Header } from 'components/Header';
 import { useApolloClient } from 'react-apollo-hooks';
 
-import { AphSelect, AphButton } from '@aph/web-ui-components';
+import { AphSelect, AphButton, AphInput } from '@aph/web-ui-components';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { ConsultationsCard } from 'components/Consult/V2/ConsultationsCard';
 import { NavigationBottom } from 'components/NavigationBottom';
@@ -45,6 +45,8 @@ import { GetAppointmentData } from 'graphql/types/GetAppointmentData';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as appointmentsHistoryType } from 'graphql/types/GetAppointmentData';
 import { PaymentTransactionStatus_paymentTransactionStatus_appointment as paymentTransactionAppointmentType } from 'graphql/types/PaymentTransactionStatus';
 import _uniq from 'lodash/uniq';
+import FormControl from '@material-ui/core/FormControl';
+import CloseIcon from '@material-ui/icons/Close';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -57,6 +59,12 @@ const useStyles = makeStyles((theme: Theme) => {
     block: {
       display: 'block',
     },
+    tabsContent: {
+      padding: '0 25px',
+      [theme.breakpoints.down('xs')]: {
+        padding: '0 16px',
+      },
+    },
     tabsRoot: {
       backgroundColor: theme.palette.common.white,
       borderRadius: '10px 10px 0 0',
@@ -64,7 +72,6 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 20,
       paddingRight: 20,
       position: 'sticky',
-      margin: '0 15px',
       top: 88,
       zIndex: 5,
       [theme.breakpoints.down('xs')]: {
@@ -103,13 +110,17 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
         borderRadius: 0,
         marginBottom: 0,
+        padding: '10px 0 0 ',
       },
     },
     consultationsHeader: {
-      padding: '10px 40px 30px 40px',
+      padding: '10px 40px',
       '& h1': {
         display: 'flex',
         fontSize: 50,
+        '& span': {
+          padding: '0 0 0 10px',
+        },
         [theme.breakpoints.down('xs')]: {
           fontSize: 30,
         },
@@ -126,7 +137,12 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         color: '#0087ba',
         margin: 0,
-        paddingTop: 10,
+      },
+      [theme.breakpoints.down('xs')]: {
+        padding: '10px 16px',
+        '& p': {
+          fontSize: 14,
+        },
       },
     },
     selectMenuRoot: {
@@ -162,9 +178,7 @@ const useStyles = makeStyles((theme: Theme) => {
     addMemberBtn: {
       boxShadow: 'none',
       backgroundColor: 'transparent',
-      marginLeft: 30,
-      paddingBottom: 0,
-      paddingRight: 0,
+      fontWeight: 700,
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -210,6 +224,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 8,
       borderRadius: 10,
       display: 'flex',
+      [theme.breakpoints.down('xs')]: {
+        minWidth: '100%',
+      },
     },
     mascotIcon: {
       position: 'absolute',
@@ -347,11 +364,20 @@ const useStyles = makeStyles((theme: Theme) => {
       justifyContent: 'center',
     },
     filterIcon: {
-      float: 'right',
-      position: 'relative',
-      top: -8,
-      right: -22,
       cursor: 'pointer',
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        top: -35,
+        right: 0,
+      },
+    },
+    disableIcon: {
+      opacity: 0.7,
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        top: -35,
+        right: 0,
+      },
     },
     modalDialog: {
       display: 'flex',
@@ -365,7 +391,147 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 17,
         lineHeight: '22px',
         fontWeight: 'bold',
-        margin: '45px 0 0 20px',
+        padding: '15px 0 0 15px',
+        margin: 0,
+      },
+    },
+    consultationContent: {
+      display: 'flex',
+      alignItems: 'center',
+      padding: '10px 0',
+      [theme.breakpoints.down('xs')]: {
+        position: 'relative',
+      },
+    },
+    appointmentOptions: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '10px 0',
+      [theme.breakpoints.down('xs')]: {
+        position: 'relative',
+        padding: 0,
+      },
+    },
+    formControl: {
+      width: ' 50%',
+      position: 'relative',
+      margin: '0 0 0 30px',
+      '& img': {
+        position: 'absolute',
+        left: 0,
+        top: 10,
+      },
+      [theme.breakpoints.down('xs')]: {
+        width: 'auto',
+        position: 'static',
+        margin: 0,
+        '& img': {
+          position: 'static',
+          margin: '0 0 0 10px',
+        },
+      },
+    },
+    searchInput: {
+      padding: '0 0 0 30px',
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    searchInputActive: {
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        background: 'white',
+        position: 'absolute',
+        top: 40,
+        left: 0,
+        right: 0,
+        width: '100%',
+        padding: 16,
+        borderRadius: 5,
+        zIndex: 9,
+        boxShadow: '0 0px 5px 0 rgba(0, 0, 0, 0.3)',
+      },
+    },
+    memberOption: {
+      display: 'flex',
+      alignItems: 'center',
+      '& p': {
+        fontSize: 14,
+        color: '#02475B',
+        fontWeight: 500,
+      },
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    mobileMemberOption: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'flex',
+        alignItems: 'center',
+        paddingTop: 10,
+        '& p': {
+          fontSize: 12,
+          color: '#02475B',
+          fontWeight: 500,
+        },
+      },
+    },
+    appliedFilters: {
+      borderRadius: '10px 10px 0 0',
+      boxShadow: '0px 5px 20px rgba(128, 128, 128, 0.3)',
+      background: '#fff',
+      padding: 10,
+      display: 'flex',
+      alignItems: 'center',
+      '& p': {
+        fontSize: 12,
+        fontWeight: 500,
+        textTransform: 'uppercase',
+        padding: '0 10px',
+      },
+      [theme.breakpoints.down('xs')]: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+      },
+    },
+    filterList: {
+      margin: 0,
+      padding: 0,
+      listStyle: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      '& li': {
+        padding: 6,
+      },
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        overflow: 'auto',
+      },
+    },
+    filterBtn: {
+      padding: '7px 10px',
+      background: '#00B38E',
+      fontSize: 10,
+      color: '#fff',
+      fontWeight: 500,
+      borderRadius: 10,
+      display: 'flex',
+      alignItems: 'center',
+      whiteSpace: 'nowrap',
+      '&:hover': {
+        background: '#00B38E',
+        color: '#fff',
+      },
+    },
+    clearFilter: {
+      cursor: 'pointer',
+      lineHeight: '10px',
+      '& svg': {
+        width: 14,
+        height: 14,
+        margin: '0 0 0 10px',
       },
     },
   };
@@ -384,16 +550,14 @@ interface statusMap {
   [name: string]: statusActionInterface;
 }
 
-const initialAppointmentFilterObject: AppointmentFilterObject = {
-  consultType: [],
-  appointmentStatus: [],
-  availability: [],
-  gender: [],
-  doctorsList: [],
-};
-
 export const Appointments: React.FC<AppointmentProps> = (props) => {
   const classes = useStyles({});
+  const initialAppointmentFilterObject: AppointmentFilterObject = {
+    appointmentStatus: [],
+    availability: [],
+    doctorsList: [],
+    specialtyList: [],
+  };
   const pageUrl = window.location.href;
   const urlParams = new URLSearchParams(window.location.search);
   const successApptId = urlParams.get('apptid') ? String(urlParams.get('apptid')) : '';
@@ -411,6 +575,9 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [filteredAppointmentsList, setFilteredAppointmentsList] = React.useState<
     AppointmentsType[] | null
   >(null);
+  const [searchAppointmentList, setSearchAppointmentsList] = React.useState<
+    AppointmentsType[] | null
+  >(null);
   const [specialtyName, setSpecialtyName] = React.useState<string>('');
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -425,12 +592,33 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [paymentData, setPaymentData] = React.useState<paymentTransactionAppointmentType | null>(
     null
   );
-
+  const [filterDoctorsList, setFilterDoctorsList] = React.useState<string[]>([]);
+  const [filterSpecialtyList, setFilterSpecialtyList] = React.useState<string[]>([]);
   const doctorName = doctorDetail && doctorDetail.fullName;
   const readableDoctorname = (doctorName && doctorName.length && readableParam(doctorName)) || '';
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
+  const [selectCurrentUser, setSelectCurrentUser] = React.useState<boolean>(false);
+  const [searchKeyword, setSearchKeyword] = React.useState<string>('');
+  const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
+  const [searchClicked, setSearchClicked] = React.useState<boolean>(false);
 
-  const [filterDoctorsList, setFilterDoctorsList] = React.useState<string[]>([]);
+  useEffect(() => {
+    if (searchKeyword.length > 2) {
+      const doctorsOrSpecialitySearch = filteredAppointmentsList.filter(
+        (appointmentDetail: any) => {
+          return (
+            appointmentDetail.doctorInfo.fullName
+              .toLowerCase()
+              .includes(searchKeyword.toLowerCase()) ||
+            appointmentDetail.doctorInfo.specialty.specialistSingularTerm
+              .toLowerCase()
+              .includes(searchKeyword.toLowerCase())
+          );
+        }
+      );
+      setSearchAppointmentsList(doctorsOrSpecialitySearch);
+    }
+  }, [searchKeyword]);
 
   const getAppointmentHistory = (successApptId: string) => {
     if (!appointmentHistory) {
@@ -566,7 +754,16 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                 ? appointment.doctorInfo.fullName
                 : null;
             });
+            const specialtyList = appointmentsListData.map((appointment: AppointmentsType) => {
+              return appointment &&
+                appointment.doctorInfo &&
+                appointment.doctorInfo.specialty &&
+                appointment.doctorInfo.specialty.name
+                ? appointment.doctorInfo.specialty.name
+                : null;
+            });
             setFilterDoctorsList(doctorsList || []);
+            setFilterSpecialtyList(specialtyList || []);
             setAppointmentsList(appointmentsListData);
             setFilteredAppointmentsList(appointmentsListData);
             setFilter(initialAppointmentFilterObject);
@@ -655,7 +852,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     localFilteredAppointmentsList: AppointmentsType[]
   ) => {
     let finalList: AppointmentsType[] = [];
-    if (appointmentStatus.includes('New')) {
+    if (appointmentStatus.includes('Active')) {
       finalList = localFilteredAppointmentsList.filter(
         (appointment) => appointment.appointmentState === APPOINTMENT_STATE.NEW
       );
@@ -680,7 +877,9 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     }
     if (appointmentStatus.includes('Follow-Up')) {
       const filteredList = localFilteredAppointmentsList.filter(
-        (appointment) => appointment.isFollowUp !== 'false'
+        (appointment) =>
+          appointment.status === STATUS.COMPLETED &&
+          !isPastAppointment(appointment.appointmentDateTime)
       );
       finalList = [...finalList, ...filteredList];
     }
@@ -696,8 +895,8 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       switch (type) {
         case 'doctor':
           return list.includes(appointment.doctorInfo.fullName);
-        case 'gender':
-          return list.includes(appointment.doctorInfo.gender);
+        case 'specialty':
+          return list.includes(appointment.doctorInfo.specialty.name);
         default:
           return false;
       }
@@ -762,25 +961,26 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
         });
         finalList = [...finalList, ...filteredList];
       }
+    } else if (selectedDate) {
+      const filteredList = localFilteredAppointmentsList.filter((appointment) => {
+        return moment(appointment.appointmentDateTime).date() === moment(selectedDate).date();
+      });
+      finalList = [...finalList, ...filteredList];
     }
     return _uniq(finalList);
   };
 
   useEffect(() => {
-    const { consultType, availability, gender, appointmentStatus, doctorsList } = filter;
+    const { availability, appointmentStatus, doctorsList, specialtyList } = filter;
     if (
       filter.appointmentStatus === [] &&
       filter.availability === [] &&
-      filter.consultType === [] &&
       filter.doctorsList === [] &&
-      filter.gender === []
+      filter.specialtyList === []
     ) {
       setFilteredAppointmentsList(appointmentsList || []);
     } else {
       let localFilteredList: AppointmentsType[] = appointmentsList || [];
-      if (consultType.length > 0) {
-        localFilteredList = getConsultTypeFilteredList(consultType, localFilteredList);
-      }
       if (appointmentStatus.length > 0) {
         localFilteredList = getAppointmentStatusFilteredList(appointmentStatus, localFilteredList);
       }
@@ -790,8 +990,8 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
       if (doctorsList.length > 0) {
         localFilteredList = getGenericFilteredList(doctorsList, localFilteredList, 'doctor');
       }
-      if (gender.length > 0) {
-        localFilteredList = getGenericFilteredList(gender, localFilteredList, 'gender');
+      if (specialtyList.length > 0) {
+        localFilteredList = getGenericFilteredList(specialtyList, localFilteredList, 'specialty');
       }
       setFilteredAppointmentsList(localFilteredList);
     }
@@ -803,8 +1003,11 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const followUpAppointments: AppointmentsType[] = [];
   const pastAppointments: AppointmentsType[] = [];
 
-  filteredAppointmentsList &&
-    filteredAppointmentsList.forEach((appointmentDetails) => {
+  const updatedAppointmentList =
+    searchKeyword.length > 2 ? searchAppointmentList : filteredAppointmentsList;
+
+  updatedAppointmentList &&
+    updatedAppointmentList.forEach((appointmentDetails) => {
       if (
         appointmentDetails.status !== STATUS.CANCELLED &&
         !isPastAppointment(appointmentDetails.appointmentDateTime)
@@ -864,6 +1067,38 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
 
+  const { availability, appointmentStatus, doctorsList, specialtyList } = filter;
+  const filterLength =
+    (availability && availability.length) +
+    (appointmentStatus && appointmentStatus.length) +
+    (doctorsList && doctorsList.length) +
+    (specialtyList && specialtyList.length);
+
+  useEffect(() => {
+    filterLength === 0 && setSelectedDate(null);
+  }, [filterLength]);
+
+  const selectOtherMember = (view: string) => {
+    return (
+      <div className={view === 'webDisplay' ? classes.memberOption : classes.mobileMemberOption}>
+        <Typography>View appointments of another member?</Typography>
+        <AphButton
+          color="primary"
+          classes={{ root: classes.addMemberBtn }}
+          onClick={() => setSelectCurrentUser(true)}
+        >
+          Select Member
+        </AphButton>
+      </div>
+    );
+  };
+
+  const tabsOptions = [
+    { label: 'Today', value: 'Active appointments' },
+    { label: 'Upcoming', value: 'Upcoming appointments' },
+    { label: 'Past', value: 'Past appointments' },
+  ];
+
   return (
     <div className={classes.root}>
       <Header />
@@ -875,53 +1110,86 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
             <div className={`${classes.consultationsHeader}`}>
               {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
                 <Typography variant="h1">
-                  <span>hi</span>
-                  <AphSelect
-                    value={currentPatient.id}
-                    onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
-                    classes={{
-                      root: classes.selectMenuRoot,
-                      selectMenu: classes.selectMenuItem,
-                    }}
-                  >
-                    {allCurrentPatients.map((patient) => {
-                      const isSelected = patient.id === currentPatient.id;
-                      const name = isSelected
-                        ? (patient.firstName || '').toLocaleLowerCase()
-                        : (patient.firstName || '').toLocaleLowerCase();
-                      return (
-                        <MenuItem
-                          selected={isSelected}
-                          value={patient.id}
-                          classes={{ selected: classes.menuSelected }}
-                          key={patient.id}
+                  <span>
+                    hi {!selectCurrentUser && currentPatient.firstName}
+                    {!selectCurrentUser && '!'}
+                  </span>
+                  {selectCurrentUser && (
+                    <AphSelect
+                      value={currentPatient.id}
+                      onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
+                      classes={{
+                        root: classes.selectMenuRoot,
+                        selectMenu: classes.selectMenuItem,
+                      }}
+                      open={selectCurrentUser}
+                      onClick={() => {
+                        setSelectCurrentUser(!selectCurrentUser);
+                      }}
+                    >
+                      {allCurrentPatients.map((patient) => {
+                        const isSelected = patient.id === currentPatient.id;
+                        const name = isSelected
+                          ? (patient.firstName || '').toLowerCase()
+                          : (patient.firstName || '').toLowerCase();
+                        return (
+                          <MenuItem
+                            selected={isSelected}
+                            value={patient.id}
+                            classes={{ selected: classes.menuSelected }}
+                            key={patient.id}
+                            onClick={() => {
+                              setSelectCurrentUser(!selectCurrentUser);
+                            }}
+                          >
+                            {name}
+                          </MenuItem>
+                        );
+                      })}
+                      <MenuItem classes={{ selected: classes.menuSelected }} key="addMember">
+                        <AphButton
+                          color="primary"
+                          classes={{ root: classes.addMemberBtn }}
+                          onClick={() => {
+                            setIsAddNewProfileDialogOpen(true);
+                          }}
                         >
-                          {name}
-                        </MenuItem>
-                      );
-                    })}
-                    <MenuItem classes={{ selected: classes.menuSelected }}>
-                      <AphButton
-                        color="primary"
-                        classes={{ root: classes.addMemberBtn }}
-                        onClick={() => {
-                          setIsAddNewProfileDialogOpen(true);
-                        }}
-                      >
-                        Add Member
-                      </AphButton>
-                    </MenuItem>
-                  </AphSelect>
+                          Add Member
+                        </AphButton>
+                      </MenuItem>
+                    </AphSelect>
+                  )}
                 </Typography>
               ) : (
                 <Typography variant="h1">hello there!</Typography>
               )}
-              <p>
-                {filteredAppointmentsList && !mutationLoading && appointmentText()}{' '}
-                <span className={classes.filterIcon} onClick={() => setIsFilterOpen(true)}>
-                  <img src={require('images/ic_filterblack.svg')} alt="" />
-                </span>
-              </p>
+              <div className={classes.consultationContent}>
+                <p>{filteredAppointmentsList && !mutationLoading && appointmentText()} </p>
+                {filteredAppointmentsList && !mutationLoading && (
+                  <FormControl className={classes.formControl}>
+                    <img
+                      src={require('images/ic-search.svg')}
+                      alt="Search Doctors"
+                      onClick={() => setSearchClicked(true)}
+                    />
+                    <AphInput
+                      disabled={appointmentsList && appointmentsList.length === 0}
+                      className={
+                        searchClicked ? `${classes.searchInputActive}` : `${classes.searchInput}`
+                      }
+                      placeholder="Search appointments by Doctor Name or Speciality"
+                      onChange={(e) => {
+                        setSearchKeyword(e.target.value);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          setSearchClicked(false);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                )}
+              </div>
 
               <AphDialog open={isAddNewProfileDialogOpen} maxWidth="sm">
                 <AphDialogClose
@@ -939,44 +1207,133 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                   isProfileDelete={false}
                 />
               </AphDialog>
+
+              <div className={classes.appointmentOptions}>
+                {selectOtherMember('webDisplay')}
+                <div
+                  className={
+                    appointmentsList && appointmentsList.length > 0
+                      ? classes.filterIcon
+                      : classes.disableIcon
+                  }
+                  onClick={() =>
+                    appointmentsList && appointmentsList.length > 0 && setIsFilterOpen(true)
+                  }
+                >
+                  <img src={require('images/ic_filterblack.svg')} alt="" />
+                </div>
+              </div>
             </div>
-            <div>
-              <Tabs
-                value={tabValue}
-                variant="fullWidth"
-                classes={{
-                  root: classes.tabsRoot,
-                  indicator: classes.tabsIndicator,
-                }}
-                onChange={(e, newValue) => {
-                  setTabValue(newValue);
-                }}
-              >
-                <Tab
+            <div className={classes.tabsContent}>
+              {filterLength > 0 ? (
+                <div>
+                  <div className={classes.appliedFilters}>
+                    <Typography>Filters Applied:</Typography>
+                    <ul className={classes.filterList}>
+                      {appointmentStatus.length > 0 &&
+                        appointmentStatus.map((key) => (
+                          <li>
+                            <AphButton className={classes.filterBtn}>
+                              {key}
+                              <div
+                                className={classes.clearFilter}
+                                onClick={() => {
+                                  const appointmentStatus = filter.appointmentStatus.filter(
+                                    (val) => val !== key
+                                  );
+                                  setFilter({ ...filter, appointmentStatus });
+                                }}
+                              >
+                                <CloseIcon />
+                              </div>
+                            </AphButton>
+                          </li>
+                        ))}
+                      {availability.length > 0 &&
+                        availability.map((key) => (
+                          <li>
+                            <AphButton className={classes.filterBtn}>
+                              {key}
+                              <div
+                                className={classes.clearFilter}
+                                onClick={() => {
+                                  const availability = filter.availability.filter(
+                                    (val) => val !== key
+                                  );
+                                  setFilter({ ...filter, availability });
+                                }}
+                              >
+                                <CloseIcon />
+                              </div>
+                            </AphButton>
+                          </li>
+                        ))}
+                      {doctorsList.length > 0 &&
+                        doctorsList.map((key) => (
+                          <li>
+                            <AphButton className={classes.filterBtn}>
+                              {key}
+                              <div
+                                className={classes.clearFilter}
+                                onClick={() => {
+                                  const doctorsList = filter.doctorsList.filter(
+                                    (val) => val !== key
+                                  );
+                                  setFilter({ ...filter, doctorsList });
+                                }}
+                              >
+                                <CloseIcon />
+                              </div>
+                            </AphButton>
+                          </li>
+                        ))}
+                      {specialtyList.length > 0 &&
+                        specialtyList.map((key) => (
+                          <li>
+                            <AphButton className={classes.filterBtn}>
+                              {key}
+                              <div
+                                className={classes.clearFilter}
+                                onClick={() => {
+                                  const specialtyList = filter.specialtyList.filter(
+                                    (val) => val !== key
+                                  );
+                                  setFilter({ ...filter, specialtyList });
+                                }}
+                              >
+                                <CloseIcon />
+                              </div>
+                            </AphButton>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                </div>
+              ) : (
+                <Tabs
+                  value={tabValue}
+                  variant="fullWidth"
                   classes={{
-                    root: classes.tabRoot,
-                    selected: classes.tabSelected,
+                    root: classes.tabsRoot,
+                    indicator: classes.tabsIndicator,
                   }}
-                  label="Today"
-                  title="Today appointments"
-                />
-                <Tab
-                  classes={{
-                    root: classes.tabRoot,
-                    selected: classes.tabSelected,
+                  onChange={(e, newValue) => {
+                    setTabValue(newValue);
                   }}
-                  label="Upcoming"
-                  title={'Upcoming appointments'}
-                />
-                <Tab
-                  classes={{
-                    root: classes.tabRoot,
-                    selected: classes.tabSelected,
-                  }}
-                  label="Past"
-                  title={'Past appointments'}
-                />
-              </Tabs>
+                >
+                  {tabsOptions.map((key) => (
+                    <Tab
+                      classes={{
+                        root: classes.tabRoot,
+                        selected: classes.tabSelected,
+                      }}
+                      label={key.label}
+                      title={key.value}
+                    />
+                  ))}
+                </Tabs>
+              )}
+              {selectOtherMember('mobileDisplay')}
               {tabValue === 0 && (
                 <TabContainer>
                   {todaysAppointments && todaysAppointments.length > 0 ? (
@@ -992,7 +1349,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                       )}
                       {followUpAppointments && followUpAppointments.length > 0 && (
                         <div className={classes.cardContainer}>
-                          <h1>Follow - Up Chat</h1>
+                          <h1>Follow up Text Consult</h1>
                           <ConsultationsCard
                             appointments={followUpAppointments}
                             pastOrCurrent="current"
@@ -1163,6 +1520,9 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
           setFilter={setFilter}
           setIsFilterOpen={setIsFilterOpen}
           filterDoctorsList={filterDoctorsList}
+          filterSpecialtyList={filterSpecialtyList}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
         />
       </Modal>
       <NavigationBottom />
