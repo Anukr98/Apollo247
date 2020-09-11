@@ -1,8 +1,8 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Avatar, Popover } from '@material-ui/core';
 import React from 'react';
-
-import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import format from 'date-fns/format';
+import isToday from 'date-fns/isToday';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -167,10 +167,15 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface DoctorJoinedMessageCardProps {
   doctorName: string;
+  messageDate: string;
 }
 
 export const DoctorJoinedMessageCard: React.FC<DoctorJoinedMessageCardProps> = (props) => {
   const classes = useStyles({});
+  const chatDate = new Date(props.messageDate);
+  const chatTime = isToday(chatDate)
+    ? format(chatDate, 'hh:mm a')
+    : format(chatDate, 'do MMMM yyyy, hh:mm a');
 
   return (
     <div className={classes.doctorCardMain}>
@@ -179,7 +184,7 @@ export const DoctorJoinedMessageCard: React.FC<DoctorJoinedMessageCardProps> = (
       </div>
       <div className={`${classes.blueBubble} ${classes.petient} `}>
         {props.doctorName} has joined the consult room!
-        <div className={classes.chatTime}>07:10 PM</div>
+        <div className={classes.chatTime}>{chatTime}</div>
       </div>
     </div>
   );
