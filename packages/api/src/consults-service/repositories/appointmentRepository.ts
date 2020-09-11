@@ -591,7 +591,9 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getTodaysAppointments(startDate: Date) {
-    const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newStartDate = new Date(
+      format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T' + format(addDays(startDate, -1), 'HH:mm')
+    );
     const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
 
     return this.createQueryBuilder('appointment')
@@ -600,18 +602,15 @@ export class AppointmentRepository extends Repository<Appointment> {
         fromDate: newStartDate,
         toDate: newEndDate,
       })
-      .andWhere(
-        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
-        {
-          status1: STATUS.CANCELLED,
-          status2: STATUS.PAYMENT_PENDING,
-          status3: STATUS.UNAVAILABLE_MEDMANTRA,
-          status4: STATUS.PAYMENT_FAILED,
-          status5: STATUS.PAYMENT_PENDING_PG,
-          status6: STATUS.PAYMENT_ABORTED,
-        }
-      )
+      .andWhere('appointment.status in(:status1,:status2)', {
+        status1: STATUS.PENDING,
+        status2: STATUS.IN_PROGRESS,
+      })
+      .andWhere('appointment."appointmentState" not in(:status1)', {
+        status1: APPOINTMENT_STATE.AWAITING_RESCHEDULE,
+      })
       .orderBy('appointment.doctorId', 'ASC')
+      .orderBy('appointment."appointmentDateTime"', 'ASC')
       .getMany();
   }
 
@@ -698,7 +697,8 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
-        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',        {
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
           status1: STATUS.CANCELLED,
           status2: STATUS.PAYMENT_PENDING,
           status3: STATUS.UNAVAILABLE_MEDMANTRA,
@@ -1553,7 +1553,6 @@ export class AppointmentRepository extends Repository<Appointment> {
               .toString()
               .padStart(2, '0')}:00.000Z`;
           }
-
 
           Array(blockedSlotsCount)
             .fill(0)

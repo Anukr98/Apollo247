@@ -197,7 +197,7 @@ const sendDailyAppointmentSummary: Resolver<
       textInRow(pdfDoc, appointment.patientName, rowx, 30);
       textInRow(
         pdfDoc,
-        format(addMinutes(appointment.appointmentDateTime, +330), 'yyyy-MM-dd hh:mm:ss'),
+        format(addMinutes(appointment.appointmentDateTime, +330), 'hh:mm a, dd MMMM yyyy'),
         rowx,
         201
       );
