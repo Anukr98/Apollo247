@@ -2,6 +2,7 @@ const path = require('path');
 const process = require('process');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
@@ -48,6 +49,10 @@ const plugins = [
     inject: true,
     favicon: './favicon.svg',
     scriptLoading: 'defer',
+  }),
+  new ScriptExtHtmlWebpackPlugin({
+    async: 'npm',
+    defaultAttribute: 'defer',
   }),
   new MomentLocalesPlugin(),
   // new BundleAnalyzerPlugin(),
