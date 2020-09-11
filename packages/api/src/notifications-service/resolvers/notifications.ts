@@ -24,6 +24,7 @@ import PDFDocument from 'pdfkit';
 import { textInRow, writeRow } from 'helpers/uploadFileToBlob';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { Doctor } from 'doctors-service/entities';
+import { getPatientDeeplink } from 'helpers/appsflyer';
 
 type PushNotificationMessage = {
   messageId: string;
@@ -218,7 +219,7 @@ const sendDailyAppointmentSummary: Resolver<
           .lineTo(420, totalAppointments * 30)
           .stroke();
         pdfDoc.end();
-        const fp = `${uploadPath}$${fileName}$${totalAppointments}$${doctorDetails[0].mobileNumber}`;
+        const fp = `${uploadPath}$${fileName}$${totalAppointments}$${doctorDetails[0].mobileNumber}$${doctorDetails[0].firstName}`;
         allpdfs.push(fp);
         prevDoc = appointment.doctorId;
         flag = 0;
@@ -264,14 +265,17 @@ const sendDailyAppointmentSummary: Resolver<
             logContent = blobUrl + '\n';
             fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
             const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
+            const appLink = await getPatientDeeplink(ApiConstants.DOCTOR_APP_APPTS_LINK);
             const templateData: string[] = [
               blobUrl,
               todaysDate + ' Appointments List',
               todaysDate,
               docPdfDetails[2],
+              docPdfDetails[4],
+              appLink,
             ];
             sendDoctorNotificationWhatsapp(
-              ApiConstants.WHATSAPP_DOC_SUMMARY,
+              ApiConstants.WHATSAPP_DOC_SUMMARY_NEW,
               docPdfDetails[3],
               templateData
             );
