@@ -1,3 +1,5 @@
+import { consultWebengageEventsCommonInfo } from 'helpers/commonHelpers';
+
 //PHR Consult & RX
 declare global {
   interface Window {
@@ -851,6 +853,60 @@ export const buyMedicineClickTracking = (result: string) => {
       window.webengage.track('Buy Medicine clicked - web', {
         'Customer ID': result,
       });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+// web consult events
+
+export const goConsultRoomTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track(
+        'Go to consult room clicked (web)',
+        consultWebengageEventsCommonInfo(data)
+      );
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const medicalDetailsFillTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track(
+        'Medical details filled (web)',
+        consultWebengageEventsCommonInfo(data)
+      );
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const callReceiveClickTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track(
+        'Green button on call clicked (web)',
+        consultWebengageEventsCommonInfo(data)
+      );
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const prescriptionReceivedTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track(
+        'Prescription patient received successfully (web)',
+        consultWebengageEventsCommonInfo(data)
+      );
     } catch (err) {
       console.log('WebEngage Err: ', err);
     }

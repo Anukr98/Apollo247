@@ -473,6 +473,56 @@ const HEALTH_RECORDS_NO_DATA_FOUND =
 const HEALTH_RECORDS_NOTE =
   'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
 
+export const consultWebengageEventsInfo = (doctorDetail: any, currentPatient: any) => {
+  const patientAge =
+    new Date().getFullYear() - new Date(currentPatient && currentPatient.dateOfBirth).getFullYear();
+  const doctorAddressDetail =
+    (doctorDetail &&
+      doctorDetail.doctorHospital &&
+      doctorDetail.doctorHospital[0] &&
+      doctorDetail.doctorHospital[0].facility) ||
+    '';
+  return {
+    patientName: (currentPatient && `${currentPatient.firstName} ${currentPatient.lastName}`) || '',
+    PatientUhid: (currentPatient && currentPatient.uhid) || '',
+    doctorName: (doctorDetail && doctorDetail.fullName) || '',
+    specialtyName: (doctorDetail && doctorDetail.specialty.name) || '',
+    doctorId: (doctorDetail && doctorDetail.id) || '',
+    specialtyId: (doctorDetail && doctorDetail.specialty.id) || '',
+    patientGender: (currentPatient && currentPatient.gender) || '',
+    patientAge: (currentPatient && patientAge) || '',
+    hospitalName: (doctorAddressDetail && doctorAddressDetail.name) || '',
+    hospitalCity: (doctorAddressDetail && doctorAddressDetail.city) || '',
+  };
+};
+
+export const consultWebengageEventsCommonInfo = (data: any) => {
+  const {
+    patientName,
+    PatientUhid,
+    doctorName,
+    specialtyName,
+    doctorId,
+    specialtyId,
+    patientGender,
+    patientAge,
+    hospitalName,
+    hospitalCity,
+  } = data;
+  return {
+    'Patient name': patientName,
+    'Patient UHID': PatientUhid,
+    'Doctor Name': doctorName,
+    'Speciality name ': specialtyName,
+    'Doctor ID': doctorId,
+    'Speciality ID': specialtyId,
+    'Patient Gender': patientGender,
+    'Patient Age': patientAge,
+    'Hospital Name': hospitalName,
+    'Hospital City': hospitalCity,
+  };
+};
+
 export {
   HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,

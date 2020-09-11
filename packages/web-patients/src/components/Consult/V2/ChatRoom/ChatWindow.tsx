@@ -54,9 +54,10 @@ import { UploadChatPrescription } from 'components/Consult/V2/ChatRoom/UploadCha
 import { UploadChatEPrescriptionCard } from 'components/Consult/V2/ChatRoom/UploadChatEPrescriptionCard';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { BookAppointmentCard } from 'components/Consult/V2/ChatRoom/BookAppointmentCard';
-import { isPastAppointment } from 'helpers/commonHelpers';
+import { isPastAppointment, consultWebengageEventsInfo } from 'helpers/commonHelpers';
 import { useParams } from 'hooks/routerHooks';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import { medicalDetailsFillTracking, callReceiveClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -919,6 +920,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const doctorDisplayName = props.doctorDetails.getDoctorDetailsById.displayName;
   const scrollDivRef = useRef(null);
   const apolloClient = useApolloClient();
+  const doctorDetail = props.doctorDetails && props.doctorDetails.getDoctorDetailsById;
 
   //AV states
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
@@ -1224,6 +1226,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     startIntervalTimer(0);
     setCookiesAcceptcall();
     setShowVideo(true);
+    const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
+    callReceiveClickTracking(eventInfo);
   };
 
   const mutationResponse = useMutation<UpdateAppointmentSession, UpdateAppointmentSessionVariables>(
@@ -1998,6 +2002,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   })
                     .then((response) => {
                       setAutoQuestionsCompleted(true);
+                      const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
+                      medicalDetailsFillTracking(eventInfo);
                       // console.log(response, 'response after mutation is.....');
                     })
                     .catch((error) => {

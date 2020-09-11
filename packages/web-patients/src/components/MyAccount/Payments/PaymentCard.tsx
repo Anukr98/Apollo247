@@ -13,6 +13,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { GetOrderInvoice } from 'graphql/types/GetOrderInvoice';
 import { STATUS } from 'graphql/types/globalTypes';
+import { string } from 'prop-types';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -403,6 +404,8 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
               doctorDetail={{
                 fullName: cardDetails.doctor.name,
                 doctorHospital: [],
+                specialty: {},
+                id: '',
               }}
               paymentRefId={paymentRefId}
               bookingDateTime={moment(cardDetails.appointmentDateTime)
