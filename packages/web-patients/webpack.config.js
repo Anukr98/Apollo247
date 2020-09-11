@@ -39,6 +39,8 @@ const plugins = [
     filename: 'index.html',
     chunks: ['index']['vendors'],
     template: './index.html',
+    chunksSortMode: 'none',
+
     templateParameters: {
       env: process.env.NODE_ENV,
       licenseCode: process.env.WEBENGAGE_ID,
@@ -197,6 +199,7 @@ module.exports = {
   //   sideEffects: true,
   //   usedExports: true,
   // },
+  plugins,
 
   optimization: isLocal
     ? {
@@ -251,6 +254,4 @@ module.exports = {
         },
       }
     : undefined,
-
-  plugins,
 };
