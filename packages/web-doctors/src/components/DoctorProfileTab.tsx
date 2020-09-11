@@ -694,7 +694,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   </Paper>
                 </Grid>
               )}
-              {doctor.doctorType !== 'PAYROLL' && (
+              {doctor.doctorType !== 'APOLLO' && (
                 <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">In-person Consult Location</Typography>
