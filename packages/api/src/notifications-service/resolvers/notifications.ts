@@ -21,8 +21,9 @@ import {
   sendBrowserNotitication,
 } from 'notifications-service/handlers';
 import PDFDocument from 'pdfkit';
-import { uploadPdfFileToBlobStorage, textInRow, writeRow } from 'helpers/uploadFileToBlob';
+import { textInRow, writeRow } from 'helpers/uploadFileToBlob';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { Doctor } from 'doctors-service/entities';
 
 type PushNotificationMessage = {
   messageId: string;
@@ -311,107 +312,158 @@ const sendAppointmentSummaryOps: Resolver<
   let pdfDoc: PDFKit.PDFDocument; // = new PDFDocument();
   let fileName = '',
     uploadPath = '';
-
-  let blobNames = '';
+  const allPdfs: string[] = [];
+  let fileStream: fs.WriteStream;
   const countOfNotifications = await new Promise<Number>(async (resolve, reject) => {
     let doctorsCount = 0;
     if (allAppts.length == 0) {
       resolve(doctorsCount);
     }
-
-    // let flag = 0;
     let rowHeadx = 90;
     let rowx = 100;
     const docIds: string[] = [];
-    // const allpdfs: string[] = [];
-    let fileStream: fs.WriteStream;
     allAppts.forEach((appt) => {
       docIds.push(appt.doctorId);
     });
     const adminIds: string[] = [];
     //get all admin info of the doctors
-    const allAdminDetails = await doctorRepo.getAllDocAdminsById(docIds);
-    logContent = 'allAdminDetails: ' + allAdminDetails.length.toString() + '\n';
-    fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
-    if (allAdminDetails.length > 0) {
-      //take unique adminids nad push to an array
-      allAdminDetails.forEach((admin) => {
-        logContent =
-          'doc id: ' + admin.id + ', ' + admin.admindoctormapper.length.toString() + '\n';
-        fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
-        if (
-          admin.admindoctormapper.length > 0 &&
-          !adminIds.includes(admin.admindoctormapper[0].adminuser.id)
-        ) {
-          adminIds.push(admin.admindoctormapper[0].adminuser.id);
-        }
-      });
-      //now for each admin id collect the related doctor ids and their appts and write to pdf file
-      adminIds.forEach((adminId) => {
-        doctorsCount++;
-        logContent = 'admin id: ' + adminId;
-        fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
-        fileName = format(new Date(), 'dd-MM-yyyy') + '_' + adminId + '.pdf';
-        uploadPath = assetsDir + '/' + fileName;
-        pdfDoc = new PDFDocument();
-        //console.log('came here', onlineAppointments, fileName);
-        fileStream = fs.createWriteStream(uploadPath);
-        pdfDoc.pipe(fileStream);
-        rowHeadx = 90;
-        rowx = 100;
-        writeRow(pdfDoc, rowHeadx);
-        textInRow(pdfDoc, 'Patient Name', rowx, 30);
-        textInRow(pdfDoc, 'Appointment Date Time', rowx, 201);
-        textInRow(pdfDoc, 'Appt. Type', rowx, 341);
-        textInRow(pdfDoc, 'Display ID', rowx, 441);
-        //get all the doctors associated with the admin id
-        const doctorDetails = allAdminDetails.filter((item) => {
-          if (item.admindoctormapper[0].adminuser.id == adminId) return item;
-        });
-        logContent = doctorDetails.length.toString() + '\n';
-        fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
-        //get appts of above fetched doctors
-        if (doctorDetails.length > 0) {
-          doctorDetails.forEach((adminDoctor) => {
-            logContent = adminDoctor.id + ': \n';
-            fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
-            const docApptDetails = allAppts.filter((item) => {
-              if (item.doctorId == adminDoctor.id) return item;
-            });
-            //now write each appts details to pdf file
-            //console.log(docApptDetails, 'docApptDetails');
-            logContent = docApptDetails.length + ': \n';
-            fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
-            writeRow(pdfDoc, rowHeadx);
-            textInRow(pdfDoc, docApptDetails[0].doctorId, rowx, 30);
-            textInRow(pdfDoc, docApptDetails[0].appointmentDateTime.toString(), rowx, 201);
-            textInRow(pdfDoc, adminDoctor.admindoctormapper[0].id, rowx, 341);
-            textInRow(
-              pdfDoc,
-              adminDoctor.admindoctormapper[0].adminuser.id +
-                '-' +
-                adminDoctor.admindoctormapper[0].adminuser.mobileNumber,
-              rowx,
-              441
-            );
-            rowHeadx += 20;
-            rowx += 18;
-          });
-          pdfDoc.end();
-          logContent = '-------------------------------------- \n';
+    if (docIds.length > 0) {
+      const allAdminDetails = await doctorRepo.getAllDocAdminsById(docIds);
+      logContent = 'allAdminDetails: ' + allAdminDetails.length.toString() + '\n';
+      fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
+      if (allAdminDetails.length > 0) {
+        //take unique adminids nad push to an array
+        allAdminDetails.forEach((admin) => {
+          logContent =
+            'doc id: ' + admin.id + ', ' + admin.admindoctormapper.length.toString() + '\n';
           fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
+          if (
+            admin.admindoctormapper.length > 0 &&
+            !adminIds.includes(admin.admindoctormapper[0].adminuser.id)
+          ) {
+            adminIds.push(admin.admindoctormapper[0].adminuser.id);
+          }
+        });
+        //now for each admin id collect the related doctor ids and their appts and write to pdf file
+        adminIds.forEach((adminId) => {
+          doctorsCount++;
+          logContent = 'admin id: ' + adminId;
+          fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
+          fileName = format(new Date(), 'dd-MM-yyyy-hh-mm-ss') + '_' + adminId + '.pdf';
+          uploadPath = assetsDir + '/' + fileName;
+          pdfDoc = new PDFDocument();
+          //console.log('came here', onlineAppointments, fileName);
+          fileStream = fs.createWriteStream(uploadPath);
+          pdfDoc.pipe(fileStream);
+          rowHeadx = 90;
+          rowx = 100;
+          writeRow(pdfDoc, rowHeadx);
+          textInRow(pdfDoc, 'Patient Name', rowx, 30);
+          textInRow(pdfDoc, 'Appointment Date Time', rowx, 201);
+          textInRow(pdfDoc, 'Appt. Type', rowx, 341);
+          textInRow(pdfDoc, 'Display ID', rowx, 441);
+          //get all the doctors associated with the admin id
+          const doctorDetails: Doctor[] = [];
+          allAdminDetails.filter((item) => {
+            item.admindoctormapper.forEach((docMapper) => {
+              if (docMapper.adminuser.id == adminId) {
+                doctorDetails.push(item);
+              }
+            });
+          });
+          //console.log(adminId, doctorDetails.length, 'adminDocDetails');
+          logContent = doctorDetails.length.toString() + '\n';
+          fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
+          //get appts of above fetched doctors
+          let currentAdminMobNumber = '';
+          let totalAppointments = 0;
+          if (doctorDetails.length > 0) {
+            doctorDetails.forEach((adminDoctor) => {
+              logContent = adminDoctor.id + ': \n';
+              fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
+              const docApptDetails = allAppts.filter((item) => {
+                if (item.doctorId == adminDoctor.id) return item;
+              });
+              logContent = 'appointmentLegth: ' + docApptDetails.length + ': \n';
+              fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
+              totalAppointments = totalAppointments + docApptDetails.length;
+              docApptDetails.forEach((docAppointment) => {
+                rowHeadx += 20;
+                rowx += 18;
+                writeRow(pdfDoc, rowHeadx);
+                textInRow(pdfDoc, docAppointment.patientId.substring(0, 5), rowx, 30);
+                textInRow(
+                  pdfDoc,
+                  format(
+                    addMinutes(docAppointment.appointmentDateTime, +330),
+                    'yyyy-MM-dd hh:mm:ss'
+                  ),
+                  rowx,
+                  201
+                );
+                textInRow(pdfDoc, docAppointment.appointmentType, rowx, 341);
+                textInRow(pdfDoc, docAppointment.displayId.toString(), rowx, 441);
+                currentAdminMobNumber = adminDoctor.admindoctormapper[0].adminuser.mobileNumber;
+              });
+            });
+            pdfDoc.end();
+            const fp = `${uploadPath}$${fileName}$${totalAppointments}$${currentAdminMobNumber}`;
+            allPdfs.push(fp);
+            logContent = '-------------------------------------- \n';
+            fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
+          }
+        });
+        if (doctorsCount == adminIds.length) {
+          fileStream.on('finish', async () => {
+            allPdfs.map(async (pdffile) => {
+              logContent = pdffile + '\n';
+              fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
+              const docPdfDetails: string[] = pdffile.split('$');
+              const client = new AphStorageClient(
+                process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+                process.env.AZURE_STORAGE_CONTAINER_NAME
+              );
+              const pdfFile = await client.uploadPdfFile({
+                name: docPdfDetails[1],
+                filePath: docPdfDetails[0],
+              });
+              const blobUrl = client.getBlobUrl(pdfFile.name);
+              fs.unlinkSync(docPdfDetails[0]);
+              logContent = blobUrl + '\n';
+              fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
+              const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
+              console.log(
+                docPdfDetails[0],
+                docPdfDetails[3],
+                docPdfDetails[2],
+                'finalAdminDetails'
+              );
+              const templateData: string[] = [
+                blobUrl,
+                todaysDate + ' Appointments List',
+                todaysDate,
+                docPdfDetails[2],
+              ];
+              sendDoctorNotificationWhatsapp(
+                ApiConstants.WHATSAPP_DOC_SUMMARY,
+                docPdfDetails[3],
+                templateData
+              );
+            });
+          });
+          resolve(doctorsCount);
         }
-      });
-      if (doctorsCount == adminIds.length) {
+      } else {
         resolve(doctorsCount);
       }
     } else {
       resolve(doctorsCount);
     }
   });
-
-  const final = countOfNotifications + ' - ' + blobNames;
-  return ApiConstants.DAILY_APPOINTMENT_SUMMARY_RESPONSE.replace('{0}', final.toString());
+  return ApiConstants.DAILY_APPOINTMENT_SUMMARY_RESPONSE.replace(
+    '{0}',
+    countOfNotifications.toString()
+  );
 };
 
 const sendFollowUpNotification: Resolver<null, {}, NotificationsServiceContext, string> = async (
