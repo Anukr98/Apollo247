@@ -1,7 +1,4 @@
-import {
-  useAppCommonData,
-  AppCommonDataContextProps,
-} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -206,7 +203,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     couponDiscount,
     coupon,
   } = useDiagnosticsCart();
-  const { locationForDiagnostics, locationDetails } = useAppCommonData();
+  const { locationForDiagnostics } = useAppCommonData();
   const client = useApolloClient();
   const MAX_SLIDER_VALUE = grandTotal;
 
@@ -274,21 +271,29 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const initiateOrder = async () => {
     setShowSpinner(true);
     const { CentreCode, CentreName, City, State, Locality } = diagnosticClinic || {};
-    const { date, Timeslot } = diagnosticSlot || {};
-    const slotTimings = Timeslot || '';
+    const {
+      slotStartTime,
+      slotEndTime,
+      employeeSlotId,
+      date,
+      diagnosticEmployeeCode,
+      // city, // ignore city for now from this and take from "locationForDiagnostics" context
+      diagnosticBranchCode,
+    } = diagnosticSlot || {};
 
-    const { CentreCode, CentreName, City, State, Locality } = diagnosticClinic || {};
-    const { date, Timeslot, TimeslotID } = diagnosticSlot || {};
-    const selectedLocation = (location ||
-      locationForDiagnostics ||
-      {}) as AppCommonDataContextProps['locationForDiagnostics'];
+    const slotTimings = (slotStartTime && slotEndTime
+      ? `${slotStartTime}-${slotEndTime}`
+      : ''
+    ).replace(' ', '');
+    console.log(physicalPrescriptions, 'physical prescriptions');
+
     const orderInfo: DiagnosticOrderInput = {
       // <- for home collection order
-      diagnosticBranchCode: '',
-      diagnosticEmployeeCode: '',
-      employeeSlotId: 0,
+      diagnosticBranchCode: CentreCode ? '' : diagnosticBranchCode!,
+      diagnosticEmployeeCode: diagnosticEmployeeCode || '',
+      employeeSlotId: employeeSlotId! || 0,
       slotTimings: slotTimings,
-      patientAddressId: deliveryAddressId,
+      patientAddressId: deliveryAddressId!,
       // for home collection order ->
       // <- for clinic order
       centerName: CentreName || '',
@@ -297,10 +302,10 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       centerState: State || '',
       centerLocality: Locality || '',
       // for clinic order ->
-      city: selectedLocation!.city!,
-      state: selectedLocation!.state!,
-      stateId: `${selectedLocation!.stateId!}`,
-      cityId: `${selectedLocation!.cityId!}`,
+      city: (locationForDiagnostics || {}).city!,
+      state: (locationForDiagnostics || {}).state!,
+      stateId: `${(locationForDiagnostics || {}).stateId!}`,
+      cityId: `${(locationForDiagnostics || {}).cityId!}`,
       diagnosticDate: moment(date).format('YYYY-MM-DD'),
       prescriptionUrl: [
         ...physicalPrescriptions.map((item) => item.uploadedUrl),

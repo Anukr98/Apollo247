@@ -211,6 +211,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
   const [showLocations, setshowLocations] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState({});
 
   useEffect(() => {
     console.log(locationDetails, 'locationDetails');
