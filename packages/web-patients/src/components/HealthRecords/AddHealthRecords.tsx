@@ -9,7 +9,7 @@ import {
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { AphButton, AphSelect, AphTextField } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
@@ -24,8 +24,16 @@ import {
   AddMedicalRecordInput,
   MedicalRecordType,
   LabResultFileProperties,
+  AddHealthCheckRecordInput,
+  HealthCheckFileProperties,
+  HospitalizationFileProperties,
+  AddHospitalizationRecordInput,
 } from '../../graphql/types/globalTypes';
-import { ADD_MEDICAL_RECORD } from '../../graphql/profiles';
+import {
+  ADD_MEDICAL_RECORD,
+  ADD_HEALTHCHECK_RECORD,
+  ADD_HOSPITALIZATION_RECORD,
+} from '../../graphql/profiles';
 import moment from 'moment';
 import { AphCalendarPastDate } from '../AphCalendarPastDate';
 import { useMutation } from 'react-apollo-hooks';
@@ -36,6 +44,7 @@ import { addRecordClickTracking } from '../../webEngageTracking';
 import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
 import { INVALID_FILE_SIZE_ERROR, toBase64 } from 'helpers/commonHelpers';
+import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -379,36 +388,59 @@ const RecordType: RecordTypeType[] = [
     value: _startCase(_toLower(MedicalRecordType.PRESCRIPTION)).replace('_', ' '),
     key: MedicalRecordType.PRESCRIPTION,
   },
+  {
+    value: _startCase(_toLower(MedicalRecordType.HEALTHCHECK)).replace('_', ' '),
+    key: MedicalRecordType.HEALTHCHECK,
+  },
+  {
+    value: _startCase(_toLower(MedicalRecordType.HOSPITALIZATION)).replace('_', ' '),
+    key: MedicalRecordType.HOSPITALIZATION,
+  },
 ];
 
-export const AddRecords: React.FC = (props) => {
+export const AddHealthRecords: React.FC = (props) => {
   const classes = useStyles({});
   let refFileInput: any = useRef();
-  const [typeOfRecord, setTypeOfRecord] = React.useState<string>('');
-  const [nameOfTest, setNameOfTest] = React.useState<string>('');
-  const [notes, setNotes] = React.useState<string>('');
-  const [observation, setObservation] = React.useState<string>('');
-  const [referringDoctor, setReferringDoctor] = React.useState<string>('');
-  const [doctorIssuedPrescription, setDoctorIssuedPrescription] = React.useState<string>('');
-  const [location, setLocation] = React.useState<string>('');
-  const [uploadedDocuments, setUploadedDocuments] = React.useState<any | null>([]);
-  const [isUploading, setIsUploading] = React.useState<boolean>(false);
-  const [showSpinner, setshowSpinner] = React.useState<boolean>(false);
-  const [medicalRecordParameters, setmedicalRecordParameters] = React.useState<
+  const params = useParams<{
+    type: string;
+  }>();
+  const [typeOfRecord, setTypeOfRecord] = useState<string>(
+    params.type === 'healthCheck'
+      ? MedicalRecordType.HEALTHCHECK
+      : params.type === 'hospitalization'
+      ? MedicalRecordType.HOSPITALIZATION
+      : ''
+  );
+  const [nameOfTest, setNameOfTest] = useState<string>('');
+  const [notes, setNotes] = useState<string>('');
+  const [observation, setObservation] = useState<string>('');
+  const [referringDoctor, setReferringDoctor] = useState<string>('');
+  const [doctorIssuedPrescription, setDoctorIssuedPrescription] = useState<string>('');
+  const [location, setLocation] = useState<string>('');
+  const [uploadedDocuments, setUploadedDocuments] = useState<any | null>([]);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [medicalRecordParameters, setmedicalRecordParameters] = useState<
     AddMedicalRecordParametersInput[]
   >([MedicalRecordInitialValues]);
-  const [showReportDetails, setshowReportDetails] = React.useState<boolean>(false);
-  const [dateOfTest, setdateOfTest] = React.useState<string>('');
-  const [dateOfPrescription, setDateOfPrescription] = React.useState<string>('');
-  const [showCalendar, setShowCalendar] = React.useState<boolean>(false);
-  const [forceRender, setForceRender] = React.useState<boolean>(false);
+  const [showReportDetails, setshowReportDetails] = useState<boolean>(false);
+  const [dateOfTest, setdateOfTest] = useState<string>('');
+  const [dateOfPrescription, setDateOfPrescription] = useState<string>('');
+  const [showCalendar, setShowCalendar] = useState<boolean>(false);
+  const [forceRender, setForceRender] = useState<boolean>(false);
+  const [healthCheckName, setHealthCheckName] = useState<string>('');
+  const [dischargeDate, setDischargeDate] = useState<string>('');
+  const [hospitalName, setHospitalName] = useState<string>('');
+  const [doctorName, setDoctorName] = useState<string>('');
 
-  const [alertMessage, setAlertMessage] = React.useState<string>('');
-  const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const addMedicalRecordMutation = useMutation(ADD_MEDICAL_RECORD);
+  const addHealthCheckRecordMutation = useMutation(ADD_HEALTHCHECK_RECORD);
+  const addHospitalizationRecordMutation = useMutation(ADD_HOSPITALIZATION_RECORD);
 
   const isValid = () => {
     let message = '';
@@ -425,23 +457,42 @@ export const AddRecords: React.FC = (props) => {
         } else if (dateOfPrescription === '') {
           message = 'Enter Date of Prescription';
         }
-      }
-      const parameters = isRecordParameterFilled();
-      if (parameters.length > 0) {
-        const paramsWithInvalidValues = parameters.find(
-          (paramObj: AddMedicalRecordParametersInput) =>
-            paramObj.parameterName === '' || paramObj.minimum >= paramObj.maximum
-        );
-        if (paramsWithInvalidValues) {
-          if (paramsWithInvalidValues.minimum >= paramsWithInvalidValues.maximum) {
-            message = 'Please enter valid Maximum and Minimum';
-          } else {
-            message = 'Please enter valid Parameter Name';
-          }
+      } else if (typeOfRecord === MedicalRecordType.HEALTHCHECK) {
+        if (healthCheckName === '') {
+          message = 'Enter Healthcheck Name';
+        } else if (dateOfTest === '') {
+          message = 'Enter Date of Test';
+        }
+      } else if (typeOfRecord === MedicalRecordType.HOSPITALIZATION) {
+        if (doctorName === '') {
+          message = 'Enter doctor Name';
+        } else if (dischargeDate === '') {
+          message = 'Enter Date of discharge';
+        } else if (hospitalName === '') {
+          message = 'Enter Hospital Name';
         }
       }
-      if ((notes.length > 0 || observation.length > 0) && referringDoctor.length === 0) {
-        message = 'Please Enter Referring doctor ';
+      if (
+        typeOfRecord === MedicalRecordType.PRESCRIPTION ||
+        typeOfRecord === MedicalRecordType.TEST_REPORT
+      ) {
+        const parameters = isRecordParameterFilled();
+        if (parameters.length > 0) {
+          const paramsWithInvalidValues = parameters.find(
+            (paramObj: AddMedicalRecordParametersInput) =>
+              paramObj.parameterName === '' || paramObj.minimum >= paramObj.maximum
+          );
+          if (paramsWithInvalidValues) {
+            if (paramsWithInvalidValues.minimum >= paramsWithInvalidValues.maximum) {
+              message = 'Please enter valid Maximum and Minimum';
+            } else {
+              message = 'Please enter valid Parameter Name';
+            }
+          }
+        }
+        if ((notes.length > 0 || observation.length > 0) && referringDoctor.length === 0) {
+          message = 'Please Enter Referring doctor ';
+        }
       }
     } else {
       message = 'Select the Record Type';
@@ -457,11 +508,11 @@ export const AddRecords: React.FC = (props) => {
       .map((item) => {
         return item !== MedicalRecordInitialValues
           ? {
-            ...item,
-            result: parseFloat(((item && item.result) || 0).toString()),
-            maximum: parseFloat(((item && item.maximum) || 0).toString()),
-            minimum: parseFloat(((item && item.minimum) || 0).toString()),
-          }
+              ...item,
+              result: parseFloat(((item && item.result) || 0).toString()),
+              maximum: parseFloat(((item && item.maximum) || 0).toString()),
+              minimum: parseFloat(((item && item.minimum) || 0).toString()),
+            }
           : undefined;
       })
       .filter((item) => item !== undefined) as AddMedicalRecordParametersInput[];
@@ -545,11 +596,111 @@ export const AddRecords: React.FC = (props) => {
       });
   };
 
+  const callAddingHealthCheckRecord = () => {
+    let inputData: AddHealthCheckRecordInput = {
+      patientId: currentPatient ? currentPatient.id : '',
+      recordType: typeOfRecord as MedicalRecordType,
+      healthCheckName,
+      healthCheckDate: moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+    };
+    if (uploadedDocuments && uploadedDocuments.length > 0) {
+      const item = uploadedDocuments[0];
+      const baseFormatSplitArry = item.baseFormat.split(`;base64,`);
+      const documentFile: HealthCheckFileProperties = {
+        fileName: item.name,
+        mimeType:
+          item.fileType === 'pdf' ? 'application/pdf' : `image/${item.fileType.toLowerCase()}`,
+        content: baseFormatSplitArry[1],
+      };
+      inputData = { ...inputData, healthCheckFiles: [documentFile] };
+    }
+    addHealthCheckRecordMutation({
+      variables: {
+        AddHealthCheckRecordInput: inputData,
+      },
+    })
+      .then(({ data }) => {
+        console.log(data);
+        setshowSpinner(false);
+        setUploadedDocuments([]);
+        refFileInput.current.value = null;
+        /**Gtm code start start */
+        gtmTracking({
+          category: 'Profile',
+          action: 'Record Added',
+          label: `${typeOfRecord} - Self`,
+        });
+        /**Gtm code start start */
+
+        window.location.href = `${clientRoutes.healthRecords()}?active=healthCheck`;
+      })
+      .catch((e) => {
+        setshowSpinner(false);
+        setIsAlertOpen(true);
+        setAlertMessage('Please fill all the details');
+      });
+  };
+
+  const callingAddingHospitalizationRecord = () => {
+    let inputData: AddHospitalizationRecordInput = {
+      patientId: currentPatient ? currentPatient.id : '',
+      recordType: typeOfRecord as MedicalRecordType,
+      dischargeDate: moment(dischargeDate, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+      hospitalName,
+      doctorName,
+    };
+    if (uploadedDocuments && uploadedDocuments.length > 0) {
+      const item = uploadedDocuments[0];
+      const baseFormatSplitArry = item.baseFormat.split(`;base64,`);
+      const documentFile: HospitalizationFileProperties = {
+        fileName: item.name,
+        mimeType:
+          item.fileType === 'pdf' ? 'application/pdf' : `image/${item.fileType.toLowerCase()}`,
+        content: baseFormatSplitArry[1],
+      };
+      inputData = { ...inputData, hospitalizationFiles: [documentFile] };
+    }
+    addHospitalizationRecordMutation({
+      variables: {
+        AddHospitalizationRecordInput: inputData,
+      },
+    })
+      .then(({ data }) => {
+        console.log(data);
+        setshowSpinner(false);
+        setUploadedDocuments([]);
+        refFileInput.current.value = null;
+        /**Gtm code start start */
+        gtmTracking({
+          category: 'Profile',
+          action: 'Record Added',
+          label: `${typeOfRecord} - Self`,
+        });
+        /**Gtm code start start */
+
+        window.location.href = `${clientRoutes.healthRecords()}?active=hospitalization`;
+      })
+      .catch((e) => {
+        setshowSpinner(false);
+        setIsAlertOpen(true);
+        setAlertMessage('Please fill all the details');
+      });
+  };
+
   const saveRecord = () => {
     const valid = isValid();
     if (valid.message.length === 0) {
       setshowSpinner(true);
-      callAddingRecord();
+      if (
+        typeOfRecord === MedicalRecordType.TEST_REPORT ||
+        typeOfRecord === MedicalRecordType.PRESCRIPTION
+      ) {
+        callAddingRecord();
+      } else if (typeOfRecord === MedicalRecordType.HEALTHCHECK) {
+        callAddingHealthCheckRecord();
+      } else if (typeOfRecord === MedicalRecordType.HOSPITALIZATION) {
+        callingAddingHospitalizationRecord();
+      }
     } else {
       setIsAlertOpen(true);
       setAlertMessage(valid.message);
@@ -565,8 +716,8 @@ export const AddRecords: React.FC = (props) => {
     if (!isNaN(parseFloat(value))) {
       let number =
         value.indexOf('.') === value.length - 1 ||
-          value.indexOf('0', value.length - 1) === value.length - 1 ||
-          value.indexOf('-') === value.length - 1
+        value.indexOf('0', value.length - 1) === value.length - 1 ||
+        value.indexOf('-') === value.length - 1
           ? value
           : parseFloat(value);
       return number || 0;
@@ -624,31 +775,31 @@ export const AddRecords: React.FC = (props) => {
                     <Grid container spacing={2}>
                       {!isUploading && uploadedDocuments && uploadedDocuments.length > 0
                         ? uploadedDocuments.map((doc: any) => (
-                          <Grid item sm={4} className={classes.gridWidth}>
-                            <div className={classes.uploadedImage}>
-                              <div className={classes.docImg}>
-                                <img src={doc.imageUrl} alt="" />
-                              </div>
-                              <div className={classes.documentDetails}>
-                                <span>{doc.name}</span>
-                                <div className={classes.removeBtn}>
-                                  <AphButton>
-                                    <img
-                                      src={require('images/ic_cross_onorange_small.svg')}
-                                      alt=""
-                                      onClick={() => {
-                                        const docsWithoutSelectedDoc = uploadedDocuments.filter(
-                                          (document: any) => document.name !== doc.name
-                                        );
-                                        setUploadedDocuments(docsWithoutSelectedDoc);
-                                      }}
-                                    />
-                                  </AphButton>
+                            <Grid item sm={4} className={classes.gridWidth}>
+                              <div className={classes.uploadedImage}>
+                                <div className={classes.docImg}>
+                                  <img src={doc.imageUrl} alt="" />
+                                </div>
+                                <div className={classes.documentDetails}>
+                                  <span>{doc.name}</span>
+                                  <div className={classes.removeBtn}>
+                                    <AphButton>
+                                      <img
+                                        src={require('images/ic_cross_onorange_small.svg')}
+                                        alt=""
+                                        onClick={() => {
+                                          const docsWithoutSelectedDoc = uploadedDocuments.filter(
+                                            (document: any) => document.name !== doc.name
+                                          );
+                                          setUploadedDocuments(docsWithoutSelectedDoc);
+                                        }}
+                                      />
+                                    </AphButton>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </Grid>
-                        ))
+                            </Grid>
+                          ))
                         : null}
 
                       <Grid item sm={4} className={classes.gridWidth}>
@@ -766,18 +917,32 @@ export const AddRecords: React.FC = (props) => {
                           </AphSelect>
                         </div>
                       </Grid>
-                      {typeOfRecord === MedicalRecordType.TEST_REPORT && (
+                      {(typeOfRecord === MedicalRecordType.TEST_REPORT ||
+                        typeOfRecord === MedicalRecordType.HEALTHCHECK) && (
                         <>
                           <Grid item sm={6} className={classes.gridWidth}>
-                            <div className={classes.formGroup}>
-                              <label>Name Of Test</label>
-                              <AphTextField
-                                disabled={showSpinner}
-                                value={nameOfTest}
-                                onChange={(e) => setNameOfTest(e.target.value)}
-                                placeholder="Enter name of test"
-                              />
-                            </div>
+                            {typeOfRecord === MedicalRecordType.TEST_REPORT && (
+                              <div className={classes.formGroup}>
+                                <label>Name Of Test</label>
+                                <AphTextField
+                                  disabled={showSpinner}
+                                  value={nameOfTest}
+                                  onChange={(e) => setNameOfTest(e.target.value)}
+                                  placeholder="Enter name of test"
+                                />
+                              </div>
+                            )}
+                            {typeOfRecord === MedicalRecordType.HEALTHCHECK && (
+                              <div className={classes.formGroup}>
+                                <label>Name Of Health Check</label>
+                                <AphTextField
+                                  disabled={showSpinner}
+                                  value={healthCheckName}
+                                  onChange={(e) => setHealthCheckName(e.target.value)}
+                                  placeholder="Enter name of health check"
+                                />
+                              </div>
+                            )}
                           </Grid>
                           <Grid item sm={6} className={classes.gridWidth}>
                             <div className={classes.formGroup}>
@@ -849,9 +1014,221 @@ export const AddRecords: React.FC = (props) => {
                           </Grid>
                         </>
                       )}
+                      {typeOfRecord === MedicalRecordType.HOSPITALIZATION && (
+                        <>
+                          <Grid item sm={6} className={classes.gridWidth}>
+                            <div className={classes.formGroup}>
+                              <label>Name Of Doctor</label>
+                              <AphTextField
+                                disabled={showSpinner}
+                                value={doctorName}
+                                onChange={(e) => setDoctorName(e.target.value)}
+                                placeholder="Enter doctor name"
+                              />
+                            </div>
+                          </Grid>
+                          <Grid item sm={6} className={classes.gridWidth}>
+                            <div className={classes.formGroup}>
+                              <label>Date Of Discharge</label>
+                              <AphTextField
+                                disabled={showSpinner}
+                                value={dischargeDate}
+                                onFocus={() => setShowCalendar(true)}
+                                placeholder="dd/mm/yyyy"
+                              />
+                              {showCalendar && (
+                                <AphCalendarPastDate
+                                  getDate={(dateSelected: string) => {
+                                    setDischargeDate(dateSelected);
+                                    setShowCalendar(false);
+                                  }}
+                                  selectedDate={
+                                    dischargeDate.length > 0 ? new Date(dischargeDate) : new Date()
+                                  }
+                                />
+                              )}
+                            </div>
+                          </Grid>
+                          <Grid item sm={6} className={classes.gridWidth}>
+                            <div className={classes.formGroup}>
+                              <label>Name Of Hospital</label>
+                              <AphTextField
+                                disabled={showSpinner}
+                                value={hospitalName}
+                                onChange={(e) => setHospitalName(e.target.value)}
+                                placeholder="Enter Hospital Name"
+                              />
+                            </div>
+                          </Grid>
+                        </>
+                      )}
                     </Grid>
                   </ExpansionPanelDetails>
                 </ExpansionPanel>
+                {(typeOfRecord === MedicalRecordType.TEST_REPORT ||
+                  typeOfRecord === MedicalRecordType.PRESCRIPTION ||
+                  typeOfRecord === '') && (
+                  <ExpansionPanel
+                    className={classes.panelRoot}
+                    defaultExpanded={expanded === 'report'}
+                    onChange={handleChange('report')}
+                  >
+                    <ExpansionPanelSummary
+                      expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
+                      classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
+                    >
+                      Report Details (Optional)
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails className={classes.panelDetails}>
+                      {/* click on Add Parameters button this section will be repeat */}
+
+                      <div className={classes.formGroupHeader}>Parameters</div>
+                      {medicalRecordParameters.map((record: any, idx: number) => (
+                        <div className={classes.formGroupContent}>
+                          <Grid container spacing={2}>
+                            <Grid item sm={6} className={classes.gridWidth}>
+                              <div className={classes.formGroup}>
+                                <label>Name Of Parameter</label>
+                                <AphTextField
+                                  disabled={showSpinner}
+                                  value={record.parameterName}
+                                  onChange={(e) => {
+                                    setParametersData('parameterName', e.target.value, idx);
+                                  }}
+                                  placeholder="Enter name"
+                                />
+                              </div>
+                            </Grid>
+                            <Grid item sm={6} className={classes.gridWidth}>
+                              <div className={classes.formGroup}>
+                                <label>Result</label>
+                                <AphTextField
+                                  disabled={showSpinner}
+                                  value={record.result}
+                                  onChange={(e) => setParametersData('result', e.target.value, idx)}
+                                  placeholder="Enter value"
+                                />
+                              </div>
+                            </Grid>
+                            <Grid item sm={6} className={classes.gridWidth}>
+                              <div className={classes.formGroup}>
+                                <label>Unit</label>
+                                <AphSelect
+                                  disabled={showSpinner}
+                                  value={record.unit}
+                                  onChange={(e) => {
+                                    setParametersData('unit', e.target.value as string, idx);
+                                  }}
+                                  MenuProps={{
+                                    classes: { paper: classes.menuPopover },
+                                    anchorOrigin: {
+                                      vertical: 'top',
+                                      horizontal: 'right',
+                                    },
+                                    transformOrigin: {
+                                      vertical: 'top',
+                                      horizontal: 'right',
+                                    },
+                                  }}
+                                >
+                                  {MedicalTest.map((test: any) => (
+                                    <MenuItem
+                                      value={test.key}
+                                      classes={{ selected: classes.menuSelected }}
+                                    >
+                                      {test.value}
+                                    </MenuItem>
+                                  ))}
+                                </AphSelect>
+                              </div>
+                            </Grid>
+                          </Grid>
+                          <Grid container spacing={2}>
+                            <Grid item sm={6} className={classes.gridWidth}>
+                              <div className={classes.formGroup}>
+                                <label>Min</label>
+                                <AphTextField
+                                  disabled={showSpinner}
+                                  value={record.minimum}
+                                  onChange={(e) =>
+                                    setParametersData('minimum', e.target.value, idx)
+                                  }
+                                  placeholder="Enter value"
+                                />
+                              </div>
+                            </Grid>
+                            <Grid item sm={6} className={classes.gridWidth}>
+                              <div className={classes.formGroup}>
+                                <label>Max</label>
+                                <AphTextField
+                                  disabled={showSpinner}
+                                  value={record.maximum}
+                                  onChange={(e) =>
+                                    setParametersData('maximum', e.target.value, idx)
+                                  }
+                                  placeholder="Enter value"
+                                />
+                              </div>
+                            </Grid>
+                          </Grid>
+                        </div>
+                      ))}
+                      {/*Parameters Group end here */}
+                      <div className={classes.formBottomActions}>
+                        <AphButton
+                          disabled={showSpinner}
+                          onClick={() => {
+                            const dataCopy = [...medicalRecordParameters];
+                            dataCopy.push(MedicalRecordInitialValues);
+                            setmedicalRecordParameters(dataCopy);
+                          }}
+                        >
+                          Add Parameter
+                        </AphButton>
+                      </div>
+                      <div className={classes.observationDetails}>
+                        <div className={classes.formGroupHeader}>Observation Details</div>
+                        <div className={`${classes.formGroupContent} ${classes.formGroupLast}`}>
+                          <Grid container spacing={2}>
+                            <Grid item sm={6} className={classes.gridWidth}>
+                              <div className={classes.formGroup}>
+                                <label>Referring Doctor</label>
+                                <AphTextField
+                                  disabled={showSpinner}
+                                  value={referringDoctor}
+                                  onChange={(e) => setReferringDoctor(e.target.value)}
+                                  placeholder="Enter name"
+                                />
+                              </div>
+                            </Grid>
+                            <Grid item sm={6} className={classes.gridWidth}>
+                              <div className={classes.formGroup}>
+                                <label>Observations / Impressions</label>
+                                <AphTextField
+                                  disabled={showSpinner}
+                                  value={observation}
+                                  onChange={(e) => setObservation(e.target.value)}
+                                  placeholder="Enter observations"
+                                />
+                              </div>
+                            </Grid>
+                            <Grid item sm={6} className={classes.gridWidth}>
+                              <div className={classes.formGroup}>
+                                <label>Additional Notes</label>
+                                <AphTextField
+                                  disabled={showSpinner}
+                                  value={notes}
+                                  onChange={(e) => setNotes(e.target.value)}
+                                  placeholder="Enter notes"
+                                />
+                              </div>
+                            </Grid>
+                          </Grid>
+                        </div>
+                      </div>
+                    </ExpansionPanelDetails>
+                  </ExpansionPanel>
+                )}
               </div>
             </Scrollbars>
             <div className={classes.pageBottomActions}>
@@ -874,153 +1251,3 @@ export const AddRecords: React.FC = (props) => {
     </div>
   );
 };
-
-// base64FileInput: baseFormatSplitArry[1],
-// category:
-//   typeOfRecord === 'PRESCRIPTION'
-//     ? PRISM_DOCUMENT_CATEGORY.OpSummary
-//     : PRISM_DOCUMENT_CATEGORY.TestReports,
-// fileType: item.fileType === 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
-// patientId: currentPatient && currentPatient.id,
-
-// multiplePhysicalPrescriptionUpload(uploadedDocuments)
-//   .then((data) => {
-//     const uploadUrlscheck = data.map(({ data }: any) =>
-//       data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
-//     );
-//     const filtered = uploadUrlscheck.filter(function (el) {
-//       return el != null;
-//     });
-//     if (filtered.length > 0) {
-//       const inputData = {
-//         patientId: currentPatient ? currentPatient.id : '',
-//         testName: nameOfTest,
-//         issuingDoctor: doctorIssuedPrescription,
-//         location,
-//         testDate:
-//           dateOfTest !== ''
-//             ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD')
-//             : dateOfPrescription !== ''
-//             ? moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD')
-//             : '',
-//         recordType: typeOfRecord,
-//         referringDoctor: referringDoctor,
-//         sourceName: '',
-//         observations: observation,
-//         additionalNotes: notes,
-//         medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
-//         documentURLs: filtered.map((item) => item.filePath).join(','),
-//         prismFileIds: filtered.map((item) => item.fileId).join(','),
-//       };
-//       if (uploadUrlscheck.length > 0) {
-//         addMedicalRecordMutation({
-//           variables: {
-//             AddMedicalRecordInput: inputData,
-//           },
-//         })
-//           .then(({ data }) => {
-//             setshowSpinner(false);
-//             setUploadedDocuments([]);
-//             refFileInput.current.value = null;
-//             /**Gtm code start start */
-//             gtmTracking({
-//               category: 'Profile',
-//               action: 'Record Added',
-//               label: `${typeOfRecord} - Self`,
-//             });
-//             /**Gtm code start start */
-//             window.location.href = `${clientRoutes.healthRecords()}?active=medical`;
-//           })
-//           .catch((e) => {
-//             setshowSpinner(false);
-//             setIsAlertOpen(true);
-//             setAlertMessage('Please fill all the details');
-//           });
-//       } else {
-//         setshowSpinner(false);
-//         setIsAlertOpen(true);
-//         setAlertMessage('An error occurred while loading the image.');
-//       }
-//     } else {
-//       setshowSpinner(false);
-//       setIsAlertOpen(true);
-//       setAlertMessage('An error occurred while uploading the image.');
-//     }
-//   })
-//   .catch((e) => {
-//     setshowSpinner(false);
-//     setIsAlertOpen(true);
-//     setAlertMessage('An error occurred while uploading the image.');
-//   });
-/////////////////////////
-
-// const uploadLabOrPrescriptionResults = (prescriptions: PickerImage[]) => {
-// const item = prescriptions[0];
-// const baseFormatSplitArry = item.baseFormat.split(`;base64,`);
-
-// if (typeOfRecord === MedicRecordType.TEST_REPORT) {
-//   // call upload labResults
-//   return uploadLabResultMutation({
-//     fetchPolicy: 'no-cache',
-//     variables: {
-//       labResultsInput: {
-//         labTestName: nameOfTest,
-//         labTestDate: moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD'),
-//         labTestRefferedBy: referringDoctor,
-//         observation: observation,
-//         // identifier:,
-//         additionalNotes: notes,
-//         labTestResults: showReportDetails ? getRecordParameters() : [],
-//         testResultFiles: [
-//           {
-//             fileName: item.name,
-//             mimeType:
-//               item.fileType === 'pdf'
-//                 ? 'application/pdf'
-//                 : `image/${item.fileType.toUpperCase()}`,
-//             content: baseFormatSplitArry[1],
-//           },
-//         ],
-//       },
-//       uhid: currentPatient && currentPatient.uhid,
-//     },
-//   });
-// } else {
-//   // upload prescriptionResults
-//   return uploadPrescriptionMutation({
-//     fetchPolicy: 'no-cache',
-//     variables: {
-//       prescriptionInput: {
-//         prescribedBy: doctorIssuedPrescription,
-//         dateOfPrescription: moment(dateOfPrescription, 'DD/MM/YYYY').format('YYYY-MM-DD'),
-//         startDate: null,
-//         endDate: null,
-//         prescriptionSource: prescriptionSource.SELF,
-//         prescriptionFiles: [
-//           {
-//             fileName: item.name,
-//             mimeType:
-//               item.fileType === 'pdf'
-//                 ? 'application/pdf'
-//                 : `image/${item.fileType.toLowerCase()}`,
-//             content: baseFormatSplitArry[1],
-//           },
-//         ],
-//       },
-//       uhid: currentPatient && currentPatient.uhid,
-//     },
-//   });
-// }
-// };
-
-// const getRecordParameters = () => {
-//   return isRecordParameterFilled().map(
-//     (item) =>
-//       item && {
-//         result: item.result.toString(),
-//         parameterName: item.parameterName,
-//         unit: item.unit,
-//         range: `${item.minimum}-${item.maximum}`,
-//       }
-//   );
-// };
