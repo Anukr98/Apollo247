@@ -894,12 +894,14 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                     </div>
                     <div className={classes.consultChatContainer}>
                       <div className={classes.consultRow}>
-                        {appointmentDetails.appointmentState ===
-                          APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
-                          <AphButton className={classes.errorButton}>
-                            Sorry, we had to reschedule this appointment. Please pick another slot.
-                          </AphButton>
-                        )}
+                        {props.pastOrCurrent !== 'past' &&
+                          appointmentDetails.appointmentState ===
+                            APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
+                            <AphButton className={classes.errorButton}>
+                              Sorry, we had to reschedule this appointment. Please pick another
+                              slot.
+                            </AphButton>
+                          )}
                         <div className={classes.consultChat}>
                           {/* <h5>Previous Prescription</h5>
                         <AphButton className={classes.presButton}>
