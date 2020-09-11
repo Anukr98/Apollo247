@@ -174,7 +174,13 @@ export const DoctorJoinedMessageCard: React.FC<DoctorJoinedMessageCardProps> = (
 
   return (
     <div className={classes.doctorCardMain}>
-      <div className={classes.chatImgBubble}>{props.doctorName} has joined the consult room!</div>
+      <div className={classes.doctorAvatar}>
+        <Avatar className={classes.avatar} src={require('images/ic_mascot_male.png')} alt="" />
+      </div>
+      <div className={`${classes.blueBubble} ${classes.petient} `}>
+        {props.doctorName} has joined the consult room!
+        <div className={classes.chatTime}>07:10 PM</div>
+      </div>
     </div>
   );
 };
