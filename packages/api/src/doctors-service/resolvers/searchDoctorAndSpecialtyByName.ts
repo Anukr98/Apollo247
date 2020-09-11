@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { Doctor, DoctorSpecialty, DoctorType } from 'doctors-service/entities/';
+import { Doctor, DoctorSpecialty } from 'doctors-service/entities/';
 import {
   DoctorSlotAvailability,
   Geolocation,
@@ -246,7 +246,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
     if (doctor['activeSlotCount'] > 0) {
       perfectMatchedDoctorsId.push(doctor['id']);
-      if (doctor.doctorType === DoctorType.STAR_APOLLO) {
+      if (doctor.doctorType === 'STAR_APOLLO') {
         perfectMatchedDoctors.unshift(doctor);
       } else {
         perfectMatchedDoctors.push(doctor);
@@ -363,7 +363,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
     if (doctor['activeSlotCount'] > 0) {
       if (doctor['earliestSlotavailableInMinutes'] < 241) {
-        if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === DoctorType.APOLLO) {
+        if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
           earlyAvailableApolloMatchedDoctors.push(doctor);
         } else {
           earlyAvailableNonApolloMatchedDoctors.push(doctor);
@@ -545,13 +545,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       }
       if (doctor['activeSlotCount'] > 0) {
         if (doctor['earliestSlotavailableInMinutes'] < 241) {
-          if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === DoctorType.APOLLO) {
+          if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
             earlyAvailableApolloPossibleDoctors.push(doctor);
           } else {
             earlyAvailableNonApolloPossibleDoctors.push(doctor);
           }
         } else {
-          if (doctor.doctorType === DoctorType.STAR_APOLLO) {
+          if (doctor.doctorType === 'STAR_APOLLO') {
             possibleDoctors.unshift(doctor);
           } else {
             possibleDoctors.push(doctor);

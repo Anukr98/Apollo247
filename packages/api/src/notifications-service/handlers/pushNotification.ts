@@ -1618,7 +1618,7 @@ export async function sendNotification(
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         content: notificationBody,
-        doctorType: DOCTOR_CALL_TYPE.SENIOR,
+        doctorType: 'SENIOR',
       },
     };
   }
@@ -1640,7 +1640,7 @@ export async function sendNotification(
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         content: notificationBody,
-        doctorType: DOCTOR_CALL_TYPE.SENIOR,
+        doctorType: 'SENIOR',
       },
     };
   }
@@ -1659,7 +1659,7 @@ export async function sendNotification(
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         content: notificationBody,
-        doctorType: DOCTOR_CALL_TYPE.JUNIOR,
+        doctorType: 'JUNIOR',
       },
     };
   }
