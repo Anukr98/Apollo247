@@ -450,7 +450,7 @@ const isPastAppointment = (appointmentDateTime: string) =>
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const followUpDayMoment = moment(appointmentTime).add(7, 'days');
   const diffInDays = followUpDayMoment.diff(moment(), 'days');
-  if (diffInDays <= 0) {
+  if (diffInDays === 0) {
     const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
     const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
     return diffInHours > 0
@@ -458,8 +458,10 @@ const getAvailableFreeChatDays = (appointmentTime: string) => {
       : diffInMinutes > 0
       ? `You can follow up with the doctor via text (${diffInMinutes} minutes left)`
       : '';
-  } else {
+  } else if (diffInDays > 0) {
     return `You can follow up with the doctor via text (${diffInDays} days left)`;
+  } else {
+    return '';
   }
 };
 
