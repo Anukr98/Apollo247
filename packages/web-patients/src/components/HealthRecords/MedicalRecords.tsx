@@ -541,7 +541,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
       <div className={classes.leftSection}>
         <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
-          <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
+          <Link className={classes.addReportMobile} to={clientRoutes.addHealthRecords('medical')}>
             <img src={require('images/ic_addfile.svg')} />
           </Link>
         </div>
@@ -623,7 +623,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           <AphButton
             color="primary"
             onClick={() => {
-              window.location.href = clientRoutes.addRecords();
+              window.location.href = clientRoutes.addHealthRecords('medical');
             }}
             fullWidth
           >

@@ -32,7 +32,7 @@ import { MyAccount } from 'components/MyAccount/MyAccount';
 import { NotificationSettings } from 'components/Notifications/NotificationSettings';
 import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
 import { PHRLanding } from 'components/HealthRecords/PHRLanding';
-import { AddRecords } from 'components/HealthRecords/AddRecords';
+import { AddHealthRecords } from 'components/HealthRecords/AddHealthRecords';
 import { OrdersLanding } from 'components/Orders/OrdersLanding';
 import { StoragePoc } from 'components/StoragePoc';
 import { SearchByMedicine } from 'components/Medicine/SearchByMedicine';
@@ -193,7 +193,11 @@ const App: React.FC = () => {
           component={NotificationSettings}
         />
         <AuthRouted exact path={clientRoutes.healthRecords()} component={PHRLanding} />
-        <AuthRouted exact path={clientRoutes.addRecords()} component={AddRecords} />
+        <AuthRouted
+          exact
+          path={clientRoutes.addHealthRecords(':type')}
+          component={AddHealthRecords}
+        />
         <AuthRouted exact path={clientRoutes.yourOrders()} component={OrdersLanding} />
         <Route exact path={clientRoutes.symptomsTrackerFor()} component={SymptomsTracker} />
         <Route exact path={clientRoutes.symptomsTracker()} component={SymptomsTrackerSDK} />

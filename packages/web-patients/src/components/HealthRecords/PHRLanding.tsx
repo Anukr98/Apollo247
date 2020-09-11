@@ -171,6 +171,18 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
     ) {
       setTabValue(1);
       window.history.pushState('', '', '');
+    } else if (
+      (props && props.location && props.location.state === 'healthCheck') ||
+      window.location.href.includes('active=healthCheck')
+    ) {
+      setTabValue(2);
+      window.history.pushState('', '', '');
+    } else if (
+      (props && props.location && props.location.state === 'hospitalization') ||
+      window.location.href.includes('active=hospitalization')
+    ) {
+      setTabValue(3);
+      window.history.pushState('', '', '');
     }
   }, [props]);
 
@@ -216,12 +228,8 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         data1: HealthCheckType | HospitalizationType | LabResultsType,
         data2: HealthCheckType | HospitalizationType | LabResultsType
       ) => {
-        let date1 = moment(data1.date)
-          .toDate()
-          .getTime();
-        let date2 = moment(data2.date)
-          .toDate()
-          .getTime();
+        const date1 = moment(data1.date).toDate().getTime();
+        const date2 = moment(data2.date).toDate().getTime();
         return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
       }
     );
@@ -285,10 +293,10 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
 
   const sortByDate = (array: any[]) => {
     return array.sort((a: any, b: any) => {
-      let date1 = moment(a.bookingDate || a.date || a.quoteDateTime)
+      const date1 = moment(a.bookingDate || a.date || a.quoteDateTime)
         .toDate()
         .getTime();
-      let date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
+      const date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
         .toDate()
         .getTime();
       return date1 > date2 ? -1 : date1 < date2 ? 1 : a.id - b.id;
