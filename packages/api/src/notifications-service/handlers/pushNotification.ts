@@ -1256,6 +1256,11 @@ export async function sendNotification(
       format(istDateTime, 'hh:mm a'),
       appointment.appointmentType,
     ];
+    console.log(
+      secretaryTemplateData,
+      doctorDetails.doctorSecretary.secretary.mobileNumber,
+      'secretaryTemplateData'
+    );
     sendDoctorNotificationWhatsapp(
       ApiConstants.WHATSAPP_DOC_SECRETARY_BOOKING,
       doctorDetails.doctorSecretary.secretary.mobileNumber,
