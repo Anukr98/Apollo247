@@ -406,6 +406,13 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       'doctorSlots.slots.slot': {
         order: 'asc',
         nested_path: 'doctorSlots.slots',
+        nested_filter: {
+          range: {
+            'doctorSlots.slots.slotThreshold': {
+              gte: 'now',
+            },
+          },
+        },
       },
     });
   }
