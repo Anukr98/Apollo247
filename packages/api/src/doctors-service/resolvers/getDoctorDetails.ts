@@ -31,18 +31,18 @@ export const getDoctorDetailsTypeDefs = gql`
     BOTH
   }
   enum DoctorType {
-    APOLLO_HOSPITALS
-    APOLLO_CLINIC
-    APOLLO_CRADLE
-    DOCTOR_CONNECT
-    APOLLO_FERTILITY
-    JUNIOR
     APOLLO
-    APOLLO_SPECTRA_HOSPITALS
+    CLINIC
+    CRADLE
+    DOCTOR_CONNECT
+    FERTILITY
+    JUNIOR
+    PAYROLL
+    SPECTRA
     STAR_APOLLO
-    APOLLO_SUGAR_CLINICS
-    APOLLO_WHITE_DENTAL
+    SUGAR
     APOLLO_HOMECARE
+    WHITE_DENTAL
   }
 
   enum LoggedInUserType {
