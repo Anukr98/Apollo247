@@ -1349,7 +1349,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                       )}
                       {followUpAppointments && followUpAppointments.length > 0 && (
                         <div className={classes.cardContainer}>
-                          <h1>Follow - Up Chat</h1>
+                          <h1>Follow up Text Consult</h1>
                           <ConsultationsCard
                             appointments={followUpAppointments}
                             pastOrCurrent="current"

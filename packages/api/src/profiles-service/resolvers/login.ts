@@ -180,7 +180,7 @@ const resendOtp: Resolver<
     otp,
     hashCode,
     logger: resendLogger,
-    id,
+    id: otpSaveResponse.id,
   });
 };
 type testSMSResult = {

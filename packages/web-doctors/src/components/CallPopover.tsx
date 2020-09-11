@@ -89,11 +89,9 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingRight: 20,
     },
     breadcrumbs: {
-      marginLeft: 20,
-      marginRight: 20,
       fontSize: 13,
       fontWeight: 600,
-      padding: '35px 20px',
+      padding: '15px 20px',
       color: '#02475b',
       textTransform: 'uppercase',
       display: 'flex',
@@ -140,7 +138,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fff',
       padding: '8px 16px',
       backgroundColor: '#fc9916',
-      marginLeft: 20,
+      marginLeft: 10,
       minWidth: 168,
       marginRight: 10,
       borderRadius: 10,
@@ -210,6 +208,7 @@ const useStyles = makeStyles((theme: Theme) => {
     consultTest: {
       position: 'relative',
       width: '50%',
+      lineHeight: 'normal',
     },
     timeLeft: {
       fontSize: 12,
@@ -225,8 +224,9 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: 'red',
       textTransform: 'initial',
-      position: 'absolute',
-      bottom: -15,
+      lineHeight: '12px',
+      // position: 'absolute',
+      // bottom: -15,
     },
     backArrow: {
       cursor: 'pointer',
@@ -267,8 +267,10 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
     },
     consultButtonContainer: {
-      position: 'absolute',
-      right: 0,
+      flex: '1 0 auto',
+      display: 'flex',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
     },
     cross: {
       position: 'absolute',
@@ -620,11 +622,11 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
     },
     stickyHeader: {
-      position: 'sticky',
-      top: 0,
-      zIndex: 1,
-      backgroundColor: '#f7f7f7',
-      boxShadow: 'inset 0px 0px 10px 0 rgba(128,128,128,0.2)',
+      // position: 'sticky',
+      // top: 0,
+      // zIndex: 1,
+      backgroundColor: '#fff',
+      // boxShadow: 'inset 0px 0px 10px 0 rgba(128,128,128,0.2)',
     },
     prescriptionSent: {
       position: 'relative',
@@ -1041,6 +1043,7 @@ const useStyles = makeStyles((theme: Theme) => {
       right: '7%',
       color: '#FFF',
       padding: '15px 25px',
+      zIndex: 999,
     },
     joinPrompt: {
       display: 'flex',
@@ -1050,9 +1053,10 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
       position: 'fixed',
       left: 0,
-      bottom: -10,
-      height: 100,
-      zIndex: 2,
+      bottom: 0,
+      padding: 20,
+      zIndex: 999,
+      borderRadius: '15px 15px 0 0',
     },
     joinPromptText: {
       fontSize: 18,
@@ -1070,7 +1074,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'fixed',
       width: '100%',
       height: '100%',
-      zIndex: 2,
+      zIndex: 999,
     },
   };
 });
@@ -1539,13 +1543,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     timerIntervalId && clearInterval(timerIntervalId);
   };
   const stopAudioVideoCall = () => {
+    props.setGiveRating(true);
     setIsCallAccepted(false);
     setShowVideo(false);
     setShowVideoChat(false);
     setDisableOnCancel(false);
     clearInterval(intervalMissCall);
     setPlayRingtone(false);
-    props.setGiveRating(true);
+
     if (!isCallAccepted) sendCallDisconnectNotification();
 
     const cookieStr = `action=`;
@@ -1960,7 +1965,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       id: props.doctorId,
       message: startConsult,
       isTyping: true,
-      automatedText: currentPatient!.displayName + ' has joined your chat!',
+      automatedText: currentPatient!.displayName + ' has joined the consult room!',
       messageDate: new Date(),
       sentBy: REQUEST_ROLES.DOCTOR,
     };
@@ -3389,6 +3394,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         <div className={showVideo ? '' : classes.audioVideoContainer}>
           {showVideo && (
             <Consult
+              setGiveRating={props.setGiveRating}
               toggelChatVideo={() => toggelChatVideo()}
               stopAudioVideoCall={() => stopAudioVideoCall()}
               stopAudioVideoCallpatient={() => stopAudioVideoCallpatient()}

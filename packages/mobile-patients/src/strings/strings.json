@@ -34,14 +34,15 @@
     "mainHeading": "How would you like to consult with",
     "checkBoxText": "I have consulted with {0} before",
     "online": {
-      "heading": "CHAT/AUDIO/VIDEO",
+      "heading": "In-App AUDIO/VIDEO",
       "question": "How to consult via chat/audio/video?",
       "point1": "Choose the doctor",
       "point2": "Book a slot",
       "point3": "Make payment",
-      "point4": "Speak to the doctor via video/audio/chat",
-      "point5": "Receive prescriptions instantly",
-      "point6": "Chat with the doctor for 7 days after your consult"
+      "point4": "Be present in the consult room within Apollo247 app at the time of consult",
+      "point5": "Speak to the doctor via video/audio/chat",
+      "point6": "Receive prescriptions instantly",
+      "point7": "Follow Up via text - valid for 7 days"
     },
     "inperson": {
       "heading": "MEET IN PERSON",
@@ -51,9 +52,9 @@
       "point3": "Make payment",
       "point4": "Visit the doctor at Hospital/Clinic",
       "point5": "Receive prescriptions instantly",
-      "point6": "Chat with the doctor for 7 days after your consult"
+      "point6": "Follow Up via text - valid for 7 days"
     },
-    "follow_up_chat_days_text": "Follow Up chat for minimum of {0} days",
+    "follow_up_chat_days_text": "Follow Up via text - valid for {0} days",
     "follow_up_chat_message": "is available for a minimum of {0} days for free follow-up chat post Consult. However, doctor can decide to increase the follow-up chat days as per case basis.",
     "chatDisabledHeader": "Free follow up chat days with the doctor are over. Please book a new appointment for consulting with {0} again!"
   },
@@ -326,7 +327,9 @@
     "failure": "PAYMENT_FAILED",
     "pending": "PAYMENT_PENDING_PG",
     "refund": "PAYMENT_REFUND",
-    "aborted": "PAYMENT_ABORTED"
+    "aborted": "PAYMENT_ABORTED",
+    "askPermission1": "To make sure that you do not miss the call from Dr.",
+    "askPermission2": " for your consultation, Apollo 247 needs to have \"full screen overlay\" permission to display call notifications."
   },
   "PharmaPayment": {
     "success": "TXN_SUCCESS",

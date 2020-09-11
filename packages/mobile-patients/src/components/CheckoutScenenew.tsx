@@ -89,6 +89,8 @@ const windowHeight = Dimensions.get('window').height;
 export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const deliveryTime = props.navigation.getParam('deliveryTime');
   const isChennaiOrder = props.navigation.getParam('isChennaiOrder');
+  const tatType = props.navigation.getParam('tatType');
+  const paramShopId = props.navigation.getParam('shopId');
 
   const { currentPatient } = useAllCurrentPatients();
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
@@ -456,12 +458,13 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
+        tatType: tatType,
         coupon: coupon ? coupon.coupon : '',
         couponDiscount: coupon ? getFormattedAmount(couponDiscount) : 0,
         productDiscount: getFormattedAmount(productDiscount) || 0,
         quoteId: null,
         patientId: (currentPatient && currentPatient.id) || '',
-        shopId: storeId || null,
+        shopId: deliveryAddressId ? paramShopId : storeId || null,
         shopAddress: selectedStore
           ? {
               storename,

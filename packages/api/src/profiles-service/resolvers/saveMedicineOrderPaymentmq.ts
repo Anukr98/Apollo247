@@ -376,10 +376,20 @@ const SaveMedicineOrderPaymentMq: Resolver<
     if (patientAddressId)
       patientAddress = await patientRepo.getPatientAddressById(patientAddressId);
     if (medicineOrderLineItems.length) {
+      //to use to filter cod line in the email template
+      let isCODEmailTemplate = false;
+      if (
+        medicinePaymentMqInput.amountPaid == 0 &&
+        (medicinePaymentMqInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS ||
+          medicinePaymentMqInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.NO_PAYMENT)
+      ) {
+        isCODEmailTemplate = true;
+      }
       const mailContent = medicineCOD({
         orderDetails,
         patientAddress: patientAddress,
         medicineOrderLineItems: medicineOrderLineItems,
+        isCODEmailTemplate,
       });
 
       const subjectLine = ApiConstants.ORDER_PLACED_TITLE;
