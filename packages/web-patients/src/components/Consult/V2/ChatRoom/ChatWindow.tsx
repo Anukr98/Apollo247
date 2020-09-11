@@ -2127,7 +2127,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               >
                 {messages.map((messageDetails: any) => {
                   const cardType = getCardType(messageDetails);
-
                   const message =
                     messageDetails && messageDetails.message ? messageDetails.message : '';
                   if (
@@ -2155,7 +2154,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                       messageDetails.message === autoMessageStrings.appointmentComplete
                     );
                     return messageDetails.message === '^^#startconsult' ? (
-                      <DoctorJoinedMessageCard doctorName={doctorDisplayName} />
+                      <DoctorJoinedMessageCard
+                        doctorName={doctorDisplayName}
+                        messageDate={messageDetails.messageDate}
+                      />
                     ) : null;
                   }
                   const duration = messageDetails.duration;
