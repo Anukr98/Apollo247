@@ -378,7 +378,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
   const { allCombinedData, loading, activeData, setActiveData, error, deleteReport } = props;
 
   const getFormattedDate = (combinedData: HospitalizationType, dateFor: string) => {
-    return dateFor === 'title' ? (
+    return dateFor === 'title' && combinedData.dateOfHospitalization !== 0 ? (
       <span>
         From {moment(combinedData.dateOfHospitalization).format('DD MMM, YYYY')} to{' '}
         {moment(combinedData.date).format('DD MMM, YYYY')}
@@ -405,7 +405,10 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
       <div className={classes.leftSection}>
         <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
-          <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
+          <Link
+            className={classes.addReportMobile}
+            to={clientRoutes.addHealthRecords('hospitalization')}
+          >
             <img src={require('images/ic_addfile.svg')} />
           </Link>
         </div>
@@ -455,17 +458,17 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
             </div>
           )}
         </Scrollbars>
-        {/* <div className={classes.addReportActions}>
+        <div className={classes.addReportActions}>
           <AphButton
             color="primary"
             onClick={() => {
-              window.location.href = clientRoutes.addRecords();
+              window.location.href = clientRoutes.addHealthRecords('hospitalization');
             }}
             fullWidth
           >
             Add Record
           </AphButton>
-        </div> */}
+        </div>
       </div>
       <div
         className={`${classes.rightSection} ${

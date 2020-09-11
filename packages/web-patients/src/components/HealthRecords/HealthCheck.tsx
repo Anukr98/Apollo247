@@ -403,7 +403,10 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
       <div className={classes.leftSection}>
         <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
-          <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
+          <Link
+            className={classes.addReportMobile}
+            to={clientRoutes.addHealthRecords('healthCheck')}
+          >
             <img src={require('images/ic_addfile.svg')} />
           </Link>
         </div>
@@ -453,17 +456,17 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
             </div>
           )}
         </Scrollbars>
-        {/* <div className={classes.addReportActions}>
+        <div className={classes.addReportActions}>
           <AphButton
             color="primary"
             onClick={() => {
-              window.location.href = clientRoutes.addRecords();
+              window.location.href = clientRoutes.addHealthRecords('healthCheck');
             }}
             fullWidth
           >
             Add Record
           </AphButton>
-        </div> */}
+        </div>
       </div>
       <div
         className={`${classes.rightSection} ${
