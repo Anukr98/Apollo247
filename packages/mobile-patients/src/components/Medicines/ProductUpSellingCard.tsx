@@ -15,14 +15,18 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Divider, Image } from 'react-native-elements';
+import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 
 export interface Props extends Omit<AddToCartButtonsProps, 'containerStyle'> {
   title: string;
   imageUrl: string;
   price: number;
   specialPrice?: number | string;
+  isInStock: boolean;
+  isSellOnline: boolean;
   onPress: () => void;
   onAddToCart: () => void;
+  onNotify: () => void;
   containerStyle?: StyleProp<ViewStyle>;
   addToCartButtonContainerStyle?: StyleProp<ViewStyle>;
 }
@@ -32,8 +36,11 @@ export const ProductUpSellingCard: React.FC<Props> = ({
   imageUrl,
   price,
   specialPrice,
+  isInStock,
+  isSellOnline,
   onPress,
   onAddToCart,
+  onNotify,
   containerStyle,
   numberOfItemsInCart,
   addToCartButtonContainerStyle,
@@ -52,6 +59,7 @@ export const ProductUpSellingCard: React.FC<Props> = ({
       </Text>
     </View>
   );
+  const renderNotForSaleTag = () => <NotForSaleBadge containerStyle={{ alignSelf: 'center' }} />;
 
   const renderPriceAndAddToCartButton = () => {
     const discount = getDiscountPercentage(price, specialPrice);
@@ -65,7 +73,11 @@ export const ProductUpSellingCard: React.FC<Props> = ({
         )}
         <View style={[styles.priceAndAddToCartButton, { marginTop: !!discount ? 0 : 12 }]}>
           <Text style={styles.price}>{`Rs. ${discount ? specialPrice : price}`}</Text>
-          {renderAddToCartButton()}
+          {isInStock
+            ? isSellOnline
+              ? renderAddToCartButton()
+              : renderNotForSaleTag()
+            : renderNotifyButton()}
         </View>
       </View>
     );
@@ -83,6 +95,12 @@ export const ProductUpSellingCard: React.FC<Props> = ({
         {...restOfProps}
       />
     );
+
+  const renderNotifyButton = () => (
+    <Text onPress={onNotify} style={styles.addToCart}>
+      {'NOTIFY ME'}
+    </Text>
+  );
 
   return (
     <TouchableOpacity activeOpacity={1} style={[styles.card, containerStyle]} onPress={onPress}>

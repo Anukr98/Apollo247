@@ -333,7 +333,6 @@ const initiateRescheduleAppointment: Resolver<
     consultsDb,
     doctorsDb
   );
-  console.log(notificationResult, 'notificationResult');
   const historyAttrs: Partial<AppointmentUpdateHistory> = {
     appointment,
     userType: APPOINTMENT_UPDATED_BY.DOCTOR,
@@ -539,7 +538,6 @@ const bookRescheduleAppointment: Resolver<
       consultsDb,
       doctorsDb
     );
-    console.log(notificationResult, 'notificationResult');
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
@@ -756,7 +754,6 @@ const bookRescheduleAppointment: Resolver<
       consultsDb,
       doctorsDb
     );
-    console.log(notificationResult, 'appt rescheduled notification');
   }
   return { appointmentDetails };
 };

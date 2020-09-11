@@ -162,7 +162,6 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
 
   const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
   const facilitiesResult = await facilityRepo.insertOrUpdateAllFacilities(hospitals);
-  console.log('FacilityResult >>>>>>:: ', facilitiesResult);
   //hospital details ends
 
   //insert doctor starts
@@ -220,7 +219,6 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     DoctorDetails.displayName = element.DISPLAYNAME;
     return DoctorDetails;
   });
-  console.log('DoctorsData >>>>>>>', formatedDoctorData);
 
   //Doctor starts
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
@@ -270,8 +268,6 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   const doctorHospitalRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
   const doctorHospitalResult = await doctorHospitalRepo.insertDoctorAndHospitals(dostorHospital);
 
-  console.log('DoctorHospitalResult >>>>>>:: ', dostorHospital);
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const consultHours: any[] = [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -294,9 +290,6 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
 
   const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
   const consultHoursResult = await consultHoursRepo.insertOrUpdateAllConsultHours(consultHours);
-
-  console.log('ConsultHoursLength: ', consultHoursResult.length);
-  console.log('Reference ConsultHours Record:', consultHoursResult[0]);
   return 'Data Insertion Completed :)';
 };
 //insert data features ends here

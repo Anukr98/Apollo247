@@ -13,6 +13,7 @@ import { MedicineProduct } from '../../helpers/apiCalls';
 import { g } from '../../helpers/helperFunctions';
 import { AppConfig } from '../../strings/AppConfig';
 import { QuantityButton } from '../ui/QuantityButton';
+import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 
 const styles = StyleSheet.create({
   containerStyle: {},
@@ -53,6 +54,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
   const type = g(data, 'PharmaOverview', '0' as any, 'Doseform');
   const imageUri = data.thumbnail ? `${config.IMAGES_BASE_URL[0]}${data.thumbnail}` : '';
   const isOutOfStock = !data.is_in_stock;
+  const isNotForOnlineSelling = !data.sell_online;
   const specialPrice = data.special_price
     ? typeof data.special_price == 'string'
       ? Number(data.special_price)
@@ -65,7 +67,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
         <Text numberOfLines={1} style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0) }}>
           {data.name}
         </Text>
-        {isOutOfStock ? (
+        {isOutOfStock && !isNotForOnlineSelling ? (
           <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20, 0.04) }}>
             {'Out Of Stock'}
           </Text>
@@ -118,6 +120,8 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
     );
   };
 
+  const renderNotForSaleTag = () => <NotForSaleBadge containerStyle={{ alignSelf: 'center' }} />;
+
   const renderAddToCartView = () => {
     return (
       <TouchableOpacity
@@ -154,7 +158,11 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
           {renderNamePriceAndInStockStatus()}
           <View style={{ width: 24 }} />
           <View style={{ alignItems: 'flex-end' }}>
-            {props.quantity ? renderQuantityView() : renderAddToCartView()}
+            {isNotForOnlineSelling
+              ? renderNotForSaleTag()
+              : props.quantity
+              ? renderQuantityView()
+              : renderAddToCartView()}
           </View>
         </View>
         {props.showSeparator ? <Spearator /> : null}

@@ -151,7 +151,7 @@ const endCallNotification: Resolver<
     args.isDev = false;
   }
 
-  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']  &&
+  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
   (!args.numberOfParticipants || (args.numberOfParticipants && args.numberOfParticipants < 2))) {
     hitCallKitCurl(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
@@ -241,7 +241,6 @@ const sendCallNotification: Resolver<
       args.numberOfParticipants,
       args.patientId,
     );
-    console.log(notificationResult, 'doctor call appt notification');
   } else {
     const pushNotificationInput = {
       appointmentId: args.appointmentId,
@@ -259,7 +258,6 @@ const sendCallNotification: Resolver<
       args.numberOfParticipants,
       args.patientId,
     );
-    console.log(notificationResult, 'doctor call appt notification');
   }
   return { status: true, callDetails: appointmentCallDetails };
 };
@@ -272,7 +270,6 @@ const sendApptNotification: Resolver<
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptsList = await apptRepo.getNextMinuteAppointments();
-  console.log(apptsList);
   if (apptsList.length > 0) {
     apptsList.map((appt) => {
       const pushNotificationInput = {
@@ -285,7 +282,6 @@ const sendApptNotification: Resolver<
         consultsDb,
         doctorsDb
       );
-      console.log(notificationResult, 'doctor call appt notification');
     });
   }
 
@@ -346,7 +342,6 @@ const sendCallDisconnectNotification: Resolver<
       doctorsDb,
       args.callType
     );
-    console.log(notificationResult, 'doctor call appt notification');
   }
   return { status: true };
 };

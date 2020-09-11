@@ -1,38 +1,35 @@
-import { makeStyles } from '@material-ui/styles';
-import { Theme, FormControlLabel, CircularProgress, Popover, Typography } from '@material-ui/core';
-import React, { useEffect, useRef } from 'react';
-import moment from 'moment';
-import isNull from 'lodash/isNull';
-
 import {
-  AphRadio,
   AphButton,
   AphDialog,
-  AphDialogTitle,
   AphDialogClose,
+  AphDialogTitle,
+  AphRadio,
 } from '@aph/web-ui-components';
-import { useApolloClient } from 'react-apollo-hooks';
+import { CircularProgress, FormControlLabel, Popover, Theme, Typography } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
+import axios, { AxiosError } from 'axios';
+import { Alerts } from 'components/Alerts/Alerts';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
-import axios, { AxiosResponse, Canceler, AxiosError } from 'axios';
-import { Alerts } from 'components/Alerts/Alerts';
-import { UPDATE_PATIENT_ADDRESS } from 'graphql/address';
-import { useMutation } from 'react-apollo-hooks';
-import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
+import { MedicineCartItem, useShoppingCart } from 'components/MedicinesCartProvider';
+import { GET_PATIENT_ADDRESSES_LIST, UPDATE_PATIENT_ADDRESS } from 'graphql/address';
 import {
   GetPatientAddressList,
   GetPatientAddressListVariables,
   GetPatientAddressList_getPatientAddressList_addressList as Address,
 } from 'graphql/types/GetPatientAddressList';
-import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
-import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
-import { gtmTracking } from '../../gtmTracking';
+import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
 import {
-  pharmaStateCodeMapping,
-  getDiffInDays,
-  TAT_API_TIMEOUT_IN_MILLI_SEC,
-} from 'helpers/commonHelpers';
-import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
+  checkServiceAvailability,
+  checkSkuAvailability,
+  checkTatAvailability,
+} from 'helpers/MedicineApiCalls';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import isNull from 'lodash/isNull';
+import moment from 'moment';
+import React, { useEffect, useRef } from 'react';
+import { useApolloClient, useMutation } from 'react-apollo-hooks';
+import { gtmTracking } from '../../gtmTracking';
 
 export const formatAddress = (address: Address) => {
   const addressFormat = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
@@ -212,20 +209,21 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-const apiDetails = {
-  url: process.env.PHARMACY_MED_INFO_URL,
-  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
-  deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
-  service_url: process.env.PHARMACY_SERVICE_AVAILABILITY,
-  deliveryHeaderTATUrl: process.env.PHARMACY_MED_DELIVERY_HEADER_TAT,
-};
-
 type HomeDeliveryProps = {
   setDeliveryTime: (deliveryTime: string) => void;
   deliveryTime: string;
   selectedZipCode: (zipCode: string) => void;
-  checkForPriceUpdate: (shopid: string) => void;
+  checkForPriceUpdate: (
+    shopid: string,
+    pincode: string,
+    lat: string,
+    lng: string,
+    tatType: string
+  ) => void;
+  setLatitude: (latitude: string) => void;
+  setLongitude: (longitude: string) => void;
+  latitude: string;
+  longitude: string;
 };
 
 interface TatInterface {
@@ -249,10 +247,9 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     setDeliveryAddresses,
     cartItems,
     setStoreAddressId,
-    medicineCartType,
-    removeCartItems,
     updateItemShippingStatus,
     changeCartTatStatus,
+    pharmaAddressDetails,
   } = useShoppingCart();
   const { setDeliveryTime, deliveryTime } = props;
   const { isSigningIn } = useAuth();
@@ -282,7 +279,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
   useEffect(() => {
     if (isMounted.current && deliveryAddressId && !selectingAddress) {
-      !nonCartFlow && fetchDeliveryTime(zipCode);
+      !nonCartFlow && fetchDeliveryTime(zipCode, props.latitude, props.longitude);
     } else {
       isMounted.current = true;
     }
@@ -309,9 +306,13 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
             if (deliveryAddressId) {
               const index = addresses.findIndex((address) => address.id === deliveryAddressId);
               const zipCode = index !== -1 ? addresses[index].zipcode || '' : '';
+              const lat = index !== -1 ? addresses[index].latitude || '' : '';
+              const lng = index !== -1 ? addresses[index].longitude || '' : '';
               setZipCode(zipCode);
+              props.setLatitude(lat.toString());
+              props.setLongitude(lng.toString());
               if (cartItems.length > 0 && !nonCartFlow) {
-                fetchDeliveryTime(zipCode);
+                fetchDeliveryTime(zipCode, lat.toString(), lng.toString());
               }
               props.selectedZipCode(zipCode);
               setSelectedAddressDataIndex(index || 0);
@@ -352,7 +353,6 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         let obj = cartItems.find((o) => o.sku === nonDeliverableSKU);
         arrSku.push(obj.sku);
       });
-      removeCartItems && removeCartItems(arrSku);
       setShowNonDeliverablePopup(false);
       setNonServicableSKU([]);
     }
@@ -395,93 +395,52 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
   const fetchUserDisplayDeliveryTime = async (paramObject: {
     postalcode: string;
-    ordertype: string;
-    lookup: lookupType[];
+    lat: string;
+    lng: string;
   }) => {
-    const CancelToken = axios.CancelToken;
-    let cancelGetDeliveryTimeApi: Canceler | undefined;
-    await axios
-      .post(
-        apiDetails.deliveryHeaderTATUrl,
-        {
-          ...paramObject,
-        },
-        {
-          headers: {
-            Authentication: apiDetails.deliveryAuthToken,
-          },
-          timeout: TAT_API_TIMEOUT_IN_MILLI_SEC,
-          cancelToken: new CancelToken((c) => {
-            // An executor function receives a cancel function as a parameter
-            cancelGetDeliveryTimeApi = c;
-          }),
-        }
-      )
-      .then(async ({ data }: any) => {
-        sessionStorage.removeItem('tatFail');
-        if (data && data.tat && data.tat[0]) {
-          setDeliveryTime(data.tat[0].deliverydate);
-          props.checkForPriceUpdate(data.tat[0].siteId);
+    const items = cartItems.map((item: MedicineCartItem) => {
+      return { sku: item.sku, qty: item.quantity };
+    });
+    await checkTatAvailability(items, paramObject.postalcode, paramObject.lat, paramObject.lng)
+      .then((res: any) => {
+        if (res && res.data && res.data.response && res.data.response.tat) {
+          setDeliveryTime(res.data.response.tat);
+          props.checkForPriceUpdate(
+            res.data.response.storeCode,
+            paramObject.postalcode,
+            paramObject.lat,
+            paramObject.lng,
+            res.data.response.storeType
+          );
           changeCartTatStatus && changeCartTatStatus(true);
         }
       })
       .catch((e) => {
-        sessionStorage.setItem('tatFail', 'true');
         console.log(e);
         setDefaultDeliveryTime();
       });
   };
 
-  const fetchDeliveryTime = async (zipCode: string) => {
-    const CancelToken = axios.CancelToken;
-    let cancelGetDeliveryTimeApi: Canceler | undefined;
+  const fetchDeliveryTime = async (zipCode: string, lat: string, lng: string) => {
     const lookUp = cartItems.map((item: MedicineCartItem) => {
-      return { sku: item.sku, qty: item.quantity };
+      return item.sku;
     });
     setDeliveryLoading(true);
-    await axios
-      .post(
-        apiDetails.deliveryUrl || '',
-        {
-          postalcode: zipCode || '',
-          ordertype: medicineCartType,
-          lookup: lookUp,
-        },
-        {
-          headers: {
-            Authentication: apiDetails.deliveryAuthToken,
-          },
-          timeout: TAT_API_TIMEOUT_IN_MILLI_SEC,
-          cancelToken: new CancelToken((c) => {
-            // An executor function receives a cancel function as a parameter
-            cancelGetDeliveryTimeApi = c;
-          }),
-        }
-      )
-      .then((res: AxiosResponse) => {
+    await checkSkuAvailability(lookUp.join(','), zipCode)
+      .then((res: any) => {
         try {
-          if (res && res.data) {
+          if (res && res.data && res.data.response) {
             setDeliveryLoading(false);
             setSelectingAddress(true);
-            if (
-              typeof res.data === 'object' &&
-              Array.isArray(res.data.tat) &&
-              res.data.tat.length
-            ) {
-              const tatResult = res.data.tat;
-
+            if (res.data.response.length > 0) {
+              const tatResult = res.data.response;
               const nonDeliverySKUArr = tatResult
-                .filter(
-                  (item: TatInterface) =>
-                    getDiffInDays(item.deliverydate) > 10 ||
-                    item.siteId === '' ||
-                    item.siteId === null
-                )
-                .map((filteredSku: TatInterface) => filteredSku.artCode);
+                .filter((item: any) => !item.exist)
+                .map((filteredSku: any) => filteredSku.sku);
 
               const deliverableSku = tatResult
-                .filter((item: TatInterface) => getDiffInDays(item.deliverydate) <= 10)
-                .map((filteredSku: TatInterface) => filteredSku.artCode);
+                .filter((item: any) => item.exist)
+                .map((filteredSku: any) => filteredSku.sku);
 
               deliverableSku.map((deliverableSKU: string) => {
                 let obj = cartItems.find((o) => o.sku === deliverableSKU);
@@ -504,16 +463,13 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               } else {
                 fetchUserDisplayDeliveryTime({
                   postalcode: zipCode || '',
-                  ordertype: medicineCartType,
-                  lookup: lookUp,
+                  lat,
+                  lng,
                 });
               }
 
               setErrorDeliveryTimeMsg('');
-            } else if (
-              typeof res.data.errorMSG === 'string' ||
-              typeof res.data.errorMsg === 'string'
-            ) {
+            } else if (typeof res.data.errorMSG === 'string') {
               setDefaultDeliveryTime();
             }
           }
@@ -521,11 +477,6 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         } catch (error) {
           console.log(error);
           setDefaultDeliveryTime();
-          fetchUserDisplayDeliveryTime({
-            postalcode: zipCode || '',
-            ordertype: medicineCartType,
-            lookup: lookUp,
-          });
         }
       })
       .catch((error: any) => {
@@ -637,53 +588,53 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               <CircularProgress />
             </div>
           ) : (
-              <ul>
-                {deliveryAddresses.map(
-                  (address, idx) =>
-                    idx === selectedAddressDataIndex && (
-                      <li key={idx}>
-                        <FormControlLabel
-                          checked={address.id === deliveryAddressId}
-                          className={classes.radioLabel}
-                          value={address.id}
-                          control={<AphRadio color="primary" />}
-                          label={formatAddress(address)}
-                          onChange={() => {
-                            checkServiceAvailabilityCheck(address.zipcode)
-                              .then((res: AxiosResponse) => {
-                                if (res && res.data && res.data.Availability) {
-                                  /**Gtm code start  */
-                                  gtmTracking({
-                                    category: 'Pharmacy',
-                                    action: 'Order',
-                                    label: 'Address Selected',
-                                  });
-                                  /**Gtm code End  */
-                                  checkLatLongStateCodeAvailability(address);
-                                } else {
-                                  setShowPlaceNotFoundPopup(true);
-                                }
-                              })
-                              .catch((e: any) => {
-                                console.log(e);
-                              });
-                          }}
-                        />
-                      </li>
-                    )
-                )}
-              </ul>
-            )}
+            <ul>
+              {deliveryAddresses.map(
+                (address, idx) =>
+                  idx === selectedAddressDataIndex && (
+                    <li key={idx}>
+                      <FormControlLabel
+                        checked={address.id === deliveryAddressId}
+                        className={classes.radioLabel}
+                        value={address.id}
+                        control={<AphRadio color="primary" />}
+                        label={formatAddress(address)}
+                        onChange={() => {
+                          checkServiceAvailabilityCheck(address.zipcode)
+                            .then((res: any) => {
+                              if (res && res.data && res.data.response) {
+                                /**Gtm code start  */
+                                gtmTracking({
+                                  category: 'Pharmacy',
+                                  action: 'Order',
+                                  label: 'Address Selected',
+                                });
+                                /**Gtm code End  */
+                                checkLatLongStateCodeAvailability(address);
+                              } else {
+                                setShowPlaceNotFoundPopup(true);
+                              }
+                            })
+                            .catch((e: any) => {
+                              console.log(e);
+                            });
+                        }}
+                      />
+                    </li>
+                  )
+              )}
+            </ul>
+          )}
         </>
       ) : (
-          <>
-            {isLoading && (
-              <div className={classes.alignCenter}>
-                <CircularProgress />
-              </div>
-            )}
-          </>
-        )}
+        <>
+          {isLoading && (
+            <div className={classes.alignCenter}>
+              <CircularProgress />
+            </div>
+          )}
+        </>
+      )}
 
       <div className={classes.bottomActions}>
         {!isSigningIn ? (

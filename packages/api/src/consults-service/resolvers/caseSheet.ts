@@ -55,6 +55,7 @@ import { ConsultQueueRepository } from 'consults-service/repositories/consultQue
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
 
+
 export type DiagnosisJson = {
   name: string;
   id: string;
@@ -868,7 +869,7 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
   }
 
-  if (inputArguments && inputArguments.followUpAfterInDays) {
+  if (inputArguments && !(inputArguments.followUpAfterInDays === undefined || inputArguments.followUpAfterInDays === null)) {
     if (
       inputArguments.followUpAfterInDays > ApiConstants.CHAT_DAYS_LIMIT ||
       inputArguments.followUpAfterInDays < 0
@@ -1072,6 +1073,7 @@ const searchDiagnostic: Resolver<
   return result;
 };
 
+const REDIS_JDCASESHEET_LOCK_PREFIX = `jdcasesheet:lock:`;
 const createJuniorDoctorCaseSheet: Resolver<
   null,
   { appointmentId: string },
@@ -1095,6 +1097,13 @@ const createJuniorDoctorCaseSheet: Resolver<
   //check if junior doctor case-sheet exists already
   caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
   if (caseSheetDetails != null) return caseSheetDetails;
+
+  const lockKey = `${REDIS_JDCASESHEET_LOCK_PREFIX}${args.appointmentId}`;
+  const lockedAppointment = await getCache(lockKey);
+  if (lockedAppointment && typeof lockedAppointment == 'string') {
+    throw new Error(AphErrorMessages.CASESHEET_CREATION_IN_PROGRESS);
+  }
+  await setCache(lockKey, 'true', ApiConstants.CACHE_EXPIRATION_120);
 
   const caseSheetAttrs: Partial<CaseSheet> = {
     consultType: appointmentData.appointmentType,
@@ -1135,6 +1144,7 @@ const createJuniorDoctorCaseSheet: Resolver<
     reason: 'JD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + doctorData.id,
   };
   appointmentRepo.saveAppointmentHistory(historyAttrs);
+  await delCache(lockKey);
   return caseSheetDetails;
 };
 
@@ -1422,13 +1432,11 @@ const updatePatientPrescriptionSentStatus: Resolver<
       getCaseSheetData
     );
 
+
     const pushNotificationInput = {
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
-      data: {
-        caseSheetId: getCaseSheetData.id,
-      },
     };
 
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
@@ -1558,9 +1566,6 @@ const generatePrescriptionTemp: Resolver<
       appointmentId: getCaseSheetData.appointment.id,
       notificationType: NotificationType.PRESCRIPTION_READY,
       blobName: uploadedPdfData.name,
-      data: {
-        caseSheetId: getCaseSheetData.id,
-      },
     };
     sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
     caseSheetAttrs = {
@@ -1629,7 +1634,6 @@ const getSDLatestCompletedCaseSheet: Resolver<
 
   //check whether there is a senior doctor case-sheet
   const caseSheetDetails = await caseSheetRepo.getSDLatestCompletedCaseSheet(appointmentData.id);
-  console.log('caseSheetDetails > ', caseSheetDetails);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);

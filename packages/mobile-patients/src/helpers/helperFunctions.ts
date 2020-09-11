@@ -6,9 +6,9 @@ import {
   GooglePlacesType,
   MedicineProduct,
   PlacesApiResponse,
-  getDeliveryTime,
   medCartItemsDetailsApi,
   MedicineOrderBilledItem,
+  availabilityApi247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   MEDICINE_ORDER_STATUS,
@@ -116,6 +116,7 @@ export const productsThumbnailUrl = (filePath: string, baseUrl?: string) =>
 
 export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
+  const landmark = [address.landmark];
   // to handle state value getting twice
   const addrLine2 = [address.city, address.state]
     .filter((v) => v)
@@ -125,7 +126,32 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .filter((item, idx, array) => array.indexOf(item) === idx)
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-  return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+    return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+};
+
+export const formatAddressWithLandmark = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
+  const landmark = [address.landmark];
+  // to handle state value getting twice
+  const addrLine2 = [address.city, address.state]
+    .filter((v) => v)
+    .join(', ')
+    .split(',')
+    .map((v) => v.trim())
+    .filter((item, idx, array) => array.indexOf(item) === idx)
+    .join(', ');
+  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  if(address.landmark!=''){
+    return `${addrLine1},\nLandmark: ${landmark}\n${addrLine2}${formattedZipcode}`;
+  }
+  else{
+    return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+  }
+    
+};
+
+export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  return `${address.name}\n${address.mobileNumber}`;
 };
 
 export const followUpChatDaysCaseSheet = (
@@ -659,6 +685,15 @@ export const isValidName = (value: string) =>
     : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
     ? true
     : false;
+  
+export const isValidPhoneNumber = (value: string) =>{
+    const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
+      ? !/^(234){1}\d{0,9}$/.test(value)
+        ? false
+        : true
+      : true;
+    return isValidNumber;
+}
 
 export const extractUrlFromString = (text: string): string | undefined => {
   const urlRegex = /(https?:\/\/[^ ]*)/;
@@ -1025,6 +1060,16 @@ export const callPermissions = (doRequest?: () => void) => {
   });
 };
 
+export const storagePermissions = (doRequest?: () => void) => {
+  permissionHandler(
+    'storage',
+    'Enable storage from settings for uploading documents during consultation.',
+    () => {
+      doRequest && doRequest();
+    }
+  );
+};
+
 export const InitiateAppsFlyer = (
   navigation: NavigationScreenProp<NavigationRoute<object>, object>
 ) => {
@@ -1034,8 +1079,12 @@ export const InitiateAppsFlyer = (
       console.log('res.data', res.data);
       // if (res.data.af_dp !== undefined) {
       try {
-        AsyncStorage.setItem('deeplink', res.data.af_dp);
-        AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+        if (res.data.af_dp !== undefined) {
+          AsyncStorage.setItem('deeplink', res.data.af_dp);
+        }
+        if (res.data.af_sub1 !== null) {
+          AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+        }
 
         console.log('res.data.af_dp', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('APPS_FLYER_DEEP_LINK', res.data.af_dp);
@@ -1087,8 +1136,12 @@ export const InitiateAppsFlyer = (
     // for iOS universal links
     if (Platform.OS === 'ios') {
       try {
-        AsyncStorage.setItem('deeplink', res.data.af_dp);
-        AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+        if (res.data.af_dp !== undefined) {
+          AsyncStorage.setItem('deeplink', res.data.af_dp);
+        }
+        if (res.data.af_sub1 !== null) {
+          AsyncStorage.setItem('deeplinkReferalCode', res.data.af_sub1);
+        }
 
         console.log('res.data.af_dp_onAppOpenAttribution', decodeURIComponent(res.data.af_dp));
         setBugFenderLog('onAppOpenAttribution_APPS_FLYER_DEEP_LINK', res.data.af_dp);
@@ -1294,13 +1347,6 @@ export const trimTextWithEllipsis = (text: string, count: number) =>
 export const parseNumber = (number: string | number, decimalPoints?: number) =>
   Number(Number(number).toFixed(decimalPoints || 2));
 
-export const isDeliveryDateWithInXDays = (deliveryDate: string) => {
-  return (
-    moment(deliveryDate, 'D-MMM-YYYY HH:mm a').diff(moment(), 'days') <=
-    AppConfig.Configuration.TAT_UNSERVICEABLE_DAY_COUNT
-  );
-};
-
 export const getMaxQtyForMedicineItem = (qty?: number | string) => {
   return qty ? Number(qty) : AppConfig.Configuration.CART_ITEM_MAX_QUANTITY;
 };
@@ -1320,12 +1366,12 @@ export const addPharmaItemToCart = (
   },
   onComplete?: () => void
 ) => {
-  const unServiceableMsg = 'Sorry, not serviceable in your area.';
+  const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
   const navigate = () => {
     navigation.navigate(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
-      deliveryError: unServiceableMsg,
+      deliveryError: outOfStockMsg,
     });
   };
 
@@ -1368,26 +1414,13 @@ export const addPharmaItemToCart = (
   }
 
   setLoading && setLoading(true);
-  getDeliveryTime({
-    postalcode: pincode,
-    ordertype: cartItem.isMedicine ? 'pharma' : 'fmcg',
-    lookup: [
-      {
-        sku: cartItem.id,
-        qty: cartItem.quantity,
-      },
-    ],
-  })
+  availabilityApi247(pincode, cartItem.id)
     .then((res) => {
-      const deliveryDate = g(res, 'data', 'tat', '0' as any, 'deliverydate');
-      if (deliveryDate) {
-        if (isDeliveryDateWithInXDays(deliveryDate)) {
-          addToCart();
-        } else {
-          navigate();
-        }
-      } else {
+      const availability = g(res, 'data', 'response', '0' as any, 'exist');
+      if (availability) {
         addToCart();
+      } else {
+        navigate();
       }
     })
     .catch(() => {
