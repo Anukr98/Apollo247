@@ -1186,6 +1186,7 @@ export const MedicineCart: React.FC = (props) => {
           items: cartItemsForApi,
           coupon: couponCode,
           deviceType: getDeviceType(),
+          shopId,
         },
       },
     }

@@ -457,6 +457,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
     doctor['onlineStatus'] = DOCTOR_ONLINE_STATUS.ONLINE;
+    doctor['mobileNumber'] = '';
     doctor['doctorHospital'] = [];
     doctor['openSlotDates'] = [];
     doctor['activeSlotCount'] = 0;
