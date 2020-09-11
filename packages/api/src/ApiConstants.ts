@@ -286,6 +286,7 @@ export enum ApiConstants {
   KALEYRA_OTP_SENDER = 'APOLLO',
   KALEYRA_OTP_SMS_METHOD = 'sms',
   OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
+  OTP_NON_WHITELISTED_NUMBER = 'OTP cannot be sent to non-whitelisted mobile number for lower environment',
   OTP_FAIL_MESSAGE = 'OTP sending failed',
   INVALID_RESEND_MESSAGE = 'Invalid resend details',
   NOTIFICATION_MSG_FOR_DR_CALL = 'Hi {0}, {1} will call you from the number {2}. Please pick up the call to connect with the doctor.',
@@ -393,6 +394,8 @@ export enum ApiConstants {
   PATIENT_APPT_DEEPLINK = 'apollopatients://Consult',
   PATIENT_CHATROOM_DEEPLINK = 'apollopatients://ChatRoom?',
   PATIENT_PRESCRIPTION_DEEPLINK = 'apollopatients://ConsultDetails?',
+  DOCTOR_DEEPLINK_WEB_URL = 'https://www.apollo247.com/doctors/<DoctorID>',
+
   // whatsapp constants
   WEB_ENGAGE_AUTHORIZATION = 'fe30a7fd-5dd7-48a8-9ce0-be85b5eb4de7',
 

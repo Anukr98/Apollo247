@@ -769,6 +769,7 @@ export interface MedicineCartOMSInput {
   showPrescriptionAtStore?: boolean | null;
   shopAddress?: ShopAddress | null;
   customerComment?: string | null;
+  tatType?: string | null;
 }
 
 export interface MedicineCartOMSItem {

@@ -1010,7 +1010,7 @@ app.get('/processOmsOrders', (req, res) => {
                   deliveryStateCode = 'TS',
                   lat = 0,
                   long = 0;
-                const patientAddressDetails = orderDetails.medicineOrderAddress;
+                const patientAddressDetails = orderDetails.medicineOrderAddress || {};
                 if (orderDetails.deliveryType == 'STORE_PICKUP') {
                   if (!orderDetails.shopAddress) {
                     logger.error(
@@ -1170,6 +1170,8 @@ app.get('/processOmsOrders', (req, res) => {
                   customercomment: orderDetails.customerComment || '',
                   landmark: landmark,
                   issubscribe: false,
+                  tattype: orderDetails.tatType || '',
+                  orderchannel: orderDetails.bookingSource || '',
                   customerdetails: {
                     billingaddress: deliveryAddress.trim(),
                     billingpincode: deliveryZipcode,
