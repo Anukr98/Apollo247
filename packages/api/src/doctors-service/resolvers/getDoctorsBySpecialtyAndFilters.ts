@@ -476,25 +476,18 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     if (doctor.languages instanceof Array) {
       doctor.languages = doctor.languages.join(', ');
     }
-    console.log(doc.inner_hits);
     for (const slot of doc.inner_hits['doctorSlots.slots'].hits.hits) {
       console.log(slot._source.slot);
       const nextAvailable = differenceInMinutes(new Date(slot._source.slot), callStartTime);
-      if (nextAvailable > bufferTime) {
-        if (doctor['activeSlotCount'] === 0) {
-          doctor['earliestSlotavailableInMinutes'] = nextAvailable;
-          finalDoctorNextAvailSlots.push({
-            availableInMinutes: Math.abs(nextAvailable),
-            physicalSlot: slot._source.slotType === 'ONLINE' ? '' : slot._source.slot,
-            currentDateTime: callStartTime,
-            doctorId: doctor.doctorId,
-            onlineSlot: slot._source.slotType === 'PHYSICAL' ? '' : slot._source.slot,
-            referenceSlot: slot._source.slot,
-          });
-        }
-        doctor['activeSlotCount'] += 1;
-        break;
-      }
+      doctor['earliestSlotavailableInMinutes'] = nextAvailable;
+      finalDoctorNextAvailSlots.push({
+        availableInMinutes: Math.abs(nextAvailable),
+        physicalSlot: slot._source.slotType === 'ONLINE' ? '' : slot._source.slot,
+        currentDateTime: callStartTime,
+        doctorId: doctor.doctorId,
+        onlineSlot: slot._source.slotType === 'PHYSICAL' ? '' : slot._source.slot,
+        referenceSlot: slot._source.slot,
+      });
     }
     doctor.facility = Array.isArray(doctor.facility) ? doctor.facility : [doctor.facility];
     for (const facility of doctor.facility) {
