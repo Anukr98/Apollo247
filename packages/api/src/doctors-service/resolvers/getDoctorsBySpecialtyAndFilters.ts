@@ -405,15 +405,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     elasticSort.push({
       'doctorSlots.slots.slot': {
         order: 'asc',
-        mode: 'min',
         nested_path: 'doctorSlots.slots',
-        nested_filter: {
-          range: {
-            'doctorSlots.slots.slotThreshold': {
-              gte: 'now',
-            },
-          },
-        },
       },
     });
   }
