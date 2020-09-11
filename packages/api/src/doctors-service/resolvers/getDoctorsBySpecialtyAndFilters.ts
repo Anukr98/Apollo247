@@ -240,16 +240,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     finalDoctorsConsultModeAvailability: DoctorConsultModeAvailability[] = [];
   const finalSpecialtyDetails: any = [];
   let doctors = [];
-  // const finalSpecialtyDetails = [];
   const elasticMatch = [];
   const elasticSort = [];
-  // const earlyAvailableApolloDoctors = [],
-  //   earlyAvailableNonApolloDoctors = [],
-  //   docs = [];
-  // let earlyAvailableStarApolloDoctors = [],
-  //   earlyAvailableNonStarApolloDoctors = [],
-  //   starDoctor = [],
-  //   nonStarDoctor = [];
   let apolloDoctorCount: number = 0,
     partnerDoctorCount: number = 0;
 
@@ -484,7 +476,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     if (doctor.languages instanceof Array) {
       doctor.languages = doctor.languages.join(', ');
     }
+    console.log(doc.inner_hits);
     for (const slot of doc.inner_hits['doctorSlots.slots'].hits.hits) {
+      console.log(slot._source.slot);
       const nextAvailable = differenceInMinutes(new Date(slot._source.slot), callStartTime);
       if (nextAvailable > bufferTime) {
         if (doctor['activeSlotCount'] === 0) {
@@ -528,7 +522,10 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
 
     doctors.push(doctor);
-    finalSpecialtyDetails.push(doctor.specialty);
+    finalDoctorsConsultModeAvailability.push({
+      availableModes: doctor['availableMode'],
+      doctorId: doctor.doctorId,
+    });
   }
 
   const aggnDocumentsSpan = 10000;
@@ -723,7 +720,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctors: doctors,
     doctorsNextAvailability: finalDoctorNextAvailSlots,
     doctorsAvailability: finalDoctorsConsultModeAvailability,
-    specialty: finalSpecialtyDetails,
+    specialty: doctors[0].specialty,
     sort: args.filterInput.sort,
     filters: filters,
     apolloDoctorCount,
@@ -957,7 +954,7 @@ const getDoctorList: Resolver<
       },
     },
   };
-  const client = new Client({ node: 'http://104.211.242.175:9200' });
+  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
 
   const getDetails = await client.search(searchParams);
   const doctorTypeCount = getDetails.body.aggregations.doctorTypeCount.buckets;
