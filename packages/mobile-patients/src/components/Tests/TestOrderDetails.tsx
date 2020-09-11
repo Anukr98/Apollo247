@@ -1,6 +1,6 @@
 import { TestOrderSummaryView } from '@aph/mobile-patients/src/components/TestOrderSummaryView';
-import { TestSlot } from '@aph/mobile-patients/src/components/Tests/TestsCart.tsx';
 import {
+  SlotInfo,
   TestScheduleOverlay,
   TestScheduleType,
 } from '@aph/mobile-patients/src/components/Tests/TestScheduleOverlay';
@@ -216,11 +216,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     date: Date,
     reason: string,
     comment?: string,
-    slotInfo?: TestSlot
+    slotInfo?: SlotInfo
   ) => {
     // TODO: call api and change visibility, refetch
     setApiLoading(true);
     const isClinicVisit = type == 'clinic-visit';
+    const slotTimings = !isClinicVisit
+      ? [slotInfo!.startTime, slotInfo!.endTime].map((val) => val.trim()).join(' - ')
+      : '';
     const variables: updateDiagnosticOrderVariables = {
       updateDiagnosticOrderInput: {
         id: g(order, 'id'),
@@ -232,10 +235,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         centerLocality: g(order, 'centerLocality')!,
         // customizations
         diagnosticDate: moment(date).format('YYYY-MM-DD'),
-        slotTimings: (!isClinicVisit && g(slotInfo, 'Timeslot')) || '',
-        employeeSlotId: 0,
-        diagnosticEmployeeCode: '',
-        diagnosticBranchCode: '',
+        slotTimings: slotTimings || '',
+        employeeSlotId: g(slotInfo, 'slot')!,
+        diagnosticEmployeeCode: g(slotInfo, 'employeeCode') || '',
+        diagnosticBranchCode: g(slotInfo, 'diagnosticBranchCode') || '',
       },
     };
     console.log({ variables });
