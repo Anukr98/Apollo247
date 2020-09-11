@@ -45,6 +45,7 @@ const plugins = [
     },
     inject: true,
     favicon: './favicon.svg',
+    scriptLoading: 'defer',
   }),
   new MomentLocalesPlugin(),
   // new BundleAnalyzerPlugin(),
