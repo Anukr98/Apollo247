@@ -499,7 +499,7 @@ const getStoreItems = async (items: MedicineCartOMSItem[], shopId: string) => {
   const inventoryBaseUrl = process.env.INVENTORY_SYNC_URL || '';
   const authToken = process.env.INVENTORY_SYNC_TOKEN || '';
   const itemdetails = items.map((item) => item.medicineSKU);
-  const apiUrl = `${inventoryBaseUrl}/pricecheck?storecode=${shopId}&sku=${itemdetails.join(',')}`;
+  const apiUrl = `${inventoryBaseUrl}/pricecheck?storeCode=${shopId}&sku=${itemdetails.join(',')}`;
 
   log(
     'profileServiceLogger',
