@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Connection } from 'typeorm';
+import { EntityRepository, Repository, Connection, In } from 'typeorm';
 import { ConsultQueueItem, Appointment, APPOINTMENT_STATE } from 'consults-service/entities';
 import { format, addDays } from 'date-fns';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -124,4 +124,30 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .limit(limit)
       .getMany();
   }
+
+  async getInvalidConsultQueueItems(appointmentStatuses: string[], isActive: boolean = true){
+    return await this.createQueryBuilder('consultQueueItem')
+    .select([
+      'consultQueueItem.id' as 'id' 
+    ])
+    .innerJoinAndSelect(
+      'consultQueueItem.appointment',
+      'appointment',
+      'consultQueueItem.appointmentId = appointment.id'
+    )
+    .where('consultQueueItem.isActive = :isActive', { isActive })
+    .andWhere('appointment.status IN (:...appointmentStatuses)', {
+      appointmentStatuses,
+    })
+    .getMany();
+  }
+
+  async bulkUpdateInvalidConsultQueueItems(csQueueIds : number[]){
+    await this.createQueryBuilder()
+    .update(ConsultQueueItem)
+    .set({ isActive: false })
+    .where({ id: In(csQueueIds) })
+    .execute();
+  }
+
 }

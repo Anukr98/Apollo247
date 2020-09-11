@@ -164,6 +164,11 @@ const styles = StyleSheet.create({
     paddingTop: 7,
     paddingBottom: 12,
   },
+  subDataTextStyle: {
+    color: theme.colors.SKY_BLUE,
+    lineHeight: 24,
+    ...theme.fonts.IBMPlexSansMedium(14)
+  },
   labelViewStyle: {
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
@@ -424,10 +429,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         {!!(item?.since) && <Text style={styles.dataTextStyle}>
                           Since: {item.since}
                         </Text>}
-                        {!!(item?.howOften) && <Text style={styles.dataTextStyle}>
+                        {!!(item?.howOften) && <Text style={styles.subDataTextStyle}>
                           How Often: {item.howOften}
                         </Text>}
-                        {!!(item?.severity) && <Text style={styles.dataTextStyle}>
+                        {!!(item?.severity) && <Text style={styles.subDataTextStyle}>
                           Severity: {item.severity}
                         </Text>}
                       </View>

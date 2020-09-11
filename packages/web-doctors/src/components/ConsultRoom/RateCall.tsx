@@ -29,6 +29,7 @@ export interface RateCallProps {
     videoFeedbacks: {}[];
   }) => void;
   visible: boolean;
+  setGiveRating: (flag: boolean) => void;
 }
 
 const StyledRating = withStyles({
@@ -81,6 +82,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     submitButton: {
       marginTop: 10,
+      marginLeft: 20,
       float: 'right',
     },
   };
@@ -279,6 +281,18 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
     );
   };
 
+  const renderCancelBtn = () => {
+    return (
+      <AphButton
+        title="CANCEL"
+        className={classes.submitButton}
+        onClick={() => props.setGiveRating(false)}
+      >
+        CANCEL
+      </AphButton>
+    );
+  };
+
   const renderSubmitBtn = () => {
     return (
       <AphButton
@@ -364,6 +378,7 @@ export const RateCall: React.FC<RateCallProps> = (props) => {
           )}
           {renderCalltypeTab()}
           {renderMultiSelectQuestions()}
+          {rating == 0 && renderCancelBtn()}
           {rating !== 0 && renderSubmitBtn()}
         </div>
       </DialogContent>

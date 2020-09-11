@@ -38,6 +38,7 @@ export const saveMedicineOrderOMSTypeDefs = gql`
   input MedicineCartOMSInput {
     quoteId: String
     shopId: String
+    tatType: String
     estimatedAmount: Float
     patientId: ID!
     medicineDeliveryType: MEDICINE_DELIVERY_TYPE!
@@ -115,6 +116,7 @@ export const saveMedicineOrderOMSTypeDefs = gql`
   input MedicineCartOMSItem {
     medicineSKU: String
     medicineName: String
+    couponFree: Boolean
     price: Float
     quantity: Int
     mrp: Float
@@ -138,6 +140,7 @@ export enum customerTypeInCoupons {
 type MedicineCartOMSInput = {
   quoteId: string;
   shopId: string;
+  tatType: string;
   estimatedAmount: number;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
@@ -181,6 +184,7 @@ type MedicineCartOMSItem = {
   mou: number;
   isMedicine: string;
   specialPrice: number;
+  couponFree: boolean;
 };
 
 type SaveMedicineOrderResult = {
@@ -220,7 +224,10 @@ const saveMedicineOrderOMS: Resolver<
   ) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
   }
-  const medicineOrderAddressDetails: Partial<MedicineOrderAddress> = {};
+  const medicineOrderAddressDetails: Partial<MedicineOrderAddress> = {
+    name: patientDetails.firstName,
+    mobileNumber: patientDetails.mobileNumber,
+  };
   if (medicineCartOMSInput.patientAddressId) {
     const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
     const patientAddressDetails = await patientAddressRepo.findById(
@@ -243,14 +250,10 @@ const saveMedicineOrderOMS: Resolver<
 
       if (patientAddressDetails.name) {
         medicineOrderAddressDetails.name = patientAddressDetails.name;
-      } else {
-        medicineOrderAddressDetails.name = patientDetails.firstName;
       }
 
       if (patientAddressDetails.mobileNumber) {
         medicineOrderAddressDetails.mobileNumber = patientAddressDetails.mobileNumber;
-      } else {
-        medicineOrderAddressDetails.mobileNumber = patientDetails.mobileNumber;
       }
     }
   }
@@ -318,6 +321,7 @@ const saveMedicineOrderOMS: Resolver<
     estimatedAmount: medicineCartOMSInput.estimatedAmount,
     orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
     shopId: medicineCartOMSInput.shopId,
+    tatType: medicineCartOMSInput.tatType || '',
     quoteDateTime: new Date(),
     devliveryCharges: medicineCartOMSInput.devliveryCharges,
     deliveryType: medicineCartOMSInput.medicineDeliveryType,
@@ -345,9 +349,10 @@ const saveMedicineOrderOMS: Resolver<
     const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
     if (saveOrder) {
       const medicineOrderLineItems = medicineCartOMSInput.items.map(async (item) => {
+        const { couponFree, ...lineItems } = item;
         const orderItemAttrs: Partial<MedicineOrderLineItems> = {
           medicineOrders: saveOrder,
-          ...item,
+          ...lineItems,
         };
         await medicineOrdersRepo.saveMedicineOrderLineItem(orderItemAttrs);
       });
@@ -407,6 +412,7 @@ const validateStoreItems = async (medicineCartOMSInput: MedicineCartOMSInput) =>
       orderLineItems.push({
         itemId: item.medicineSKU,
         productName: item.medicineName,
+        couponFree: item.couponFree,
         productType:
           type == 'pharma'
             ? CouponCategoryApplicable.PHARMA
@@ -444,6 +450,7 @@ const validatePharmaItems = async (medicineCartOMSInput: MedicineCartOMSInput) =
         mrp: orderLineItem.price,
         specialPrice: orderLineItem.special_price || orderLineItem.price,
         quantity: item.quantity,
+        couponFree: item.couponFree,
       });
     }
   });

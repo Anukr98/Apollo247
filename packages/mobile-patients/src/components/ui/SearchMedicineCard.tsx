@@ -144,7 +144,7 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
   };
 
   const renderOutOfStock = () => {
-    return !isInStock ? (
+    return !isInStock && isSellOnline ? (
       <Text style={styles.outOfStockStyle}>{'Out Of Stock'}</Text>
     ) : (
       <View style={{ flexDirection: 'row' }}>

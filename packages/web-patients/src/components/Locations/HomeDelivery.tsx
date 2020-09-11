@@ -230,7 +230,13 @@ type HomeDeliveryProps = {
   setDeliveryTime: (deliveryTime: string) => void;
   deliveryTime: string;
   selectedZipCode: (zipCode: string) => void;
-  checkForPriceUpdate: (shopid: string, pincode: string, lat: string, lng: string) => void;
+  checkForPriceUpdate: (
+    shopid: string,
+    pincode: string,
+    lat: string,
+    lng: string,
+    tatType: string
+  ) => void;
   setLatitude: (latitude: string) => void;
   setLongitude: (longitude: string) => void;
   latitude: string;
@@ -422,7 +428,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
             res.data.response.storeCode,
             paramObject.postalcode,
             paramObject.lat,
-            paramObject.lng
+            paramObject.lng,
+            res.data.response.storeType
           );
           changeCartTatStatus && changeCartTatStatus(true);
         }
