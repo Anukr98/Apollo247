@@ -225,9 +225,9 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const getHomeVisitTime = () => {
     return '';
-    if (g(diagnosticSlot, 'date') && g(diagnosticSlot, 'Timeslot')) {
+    if (g(diagnosticSlot, 'date') && g(diagnosticSlot, 'slotStartTime')) {
       const _date = moment(g(diagnosticSlot, 'date')).format('D MMM YYYY');
-      const _time = moment(g(diagnosticSlot, 'Timeslot')!.trim(), 'hh:mm').format('hh:mm A');
+      const _time = moment(g(diagnosticSlot, 'slotStartTime')!.trim(), 'hh:mm').format('hh:mm A');
       return `${_date}, ${_time}`;
     } else {
       return '';
@@ -340,14 +340,22 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const initiateOrder = async () => {
     setShowSpinner(true);
-    let location: AppCommonDataContextProps['locationForDiagnostics'] = null;
-    try {
-      if (!g(locationForDiagnostics, 'city') && g(locationDetails, 'city')) {
-        location = await getServiceableCityDetails(locationDetails!.city, g(currentPatient, 'id'));
-      }
-    } catch (error) {
-      CommonBugFender('TestsCheckoutScene_initiateOrder_location_try', error);
-    }
+    const { CentreCode, CentreName, City, State, Locality } = diagnosticClinic || {};
+    const {
+      slotStartTime,
+      slotEndTime,
+      employeeSlotId,
+      date,
+      diagnosticEmployeeCode,
+      // city, // ignore city for now from this and take from "locationForDiagnostics" context
+      diagnosticBranchCode,
+    } = diagnosticSlot || {};
+
+    const slotTimings = (slotStartTime && slotEndTime
+      ? `${slotStartTime}-${slotEndTime}`
+      : ''
+    ).replace(' ', '');
+    console.log(physicalPrescriptions, 'physical prescriptions');
 
     const { CentreCode, CentreName, City, State, Locality } = diagnosticClinic || {};
     const { date, Timeslot, TimeslotID } = diagnosticSlot || {};
@@ -356,12 +364,11 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       {}) as AppCommonDataContextProps['locationForDiagnostics'];
     const orderInfo: DiagnosticOrderInput = {
       // <- for home collection order
-      diagnosticBranchCode: '',
-      diagnosticEmployeeCode: '',
-      employeeSlotId: 0,
-      slotTimings: Timeslot || '',
-      patientAddressId: deliveryAddressId,
-      slotId: TimeslotID || '',
+      diagnosticBranchCode: CentreCode ? '' : diagnosticBranchCode!,
+      diagnosticEmployeeCode: diagnosticEmployeeCode || '',
+      employeeSlotId: employeeSlotId! || 0,
+      slotTimings: slotTimings,
+      patientAddressId: deliveryAddressId!,
       // for home collection order ->
       // <- for clinic order
       centerName: CentreName || '',
@@ -391,8 +398,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       items: cartItems.map(
         (item) =>
           ({
-            itemId: Number(item.id),
-            price: item.specialPrice || item.price,
+            itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
+            price: (item.specialPrice as number) || item.price,
             quantity: 1,
           } as DiagnosticLineItem)
       ),

@@ -1302,16 +1302,29 @@ export const GET_LATEST_MEDICINE_ORDER = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_IT_DOSE_SLOTS = gql`
-  query GetDiagnosticItDoseSlots($patientId: String, $selectedDate: Date, $zipCode: Int) {
-    getDiagnosticItDoseSlots(
+export const GET_DIAGNOSTIC_SLOTS = gql`
+  query getDiagnosticSlots(
+    $patientId: String
+    $hubCode: String
+    $selectedDate: Date
+    $zipCode: Int
+  ) {
+    getDiagnosticSlots(
       patientId: $patientId
+      hubCode: $hubCode
       selectedDate: $selectedDate
       zipCode: $zipCode
     ) {
-      slotInfo {
-        TimeslotID
-        Timeslot
+      diagnosticBranchCode
+      diagnosticSlot {
+        employeeCode
+        employeeName
+        slotInfo {
+          endTime
+          status
+          startTime
+          slot
+        }
       }
     }
   }
