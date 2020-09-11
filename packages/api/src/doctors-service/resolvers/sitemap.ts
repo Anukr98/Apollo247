@@ -91,7 +91,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
       const url = process.env.SITEMAP_BASE_URL + 'specialties/' + specialtyName;
       const urlInfo: SitemapUrls = {
         url,
-        urlName: specialtyName,
+        urlName: specialty.specialistPluralTerm,
       };
       specialityUrls.push(urlInfo);
       const specialtyStr =
@@ -130,7 +130,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
   );
   const textRes = await listResp.text();
   const cmsUrlsList = JSON.parse(textRes);
-
+  console.log(cmsUrlsList, 'cmsUrlsList');
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cmsUrlsList.data.forEach((link: any) => {
@@ -174,9 +174,12 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
   const healthAreaTextRes = await healthAreaListResp.text();
   const healthAreasUrlsList = JSON.parse(healthAreaTextRes);
   let healthAreaUrls = '\n<!--Health Area links-->\n';
-  if (healthAreasUrlsList.healthareas && healthAreasUrlsList.healthareas.length > 0) {
+  if (
+    healthAreasUrlsList.shop_by_healthareas &&
+    healthAreasUrlsList.shop_by_healthareas.length > 0
+  ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    healthAreasUrlsList.healthareas.forEach((link: any) => {
+    healthAreasUrlsList.shop_by_healthareas.forEach((link: any) => {
       const url = process.env.SITEMAP_BASE_URL + 'medicine/healthareas/' + link.url_key;
       const urlInfo: SitemapUrls = {
         url,
@@ -235,15 +238,13 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
 
   //read static page urls from redis cache
   const staticPages = await keyCache('apollo247:staticpages:*');
-  console.log(staticPages, 'staticPages');
   if (staticPages && staticPages.length > 0) {
     for (let k = 0; k < staticPages.length; k++) {
       const pageDets = await hgetAllCache(staticPages[k]);
-      console.log(pageDets, 'page dets');
       if (pageDets) {
         const urlInfo: SitemapUrls = {
           url: pageDets.pageUrl,
-          urlName: pageDets.pageName,
+          urlName: decodeURIComponent(pageDets.pageName),
         };
         staticPageUrls.push(urlInfo);
       }

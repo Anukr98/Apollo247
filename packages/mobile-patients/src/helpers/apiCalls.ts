@@ -155,6 +155,7 @@ export interface GetTatResponse247 {
     tat: string;
     tatU: number;
     inventoryExist: boolean;
+    storeType: string;
   };
   errorMSG?: string;
 }
@@ -510,9 +511,13 @@ export const pinCodeServiceabilityApi247 = (
   pincode: string
 ): Promise<AxiosResponse<{ response: boolean }>> => {
   const url = `${config.UATTAT_CONFIG[0]}/serviceable?pincode=${pincode}`;
+<<<<<<< HEAD
   return Axios.post(
     url,
     {},
+=======
+  return Axios.get(url,
+>>>>>>> a7034c6f5a1bf065e74d77737e82b7f72e4e7726
     {
       headers: {
         Authorization: config.UATTAT_CONFIG[1],

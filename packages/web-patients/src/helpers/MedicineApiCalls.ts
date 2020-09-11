@@ -273,10 +273,10 @@ export const checkTatAvailability = (items: Items[], pincode: string, lat: strin
   return axios.post(
     `${process.env.INVENTORY_SYNC_URL}/tat`,
     {
+      items,
       pincode,
       lat,
       lng,
-      items,
     },
     {
       headers: {

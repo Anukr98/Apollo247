@@ -46,7 +46,6 @@ export enum ONE_APOLLO_PRODUCT_CATEGORY {
   PHARMA = 'P247',
 }
 
-
 export interface TransactionLineItemsPartial {
   ProductCode: string;
   NetAmount: number;
@@ -408,6 +407,9 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({ nullable: true })
   siteId: string;
+
+  @Column({ nullable: true })
+  tatType: string;
 
   @Column({ nullable: true })
   shopId: string;
@@ -1277,20 +1279,13 @@ export class Patient extends BaseEntity {
   @AfterUpdate()
   async setPatientCache() {
     try {
-      log(
-        'profileServiceLogger',
-        'setting Cache',
-        'profilesService->setPatientCache()',
-        '',
-        ''
-      );
+      log('profileServiceLogger', 'setting Cache', 'profilesService->setPatientCache()', '', '');
       await setCache(
         `patient:${this.id}`,
         JSON.stringify(this),
         ApiConstants.CACHE_EXPIRATION_3600
       );
-    } catch (ex) {
-    }
+    } catch (ex) {}
   }
 }
 //patient Ends
