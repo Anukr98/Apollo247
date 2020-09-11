@@ -212,7 +212,7 @@ export const HeroBanner: React.FC = () => {
         {isDesktopOnly ? (
           <img
             className={classes.desktopBanner}
-            src={require('images/img-doctors@1x.png')}
+            src={require('images/img-doctors@1x.jpg')}
             alt="Online Doctor Consultation & Medicines"
           />
         ) : (
