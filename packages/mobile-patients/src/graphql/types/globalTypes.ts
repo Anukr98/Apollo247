@@ -485,6 +485,23 @@ export enum prescriptionSource {
   SELF = "SELF",
 }
 
+export interface AddHealthCheckRecordInput {
+  patientId: string;
+  recordType: MedicalRecordType;
+  healthCheckName: string;
+  healthCheckDate: any;
+  healthCheckFiles?: (HealthCheckFileProperties | null)[] | null;
+}
+
+export interface AddHospitalizationRecordInput {
+  patientId: string;
+  recordType: MedicalRecordType;
+  dischargeDate: any;
+  hospitalName: string;
+  doctorName: string;
+  hospitalizationFiles?: (HospitalizationFileProperties | null)[] | null;
+}
+
 export interface AddMedicalRecordInput {
   additionalNotes?: string | null;
   documentURLs?: string | null;
@@ -707,12 +724,24 @@ export interface Geolocation {
   longitude: number;
 }
 
+export interface HealthCheckFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
 export interface HelpEmailInput {
   category?: string | null;
   reason?: string | null;
   comments?: string | null;
   patientId?: string | null;
   email?: string | null;
+}
+
+export interface HospitalizationFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
 }
 
 export interface LabResultFileProperties {

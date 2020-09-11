@@ -1970,6 +1970,24 @@ export const ADD_MEDICAL_RECORD = gql`
   }
 `;
 
+export const ADD_PATIENT_HEALTH_CHECK_RECORD = gql`
+  mutation addPatientHealthCheckRecord($AddHealthCheckRecordInput: AddHealthCheckRecordInput) {
+    addPatientHealthCheckRecord(addHealthCheckRecordInput: $AddHealthCheckRecordInput) {
+      status
+    }
+  }
+`;
+
+export const ADD_PATIENT_HOSPITALIZATION_RECORD = gql`
+  mutation addPatientHospitalizationRecord(
+    $AddHospitalizationRecordInput: AddHospitalizationRecordInput
+  ) {
+    addPatientHospitalizationRecord(addHospitalizationRecordInput: $AddHospitalizationRecordInput) {
+      status
+    }
+  }
+`;
+
 export const UPLOAD_LAB_RESULTS = gql`
   mutation uploadLabResults($LabResultsUploadRequest: LabResultsUploadRequest, $uhid: String) {
     uploadLabResults(labResultsInput: $LabResultsUploadRequest, uhid: $uhid) {
