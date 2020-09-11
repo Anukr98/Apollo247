@@ -115,12 +115,14 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     consultRoom: {
       paddingTop: 64,
+      height: '100vh',
+      overflow: 'hidden',
       [theme.breakpoints.down('xs')]: {
         paddingTop: 64,
       },
     },
     chatContainer: {
-      minHeight: 'calc(100vh - 360px)',
+      // minHeight: 'calc(100vh - 360px)',
     },
     headerSticky: {
       position: 'fixed',
@@ -134,12 +136,12 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: '#f7f7f7',
-      minHeight: 500,
+      height: '100%',
     },
     tabsRoot: {
       backgroundColor: theme.palette.common.white,
       borderRadius: 0,
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      // boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
     },
     tabRoot: {
       fontSize: 16,
@@ -177,6 +179,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     block: {
       display: 'block',
+      height: '100%',
     },
     modalBox: {
       maxWidth: 320,
@@ -291,9 +294,27 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
     },
     stickyConsultTabs: {
-      position: 'sticky',
-      top: 94,
-      zIndex: 2,
+      // position: "sticky",
+      // top: 94,
+      // zIndex: 2,
+    },
+    tabContainer: {
+      height: 'calc(100% - 68px)',
+    },
+    tabContent: {
+      height: 'calc(100% - 48px)',
+      overflow: 'auto',
+      padding: 20,
+      '&::-webkit-scrollbar': {
+        width: 6,
+      },
+      '&::-webkit-scrollbar-track': {
+        background: 'transparent',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#ccc',
+        borderRadius: 5,
+      },
     },
   };
 });
@@ -411,7 +432,10 @@ export const ConsultTabs: React.FC = () => {
   const [lifeStyle, setLifeStyle] = useState<string>('');
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
-  const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
+  const [vitalError, setVitalError] = useState<VitalErrorProps>({
+    height: '',
+    weight: '',
+  });
   const [referralSpecialtyName, setReferralSpecialtyName] = useState<string>('');
   const [referralDescription, setReferralDescription] = useState<string>('');
   const [medicationHistory, setMedicationHistory] = useState<string>('');
@@ -732,21 +756,13 @@ export const ConsultTabs: React.FC = () => {
                   _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
                 ] as unknown) as boolean[])
               : setFollowUp([]);
-            console.log(
-              'follow up old var',
-              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
-            );
-            console.log(
-              'follow up old var type',
-              typeof _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
-            );
 
             _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays &&
-            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays !== null
-              ? setFollowUpAfterInDays(([
-                  _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
-                ] as unknown) as string[])
-              : setFollowUpAfterInDays([]);
+              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays !== null &&
+              setFollowUpAfterInDays(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
+              ] as unknown) as string[]);
+
             _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
               ? setFollowUpDate(([
                   _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
@@ -1363,6 +1379,7 @@ export const ConsultTabs: React.FC = () => {
           _data.data.sendCallNotification &&
           _data.data.sendCallNotification.status
         ) {
+          setcallId(_data.data.sendCallNotification.callDetails.id);
           if (isCall) {
             const cookieStr = `doctorCallId=${_data.data.sendCallNotification.callDetails.id}`;
             document.cookie = cookieStr + ';path=/;';
@@ -1811,7 +1828,6 @@ export const ConsultTabs: React.FC = () => {
         sessionClient.notify(JSON.stringify(logObject));
         console.log('Error in Call Notification', error.message);
       });
-    setGiveRating(true);
   };
 
   const endCallNotificationAction = (isCall: boolean) => {
@@ -1874,12 +1890,6 @@ export const ConsultTabs: React.FC = () => {
       .catch((e: any) => {
         alert('Error in giving feedback. Please try again!');
       });
-  };
-
-  const showRateCallModal = () => {
-    return (
-      <RateCall visible={giveRating} submitRatingCallback={(data) => submitRatingHandler(data)} />
-    );
   };
 
   const inEditMode =
@@ -2008,141 +2018,144 @@ export const ConsultTabs: React.FC = () => {
             casesheetVersion,
           }}
         >
-          <Scrollbars
+          {/* <Scrollbars
             ref={(s: any) => {
               !isClickedOnEdit && isClickedOnPriview && s !== null && s.scrollToTop();
             }}
             autoHide={true}
             style={{ height: 'calc(100vh - 65px)' }}
-          >
-            {showRateCallModal()}
-            <div className={classes.container}>
-              <CallPopover
-                setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-                createSessionAction={createSessionAction}
-                saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) =>
-                  saveCasesheetAction(flag, sendToPatientFlag)
+
+          > */}
+          <RateCall
+            visible={giveRating}
+            setGiveRating={setGiveRating}
+            submitRatingCallback={(data) => submitRatingHandler(data)}
+          />
+          <div className={classes.container}>
+            <CallPopover
+              setGiveRating={setGiveRating}
+              setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+              createSessionAction={createSessionAction}
+              saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) =>
+                saveCasesheetAction(flag, sendToPatientFlag)
+              }
+              endConsultAction={endConsultAction}
+              appointmentId={appointmentId}
+              appointmentDateTime={appointmentDateTime}
+              doctorId={doctorId}
+              urlToPatient={urlToPatient}
+              caseSheetId={caseSheetId}
+              prescriptionPdf={prescriptionPdf}
+              sessionId={sessionId}
+              token={token}
+              startAppointment={startAppointment}
+              casesheetInfo={casesheetInfo}
+              startAppointmentClick={startAppointmentClick}
+              saving={saving}
+              appointmentStatus={appointmentStatus}
+              sentToPatient={sentToPatient}
+              isAppointmentEnded={isAppointmentEnded}
+              setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
+              pubnub={pubnub}
+              sessionClient={sessionClient}
+              lastMsg={lastMsg}
+              //presenceEventObject={presenceEventObject}
+              endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
+              hasCameraMicPermission={hasCameraMicPermission}
+              createSDCasesheetCall={(flag: boolean) => createSDCasesheetCall(flag)}
+              isNewprescriptionEditable={isNewprescriptionEditable}
+              isNewPrescription={isNewPrescription}
+              isClickedOnEdit={isClickedOnEdit}
+              setIsClickedOnEdit={setIsClickedOnEdit}
+              isClickedOnPriview={isClickedOnPriview}
+              setIsClickedOnPriview={setIsClickedOnPriview}
+              tabValue={tabValue}
+              showConfirmPrescription={showConfirmPrescription}
+              setShowConfirmPrescription={(flag: boolean) => setShowConfirmPrescription(flag)}
+            />
+            <div className={classes.tabContainer}>
+              <div
+                className={
+                  (inEditMode || isClickedOnEdit) && !isClickedOnPriview
+                    ? classes.block
+                    : classes.none
                 }
-                endConsultAction={endConsultAction}
-                appointmentId={appointmentId}
-                appointmentDateTime={appointmentDateTime}
-                doctorId={doctorId}
-                urlToPatient={urlToPatient}
-                caseSheetId={caseSheetId}
-                prescriptionPdf={prescriptionPdf}
-                sessionId={sessionId}
-                token={token}
-                startAppointment={startAppointment}
-                casesheetInfo={casesheetInfo}
-                startAppointmentClick={startAppointmentClick}
-                saving={saving}
-                appointmentStatus={appointmentStatus}
-                sentToPatient={sentToPatient}
-                isAppointmentEnded={isAppointmentEnded}
-                setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
-                pubnub={pubnub}
-                sessionClient={sessionClient}
-                lastMsg={lastMsg}
-                //presenceEventObject={presenceEventObject}
-                endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
-                hasCameraMicPermission={hasCameraMicPermission}
-                createSDCasesheetCall={(flag: boolean) => createSDCasesheetCall(flag)}
-                isNewprescriptionEditable={isNewprescriptionEditable}
-                isNewPrescription={isNewPrescription}
-                isClickedOnEdit={isClickedOnEdit}
-                setIsClickedOnEdit={setIsClickedOnEdit}
-                isClickedOnPriview={isClickedOnPriview}
-                setIsClickedOnPriview={setIsClickedOnPriview}
-                tabValue={tabValue}
-                showConfirmPrescription={showConfirmPrescription}
-                setShowConfirmPrescription={(flag: boolean) => setShowConfirmPrescription(flag)}
-              />
-              <div>
-                <div
-                  className={
-                    (inEditMode || isClickedOnEdit) && !isClickedOnPriview
-                      ? classes.block
-                      : classes.none
-                  }
+              >
+                <Tabs
+                  value={tabValue}
+                  variant="fullWidth"
+                  classes={{
+                    root: classes.tabsRoot,
+                    indicator: classes.tabsIndicator,
+                  }}
+                  onChange={(e, newValue) => {
+                    // if (tabValue !== newValue) {
+                    //   postDoctorConsultEventAction(
+                    //     newValue === 0
+                    //       ? WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW
+                    //       : WebEngageEvent.DOCTOR_IN_CHAT_WINDOW,
+                    //   );
+                    // }
+                    setTabValue(newValue);
+                  }}
                 >
-                  <div className={classes.stickyConsultTabs}>
-                    <Tabs
-                      value={tabValue}
-                      variant="fullWidth"
-                      classes={{
-                        root: classes.tabsRoot,
-                        indicator: classes.tabsIndicator,
-                      }}
-                      onChange={(e, newValue) => {
-                        // if (tabValue !== newValue) {
-                        //   postDoctorConsultEventAction(
-                        //     newValue === 0
-                        //       ? WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW
-                        //       : WebEngageEvent.DOCTOR_IN_CHAT_WINDOW,
-                        //   );
-                        // }
-                        setTabValue(newValue);
-                      }}
-                    >
-                      <Tab
-                        classes={{
-                          root: classes.tabRoot,
-                          selected: classes.tabSelected,
-                        }}
-                        label="Case Sheet"
-                      />
-                      <Tab
-                        classes={{
-                          root: classes.tabRoot,
-                          selected: classes.tabSelected,
-                        }}
-                        label="Chat"
-                      />
-                    </Tabs>
-                  </div>
-                  <div>
-                    <div className={tabValue !== 0 ? classes.none : classes.block}>
-                      {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
-                    </div>
+                  <Tab
+                    classes={{
+                      root: classes.tabRoot,
+                      selected: classes.tabSelected,
+                    }}
+                    label="Case Sheet"
+                  />
+                  <Tab
+                    classes={{
+                      root: classes.tabRoot,
+                      selected: classes.tabSelected,
+                    }}
+                    label="Chat"
+                  />
+                </Tabs>
+
+                <div className={classes.tabContent}>
+                  <div className={tabValue !== 0 ? classes.none : classes.block}>
+                    {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
                   </div>
 
-                  <div>
-                    <div className={tabValue !== 1 ? classes.none : classes.block}>
-                      <div className={classes.chatContainer}>
-                        <ConsultRoom
-                          startConsult={startConsult}
-                          sessionId={sessionId}
-                          token={token}
-                          appointmentId={paramId}
-                          doctorId={doctorId}
-                          patientId={patientId}
-                          pubnub={pubnub}
-                          sessionClient={sessionClient}
-                          lastMsg={lastMsg}
-                          messages={messages}
-                          appointmentStatus={appointmentStatus}
-                          postDoctorConsultEventAction={(
-                            eventType: WebEngageEvent,
-                            displayId: string
-                          ) => postDoctorConsultEventAction(eventType, displayId)}
-                        />
-                      </div>
+                  <div className={tabValue !== 1 ? classes.none : classes.block}>
+                    <div className={classes.chatContainer}>
+                      <ConsultRoom
+                        startConsult={startConsult}
+                        sessionId={sessionId}
+                        token={token}
+                        appointmentId={paramId}
+                        doctorId={doctorId}
+                        patientId={patientId}
+                        pubnub={pubnub}
+                        sessionClient={sessionClient}
+                        lastMsg={lastMsg}
+                        messages={messages}
+                        appointmentStatus={appointmentStatus}
+                        postDoctorConsultEventAction={(
+                          eventType: WebEngageEvent,
+                          displayId: string
+                        ) => postDoctorConsultEventAction(eventType, displayId)}
+                      />
                     </div>
                   </div>
-                </div>
-
-                <div
-                  className={
-                    inEditMode && isClickedOnPriview && !isClickedOnEdit
-                      ? classes.block
-                      : classes.none
-                  }
-                >
-                  <CasesheetView saving={saving} />
                 </div>
               </div>
+
+              <div
+                className={
+                  inEditMode && isClickedOnPriview && !isClickedOnEdit
+                    ? classes.block
+                    : classes.none
+                }
+              >
+                <CasesheetView saving={saving} />
+              </div>
             </div>
-          </Scrollbars>
+          </div>
+          {/* </Scrollbars> */}
         </CaseSheetContext.Provider>
       )}
       <Modal

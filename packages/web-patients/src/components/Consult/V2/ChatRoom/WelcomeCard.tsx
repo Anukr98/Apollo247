@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 4px 0 #00000026',
       backgroundColor: '#0087ba',
       fontSize: 15,
-      maxWidth: 240,
+      maxWidth: 300,
       margin: '0 0 10px 45px',
       '& p': {
         margin: 0,
@@ -65,9 +65,10 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = (props) => {
       <div className={`${classes.blueBubble} ${classes.petient} `}>
         Let’s get you feeling better by following simple steps :)
         <p>1. Answer some quick questions</p>
-        <p>2. Connect with your doctor</p>
-        <p>3. Get a prescription and meds, if necessary</p>
-        <p>4. Chat with your doctor for 7 days</p>
+        <p>2. Please be present in this Consult Room at the time of consult</p>
+        <p>3. Connect with your doctor via on web Audio/Video call.</p>
+        <p>4. Get a prescription and meds, if necessary</p>
+        <p>5. Follow up via text (validity 7 days)</p>
       </div>
       <div className={`${classes.blueBubble} ${classes.petient} `}>
         <p>

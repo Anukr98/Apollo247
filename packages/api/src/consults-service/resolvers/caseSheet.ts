@@ -869,7 +869,7 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
   }
 
-  if (inputArguments && inputArguments.followUpAfterInDays) {
+  if (inputArguments && !(inputArguments.followUpAfterInDays === undefined || inputArguments.followUpAfterInDays === null)) {
     if (
       inputArguments.followUpAfterInDays > ApiConstants.CHAT_DAYS_LIMIT ||
       inputArguments.followUpAfterInDays < 0
@@ -1073,6 +1073,7 @@ const searchDiagnostic: Resolver<
   return result;
 };
 
+const REDIS_JDCASESHEET_LOCK_PREFIX = `jdcasesheet:lock:`;
 const createJuniorDoctorCaseSheet: Resolver<
   null,
   { appointmentId: string },
@@ -1096,6 +1097,13 @@ const createJuniorDoctorCaseSheet: Resolver<
   //check if junior doctor case-sheet exists already
   caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
   if (caseSheetDetails != null) return caseSheetDetails;
+
+  const lockKey = `${REDIS_JDCASESHEET_LOCK_PREFIX}${args.appointmentId}`;
+  const lockedAppointment = await getCache(lockKey);
+  if (lockedAppointment && typeof lockedAppointment == 'string') {
+    throw new Error(AphErrorMessages.CASESHEET_CREATION_IN_PROGRESS);
+  }
+  await setCache(lockKey, 'true', ApiConstants.CACHE_EXPIRATION_120);
 
   const caseSheetAttrs: Partial<CaseSheet> = {
     consultType: appointmentData.appointmentType,
@@ -1136,6 +1144,7 @@ const createJuniorDoctorCaseSheet: Resolver<
     reason: 'JD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + doctorData.id,
   };
   appointmentRepo.saveAppointmentHistory(historyAttrs);
+  await delCache(lockKey);
   return caseSheetDetails;
 };
 
@@ -1341,7 +1350,7 @@ const submitJDCaseSheet: Resolver<
     fromState: appointmentData.appointmentState,
     toState: appointmentData.appointmentState,
     userName: virtualJDId,
-    reason: 'Virtaul ' + ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString(),
+    reason: 'Virtual ' + ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString(),
   };
   appointmentRepo.saveAppointmentHistory(historyAttrs);
 
@@ -1382,7 +1391,9 @@ const updatePatientPrescriptionSentStatus: Resolver<
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.getPatientDetails(getCaseSheetData.patientId);
+  const patientData = await patientRepo.findByIdWithRelations(getCaseSheetData.patientId, [
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   let caseSheetAttrs: Partial<CaseSheet> = {
@@ -1511,7 +1522,9 @@ const generatePrescriptionTemp: Resolver<
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.getPatientData(getCaseSheetData.patientId);
+  const patientData = await patientRepo.findByIdWithRelations(getCaseSheetData.patientId, [
+    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY
+  ]);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   let caseSheetAttrs: Partial<CaseSheet> = {

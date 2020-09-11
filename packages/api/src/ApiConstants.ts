@@ -286,6 +286,7 @@ export enum ApiConstants {
   KALEYRA_OTP_SENDER = 'APOLLO',
   KALEYRA_OTP_SMS_METHOD = 'sms',
   OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
+  OTP_NON_WHITELISTED_NUMBER = 'OTP cannot be sent to non-whitelisted mobile number for lower environment',
   OTP_FAIL_MESSAGE = 'OTP sending failed',
   INVALID_RESEND_MESSAGE = 'Invalid resend details',
   NOTIFICATION_MSG_FOR_DR_CALL = 'Hi {0}, {1} will call you from the number {2}. Please pick up the call to connect with the doctor.',
@@ -488,4 +489,10 @@ export const migrationDir = {
 
 export const elasticConsts = {
   ELASTIC_CONFLICT_RETRY_COUNT: 5,
+};
+
+export const PharmaProductTypes = {
+  FMCG: 'FMCG',
+  PHARMA: 'Pharma',
+  PL: 'PL',
 };

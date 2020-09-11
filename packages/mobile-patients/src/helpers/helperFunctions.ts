@@ -116,6 +116,7 @@ export const productsThumbnailUrl = (filePath: string, baseUrl?: string) =>
 
 export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
+  const landmark = [address.landmark];
   // to handle state value getting twice
   const addrLine2 = [address.city, address.state]
     .filter((v) => v)
@@ -125,7 +126,32 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .filter((item, idx, array) => array.indexOf(item) === idx)
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-  return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+    return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+};
+
+export const formatAddressWithLandmark = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
+  const landmark = [address.landmark];
+  // to handle state value getting twice
+  const addrLine2 = [address.city, address.state]
+    .filter((v) => v)
+    .join(', ')
+    .split(',')
+    .map((v) => v.trim())
+    .filter((item, idx, array) => array.indexOf(item) === idx)
+    .join(', ');
+  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  if(address.landmark!=''){
+    return `${addrLine1},\nLandmark: ${landmark}\n${addrLine2}${formattedZipcode}`;
+  }
+  else{
+    return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+  }
+    
+};
+
+export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  return `${address.name}\n${address.mobileNumber}`;
 };
 
 export const followUpChatDaysCaseSheet = (
@@ -1340,12 +1366,12 @@ export const addPharmaItemToCart = (
   },
   onComplete?: () => void
 ) => {
-  const unServiceableMsg = 'Sorry, not serviceable in your area.';
+  const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
   const navigate = () => {
     navigation.navigate(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
-      deliveryError: unServiceableMsg,
+      deliveryError: outOfStockMsg,
     });
   };
 
