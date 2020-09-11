@@ -1,43 +1,35 @@
-import { makeStyles } from '@material-ui/styles';
-import { Theme, FormControlLabel, CircularProgress, Popover, Typography } from '@material-ui/core';
-import React, { useEffect, useRef } from 'react';
-import moment from 'moment';
-import isNull from 'lodash/isNull';
-
 import {
-  AphRadio,
   AphButton,
   AphDialog,
-  AphDialogTitle,
   AphDialogClose,
+  AphDialogTitle,
+  AphRadio,
 } from '@aph/web-ui-components';
-import { useApolloClient } from 'react-apollo-hooks';
+import { CircularProgress, FormControlLabel, Popover, Theme, Typography } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
+import axios, { AxiosError } from 'axios';
+import { Alerts } from 'components/Alerts/Alerts';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
-import axios, { AxiosResponse, Canceler, AxiosError } from 'axios';
-import { Alerts } from 'components/Alerts/Alerts';
-import { UPDATE_PATIENT_ADDRESS } from 'graphql/address';
-import { useMutation } from 'react-apollo-hooks';
-import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
+import { MedicineCartItem, useShoppingCart } from 'components/MedicinesCartProvider';
+import { GET_PATIENT_ADDRESSES_LIST, UPDATE_PATIENT_ADDRESS } from 'graphql/address';
 import {
   GetPatientAddressList,
   GetPatientAddressListVariables,
   GetPatientAddressList_getPatientAddressList_addressList as Address,
 } from 'graphql/types/GetPatientAddressList';
-import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
-import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
-import { gtmTracking } from '../../gtmTracking';
-import {
-  pharmaStateCodeMapping,
-  getDiffInDays,
-  TAT_API_TIMEOUT_IN_MILLI_SEC,
-} from 'helpers/commonHelpers';
+import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
 import {
   checkServiceAvailability,
   checkSkuAvailability,
   checkTatAvailability,
 } from 'helpers/MedicineApiCalls';
-import fetchUtil from 'helpers/fetch';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import isNull from 'lodash/isNull';
+import moment from 'moment';
+import React, { useEffect, useRef } from 'react';
+import { useApolloClient, useMutation } from 'react-apollo-hooks';
+import { gtmTracking } from '../../gtmTracking';
 
 export const formatAddress = (address: Address) => {
   const addressFormat = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
@@ -217,15 +209,6 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-const apiDetails = {
-  url: process.env.PHARMACY_MED_INFO_URL,
-  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
-  deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
-  service_url: process.env.PHARMACY_SERVICE_AVAILABILITY,
-  deliveryHeaderTATUrl: process.env.PHARMACY_MED_DELIVERY_HEADER_TAT,
-};
-
 type HomeDeliveryProps = {
   setDeliveryTime: (deliveryTime: string) => void;
   deliveryTime: string;
@@ -264,8 +247,6 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     setDeliveryAddresses,
     cartItems,
     setStoreAddressId,
-    medicineCartType,
-    removeCartItems,
     updateItemShippingStatus,
     changeCartTatStatus,
     pharmaAddressDetails,
@@ -445,7 +426,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       return item.sku;
     });
     setDeliveryLoading(true);
-    await checkSkuAvailability(lookUp.join(','), pharmaAddressDetails.pincode)
+    await checkSkuAvailability(lookUp.join(','), zipCode)
       .then((res: any) => {
         try {
           if (res && res.data && res.data.response) {
