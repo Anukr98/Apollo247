@@ -21,10 +21,9 @@ import {
   sendBrowserNotitication,
 } from 'notifications-service/handlers';
 import PDFDocument from 'pdfkit';
-import { uploadPdfFileToBlobStorage, textInRow, writeRow } from 'helpers/uploadFileToBlob';
+import { textInRow, writeRow } from 'helpers/uploadFileToBlob';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { Doctor } from 'doctors-service/entities';
-import { doctorOnlineStatusTypeDefs } from 'doctors-service/resolvers/doctorOnlineStatus';
 
 type PushNotificationMessage = {
   messageId: string;
