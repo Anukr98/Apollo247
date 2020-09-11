@@ -393,7 +393,7 @@ const RecordType: RecordTypeType[] = [
     key: MedicalRecordType.HEALTHCHECK,
   },
   {
-    value: _startCase(_toLower(MedicalRecordType.HOSPITALIZATION)).replace('_', ' '),
+    value: 'Discharge Summary',
     key: MedicalRecordType.HOSPITALIZATION,
   },
 ];
