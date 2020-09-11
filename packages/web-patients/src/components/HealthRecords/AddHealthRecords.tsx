@@ -769,7 +769,7 @@ export const AddHealthRecords: React.FC = (props) => {
                     expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
                     classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
                   >
-                    {'Documents Uploaded'}
+                    {'Document Uploaded'}
                   </ExpansionPanelSummary>
                   <ExpansionPanelDetails className={classes.panelDetails}>
                     <Grid container spacing={2}>
@@ -801,80 +801,74 @@ export const AddHealthRecords: React.FC = (props) => {
                             </Grid>
                           ))
                         : null}
-
-                      <Grid item sm={4} className={classes.gridWidth}>
-                        <div className={classes.uploadImage}>
-                          <input
-                            disabled={showSpinner}
-                            type="file"
-                            ref={refFileInput}
-                            onChange={async (e) => {
-                              const fileNames = e.target.files;
-                              if (fileNames && fileNames.length > 0) {
-                                const file = fileNames[0] || null;
-                                const fileExtension = file.name.split('.').pop();
-                                const fileSize = file.size;
-                                if (fileSize > 2000000) {
-                                  setIsAlertOpen(true);
-                                  setAlertMessage(INVALID_FILE_SIZE_ERROR);
-                                } else if (
-                                  fileExtension &&
-                                  (fileExtension.toLowerCase() === 'png' ||
-                                    fileExtension.toLowerCase() === 'jpg' ||
-                                    fileExtension.toLowerCase() === 'jpeg')
-                                ) {
-                                  setIsUploading(true);
-                                  if (file) {
-                                    const aphBlob = await client
-                                      .uploadBrowserFile({ file })
-                                      .catch((error: any) => {
-                                        throw error;
-                                      });
-                                    if (aphBlob && aphBlob.name) {
-                                      const url = client.getBlobUrl(aphBlob.name);
-                                      // let uploadedFiles = uploadedDocuments;
-                                      toBase64(file)
-                                        .then((res) => {
-                                          // uploadedFiles.push({
-                                          //   baseFormat: res,
-                                          //   imageUrl: url,
-                                          //   name: aphBlob.name,
-                                          //   fileType: fileExtension.toLowerCase(),
-                                          // });
-                                          setUploadedDocuments([
-                                            {
-                                              baseFormat: res,
-                                              imageUrl: url,
-                                              name: aphBlob.name,
-                                              fileType: fileExtension.toLowerCase(),
-                                            },
-                                          ]);
-                                          setIsUploading(false);
-                                          // setForceRender(!forceRender); // Added because after setUploadedDocuments component is not rerendering.
-                                        })
-                                        .catch((e: any) => {
-                                          setIsUploading(false);
-                                          setIsAlertOpen(true);
-                                          setAlertMessage('Error while uploading the file');
+                      {uploadedDocuments.length === 0 && (
+                        <Grid item sm={4} className={classes.gridWidth}>
+                          <div className={classes.uploadImage}>
+                            <input
+                              disabled={showSpinner}
+                              type="file"
+                              ref={refFileInput}
+                              onChange={async (e) => {
+                                const fileNames = e.target.files;
+                                if (fileNames && fileNames.length > 0) {
+                                  const file = fileNames[0] || null;
+                                  const fileExtension = file.name.split('.').pop();
+                                  const fileSize = file.size;
+                                  if (fileSize > 2000000) {
+                                    setIsAlertOpen(true);
+                                    setAlertMessage(INVALID_FILE_SIZE_ERROR);
+                                  } else if (
+                                    fileExtension &&
+                                    (fileExtension.toLowerCase() === 'png' ||
+                                      fileExtension.toLowerCase() === 'jpg' ||
+                                      fileExtension.toLowerCase() === 'jpeg')
+                                  ) {
+                                    setIsUploading(true);
+                                    if (file) {
+                                      const aphBlob = await client
+                                        .uploadBrowserFile({ file })
+                                        .catch((error: any) => {
+                                          throw error;
                                         });
+                                      if (aphBlob && aphBlob.name) {
+                                        const url = client.getBlobUrl(aphBlob.name);
+                                        toBase64(file)
+                                          .then((res) => {
+                                            setUploadedDocuments([
+                                              {
+                                                baseFormat: res,
+                                                imageUrl: url,
+                                                name: aphBlob.name,
+                                                fileType: fileExtension.toLowerCase(),
+                                              },
+                                            ]);
+                                            setIsUploading(false);
+                                            // setForceRender(!forceRender); // Added because after setUploadedDocuments component is not rerendering.
+                                          })
+                                          .catch((e: any) => {
+                                            setIsUploading(false);
+                                            setIsAlertOpen(true);
+                                            setAlertMessage('Error while uploading the file');
+                                          });
+                                      }
                                     }
+                                  } else {
+                                    setIsAlertOpen(true);
+                                    setAlertMessage(
+                                      'Invalid File Extension. Only files with .jpg,.jpeg or .png  extensions are allowed.'
+                                    );
                                   }
-                                } else {
-                                  setIsAlertOpen(true);
-                                  setAlertMessage(
-                                    'Invalid File Extension. Only files with .jpg,.jpeg or .png  extensions are allowed.'
-                                  );
+                                  setIsUploading(false);
                                 }
-                                setIsUploading(false);
-                              }
-                            }}
-                            id="icon-button-file"
-                          />
-                          <label htmlFor="icon-button-file">
-                            {isUploading ? <CircularProgress /> : 'Add document'}
-                          </label>
-                        </div>
-                      </Grid>
+                              }}
+                              id="icon-button-file"
+                            />
+                            <label htmlFor="icon-button-file">
+                              {isUploading ? <CircularProgress /> : 'Add document'}
+                            </label>
+                          </div>
+                        </Grid>
+                      )}
                     </Grid>
                   </ExpansionPanelDetails>
                 </ExpansionPanel>
