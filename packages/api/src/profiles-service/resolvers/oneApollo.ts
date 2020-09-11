@@ -8,6 +8,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format } from 'date-fns';
 import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 import { Patient } from 'profiles-service/entities';
+import { winstonLogger } from 'customWinstonLogger';
 
 export const oneApolloTypeDefs = gql`
   type UserDetailResponse {
@@ -67,6 +68,8 @@ type TransactionDetails = {
   netAmount: number;
   grossAmount: number;
 };
+
+const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
 
 const getOneApolloUser: Resolver<
   null,
@@ -173,7 +176,7 @@ const createOneApolloUser: Resolver<
     } else {
       mobileNumber = patient.mobileNumber;
     }
-    const userCreateResponse = await oneApollo.createOneApolloUser({
+    const userPayload = {
       FirstName: patient.firstName,
       LastName: patient.lastName,
       BusinessUnit: <string>process.env.ONEAPOLLO_BUSINESS_UNIT,
@@ -183,7 +186,11 @@ const createOneApolloUser: Resolver<
       Email: patient.emailAddress,
       StoreCode: getStoreCode(patient),
       CustomerId: patient.uhid,
-    });
+    };
+    //adding log for prod, remove it once testing is done...
+    profilesLogger.log('info', `createOneApolloUser payload - ${JSON.stringify(userPayload)}`);
+
+    const userCreateResponse = await oneApollo.createOneApolloUser(userPayload);
 
     if (userCreateResponse.Success) {
       return {
