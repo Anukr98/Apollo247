@@ -6,7 +6,6 @@ import _uniq from 'lodash/uniq';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import axios from 'axios';
 import { checkSkuAvailability } from 'helpers/MedicineApiCalls';
 
 export interface MedicineCartItem {
