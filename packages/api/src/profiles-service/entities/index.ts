@@ -46,13 +46,6 @@ export enum ONE_APOLLO_PRODUCT_CATEGORY {
   PHARMA = 'P247',
 }
 
-export interface TransactionLineItemsPartial {
-  ProductCode: string;
-  NetAmount: number;
-  GrossAmount: number;
-  DiscountAmount: number;
-}
-
 export interface PaginateParams {
   take?: number;
   skip?: number;
