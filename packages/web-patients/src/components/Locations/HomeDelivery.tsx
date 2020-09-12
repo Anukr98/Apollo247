@@ -213,13 +213,7 @@ type HomeDeliveryProps = {
   setDeliveryTime: (deliveryTime: string) => void;
   deliveryTime: string;
   selectedZipCode: (zipCode: string) => void;
-  checkForPriceUpdate: (
-    shopid: string,
-    pincode: string,
-    lat: string,
-    lng: string,
-    tatType: string
-  ) => void;
+  checkForPriceUpdate: (tatRes: any) => void;
   setLatitude: (latitude: string) => void;
   setLongitude: (longitude: string) => void;
   latitude: string;
@@ -250,6 +244,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     updateItemShippingStatus,
     changeCartTatStatus,
     pharmaAddressDetails,
+    removeCartItems,
   } = useShoppingCart();
   const { setDeliveryTime, deliveryTime } = props;
   const { isSigningIn } = useAuth();
@@ -353,6 +348,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         let obj = cartItems.find((o) => o.sku === nonDeliverableSKU);
         arrSku.push(obj.sku);
       });
+      removeCartItems && removeCartItems(arrSku);
       setShowNonDeliverablePopup(false);
       setNonServicableSKU([]);
     }
@@ -405,13 +401,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       .then((res: any) => {
         if (res && res.data && res.data.response && res.data.response.tat) {
           setDeliveryTime(res.data.response.tat);
-          props.checkForPriceUpdate(
-            res.data.response.storeCode,
-            paramObject.postalcode,
-            paramObject.lat,
-            paramObject.lng,
-            res.data.response.storeType
-          );
+          props.checkForPriceUpdate(res.data.response);
           changeCartTatStatus && changeCartTatStatus(true);
         }
       })

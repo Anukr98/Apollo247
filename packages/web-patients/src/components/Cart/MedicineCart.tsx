@@ -764,16 +764,59 @@ export const MedicineCart: React.FC = (props) => {
     }
   }, [showOrderPopup]);
 
-  const checkForPriceUpdate = (
-    sId: string,
-    pincode: string,
-    lat: string,
-    lng: string,
-    tatType: string
-  ) => {
-    setShopId(sId);
-    setTatType(tatType);
-    checkForCartChanges(pincode, lat, lng);
+  const checkForPriceUpdate = (tatRes: any) => {
+    setShopId(tatRes.storeCode);
+    setTatType(tatRes.storeType);
+
+    // checkForCartChanges(pincode, lat, lng);
+    checkCartChangesUtil(tatRes.items);
+  };
+
+  const checkCartChangesUtil = (updatedCartItems: any) => {
+    cartItems.map((item, index) => {
+      const itemToBeMatched = _find(updatedCartItems, { sku: item.sku });
+      const storeItemPrice =
+        (itemToBeMatched.mrp && Number((itemToBeMatched.mrp * Number(item.mou || 1)).toFixed(2))) ||
+        0;
+
+      if (
+        itemToBeMatched.mrp !== 0 &&
+        Number((itemToBeMatched.mrp * Number(item.mou || 1)).toFixed(2)).toFixed(2) !==
+          Number(item.price).toFixed(2) &&
+        !isDiffLessOrGreaterThan25Percent(item.price, storeItemPrice)
+      ) {
+        let newItem = { ...item };
+        const isDiff = storeItemPrice
+          ? isDiffLessOrGreaterThan25Percent(item.price, storeItemPrice)
+          : true;
+        const storeItemSP =
+          !isDiff && item.special_price
+            ? getSpecialPriceFromRelativePrices(
+                item.price,
+                Number(item.special_price),
+                itemToBeMatched.mrp * Number(item.mou || 1)
+              )
+            : item.special_price;
+        newItem['price'] = isDiff ? item.price : storeItemPrice;
+        if (item.special_price) {
+          // get new special price
+          newItem['special_price'] = isDiff ? item.special_price : storeItemSP;
+        }
+
+        /* the below commented code are the price difference
+          values which could be used in the near future */
+        const changedDetailObj = {
+          // pDiff: item.price - updatedCartItems[index].price,
+          availabilityChange: true,
+          // splPDiff: item.special_price
+          //   ? Number(item.special_price) - Number(updatedCartItems[index].special_price)
+          //   : 0,
+        };
+        const updatedObj = Object.assign({}, item, changedDetailObj);
+        updateCartItemPrice(newItem);
+        setPriceDifferencePopover(true);
+      }
+    });
   };
 
   const getSpecialPriceFromRelativePrices = (
@@ -794,51 +837,8 @@ export const MedicineCart: React.FC = (props) => {
     return await checkTatAvailability(items, pincode, lat, lng)
       .then((res: any) => {
         const updatedCartItems = res && res.data && res.data.response && res.data.response.items;
-        cartItems.map((item, index) => {
-          const itemToBeMatched = _find(updatedCartItems, { sku: item.sku });
-          const storeItemPrice =
-            (itemToBeMatched.mrp &&
-              Number((itemToBeMatched.mrp * Number(item.mou || 1)).toFixed(2))) ||
-            0;
-
-          if (
-            itemToBeMatched.mrp !== 0 &&
-            Number((itemToBeMatched.mrp * Number(item.mou || 1)).toFixed(2)).toFixed(2) !==
-              Number(item.price).toFixed(2) &&
-            !isDiffLessOrGreaterThan25Percent(item.price, storeItemPrice)
-          ) {
-            let newItem = { ...item };
-            const isDiff = storeItemPrice
-              ? isDiffLessOrGreaterThan25Percent(item.price, storeItemPrice)
-              : true;
-            const storeItemSP =
-              !isDiff && item.special_price
-                ? getSpecialPriceFromRelativePrices(
-                    item.price,
-                    Number(item.special_price),
-                    itemToBeMatched.mrp * Number(item.mou || 1)
-                  )
-                : item.special_price;
-            newItem['price'] = isDiff ? item.price : storeItemPrice;
-            if (item.special_price) {
-              // get new special price
-              newItem['special_price'] = isDiff ? item.special_price : storeItemSP;
-            }
-
-            /* the below commented code are the price difference
-              values which could be used in the near future */
-            const changedDetailObj = {
-              // pDiff: item.price - updatedCartItems[index].price,
-              availabilityChange: true,
-              // splPDiff: item.special_price
-              //   ? Number(item.special_price) - Number(updatedCartItems[index].special_price)
-              //   : 0,
-            };
-            const updatedObj = Object.assign({}, item, changedDetailObj);
-            updateCartItemPrice(newItem);
-            setPriceDifferencePopover(true);
-          }
-        });
+        //call the fxn here
+        checkCartChangesUtil(updatedCartItems);
         return true;
       })
       .catch((e) => {
@@ -879,19 +879,18 @@ export const MedicineCart: React.FC = (props) => {
     });
     return sum;
   };
-  const getCouponDiscountTotal = () => {
-    let sum = 0;
-    cartItems.forEach((item) => {
-      if (item.special_price === 0) {
-        sum += Number(item.price) * item.quantity;
-      }
-    });
-    return sum;
-  };
+  // const getCouponDiscountTotal = () => {
+  //   let sum = 0;
+  //   cartItems.forEach((item) => {
+  //     if (item.special_price === 0) {
+  //       sum += Number(item.price) * item.quantity;
+  //     }
+  //   });
+  //   return sum;
+  // };
   const mrpTotal = getMRPTotal();
-  const couponDiscountTotal = getCouponDiscountTotal();
+  // const couponDiscountTotal = getCouponDiscountTotal();
   let productDiscount = mrpTotal - cartTotal;
-  console.log('cartTotal', cartTotal);
   // below variable is for calculating delivery charges after applying coupon discount
   const modifiedAmountForCharges =
     validateCouponResult &&
