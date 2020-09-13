@@ -75,7 +75,7 @@ const DoctorsLanding = loadable(() => import('components/DoctorsLanding'));
 import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
 import { Loader } from 'components/Loader';
 import { Prescription } from 'components/Consult/V2/Prescription';
-import { Sitemap } from 'components/Sitemap';
+// import { Sitemap } from 'components/Sitemap';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -220,8 +220,8 @@ const App: React.FC = () => {
         <Route exact path={clientRoutes.medicinePrescription()} component={MedicinePrescriptions} />
         <Route exact path={clientRoutes.covidProtocol()} component={covidProtocolLanding} />
         <Route exact path={clientRoutes.prescription(':appointmentId')} component={Prescription} />
-        <Route exact path={clientRoutes.sitemap(':sitemap')} component={Sitemap} />
-        <Route exact path={clientRoutes.childSitemap(':sitemap', ':pageNo')} component={Sitemap} />
+        {/* <Route exact path={clientRoutes.sitemap(':sitemap')} component={Sitemap} />
+        <Route exact path={clientRoutes.childSitemap(':sitemap', ':pageNo')} component={Sitemap} /> */}
       </Switch>
     </div>
   );
