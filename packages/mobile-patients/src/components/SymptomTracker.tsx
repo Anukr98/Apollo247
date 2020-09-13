@@ -517,17 +517,24 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
               style={styles.plainBtn}
               onPress={() => {
                 insertMessage = insertMessage.concat({
-                  text: string.symptomChecker.thanksForGivingAnswers.replace(
-                    '{{name}}',
-                    selectedPatient.firstName + ' ' + selectedPatient.lastName
-                  ),
+                  text: 'No Other Symptom',
+                  isSentByPatient: true,
                 });
                 setMessages(insertMessage);
-                setChatEnded(true);
                 setTimeout(() => {
-                  flatlistRef.current.scrollToEnd({ animated: true });
-                }, 300);
-                fetchSymptoms();
+                  insertMessage = insertMessage.concat({
+                    text: string.symptomChecker.thanksForGivingAnswers.replace(
+                      '{{name}}',
+                      selectedPatient.firstName + ' ' + selectedPatient.lastName
+                    ),
+                  });
+                  setMessages(insertMessage);
+                  setChatEnded(true);
+                  setTimeout(() => {
+                    flatlistRef.current.scrollToEnd({ animated: true });
+                  }, 300);
+                  fetchSymptoms();
+                }, 500);
               }}
             >
               <Text style={styles.plainBtnTxt}>{string.symptomChecker.noOtherSymptoms}</Text>
@@ -569,7 +576,12 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     try {
       const res = await updateSymptomTrackerChat(chat_id, body);
       if (res?.data?.dialogue) {
-        insertMessage = insertMessage.concat({ text: res.data.dialogue.text });
+        insertMessage = insertMessage.concat({
+          text:
+            insertMessage.length > 3
+              ? string.symptomChecker.addAnotherSymptom
+              : res.data.dialogue.text,
+        });
         setDefaultSymptoms(res.data.dialogue.options);
         setTimeout(() => {
           flatlistRef.current.scrollToEnd({ animated: true });
@@ -585,20 +597,37 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     return (
       <View>
         {chatEnded && symptoms.length > 0 ? (
-          <View style={styles.symptomsContainer}>
-            <View style={styles.seperatorLine}>
-              <Text style={styles.patientDetailsTitle}>{string.symptomChecker.symptoms}</Text>
+          <View>
+            <View style={styles.symptomsContainer}>
+              <View style={styles.seperatorLine}>
+                <Text style={styles.patientDetailsTitle}>{string.symptomChecker.symptoms}</Text>
+              </View>
+              {symptoms &&
+                symptoms.length > 0 &&
+                symptoms.map((item, index) => {
+                  return (
+                    <View key={index} style={[styles.itemRowStyle, { marginTop: 14 }]}>
+                      <View style={styles.bullet} />
+                      <Text style={styles.patientDetailsText}>{item.name}</Text>
+                    </View>
+                  );
+                })}
             </View>
-            {symptoms &&
-              symptoms.length > 0 &&
-              symptoms.map((item, index) => {
-                return (
-                  <View key={index} style={[styles.itemRowStyle, { marginTop: 14 }]}>
-                    <View style={styles.bullet} />
-                    <Text style={styles.patientDetailsText}>{item.name}</Text>
-                  </View>
-                );
-              })}
+            <View style={[styles.symptomsContainer, { marginTop: 20 }]}>
+              <View style={styles.seperatorLine}>
+                <Text style={styles.patientDetailsTitle}>Specialities</Text>
+              </View>
+              {specialities &&
+                specialities.length > 0 &&
+                specialities.map((item, index) => {
+                  return (
+                    <View key={index} style={[styles.itemRowStyle, { marginTop: 14 }]}>
+                      <View style={styles.bullet} />
+                      <Text style={styles.patientDetailsText}>{item.name}</Text>
+                    </View>
+                  );
+                })}
+            </View>
           </View>
         ) : (
           <View />
@@ -838,7 +867,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   patientDetailContainer: {
-    backgroundColor: 'rgba(252, 183, 22, 0.2)',
+    backgroundColor: 'rgba(2, 71, 91, 0.1)',
     paddingRight: 20,
     paddingLeft: 25,
     paddingTop: 13,
@@ -849,7 +878,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   symptomsContainer: {
-    backgroundColor: 'rgba(252, 183, 22, 0.2)',
+    backgroundColor: 'rgba(2, 71, 91, 0.1)',
     paddingRight: 20,
     paddingLeft: 25,
     paddingVertical: 13,
@@ -858,7 +887,7 @@ const styles = StyleSheet.create({
     marginLeft: 40,
   },
   patientDetailsTitle: {
-    ...theme.fonts.IBMPlexSansMedium(18),
+    ...theme.fonts.IBMPlexSansMedium(16),
     color: colors.LIGHT_BLUE,
   },
   seperatorLine: {
@@ -875,7 +904,6 @@ const styles = StyleSheet.create({
   },
   selectMemberBtn: {
     marginTop: 20,
-    alignSelf: 'flex-end',
     height: 30,
   },
   botIcon: {
