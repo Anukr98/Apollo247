@@ -659,15 +659,15 @@ export const isValidName = (value: string) =>
     : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
     ? true
     : false;
-  
-export const isValidPhoneNumber = (value: string) =>{
-    const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
-      ? !/^(234){1}\d{0,9}$/.test(value)
-        ? false
-        : true
-      : true;
-    return isValidNumber;
-}
+
+export const isValidPhoneNumber = (value: string) => {
+  const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
+    ? !/^(234){1}\d{0,9}$/.test(value)
+      ? false
+      : true
+    : true;
+  return isValidNumber;
+};
 
 export const extractUrlFromString = (text: string): string | undefined => {
   const urlRegex = /(https?:\/\/[^ ]*)/;
@@ -1323,6 +1323,35 @@ export const parseNumber = (number: string | number, decimalPoints?: number) =>
 
 export const getMaxQtyForMedicineItem = (qty?: number | string) => {
   return qty ? Number(qty) : AppConfig.Configuration.CART_ITEM_MAX_QUANTITY;
+};
+
+export const formatToCartItem = ({
+  sku,
+  name,
+  price,
+  special_price,
+  mou,
+  is_prescription_required,
+  MaxOrderQty,
+  type_id,
+  is_in_stock,
+  thumbnail,
+  image,
+}: MedicineProduct): ShoppingCartItem => {
+  return {
+    id: sku,
+    name: name,
+    price: price,
+    specialPrice: Number(special_price) || undefined,
+    mou: mou,
+    quantity: 1,
+    prescriptionRequired: is_prescription_required == '1',
+    isMedicine: (type_id || '').toLowerCase() == 'pharma',
+    thumbnail: thumbnail || image,
+    maxOrderQty: MaxOrderQty,
+    productType: type_id,
+    isInStock: is_in_stock == 1,
+  };
 };
 
 export const addPharmaItemToCart = (

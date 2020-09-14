@@ -29,7 +29,11 @@ export const MedSearchSectionProductView: React.FC<Props> = ({
   };
 
   const renderTitle = () => {
-    return <Text style={styles.title}>{title}</Text>;
+    return (
+      <Text style={styles.title} numberOfLines={3}>
+        {title}
+      </Text>
+    );
   };
 
   return (
