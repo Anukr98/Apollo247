@@ -31,7 +31,7 @@ const plugins = [
     template: './index.html',
     templateParameters: { 
       env: process.env.NODE_ENV,
-      licenseCode: process.env.WEBENGAGE_Doctor_ID, 
+      licenseCode: process.env.WEBENGAGE_DOCTOR_ID, 
     },
     inject: true,
     favicon: './favicon.png',
