@@ -447,8 +447,9 @@ const isPastAppointment = (appointmentDateTime: string) =>
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const appointmentDate = moment(appointmentTime);
   const followUpDayMoment = appointmentDate.add(7, 'days');
-  let diffInDays = followUpDayMoment.diff(moment(), 'days');
+  let diffInDays = followUpDayMoment.diff(moment(), 'days'); // it will applicable if appointmentDate > followupDayMoment and diff shouldn't cross 7
   if (appointmentDate < followUpDayMoment) {
+    // diff(moment(), 'days') gives 6 days x hours as 6days, to show it as 7 days adding +1
     diffInDays += 1;
   }
   if (diffInDays === 0) {
