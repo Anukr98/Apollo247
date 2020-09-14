@@ -545,14 +545,16 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
             <img src={require('images/ic_addfile.svg')} />
           </Link>
         </div>
-        <div className={classes.filterIcon}>
-          <img
-            ref={locationRef}
-            onClick={() => setShowPopover(true)}
-            src={require('images/ic_filter.svg')}
-            alt=""
-          />
-        </div>
+        {allCombinedData && allCombinedData.length > 0 && (
+          <div className={classes.filterIcon}>
+            <img
+              ref={locationRef}
+              onClick={() => setShowPopover(true)}
+              src={require('images/ic_filter.svg')}
+              alt=""
+            />
+          </div>
+        )}
         <Scrollbars
           autoHide={true}
           autoHeight
