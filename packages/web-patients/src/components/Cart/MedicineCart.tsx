@@ -916,6 +916,7 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult.discount >= productDiscount
       ? Number(cartTotal) - couponDiscount
       : Number(cartTotal);
+
   const deliveryCharges =
     modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
     modifiedAmountForCharges <= 0 ||
@@ -1645,11 +1646,16 @@ export const MedicineCart: React.FC = (props) => {
                 </>
               ) : null}
             </div>
-            <div className={`${classes.medicineListGroup} ${classes.medicinesAddmore}`}>
-              <img src={require('images/ic_priority_high.svg')} alt="info icon" />
-              Add <span className={classes.addmoreAmount}>126.00</span> of eligible items to your
-              order to qualify for FREE Delivery.
-            </div>
+            {deliveryCharges !== 0 && (
+              <div className={`${classes.medicineListGroup} ${classes.medicinesAddmore}`}>
+                <img src={require('images/ic_priority_high.svg')} alt="info icon" />
+                Add{' '}
+                <span className={classes.addmoreAmount}>
+                  {(Number(pharmacyMinDeliveryValue) - cartTotal).toFixed(2)}
+                </span>{' '}
+                of eligible items to your order to qualify for FREE Delivery.
+              </div>
+            )}
           </Scrollbars>
         </div>
         <div className={classes.rightSection}>
@@ -1969,8 +1975,7 @@ export const MedicineCart: React.FC = (props) => {
                         : !deliveryAddressId ||
                           (deliveryAddressId && deliveryAddressId.length === 0)) ||
                       !isPaymentButtonEnable ||
-                      disableSubmit ||
-                      totalWithCouponDiscount == 0
+                      disableSubmit
                     }
                     className={
                       (!nonCartFlow
