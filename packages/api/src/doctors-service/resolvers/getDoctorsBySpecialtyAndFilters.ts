@@ -11,10 +11,8 @@ import {
 } from 'doctors-service/entities/';
 import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
-
 import { ApiConstants } from 'ApiConstants';
 import { debugLog } from 'customWinstonLogger';
-import { distanceBetweenTwoLatLongInMeters } from 'helpers/distanceCalculator';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
@@ -399,10 +397,15 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         order: 'asc',
         nested_path: 'doctorSlots.slots',
         nested_filter: {
-          range: {
-            'doctorSlots.slots.slotThreshold': {
-              gte: 'now',
-            },
+          bool: {
+            must: [
+              { match: { 'doctorSlots.slots.status': 'OPEN' } },
+              {
+                range: {
+                  'doctorSlots.slots.slotThreshold': { gt: 'now' },
+                },
+              },
+            ],
           },
         },
       },
@@ -448,6 +451,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
     doctor['onlineStatus'] = DOCTOR_ONLINE_STATUS.ONLINE;
+    doctor['mobileNumber'] = '';
     doctor['doctorHospital'] = [];
     doctor['openSlotDates'] = [];
     doctor['activeSlotCount'] = 0;

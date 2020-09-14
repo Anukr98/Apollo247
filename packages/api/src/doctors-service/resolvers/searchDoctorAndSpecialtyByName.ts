@@ -177,6 +177,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   for (const doc of responsePerfectMatchDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
+    doctor['mobileNumber'] = '';
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
     }
@@ -294,6 +295,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   for (const doc of responseDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
+    doctor['mobileNumber'] = '';
     if (doctor['languages'] instanceof Array) {
       doctor['languages'] = doctor['languages'].join(', ');
     }
@@ -477,6 +479,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     for (const doc of responsePossibleDoctors.body.hits.hits) {
       const doctor = doc._source;
       doctor['id'] = doctor.doctorId;
+      doctor['mobileNumber'] = '';
       doctor['doctorHospital'] = [];
       doctor['activeSlotCount'] = 0;
       if (doctor['languages'] instanceof Array) {
