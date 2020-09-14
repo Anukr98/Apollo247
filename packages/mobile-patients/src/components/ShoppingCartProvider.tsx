@@ -29,6 +29,7 @@ export interface ShoppingCartItem {
   unserviceable?: boolean;
   isMedicine: boolean;
   productType?: 'FMCG' | 'Pharma' | 'PL';
+  isFreeCouponProduct?: boolean;
 }
 
 export interface CouponProducts {
@@ -40,6 +41,7 @@ export interface CouponProducts {
   sku: string;
   specialPrice: number;
   subCategoryId: any;
+  couponFree: boolean;
 }
 
 export interface PhysicalPrescription {
@@ -82,6 +84,7 @@ export interface CartProduct {
   quantity: number;
   discountAmt: number;
   onMrp: boolean;
+  couponFree?: boolean;
 }
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
 
@@ -545,8 +548,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
     let discount = 0;
     products &&
       products.forEach((item) => {
-        if (item.mrp != item.specialPrice) {
-          discount = discount + (item.mrp - item.specialPrice) * item.quantity;
+        let quantity = item.quantity;
+        if (item.couponFree) {
+          quantity = 1; // one free product
+          discount = discount + item.mrp * quantity;
+        } else if (item.mrp != item.specialPrice) {
+          discount = discount + (item.mrp - item.specialPrice) * quantity;
         }
       });
     return discount;

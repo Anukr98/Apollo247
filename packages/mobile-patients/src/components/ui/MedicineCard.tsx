@@ -179,7 +179,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     maxQty,
   } = props;
 
-  const isSpecialPrice = !!specialPrice || specialPrice === 0;
+  const isSpecialPrice = specialPrice !== price && (!!specialPrice || specialPrice === 0);
   const priceToBeDisplayed = isSpecialPrice ? specialPrice : price;
 
   const renderTitleAndIcon = () => {

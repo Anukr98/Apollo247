@@ -413,16 +413,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             (item) => item.id == medicineDetails.sku
           );
           let quantity = couponProducts[index]!.quantity;
-          if (existingCartItem.length) {
-            quantity += existingCartItem[0].quantity;
-          }
 
           return {
             id: medicineDetails!.sku!,
             mou: medicineDetails.mou,
             name: medicineDetails!.name,
             price: medicineDetails.price,
-            specialPrice: Number(couponProducts[index]!.mrp),
+            specialPrice: Number(couponProducts[index]!.specialPrice),
             quantity,
             prescriptionRequired: medicineDetails.is_prescription_required == '1',
             isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
@@ -430,6 +427,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             isInStock: !!medicineDetails.is_in_stock,
             maxOrderQty: medicineDetails.MaxOrderQty,
             productType: medicineDetails.type_id,
+            isFreeCouponProduct: couponProducts[index]!.couponFree,
           } as ShoppingCartItem;
         });
         addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
