@@ -81,7 +81,7 @@ import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
-export interface CheckoutSceneNewProps extends NavigationScreenProps {}
+export interface CheckoutSceneNewProps extends NavigationScreenProps { }
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -388,6 +388,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             console.log(error);
           }
           clearCartInfo && clearCartInfo();
+          localStorage.removeItem('updatedFreeCoupon')
           handleOrderSuccess(`${orderAutoId}`);
         }
       })
@@ -416,7 +417,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         order_AutoId: orderAutoId,
       };
       postWebEngageEvent(WebEngageEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
-    } catch (error) {}
+    } catch (error) { }
     const token = await firebase.auth().currentUser!.getIdToken();
     console.log({ token });
     const checkoutEventAttributes = {
@@ -466,15 +467,15 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         shopId: storeId || null,
         shopAddress: selectedStore
           ? {
-              storename,
-              address,
-              workinghrs,
-              phone,
-              city,
-              state,
-              zipcode: pinCode,
-              stateCode: state_id,
-            }
+            storename,
+            address,
+            workinghrs,
+            phone,
+            city,
+            state,
+            zipcode: pinCode,
+            stateCode: state_id,
+          }
           : null,
         showPrescriptionAtStore: storeId ? showPrescriptionAtStore : false,
         patientAddressId: deliveryAddressId,
@@ -576,8 +577,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           description: isPriceMismatch
             ? 'Your order failed due to mismatch in cart items price. Please remove items from cart and add again to place order.'
             : isCouponError
-            ? 'Sorry, invalid coupon applied. Remove the coupon and try again.'
-            : `Your order failed due to some temporary issue :( Please submit the order again.`,
+              ? 'Sorry, invalid coupon applied. Remove the coupon and try again.'
+              : `Your order failed due to some temporary issue :( Please submit the order again.`,
         });
       });
   };
@@ -1236,8 +1237,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           !loading ? (
             renderChennaiOrderFormAndPayButton()
           ) : (
-            <Spinner />
-          )
+              <Spinner />
+            )
         ) : !loading ? (
           <ScrollView
             style={{ flex: 0.9 }}
@@ -1252,8 +1253,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             {(isCashOnDelivery || HCorder) && renderPlaceorder()}
           </ScrollView>
         ) : (
-          <Spinner />
-        )}
+              <Spinner />
+            )}
       </SafeAreaView>
     </View>
   );
