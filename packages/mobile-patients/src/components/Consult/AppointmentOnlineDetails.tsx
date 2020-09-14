@@ -192,7 +192,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const movedFrom = props.navigation.state.params!.from;
   console.log('******DATA*********', { data, doctorDetails });
 
-  const dateIsAfter = moment(data.appointmentDateTime).isAfter(moment(new Date()));
+  const fifteenMinutesLater = new Date();
+  const dateIsAfter = moment(data.appointmentDateTime).isAfter(
+    moment(fifteenMinutesLater.setMinutes(fifteenMinutesLater.getMinutes() + 15))
+  );
   const [cancelAppointment, setCancelAppointment] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
