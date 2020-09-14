@@ -1947,8 +1947,7 @@ export const MedicineCart: React.FC = (props) => {
                         : !deliveryAddressId ||
                           (deliveryAddressId && deliveryAddressId.length === 0)) ||
                       !isPaymentButtonEnable ||
-                      disableSubmit ||
-                      totalWithCouponDiscount == 0
+                      disableSubmit
                     }
                     className={
                       (!nonCartFlow
