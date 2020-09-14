@@ -68,14 +68,7 @@ const updateItems = async (client, token, cityStateMapping) => {
       map.city_id
     );
     items = await fetchDiagnosticsItems(token, map.state_id, map.city_id);
-    await updateItem(
-      client,
-      items,
-      map.state_id,
-      map.city_id,
-      map.state.toUpperCase(),
-      map.city.toUpperCase()
-    );
+    await updateItem(client, items, map.state_id, map.city_id, map.state.toUpperCase(), map.city);
   }
   console.log('all the items have been pushed. Terminating process');
   process.kill(process.pid);
@@ -124,7 +117,7 @@ const updateItem = async (client, items, stateId, cityId, state, city) => {
 };
 
 const updateDiagnosticItem = async (client, item, stateId, cityId, state, city) => {
-  const str = `UPDATE diagnostics SET "rate" = ${item.Rate}, "itemName" = '${item.itemname}', "toAgeInDays" = ${item.ToAgeInDays}, "isActive" = true, "itemAliasName" = '', "testInPackage" = 0, "NABL_CAP" = '', "itemRemarks" = '', "discounted" = 'N', "testPreparationData" = '', "state" = '${state}', "city" = '${city}' WHERE "itemId" = '${item.itemid}' AND "stateId" = ${stateId} AND "cityId" = ${cityId} AND "isActive" = false`;
+  const str = `UPDATE diagnostics SET "rate" = ${item.Rate}, "itemName" = '${item.itemname}', "toAgeInDays" = ${item.ToAgeInDays}, "isActive" = true, "itemAliasName" = '', "testInPackage" = 0, "NABL_CAP" = '', "itemRemarks" = '', "discounted" = 'N', "testPreparationData" = '', "state" = '${state}', "city" = '${city}' WHERE "itemId" = '${item.itemid}' AND "stateId" = ${stateId} AND "cityId" = ${cityId}`;
   try {
     const result = await client.query(str);
     if (result.rowCount != 1) {
