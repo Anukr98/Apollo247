@@ -592,33 +592,11 @@ export const HdfcLanding: React.FC = (props) => {
                     Wide Range of benefits worth 38K+ for all HDFC customers
                   </Typography>
                 </div>
-                <AphButton
-                  color="primary"
-                  variant="contained"
-                  onClick={() => {
-                    setIsLoginPopupVisible(true);
-                  }}
-                >
-                  SignUp Now
-                </AphButton>
-              </div>
-            </div>
-          </div>
-          <Typography className={classes.register}>
-            *Register Now to Unlock many more benefits
-          </Typography>
-          <div className={classes.apolloContainer}>
-            <div className={classes.apolloCare}>
-              <img src={require('images/hdfc/join-apollo.svg')} alt="Apollo World of Care" />
-              <div className={classes.acContainer}>
-                <Typography component="h4">Join The Apollo World Of Care</Typography>
-                <Typography>
-                  Register now for Round-the-clock doctor availability, ease of ordering medicines
-                  &amp; tests online and much more on Apollo 24/7
-                </Typography>
                 <Route
                   render={({ history }) => (
                     <AphButton
+                      color="primary"
+                      variant="contained"
                       onClick={() => {
                         if (!isSignedIn) setIsLoginPopupVisible(true);
                         else {
@@ -651,325 +629,256 @@ export const HdfcLanding: React.FC = (props) => {
                 />
               </div>
             </div>
+          </div>
 
-            <div className={classes.benefitContent}>
-              <Typography component="h2"> Benefits</Typography>
-              <ul className={classes.benefitList}>
+          <div className={classes.benefitContent}>
+            <Typography component="h2"> Benefits</Typography>
+            <ul className={classes.benefitList}>
+              <li>
+                <img src={require('images/hdfc/call.svg')} alt="Doctor On Call" />
+                <div className={classes.benefitDetails}>
+                  <Typography component="h3">24*7 Doctor on Call</Typography>
+                  <Typography>Get an instant call from an Apollo Doctor</Typography>
+                </div>
+              </li>
+              <li>
+                <img src={require('images/hdfc/medicine-delivery.svg')} alt="Medicine Delivery" />
+                <div className={classes.benefitDetails}>
+                  <Typography component="h3">Seamless Medicine Delivery</Typography>
+                  <Typography>Get upto 20% off on Apollo pharmacy</Typography>
+                </div>
+              </li>
+              <li>
+                <img src={require('images/hdfc/health-records.svg')} alt="Health Records" />
+                <div className={classes.benefitDetails}>
+                  <Typography component="h3">Patients Health Records</Typography>
+                  <Typography>Access to a digital vault for your health records</Typography>
+                </div>
+              </li>
+              <li>
+                <img src={require('images/hdfc/diabetes.svg')} alt="Diabetes Program" />
+                <div className={classes.benefitDetails}>
+                  <Typography component="h3">Diabetes Management Program</Typography>
+                  <Typography>Complimentary Access to Base Diabetes Management Program</Typography>
+                </div>
+              </li>
+              <li>
+                <img src={require('images/hdfc/health-testing.svg')} alt="Covid Health Testing" />
+                <div className={classes.benefitDetails}>
+                  <Typography component="h3">Covid Health Testing</Typography>
+                  <Typography>Preferential access for Covid testing</Typography>
+                </div>
+              </li>
+              <li>
+                <img src={require('images/hdfc/access.svg')} alt="Access to Apollo Services" />
+                <div className={classes.benefitDetails}>
+                  <Typography component="h3">
+                    Access to Apollo Doctors &amp; Diagnostic Services
+                  </Typography>
+                  <Typography>
+                    Get 24/7 access to Apollo Doctors and Diagnostic services on App
+                  </Typography>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <Typography className={classes.register}>
+            *Register Now to Unlock many more benefits
+          </Typography>
+          <div className={classes.apolloContainer}>
+            <div className={classes.apolloCare}>
+              <img src={require('images/hdfc/join-apollo.svg')} alt="Apollo World of Care" />
+              <div className={classes.acContainer}>
+                <Typography component="h4">Join The Apollo World Of Care</Typography>
+                <Typography>
+                  Register now for Round-the-clock doctor availability, ease of ordering medicines
+                  &amp; tests online and much more on Apollo 24/7
+                </Typography>
+
+                <Route
+                  render={({ history }) => (
+                    <AphButton
+                      color="primary"
+                      onClick={() => {
+                        if (!isSignedIn) setIsLoginPopupVisible(true);
+                        else {
+                          userSubscriptions.length != 0
+                            ? history.push(clientRoutes.welcome())
+                            : createSubscription({
+                                variables: {
+                                  userSubscription: {
+                                    mobile_number: currentPatient.mobileNumber,
+                                  },
+                                },
+                              })
+                                .then(() => {
+                                  history.push(clientRoutes.membershipHdfc());
+                                })
+                                .catch((error) => {
+                                  console.error(error);
+                                  alert('Something went wrong :(');
+                                });
+                        }
+                      }}
+                    >
+                      {isSignedIn
+                        ? userSubscriptions.length != 0
+                          ? 'Explore now'
+                          : 'Check Eligibility'
+                        : 'SignUp Now'}
+                    </AphButton>
+                  )}
+                />
+              </div>
+            </div>
+          </div>
+          <div className={classes.tncContainer}>
+            <div className={classes.tncContent}>
+              <Typography component="h4">Terms &amp; Conditions</Typography>
+              <ul className={classes.tncList}>
                 <li>
-                  <img src={require('images/hdfc/call.svg')} alt="Doctor On Call" />
-                  <div className={classes.benefitDetails}>
-                    <Typography component="h3">24*7 Doctor on Call</Typography>
-                    <Typography>Get an instant call from an Apollo Doctor</Typography>
-                  </div>
+                  The Healthy Life offering is the marketing program offered by Apollo 24/7, an app
+                  managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank
+                  customers.
                 </li>
                 <li>
-                  <img src={require('images/hdfc/medicine-delivery.svg')} alt="Medicine Delivery" />
-                  <div className={classes.benefitDetails}>
-                    <Typography component="h3">Seamless Medicine Delivery</Typography>
-                    <Typography>Get upto 20% off on Apollo pharmacy</Typography>
-                  </div>
+                  The validity of the program (“Term”) is till 31st August 2021, unless extended by
+                  Apollo 24/7 and HDFC Bank.
                 </li>
                 <li>
-                  <img src={require('images/hdfc/health-records.svg')} alt="Health Records" />
-                  <div className={classes.benefitDetails}>
-                    <Typography component="h3">Patients Health Records</Typography>
-                    <Typography>Access to a digital vault for your health records</Typography>
-                  </div>
+                  The discounts applicable as per the Healthy Life program shall be applied at the
+                  time of payment checkout by the customer.
                 </li>
                 <li>
-                  <img src={require('images/hdfc/diabetes.svg')} alt="Diabetes Program" />
-                  <div className={classes.benefitDetails}>
-                    <Typography component="h3">Diabetes Management Program</Typography>
-                    <Typography>
-                      Complimentary Access to Base Diabetes Management Program
-                    </Typography>
-                  </div>
+                  This program is designed for select HDFC customers and offerings will vary with
+                  the different categories of HDFC customers. However, membership schemes can be
+                  upgraded on the basis of the spending on the Apollo 24/7 app as mentioned in the
+                  offer grid.
                 </li>
                 <li>
-                  <img src={require('images/hdfc/health-testing.svg')} alt="Covid Health Testing" />
-                  <div className={classes.benefitDetails}>
-                    <Typography component="h3">Covid Health Testing</Typography>
-                    <Typography>Preferential access for Covid testing</Typography>
-                  </div>
+                  The Healthy Life Program is open to all HDFC customers with a valid Indian mobile
+                  number only.
                 </li>
                 <li>
-                  <img src={require('images/hdfc/access.svg')} alt="Access to Apollo Services" />
-                  <div className={classes.benefitDetails}>
-                    <Typography component="h3">
-                      Access to Apollo Doctors &amp; Diagnostic Services
-                    </Typography>
-                    <Typography>
-                      Get 24/7 access to Apollo Doctors and Diagnostic services on App
-                    </Typography>
-                  </div>
+                  The T&amp;C’s of the silver, gold and platinum membership offered in the Healthy
+                  Life program shall be governed by the terms &amp; conditions of the website -{' '}
+                  <a href="https://www.oneapollo.com/terms-conditions/">
+                    https://www.oneapollo.com/terms-conditions/
+                  </a>
+                </li>
+                <li>
+                  The Healthy Life offering will be applicable to all HDFC customers, whether they
+                  are existing customers of Apollo 24/7 or not. However, all the customers shall
+                  adhere to the offerings as mentioned in this marketing program.
+                </li>
+                <li>The Healthy Life program is non-transferable.</li>
+                <li>
+                  The activation of the benefits for the Healthy Life program will be completed 24
+                  hours post the service delivery/fulfillment of the qualifying transaction. For
+                  e.g., to unlock benefits, the user is needed to make a qualifying transaction of
+                  INR 499, amount subject to change as per different tiers
+                </li>
+                <li>
+                  By enrolling for the Healthy Life program, a member consents to allow use and
+                  disclosure by Apollo Health centres, along with his/her personal and other
+                  information as provided by the member at the time of enrolment and/or
+                  subsequently.
+                </li>
+                <li>
+                  As a prerequisite to becoming a member, a customer will need to provide mandatory
+                  information including full name, valid and active Indian mobile number. He/she
+                  shall adhere to such terms and conditions as may be prescribed for membership from
+                  time to time.
+                </li>
+                <li>
+                  The Healthy Life membership program will be issued solely at the discretion of the
+                  management and the final discretion on all matters relating to the membership
+                  shall rest with Apollo 24/7(AHEL).
+                </li>
+                <li>
+                  Healthy Life program is a corporate offering exclusively for HDFC bank customers
+                  and not for individuals.
+                </li>
+                <li>
+                  Apollo 24/7 reserves the right to add, alter, amend and revise terms and
+                  conditions as well as rules and regulations governing the Healthy Life membership
+                  program without prior notice.
+                </li>
+                <li>
+                  Benefits and offers available through the program may change or be withdrawn
+                  without prior intimation. Apollo 24/7 will not be responsible for any liability
+                  arising from such situations or use of such offers.
+                </li>
+                <li>
+                  Any disputes arising out of the offer shall be subject to arbitration by a sole
+                  arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the
+                  arbitration shall be conducted as per the provisions of Arbitration and
+                  Conciliation Act, 1996. The place of arbitration shall be at Chennai and language
+                  of arbitration shall be English. The existence of a dispute, if at all, shall not
+                  constitute a claim against Apollo 24/7.
                 </li>
               </ul>
             </div>
-            <Typography className={classes.register}>
-              *Register Now to Unlock many more benefits
-            </Typography>
-            <div className={classes.apolloContainer}>
-              <div className={classes.apolloCare}>
-                <img src={require('images/hdfc/join-apollo.svg')} alt="Apollo World of Care" />
-                <div className={classes.acContainer}>
-                  <Typography component="h4">Join The Apollo World Of Care</Typography>
-                  <Typography>
-                    Register now for Round-the-clock doctor availability, ease of ordering medicines
-                    &amp; tests online and much more on Apollo 24/7
-                  </Typography>
-                  <AphButton color="primary" variant="contained">
-                    Sign Up Now
-                  </AphButton>
-                </div>
-              </div>
-            </div>
-            <div className={classes.tncContainer}>
-              <div className={classes.tncContent}>
-                <Typography component="h4">Terms &amp; Conditions</Typography>
-                <ul className={classes.tncList}>
-                  <li>
-                    The Healthy Life offering is the marketing program offered by Apollo 24/7, an
-                    app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank
-                    customers.
-                  </li>
-                  <li>
-                    The validity of the program (“Term”) is till 31st August 2021, unless extended
-                    by Apollo 24/7 and HDFC Bank.
-                  </li>
-                  <li>
-                    The discounts applicable as per the Healthy Life program shall be applied at the
-                    time of payment checkout by the customer.
-                  </li>
-                  <li>
-                    This program is designed for select HDFC customers and offerings will vary with
-                    the different categories of HDFC customers. However, membership schemes can be
-                    upgraded on the basis of the spending on the Apollo 24/7 app as mentioned in the
-                    offer grid.
-                  </li>
-                  <li>
-                    The Healthy Life Program is open to all HDFC customers with a valid Indian
-                    mobile number only.
-                  </li>
-                  <li>
-                    The T&amp;C’s of the silver, gold and platinum membership offered in the Healthy
-                    Life program shall be governed by the terms &amp; conditions of the website -{' '}
-                    <a href="https://www.oneapollo.com/terms-conditions/">
-                      https://www.oneapollo.com/terms-conditions/
-                    </a>
-                  </li>
-                  <li>
-                    The Healthy Life offering will be applicable to all HDFC customers, whether they
-                    are existing customers of Apollo 24/7 or not. However, all the customers shall
-                    adhere to the offerings as mentioned in this marketing program.
-                  </li>
-                  <li>The Healthy Life program is non-transferable.</li>
-                  <li>
-                    The activation of the benefits for the Healthy Life program will be completed 24
-                    hours post the service delivery/fulfillment of the qualifying transaction. For
-                    e.g., to unlock benefits, the user is needed to make a qualifying transaction of
-                    INR 499, amount subject to change as per different tiers
-                  </li>
-                  <li>
-                    By enrolling for the Healthy Life program, a member consents to allow use and
-                    disclosure by Apollo Health centres, along with his/her personal and other
-                    information as provided by the member at the time of enrolment and/or
-                    subsequently.
-                  </li>
-                  <li>
-                    As a prerequisite to becoming a member, a customer will need to provide
-                    mandatory information including full name, valid and active Indian mobile
-                    number. He/she shall adhere to such terms and conditions as may be prescribed
-                    for membership from time to time.
-                  </li>
-                  <li>
-                    The Healthy Life membership program will be issued solely at the discretion of
-                    the management and the final discretion on all matters relating to the
-                    membership shall rest with Apollo 24/7(AHEL).
-                  </li>
-                  <li>
-                    Healthy Life program is a corporate offering exclusively for HDFC bank customers
-                    and not for individuals.
-                  </li>
-                  <li>
-                    Apollo 24/7 reserves the right to add, alter, amend and revise terms and
-                    conditions as well as rules and regulations governing the Healthy Life
-                    membership program without prior notice.
-                  </li>
-                  <li>
-                    Benefits and offers available through the program may change or be withdrawn
-                    without prior intimation. Apollo 24/7 will not be responsible for any liability
-                    arising from such situations or use of such offers.
-                  </li>
-                  <li>
-                    Any disputes arising out of the offer shall be subject to arbitration by a sole
-                    arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the
-                    arbitration shall be conducted as per the provisions of Arbitration and
-                    Conciliation Act, 1996. The place of arbitration shall be at Chennai and
-                    language of arbitration shall be English. The existence of a dispute, if at all,
-                    shall not constitute a claim against Apollo 24/7.
-                  </li>
-                </ul>
-              </div>
-            </div>
           </div>
         </div>
-
-        {/* Login Popover */}
-        {!isSignedIn && (
-          <Popover
-            open={isLoginPopupVisible}
-            anchorEl={avatarRef.current}
-            onClose={() => {
-              const otpAfterCleaning = otp.replace(/,/g, '');
-              if (
-                mobileNumber.length === 0 ||
-                (mobileNumber.length === 10 && otpAfterCleaning.length === 0) ||
-                otpAfterCleaning.length === 6
-              ) {
-                setIsLoginPopupVisible(false);
-                setVerifyOtpError(false);
-              }
-            }}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            classes={{ paper: classes.topPopover }}
-          >
-            <Paper className={classes.loginForm}>
-              <SignIn
-                setMobileNumber={(mobileNumber: string) => setMobileNumber(mobileNumber)}
-                setOtp={(otp: string) => setOtp(otp)}
-                mobileNumber={mobileNumber}
-                otp={otp}
-              />
-            </Paper>
-          </Popover>
-        )}
-
-        {/* SignUp Popover */}
-        {defaultNewProfile && (
-          <AphDialog maxWidth="sm" open={defaultNewProfile && !hasExistingProfile ? true : false}>
-            <NewProfile
-              patient={defaultNewProfile}
-              onClose={() => {}}
-              customSignUp={customSignUp}
-            />
-          </AphDialog>
-        )}
-        {/* <Popover
-        open={defaultNewProfile && !hasExistingProfile ? true : false}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.topPopover }}
-      >
-        <Paper className={classes.finalStep}>
-          <Typography component="h2">Enter your details to complete the registration</Typography>
-          <form>
-            <FormControl className={classes.formControl}>
-              <AphTextField label="First Name" />
-            </FormControl>
-            <FormControl className={classes.formControl}>
-              <AphTextField label="Last name" />
-            </FormControl>
-            <FormControl className={classes.formControl}>
-              <AphTextField label="Email ID" />
-            </FormControl>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <ThemeProvider theme={defaultMaterialTheme}>
-                <KeyboardDatePicker
-                  className={classes.keyboardDatePicker}
-                  disableToolbar
-                  variant="inline"
-                  format="MM/dd/yyyy"
-                  value={selectedDate}
-                  label="Date of Birth"
-                  // onChange={handleDateChange}
-                  KeyboardButtonProps={{
-                    'aria-label': 'change date',
-                  }}
-                  onChange={(date) => handleDateChange((date as unknown) as Date)}
-                  onFocus={() => {}}
-                  onBlur={() => {}}
-                />
-              </ThemeProvider>
-            </MuiPickersUtilsProvider>
-            <FormControl component="fieldset" className={classes.formControl}>
-              <FormLabel component="label">Select your gender</FormLabel>
-              <RadioGroup
-                className={classes.radioContainer}
-                aria-label="gender"
-                name="gender1"
-                value={value}
-                onChange={handleChange}
-              >
-                <FormControlLabel value="male" control={<AphRadio />} label="Male" />
-                <FormControlLabel value="female" control={<AphRadio />} label="Female" />
-              </RadioGroup>
-            </FormControl>
-
-            <div className={classes.action}>
-              <Fab
-                type="submit"
-                color="primary"
-                aria-label="Sign in"
-                onClick={() => {
-                  return updatePatient({
-                    variables: {
-                      patientInput: {
-                        id: defaultNewProfile.id,
-                        firstName: 'values.firstName',
-                        lastName: 'values.lastName',
-                        gender: Gender.MALE,
-                        dateOfBirth: 'convertClientDateToIsoDate(values.dateOfBirth)',
-                        emailAddress: _isEmpty('values.emailAddress')
-                          ? null
-                          : 'values.emailAddress',
-                        relation: Relation.ME,
-                        referralCode: 'HDFCBANK',
-                      },
-                    },
-                  })
-                    .then(() => {
-                      setShowProfileSuccess(true);
-                      setisProfileUpdate(false);
-                    })
-                    .catch((error) => {
-                      console.error(error);
-                      setShowProfileSuccess(true);
-                      alert('Something went wrong :(');
-                    });
-                }}
-              >
-                <img src={require('images/ic_arrow_forward.svg')} />
-              </Fab>
-            </div>
-          </form>
-        </Paper>
-      </Popover> */}
-        <AphDialog open={notEligible} maxWidth="sm">
-          <div className={classes.dialogcontent}>
-            <img src={require('images/hdfc/sorry.svg')} alt="Not Eligible" />
-            <Typography>Unfortunately you are not eligible for the premium plans</Typography>
-            <Typography className={classes.hightLight}>
-              Please contact HDFC for further updates
-            </Typography>
-            <AphButton color="primary" onClick={() => setNotEligible(false)}>
-              Go Back
-            </AphButton>
-          </div>
-        </AphDialog>
       </div>
+
+      {/* Login Popover */}
+      {!isSignedIn && (
+        <Popover
+          open={isLoginPopupVisible}
+          anchorEl={avatarRef.current}
+          onClose={() => {
+            const otpAfterCleaning = otp.replace(/,/g, '');
+            if (
+              mobileNumber.length === 0 ||
+              (mobileNumber.length === 10 && otpAfterCleaning.length === 0) ||
+              otpAfterCleaning.length === 6
+            ) {
+              setIsLoginPopupVisible(false);
+              setVerifyOtpError(false);
+            }
+          }}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          classes={{ paper: classes.topPopover }}
+        >
+          <Paper className={classes.loginForm}>
+            <SignIn
+              setMobileNumber={(mobileNumber: string) => setMobileNumber(mobileNumber)}
+              setOtp={(otp: string) => setOtp(otp)}
+              mobileNumber={mobileNumber}
+              otp={otp}
+            />
+          </Paper>
+        </Popover>
+      )}
+
+      {/* SignUp Popover */}
+      {defaultNewProfile && (
+        <AphDialog maxWidth="sm" open={defaultNewProfile && !hasExistingProfile ? true : false}>
+          <NewProfile patient={defaultNewProfile} onClose={() => {}} customSignUp={customSignUp} />
+        </AphDialog>
+      )}
+
+      <AphDialog open={notEligible} maxWidth="sm">
+        <div className={classes.dialogcontent}>
+          <img src={require('images/hdfc/sorry.svg')} alt="Not Eligible" />
+          <Typography>Unfortunately you are not eligible for the premium plans</Typography>
+          <Typography className={classes.hightLight}>
+            Please contact HDFC for further updates
+          </Typography>
+          <AphButton color="primary" onClick={() => setNotEligible(false)}>
+            Go Back
+          </AphButton>
+        </div>
+      </AphDialog>
     </div>
   );
 };

@@ -139,7 +139,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '12px 16px',
         background: '#fff',
       },
-      '& button': {
+      '& a': {
         color: '#FC9916',
         position: 'relative',
         background: '#fff',
@@ -428,7 +428,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '&:hover': {
         boxShadow: ' 0px 1px 12px rgba(128, 128, 128, 0.2)',
-        '& button': {
+        '& a': {
           background: '#FC9916',
           color: '#FFF',
           [theme.breakpoints.down('sm')]: {
@@ -437,7 +437,7 @@ const useStyles = makeStyles((theme: Theme) => {
           },
         },
       },
-      '& button': {
+      '& a': {
         background: '#fff',
         color: '#FC9916',
         width: '100%',
@@ -630,7 +630,9 @@ export const MembershipPlanDetail: React.FC = (props) => {
                   A host of benefits await you with our Gold+ Plan curated for HDFC customers
                 </Typography>
                 <div className={classes.btnContainer}>
-                  <AphButton variant="contained">Explore Now</AphButton>
+                  <AphButton variant="contained" href={clientRoutes.welcome()}>
+                    Explore Now
+                  </AphButton>
                 </div>
               </div>
 
@@ -706,7 +708,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
                         <Typography>
                           Round-the-clock doctor availability at a click of a button
                         </Typography>
-                        <AphButton>Redeem</AphButton>
+                        <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
                       </div>
                     </li>
                     <li>
@@ -715,7 +717,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
                         <Typography>
                           Priority Chat Support on Whatsapp with our Executives
                         </Typography>
-                        <AphButton>Redeem</AphButton>
+                        <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
                       </div>
                     </li>
                     <li>
@@ -726,7 +728,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
                           <li>Preferential Access to COVID Home Testing </li>
                           <li>Preferential Access To Home &amp; Hotel Care </li>
                         </ul>
-                        <AphButton>Redeem</AphButton>
+                        <AphButton href={clientRoutes.covidLanding()}>Redeem</AphButton>
                       </div>
                     </li>
                     <li>
@@ -737,14 +739,14 @@ export const MembershipPlanDetail: React.FC = (props) => {
                         <Typography>
                           Choose a Doctor and Book an Online Consultation instantly on our App
                         </Typography>
-                        <AphButton>Redeem</AphButton>
+                        <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
                       </div>
                     </li>
                     <li>
                       <div className={classes.couponCard}>
                         <Typography component="h2">Free Medicine Delivery</Typography>
                         <Typography>No delivery charges for orders greater than Rs 300</Typography>
-                        <AphButton>Redeem</AphButton>
+                        <AphButton href={clientRoutes.medicines()}>Redeem</AphButton>
                       </div>
                     </li>
                     <li>
@@ -753,7 +755,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
                         <Typography>
                           Store all your medical documents in your personal digital vault
                         </Typography>
-                        <AphButton>Redeem</AphButton>
+                        <AphButton href={clientRoutes.healthRecords()}>Redeem</AphButton>
                       </div>
                     </li>
                     <li>
@@ -762,7 +764,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
                         <Typography>
                           Get a free medical consultation from Top Apollo Doctors
                         </Typography>
-                        <AphButton>Redeem</AphButton>
+                        <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
                       </div>
                     </li>
                   </ul>

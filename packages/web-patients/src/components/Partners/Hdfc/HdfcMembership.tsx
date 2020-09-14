@@ -4,6 +4,7 @@ import { Theme, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -209,6 +210,44 @@ const useStyles = makeStyles((theme: Theme) => {
         justifyContent: 'center',
         padding: 0,
       },
+      '& a': {
+        margin: '0 0 0 30px',
+        width: 150,
+        '&:first-child': {
+          color: '#FC9916',
+        },
+        '&:last-child': {
+          background: '#FC9916',
+          '&:hover': {
+            background: '#FC9916',
+          },
+        },
+        [theme.breakpoints.down('sm')]: {
+          background: '#FC9916',
+          color: '#fff',
+          width: '50%',
+          margin: 0,
+          flex: '1 0 auto',
+          borderRadius: 0,
+          boxShadow: 'none',
+          position: 'relative',
+          '&:hover': {
+            background: '#FC9916',
+            boxShadow: 'none',
+          },
+          '&:first-child': {
+            color: '#fff',
+            '&:after': {
+              content: "''",
+              position: 'absolute',
+              right: 0,
+              top: 5,
+              bottom: 5,
+              borderRight: '1px solid #fff',
+            },
+          },
+        },
+      },
       '& button': {
         margin: '0 0 0 30px',
         width: 150,
@@ -377,8 +416,8 @@ export const HdfcMemberShip: React.FC = (props) => {
                 </a>
               </div>
               <div className={classes.btnContainer}>
-                <AphButton>View Details</AphButton>
-                <AphButton color="primary" variant="contained">
+                <AphButton href={clientRoutes.membershipPlanDetail()}>View Details</AphButton>
+                <AphButton color="primary" variant="contained" href={clientRoutes.welcome()}>
                   Explore
                 </AphButton>
               </div>
@@ -417,7 +456,7 @@ export const HdfcMemberShip: React.FC = (props) => {
                 </a>
               </div>
               <div className={classes.btnContainer}>
-                <AphButton>View Details</AphButton>
+                <AphButton href={clientRoutes.membershipPlanLocked()}>View Details</AphButton>
                 <AphButton
                   color="primary"
                   variant="contained"
