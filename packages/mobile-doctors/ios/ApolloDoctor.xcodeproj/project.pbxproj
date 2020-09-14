@@ -509,7 +509,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloDoctor/ApolloDoctor.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 03;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -526,7 +526,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/ApolloDoctor/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 1.04;
+				MARKETING_VERSION = 1.05;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",
@@ -534,7 +534,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.doctor247;
 				PRODUCT_NAME = ApolloDoctor;
-				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor247_Adhoc;
+				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor247_AppStore;
 				SWIFT_OBJC_BRIDGING_HEADER = "ApolloDoctor/ApolloDoctor-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -551,7 +551,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloDoctor/ApolloDoctor.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 03;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -567,7 +567,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/ApolloDoctor/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 1.04;
+				MARKETING_VERSION = 1.05;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",
@@ -575,7 +575,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.doctor247;
 				PRODUCT_NAME = ApolloDoctor;
-				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor247_Adhoc;
+				PROVISIONING_PROFILE_SPECIFIER = ApolloDoctor247_AppStore;
 				SWIFT_OBJC_BRIDGING_HEADER = "ApolloDoctor/ApolloDoctor-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
