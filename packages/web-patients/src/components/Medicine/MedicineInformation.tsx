@@ -19,7 +19,6 @@ import {
   checkTatAvailability,
 } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
-import axios, { AxiosResponse, AxiosError, Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -44,6 +43,7 @@ import _lowerCase from 'lodash/lowerCase';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import fetchUtil from 'helpers/fetch';
 import _get from 'lodash/get';
+import fetchWrapper from 'helpers/fetchWrapper';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -420,14 +420,12 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
 
   const fetchSubstitutes = async () => {
-    await axios
+    await fetchWrapper
       .post(
         apiDetails.url || '',
         { params: data.sku || params.sku },
         {
-          headers: {
-            Authorization: apiDetails.authToken,
-          },
+          Authorization: apiDetails.authToken,
         }
       )
       .then(({ data }) => {
@@ -482,7 +480,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
 
   const getPlaceDetails = (pincode: string) => {
-    axios
+    fetchWrapper
       .get(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
       )
@@ -497,12 +495,12 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             );
           }
         } catch {
-          (e: AxiosError) => {
+          (e: any) => {
             console.log(e);
           };
         }
       })
-      .catch((e: AxiosError) => {
+      .catch((e: any) => {
         setIsAlertOpen(true);
         setAlertMessage('Something went wrong :(');
         console.log(e);

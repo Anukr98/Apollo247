@@ -19,7 +19,6 @@ import {
 } from '@aph/web-ui-components';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
-import axios from 'axios';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import {
   useShoppingCart,
@@ -81,6 +80,7 @@ import { getTypeOfProduct } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
 import fetchUtil from 'helpers/fetch';
 import { checkTatAvailability } from 'helpers/MedicineApiCalls';
+import fetchWrapper from 'helpers/fetchWrapper';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -1072,14 +1072,12 @@ export const MedicineCart: React.FC = (props) => {
 
         const allData: MedicineCartItem[] = [];
         if (skus && skus.length) {
-          axios
+          fetchWrapper
             .post(
               apiDetails.bulk_product_info_url || '',
               { params: skus.join(',') },
               {
-                headers: {
-                  Authorization: apiDetails.authToken,
-                },
+                Authorization: apiDetails.authToken,
               }
             )
             .then((resp) => {
