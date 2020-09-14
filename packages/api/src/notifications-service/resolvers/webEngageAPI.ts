@@ -272,33 +272,41 @@ export async function trackWebEngageEventForCasesheetInsert(caseSheetDetails: Ca
 }
 
 export async function trackWebEngageEventForAppointmentComplete(appointmentDetails: Appointment) {
-  if (appointmentDetails.status !== STATUS.COMPLETED) return '';
+  try {
+    if (appointmentDetails.status !== STATUS.COMPLETED) return '';
+    //get doctor details
+    const doctorsDb = getConnection('doctors-db');
+    const doctorRepo = doctorsDb.getRepository(Doctor);
+    const doctorDetails = await doctorRepo.findOne({
+      select: ['fullName'],
+      where: { id: appointmentDetails.doctorId },
+    });
 
-  //get doctor details
-  const doctorsDb = getConnection('doctors-db');
-  const doctorRepo = doctorsDb.getRepository(Doctor);
-  const doctorDetails = await doctorRepo.findOne({
-    select: ['fullName'],
-    where: { id: appointmentDetails.doctorId },
-  });
+    //get patient details
+    const patientsDb = getConnection('patients-db');
+    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+    const patientDetails = await patientRepo.findByIdWithRelations(
+      appointmentDetails.patientId,
+      []
+    );
 
-  //get patient details
-  const patientsDb = getConnection('patients-db');
-  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findByIdWithRelations(appointmentDetails.patientId, []);
+    const postBody: Partial<WebEngageInput> = {
+      userId: patientDetails ? patientDetails.mobileNumber : '',
+      eventName: ApiConstants.DOCTOR_ENDED_CONSULTATION_EVENT_NAME.toString(),
+      eventData: {
+        consultID: appointmentDetails.id,
+        displayID: appointmentDetails.displayId.toString(),
+        consultMode: appointmentDetails.appointmentType.toString(),
+        doctorName: doctorDetails ? doctorDetails.fullName : '',
+      },
+    };
 
-  const postBody: Partial<WebEngageInput> = {
-    userId: patientDetails ? patientDetails.mobileNumber : '',
-    eventName: ApiConstants.DOCTOR_ENDED_CONSULTATION_EVENT_NAME.toString(),
-    eventData: {
-      consultID: appointmentDetails.id,
-      displayID: appointmentDetails.displayId.toString(),
-      consultMode: appointmentDetails.appointmentType.toString(),
-      doctorName: doctorDetails ? doctorDetails.fullName : '',
-    },
-  };
-
-  return await postEvent(postBody);
+    return await postEvent(postBody);
+  } catch (error) {
+    throw new AphError(AphErrorMessages.WEBENGAGE_APPOINTMENT_COMPLETE_TRACK_ERROR, undefined, {
+      error,
+    });
+  }
 }
 
 export async function trackWebEngageEventForExotelCall(exotelCallDetails: ExotelDetails) {
