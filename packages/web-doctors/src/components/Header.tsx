@@ -24,7 +24,7 @@ import {
   MarkMessageToUnread,
   MarkMessageToUnreadVariables,
 } from 'graphql/types/MarkMessageToUnread';
-//import { Offline, Online } from 'react-detect-offline';
+import { webEngageEventTracking } from 'webEngageTracking';
 import Pubnub from 'pubnub';
 import {
   UPDATE_DOCTOR_ONLINE_STATUS,
@@ -584,6 +584,9 @@ const HeaderComponent: React.FC<any> = (props) => {
                           title="Notification"
                           className={classes.notificationIcon}
                           onClick={() => {
+                            webEngageEventTracking(null,
+                              'Front_end - Doctor Clicked on the Notification'
+                            );
                             setSelectedTab(4);
                             setIsHelpPopupOpen1(true);
                             // setTimeout(() => {

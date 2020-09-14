@@ -46,6 +46,7 @@ import { ApolloError } from 'apollo-client';
 import { AphButton } from '@aph/web-ui-components';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import isNumeric from 'validator/lib/isNumeric';
+import { webEngageEventTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -768,7 +769,14 @@ export const MyAccount: React.FC = (props) => {
                         classes.tabContent
                       } ${selectedNavTab === 5 && classes.tabActive}`}
                     >
-                      <div onClick={() => setselectedNavTab(5)} className={classes.leftNav}>
+                      <div 
+                        onClick={() => {
+                          webEngageEventTracking(null,
+                            'Front_end - Doctor Clicked on the Settings'
+                          );
+                          setselectedNavTab(5);
+                        }} 
+                        className={classes.leftNav}>
                         <img
                           alt=""
                           src={
