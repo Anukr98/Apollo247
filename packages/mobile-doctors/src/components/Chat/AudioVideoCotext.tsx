@@ -246,6 +246,7 @@ export const AudioVideoProvider: React.FC = (props) => {
         audioTrack.stop();
       }
     } else if (callAccepted) {
+      setCallDuraion('00 : 01');
       if (audioTrack) {
         setPrevVolume();
         audioTrack.stop();
