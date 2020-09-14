@@ -1243,7 +1243,6 @@ export const MedicineCart: React.FC = (props) => {
 
     savePayment({ variables: paymentInfo })
       .then(({ data }: any) => {
-        console.log('Yaswanth');
         if (data && data.SaveMedicineOrderPaymentMq) {
           const { errorCode, errorMessage } = data.SaveMedicineOrderPaymentMq;
           if (errorCode || (errorMessage && errorMessage.length > 0)) {
@@ -1255,7 +1254,6 @@ export const MedicineCart: React.FC = (props) => {
         }
       })
       .catch((e) => {
-        console.log('Yaswanth');
         window.location.href = clientRoutes.medicinesCartInfo(orderAutoId.toString(), 'failed');
       })
       .finally(() => {
@@ -1301,7 +1299,6 @@ export const MedicineCart: React.FC = (props) => {
             window.location.href = clientRoutes.medicinesCartInfo('prescription', 'success');
           }
         } else {
-          console.log('yaswanth');
           setIsAlertOpen(true);
           setAlertMessage('Something went wrong, please try later.');
         }
@@ -1309,7 +1306,6 @@ export const MedicineCart: React.FC = (props) => {
       .catch((e) => {
         console.log({ e });
         setIsAlertOpen(true);
-        console.log('yaswanth');
 
         setAlertMessage('Something went wrong, please try later.');
       })
@@ -1440,8 +1436,6 @@ export const MedicineCart: React.FC = (props) => {
       return;
     }
     paymentMutation().then(({ data }: any) => {
-      console.log('yaswanth');
-      debugger;
       if (data && data.saveMedicineOrderOMS) {
         /**Gtm code start  */
         let ecommItems: any[] = [];
@@ -1480,8 +1474,6 @@ export const MedicineCart: React.FC = (props) => {
         if (orderAutoId && orderAutoId > 0) {
           placeOrder(orderId, orderAutoId, true, dataObj.userEmail);
         } else if (errorMessage) {
-          console.log('Yaswanth');
-
           setIsAlertOpen(true);
           setAlertMessage('Something went wrong, please try later.');
         }
