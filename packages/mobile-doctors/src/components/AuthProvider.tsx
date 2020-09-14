@@ -175,6 +175,7 @@ export const AuthProvider: React.FC = (props) => {
         .then((_) => {
           setFirebaseUser(null);
           setDoctorDetails(null);
+          AsyncStorage.setItem('doctorDetails', 'null');
           setAuthToken('');
           resolve();
         })
@@ -202,6 +203,10 @@ export const AuthProvider: React.FC = (props) => {
         authStateListener && authStateListener();
       };
     });
+    const asyncCall = async () => {
+      setDoctorDetails(JSON.parse((await AsyncStorage.getItem('doctorDetails')) || 'null'));
+    };
+    asyncCall();
   }, []);
 
   useEffect(() => {
@@ -258,6 +263,7 @@ export const AuthProvider: React.FC = (props) => {
                 g(data, 'getDoctorDetails', 'emailAddress') || ''
               );
             }, 2000);
+            AsyncStorage.setItem('doctorDetails', JSON.stringify(data.getDoctorDetails));
             setDoctorDetails(data.getDoctorDetails);
             setDoctorDetailsError(false);
             resolve(true);
