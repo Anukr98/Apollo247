@@ -606,11 +606,11 @@ export class AppointmentRepository extends Repository<Appointment> {
         status1: STATUS.PENDING,
         status2: STATUS.IN_PROGRESS,
       })
-      .andWhere('appointment."appointmentState" not in(:status1)', {
-        status1: APPOINTMENT_STATE.AWAITING_RESCHEDULE,
+      .andWhere('appointment."appointmentState" not in(:status3)', {
+        status3: APPOINTMENT_STATE.AWAITING_RESCHEDULE,
       })
       .orderBy('appointment.doctorId', 'ASC')
-      .orderBy('appointment."appointmentDateTime"', 'ASC')
+      .addOrderBy('appointment."appointmentDateTime"', 'ASC')
       .getMany();
   }
 

@@ -197,14 +197,18 @@ const sendDailyAppointmentSummary: Resolver<
       textInRow(pdfDoc, appointment.patientName, rowx, 30);
       textInRow(
         pdfDoc,
-        format(addMinutes(appointment.appointmentDateTime, +330), 'hh:mm a, dd MMMM yyyy'),
+        format(addMinutes(appointment.appointmentDateTime, +330), 'hh:mm a, dd MMM yyyy'),
         rowx,
         201
       );
       textInRow(pdfDoc, appointment.appointmentType, rowx, 341);
       textInRow(pdfDoc, appointment.displayId.toString(), rowx, 441);
+      let nextDocId = prevDoc;
+      if (index + 1 != array.length) {
+        nextDocId = allAppts[index + 1].doctorId;
+      }
 
-      if (index + 1 == array.length || prevDoc != appointment.doctorId) {
+      if (index + 1 == array.length || prevDoc != nextDocId) {
         const doctorDetails = allDoctorDetails.filter((item) => {
           return item.id == prevDoc;
         });
@@ -221,7 +225,7 @@ const sendDailyAppointmentSummary: Resolver<
         pdfDoc.end();
         const fp = `${uploadPath}$${fileName}$${totalAppointments}$${doctorDetails[0].mobileNumber}$${doctorDetails[0].firstName}`;
         allpdfs.push(fp);
-        prevDoc = appointment.doctorId;
+        prevDoc = nextDocId; //appointment.doctorId;
         flag = 0;
         if (doctorDetails) {
           doctorsCount++;
@@ -400,7 +404,7 @@ const sendAppointmentSummaryOps: Resolver<
                   pdfDoc,
                   format(
                     addMinutes(docAppointment.appointmentDateTime, +330),
-                    'yyyy-MM-dd hh:mm:ss'
+                    'hh:mm a, dd MMM yyyy'
                   ),
                   rowx,
                   201
