@@ -3,6 +3,7 @@ import { Theme, CircularProgress, Grid } from '@material-ui/core';
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
+import { AphCheckbox } from 'components/AphCheckbox';
 import { AphCalendar } from 'components/AphCalendar';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -185,6 +186,34 @@ const useStyles = makeStyles((theme: Theme) => {
       '& button': {
         minWidth: 288,
       },
+    },
+    marBottomMedium: {
+      marginBottom: 20,
+    },
+    checkbox: {
+      alignItems: 'baseline',
+      margin: '0 0 0 auto',
+      '&:hover': {
+        backgroundColor: 'transparent !important',
+      },
+      '&:focus': {
+        backgroundColor: 'transparent',
+      },
+    },
+    whatsupTxt: {
+      fontSize: 15,
+      lineHeight: '19px',
+      color: '#01475b',
+      fontWeight: 500,
+      marginLeft: 8,
+      '& img': {
+        margin: '0 3px',
+        position: 'relative',
+        top: 3,
+      },
+    },
+    whatsUpContent: {
+      margin: '10px 0',
     },
   };
 });
@@ -558,9 +587,9 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           } else {
             const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
               res.data.bookAppointment.appointment.id
-            }&patientId=${
+              }&patientId=${
               currentPatient ? currentPatient.id : ''
-            }&price=${revisedAmount}&source=WEB`;
+              }&price=${revisedAmount}&source=WEB`;
             window.location.href = pgUrl;
           }
         }
@@ -588,7 +617,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
         <div className={classes.customScrollBar}>
-          <div className={classes.consultGroup}>
+          <div className={`${classes.consultGroup} ${classes.marBottomMedium}`}>
             <p>{`Dr. ${doctorName} is ${availabilityMarkup()}! Would you like to
                 consult now or schedule for later?`}</p>
             <div className={classes.actions}>
@@ -606,7 +635,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                       ? classes.buttonActive
                       : ''
                     : classes.disabledButton
-                }`}
+                  }`}
                 disabled={!(consultNow && slotAvailableNext === '') || !consultNowAvailable}
                 title={' Consult Now'}
               >
@@ -620,7 +649,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 color="secondary"
                 className={`${classes.button} ${
                   showCalendar || scheduleLater || !consultNowAvailable ? classes.buttonActive : ''
-                }`}
+                  }`}
                 title={' Schedule For Later'}
               >
                 Schedule For Later
@@ -650,7 +679,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                       showCalendar || scheduleLater || !consultNowAvailable
                         ? classes.showCalendar
                         : ''
-                    }`}
+                      }`}
                     ref={calendarRef}
                   >
                     {nextAvailability && (
@@ -684,6 +713,14 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             rights to visit a physician and opt for a physical examination at any point in time and
             I am free at any time during the consultation to request for the same.
           </p>
+          <div className={classes.whatsUpContent}>
+            <AphCheckbox
+              disabled={mutationLoading}
+              className={classes.checkbox}
+              color="primary"
+            />
+            <span className={classes.whatsupTxt}>Receive status updates on <img src={require('images/ic_whatsup.svg')} alt="" /> Whatsapp</span>
+          </div>
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
@@ -712,10 +749,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             }}
             className={
               disableSubmit ||
-              mutationLoading ||
-              isDialogOpen ||
-              (!consultNowAvailable && timeSelected === '') ||
-              (scheduleLater && timeSelected === '')
+                mutationLoading ||
+                isDialogOpen ||
+                (!consultNowAvailable && timeSelected === '') ||
+                (scheduleLater && timeSelected === '')
                 ? classes.buttonDisable
                 : ''
             }
@@ -724,51 +761,51 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             {mutationLoading ? <CircularProgress size={22} color="secondary" /> : `Reschedule`}
           </AphButton>
         ) : (
-          <Link to={clientRoutes.payOnlineConsult()}>
-            <AphButton
-              color="primary"
-              disabled={
-                disableSubmit ||
-                mutationLoading ||
-                isDialogOpen ||
-                (!consultNowAvailable && timeSelected === '') ||
-                (scheduleLater && timeSelected === '')
-              }
-              onClick={() => {
-                localStorage.setItem(
-                  'consultBookDetails',
-                  JSON.stringify({
-                    patientId: currentPatient ? currentPatient.id : '',
-                    doctorId: doctorId,
-                    doctorName,
-                    appointmentDateTime: appointmentDateTime,
-                    appointmentType: AppointmentType.ONLINE,
-                    hospitalId: hospitalId,
-                    couponCode: couponCode ? couponCode : null,
-                    amount: revisedAmount,
-                    speciality: getSpeciality(),
-                  })
-                );
-              }}
-              className={
-                disableSubmit ||
-                mutationLoading ||
-                isDialogOpen ||
-                (!consultNowAvailable && timeSelected === '') ||
-                (scheduleLater && timeSelected === '')
-                  ? classes.buttonDisable
-                  : ''
-              }
-              title={'Pay'}
-            >
-              {mutationLoading ? (
-                <CircularProgress size={22} color="secondary" />
-              ) : (
-                `PAY Rs. ${revisedAmount}`
-              )}
-            </AphButton>
-          </Link>
-        )}
+            <Link to={clientRoutes.payOnlineConsult()}>
+              <AphButton
+                color="primary"
+                disabled={
+                  disableSubmit ||
+                  mutationLoading ||
+                  isDialogOpen ||
+                  (!consultNowAvailable && timeSelected === '') ||
+                  (scheduleLater && timeSelected === '')
+                }
+                onClick={() => {
+                  localStorage.setItem(
+                    'consultBookDetails',
+                    JSON.stringify({
+                      patientId: currentPatient ? currentPatient.id : '',
+                      doctorId: doctorId,
+                      doctorName,
+                      appointmentDateTime: appointmentDateTime,
+                      appointmentType: AppointmentType.ONLINE,
+                      hospitalId: hospitalId,
+                      couponCode: couponCode ? couponCode : null,
+                      amount: revisedAmount,
+                      speciality: getSpeciality(),
+                    })
+                  );
+                }}
+                className={
+                  disableSubmit ||
+                    mutationLoading ||
+                    isDialogOpen ||
+                    (!consultNowAvailable && timeSelected === '') ||
+                    (scheduleLater && timeSelected === '')
+                    ? classes.buttonDisable
+                    : ''
+                }
+                title={'Pay'}
+              >
+                {mutationLoading ? (
+                  <CircularProgress size={22} color="secondary" />
+                ) : (
+                    `PAY Rs. ${revisedAmount}`
+                  )}
+              </AphButton>
+            </Link>
+          )}
       </div>
       <AphDialog
         open={isDialogOpen}
