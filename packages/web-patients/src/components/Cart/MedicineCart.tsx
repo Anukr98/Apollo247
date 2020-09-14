@@ -640,6 +640,23 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    medicinesAddmore: {
+      fontWeight: 500,
+      fontSize: 14,
+      lineHeight: '20px',
+      padding: 10,
+      background: '#F7F8F5',
+      boxShadow: '0px 5px 20px rgba(128, 128, 128, 0.3)',
+      borderRadius: 5,
+      margin: '20px 15px 10px 20px',
+      '& img': {
+        position: 'relative',
+        top: 3,
+      },
+    },
+    addmoreAmount: {
+      color: '#FC9916',
+    },
   };
 });
 
@@ -1355,7 +1372,7 @@ export const MedicineCart: React.FC = (props) => {
           const uploadUrlscheck = data.map(({ data }: any) =>
             data && data.uploadDocument && data.uploadDocument.status ? data.uploadDocument : null
           );
-          const filtered = uploadUrlscheck.filter(function (el) {
+          const filtered = uploadUrlscheck.filter(function(el) {
             return el != null;
           });
           const phyPresUrls = filtered.map((item) => item.filePath).filter((i) => i);
@@ -1627,6 +1644,11 @@ export const MedicineCart: React.FC = (props) => {
                   ) : null}
                 </>
               ) : null}
+            </div>
+            <div className={`${classes.medicineListGroup} ${classes.medicinesAddmore}`}>
+              <img src={require('images/ic_priority_high.svg')} alt="info icon" />
+              Add <span className={classes.addmoreAmount}>126.00</span> of eligible items to your
+              order to qualify for FREE Delivery.
             </div>
           </Scrollbars>
         </div>
