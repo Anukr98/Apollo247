@@ -393,7 +393,6 @@ export enum ApiConstants {
   DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO = 'MGY5',
   PATIENT_APPT_DEEPLINK = 'apollopatients://Consult',
   PATIENT_CHATROOM_DEEPLINK = 'apollopatients://ChatRoom?',
-  DOCTOR_CHATROOM_DEEPLINK = 'apollodoctors://chat?',
   PATIENT_PRESCRIPTION_DEEPLINK = 'apollopatients://ConsultDetails?',
   DOCTOR_DEEPLINK_WEB_URL = 'https://www.apollo247.com/doctors/<DoctorID>',
 

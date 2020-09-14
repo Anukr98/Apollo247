@@ -411,7 +411,7 @@ const sendAppointmentSummaryOps: Resolver<
                 );
                 textInRow(pdfDoc, docAppointment.appointmentType, rowx, 341);
                 textInRow(pdfDoc, docAppointment.displayId.toString(), rowx, 441);
-                currentAdminMobNumber = adminDoctor.admindoctormapper[0].adminuser.mobileNumber;
+                currentAdminMobNumber = `${adminDoctor.admindoctormapper[0].adminuser.mobileNumber}$${adminDoctor.admindoctormapper[0].adminuser.userName}`;
               });
             });
             pdfDoc.end();
@@ -440,20 +440,17 @@ const sendAppointmentSummaryOps: Resolver<
               logContent = blobUrl + '\n';
               fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
               const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
-              console.log(
-                docPdfDetails[0],
-                docPdfDetails[3],
-                docPdfDetails[2],
-                'finalAdminDetails'
-              );
+              const appLink = await getPatientDeeplink(ApiConstants.DOCTOR_APP_APPTS_LINK);
               const templateData: string[] = [
                 blobUrl,
                 todaysDate + ' Appointments List',
                 todaysDate,
                 docPdfDetails[2],
+                docPdfDetails[4],
+                appLink,
               ];
               sendDoctorNotificationWhatsapp(
-                ApiConstants.WHATSAPP_DOC_SUMMARY,
+                ApiConstants.WHATSAPP_DOC_SUMMARY_NEW,
                 docPdfDetails[3],
                 templateData
               );
