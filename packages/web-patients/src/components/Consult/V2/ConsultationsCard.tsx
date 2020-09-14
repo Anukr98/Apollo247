@@ -550,7 +550,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       case STATUS.NO_SHOW || STATUS.CALL_ABANDON:
         return 'PICK ANOTHER SLOT';
       case STATUS.COMPLETED:
-        return props.pastOrCurrent === 'past' ? 'FOLLOW-UP' : 'TEXT CONSULT';
+        return props.pastOrCurrent === 'past' ? 'BOOK FOLLOW UP' : 'TEXT CONSULT';
       case STATUS.IN_PROGRESS:
         return 'GO TO CONSULT ROOM';
       case STATUS.CANCELLED:
@@ -933,7 +933,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                         }
                                       }}
                                     >
-                                      {props.pastOrCurrent !== 'past' ? 'Follow-up' : 'VIEW CHAT'}
+                                      {props.pastOrCurrent !== 'past'
+                                        ? 'BOOK FOLLOW UP'
+                                        : 'VIEW CHAT'}
                                     </h3>
                                   )}
                                 />
@@ -969,7 +971,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                         appointmentState,
                                         status,
                                         isConsultStarted
-                                      ) === 'FOLLOW-UP'
+                                      ) === 'BOOK FOLLOW UP'
                                     ) {
                                       callSlotScreen(appointmentDetails);
                                     } else if (pickAnotherSlot) {
@@ -989,7 +991,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                           );
                                     }
                                   } else {
-                                    console.log('visit clinic');
                                     history.push(
                                       clientRoutes.doctorDetails(
                                         doctorName,
@@ -1002,7 +1003,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                 <h3>
                                   {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
                                     ? props.pastOrCurrent === 'past'
-                                      ? 'FOLLOW-UP'
+                                      ? 'BOOK FOLLOW UP'
                                       : showAppointmentAction(
                                           appointmentState,
                                           status,
