@@ -22,7 +22,7 @@ import { addPatientHospitalizationRecord } from '@aph/mobile-patients/src/graphq
 import {
   AddMedicalRecordParametersInput,
   MedicalTestUnit,
-  prescriptionSource,
+  mediaPrescriptionSource,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   g,
@@ -213,7 +213,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           : undefined;
       })
       .filter((item) => item !== undefined) as AddMedicalRecordParametersInput[];
-    console.log(medicalRecordsVaild);
 
     if (medicalRecordsVaild.length > 0) {
       setmedicalRecordParameters(medicalRecordsVaild);
@@ -328,7 +327,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             referringDoctor: referringDoctor,
-            sourceName: prescriptionSource.SELF,
+            sourceName: mediaPrescriptionSource.SELF,
             observations: observations,
             additionalNotes: additionalNotes,
             medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
@@ -349,7 +348,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             referringDoctor: referringDoctor,
-            sourceName: prescriptionSource.SELF,
+            sourceName: mediaPrescriptionSource.SELF,
             observations: observations,
             additionalNotes: additionalNotes,
             medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
@@ -365,7 +364,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       })
       .then(({ data }) => {
         setshowSpinner(false);
-        console.log('suceessfully added', data);
         const status = g(data, 'addPatientMedicalRecord', 'status');
         if (status) {
           props.navigation.goBack();
@@ -412,7 +410,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       })
       .then(({ data }) => {
         setshowSpinner(false);
-        console.log('suceessfully added', data);
         const status = g(data, 'addPatientHealthCheckRecord', 'status');
         if (status) {
           props.navigation.goBack();
@@ -461,7 +458,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       })
       .then(({ data }) => {
         setshowSpinner(false);
-        console.log('suceessfully added', data);
         const status = g(data, 'addPatientHospitalizationRecord', 'status');
         if (status) {
           props.navigation.goBack();
@@ -1083,8 +1079,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setdisplayOrderPopup(false);
             if (selectedType == 'CAMERA_AND_GALLERY') {
               if (response.length == 0) return;
-              console.log(response, 'response');
-
               setImages(response);
               setdisplayOrderPopup(false);
             }
