@@ -8,7 +8,6 @@ import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
 import fetchUtil from 'helpers/fetch';
-import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentDetails } from 'graphql/types/GetPatientAllAppointments';
 
 declare global {
   interface Window {
@@ -450,16 +449,18 @@ const isPastAppointment = (appointmentDateTime: string) =>
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const followUpDayMoment = moment(appointmentTime).add(7, 'days');
   const diffInDays = followUpDayMoment.diff(moment(), 'days');
-  if (diffInDays <= 0) {
+  if (diffInDays === 0) {
     const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
     const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
     return diffInHours > 0
-      ? `You can follow up with the doctor via text (${diffInHours} hours left)`
+      ? `Valid for ${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'}`
       : diffInMinutes > 0
-      ? `You can follow up with the doctor via text (${diffInMinutes} minutes left)`
+      ? `Valid for ${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'}`
       : '';
+  } else if (diffInDays > 0) {
+    return `Valid for ${diffInDays} ${diffInDays === 1 ? 'day' : 'days'}`;
   } else {
-    return `You can follow up with the doctor via text (${diffInDays} days left)`;
+    return '';
   }
 };
 
