@@ -3192,7 +3192,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           flex: 1,
         }}
       >
-        {showRateCallModal()}
+        {/* {showRateCallModal()} */}
         {showHeaderView()}
         {overlayDisplay}
         {showExoPopup && exoTelPopup()}
