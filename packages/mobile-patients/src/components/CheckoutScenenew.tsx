@@ -388,7 +388,6 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             console.log(error);
           }
           clearCartInfo && clearCartInfo();
-          localStorage.removeItem('updatedFreeCoupon')
           handleOrderSuccess(`${orderAutoId}`);
         }
       })
