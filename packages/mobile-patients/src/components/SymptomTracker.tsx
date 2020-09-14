@@ -277,7 +277,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         saveUserChange={true}
         editProfileCallback={editProfileCallback}
         screenName={string.symptomChecker.symptomTracker}
-        listContainerStyle={{ marginTop: Platform.OS === 'ios' ? 10 : 60 }}
+        listContainerStyle={styles.profileListContainerStyle}
         childView={
           <View
             style={{
@@ -296,15 +296,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                     ''}
                 </Text>
                 {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                  <LinkedUhidIcon
-                    style={{
-                      width: 22,
-                      height: 20,
-                      marginLeft: 5,
-                      marginTop: Platform.OS === 'ios' ? 26 : 30,
-                    }}
-                    resizeMode={'contain'}
-                  />
+                  <LinkedUhidIcon style={styles.uhidIcon} resizeMode={'contain'} />
                 ) : null}
                 <View style={{ paddingTop: 28 }}>
                   <DropdownGreen />
@@ -606,14 +598,14 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                 symptoms.length > 0 &&
                 symptoms.map((item, index) => {
                   return (
-                    <View key={index} style={[styles.itemRowStyle, { marginTop: 14 }]}>
+                    <View key={index} style={[styles.itemRowStyle, styles.itemRowMargin]}>
                       <View style={styles.bullet} />
                       <Text style={styles.patientDetailsText}>{item.name}</Text>
                     </View>
                   );
                 })}
             </View>
-            <View style={[styles.symptomsContainer, { marginTop: 20 }]}>
+            <View style={[styles.symptomsContainer, styles.symptomViewMargin]}>
               <View style={styles.seperatorLine}>
                 <Text style={styles.patientDetailsTitle}>Specialities</Text>
               </View>
@@ -621,7 +613,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                 specialities.length > 0 &&
                 specialities.map((item, index) => {
                   return (
-                    <View key={index} style={[styles.itemRowStyle, { marginTop: 14 }]}>
+                    <View key={index} style={[styles.itemRowStyle, styles.itemRowMargin]}>
                       <View style={styles.bullet} />
                       <Text style={styles.patientDetailsText}>{item.name}</Text>
                     </View>
@@ -648,7 +640,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         </TouchableOpacity>
         <Button
           title={string.symptomChecker.consultDoctor}
-          style={[styles.proceedBtn, { marginTop: 0 }]}
+          style={[styles.proceedBtn, styles.consultDoctorMargin]}
           onPress={() => {
             const filteredSpecialities: string[] = specialities.map((item: any) => {
               return item.name;
@@ -681,7 +673,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     return (
       <View style={styles.closeIcon}>
         <TouchableOpacity onPress={() => setShowInfo(false)}>
-          <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
+          <CrossPopup style={styles.crossIconStyle} />
         </TouchableOpacity>
       </View>
     );
@@ -693,9 +685,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         onRequestClose={() => setShowInfo(false)}
         isVisible={showInfo}
         windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
-        containerStyle={{
-          marginBottom: 20,
-        }}
+        containerStyle={styles.overlayContainerStyle}
         fullScreen
         transparent
         overlayStyle={styles.overlayStyle}
@@ -1009,5 +999,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 30,
     alignItems: 'flex-end',
+  },
+  itemRowMargin: {
+    marginTop: 14,
+  },
+  uhidIcon: {
+    width: 22,
+    height: 20,
+    marginLeft: 5,
+    marginTop: Platform.OS === 'ios' ? 26 : 30,
+  },
+  symptomViewMargin: {
+    marginTop: 20,
+  },
+  consultDoctorMargin: {
+    marginTop: 0,
+  },
+  profileListContainerStyle: {
+    marginTop: Platform.OS === 'ios' ? 10 : 60,
+  },
+  crossIconStyle: {
+    marginRight: 1,
+    width: 28,
+    height: 28,
+  },
+  overlayContainerStyle: {
+    marginBottom: 20,
   },
 });
