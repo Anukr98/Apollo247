@@ -9,7 +9,7 @@ import { PATIENT_ADDRESS_TYPE } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios, { AxiosError } from 'axios';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
@@ -273,7 +273,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   // ------------------------------------------------
   useEffect(() => {
     if (pincode && pincode.length === 6) {
-      fetchWrapper
+      axios
         .get(
           `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
         )
@@ -327,11 +327,11 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
               }
             }
           } catch {
-            (e: any) => console.log(e);
+            (e: AxiosError) => console.log(e);
             showError = true;
           }
         })
-        .catch((e: any) => {
+        .catch((e: AxiosError) => {
           console.log(e);
         });
     }

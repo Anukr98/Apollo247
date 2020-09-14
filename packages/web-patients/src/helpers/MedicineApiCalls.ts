@@ -2,7 +2,7 @@ import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAdd
 import { MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
 import moment from 'moment';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as LatestOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 const apiDetails = {
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -251,22 +251,25 @@ export interface GetPackageDataResponse {
 }
 
 export const checkServiceAvailability = (zipCode: string) => {
-  return fetchWrapper.get(`${process.env.INVENTORY_SYNC_URL}/serviceable?pincode=${zipCode}`, {
-    Authorization: process.env.INVENTORY_SYNC_TOKEN,
+  return axios.get(`${process.env.INVENTORY_SYNC_URL}/serviceable?pincode=${zipCode}`, {
+    headers: {
+      Authorization: process.env.INVENTORY_SYNC_TOKEN,
+      'Content-Type': 'application/json',
+    },
   });
 };
 
 export const checkSkuAvailability = (sku: string, pincode: string) => {
-  return fetchWrapper.get(
-    `${process.env.INVENTORY_SYNC_URL}/availability?sku=${sku}&pincode=${pincode}`,
-    {
+  return axios.get(`${process.env.INVENTORY_SYNC_URL}/availability?sku=${sku}&pincode=${pincode}`, {
+    headers: {
       Authorization: process.env.INVENTORY_SYNC_TOKEN,
-    }
-  );
+      'Content-Type': 'application/json',
+    },
+  });
 };
 
 export const checkTatAvailability = (items: Items[], pincode: string, lat: string, lng: string) => {
-  return fetchWrapper.post(
+  return axios.post(
     `${process.env.INVENTORY_SYNC_URL}/tat`,
     {
       items,
@@ -275,7 +278,10 @@ export const checkTatAvailability = (items: Items[], pincode: string, lat: strin
       lng,
     },
     {
-      Authorization: process.env.INVENTORY_SYNC_TOKEN,
+      headers: {
+        Authorization: process.env.INVENTORY_SYNC_TOKEN,
+        'Content-Type': 'application/json',
+      },
     }
   );
 };
@@ -298,14 +304,18 @@ export interface MedCartItemsDetailsResponse {
   productdp: MedicineProduct[];
 }
 
-const medCartItemsDetailsApi = (itemIds: string[]): Promise<any> => {
-  return fetchWrapper.post(
+const medCartItemsDetailsApi = (
+  itemIds: string[]
+): Promise<AxiosResponse<MedCartItemsDetailsResponse>> => {
+  return axios.post(
     apiDetails.cartItemDetails,
     {
       params: itemIds.toString(),
     },
     {
-      Authorization: apiDetails.authToken,
+      headers: {
+        Authorization: apiDetails.authToken,
+      },
     }
   );
 };
@@ -399,12 +409,16 @@ export const reOrderItems = async (
   }
 };
 
-export const getMedicineDetailsApi = (productSku: string): Promise<any> => {
-  return fetchWrapper.post(
+export const getMedicineDetailsApi = (
+  productSku: string
+): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
+  return axios.post(
     apiDetails.medicineDetails,
     { params: productSku },
     {
-      Authorization: apiDetails.authToken,
+      headers: {
+        Authorization: apiDetails.authToken,
+      },
     }
   );
 };

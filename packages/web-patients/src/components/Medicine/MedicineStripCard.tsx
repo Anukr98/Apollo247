@@ -7,7 +7,7 @@ import _uniqueId from 'lodash/uniqueId';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import _unescape from 'lodash/unescape';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios from 'axios';
 // import { AphCheckbox } from 'components/AphCheckbox';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -388,12 +388,14 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                   onClick={() => {
                     setIsPopoverOpen(true);
                     if (isPrescriptionRequired) setpopoverPrescriptionIcon(true);
-                    fetchWrapper
+                    axios
                       .post(
                         process.env.PHARMACY_MED_PRODUCT_INFO_URL,
                         { params: medicineSku },
                         {
-                          Authorization: process.env.PHARMACY_MED_AUTH_TOKEN,
+                          headers: {
+                            Authorization: process.env.PHARMACY_MED_AUTH_TOKEN,
+                          },
                         }
                       )
                       .then((result) => {

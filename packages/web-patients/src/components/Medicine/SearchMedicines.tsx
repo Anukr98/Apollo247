@@ -6,7 +6,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { AphTextField } from '@aph/web-ui-components';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { MedicineStripCard } from 'components/Medicine/MedicineStripCard';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios, { AxiosError, Cancel } from 'axios';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import _debounce from 'lodash/debounce';
 import { MedicineCartItem } from 'components/MedicinesCartProvider';
@@ -282,7 +282,7 @@ export const SearchMedicines: React.FC = (props) => {
                   _debounce(() => {
                     setMedicineCount(0);
                     setLoading(true);
-                    fetchWrapper
+                    axios
                       .post(
                         process.env.PHARMACY_MED_SEARCH_URL,
                         { params: medicineName },
@@ -313,8 +313,11 @@ export const SearchMedicines: React.FC = (props) => {
                         setMedicineCount(medicineCount);
                         setLoading(false);
                       })
-                      .catch((thrown: any) => {
-                        console.error(thrown);
+                      .catch((thrown: AxiosError | Cancel) => {
+                        if (axios.isCancel(thrown)) {
+                          // const cancel: Cancel = thrown;
+                          // console.log(cancel);
+                        }
                       });
                   }, 1500)();
                 } else {

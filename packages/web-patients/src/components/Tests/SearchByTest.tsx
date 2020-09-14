@@ -11,7 +11,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SEARCH_DIAGNOSTICS, GET_DIAGNOSTIC_DATA } from 'graphql/profiles';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios from 'axios';
 import {
   searchDiagnostics,
   searchDiagnostics_searchDiagnostics_diagnostics,
@@ -255,7 +255,7 @@ export const SearchByTest: React.FC = (props) => {
 
   const getPackageDetails = async () => {
     setLoading(true);
-    await fetchWrapper
+    await axios
       .post(apiDetails.url || '', {
         ...TestApiCredentials,
         ItemID: params.searchType === 'browser-packages' ? params.searchTestText : '',

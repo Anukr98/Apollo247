@@ -94,6 +94,7 @@
     "apollo-link-context": "^1.0.18",
     "apollo-link-error": "^1.1.11",
     "apollo-link-http": "^1.5.15",
+    "axios": "^0.20.0",
     "date-fns": "^2.0.0-beta.2",
     "firebase": "^6.2.2",
     "formik": "^1.5.8",

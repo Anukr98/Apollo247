@@ -50,7 +50,7 @@ import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 // import Pagination from '@material-ui/lab/Pagination';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios from 'axios';
 let currentPage = 1;
 let apolloDoctorCount = 0;
 let partnerDoctorCount = 0;
@@ -651,9 +651,9 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
   useEffect(() => {
     if (slugName !== '') {
-      fetchWrapper
+      axios
         .get(`${process.env.CMS_BASE_URL}/api/specialty-details/${readableParam(specialtyName)}`, {
-          Authorization: process.env.CMS_TOKEN,
+          headers: { 'Content-Type': 'application/json', Authorization: process.env.CMS_TOKEN },
         })
         .then((res: any) => {
           if (res && res.data && res.data.success) {

@@ -29,7 +29,7 @@ import moment from 'moment';
 import React, { useEffect, useRef } from 'react';
 import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import { gtmTracking } from '../../gtmTracking';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios, { AxiosError } from 'axios';
 
 export const formatAddress = (address: Address) => {
   const addressFormat = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
@@ -487,7 +487,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       // get lat long
       if (address.zipcode && address.zipcode.length === 6) {
         setIsLoading(true);
-        fetchWrapper
+        axios
           .get(googleMapApi)
           .then(({ data }) => {
             try {
@@ -548,7 +548,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                 });
               }
             } catch {
-              (e: any) => {
+              (e: AxiosError) => {
                 console.log(e);
                 setIsLoading(false);
                 setIsAlertOpen(true);
@@ -556,7 +556,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               };
             }
           })
-          .catch((e: any) => {
+          .catch((e: AxiosError) => {
             setIsLoading(false);
             setIsAlertOpen(true);
             setAlertMessage(e.message);

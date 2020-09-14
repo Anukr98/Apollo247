@@ -7,7 +7,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { UPDATE_PATIENT_ADDRESS } from 'graphql/address';
 import { useMutation } from 'react-apollo-hooks';
 import { GetPatientAddressList_getPatientAddressList_addressList as Address } from 'graphql/types/GetPatientAddressList';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios, { AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
 import { gtmTracking } from '../../gtmTracking';
 import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
@@ -175,7 +175,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
       // get lat long
       if (addressDetails.zipcode && addressDetails.zipcode.length === 6) {
         setIsLoading(true);
-        fetchWrapper
+        axios
           .get(googleMapApi)
           .then(({ data }) => {
             try {
@@ -236,7 +236,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                 });
               }
             } catch {
-              (e: any) => {
+              (e: AxiosError) => {
                 console.log(e);
                 setIsLoading(false);
                 setIsAlertOpen(true);
@@ -244,7 +244,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
               };
             }
           })
-          .catch((e: any) => {
+          .catch((e: AxiosError) => {
             setIsLoading(false);
             setIsAlertOpen(true);
             setAlertMessage(e.message);

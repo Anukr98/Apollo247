@@ -2,7 +2,7 @@ import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-u
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios from 'axios';
 import _lowerCase from 'lodash/lowerCase';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { NavigationBottom } from 'components/NavigationBottom';
@@ -300,14 +300,16 @@ const SearchByMedicine: React.FC = (props) => {
 
   const onSearchMedicine = async () => {
     setIsLoading(true);
-    await fetchWrapper
+    await axios
       .post(
         apiDetailsText.url,
         {
           params: paramSearchText,
         },
         {
-          Authorization: apiDetails.authToken,
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
         }
       )
       .then(({ data }) => {
@@ -325,17 +327,19 @@ const SearchByMedicine: React.FC = (props) => {
   };
 
   const getCategoryProducts = () => {
-    fetchWrapper
+    axios
       .post(
         apiDetails.skuUrl || '',
         { params: paramSearchText, level: 'category' },
         {
-          Authorization: apiDetails.authToken,
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
         }
       )
       .then((res) => {
         setCategoryId(res.data.category_id || paramSearchText);
-        fetchWrapper
+        axios
           .post(
             apiDetails.url || '',
             {
@@ -343,8 +347,10 @@ const SearchByMedicine: React.FC = (props) => {
               page_id: 1,
             },
             {
-              Authorization: apiDetails.authToken,
-              Accept: '*/*',
+              headers: {
+                Authorization: apiDetails.authToken,
+                Accept: '*/*',
+              },
             }
           )
           .then(({ data }) => {

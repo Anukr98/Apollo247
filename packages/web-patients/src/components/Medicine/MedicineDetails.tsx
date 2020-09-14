@@ -6,7 +6,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
 import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { useParams } from 'hooks/routerHooks';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios from 'axios';
 import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
@@ -620,21 +620,25 @@ const MedicineDetails: React.FC = (props) => {
   };
 
   const getMedicineDetails = async (sku: string) => {
-    await fetchWrapper
+    await axios
       .post(
         apiDetails.skuUrl || '',
         { params: sku, level: 'product' },
         {
-          Authorization: apiDetails.authToken,
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
         }
       )
-      .then(async ({ data }) => {
-        await fetchWrapper
+      .then(async ({ data }: any) => {
+        await axios
           .post(
             apiDetails.url || '',
             { params: data.sku || sku },
             {
-              Authorization: apiDetails.authToken,
+              headers: {
+                Authorization: apiDetails.authToken,
+              },
             }
           )
           .then(({ data }) => {

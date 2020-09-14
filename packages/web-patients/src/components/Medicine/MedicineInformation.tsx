@@ -43,7 +43,7 @@ import _lowerCase from 'lodash/lowerCase';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import fetchUtil from 'helpers/fetch';
 import _get from 'lodash/get';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios, { AxiosError } from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -420,12 +420,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
 
   const fetchSubstitutes = async () => {
-    await fetchWrapper
+    await axios
       .post(
         apiDetails.url || '',
         { params: data.sku || params.sku },
         {
-          Authorization: apiDetails.authToken,
+          headers: {
+            Authorization: apiDetails.authToken,
+          },
         }
       )
       .then(({ data }) => {
@@ -480,7 +482,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   };
 
   const getPlaceDetails = (pincode: string) => {
-    fetchWrapper
+    axios
       .get(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
       )
@@ -495,12 +497,12 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             );
           }
         } catch {
-          (e: any) => {
+          (e: AxiosError) => {
             console.log(e);
           };
         }
       })
-      .catch((e: any) => {
+      .catch((e: AxiosError) => {
         setIsAlertOpen(true);
         setAlertMessage('Something went wrong :(');
         console.log(e);

@@ -10,7 +10,7 @@ import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { TEST_COLLECTION_TYPE } from 'graphql/types/globalTypes';
 import { gtmTracking } from '../../../gtmTracking';
 import _replace from 'lodash/replace';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -224,7 +224,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                           <AphButton
                             onClick={() => {
                               setLoading(true);
-                              fetchWrapper
+                              axios
                                 .post(apiDetails.url || '', {
                                   ...TestApiCredentials,
                                   ItemID: hotSeller.diagnostics

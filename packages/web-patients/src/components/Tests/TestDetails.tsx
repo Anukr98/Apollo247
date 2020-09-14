@@ -8,7 +8,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AphButton } from '@aph/web-ui-components';
 import { useParams } from 'hooks/routerHooks';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios from 'axios';
 import {
   searchDiagnosticsById,
   searchDiagnosticsByIdVariables,
@@ -435,7 +435,7 @@ const TestDetails: React.FC = (props) => {
 
   const getPackageDetails = async () => {
     setLoading(true);
-    await fetchWrapper
+    await axios
       .post(apiDetails.url || '', {
         ...TestApiCredentials,
         ItemID: params.itemId,

@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios from 'axios';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
@@ -258,7 +258,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
   const [loading, setLoading] = useState(false);
   const onSearchMedicine = async (value: string) => {
     setLoading(true);
-    await fetchWrapper
+    await axios
       .post(
         apiDetails.url,
         {

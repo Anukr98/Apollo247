@@ -20,7 +20,7 @@ import { gtmTracking } from '../../gtmTracking';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
 import fetchUtil from 'helpers/fetch';
 import { PharmaCoupon } from './MedicineCart';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -265,12 +265,14 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
 
         const allData: MedicineCartItem[] = [];
         if (skus && skus.length) {
-          fetchWrapper
+          axios
             .post(
               apiDetails.bulk_product_info_url || '',
               { params: skus.join(',') },
               {
-                Authorization: apiDetails.authToken,
+                headers: {
+                  Authorization: apiDetails.authToken,
+                },
               }
             )
             .then((resp) => {

@@ -80,7 +80,7 @@ import { getTypeOfProduct } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
 import fetchUtil from 'helpers/fetch';
 import { checkTatAvailability } from 'helpers/MedicineApiCalls';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -1072,12 +1072,14 @@ export const MedicineCart: React.FC = (props) => {
 
         const allData: MedicineCartItem[] = [];
         if (skus && skus.length) {
-          fetchWrapper
+          axios
             .post(
               apiDetails.bulk_product_info_url || '',
               { params: skus.join(',') },
               {
-                Authorization: apiDetails.authToken,
+                headers: {
+                  Authorization: apiDetails.authToken,
+                },
               }
             )
             .then((resp) => {

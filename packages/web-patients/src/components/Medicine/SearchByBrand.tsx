@@ -6,7 +6,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
 import { MedicineFilter } from 'components/Medicine/MedicineFilter';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
-import fetchWrapper from 'helpers/fetchWrapper';
+import axios from 'axios';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { MedicineProductsResponse, MedicineProduct } from './../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
@@ -141,7 +141,7 @@ const SearchByBrand: React.FC = (props) => {
   const onePrimaryUser = hasOnePrimaryUser();
   useEffect(() => {
     if (!medicineListFiltered || (medicineListFiltered && medicineListFiltered.length < 1)) {
-      fetchWrapper
+      axios
         .post(
           apiDetails.url || '',
           {
@@ -149,8 +149,10 @@ const SearchByBrand: React.FC = (props) => {
             page_id: 1,
           },
           {
-            Authorization: apiDetails.authToken,
-            Accept: '*/*',
+            headers: {
+              Authorization: apiDetails.authToken,
+              Accept: '*/*',
+            },
           }
         )
         .then(({ data }) => {
