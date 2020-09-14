@@ -6,9 +6,8 @@ import Scrollbars from 'react-custom-scrollbars';
 import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
 import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { useParams } from 'hooks/routerHooks';
-import axios from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
-import stripHtml from 'string-strip-html';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -35,7 +34,7 @@ import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
-import { getPackOfMedicine } from 'helpers/commonHelpers';
+import { getPackOfMedicine, stripHtml } from 'helpers/commonHelpers';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -590,7 +589,7 @@ type MedicineOverViewDetails = {
 
 type MedicineOverView = MedicineOverViewDetails[] | string;
 
-export const MedicineDetails: React.FC = (props) => {
+const MedicineDetails: React.FC = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = React.useState<number>(0);
   const params = useParams<{ sku: string; searchText: string }>();
@@ -621,25 +620,21 @@ export const MedicineDetails: React.FC = (props) => {
   };
 
   const getMedicineDetails = async (sku: string) => {
-    await axios
+    await fetchWrapper
       .post(
         apiDetails.skuUrl || '',
         { params: sku, level: 'product' },
         {
-          headers: {
-            Authorization: apiDetails.authToken,
-          },
+          Authorization: apiDetails.authToken,
         }
       )
       .then(async ({ data }) => {
-        await axios
+        await fetchWrapper
           .post(
             apiDetails.url || '',
             { params: data.sku || sku },
             {
-              headers: {
-                Authorization: apiDetails.authToken,
-              },
+              Authorization: apiDetails.authToken,
             }
           )
           .then(({ data }) => {
@@ -1327,3 +1322,5 @@ export const MedicineDetails: React.FC = (props) => {
     </div>
   );
 };
+
+export default MedicineDetails;

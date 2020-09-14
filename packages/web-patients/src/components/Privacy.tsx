@@ -46,7 +46,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Privacy: React.FC = (props) => {
+const Privacy: React.FC = (props) => {
   const classes = useStyles({});
 
   return (
@@ -516,3 +516,5 @@ export const Privacy: React.FC = (props) => {
     </div>
   );
 };
+
+export default Privacy;

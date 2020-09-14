@@ -4,7 +4,7 @@ import { Theme } from '@material-ui/core';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { useParams } from 'hooks/routerHooks';
-import axios from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -96,16 +96,14 @@ export const TestFilter: React.FC<TestFilterProps> = (props: any) => {
   }, [subtxt]);
 
   const onSearchMedicine = async (value: string | null) => {
-    await axios
+    await fetchWrapper
       .post(
         apiDetails.url,
         {
           params: value,
         },
         {
-          headers: {
-            Authorization: apiDetails.authToken,
-          },
+          Authorization: apiDetails.authToken,
         }
       )
       .then(({ data }) => {

@@ -3,6 +3,7 @@ import { Theme } from '@material-ui/core';
 import React, { useEffect } from 'react';
 import Typography from '@material-ui/core/Typography';
 import { AphButton } from '@aph/web-ui-components';
+import { LazyIntersection } from './lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -89,7 +90,7 @@ export const MascotWithMessage: React.FC<MascotWithMessageProps> = (props, histo
     <div className={classes.signUpBar}>
       <div className={classes.signUpPop}>
         <div className={classes.mascotIcon}>
-          <img src={require('images/ic-mascot.png')} alt="" />
+          <LazyIntersection src={require('images/ic-mascot.png')} alt="" />
         </div>
         <div className={classes.signinGroup}>
           {props.messageTitle.length > 0 ? (

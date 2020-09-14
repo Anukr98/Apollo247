@@ -11,7 +11,7 @@ import {
 } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { ViewAllStoreAddress } from 'components/Locations/ViewAllStoreAddress';
-import axios, { AxiosError, Cancel } from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { LocationContext } from 'components/LocationProvider';
 import { useShoppingCart, StoreAddresses } from 'components/MedicinesCartProvider';
 
@@ -135,14 +135,12 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
   let showAddress = 0;
 
   const getPharmacyAddresses = async (pincode: string) => {
-    await axios
+    await fetchWrapper
       .post(
         apiDetails.url || '',
         { params: pincode },
         {
-          headers: {
-            Authorization: apiDetails.authToken,
-          },
+          Authorization: apiDetails.authToken,
         }
       )
       .then(({ data }) => {
@@ -168,14 +166,14 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
         }
         setLoading(false);
       })
-      .catch((thrown: AxiosError | Cancel) => {
+      .catch((thrown: any) => {
         setLoading(false);
         setPincodeError(true);
       });
   };
 
   const getCurrentLocationPincode = async (currentLat: string, currentLong: string) => {
-    await axios
+    await fetchWrapper
       .get(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentLat},${currentLong}&key=${apiDetails.googleAPIKey}`
       )
@@ -194,10 +192,10 @@ export const StorePickUp: React.FC<{ pincode: string | null }> = (props) => {
             }
           }
         } catch {
-          (e: AxiosError) => console.log(e);
+          (e: any) => console.log(e);
         }
       })
-      .catch((e: AxiosError) => {
+      .catch((e: any) => {
         console.log(e);
         setPincodeError(true);
       });

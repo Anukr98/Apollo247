@@ -20,7 +20,7 @@ import {
   MEDICINE_CONSUMPTION_DURATION,
 } from '../../graphql/types/globalTypes';
 import { clientRoutes } from 'helpers/clientRoutes';
-import axios from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -130,14 +130,12 @@ export const Prescription: React.FC<PrescriptionProps> = (props) => {
   const { addMultipleCartItems } = useShoppingCart();
 
   const getMedicineDetails = async (sku: string, medPrescription: PrescriptionType) => {
-    await axios
+    await fetchWrapper
       .post(
         apiDetails.url,
         { params: sku },
         {
-          headers: {
-            Authorization: apiDetails.authToken,
-          },
+          Authorization: apiDetails.authToken,
         }
       )
       .then(({ data }) => {

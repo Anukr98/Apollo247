@@ -44,14 +44,13 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import _lowerCase from 'lodash/lowerCase';
-import axios from 'axios';
 import { gtmTracking } from 'gtmTracking';
 import { SpecialtySearch } from 'components/SpecialtySearch';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 // import Pagination from '@material-ui/lab/Pagination';
-
+import fetchWrapper from 'helpers/fetchWrapper';
 let currentPage = 1;
 let apolloDoctorCount = 0;
 let partnerDoctorCount = 0;
@@ -388,7 +387,7 @@ interface SpecialityProps {
   history: any;
 }
 
-export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
+const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const searchObject: SearchObject = {
     searchKeyword: '',
     cityName: [],
@@ -652,9 +651,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
   useEffect(() => {
     if (slugName !== '') {
-      axios
+      fetchWrapper
         .get(`${process.env.CMS_BASE_URL}/api/specialty-details/${readableParam(specialtyName)}`, {
-          headers: { 'Content-Type': 'application/json', Authorization: process.env.CMS_TOKEN },
+          Authorization: process.env.CMS_TOKEN,
         })
         .then((res: any) => {
           if (res && res.data && res.data.success) {
@@ -1043,3 +1042,5 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     </div>
   );
 };
+
+export default SpecialtyDetails;

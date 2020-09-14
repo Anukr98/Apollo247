@@ -5,7 +5,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
 import Scrollbars from 'react-custom-scrollbars';
-import axios from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { Brand } from './../../helpers/MedicineApiCalls';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
@@ -288,15 +288,13 @@ export const ViewAllBrands: React.FC = (props) => {
   useEffect(() => {
     if (!data) {
       setIsLoading(true);
-      axios
+      fetchWrapper
         .post(
           apiDetails.url!,
           {},
           {
-            headers: {
-              Authorization: apiDetails.authToken,
-              Accept: '*/*',
-            },
+            Authorization: apiDetails.authToken,
+            Accept: '*/*',
           }
         )
         .then((res) => {
@@ -423,3 +421,5 @@ export const ViewAllBrands: React.FC = (props) => {
     </div>
   );
 };
+
+export default ViewAllBrands;

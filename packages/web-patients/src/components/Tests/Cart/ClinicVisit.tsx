@@ -11,7 +11,7 @@ import {
 } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { ViewAllClinicAddress } from 'components/Tests/Cart/ViewAllClinicAddress';
-import axios, { AxiosError, Cancel } from 'axios';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { LocationContext } from 'components/LocationProvider';
 import { useDiagnosticsCart, Clinic } from '../DiagnosticsCartProvider';
 
@@ -151,7 +151,7 @@ export const ClinicVisit: React.FC<ClinicVisitProps> = (props) => {
   const filterClinics = (key: string) => {
     if (isValidPinCode(key)) {
       if (key.length == 6) {
-        axios
+        fetchWrapper
           .get(
             `https://maps.googleapis.com/maps/api/geocode/json?address=${key}&components=country:in&key=${apiDetails.googleAPIKey}`
           )
@@ -197,7 +197,7 @@ export const ClinicVisit: React.FC<ClinicVisitProps> = (props) => {
   };
 
   const fetchAllClinics = () => {
-    axios
+    fetchWrapper
       .post(apiDetails.allClinics || '', {
         ...TestApiCredentials,
       })
@@ -210,7 +210,7 @@ export const ClinicVisit: React.FC<ClinicVisitProps> = (props) => {
   };
 
   const getCurrentLocationPincode = async (currentLat: string, currentLong: string) => {
-    await axios
+    await fetchWrapper
       .get(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${currentLat},${currentLong}&key=${apiDetails.googleAPIKey}`
       )
@@ -228,10 +228,10 @@ export const ClinicVisit: React.FC<ClinicVisitProps> = (props) => {
             }
           }
         } catch {
-          (e: AxiosError) => console.log(e);
+          (e: any) => console.log(e);
         }
       })
-      .catch((e: AxiosError) => {
+      .catch((e: any) => {
         console.log(e);
         setPincodeError(true);
       });

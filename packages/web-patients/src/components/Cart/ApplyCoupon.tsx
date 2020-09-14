@@ -3,7 +3,7 @@ import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { AphRadio, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
-import _each from 'lodash';
+//import _each from 'lodash';
 import { useMutation } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { PHRAMA_COUPONS_LIST, VALIDATE_PHARMA_COUPONS } from '../../graphql/medicines';
@@ -19,8 +19,8 @@ import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvi
 import { gtmTracking } from '../../gtmTracking';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
 import fetchUtil from 'helpers/fetch';
+import fetchWrapper from 'helpers/fetchWrapper';
 import { PharmaCoupon } from './MedicineCart';
-import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -260,7 +260,16 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           cartItems && cartItems.length ? cartItems.map((cartItem) => cartItem.sku) : []
         );
         response.products.forEach((data: any) => {
-          if (!cartSkuSet.has(data.sku) && data.couponFree) skus.push(data.sku);
+          if (!cartSkuSet.has(data.sku))
+            promises.push(
+              fetchWrapper.post(
+                apiDetails.url || '',
+                { params: data.sku },
+                {
+                  Authorization: apiDetails.authToken,
+                }
+              )
+            );
         });
 
         const allData: MedicineCartItem[] = [];
