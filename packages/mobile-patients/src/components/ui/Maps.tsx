@@ -19,6 +19,7 @@ import {
   savePatientAddress,
   savePatientAddressVariables,
   savePatientAddress_savePatientAddress,
+  savePatientAddress_savePatientAddress_patientAddress,
 } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   updatePatientAddress,
@@ -30,6 +31,7 @@ import {
   postWebEngageEvent,
   doRequestAndAccessLocationModified,
   distanceBwTwoLatLng,
+  removeConsecutiveComma,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   getLatLongFromAddress,
@@ -47,6 +49,7 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { useApolloClient } from 'react-apollo-hooks';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -179,14 +182,16 @@ export interface MapProps
     isChanged?: boolean;
     addOnly?: boolean;
     source: string;
+    ComingFrom?: string;
   }> {}
 
 export const Maps: React.FC<MapProps> = (props) => {
   const addressObject = props.navigation.getParam('addressDetails');
   const [latitude, setLatitude] = useState<number>(0);
   const [longitude, setLongitude] = useState<number>(0);
-  const [latitudeDelta, setLatitudeDelta] = useState<number>(1);
-  const [longitudeDelta, setLongitudeDelta] = useState<number>(1);
+  const [latitudeDelta, setLatitudeDelta] = useState<number>(0.01);
+  const [longitudeDelta, setLongitudeDelta] = useState<number>(0.01);
+  const [isMapDragging, setMapDragging] = useState<boolean>(false);
 
   const [stateCode, setStateCode] = useState<string>(addressObject?.stateCode!);
   const [state, setstate] = useState<string>(addressObject?.state!);
@@ -200,10 +205,17 @@ export const Maps: React.FC<MapProps> = (props) => {
 
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const { addAddress, setDeliveryAddressId, setNewAddressAdded } = useShoppingCart();
+  const {
+    addAddress,
+    setDeliveryAddressId,
+    setNewAddressAdded,
+    addresses,
+    setAddresses,
+  } = useShoppingCart();
   const {
     addAddress: addDiagnosticAddress,
     setDeliveryAddressId: setDiagnosticAddressId,
+    setAddresses: setTestAddresses,
   } = useDiagnosticsCart();
   const { locationDetails, pharmacyLocation } = useAppCommonData();
   const _map = useRef(null);
@@ -228,11 +240,11 @@ export const Maps: React.FC<MapProps> = (props) => {
     let address;
     if (getLandmark != '') {
       address =
-        addressObject?.addressLine1 +
+        addressObject?.addressLine1?.trim() +
         ', ' +
-        addressObject?.addressLine2 +
+        addressObject?.addressLine2?.trim() +
         ', ' +
-        getLandmark +
+        getLandmark.trim() +
         ', ' +
         addressObject?.city +
         ', ' +
@@ -241,9 +253,9 @@ export const Maps: React.FC<MapProps> = (props) => {
         addressObject?.zipcode;
     } else {
       address =
-        addressObject?.addressLine1 +
+        addressObject?.addressLine1?.trim() +
         ', ' +
-        addressObject?.addressLine2 +
+        addressObject?.addressLine2?.trim() +
         ', ' +
         addressObject?.city +
         ', ' +
@@ -252,7 +264,7 @@ export const Maps: React.FC<MapProps> = (props) => {
         addressObject?.zipcode;
     }
 
-    setAddress(address);
+    setAddress(removeConsecutiveComma(address));
     //check this condition for initial cases
     getLatLongFromAddress(address)
       .then(({ data }) => {
@@ -297,6 +309,30 @@ export const Maps: React.FC<MapProps> = (props) => {
     postWebEngageEvent(WebEngageEventName.CONFIRM_LOCATION, eventAttributes);
   };
 
+  const setUpdatedAddressList = async (
+    updatedAddress: savePatientAddress_savePatientAddress_patientAddress
+  ) => {
+    const newAddrList = [
+      { ...updatedAddress },
+      ...addresses.filter((item) => item.id != updatedAddress.id),
+    ];
+    setAddresses!(newAddrList);
+    setTestAddresses!(newAddrList);
+  };
+
+  const _navigateToScreens = (
+    addressList: savePatientAddress_savePatientAddress_patientAddress
+  ) => {
+    const screenName = props.navigation.getParam('ComingFrom')!;
+    if (screenName! && screenName != '') {
+      setUpdatedAddressList(addressList);
+      props.navigation.pop(2, { immediate: true });
+    } else {
+      props.navigation.pop(3, { immediate: true });
+      props.navigation.push(AppRoutes.AddressBook);
+    }
+  };
+
   const onConfirmLocation = async () => {
     setshowSpinner(true);
     if (addressObject?.latitude && addressObject?.longitude) {
@@ -332,8 +368,7 @@ export const Maps: React.FC<MapProps> = (props) => {
           try {
             setshowSpinner(false);
             console.log('updateapicalled', _data);
-            props.navigation.pop(3, { immediate: true });
-            props.navigation.push(AppRoutes.AddressBook);
+            _navigateToScreens(_data.data.updatePatientAddress.patientAddress);
           } catch (error) {
             CommonBugFender('AddAddress_onConfirmLocation_try', error);
           }
@@ -455,19 +490,33 @@ export const Maps: React.FC<MapProps> = (props) => {
     );
   };
 
-  // const onMarkerDragEnd = (event: MapEvent) =>{
+  // const onMarkerDragEnd = (event: MapEvent) => {
   //   const coordinates = event.nativeEvent.coordinate;
   //   setLatitude(coordinates?.latitude);
   //   setLongitude(coordinates?.longitude);
-  // }
+  // };
 
   /** to drag the map */
   /** set lat-long when drag has been stopped */
   const _onRegionChangeComplete = (region: RegionObject) => {
-    setRegion(region);
-    setLatitude(region.latitude);
-    setLongitude(region.longitude);
-    console.log(region.latitude, region.longitude);
+    /**since double tap does not work in ios */
+    if (isMapDragging || Platform.OS == 'ios') {
+      setMapDragging(false);
+      setRegion(region);
+      setLatitude(region.latitude);
+      setLongitude(region.longitude);
+      console.log(region.latitude, region.longitude);
+    }
+
+    if (!isMapDragging && Platform.OS == 'android') {
+      return;
+    }
+  };
+
+  const _setMapDragging = () => {
+    if (!isMapDragging) {
+      setMapDragging(true);
+    }
   };
 
   /** for getting current position */
@@ -560,7 +609,9 @@ export const Maps: React.FC<MapProps> = (props) => {
         minZoomLevel={9}
         onMapReady={() => console.log('ready')}
         onRegionChangeComplete={(region) => _onRegionChangeComplete(region)}
-        // initialRegion={{latitude:latitude,longitude:longitude,latitudeDelta:latitudeDelta,longitudeDelta:longitudeDelta}}
+        onDoublePress={_setMapDragging}
+        onPanDrag={_setMapDragging}
+        // initialRegion={{latitude: latitude,longitude: longitude,latitudeDelta: latitudeDelta,longitudeDelta: longitudeDelta,}}
       >
         {/**drag the marker */}
         {/* <Marker
