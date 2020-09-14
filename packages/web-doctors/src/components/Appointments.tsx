@@ -23,9 +23,12 @@ import { LinearProgress } from '@material-ui/core';
 import _uniqueId from 'lodash/uniqueId';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet as caseSheetInfo } from 'graphql/types/GetDoctorAppointments';
 import StatusModal, { defaultText, modalData, ModalContent } from './StatusModal';
+import { webEngageEventTracking } from 'webEngageTracking';
 
 export interface Appointment {
   id: string;
+  appointmentDateTime: string;
+  displayId: number;
   patientId: string;
   startTime: number;
   isJdQuestionsComplete: boolean | null;
@@ -36,6 +39,7 @@ export interface Appointment {
   caseSheet: any;
   details: {
     patientName: string;
+    mobileNumber: string;
     checkups: any;
     avatar: string;
   };
@@ -401,6 +405,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
   const [loading, isLoading] = useState<boolean>(loadingData);
   const [text, setText] = useState<ModalContent>(defaultText);
   const upcomingElement = useRef(null);
+  const { currentPatient} = useAuth();
 
   useImperativeHandle(upcomingElement, () => {
     if (upcomingElement.current) {
@@ -633,12 +638,25 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                   {jrdCaseSheet.length > 0 &&
                   appointment.isJdQuestionsComplete &&
                   jrdCaseSheet[0].status === 'COMPLETED' ? (
-                    <>
+                    <div onClick={() =>{
+                      webEngageEventTracking(
+                        {
+                          'Doctor name': (currentPatient && currentPatient.fullName) || '',
+                          'Patient name': (appointment && appointment.details && appointment.details.patientName) || '',
+                          'Patient mobile number': (appointment && appointment.details && appointment.details.mobileNumber) || '',
+                          'Doctor Mobile number': (currentPatient && currentPatient.mobileNumber) || '',
+                          'Appointment Date time': (appointment && appointment.appointmentDateTime) || '',
+                          'Appointment display ID': (appointment && appointment.displayId) || '',
+                          'Appointment ID': (appointment && appointment.id) || '',
+                        },
+                        'Front_end - Doctor started Appointment session'
+                      );
+                    }}>
                       {localStorage.setItem('callBackUrl', '/calendar')}
                       <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}/0`}>
                         {appointmentCard}
                       </Link>
-                    </>
+                    </div>
                   ) : (
                     <div
                       onClick={() => {
@@ -647,6 +665,12 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                           ...defaultText,
                           appointmentId: appointment.id,
                           patientId: appointment.patientId,
+                          doctorName: (currentPatient && currentPatient.fullName) || '',
+                          patientName: (appointment && appointment.details && appointment.details.patientName) || '',
+                          patientMobileNumber: (appointment && appointment.details && appointment.details.mobileNumber) || '',
+                          doctorMobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
+                          appointmentDateTime: (appointment && appointment.appointmentDateTime) || '',
+                          displayId: (appointment && appointment.displayId) || 0,
                         };
                         if (!appointment.isJdQuestionsComplete) {
                           text.headerText = modalData.questionNotField.headerText;
