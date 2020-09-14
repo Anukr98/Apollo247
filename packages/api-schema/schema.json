@@ -15372,19 +15372,19 @@
         "interfaces": null,
         "enumValues": [
           {
-            "name": "APOLLO_HOSPITALS",
+            "name": "APOLLO",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
           },
           {
-            "name": "APOLLO_CLINIC",
+            "name": "CLINIC",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
           },
           {
-            "name": "APOLLO_CRADLE",
+            "name": "CRADLE",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -15396,7 +15396,7 @@
             "deprecationReason": null
           },
           {
-            "name": "APOLLO_FERTILITY",
+            "name": "FERTILITY",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -15408,13 +15408,13 @@
             "deprecationReason": null
           },
           {
-            "name": "APOLLO",
+            "name": "PAYROLL",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
           },
           {
-            "name": "APOLLO_SPECTRA_HOSPITALS",
+            "name": "SPECTRA",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -15426,13 +15426,13 @@
             "deprecationReason": null
           },
           {
-            "name": "APOLLO_SUGAR_CLINICS",
+            "name": "SUGAR",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
           },
           {
-            "name": "APOLLO_WHITE_DENTAL",
+            "name": "WHITE_DENTAL",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
