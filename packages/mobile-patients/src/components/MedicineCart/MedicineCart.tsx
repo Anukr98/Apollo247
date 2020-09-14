@@ -9,7 +9,10 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { CartItemsList } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemsList';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  useShoppingCart,
+  ShoppingCartItem,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { FreeDelivery } from '@aph/mobile-patients/src/components/MedicineCart/Components/FreeDelivery';
 import { AmountCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/AmountCard';
 import { Coupon } from '@aph/mobile-patients/src/components/MedicineCart/Components/Coupon';
@@ -31,6 +34,7 @@ import { g } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
   availabilityApi247,
+  GetTatResponse247,
   TatApiInput247,
   getDeliveryTAT247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -56,6 +60,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
   const [lastCartItems, setlastCartItems] = useState('');
+  const [storeType, setStoreType] = useState<string | undefined>('');
+  const [shopId, setShopId] = useState<string | undefined>('');
+  const [deliveryTime, setdeliveryTime] = useState<string>('');
 
   useEffect(() => {
     fetchAddress();
@@ -95,11 +102,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     const response = await pinCodeServiceabilityApi247(address.zipcode!);
     const { data } = response;
     if (data.response) {
-      setloading(false);
       setDeliveryAddressId && setDeliveryAddressId(address.id);
     } else {
       setDeliveryAddressId && setDeliveryAddressId('');
-      setloading!(false);
     }
   }
 
@@ -110,6 +115,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       return;
     }
     if (deliveryAddressId && cartItems.length > 0) {
+      setloading(true);
       setlastCartItems(newCartItems);
       const skus = cartItems.map((item) => item.id);
       const selectedAddress: any = addresses.find((item) => item.id == deliveryAddressId);
@@ -122,7 +128,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           ...item,
           unserviceable: unserviceableSkus.indexOf(item.id) != -1,
         }));
-        console.log('updatedCartItems', updatedCartItems);
         setCartItems!(updatedCartItems);
 
         const serviceableItems = updatedCartItems
@@ -130,7 +135,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           .map((item) => {
             return { sku: item.id, qty: item.quantity };
           });
-        console.log('serviceableItems', serviceableItems);
 
         const tatInput: TatApiInput247 = {
           pincode: selectedAddress.zipcode || '',
@@ -145,26 +149,46 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           const deliveryDate = g(res, 'data', 'response', 'tat');
           if (deliveryDate) {
             const inventoryData = g(res, 'data', 'response', 'items') || [];
-            const inventory = inventoryData
-              .filter(({ qty }) => qty > 0)
-              .map((item) => {
-                return {
-                  itemId: item.sku,
-                  qty: item.qty,
-                  mrp: item.qty,
-                };
-              });
-            if (inventory && inventory.length) {
-              // fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, inventory);
+            if (inventoryData && inventoryData.length) {
+              setloading!(false);
+              setStoreType(g(res, 'data', 'response', 'storeCode'));
+              setShopId(g(res, 'data', 'response', 'storeType'));
+              setdeliveryTime(deliveryDate);
+              updatePricesAfterTat(inventoryData, updatedCartItems);
             }
           } else {
+            setloading(false);
           }
         } else {
+          setloading(false);
         }
       } catch (error) {
         console.log(error);
       }
     }
+  }
+
+  function updatePricesAfterTat(
+    inventoryData: GetTatResponse247['response']['items'],
+    updatedCartItems: ShoppingCartItem[]
+  ) {
+    let Items: ShoppingCartItem[] = [];
+    updatedCartItems.forEach((item) => {
+      let object = item;
+      let cartItem = inventoryData.filter((cartItem) => cartItem.sku == item.id);
+      if (cartItem.length) {
+        if (object.price != Number(object.mou) * cartItem[0].mrp && cartItem[0].mrp != 0) {
+          object.specialPrice &&
+            (object.specialPrice =
+              Number(object.mou) * cartItem[0].mrp * (object.specialPrice / object.price));
+          object.price = Number(object.mou) * cartItem[0].mrp;
+        }
+      }
+      console.log('obj >>', object);
+      Items.push(object);
+    });
+    setCartItems!(Items);
+    console.log(loading);
   }
 
   function showAddressPopup() {
@@ -273,7 +297,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return (
       <ProceedBar
         onPressAddDeliveryAddress={() => showAddressPopup()}
-        onPressUploadPrescription={() => props.navigation.navigate(AppRoutes.CartSummary)}
+        onPressUploadPrescription={() =>
+          props.navigation.navigate(AppRoutes.CartSummary, {
+            deliveryTime: deliveryTime,
+          })
+        }
+        deliveryTime={deliveryTime}
+        onPressChangeAddress={showAddressPopup}
       />
     );
   };
@@ -281,7 +311,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <ScrollView contentContainerStyle={{ paddingBottom: 130 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 200 }}>
           {renderHeader()}
           {renderCartItems()}
           {renderAvailFreeDelivery()}

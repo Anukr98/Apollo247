@@ -1,18 +1,34 @@
 import React from 'react';
-import { StyleSheet, Text, FlatList, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { formatOrderAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { WhiteArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
+import { TatCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCard';
 
 export interface ProceedBarProps {
   onPressAddDeliveryAddress: () => void;
   onPressUploadPrescription: () => void;
+  deliveryTime?: string;
+  onPressChangeAddress: () => void;
 }
 
 export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
-  const { grandTotal, deliveryAddressId, uploadPrescriptionRequired } = useShoppingCart();
-  const { onPressAddDeliveryAddress, onPressUploadPrescription } = props;
+  const {
+    grandTotal,
+    deliveryAddressId,
+    uploadPrescriptionRequired,
+    addresses,
+  } = useShoppingCart();
+  const {
+    onPressAddDeliveryAddress,
+    onPressUploadPrescription,
+    deliveryTime,
+    onPressChangeAddress,
+  } = props;
+  const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
 
   function getTitle() {
     return !deliveryAddressId
@@ -60,8 +76,23 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     );
   };
 
+  const renderTatCard = () => {
+    if (deliveryTime) {
+      return (
+        <TatCard
+          deliveryTime={deliveryTime}
+          deliveryAddress={formatOrderAddress(selectedAddress!)}
+          onPressChangeAddress={onPressChangeAddress}
+        />
+      );
+    } else {
+      return null;
+    }
+  };
+
   return (
     <View style={styles.container}>
+      {renderTatCard()}
       {deliveryAddressId != '' && uploadPrescriptionRequired && renderPrescriptionMessage()}
       <View style={styles.subContainer}>
         {renderTotal()}

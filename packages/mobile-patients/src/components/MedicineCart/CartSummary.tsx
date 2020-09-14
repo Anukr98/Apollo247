@@ -18,6 +18,9 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CartItemsList } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemsList';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { TatCardwithoutAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCardwithoutAddress';
+import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
+import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
 
 export interface CartSummaryProps extends NavigationScreenProps {}
 
@@ -30,6 +33,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [loading, setloading] = useState<boolean>(false);
+  const [showPopUp, setshowPopUp] = useState<boolean>(false);
+  const deliveryTime = props.navigation.getParam('deliveryTime');
 
   async function checkServicability(address: savePatientAddress_savePatientAddress_patientAddress) {
     setloading(true);
@@ -85,43 +90,56 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     return <SelectedAddress onPressChange={() => showAddressPopup()} />;
   };
 
+  const renderTatCard = () => {
+    return <TatCardwithoutAddress style={{ marginTop: 22 }} deliveryDate={deliveryTime} />;
+  };
+
   const renderCartItems = () => {
     return <CartItemsList screen={'summary'} />;
   };
 
-  const renderPrescriptionMessage = () => {
+  const renderuploadPrescriptionPopup = () => {
     return (
-      <View style={styles.prescriptionMsgCard}>
-        <Text style={styles.prescriptionMsg}>
-          Items in your cart marked with 'Rx' need prescriptions
-        </Text>
-      </View>
+      <UploadPrescription
+        showPopUp={showPopUp}
+        onClickClose={() => setshowPopUp(false)}
+        navigation={props.navigation}
+      />
     );
+  };
+
+  const renderPrescriptions = () => {
+    return <Prescriptions />;
   };
 
   const renderButton = () => {
     return (
-      <View style={{ paddingHorizontal: 50, position: 'absolute', bottom: 0, left: 0, right: 0 }}>
+      <View style={styles.buttonContainer}>
         <Button
           disabled={false}
           title={'UPLOAD PRESCRIPTION'}
-          onPress={() => {}}
+          onPress={() => {
+            setshowPopUp(true);
+          }}
           titleTextStyle={{ fontSize: 13, lineHeight: 24, marginVertical: 8 }}
-          style={{ borderRadius: 10, marginBottom: 15 }}
+          style={{ borderRadius: 10 }}
         />
       </View>
     );
   };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        <ScrollView contentContainerStyle={{ flex: 1, paddingBottom: 100 }}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
           {renderHeader()}
           {renderAddress()}
+          {renderTatCard()}
           {renderCartItems()}
-          {uploadPrescriptionRequired && renderPrescriptionMessage()}
-          {renderButton()}
+          {uploadPrescriptionRequired && renderPrescriptions()}
         </ScrollView>
+        {renderuploadPrescriptionPopup()}
+        {renderButton()}
         {loading && <Spinner />}
       </SafeAreaView>
     </View>
@@ -147,5 +165,14 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: '#02475B',
     marginVertical: 6,
+  },
+  buttonContainer: {
+    paddingHorizontal: 50,
+    paddingVertical: 15,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
 });

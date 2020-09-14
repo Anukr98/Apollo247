@@ -1003,10 +1003,6 @@ export const MinusIconWhite: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/minus-icon-white.png')} />
 );
 
-export const MinusIconOrange: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/minus-icon-orange.png')} />
-);
-
 export const DeleteIcon: React.FC<IconProps> = (props) => (
   <IconBase style={{ width: 13, height: 19 }} {...props} source={require('./icons/delete.png')} />
 );
@@ -1021,4 +1017,16 @@ export const EditAddressIcon: React.FC<IconProps> = (props) => (
 
 export const LocationIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/location.png')} />
+);
+
+export const WhiteArrowRight: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 7, height: 12 }}
+    {...props}
+    source={require('./icons/arrow_right.png')}
+  />
+);
+
+export const DeliveryIcon: React.FC<IconProps> = (props) => (
+  <IconBase style={{ width: 38, height: 39 }} {...props} source={require('./icons/delivery.png')} />
 );

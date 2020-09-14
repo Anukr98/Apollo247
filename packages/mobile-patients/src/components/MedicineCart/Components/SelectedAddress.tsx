@@ -4,6 +4,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { LocationIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { formatOrderAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
+
 export interface SelectedAddressProps {
   onPressChange: () => void;
 }
@@ -12,20 +14,6 @@ export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
   const { addresses, deliveryAddressId } = useShoppingCart();
   const { onPressChange } = props;
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
-
-  function getformattedAddress(item: savePatientAddress_savePatientAddress_patientAddress) {
-    return (
-      (item.addressLine1 && item.addressLine1 + ', ') +
-      '' +
-      (item.addressLine2 && item.addressLine2 + ', ') +
-      '' +
-      (item.city && item.city + ',') +
-      '' +
-      (item.state && item.state + ',') +
-      '' +
-      (item.zipcode && item.zipcode)
-    );
-  }
 
   const addressHeader = () => {
     return (
@@ -48,9 +36,9 @@ export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
     return (
       <View style={{ marginHorizontal: 20 }}>
         <Text style={styles.name}>{selectedAddress!.addressType}</Text>
-        <Text style={styles.address}>{getformattedAddress(selectedAddress!)}</Text>
+        <Text style={styles.address}>{formatOrderAddress(selectedAddress!)}</Text>
         <Text style={styles.address}>
-          Mobile - <Text style={{ ...theme.fonts.IBMPlexSansSemiBold(12) }}>9940499788</Text>
+          Mobile - <Text style={{ ...theme.fonts.IBMPlexSansMedium(12) }}>9940499788</Text>
         </Text>
       </View>
     );
@@ -92,12 +80,12 @@ const styles = StyleSheet.create({
   },
   name: {
     marginTop: 10,
+    marginBottom: 8,
     ...theme.fonts.IBMPlexSansSemiBold(12),
     lineHeight: 20,
     color: '#01475B',
   },
   address: {
-    marginTop: 8,
     ...theme.fonts.IBMPlexSansRegular(12),
     lineHeight: 16,
     color: '#01475B',
