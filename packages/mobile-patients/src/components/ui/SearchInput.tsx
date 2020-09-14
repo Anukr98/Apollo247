@@ -44,7 +44,7 @@ export const SearchInput: React.FC<SearchInputProps> = (props) => {
 
     const rightSearchIcon = (
       <View>
-        <WhiteSearchIcon style={{ height: 24, width: 24 }} />
+        <WhiteSearchIcon />
       </View>
     );
 
