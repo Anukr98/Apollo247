@@ -713,47 +713,126 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             />
           ) : null}
           {rowData.message === 'Audio call ended' || rowData.message === 'Video call ended' ? (
-            <View
-              style={{
-                borderRadius: 10,
-                marginVertical: 2,
-                alignSelf: 'flex-end',
-                flexDirection: 'row',
-              }}
-            >
-              <ChatCallIcon />
-              <View>
-                <Text
+            <>
+              {rowData.duration === '00 : 00' ? (
+                <View
                   style={{
-                    color: '#01475b',
-                    marginLeft: 12,
-                    textAlign: 'right',
-                    ...theme.fonts.IBMPlexSansMedium(14),
+                    backgroundColor: 'transparent',
+                    width: 282,
+                    borderRadius: 10,
+                    marginVertical: 2,
+                    alignSelf: 'flex-end',
+                    paddingVertical: 17,
                   }}
                 >
-                  {rowData.message}
-                </Text>
-                <Text
+                  <View
+                    style={{
+                      marginLeft: 40,
+                      borderRadius: 10,
+                      width: 244,
+                    }}
+                  >
+                    <View
+                      style={{
+                        backgroundColor: '#e50000',
+                        opacity: 0.04,
+                        width: 244,
+                        borderRadius: 10,
+                        minHeight: 29,
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                      }}
+                    />
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        backgroundColor: 'transparent',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <MissedCallIcon
+                        style={{
+                          width: 16,
+                          height: 16,
+                          marginLeft: 16,
+                          marginTop: 3,
+                        }}
+                      />
+                      <Text
+                        style={{
+                          color: '#890000',
+                          marginLeft: 27,
+                          textAlign: 'left',
+                          ...theme.fonts.IBMPlexSansMedium(12),
+                          lineHeight: 24,
+                          letterSpacing: 0.04,
+                          marginTop: 2,
+                        }}
+                      >
+                        {rowData.message === 'Audio call ended'
+                          ? strings.consult_room.patient_missed_voice_call
+                          : strings.consult_room.patient_missed_video_call}
+                      </Text>
+                    </View>
+                    <Text
+                      style={{
+                        color: '#01475b',
+                        textAlign: 'right',
+                        ...theme.fonts.IBMPlexSansMedium(10),
+                        marginRight: 17,
+                      }}
+                    >
+                      {convertChatTime(rowData)}
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                <View
                   style={{
-                    color: '#01475b',
-                    marginTop: 2,
-                    textAlign: 'right',
-                    ...theme.fonts.IBMPlexSansMedium(10),
+                    borderRadius: 10,
+                    marginVertical: 2,
+                    alignSelf: 'flex-end',
+                    flexDirection: 'row',
                   }}
                 >
-                  {strings.consult_room.duration} - {rowData.duration}
-                </Text>
-                <Text
-                  style={{
-                    color: '#01475b',
-                    textAlign: 'right',
-                    ...theme.fonts.IBMPlexSansMedium(10),
-                  }}
-                >
-                  {convertChatTime(rowData)}
-                </Text>
-              </View>
-            </View>
+                  <ChatCallIcon />
+                  <View>
+                    <Text
+                      style={{
+                        color: '#01475b',
+                        marginLeft: 12,
+                        textAlign: 'right',
+                        ...theme.fonts.IBMPlexSansMedium(14),
+                      }}
+                    >
+                      {rowData.message}
+                    </Text>
+                    <Text
+                      style={{
+                        color: '#01475b',
+                        marginTop: 2,
+                        textAlign: 'right',
+                        ...theme.fonts.IBMPlexSansMedium(10),
+                      }}
+                    >
+                      {strings.consult_room.duration} - {rowData.duration}
+                    </Text>
+                    <Text
+                      style={{
+                        color: '#01475b',
+                        textAlign: 'right',
+                        ...theme.fonts.IBMPlexSansMedium(10),
+                      }}
+                    >
+                      {convertChatTime(rowData)}
+                    </Text>
+                  </View>
+                </View>
+              )}
+            </>
           ) : (
             <View
               style={{
