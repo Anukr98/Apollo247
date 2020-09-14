@@ -657,6 +657,10 @@ const useStyles = makeStyles((theme: Theme) => {
     addmoreAmount: {
       color: '#FC9916',
     },
+    nudgeAddMore: {
+      color: '#0087BA',
+      paddingLeft: 5,
+    },
   };
 });
 
@@ -1654,6 +1658,15 @@ export const MedicineCart: React.FC = (props) => {
                   {(Number(pharmacyMinDeliveryValue) - cartTotal).toFixed(2)}
                 </span>{' '}
                 of eligible items to your order to qualify for FREE Delivery.
+                <span>
+                  <Link
+                    className={classes.nudgeAddMore}
+                    to={clientRoutes.medicines()}
+                    title={'Add Items'}
+                  >
+                    Add Items
+                  </Link>
+                </span>
               </div>
             )}
           </Scrollbars>
