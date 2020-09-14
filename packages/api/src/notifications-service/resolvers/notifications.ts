@@ -24,6 +24,7 @@ import PDFDocument from 'pdfkit';
 import { textInRow, writeRow } from 'helpers/uploadFileToBlob';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { Doctor } from 'doctors-service/entities';
+import { getPatientDeeplink } from 'helpers/appsflyer';
 
 type PushNotificationMessage = {
   messageId: string;
@@ -196,14 +197,18 @@ const sendDailyAppointmentSummary: Resolver<
       textInRow(pdfDoc, appointment.patientName, rowx, 30);
       textInRow(
         pdfDoc,
-        format(addMinutes(appointment.appointmentDateTime, +330), 'yyyy-MM-dd hh:mm:ss'),
+        format(addMinutes(appointment.appointmentDateTime, +330), 'hh:mm a, dd MMM yyyy'),
         rowx,
         201
       );
       textInRow(pdfDoc, appointment.appointmentType, rowx, 341);
       textInRow(pdfDoc, appointment.displayId.toString(), rowx, 441);
+      let nextDocId = prevDoc;
+      if (index + 1 != array.length) {
+        nextDocId = allAppts[index + 1].doctorId;
+      }
 
-      if (index + 1 == array.length || prevDoc != appointment.doctorId) {
+      if (index + 1 == array.length || prevDoc != nextDocId) {
         const doctorDetails = allDoctorDetails.filter((item) => {
           return item.id == prevDoc;
         });
@@ -218,9 +223,9 @@ const sendDailyAppointmentSummary: Resolver<
           .lineTo(420, totalAppointments * 30)
           .stroke();
         pdfDoc.end();
-        const fp = `${uploadPath}$${fileName}$${totalAppointments}$${doctorDetails[0].mobileNumber}`;
+        const fp = `${uploadPath}$${fileName}$${totalAppointments}$${doctorDetails[0].mobileNumber}$${doctorDetails[0].firstName}`;
         allpdfs.push(fp);
-        prevDoc = appointment.doctorId;
+        prevDoc = nextDocId; //appointment.doctorId;
         flag = 0;
         if (doctorDetails) {
           doctorsCount++;
@@ -264,14 +269,17 @@ const sendDailyAppointmentSummary: Resolver<
             logContent = blobUrl + '\n';
             fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
             const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
+            const appLink = await getPatientDeeplink(ApiConstants.DOCTOR_APP_APPTS_LINK);
             const templateData: string[] = [
               blobUrl,
               todaysDate + ' Appointments List',
               todaysDate,
               docPdfDetails[2],
+              docPdfDetails[4],
+              appLink,
             ];
             sendDoctorNotificationWhatsapp(
-              ApiConstants.WHATSAPP_DOC_SUMMARY,
+              ApiConstants.WHATSAPP_DOC_SUMMARY_NEW,
               docPdfDetails[3],
               templateData
             );
@@ -396,14 +404,14 @@ const sendAppointmentSummaryOps: Resolver<
                   pdfDoc,
                   format(
                     addMinutes(docAppointment.appointmentDateTime, +330),
-                    'yyyy-MM-dd hh:mm:ss'
+                    'hh:mm a, dd MMM yyyy'
                   ),
                   rowx,
                   201
                 );
                 textInRow(pdfDoc, docAppointment.appointmentType, rowx, 341);
                 textInRow(pdfDoc, docAppointment.displayId.toString(), rowx, 441);
-                currentAdminMobNumber = adminDoctor.admindoctormapper[0].adminuser.mobileNumber;
+                currentAdminMobNumber = `${adminDoctor.admindoctormapper[0].adminuser.mobileNumber}$${adminDoctor.admindoctormapper[0].adminuser.userName}`;
               });
             });
             pdfDoc.end();
@@ -432,20 +440,17 @@ const sendAppointmentSummaryOps: Resolver<
               logContent = blobUrl + '\n';
               fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
               const todaysDate = format(addMinutes(new Date(), +330), 'do LLLL');
-              console.log(
-                docPdfDetails[0],
-                docPdfDetails[3],
-                docPdfDetails[2],
-                'finalAdminDetails'
-              );
+              const appLink = await getPatientDeeplink(ApiConstants.DOCTOR_APP_APPTS_LINK);
               const templateData: string[] = [
                 blobUrl,
                 todaysDate + ' Appointments List',
                 todaysDate,
                 docPdfDetails[2],
+                docPdfDetails[4],
+                appLink,
               ];
               sendDoctorNotificationWhatsapp(
-                ApiConstants.WHATSAPP_DOC_SUMMARY,
+                ApiConstants.WHATSAPP_DOC_SUMMARY_NEW,
                 docPdfDetails[3],
                 templateData
               );

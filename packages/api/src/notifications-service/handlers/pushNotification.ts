@@ -1023,7 +1023,7 @@ export async function sendNotification(
       patientDetails.uhid,
       doctorDetails.salutation + ' ' + doctorDetails.firstName,
       facilityDetsString,
-      format(istDateTime, 'dd/MM/YYYY'),
+      format(istDateTime, 'dd/MM/yyyy'),
       format(istDateTime, 'hh:mm a'),
       appointment.appointmentType,
     ];
@@ -1252,10 +1252,15 @@ export async function sendNotification(
       patientDetails.uhid,
       doctorDetails.salutation + ' ' + doctorDetails.firstName,
       facilityDetsString,
-      format(istDateTime, 'dd/MM/YYYY'),
+      format(istDateTime, 'dd/MM/yyyy'),
       format(istDateTime, 'hh:mm a'),
       appointment.appointmentType,
     ];
+    console.log(
+      secretaryTemplateData,
+      doctorDetails.doctorSecretary.secretary.mobileNumber,
+      'secretaryTemplateData'
+    );
     sendDoctorNotificationWhatsapp(
       ApiConstants.WHATSAPP_DOC_SECRETARY_BOOKING,
       doctorDetails.doctorSecretary.secretary.mobileNumber,
