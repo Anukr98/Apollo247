@@ -442,13 +442,16 @@ const getCouponByUserMobileNumber = () => {
 };
 
 const isPastAppointment = (appointmentDateTime: string) =>
-  moment(appointmentDateTime)
-    .add(7, 'days')
-    .isBefore(moment());
+  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
-  const followUpDayMoment = moment(appointmentTime).add(7, 'days');
-  const diffInDays = followUpDayMoment.diff(moment(), 'days');
+  const appointmentDate = moment(appointmentTime);
+  const followUpDayMoment = appointmentDate.add(7, 'days');
+  let diffInDays = followUpDayMoment.diff(moment(), 'days'); // it will applicable if appointmentDate > followupDayMoment and diff shouldn't cross 7
+  if (appointmentDate < followUpDayMoment) {
+    // diff(moment(), 'days') gives 6 days x hours as 6days, to show it as 7 days adding +1
+    diffInDays += 1;
+  }
   if (diffInDays === 0) {
     const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
     const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');

@@ -150,14 +150,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
   const movedFrom = props.navigation.state.params!.from;
 
-  // console.log('doctorDetails', doctorDetails);
+  const fifteenMinutesLater = new Date();
 
-  // console.log(
-  //   props.navigation.state.params!.data,
-  //   data.doctorInfo.doctorHospital[0].facility.streetLine1
-  // );
-  const dateIsAfter = moment(data.appointmentDateTime).isAfter(moment(new Date()));
-  console.log('dateIsAfter', dateIsAfter);
+  const dateIsAfter = moment(data.appointmentDateTime).isAfter(
+    moment(fifteenMinutesLater.setMinutes(fifteenMinutesLater.getMinutes() + 15))
+  );
   const [cancelAppointment, setCancelAppointment] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
