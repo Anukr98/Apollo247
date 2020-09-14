@@ -564,40 +564,17 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
   }
 
-  function fieldCompare(field: string, order: string = 'asc') {
-    return function sort(objectA: any, objectB: any) {
-      if (!objectA.hasOwnProperty(field) || !objectB.hasOwnProperty(field)) {
-        return 0;
-      }
-      const fieldA = parseFloat(objectA[field]);
-      const fieldB = parseFloat(objectB[field]);
-      let comparison = 0;
-      if (fieldA > fieldB) {
-        comparison = 1;
-      } else if (fieldA < fieldB) {
-        comparison = -1;
-      }
-      return order === 'desc' ? comparison * -1 : comparison;
-    };
-  }
-
   finalMatchedDoctors = perfectMatchedDoctors
-    .sort(fieldCompare('earliestSlotavailableInMinutes'))
-    .concat(earlyAvailableApolloMatchedDoctors.sort(fieldCompare('earliestSlotavailableInMinutes')))
-    .concat(
-      earlyAvailableNonApolloMatchedDoctors.sort(fieldCompare('earliestSlotavailableInMinutes'))
-    )
-    .concat(matchedDoctors.sort(fieldCompare('earliestSlotavailableInMinutes')));
+    .concat(earlyAvailableApolloMatchedDoctors)
+    .concat(earlyAvailableNonApolloMatchedDoctors)
+    .concat(matchedDoctors);
 
   finalPossibleDoctors = earlyAvailableApolloPossibleDoctors
-    .sort(fieldCompare('earliestSlotavailableInMinutes'))
-    .concat(
-      earlyAvailableNonApolloPossibleDoctors.sort(fieldCompare('earliestSlotavailableInMinutes'))
-    )
-    .concat(possibleDoctors.sort(fieldCompare('earliestSlotavailableInMinutes')));
+    .concat(earlyAvailableNonApolloPossibleDoctors)
+    .concat(possibleDoctors);
 
-  matchedDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
-  possibleDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
+  // matchedDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
+  // possibleDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
 
   searchLogger(`API_CALL___END`);
   return {
