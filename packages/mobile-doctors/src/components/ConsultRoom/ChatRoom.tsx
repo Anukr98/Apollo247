@@ -254,6 +254,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   height: 180,
                   borderTopLeftRadius: 10,
                   borderTopRightRadius: 10,
+                  backgroundColor: theme.colors.WHITE,
                 }}
               />
             ) : (
@@ -477,7 +478,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         messageCodes.covertVideoMsg,
         messageCodes.covertAudioMsg,
         messageCodes.callAbandonment,
-        messageCodes.startConsultMsg,
         messageCodes.stopConsultMsg,
         messageCodes.jdThankyou,
         messageCodes.cancelConsultInitiated,
@@ -769,7 +769,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   rowData.message === messageCodes.secondMessage ||
                   rowData.message === messageCodes.languageQue ||
                   rowData.message === messageCodes.startConsultjr ||
-                  rowData.message === messageCodes.stopConsultJr
+                  rowData.message === messageCodes.stopConsultJr ||
+                  rowData.message === messageCodes.startConsultMsg
                 ? doctorAutomatedMessage(rowData, index)
                 : rowData.message === messageCodes.imageconsult
                 ? renderImageView(rowData)

@@ -68,6 +68,7 @@ export const clientRoutes = {
   medicinePrescription: () => '/medicine-prescription',
   covidProtocol: () => '/medical-condition',
   prescription: (appointmentId: string) => `/prescription/${appointmentId}`,
+  sitemap: () => '/sitemap',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

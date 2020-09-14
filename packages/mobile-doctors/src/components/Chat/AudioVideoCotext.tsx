@@ -2,6 +2,7 @@ import { AudioVideoStyles } from '@aph/mobile-doctors/src/components/Chat/AudioV
 import {
   BackCameraIcon,
   ChatIcon,
+  CloseWhite,
   EndCallIcon,
   FrontCameraIcon,
   FullScreenIcon,
@@ -10,24 +11,23 @@ import {
   UserPlaceHolder,
   VideoOffIcon,
   VideoOnIcon,
-  CloseWhite,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { StatusBar, Text, TouchableOpacity, View, AppState, AppStateStatus } from 'react-native';
-import { Image } from 'react-native-elements';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
-import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
-import CallDetectorManager from 'react-native-call-detection';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import RNSound from 'react-native-sound';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import SystemSetting from 'react-native-system-setting';
-import AsyncStorage from '@react-native-community/async-storage';
 // import InCallManager from 'react-native-incall-manager';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
+import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { AppState, AppStateStatus, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import CallDetectorManager from 'react-native-call-detection';
+import { Image } from 'react-native-elements';
+import RNSound from 'react-native-sound';
+import SystemSetting from 'react-native-system-setting';
 
 export type OpenTokKeys = {
   sessionId: string;
@@ -134,6 +134,8 @@ export interface AudioVideoContextPorps {
   callBacks: CallBackOptions;
   setCallBacks: (value: CallBackOptions) => void;
   errorPopup: (message: string, color: string, time?: number) => void;
+  giveRating: boolean;
+  setGiveRating: (rating: boolean) => void;
 }
 
 export const AudioVideoContext = createContext<AudioVideoContextPorps>({
@@ -173,6 +175,8 @@ export const AudioVideoContext = createContext<AudioVideoContextPorps>({
   },
   setCallBacks: () => {},
   errorPopup: (message: string, color: string, time?: number) => {},
+  giveRating: false,
+  setGiveRating: () => {},
 });
 let timerId: NodeJS.Timeout;
 let missedCallTimer: NodeJS.Timeout;
@@ -214,6 +218,7 @@ export const AudioVideoProvider: React.FC = (props) => {
   const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>('front');
   const otSessionRef = React.createRef();
   const callType = isAudio ? 'Audio' : isVideo ? 'Video' : '';
+  const [giveRating, setGiveRating] = useState<boolean>(false);
 
   const setPrevVolume = async () => {
     // InCallManager.setSpeakerphoneOn(false);
@@ -357,7 +362,12 @@ export const AudioVideoProvider: React.FC = (props) => {
             placeholderStyle={
               isMinimized ? styles.placeHolderLoaderMinimizedStyle : styles.placeHolderLoaderStyle
             }
-            PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+            PlaceholderContent={
+              <Spinner
+                style={{ backgroundColor: 'transparent' }}
+                message={strings.common.imageLoading}
+              />
+            }
           />
         ) : (
           <UserPlaceHolder
@@ -701,6 +711,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     connectionDestroyed: (event: string) => {
       AsyncStorage.getItem('callDisconnected').then((data) => {
         if (!JSON.parse(data || 'false')) {
+          setGiveRating(true);
           errorPopup(strings.toastMessages.callDisconnected, theme.colors.APP_RED);
         }
       });
@@ -854,6 +865,8 @@ export const AudioVideoProvider: React.FC = (props) => {
         callBacks,
         setCallBacks,
         errorPopup,
+        giveRating,
+        setGiveRating,
       }}
     >
       <View style={{ flex: 1 }}>

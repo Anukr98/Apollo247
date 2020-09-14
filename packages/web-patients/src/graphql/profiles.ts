@@ -408,14 +408,22 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         source
       }
       labResults {
+        errorCode
+        errorMsg
+        errorType
         response {
+          authToken
           id
           labTestName
           labTestSource
+          packageId
+          packageName
           # labTestDate
           date
           labTestRefferedBy
           siteDisplayName
+          tag
+          consultId
           additionalNotes
           observation
           labTestResults {
@@ -427,6 +435,13 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             # resultDate
           }
           fileUrl
+          testResultFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+          }
         }
         errorCode
         errorMsg
@@ -449,6 +464,63 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         errorCode
         errorMsg
         errorType
+      }
+      healthChecksNew {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          healthCheckName
+          healthCheckDate
+          healthCheckSummary
+          healthCheckFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+          source
+          healthCheckType
+          followupDate
+        }
+      }
+      hospitalizationsNew {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          hospitalizationDate
+          dateOfHospitalization
+          hospitalName
+          doctorName
+          reasonForAdmission
+          diagnosisNotes
+          dateOfDischarge
+          dischargeSummary
+          doctorInstruction
+          dateOfNextVisit
+          hospitalizationFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+          source
+        }
       }
     }
   }

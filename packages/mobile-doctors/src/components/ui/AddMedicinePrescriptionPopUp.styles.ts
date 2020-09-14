@@ -23,6 +23,8 @@ export default StyleSheet.create({
   },
   buttonView: {
     ...theme.viewStyles.cardContainer,
+    position: 'absolute',
+    bottom: 0,
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'center',
@@ -60,7 +62,7 @@ export default StyleSheet.create({
     borderRadius: 10,
     maxHeight: '85%',
   },
-  mainContainer: { margin: 16, maxHeight: '80%' },
+  mainContainer: { margin: 16, maxHeight: '80%', paddingBottom: 70 },
   headingTextStyles: {
     ...theme.viewStyles.text('R', 12, theme.colors.SHARP_BLUE, 0.6, 16),
     marginTop: 10,
@@ -79,6 +81,7 @@ export default StyleSheet.create({
     ...theme.viewStyles.text('M', 12, theme.colors.SHARP_BLUE, 0.6),
   },
   scrollViewStyle: {
+    marginBottom: 85,
     borderWidth: 1,
     borderColor: 'rgba(2, 71, 91, 0.2)',
     borderRadius: 5,
@@ -88,6 +91,7 @@ export default StyleSheet.create({
     minHeight: 44,
     justifyContent: 'space-between',
     padding: 12,
+    borderRadius: 5,
     backgroundColor: '#F9F9F9',
   },
   seperator: {

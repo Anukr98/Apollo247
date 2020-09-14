@@ -71,7 +71,7 @@ public class MainApplication extends Application implements ReactApplication {
         initializeFlipper(this); // Remove this line if you don't want Flipper enabled
 
         WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
-                .setWebEngageKey("in~~c2ab3529")
+                .setWebEngageKey("in~d3a49d39") //prod: in~11b5643cb staging: in~d3a49d39
                 .setDebugMode(false) // only in development mode
                 .build();
         registerActivityLifecycleCallbacks(new WebEngageActivityLifeCycleCallbacks(this, webEngageConfig));

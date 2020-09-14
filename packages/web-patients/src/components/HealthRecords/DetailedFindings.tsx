@@ -8,6 +8,10 @@ import {
   Grid,
 } from '@material-ui/core';
 import { MedicalTestUnit } from 'graphql/types/globalTypes';
+import {
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_labTestResults as LabTestResultsType,
+} from '../../graphql/types/getPatientPrismMedicalRecords';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -22,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     panelHeader: {
       padding: '4px 20px',
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: 500,
       color: '#02475b',
       textTransform: 'uppercase',
@@ -42,15 +46,14 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     cardTitle: {
       fontSize: 14,
-      fontWeight: 500,
-      color: '#01475b',
+      fontWeight: 600,
+      color: '#02475b',
       letterSpacing: 0.02,
       paddingBottom: 8,
-      opacity: 0.8,
     },
     cardSection: {
       padding: 16,
-      backgroundColor: '#f7f8f5',
+      backgroundColor: 'transparent',
       borderRadius: 5,
       fontSize: 14,
       fontWeight: 500,
@@ -73,6 +76,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     resultGroup: {
+      display: 'flex',
       '& label': {
         fontSize: 12,
         fontWeight: 500,
@@ -85,15 +89,21 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: 1.43,
       letterSpacing: 0.04,
       color: '#0087ba',
+      marginLeft: 'auto',
     },
     resultError: {
       color: '#d10001',
+    },
+    labtest: {
+      marginRight: 10,
+      position: 'relative',
+      top: 6,
     },
   };
 });
 
 type DetailedFindingsProps = {
-  activeData: any;
+  activeData: LabResultsType;
 };
 
 export const MedicalTest = [
@@ -110,7 +120,7 @@ export const MedicalTest = [
 
 export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
   const classes = useStyles({});
-  const { data } = props.activeData;
+  const { activeData } = props;
   return (
     <ExpansionPanel className={classes.root} defaultExpanded={true}>
       <ExpansionPanelSummary
@@ -121,21 +131,25 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
       </ExpansionPanelSummary>
       <ExpansionPanelDetails className={classes.panelDetails}>
         <Grid container spacing={2}>
-          {data &&
-            (data.labTestResults && data.labTestResults).map((detail: any) => {
+          {activeData &&
+            activeData.labTestResults &&
+            activeData.labTestResults.map((detail: LabTestResultsType) => {
               const unit = MedicalTest.find((item) => item.key === detail.unit);
               return (
                 <Grid item xs={12} sm={12}>
-                  <div className={classes.cardTitle}>{detail.parameterName}</div>
+                  {/* icon should come here */}
+                  <div className={classes.cardTitle}><img className={classes.labtest} src={require('images/ic_labtest.svg')} alt="" /> Impressions</div>
                   <div className={classes.cardSection}>
                     <Grid container spacing={2}>
-                      <Grid item xs={6} sm={4}>
+                      <Grid item xs={12} sm={12}>
                         <div className={classes.resultGroup}>
-                          <label>Result</label>
-                          <div className={classes.result}>{detail.result || 'N/A'}</div>
+                          <label>Normal Range</label>
+                          <div className={`${classes.result}`}>
+                            {detail.range ? detail.range : '-'}
+                          </div>
                         </div>
                       </Grid>
-                      <Grid item xs={6} sm={4}>
+                      <Grid item xs={12} sm={12}>
                         <div className={classes.resultGroup}>
                           <label>Units</label>
                           <div className={classes.result}>
@@ -143,14 +157,10 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
                           </div>
                         </div>
                       </Grid>
-                      <Grid item xs={6} sm={4}>
+                      <Grid item xs={12} sm={12}>
                         <div className={classes.resultGroup}>
-                          <label>Normal Range</label>
-                          <div className={`${classes.result}`}>
-                            {detail.range
-                              ? detail.range
-                              : `${detail.minimum || ''} - ${detail.maximum || ''}`}
-                          </div>
+                          <label>Result</label>
+                          <div className={classes.result}>{detail.result || 'N/A'}</div>
                         </div>
                       </Grid>
                     </Grid>

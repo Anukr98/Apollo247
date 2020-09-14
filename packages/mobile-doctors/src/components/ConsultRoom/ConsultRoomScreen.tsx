@@ -269,7 +269,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [selectedReason, setselectedReason] = useState<string>(reasons[0]);
   const [otherReason, setotherReason] = useState<string>('');
   const [isAutoSaved, setIsAutoSaved] = useState<boolean>(false);
-  const [giveRating, setGiveRating] = useState<boolean>(false);
 
   const [savedTime, setSavedTime] = useState<string>('');
   const mutationCancelSrdConsult = useMutation<cancelAppointment, cancelAppointmentVariables>(
@@ -288,7 +287,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     // favTestError,
   } = CaseSheetAPI();
 
-  const { setOpenTokKeys, setCallBacks, callData, callOptions, errorPopup } = useAudioVideo();
+  const {
+    setOpenTokKeys,
+    setCallBacks,
+    callData,
+    callOptions,
+    errorPopup,
+    setGiveRating,
+    giveRating,
+  } = useAudioVideo();
   useEffect(() => {
     getSpecialties();
     // callAbandonmentCall();
@@ -1477,18 +1484,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const endCallNotificationAPI = (isCall: boolean) => {
-    if ((isCall && callId) || (!isCall && chatId)) {
-      client
-        .query<EndCallNotification, EndCallNotificationVariables>({
-          query: END_CALL_NOTIFICATION,
-          fetchPolicy: 'no-cache',
-          variables: {
-            appointmentCallId: isCall ? callId : chatId,
-            patientId: g(caseSheet, 'patientDetails', 'id'),
-          },
-        })
-        .catch((error) => {});
-    }
+    pubnubPresence((patient: number, doctor: number) => {
+      if ((isCall && callId) || (!isCall && chatId)) {
+        client
+          .query<EndCallNotification, EndCallNotificationVariables>({
+            query: END_CALL_NOTIFICATION,
+            fetchPolicy: 'no-cache',
+            variables: {
+              appointmentCallId: isCall ? callId : chatId,
+              patientId: g(caseSheet, 'patientDetails', 'id'),
+              numberOfParticipants: patient + doctor,
+            },
+          })
+          .catch((error) => {});
+      }
+    });
   };
 
   // const startInterval = (timer: number) => { //Consult remaning time
@@ -1604,9 +1614,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               break;
             case 'Audio call ended':
               audioVideoMethod();
+              setGiveRating(true);
               break;
             case 'Video call ended':
               audioVideoMethod();
+              setGiveRating(true);
               break;
             case messageCodes.patientJoined:
               AsyncStorage.multiGet(['isAudio', 'isVideo']).then((data) => {
@@ -1626,6 +1638,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               errorPopup('Patient has rejected the call.', theme.colors.APP_YELLOW, 10);
               break;
             case messageCodes.exotelCall:
+              addMessages(message);
+              break;
+            case messageCodes.startConsultMsg:
               addMessages(message);
               break;
             default:
@@ -1913,9 +1928,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               sendEndCallNotificationAPI(
                 callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO
               );
-            } else {
-              setGiveRating(true);
             }
+            setGiveRating(true);
             firebase
               .analytics()
               .logEvent(callType == 'A' ? 'Doctor_audio_call_end' : 'Doctor_video_call_end', {
@@ -2009,6 +2023,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               if (response) {
                 callOptions.startMissedCallTimer(45, (count) => {
                   stopAllCalls(callType);
+                  setGiveRating(true);
                   // if (missedCallCounter < 2) {
 
                   // } else {
@@ -2416,9 +2431,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             pubnub.publish(
               {
                 message: {
+                  id: g(doctorDetails, 'id'),
                   isTyping: true,
                   message: messageCodes.startConsultMsg,
+                  automatedText: g(doctorDetails, 'displayName') + ' has joined the consult room!',
                   messageDate: new Date(),
+                  sentBy: REQUEST_ROLES.DOCTOR,
                 },
                 channel: channel,
                 storeInHistory: true,
