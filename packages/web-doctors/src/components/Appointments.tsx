@@ -23,6 +23,7 @@ import { LinearProgress } from '@material-ui/core';
 import _uniqueId from 'lodash/uniqueId';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet as caseSheetInfo } from 'graphql/types/GetDoctorAppointments';
 import StatusModal, { defaultText, modalData, ModalContent } from './StatusModal';
+import { useAuth } from 'hooks/authHooks';
 import { webEngageEventTracking } from 'webEngageTracking';
 
 export interface Appointment {
