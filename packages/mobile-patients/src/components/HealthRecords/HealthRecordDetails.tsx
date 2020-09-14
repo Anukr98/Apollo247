@@ -214,7 +214,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           },
         })
         .then(({ data }: any) => {
-          console.log('data', data);
           if (data && data.getLabResultpdf && data.getLabResultpdf.url) {
             downloadDocument(data.getLabResultpdf.url);
           }

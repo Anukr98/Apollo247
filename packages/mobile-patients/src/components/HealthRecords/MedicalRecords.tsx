@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
   },
 });
 
-enum FILTER_TYPE {
+export enum FILTER_TYPE {
   VIEW_BY = 'View By',
   DATE = 'Date',
   TEST = 'Test',
@@ -76,12 +76,11 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const { healthChecksNewData, hospitalizationsNewData, labResultsData, prescriptionsData } = props;
   const [combination, setCombination] = useState<{ type: string; data: any }[]>();
-  const [filterApplied, setFilterApplied] = useState<FILTER_TYPE | string>(FILTER_TYPE.DATE);
+  const [filterApplied, setFilterApplied] = useState<FILTER_TYPE | string>('');
   const [listRefersh, setListRefersh] = useState<boolean>(false);
 
   useEffect(() => {
     const mergeArray: { type: string; data: any }[] = [];
-    console.log('combination before', mergeArray);
     labResultsData?.forEach((item) => {
       mergeArray.push({ type: 'lab', data: item });
     });
@@ -91,7 +90,6 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
     hospitalizationsNewData?.forEach((item) => {
       mergeArray.push({ type: 'hospitalization', data: item });
     });
-    console.log('combination after', mergeArray);
     setCombination(sortByDate(mergeArray));
   }, [labResultsData, healthChecksNewData, hospitalizationsNewData]);
 
@@ -249,7 +247,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
               renderItem={({ item, index }) => {
                 let data;
                 if (item.type === 'lab') {
-                  data = { datalab: item.data, disableDelete: true };
+                  data = { datalab: item.data, disableDelete: true, filterApplied: filterApplied };
                 } else if (item.type === 'prescription') {
                   data = { dataprescription: item.data, disableDelete: true };
                 } else if (item.type === 'healthCheck') {

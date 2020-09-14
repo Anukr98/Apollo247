@@ -9,7 +9,8 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
-} from '../../graphql/types/getPatientPrismMedicalRecords';
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
+import { FILTER_TYPE } from '@aph/mobile-patients/src/components/HealthRecords/MedicalRecords';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -76,6 +77,7 @@ export interface HealthMedicineCardProps {
   onPressOrder?: () => void;
   onClickCard?: () => void;
   disableDelete?: boolean;
+  filterApplied?: FILTER_TYPE | string;
   datalab?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response;
   dataprescription?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response;
   datahealthcheck?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response;
