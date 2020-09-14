@@ -73,6 +73,14 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
+export const CREATE_ONE_APOLLO_USER = gql`
+  mutation createOneAPolloUser($patientId: String!) {
+    createOneApolloUser(patientId: $patientId) {
+      success
+    }
+  }
+`;
+
 export const CANCEL_APPOINTMENT = gql`
   mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
     cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
@@ -922,4 +930,3 @@ export const GET_LAB_RESULT_PDF = gql`
     }
   }
 `;
-
