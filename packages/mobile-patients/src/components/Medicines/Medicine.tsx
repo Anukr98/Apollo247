@@ -1963,22 +1963,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderOverlay = () => {
     const isNoResultsFound =
       searchSate != 'load' && searchText.length > 2 && medicineList.length == 0;
-    const overlayStyle = {
-      flex: 1,
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      width: Dimensions.get('window').width,
-      height: Dimensions.get('window').height,
-    } as ViewStyle;
 
     return (
       (!!medicineList.length || searchSate == 'load' || isNoResultsFound) && (
-        <View style={overlayStyle}>
+        <View style={theme.viewStyles.overlayStyle}>
           <TouchableOpacity
             activeOpacity={1}
-            style={overlayStyle}
+            style={theme.viewStyles.overlayStyle}
             onPress={() => {
               if (medicineList.length == 0 && !searchText) return;
               setSearchText('');
