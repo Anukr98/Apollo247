@@ -898,59 +898,72 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       })
       .then((_data) => {
         const caseSheet = g(_data, 'data', 'getCaseSheet');
-        setcaseSheet(caseSheet);
-        setData(caseSheet);
-        if (props.navigation.getParam('prevCaseSheet')) {
-          setExistingMedicingId([
-            ...((g(props.navigation.getParam('prevCaseSheet'), 'medicinePrescription') || [])
-              .filter(
-                (item, index, self) =>
-                  index ===
-                  self.findIndex(
-                    (t) =>
-                      t &&
-                      item &&
-                      (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
-                        (item.externalId || item.id || item.medicineName || '').toLowerCase()
-                  )
-              )
-              .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
-              .filter((i) => i !== null || i !== '') as string[]),
-          ]);
+        if (g(caseSheet, 'caseSheetDetails', 'doctorId') !== g(doctorDetails, 'id')) {
+          showAphAlert &&
+            showAphAlert({
+              title: string.common.alert,
+              description: 'Unauthorized Access',
+              unDismissable: true,
+              onPressOk: () => {
+                backDataFunctionality();
+                hideAphAlert && hideAphAlert();
+              },
+            });
         } else {
-          setExistingMedicingId([
-            ...((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
-              .filter(
-                (item, index, self) =>
-                  index ===
-                  self.findIndex(
-                    (t) =>
-                      t &&
-                      item &&
-                      (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
-                        (item.externalId || item.id || item.medicineName || '').toLowerCase()
-                  )
-              )
-              .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
-              .filter((i) => i !== null || i !== '') as string[]),
-            ...((g(caseSheet, 'caseSheetDetails', 'removedMedicinePrescription') || [])
-              .filter(
-                (item, index, self) =>
-                  index ===
-                  self.findIndex(
-                    (t) =>
-                      t &&
-                      item &&
-                      (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
-                        (item.externalId || item.id || item.medicineName || '').toLowerCase()
-                  )
-              )
-              .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
-              .filter((i) => i !== null || i !== '') as string[]),
-          ]);
+          setcaseSheet(caseSheet);
+          setData(caseSheet);
+          if (props.navigation.getParam('prevCaseSheet')) {
+            setExistingMedicingId([
+              ...((g(props.navigation.getParam('prevCaseSheet'), 'medicinePrescription') || [])
+                .filter(
+                  (item, index, self) =>
+                    index ===
+                    self.findIndex(
+                      (t) =>
+                        t &&
+                        item &&
+                        (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                          (item.externalId || item.id || item.medicineName || '').toLowerCase()
+                    )
+                )
+                .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
+                .filter((i) => i !== null || i !== '') as string[]),
+            ]);
+          } else {
+            setExistingMedicingId([
+              ...((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
+                .filter(
+                  (item, index, self) =>
+                    index ===
+                    self.findIndex(
+                      (t) =>
+                        t &&
+                        item &&
+                        (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                          (item.externalId || item.id || item.medicineName || '').toLowerCase()
+                    )
+                )
+                .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
+                .filter((i) => i !== null || i !== '') as string[]),
+              ...((g(caseSheet, 'caseSheetDetails', 'removedMedicinePrescription') || [])
+                .filter(
+                  (item, index, self) =>
+                    index ===
+                    self.findIndex(
+                      (t) =>
+                        t &&
+                        item &&
+                        (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                          (item.externalId || item.id || item.medicineName || '').toLowerCase()
+                    )
+                )
+                .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
+                .filter((i) => i !== null || i !== '') as string[]),
+            ]);
+          }
+          callBack && callBack();
+          setLoading && setLoading(false);
         }
-        callBack && callBack();
-        setLoading && setLoading(false);
       })
       .catch((e) => {
         const message = e.message ? e.message.split(':')[1].trim() : '';
