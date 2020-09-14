@@ -783,6 +783,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         textAlign: 'right',
                         ...theme.fonts.IBMPlexSansMedium(10),
                         marginRight: 17,
+                        paddingBottom: 8,
                       }}
                     >
                       {convertChatTime(rowData)}
