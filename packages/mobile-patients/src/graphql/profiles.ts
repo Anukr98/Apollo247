@@ -1988,27 +1988,6 @@ export const ADD_PATIENT_HOSPITALIZATION_RECORD = gql`
   }
 `;
 
-export const UPLOAD_LAB_RESULTS = gql`
-  mutation uploadLabResults($LabResultsUploadRequest: LabResultsUploadRequest, $uhid: String) {
-    uploadLabResults(labResultsInput: $LabResultsUploadRequest, uhid: $uhid) {
-      recordId
-      fileUrl
-    }
-  }
-`;
-
-export const UPLOAD_HEALTH_RECORD_PRESCRIPTION = gql`
-  mutation uploadPrescriptions(
-    $PrescriptionUploadRequest: PrescriptionUploadRequest
-    $uhid: String
-  ) {
-    uploadPrescriptions(prescriptionInput: $PrescriptionUploadRequest, uhid: $uhid) {
-      recordId
-      fileUrl
-    }
-  }
-`;
-
 export const GET_MEDICAL_RECORD = gql`
   query getPatientMedicalRecords($patientId: ID!) {
     getPatientMedicalRecords(patientId: $patientId) {
