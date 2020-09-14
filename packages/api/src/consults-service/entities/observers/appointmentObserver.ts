@@ -13,10 +13,18 @@ export class AppointmentEntitySubscriber implements EntitySubscriberInterface<Ap
   afterUpdate(event: UpdateEvent<any>): Promise<any> | void {
     try {
       const oldAppointment: Appointment = Appointment.create(event.databaseEntity as Appointment);
-      if (oldAppointment && oldAppointment.status !== STATUS.COMPLETED)
+      if (oldAppointment?.status !== STATUS.COMPLETED) {
         trackWebEngageEventForAppointmentComplete(event.entity as Appointment);
+      }
       return updateElasticSlotsViaAppointMent(event);
     } catch (error) {
+      log(
+        'consultServiceLogger',
+        `AppointmentEntitySubscriber`,
+        'afterUpdate()',
+        JSON.stringify(error),
+        ''
+      );
       throw new AphError(AphErrorMessages.AFTER_UPDATE_APPOINTMENT_ERROR, undefined, { error });
     }
   }

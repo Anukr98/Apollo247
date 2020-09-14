@@ -21,6 +21,8 @@ import {
 } from 'consults-service/entities';
 import { getConnection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { loggers } from 'winston';
+import { log } from 'customWinstonLogger';
 
 type DoctorConsultEventInput = {
   mobileNumber: string;
@@ -273,7 +275,7 @@ export async function trackWebEngageEventForCasesheetInsert(caseSheetDetails: Ca
 
 export async function trackWebEngageEventForAppointmentComplete(appointmentDetails: Appointment) {
   try {
-    if (appointmentDetails.status !== STATUS.COMPLETED) return '';
+    if (appointmentDetails?.status !== STATUS.COMPLETED) return '';
     //get doctor details
     const doctorsDb = getConnection('doctors-db');
     const doctorRepo = doctorsDb.getRepository(Doctor);
@@ -291,18 +293,25 @@ export async function trackWebEngageEventForAppointmentComplete(appointmentDetai
     );
 
     const postBody: Partial<WebEngageInput> = {
-      userId: patientDetails ? patientDetails.mobileNumber : '',
+      userId: patientDetails?.mobileNumber || '',
       eventName: ApiConstants.DOCTOR_ENDED_CONSULTATION_EVENT_NAME.toString(),
       eventData: {
         consultID: appointmentDetails.id,
         displayID: appointmentDetails.displayId.toString(),
         consultMode: appointmentDetails.appointmentType.toString(),
-        doctorName: doctorDetails ? doctorDetails.fullName : '',
+        doctorName: doctorDetails?.fullName || '',
       },
     };
 
     return await postEvent(postBody);
   } catch (error) {
+    log(
+      'notificationServiceLogger',
+      `Appointment- ${appointmentDetails.id}`,
+      'trackWebEngageEventForAppointmentComplete()',
+      JSON.stringify(error),
+      ''
+    );
     throw new AphError(AphErrorMessages.WEBENGAGE_APPOINTMENT_COMPLETE_TRACK_ERROR, undefined, {
       error,
     });
