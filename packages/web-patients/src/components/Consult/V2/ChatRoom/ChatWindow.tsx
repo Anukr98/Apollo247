@@ -1048,7 +1048,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       // adding listener
       pubnubClient.addListener({
         status: (status) => {
-          console.log('status...............', status);
+          // console.log('status...............', status);
         },
         message: (message) => {
           // console.log(message);
