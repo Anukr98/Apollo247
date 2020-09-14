@@ -409,7 +409,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 });
               }}
             >
-              <Minimize />
+              <View style={styles.exobuttonContainer}>
+                <Text style={styles.notNowText}>Not Now</Text>
+                <Minimize />
+              </View>
             </TouchableOpacity>
           </View>
           <View style={styles.joinTextContainer}>
