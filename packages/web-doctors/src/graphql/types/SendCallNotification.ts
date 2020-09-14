@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { APPT_CALL_TYPE, DOCTOR_CALL_TYPE, DEVICETYPE, BOOKINGSOURCE } from "./globalTypes";
@@ -25,6 +26,7 @@ export interface SendCallNotification {
 
 export interface SendCallNotificationVariables {
   appointmentId?: string | null;
+  patientId?: string | null;
   callType?: APPT_CALL_TYPE | null;
   doctorType?: DOCTOR_CALL_TYPE | null;
   deviceType?: DEVICETYPE | null;

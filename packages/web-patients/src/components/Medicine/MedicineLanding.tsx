@@ -506,6 +506,10 @@ const MedicineLanding: React.FC = (props: any) => {
   };
 
   useEffect(() => {
+    sessionStorage.removeItem('categoryClicked');
+  }, []);
+
+  useEffect(() => {
     if (
       (props &&
         props.location &&

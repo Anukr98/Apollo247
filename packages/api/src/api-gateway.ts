@@ -123,6 +123,8 @@ export type Resolver<Parent, Args, Context, Result> = (
   const server = new ApolloServer({
     cors: { origin: corsOrigins },
     schema,
+    introspection: false,
+    validationRules: [],
     executor,
     engine: {
       schemaTag: process.env.NODE_ENV,

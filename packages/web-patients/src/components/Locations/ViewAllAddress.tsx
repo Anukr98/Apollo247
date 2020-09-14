@@ -309,7 +309,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
               props
                 .checkServiceAvailability(localZipCode)
                 .then((res: any) => {
-                  if (res && res.data && res.data.Availability) {
+                  if (res && res.data && res.data.response) {
                     /**Gtm code start  */
                     gtmTracking({
                       category: 'Pharmacy',

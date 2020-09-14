@@ -309,16 +309,11 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
           activeOpacity={1}
           style={{ marginTop: 9, flexDirection: 'row' }}
           onPress={() => {
+            postShowPrescriptionAtStoreSelected({ value: !showPrescriptionAtStore });
+            setShowPrescriptionAtStore!(!showPrescriptionAtStore);
+            setDeliveryAddressId!('');
             if (props.selectedTab == 'Home Delivery' || deliveryAddressId) {
-              postShowPrescriptionAtStoreSelected({ value: !showPrescriptionAtStore });
-              setShowPrescriptionAtStore!(!showPrescriptionAtStore);
-              setDeliveryAddressId!('');
               props.setSelectedTab && props.setSelectedTab('Store Pick Up');
-            } else {
-              postShowPrescriptionAtStoreSelected({
-                value: !showPrescriptionAtStore,
-              });
-              setShowPrescriptionAtStore!(!showPrescriptionAtStore);
             }
           }}
         >
@@ -349,13 +344,19 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
                 marginBottom: 24,
               }}
             >
-              <TouchableOpacity activeOpacity={1} style={{}} onPress={() => {
-                const eventAttributes: WebEngageEvents[WebEngageEventName.CART_UPLOAD_PRESCRIPTION_CLICKED] = {
-                  'Customer ID': g(currentPatient, 'id'),
-                };
-                postWebEngageEvent(WebEngageEventName.CART_UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
-                setShowPopup(true);
-              }}>
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.CART_UPLOAD_PRESCRIPTION_CLICKED] = {
+                    'Customer ID': g(currentPatient, 'id'),
+                  };
+                  postWebEngageEvent(
+                    WebEngageEventName.CART_UPLOAD_PRESCRIPTION_CLICKED,
+                    eventAttributes
+                  );
+                  setShowPopup(true);
+                }}
+              >
                 <Text
                   style={{
                     ...theme.fonts.IBMPlexSansMedium(16),

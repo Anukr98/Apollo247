@@ -57,6 +57,7 @@ import { BookAppointmentCard } from 'components/Consult/V2/ChatRoom/BookAppointm
 import { isPastAppointment } from 'helpers/commonHelpers';
 import { useParams } from 'hooks/routerHooks';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -828,6 +829,8 @@ interface ChatWindowProps {
   rescheduleAPI: (bookRescheduleInput: BookRescheduleAppointmentInput) => void;
   jrDoctorJoined: boolean;
   setJrDoctorJoined: (jrDoctorJoined: boolean) => void;
+  setSrDoctorJoined: (srDoctorJoined: boolean) => void;
+  setIsConsultCompleted: (isConsultCompleted: boolean) => void;
   appointmentDetails: AppointmentHistory;
 }
 
@@ -1075,7 +1078,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         { channel: appointmentId, count: 100, stringifiedTimeToken: true },
         (status: PubnubStatus, response: HistoryResponse) => {
           if (response.messages.length === 0) sendWelcomeMessage();
-
           const newmessage: MessagesObjectProps[] = messages;
           response.messages.forEach((element: any, index: number) => {
             const item = element.entry;
@@ -2019,7 +2021,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     );
   };
 
-  console.log(autoQuestionsCompleted);
+  // console.log(autoQuestionsCompleted);
 
   const showNextSlide = () => {
     sliderRef.current.slickNext();
@@ -2125,7 +2127,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               >
                 {messages.map((messageDetails: any) => {
                   const cardType = getCardType(messageDetails);
-
                   const message =
                     messageDetails && messageDetails.message ? messageDetails.message : '';
                   if (
@@ -2146,7 +2147,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.consultPatientStartedMsg ||
                     messageDetails.message === autoMessageStrings.patientJoinedMeetingRoom
                   ) {
-                    return null;
+                    props.setSrDoctorJoined(
+                      messageDetails.message === autoMessageStrings.startConsultMsg
+                    );
+                    props.setIsConsultCompleted(
+                      messageDetails.message === autoMessageStrings.appointmentComplete
+                    );
+                    return messageDetails.message === '^^#startconsult' ? (
+                      <DoctorJoinedMessageCard
+                        doctorName={doctorDisplayName}
+                        messageDate={messageDetails.messageDate}
+                      />
+                    ) : null;
                   }
                   const duration = messageDetails.duration;
                   if (cardType === 'welcome') {

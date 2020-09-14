@@ -192,11 +192,12 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
       coupon: selectCouponCode,
       pinCode: localStorage.getItem('pharmaPincode'),
       products: cartItems.map((item) => {
-        const { sku, quantity, special_price, price, type_id } = item;
+        const { sku, quantity, special_price, price, type_id, couponFree } = item;
         return {
           sku,
           mrp: item.price,
           quantity,
+          couponFree: couponFree || false,
           categoryId: type_id || '',
           specialPrice: special_price || price,
         };
@@ -248,10 +249,11 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+    bulk_product_info_url: process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL,
   };
 
   const addDiscountedProducts = (response: any) => {
-    const promises: Promise<any>[] = [];
+    const skus: Array<string> = [];
     if (response.products && Array.isArray(response.products) && response.products.length) {
       try {
         const cartSkuSet = new Set(
@@ -269,36 +271,53 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
               )
             );
         });
+
         const allData: MedicineCartItem[] = [];
-        Promise.all(promises)
-          .then((data: any) => {
-            data.forEach((e: any) => {
-              const cartItem: MedicineCartItem = {
-                MaxOrderQty: 1,
-                url_key: e.data.productdp[0].url_key,
-                description: e.data.productdp[0].description,
-                id: e.data.productdp[0].id,
-                image: e.data.productdp[0].image,
-                is_in_stock: e.data.productdp[0].is_in_stock,
-                is_prescription_required: e.data.productdp[0].is_prescription_required,
-                name: e.data.productdp[0].name,
-                price: 0,
-                sku: e.data.productdp[0].sku,
-                special_price: 0,
-                small_image: e.data.productdp[0].small_image,
-                status: e.data.productdp[0].status,
-                thumbnail: e.data.productdp[0].thumbnail,
-                type_id: e.data.productdp[0].type_id,
-                mou: e.data.productdp[0].mou,
-                quantity: 1,
-                isShippable: true,
-              };
-              allData.push(cartItem);
+        if (skus && skus.length) {
+          axios
+            .post(
+              apiDetails.bulk_product_info_url || '',
+              { params: skus.join(',') },
+              {
+                headers: {
+                  Authorization: apiDetails.authToken,
+                },
+              }
+            )
+            .then((resp) => {
+              if (resp && resp.data && resp.data.productdp && resp.data.productdp.length) {
+                resp &&
+                  resp.data &&
+                  resp.data.productdp.forEach((e: any) => {
+                    const cartItem: MedicineCartItem = {
+                      MaxOrderQty: 1,
+                      url_key: e.url_key,
+                      description: e.description,
+                      id: e.id,
+                      image: e.image,
+                      is_in_stock: e.is_in_stock,
+                      is_prescription_required: e.is_prescription_required,
+                      name: e.name,
+                      price: e.price,
+                      sku: e.sku,
+                      special_price: 0,
+                      couponFree: true,
+                      small_image: e.small_image,
+                      status: e.status,
+                      thumbnail: e.thumbnail,
+                      type_id: e.type_id,
+                      mou: e.mou,
+                      quantity: 1,
+                      isShippable: true,
+                    };
+                    allData.push(cartItem);
+                  });
+              }
+            })
+            .then(() => {
+              addCartItems(allData);
             });
-          })
-          .then(() => {
-            addCartItems(allData);
-          });
+        }
       } catch (e) {
         console.error(e);
         throw e;

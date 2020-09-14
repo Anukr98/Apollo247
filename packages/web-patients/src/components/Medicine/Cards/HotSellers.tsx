@@ -59,9 +59,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       textAlign: 'center',
       paddingTop: 8,
-      minHeight: 70,
-      maxHeight: 70,
+      minHeight: 60,
       overflow: 'hidden',
+      display: '-webkit-box',
+      '-webkit-line-clamp': '3',
+      '-webkit-box-orient': 'vertical',
     },
     bottomSection: {
       borderTop: 'solid 0.5px rgba(2, 71, 91, 0.3)',
@@ -213,9 +215,9 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                   <Route
                     render={({ history }) => (
                       <a
-                        href=""
+                        href={clientRoutes.medicineDetails(hotSeller.url_key)}
                         onClick={() => {
-                          history.push(clientRoutes.medicineDetails(hotSeller.url_key));
+                          // history.push(clientRoutes.medicineDetails(hotSeller.url_key));
                           pharmacyConfigSectionTracking({
                             sectionName: props.section,
                             productId: hotSeller.sku,

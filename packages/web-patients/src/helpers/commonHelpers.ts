@@ -168,8 +168,8 @@ const toBase64 = (file: any) =>
   });
 
 const getDiffInDays = (nextAvailability: string) => {
-  if (nextAvailability && nextAvailability.length > 0) {
-    const nextAvailabilityTime = moment(new Date(nextAvailability.replace(/-/g, ' ')));
+  if (nextAvailability) {
+    const nextAvailabilityTime = moment(new Date(nextAvailability));
     const currentTime = moment(new Date());
     const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
     return differenceInDays;
@@ -210,6 +210,7 @@ const NO_ONLINE_SERVICE = 'NOT AVAILABLE FOR ONLINE SALE';
 const OUT_OF_STOCK = 'Out Of Stock';
 const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
 const PINCODE_MAXLENGTH = 6;
+const SPECIALTY_DETAIL_LISTING_PAGE_SIZE = 50;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -263,11 +264,10 @@ interface SearchObject {
 }
 
 interface AppointmentFilterObject {
-  consultType: string[] | null;
   appointmentStatus: string[] | null;
   availability: string[] | null;
-  gender: string[] | null;
   doctorsList: string[] | null;
+  specialtyList: string[] | null;
 }
 
 const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
@@ -284,7 +284,14 @@ const genderList = [
 const languageList = ['English', 'Telugu'];
 const availabilityList = ['Now', 'Today', 'Tomorrow', 'Next 3 days'];
 const consultType = ['Online', 'Clinic Visit'];
-const appointmentStatus = ['New', 'Completed', 'Cancelled', 'Rescheduled', 'Follow-Up'];
+const appointmentStatus = [
+  'Active',
+  'Completed',
+  'Cancelled',
+  'Rescheduled',
+  'Follow-Up',
+  'Follow - Up Chat',
+];
 
 // End of doctors list based on specialty related changes
 
@@ -443,16 +450,18 @@ const isPastAppointment = (appointmentDateTime: string) =>
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const followUpDayMoment = moment(appointmentTime).add(7, 'days');
   const diffInDays = followUpDayMoment.diff(moment(), 'days');
-  if (diffInDays <= 0) {
+  if (diffInDays === 0) {
     const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
     const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
     return diffInHours > 0
-      ? `${diffInHours} hours free chat remaining`
+      ? `You can follow up with the doctor via text (${diffInHours} hours left)`
       : diffInMinutes > 0
-      ? `${diffInMinutes} minutes free chat remaining`
+      ? `You can follow up with the doctor via text (${diffInMinutes} minutes left)`
       : '';
+  } else if (diffInDays > 0) {
+    return `You can follow up with the doctor via text (${diffInDays} days left)`;
   } else {
-    return `${diffInDays} days free chat remaining`;
+    return '';
   }
 };
 
@@ -460,9 +469,15 @@ const removeGraphQLKeyword = (error: any) => {
   return error.message.replace('GraphQL error:', '');
 };
 
+const HEALTH_RECORDS_NO_DATA_FOUND =
+  'You don’t have any records with us right now. Add a record to keep everything handy in one place!';
+
+const HEALTH_RECORDS_NOTE =
+  'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
 const stripHtml = (originalString: any) => originalString.replace(/(<([^>]+)>)/gi, '');
 
 export {
+  HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,
   getCouponByUserMobileNumber,
   getPackOfMedicine,
@@ -513,5 +528,7 @@ export {
   OUT_OF_STOCK,
   NOTIFY_WHEN_IN_STOCK,
   PINCODE_MAXLENGTH,
+  SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
+  HEALTH_RECORDS_NOTE,
   stripHtml,
 };

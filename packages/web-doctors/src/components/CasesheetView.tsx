@@ -17,8 +17,7 @@ import {
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      width: '100%',
-      paddingBottom: 1,
+      height: '100%',
     },
     previewHeader: {
       backgroundColor: theme.palette.common.white,
@@ -28,20 +27,36 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       fontWeight: 'bold',
       color: '#02475b',
+      position: 'relative',
+      zIndex: 0,
     },
     loader: {
       left: '50%',
       top: 60,
       position: 'relative',
     },
+    prescriptionContent: {
+      padding: 20,
+      height: 'calc(100% - 50px)',
+      overflow: 'auto',
+      '&::-webkit-scrollbar': {
+        width: 6,
+      },
+      '&::-webkit-scrollbar-track': {
+        background: 'transparent',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#ccc',
+        borderRadius: 5,
+      },
+    },
     prescriptionPreview: {
       backgroundColor: '#fff',
       display: 'flex',
       flexDirection: 'column',
       minHeight: '100vh',
-      width: 'calc(100% - 40px)',
+      // width: 'calc(100% - 40px)',
       color: 'rgba(0, 0, 0, 0.6)',
-      margin: 20,
       padding: 20,
     },
     pageHeader: {
@@ -665,357 +680,359 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
   }
   return (
     <div className={classes.root} id={'prescriptionWrapper'}>
-      <div className={classes.previewHeader}>Prescription</div>
-      <div className={classes.prescriptionPreview}>
-        <div className={classes.pageHeader}>
-          <div className={classes.logo}>
-            <img src={require('images/ic_logo_insideapp.svg')} alt="" />
-          </div>
-          {createdDoctorProfile ? (
-            <div className={classes.doctorInformation}>
-              <h3>
-                {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
-              </h3>
-              {currentDoctor.qualification && (
-                <p className={`${classes.specialty} ${classes.qualification}`}>
-                  {currentDoctor.qualification}
-                </p>
-              )}
-
-              <p className={classes.specialty}>
-                {`${
-                  createdDoctorProfile.specialty.specialistSingularTerm
-                    ? createdDoctorProfile.specialty.specialistSingularTerm
-                    : ''
-                } | Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}
-              </p>
-              {doctorFacilityDetails ? (
-                <>
-                  <p className={classes.address}>
-                    {`${doctorFacilityDetails.streetLine1 || ''} ${
-                      doctorFacilityDetails.streetLine2
-                        ? `| ${doctorFacilityDetails.streetLine2}`
-                        : ''
-                    } ${
-                      doctorFacilityDetails.streetLine3
-                        ? `| ${doctorFacilityDetails.streetLine3}`
-                        : ''
-                    } ${doctorFacilityDetails.city ? ` | ${doctorFacilityDetails.city}` : ''}  ${
-                      doctorFacilityDetails.zipcode ? ` - ${doctorFacilityDetails.zipcode}` : ''
-                    }  ${doctorFacilityDetails.state ? ` | ${doctorFacilityDetails.state}` : ''} ${
-                      doctorFacilityDetails.country ? `,${doctorFacilityDetails.country}` : ''
-                    }`}
+      <div className={classes.prescriptionContent}>
+        <div className={classes.previewHeader}>Prescription</div>
+        <div className={classes.prescriptionPreview}>
+          <div className={classes.pageHeader}>
+            <div className={classes.logo}>
+              <img src={require('images/ic_logo_insideapp.svg')} alt="" />
+            </div>
+            {createdDoctorProfile ? (
+              <div className={classes.doctorInformation}>
+                <h3>
+                  {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
+                </h3>
+                {currentDoctor.qualification && (
+                  <p className={`${classes.specialty} ${classes.qualification}`}>
+                    {currentDoctor.qualification}
                   </p>
-                </>
-              ) : null}
-              <div className={classes.whatsup}>
-                <p className={classes.specialty}>WhatsApp</p>
-                <span>
-                  <img src={require('images/ic_whatsup.svg')} />
-                  {whatsAppno}
-                </span>
+                )}
+                <p className={classes.specialty}>
+                  {`${
+                    createdDoctorProfile.specialty.specialistSingularTerm
+                      ? createdDoctorProfile.specialty.specialistSingularTerm
+                      : ''
+                  } | Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}
+                </p>
+                {doctorFacilityDetails ? (
+                  <>
+                    <p className={classes.address}>
+                      {`${doctorFacilityDetails.streetLine1 || ''} ${
+                        doctorFacilityDetails.streetLine2
+                          ? `| ${doctorFacilityDetails.streetLine2}`
+                          : ''
+                      } ${
+                        doctorFacilityDetails.streetLine3
+                          ? `| ${doctorFacilityDetails.streetLine3}`
+                          : ''
+                      } ${doctorFacilityDetails.city ? ` | ${doctorFacilityDetails.city}` : ''}  ${
+                        doctorFacilityDetails.zipcode ? ` - ${doctorFacilityDetails.zipcode}` : ''
+                      }  ${
+                        doctorFacilityDetails.state ? ` | ${doctorFacilityDetails.state}` : ''
+                      } ${
+                        doctorFacilityDetails.country ? `,${doctorFacilityDetails.country}` : ''
+                      }`}
+                    </p>
+                  </>
+                ) : null}
+                <div className={classes.whatsup}>
+                  <p className={classes.specialty}>WhatsApp</p>
+                  <span>
+                    <img src={require('images/ic_whatsup.svg')} />
+                    {whatsAppno}
+                  </span>
+                </div>
+                <div className={classes.whatsup}>
+                  <p className={classes.specialty}>E-mail</p>
+                  <span>
+                    <img src={require('images/ic_email.svg')} />
+                    {helpdeskMail}
+                  </span>
+                </div>
               </div>
-              <div className={classes.whatsup}>
-                <p className={classes.specialty}>E-mail</p>
-                <span>
-                  <img src={require('images/ic_email.svg')} />
-                  {helpdeskMail}
-                </span>
+            ) : null}
+          </div>
+          <div className={classes.pageContent}>
+            <div className={classes.prescriptionSection}>
+              <div className={classes.sectionHeader}>Appointment Details</div>
+              <div className={classes.consultInfo}>
+                <div className={classes.accountDetails}>
+                  {patientDetails && (
+                    <div className={classes.infoRow}>
+                      <div className={classes.label}>Patient</div>
+                      <div className={classes.labelContent}>
+                        <div className={classes.patientName}>
+                          {`${patientDetails.firstName}  ${patientDetails.lastName} | ${
+                            patientDetails.gender
+                          } | ${getAge(patientDetails.dateOfBirth)}yrs`}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {patientDetails && (patientDetails.emailAddress || patientDetails.mobileNumber) && (
+                    <div className={classes.infoRow}>
+                      <div className={classes.label}>Contact</div>
+                      <div className={classes.labelContent}>
+                        <div className={classes.labelBlue}>
+                          {`${
+                            patientDetails.emailAddress ? `${patientDetails.emailAddress} | ` : ''
+                          } ${patientDetails.mobileNumber ? patientDetails.mobileNumber : ''}`}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {patientDetails && patientDetails.uhid && (
+                    <div className={classes.infoRow}>
+                      <div className={classes.label}>UHID</div>
+                      <div className={classes.labelContent}>
+                        <div className={classes.labelBlue}>{patientDetails.uhid}</div>
+                      </div>
+                    </div>
+                  )}
+                  {appointmentInfo && appointmentInfo.displayId && (
+                    <div className={classes.infoRow}>
+                      <div className={classes.label}>Appt Id</div>
+                      <div className={classes.labelContent}>
+                        <div className={classes.labelBlue}>{appointmentInfo.displayId}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className={classes.accountDetails}>
+                  {appointmentInfo && appointmentInfo.appointmentDateTime ? (
+                    <div className={classes.infoRow}>
+                      <div className={`${classes.label} ${classes.labelRight}`}>Consult Date</div>
+                      <div className={classes.labelContent}>
+                        <div className={classes.labelBlue}>
+                          {updatedDate && updatedDate !== ''
+                            ? `${moment(updatedDate).format('DD/MM/YYYY')} at ${moment(
+                                updatedDate
+                              ).format('h:mm a')}`
+                            : `${moment(new Date()).format('DD/MM/YYYY')} at ${moment(
+                                new Date()
+                              ).format('h:mm a')}`}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+                  {consultType ? (
+                    <div className={classes.infoRow}>
+                      <div className={`${classes.label} ${classes.labelRight}`}>Consult Type</div>
+                      <div className={classes.labelContent}>
+                        <div className={classes.labelBlue}>
+                          {_startCase(_toLower(consultType[0]))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+                  {/* <div className={classes.infoRow}>
+                <div className={`${classes.label} ${classes.labelRight}`}>Consult Count</div>
+                <div className={classes.labelContent}>
+                  <div className={classes.labelBlue}>2</div>
+                </div>
+              </div> */}
+                </div>
               </div>
             </div>
-          ) : null}
-        </div>
-        <div className={classes.pageContent}>
-          <div className={classes.prescriptionSection}>
-            <div className={classes.sectionHeader}>Appointment Details</div>
-            <div className={classes.consultInfo}>
-              <div className={classes.accountDetails}>
-                {patientDetails && (
-                  <div className={classes.infoRow}>
-                    <div className={classes.label}>Patient</div>
-                    <div className={classes.labelContent}>
-                      <div className={classes.patientName}>
-                        {`${patientDetails.firstName}  ${patientDetails.lastName} | ${
-                          patientDetails.gender
-                        } | ${getAge(patientDetails.dateOfBirth)}yrs`}
+            {!loader &&
+            ((symptoms && symptoms.length > 0) || weight || height || bp || temperature) ? (
+              <div className={classes.prescriptionSection}>
+                <div className={classes.sectionHeader}>Chief Complaints</div>
+                <div className={classes.chiefComplaints}>
+                  {symptoms.map((symptom) => (
+                    <div className={classes.complaintsInfoRow}>
+                      <div className={classes.complaintsLabel}>{symptom.symptom}</div>
+                      <div className={classes.labelContent}>{generateSymptomsHtml(symptom)}</div>
+                    </div>
+                  ))}
+                  {vitalsArr.length > 0 ? (
+                    <div className={classes.complaintsInfoRow}>
+                      <div className={`${classes.complaintsLabel} ${classes.vitalLabel}`}>
+                        VITALS <span className={classes.subInfo}>(as declared by patient)</span>
+                      </div>
+                      <div className={classes.labelContent}>
+                        <div className={classes.labelBlue} style={{ fontWeight: 400 }}>
+                          {vitalsArr.join(' | ')}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-                {patientDetails && (patientDetails.emailAddress || patientDetails.mobileNumber) && (
-                  <div className={classes.infoRow}>
-                    <div className={classes.label}>Contact</div>
-                    <div className={classes.labelContent}>
-                      <div className={classes.labelBlue}>
-                        {`${
-                          patientDetails.emailAddress ? `${patientDetails.emailAddress} | ` : ''
-                        } ${patientDetails.mobileNumber ? patientDetails.mobileNumber : ''}`}
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {patientDetails && patientDetails.uhid && (
-                  <div className={classes.infoRow}>
-                    <div className={classes.label}>UHID</div>
-                    <div className={classes.labelContent}>
-                      <div className={classes.labelBlue}>{patientDetails.uhid}</div>
-                    </div>
-                  </div>
-                )}
-                {appointmentInfo && appointmentInfo.displayId && (
-                  <div className={classes.infoRow}>
-                    <div className={classes.label}>Appt Id</div>
-                    <div className={classes.labelContent}>
-                      <div className={classes.labelBlue}>{appointmentInfo.displayId}</div>
-                    </div>
-                  </div>
-                )}
+                  ) : null}
+                </div>
               </div>
-              <div className={classes.accountDetails}>
-                {appointmentInfo && appointmentInfo.appointmentDateTime ? (
-                  <div className={classes.infoRow}>
-                    <div className={`${classes.label} ${classes.labelRight}`}>Consult Date</div>
-                    <div className={classes.labelContent}>
-                      <div className={classes.labelBlue}>
+            ) : null}
+            {!loader && diagnosis && diagnosis.length > 0 ? (
+              <div className={classes.prescriptionSection}>
+                <div className={classes.sectionHeader}>Diagnosis</div>
+                <div className={classes.diagnosis}>
+                  {diagnosis.map((diagnos) => (
+                    <div className={classes.infoRow}>
+                      <div className={classes.labelContent}>{diagnos.name}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            {!loader &&
+            ((removedMedicinePrescription && removedMedicinePrescription.length > 0) ||
+              (medicinePrescription && medicinePrescription.length > 0)) ? (
+              <div className={classes.prescriptionSection}>
+                <div className={classes.sectionHeader}>
+                  <img src={require('images/ic-medicines.svg')} />
+                  Medication Prescribed
+                </div>
+                <div className={classes.medicationList}>
+                  <ol>
+                    {medicineHtml}
+                    {removedMedicineHtml}
+                  </ol>
+                </div>
+              </div>
+            ) : null}
+            {!loader && diagnosticPrescription && diagnosticPrescription.length > 0 ? (
+              <div className={classes.prescriptionSection}>
+                <div className={classes.sectionHeader}>
+                  <img src={require('images/ic-microscope-solid.svg')} />
+                  Diagnostic Tests
+                </div>
+                <div className={classes.medicationList}>
+                  <ol>
+                    {diagnosticPrescription.map(
+                      (prescription) =>
+                        (prescription.itemname || prescription.itemName) && (
+                          <li>
+                            {prescription.itemname || prescription.itemName}
+                            <span
+                              style={{
+                                whiteSpace: 'pre-line',
+                                display: 'block',
+                              }}
+                            >
+                              {prescription.testInstruction}
+                            </span>
+                          </li>
+                        )
+                    )}
+                  </ol>
+                </div>
+              </div>
+            ) : null}
+            {isPageContentFull() ? null : (
+              <>
+                {!loader &&
+                ((otherInstructions && otherInstructions.length > 0) ||
+                  !isEmpty(referralSpecialtyName) ||
+                  !isEmpty(referralDescription)) ? (
+                  <div className={classes.prescriptionSection}>
+                    <div className={classes.sectionHeader}>
+                      <img src={require('images/ic-doctors-2.svg')} />
+                      ADVICE/INSTRUCTIONS
+                    </div>
+                    <div className={classes.adviceInstruction}>
+                      {otherInstructions && otherInstructions.length > 0 && (
+                        <div className={classes.advice}>
+                          <span>Doctor’s Advice</span>
+                          <div>
+                            {otherInstructions.map((instruction) => (
+                              <div className={classes.instruction}>{instruction.instruction}</div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {/* {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
+                    <div className={classes.advice}>
+                      <span>Follow Up</span>
+                      <div className={classes.followContent}>{getFollowUpData()}</div>
+                    </div>
+                  ) : null} */}
+                      {(!isEmpty(referralSpecialtyName) || !isEmpty(referralDescription)) && (
+                        <div className={classes.advice}>
+                          <span>Referral</span>
+                          <div>
+                            {!isEmpty(referralSpecialtyName) && (
+                              <div className={classes.followContent} style={{ marginBottom: 5 }}>
+                                {`Consult a ${referralSpecialtyName}`}
+                              </div>
+                            )}
+                            {!isEmpty(referralDescription) && (
+                              <div className={classes.instruction}>{referralDescription}</div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            )}
+            {isPageContentFull() ? null : (
+              <>
+                {createdDoctorProfile && (
+                  <div className={classes.prescriptionHeader}>
+                    {((sdConsultationDate && sdConsultationDate !== '') ||
+                      (appointmentInfo && appointmentInfo!.appointmentDateTime)) && (
+                      <h6>
+                        Prescribed on{' '}
                         {updatedDate && updatedDate !== ''
-                          ? `${moment(updatedDate).format('DD/MM/YYYY')} at ${moment(
-                              updatedDate
-                            ).format('h:mm a')}`
-                          : `${moment(new Date()).format('DD/MM/YYYY')} at ${moment(
-                              new Date()
-                            ).format('h:mm a')}`}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-                {consultType ? (
-                  <div className={classes.infoRow}>
-                    <div className={`${classes.label} ${classes.labelRight}`}>Consult Type</div>
-                    <div className={classes.labelContent}>
-                      <div className={classes.labelBlue}>
-                        {_startCase(_toLower(consultType[0]))}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-                {/* <div className={classes.infoRow}>
-                  <div className={`${classes.label} ${classes.labelRight}`}>Consult Count</div>
-                  <div className={classes.labelContent}>
-                    <div className={classes.labelBlue}>2</div>
-                  </div>
-                </div> */}
-              </div>
-            </div>
-          </div>
-          {!loader &&
-          ((symptoms && symptoms.length > 0) || weight || height || bp || temperature) ? (
-            <div className={classes.prescriptionSection}>
-              <div className={classes.sectionHeader}>Chief Complaints</div>
-              <div className={classes.chiefComplaints}>
-                {symptoms.map((symptom) => (
-                  <div className={classes.complaintsInfoRow}>
-                    <div className={classes.complaintsLabel}>{symptom.symptom}</div>
-                    <div className={classes.labelContent}>{generateSymptomsHtml(symptom)}</div>
-                  </div>
-                ))}
-                {vitalsArr.length > 0 ? (
-                  <div className={classes.complaintsInfoRow}>
-                    <div className={`${classes.complaintsLabel} ${classes.vitalLabel}`}>
-                      VITALS <span className={classes.subInfo}>(as declared by patient)</span>
-                    </div>
-                    <div className={classes.labelContent}>
-                      <div className={classes.labelBlue} style={{ fontWeight: 400 }}>
-                        {vitalsArr.join(' | ')}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
-          {!loader && diagnosis && diagnosis.length > 0 ? (
-            <div className={classes.prescriptionSection}>
-              <div className={classes.sectionHeader}>Diagnosis</div>
-              <div className={classes.diagnosis}>
-                {diagnosis.map((diagnos) => (
-                  <div className={classes.infoRow}>
-                    <div className={classes.labelContent}>{diagnos.name}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
-          {!loader &&
-          ((removedMedicinePrescription && removedMedicinePrescription.length > 0) ||
-            (medicinePrescription && medicinePrescription.length > 0)) ? (
-            <div className={classes.prescriptionSection}>
-              <div className={classes.sectionHeader}>
-                <img src={require('images/ic-medicines.svg')} />
-                Medication Prescribed
-              </div>
-              <div className={classes.medicationList}>
-                <ol>
-                  {medicineHtml}
-                  {removedMedicineHtml}
-                </ol>
-              </div>
-            </div>
-          ) : null}
-          {!loader && diagnosticPrescription && diagnosticPrescription.length > 0 ? (
-            <div className={classes.prescriptionSection}>
-              <div className={classes.sectionHeader}>
-                <img src={require('images/ic-microscope-solid.svg')} />
-                Diagnostic Tests
-              </div>
-              <div className={classes.medicationList}>
-                <ol>
-                  {diagnosticPrescription.map(
-                    (prescription) =>
-                      (prescription.itemname || prescription.itemName) && (
-                        <li>
-                          {prescription.itemname || prescription.itemName}
-                          <span
-                            style={{
-                              whiteSpace: 'pre-line',
-                              display: 'block',
-                            }}
-                          >
-                            {prescription.testInstruction}
-                          </span>
-                        </li>
-                      )
-                  )}
-                </ol>
-              </div>
-            </div>
-          ) : null}
-          {isPageContentFull() ? null : (
-            <>
-              {!loader &&
-              ((otherInstructions && otherInstructions.length > 0) ||
-                !isEmpty(referralSpecialtyName) ||
-                !isEmpty(referralDescription)) ? (
-                <div className={classes.prescriptionSection}>
-                  <div className={classes.sectionHeader}>
-                    <img src={require('images/ic-doctors-2.svg')} />
-                    ADVICE/INSTRUCTIONS
-                  </div>
-                  <div className={classes.adviceInstruction}>
-                    {otherInstructions && otherInstructions.length > 0 && (
-                      <div className={classes.advice}>
-                        <span>Doctor’s Advice</span>
-                        <div>
-                          {otherInstructions.map((instruction) => (
-                            <div className={classes.instruction}>{instruction.instruction}</div>
-                          ))}
-                        </div>
+                          ? moment(updatedDate).format('DD/MM/YYYY')
+                          : moment(new Date()).format('DD/MM/YYYY')}{' '}
+                        by
+                      </h6>
+                    )}
+                    {createdDoctorProfile!.signature && (
+                      <div className={classes.followUpContent}>
+                        <img src={createdDoctorProfile.signature} />
                       </div>
                     )}
-                    {/* {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
-                      <div className={classes.advice}>
-                        <span>Follow Up</span>
-                        <div className={classes.followContent}>{getFollowUpData()}</div>
-                      </div>
-                    ) : null} */}
-                    {(!isEmpty(referralSpecialtyName) || !isEmpty(referralDescription)) && (
-                      <div className={classes.advice}>
-                        <span>Referral</span>
-                        <div>
-                          {!isEmpty(referralSpecialtyName) && (
-                            <div className={classes.followContent} style={{ marginBottom: 5 }}>
-                              {`Consult a ${referralSpecialtyName}`}
-                            </div>
-                          )}
-                          {!isEmpty(referralDescription) && (
-                            <div className={classes.instruction}>{referralDescription}</div>
-                          )}
-                        </div>
+                    {(createdDoctorProfile!.salutation ||
+                      createdDoctorProfile!.firstName ||
+                      createdDoctorProfile!.lastName ||
+                      createdDoctorProfile!.registrationNumber ||
+                      (createdDoctorProfile!.specialty &&
+                        createdDoctorProfile!.specialty!.specialistSingularTerm)) && (
+                      <div className={classes.signInformation}>
+                        {(createdDoctorProfile.salutation ||
+                          createdDoctorProfile.firstName ||
+                          createdDoctorProfile.lastName) && (
+                          <h3 className={classes.followUpContent}>
+                            {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
+                          </h3>
+                        )}
+                        {/* {currentDoctor.qualification && (
+                    <p className={`${classes.specialty} ${classes.qualification}`}>
+                      {currentDoctor.qualification}
+                    </p>
+                  )} */}
+                        {((createdDoctorProfile.specialty &&
+                          createdDoctorProfile.specialty.specialistSingularTerm) ||
+                          createdDoctorProfile.registrationNumber) && (
+                          <p className={classes.specialty}>
+                            {createdDoctorProfile.specialty.specialistSingularTerm
+                              ? `${createdDoctorProfile.specialty.specialistSingularTerm} | `
+                              : ''}
+                            {createdDoctorProfile.registrationNumber
+                              ? `Reg. No. ${createdDoctorProfile.registrationNumber}`
+                              : ''}
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
-                </div>
-              ) : null}
-            </>
-          )}
-          {isPageContentFull() ? null : (
-            <>
-              {createdDoctorProfile && (
-                <div className={classes.prescriptionHeader}>
-                  {((sdConsultationDate && sdConsultationDate !== '') ||
-                    (appointmentInfo && appointmentInfo!.appointmentDateTime)) && (
-                    <h6>
-                      Prescribed on{' '}
-                      {updatedDate && updatedDate !== ''
-                        ? moment(updatedDate).format('DD/MM/YYYY')
-                        : moment(new Date()).format('DD/MM/YYYY')}{' '}
-                      by
-                    </h6>
-                  )}
-                  {createdDoctorProfile!.signature && (
-                    <div className={classes.followUpContent}>
-                      <img src={createdDoctorProfile.signature} />
-                    </div>
-                  )}
-                  {(createdDoctorProfile!.salutation ||
-                    createdDoctorProfile!.firstName ||
-                    createdDoctorProfile!.lastName ||
-                    createdDoctorProfile!.registrationNumber ||
-                    (createdDoctorProfile!.specialty &&
-                      createdDoctorProfile!.specialty!.specialistSingularTerm)) && (
-                    <div className={classes.signInformation}>
-                      {(createdDoctorProfile.salutation ||
-                        createdDoctorProfile.firstName ||
-                        createdDoctorProfile.lastName) && (
-                        <h3 className={classes.followUpContent}>
-                          {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
-                        </h3>
-                      )}
-
-                      {/* {currentDoctor.qualification && (
-                      <p className={`${classes.specialty} ${classes.qualification}`}>
-                        {currentDoctor.qualification}
-                      </p>
-                    )} */}
-                      {((createdDoctorProfile.specialty &&
-                        createdDoctorProfile.specialty.specialistSingularTerm) ||
-                        createdDoctorProfile.registrationNumber) && (
-                        <p className={classes.specialty}>
-                          {createdDoctorProfile.specialty.specialistSingularTerm
-                            ? `${createdDoctorProfile.specialty.specialistSingularTerm} | `
-                            : ''}
-                          {createdDoctorProfile.registrationNumber
-                            ? `Reg. No. ${createdDoctorProfile.registrationNumber}`
-                            : ''}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-        <div className={classes.gerenalInfo}>
-          {isPageContentFull() &&
-          ((followUp.length > 0 && followUp[0]) ||
-            (otherInstructions && otherInstructions.length > 0)) ? (
-            <div className={classes.pageNumbers}>Page 1 of 2</div>
-          ) : null}
-          <div className={classes.disclaimer}>
-            <span>Disclaimer:</span>
-            <span>
-              This prescription is issued on the basis of your inputs during teleconsultation. It is
-              valid from the date of issue until the specific period/dosage of each medicine as
-              advised.
-            </span>
+                )}
+              </>
+            )}
+          </div>
+          <div className={classes.gerenalInfo}>
+            {isPageContentFull() &&
+            ((followUp.length > 0 && followUp[0]) ||
+              (otherInstructions && otherInstructions.length > 0)) ? (
+              <div className={classes.pageNumbers}>Page 1 of 2</div>
+            ) : null}
+            <div className={classes.disclaimer}>
+              <span>Disclaimer:</span>
+              <span>
+                This prescription is issued on the basis of your inputs during teleconsultation. It
+                is valid from the date of issue until the specific period/dosage of each medicine as
+                advised.
+              </span>
+            </div>
           </div>
         </div>
+        {isPageContentFull() &&
+        ((followUp.length > 0 && followUp[0]) ||
+          (otherInstructions && otherInstructions.length > 0)) ? (
+          <CaseSheetLastView getFollowUpData={getFollowUpData} />
+        ) : null}
       </div>
-      {isPageContentFull() &&
-      ((followUp.length > 0 && followUp[0]) ||
-        (otherInstructions && otherInstructions.length > 0)) ? (
-        <CaseSheetLastView getFollowUpData={getFollowUpData} />
-      ) : null}
     </div>
   );
 };

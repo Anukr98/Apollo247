@@ -42,13 +42,6 @@ import { useShoppingCart, MedicineCartItem, EPrescription } from 'components/Med
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { readableParam } from 'helpers/commonHelpers';
 import { useMutation } from 'react-apollo-hooks';
-import { BOOK_FOLLOWUP_APPOINTMENT } from 'graphql/consult';
-import { BookFollowupConsult } from 'components/BookFollowupConsult';
-import {
-  GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails,
-  GetDoctorDetailsById_getDoctorDetailsById_starTeam,
-  GetDoctorDetailsById_getDoctorDetailsById_consultHours,
-} from 'graphql/types/GetDoctorDetailsById';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -513,11 +506,6 @@ const Prescription: React.FC = (props) => {
   // const [showShareWidget, setShowShareWidget] = useState<boolean>(false);
   const [cartItemsLoading, setCartItemsLoading] = useState<boolean>(false);
   const [showInstockItemsPopup, setShowInstockItemsPopup] = useState<boolean>(false);
-  const [followUpLoading, setFollowUpLoading] = useState<boolean>(false);
-  const [openSlotPopup, setOpenSlotPopup] = useState<boolean>(false);
-  const [followupAppointmentType, setFollwupAppoitnmentType] = useState<number>(0);
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [followupSuccessPopup, setFollowupSuccessPopup] = useState<boolean>(false);
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -786,39 +774,6 @@ const Prescription: React.FC = (props) => {
     }`;
   };
 
-  const bookFollowupMutation = useMutation(BOOK_FOLLOWUP_APPOINTMENT);
-
-  useEffect(() => {
-    if (selectedSlot && caseSheetDetails && caseSheetDetails.appointment) {
-      const { appointment } = caseSheetDetails;
-      setFollowUpLoading(true);
-      const input = {
-        patientId: appointment.patientId,
-        doctorId: appointment.doctorId,
-        appointmentDateTime: selectedSlot,
-        appointmentType:
-          followupAppointmentType === 0 ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
-        hospitalId: appointment.hospitalId,
-        followUpParentId: appointment.id,
-      };
-      bookFollowupMutation({
-        variables: {
-          followUpAppointmentInput: input,
-        },
-        fetchPolicy: 'no-cache',
-      })
-        .then((_data: any) => {
-          setFollowupSuccessPopup(true);
-        })
-        .catch((e: any) => {
-          console.log('Error occured while BookFollowUpAppointment ', { e });
-        })
-        .finally(() => {
-          setFollowUpLoading(false);
-        });
-    }
-  }, [selectedSlot]);
-
   return (
     <div className={classes.prescriptionContainer}>
       <Header />
@@ -971,34 +926,6 @@ const Prescription: React.FC = (props) => {
                                   </ul>
                                 ) : (
                                   <ul className={classes.consultList}>
-                                    {/* <li>
-                                      {prescription.medicineDosage}{' '}
-                                      {_upperFirst(_lowerCase(prescription.medicineUnit))}
-                                    </li> */}
-                                    {/* <li>
-                                      {prescription.medicineTimings &&
-                                      prescription.medicineTimings.length
-                                        ? prescription.medicineTimings
-                                            .map((timing: MEDICINE_TIMINGS | null) =>
-                                              _upperFirst(_lowerCase(timing))
-                                            )
-                                            .join(', ') +
-                                          `${
-                                            prescription.medicineToBeTaken &&
-                                            prescription.medicineToBeTaken.length
-                                              ? ', '
-                                              : ''
-                                          }`
-                                        : ''}
-                                      {prescription.medicineToBeTaken &&
-                                      prescription.medicineToBeTaken.length
-                                        ? prescription.medicineToBeTaken
-                                            .map((medicineTobeTaken: MEDICINE_TO_BE_TAKEN) =>
-                                              _upperFirst(_lowerCase(medicineTobeTaken || ''))
-                                            )
-                                            .join(', ')
-                                        : ''}
-                                    </li> */}
                                     <li>{getMedicineDescription(prescription)}</li>
                                     <li>
                                       {prescription.routeOfAdministration
@@ -1179,16 +1106,6 @@ const Prescription: React.FC = (props) => {
                                 Online Consult/ Clinic Visit with Dr.
                                 {caseSheetDetails.appointment.doctorInfo.displayName}
                               </Typography>
-                              <AphButton
-                                className={classes.bookConsultBtn}
-                                onClick={() => setOpenSlotPopup(true)}
-                              >
-                                {followUpLoading ? (
-                                  <CircularProgress color="primary" size={22} />
-                                ) : (
-                                  'Book Follow-Up'
-                                )}
-                              </AphButton>
                             </>
                           ) : (
                             'No Followup'
@@ -1197,34 +1114,6 @@ const Prescription: React.FC = (props) => {
                       </div>
                     </ExpansionPanelDetails>
                   </ExpansionPanel>
-                  {/* As of now we do not have payment information in API so commenting below code */}
-                  {/* <ExpansionPanel defaultExpanded className={classes.panelRoot}>
-                      <ExpansionPanelSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        classes={{
-                          root: classes.panelHeader,
-                          content: classes.summaryContent,
-                          expandIcon: classes.expandIcon,
-                          expanded: classes.panelExpanded,
-                        }}
-                      >
-                        <Typography className={classes.panelHeading}>
-                          Payment &amp; Invoice
-                        </Typography>
-                      </ExpansionPanelSummary>
-                      <ExpansionPanelDetails className={classes.panelDetails}>
-                        <div className={classes.detailsContent}>
-                          <div className={classes.cdContainer}>
-                            <Typography>Paid — Rs. 299 </Typography>
-                            <ul className={classes.consultList}>
-                              <li>Debit Card</li>
-                              <li>5546 **** **** ***1</li>
-                            </ul>
-                            <Link to="#">Order Summary </Link>
-                          </div>
-                        </div>
-                      </ExpansionPanelDetails>
-                    </ExpansionPanel> */}
                 </>
               )}
             </div>
@@ -1247,63 +1136,6 @@ const Prescription: React.FC = (props) => {
           </AphButton>
         </div>
       </AphDialog>
-      {caseSheetDetails && caseSheetDetails.doctorId && (
-        <Modal
-          open={openSlotPopup}
-          onClose={() => setOpenSlotPopup(false)}
-          disableBackdropClick
-          disableEscapeKeyDown
-        >
-          <BookFollowupConsult
-            setIsPopoverOpen={setOpenSlotPopup}
-            doctorId={caseSheetDetails.doctorId}
-            setSelectedSlot={setSelectedSlot}
-            setFollwupAppoitnmentType={setFollwupAppoitnmentType}
-          />
-        </Modal>
-      )}
-      <Popover
-        open={followupSuccessPopup}
-        anchorEl={mascotRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <div className={classes.windowBody}>
-              <p>Hi! :)</p>
-              <p>
-                Your followup appointment with Dr.
-                {` ${caseSheetDetails &&
-                  caseSheetDetails.appointment &&
-                  caseSheetDetails.appointment.doctorInfo &&
-                  caseSheetDetails.appointment.doctorInfo.displayName} `}
-                booked on - {moment(selectedSlot).format('Do MMMM, dddd \nhh:mm a')}
-              </p>
-            </div>
-            <div className={classes.actions}>
-              <AphButton
-                onClick={() => {
-                  setSelectedSlot(null);
-                  window.location.href = clientRoutes.appointments();
-                }}
-              >
-                OK, GOT IT
-              </AphButton>
-            </div>
-          </div>
-        </div>
-      </Popover>
     </div>
   );
 };

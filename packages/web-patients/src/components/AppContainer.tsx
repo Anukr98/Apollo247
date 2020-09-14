@@ -29,15 +29,12 @@ const Privacy = loadable(() => import('components/Privacy'));
 const TermsAndConditions = loadable(() => import('components/TermsAndConditions'));
 const SymptomsTrackerSDK = loadable(() => import('components/SymptomsTracker/SymptomsTrackerSDK'));
 const ContactUs = loadable(() => import('components/ContactUs'));
-
 const AboutUs = loadable(() => import('components/AboutUs'));
 const Faq = loadable(() => import('components/Faq'));
 const Help = loadable(() => import('components/Help/Help'));
 const Loader = loadable(() => import('components/Loader'));
-
 const ClinicCheckout = loadable(() => import('./Checkout/ClinicCheckout'));
 const OnlineCheckout = loadable(() => import('components/Checkout/OnlineCheckout'));
-
 const DoctorDetails = loadable(() => import('components/DoctorDetails'));
 const MedicineLanding = loadable(() => import('components/Medicine/MedicineLanding'));
 const SymptomsTracker = loadable(() => import('components/SymptomsTracker/SymptomsTracker'));
@@ -47,36 +44,32 @@ const CovidArticleDetails = loadable(() => import('components/Covid/CovidArticle
 const covidProtocolLanding = loadable(() => import('components/Covid/CovidProtocolLanding'));
 const SpecialityListing = loadable(() => import('components/SpecialityListing'));
 const DoctorsLanding = loadable(() => import('components/DoctorsLanding'));
+import { covidProtocolLanding } from 'components/Covid/CovidProtocolLanding';
+import { Loader } from 'components/Loader';
+import { Prescription } from 'components/Consult/V2/Prescription';
+// import { Sitemap } from 'components/Sitemap';
 const SpecialtyDetails = loadable(() => import('components/Doctors/SpecialtyDetails'));
-
 const Appointments = loadable(() => import('components/Consult/V2/Appointments'));
 const ChatRoom = loadable(() => import('components/Consult/V2/ChatRoom/ChatRoom'));
 const Prescription = loadable(() => import('components/Consult/V2/Prescription'));
-
 const OrdersLanding = loadable(() => import('components/Orders/OrdersLanding'));
 const PayMedicine = loadable(() => import('components/PayMedicine'));
-
 const AddRecords = loadable(() => import('components/HealthRecords/AddRecords'));
 const PHRLanding = loadable(() => import('components/HealthRecords/PHRLanding'));
-
 const MedicinePrescriptions = loadable(() => import('./Prescriptions/MedicinePrescriptions'));
 const PrescriptionsLanding = loadable(() => import('./Prescriptions/PrescriptionsLanding'));
-
 const MedicineDetails = loadable(() => import('components/Medicine/MedicineDetails'));
 const SearchByBrand = loadable(() => import('components/Medicine/SearchByBrand'));
 const SearchByMedicine = loadable(() => import('components/Medicine/SearchByMedicine'));
 const ViewAllBrands = loadable(() => import('components/Medicine/ViewAllBrands'));
 const MedicineSearch = loadable(() => import('components/Medicine/MedicineSearch'));
-
 const TestsCartLanding = loadable(() => import('components/Tests/Cart/TestsCartLanding'));
 const MedicineCartLanding = loadable(() => import('components/Cart/MedicineCartLanding'));
-
 const OrderDetails = loadable(() => import('components/Tests/OrderDetails'));
 const OrderSummary = loadable(() => import('components/Tests/OrderSummary'));
 const SearchByTest = loadable(() => import('components/Tests/SearchByTest'));
 const TestDetails = loadable(() => import('components/Tests/TestDetails'));
 const TestsLanding = loadable(() => import('components/Tests/TestsLanding'));
-
 const AddressBook = loadable(() => import('components/MyAccount/AddressBook'));
 const MyAccount = loadable(() => import('components/MyAccount/MyAccount'));
 const MyPayments = loadable(() => import('components/MyAccount/MyPayments'));

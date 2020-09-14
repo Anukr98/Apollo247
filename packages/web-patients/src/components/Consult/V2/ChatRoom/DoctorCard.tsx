@@ -190,7 +190,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     ? format(chatDate, 'hh:mm a')
     : format(chatDate, 'do MMMM yyyy, hh:mm a');
   const { appointmentDetails } = props;
-
   const isCancelledByDoctor =
     props.messageDetails && props.messageDetails.message === '^^#cancelConsultInitiated';
 

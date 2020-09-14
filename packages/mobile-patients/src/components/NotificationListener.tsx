@@ -106,9 +106,7 @@ export interface NotificationListenerProps extends NavigationScreenProps {}
 
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
-  //TODO:uncomment this if auto permissions are granted
-  // const isAndroid = Platform.OS === 'android';
-  const isAndroid = false;
+  const isAndroid = Platform.OS === 'android';
   const {
     showAphAlert,
     hideAphAlert,
@@ -949,7 +947,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         firebase.notifications.Android.Importance.Max
       )
         .setDescription('Apollo Consultation')
-        .setSound('incallmanager_ringtone.mp3')
         .enableLights(true)
         .enableVibration(true)
         .setVibrationPattern([1000])
