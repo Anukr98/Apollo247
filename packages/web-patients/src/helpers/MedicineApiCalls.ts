@@ -338,11 +338,11 @@ export const reOrderItems = async (
       : lineItems.filter((item) => item.medicineSKU).map((item) => item.medicineSKU!);
 
     const lineItemsDetails = (await medCartItemsDetailsApi(lineItemsSkus)).data.productdp.filter(
-      (lineItem) => lineItem.sku && lineItem.name
+      (lineItem: any) => lineItem.sku && lineItem.name
     );
-    const availableLineItemsSkus = lineItemsDetails.map((lineItem) => lineItem.sku);
+    const availableLineItemsSkus = lineItemsDetails.map((lineItem: any) => lineItem.sku);
     const cartItemsToAdd = lineItemsDetails.map(
-      (item, index) =>
+      (item: any, index: any) =>
         item.sku &&
         ({
           ...item,

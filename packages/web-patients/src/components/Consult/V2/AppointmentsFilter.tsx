@@ -378,7 +378,7 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
     selectedDate,
     setSelectedDate,
   } = props;
-  const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(_.cloneDeep(filter));
+  const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(cloneDeep(filter));
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
