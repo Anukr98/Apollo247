@@ -12,6 +12,8 @@ import {
   MedicalIcon,
   NotificationIcon,
   RetryButtonIcon,
+  PendingIcon,
+  WhatsAppIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
@@ -107,6 +109,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
+const INCONVENIENCE_TEXT =
+  'We are trying our best to expedite the process.\nSorry for the inconvenience';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -151,6 +155,19 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   retyButton: { width: 185, height: 48, marginTop: 30 },
+  cardStyle: {
+    flexDirection: 'row',
+    ...theme.viewStyles.cardViewStyle,
+    padding: 16,
+    marginBottom: 8,
+    flex: 1,
+  },
+  pendingIcon: { height: 24, width: 24, resizeMode: 'contain' },
+  inconvenienceText: {
+    marginHorizontal: 10,
+    ...theme.fonts.IBMPlexSansRegular(13),
+    color: theme.colors.SHERPA_BLUE,
+  },
 });
 
 export interface OrderDetailsSceneProps
@@ -947,9 +964,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       scrollToSlots();
     }
 
+    const expectedDeliveryInDays = moment.duration(moment(tatInfo!).diff(moment()));
+    const diffInDays = expectedDeliveryInDays.asDays();
+
     return (
       <View>
         <View style={{ margin: 20 }}>
+          {diffInDays! > 0 ? renderInconvenienceView() : null}
           {statusList.map((order, index, array) => {
             return (
               <OrderProgressCard
@@ -1043,6 +1064,28 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           </View>
         ) : null}
         {showNotifyStoreAlert && renderNotifyStoreAlert()}
+      </View>
+    );
+  };
+
+  const renderInconvenienceView = () => {
+    return (
+      <View>
+        <View style={styles.cardStyle}>
+          <PendingIcon style={styles.pendingIcon} />
+          <Text style={styles.inconvenienceText}>{INCONVENIENCE_TEXT}</Text>
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            width: '100%',
+            backgroundColor: 'pink',
+            right: 0,
+          }}
+        >
+          <WhatsAppIcon style={{ height: 15, width: 15, resizeMode: 'contain' }} />
+          <Text>Chat with us </Text>
+        </View>
       </View>
     );
   };
