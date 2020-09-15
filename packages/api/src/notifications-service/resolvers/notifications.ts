@@ -158,7 +158,7 @@ const sendDailyAppointmentSummary: Resolver<
     let physicalAppointments = 0;
     let flag = 0;
     let rowHeadx = 90;
-    let rowx = 100;
+    let rowx = 118;
     const docIds: string[] = [];
     const allpdfs: string[] = [];
     let fileStream: fs.WriteStream;
@@ -183,7 +183,7 @@ const sendDailyAppointmentSummary: Resolver<
         fileStream = fs.createWriteStream(uploadPath);
         pdfDoc.pipe(fileStream);
         rowHeadx = 90;
-        rowx = 100;
+        rowx = 95;
         writeRow(pdfDoc, rowHeadx);
         textInRow(pdfDoc, 'Patient Name', rowx, 30);
         textInRow(pdfDoc, 'Appointment Date Time', rowx, 201);
@@ -192,7 +192,11 @@ const sendDailyAppointmentSummary: Resolver<
         flag = 1;
       }
       rowHeadx += 20;
-      rowx += 18;
+      if (index % 3 == 0) {
+        rowx += 24;
+      } else {
+        rowx += 18;
+      }
       writeRow(pdfDoc, rowHeadx);
       textInRow(pdfDoc, appointment.patientName, rowx, 30);
       textInRow(
@@ -216,11 +220,11 @@ const sendDailyAppointmentSummary: Resolver<
         pdfDoc
           .lineCap('butt')
           .moveTo(200, 90)
-          .lineTo(200, totalAppointments * 30)
+          .lineTo(200, rowHeadx + 20)
           .moveTo(340, 90)
-          .lineTo(340, totalAppointments * 30)
+          .lineTo(340, rowHeadx + 20)
           .moveTo(420, 90)
-          .lineTo(420, totalAppointments * 30)
+          .lineTo(420, rowHeadx + 20)
           .stroke();
         pdfDoc.end();
         const fp = `${uploadPath}$${fileName}$${totalAppointments}$${doctorDetails[0].mobileNumber}$${doctorDetails[0].firstName}`;
@@ -273,7 +277,7 @@ const sendDailyAppointmentSummary: Resolver<
             const templateData: string[] = [
               blobUrl,
               todaysDate + ' Appointments List',
-              todaysDate,
+              `{todaysDate} as of 8 AM`,
               docPdfDetails[2],
               docPdfDetails[4],
               appLink,
@@ -395,9 +399,13 @@ const sendAppointmentSummaryOps: Resolver<
               logContent = 'appointmentLegth: ' + docApptDetails.length + ': \n';
               fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
               totalAppointments = totalAppointments + docApptDetails.length;
-              docApptDetails.forEach((docAppointment) => {
+              docApptDetails.forEach((docAppointment, index) => {
                 rowHeadx += 20;
-                rowx += 18;
+                if (index % 3 == 0) {
+                  rowx += 24;
+                } else {
+                  rowx += 18;
+                }
                 writeRow(pdfDoc, rowHeadx);
                 textInRow(pdfDoc, docAppointment.patientId.substring(0, 5), rowx, 30);
                 textInRow(
@@ -414,6 +422,15 @@ const sendAppointmentSummaryOps: Resolver<
                 currentAdminMobNumber = `${adminDoctor.admindoctormapper[0].adminuser.mobileNumber}$${adminDoctor.admindoctormapper[0].adminuser.userName}`;
               });
             });
+            pdfDoc
+              .lineCap('butt')
+              .moveTo(200, 90)
+              .lineTo(200, rowHeadx + 20)
+              .moveTo(340, 90)
+              .lineTo(340, rowHeadx + 20)
+              .moveTo(420, 90)
+              .lineTo(420, rowHeadx + 20)
+              .stroke();
             pdfDoc.end();
             const fp = `${uploadPath}$${fileName}$${totalAppointments}$${currentAdminMobNumber}`;
             allPdfs.push(fp);
