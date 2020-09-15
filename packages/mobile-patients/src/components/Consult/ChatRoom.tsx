@@ -4842,13 +4842,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (diffMin <= 0) {
         time = `Will be joining soon`;
       } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
-        time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
+        time = `Joining in Some time`;
       } else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
-        time = `Joining in ${diffHours} hour${diffHours === 1 ? '' : 's'}`;
+        time = `Joining in Some time`;
       } else if (diffDays > 0 && diffDays < 31 && diffMonths <= 1) {
-        time = `Joining in ${diffDays} day${diffDays === 1 ? '' : 's'}`;
+        time = `Joining in Some time`;
       } else {
-        time = `Joining in ${diffMonths} month${diffMonths === 1 ? '' : 's'}`;
+        time = `Joining in Some time`;
       }
     }
     return (
@@ -7259,6 +7259,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
         type={FEEDBACKTYPE.CONSULT}
         isVisible={showFeedback}
+        containerStyle={{ paddingTop: 100 }}
       />
       {loading && <Spinner />}
       {showPDF && (

@@ -1,18 +1,8 @@
 import gql from 'graphql-tag';
 
 export const GET_CURRENT_PATIENTS = gql`
-  query GetCurrentPatients(
-    $appVersion: String
-    $deviceType: DEVICE_TYPE
-    $deviceToken: String
-    $deviceOS: String
-  ) {
-    getCurrentPatients(
-      appVersion: $appVersion
-      deviceType: $deviceType
-      deviceToken: $deviceToken
-      deviceOS: $deviceOS
-    ) {
+  query GetCurrentPatients($appVersion: String, $deviceType: DEVICE_TYPE) {
+    getCurrentPatients(appVersion: $appVersion, deviceType: $deviceType) {
       patients {
         id
         uhid
@@ -1970,23 +1960,20 @@ export const ADD_MEDICAL_RECORD = gql`
   }
 `;
 
-export const UPLOAD_LAB_RESULTS = gql`
-  mutation uploadLabResults($LabResultsUploadRequest: LabResultsUploadRequest, $uhid: String) {
-    uploadLabResults(labResultsInput: $LabResultsUploadRequest, uhid: $uhid) {
-      recordId
-      fileUrl
+export const ADD_PATIENT_HEALTH_CHECK_RECORD = gql`
+  mutation addPatientHealthCheckRecord($AddHealthCheckRecordInput: AddHealthCheckRecordInput) {
+    addPatientHealthCheckRecord(addHealthCheckRecordInput: $AddHealthCheckRecordInput) {
+      status
     }
   }
 `;
 
-export const UPLOAD_HEALTH_RECORD_PRESCRIPTION = gql`
-  mutation uploadPrescriptions(
-    $PrescriptionUploadRequest: PrescriptionUploadRequest
-    $uhid: String
+export const ADD_PATIENT_HOSPITALIZATION_RECORD = gql`
+  mutation addPatientHospitalizationRecord(
+    $AddHospitalizationRecordInput: AddHospitalizationRecordInput
   ) {
-    uploadPrescriptions(prescriptionInput: $PrescriptionUploadRequest, uhid: $uhid) {
-      recordId
-      fileUrl
+    addPatientHospitalizationRecord(addHospitalizationRecordInput: $AddHospitalizationRecordInput) {
+      status
     }
   }
 `;

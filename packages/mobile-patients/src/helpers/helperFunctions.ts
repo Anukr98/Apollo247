@@ -130,16 +130,16 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
 };
 
 export const formatAddressWithLandmark = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
+  const addrLine1 = removeConsecutiveComma([address.addressLine1, address.addressLine2].filter((v) => v).join(', '));
   const landmark = [address.landmark];
   // to handle state value getting twice
-  const addrLine2 = [address.city, address.state]
+  const addrLine2 = removeConsecutiveComma([address.city, address.state]
     .filter((v) => v)
     .join(', ')
     .split(',')
     .map((v) => v.trim())
     .filter((item, idx, array) => array.indexOf(item) === idx)
-    .join(', ');
+    .join(', '));
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   if(address.landmark!=''){
     return `${addrLine1},\nLandmark: ${landmark}\n${addrLine2}${formattedZipcode}`;
@@ -151,7 +151,12 @@ export const formatAddressWithLandmark = (address: savePatientAddress_savePatien
 };
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  return `${address.name}\n${address.mobileNumber}`;
+  if(address.name!){
+    return `${address.name}\n${address.mobileNumber}`;
+  }
+  else{
+    return `${address.mobileNumber}`;
+  }
 };
 
 export const followUpChatDaysCaseSheet = (
@@ -1440,4 +1445,7 @@ export const dataSavedUserID = async (key: string) => {
 
 export const setWebEngageScreenNames = (screenName: string) => {
   webengage.screen(screenName);
+};
+export const removeConsecutiveComma = (value: string) =>{
+  return value.replace(/^,|,$|,(?=,)/g, '')
 };

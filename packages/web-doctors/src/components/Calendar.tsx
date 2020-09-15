@@ -156,6 +156,7 @@ const dataAdapter = (
     (appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null) => {
       const {
         id,
+        displayId,
         appointmentDateTime,
         isJdQuestionsComplete,
         appointmentType: type,
@@ -193,6 +194,8 @@ const dataAdapter = (
       }
       return {
         id,
+        appointmentDateTime,
+        displayId,
         patientId,
         startTime,
         endTime,
@@ -203,6 +206,7 @@ const dataAdapter = (
         isNew: !!newPatientsList && newPatientsList.includes(patientId),
         details: {
           patientName: `${patientInfo!.firstName} ${patientInfo!.lastName}`,
+          mobileNumber: patientInfo!.mobileNumber,
           checkups: symptoms,
           avatar: patientInfo!.photoUrl
             ? patientInfo!.photoUrl

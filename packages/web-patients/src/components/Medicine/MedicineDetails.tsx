@@ -657,6 +657,7 @@ export const MedicineDetails: React.FC = (props) => {
               is_in_stock,
               MaxOrderQty,
               is_prescription_required,
+              similar_products,
             } = data && data.productdp && data.productdp.length && data.productdp[0];
             let { description } = data.productdp[0];
             pharmacyProductViewTracking({
@@ -679,6 +680,9 @@ export const MedicineDetails: React.FC = (props) => {
               const desc = Overview.filter((desc: any) => desc.Caption === 'USES');
               description = desc.length ? desc[0].CaptionDesc : '';
             }
+            const similarProducts = (
+              similar_products && similar_products.map((key: MedicineProductDetails) => key.name)
+            ).join(', ');
             setProductSchemaJSON({
               '@context': 'https://schema.org/',
               '@type': 'Product',
@@ -731,6 +735,7 @@ export const MedicineDetails: React.FC = (props) => {
                 image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
               },
               gtin8: id,
+              isSimilarTo: similarProducts,
             });
             if (type_id && type_id.toLowerCase() === 'pharma') {
               const { generic, Doseform, Strengh, Unit, Overview } =
