@@ -409,7 +409,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 });
               }}
             >
-              <Minimize />
+              <View style={styles.exobuttonContainer}>
+                <Text style={styles.notNowText}>Not Now</Text>
+                <Minimize />
+              </View>
             </TouchableOpacity>
           </View>
           <View style={styles.joinTextContainer}>
@@ -1916,6 +1919,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         if (isJoin) {
           callOptions.setCallAccepted(true);
           hideFloatingContainer();
+          setTimeout(() => {
+            callData.setVideoEnabled(false);
+          }, 1000);
         }
         callType === 'A' ? callOptions.setIsAudio(true) : callOptions.setIsAudio(false);
         callType === 'V' ? callOptions.setIsVideo(true) : callOptions.setIsVideo(false);

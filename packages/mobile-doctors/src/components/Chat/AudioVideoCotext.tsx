@@ -114,6 +114,10 @@ export type CallOptions = {
 };
 
 export type CallData = {
+  audioEnabled: boolean;
+  setAudioEnabled: (value: boolean) => void;
+  videoEnabled: boolean;
+  setVideoEnabled: (value: boolean) => void;
   messageReceived: boolean;
   setMessageReceived: (value: boolean) => void;
   callDuration: string;
@@ -153,6 +157,10 @@ export const AudioVideoContext = createContext<AudioVideoContextPorps>({
     stopMissedCallTimer: () => {},
   },
   callData: {
+    audioEnabled: false,
+    setAudioEnabled: () => {},
+    videoEnabled: false,
+    setVideoEnabled: () => {},
     messageReceived: false,
     setMessageReceived: () => {},
     callDuration: '00 : 00',
@@ -849,6 +857,10 @@ export const AudioVideoProvider: React.FC = (props) => {
           stopMissedCallTimer,
         },
         callData: {
+          audioEnabled,
+          setAudioEnabled,
+          videoEnabled,
+          setVideoEnabled,
           messageReceived,
           setMessageReceived,
           callDuration,
