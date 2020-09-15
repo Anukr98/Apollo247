@@ -247,7 +247,12 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
               renderItem={({ item, index }) => {
                 let data;
                 if (item.type === 'lab') {
-                  data = { datalab: item.data, disableDelete: true, filterApplied: filterApplied };
+                  data = {
+                    datalab: item.data,
+                    prevItemData: combination && combination[index - 1]?.data,
+                    disableDelete: true,
+                    filterApplied: filterApplied,
+                  };
                 } else if (item.type === 'prescription') {
                   data = { dataprescription: item.data, disableDelete: true };
                 } else if (item.type === 'healthCheck') {

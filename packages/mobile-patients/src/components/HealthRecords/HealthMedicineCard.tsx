@@ -78,6 +78,7 @@ export interface HealthMedicineCardProps {
   onClickCard?: () => void;
   disableDelete?: boolean;
   filterApplied?: FILTER_TYPE | string;
+  prevItemData?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response;
   datalab?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response;
   dataprescription?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response;
   datahealthcheck?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response;
@@ -85,10 +86,27 @@ export interface HealthMedicineCardProps {
 }
 
 export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => {
-  const { datalab, dataprescription, disableDelete, datahealthcheck, datahospitalization } = props;
+  const {
+    datalab,
+    dataprescription,
+    disableDelete,
+    datahealthcheck,
+    prevItemData,
+    filterApplied,
+    datahospitalization,
+  } = props;
 
   const healthCheckName = datahealthcheck?.healthCheckName || datahealthcheck?.healthCheckType;
   const hospitalizationDoctorName = datahospitalization?.doctorName;
+  const dateFilterApplied = datalab && filterApplied && filterApplied !== FILTER_TYPE.DATE;
+  const clubFilterData =
+    filterApplied && filterApplied === FILTER_TYPE.DATE
+      ? prevItemData?.date === datalab?.date
+      : filterApplied === FILTER_TYPE.TEST
+      ? prevItemData?.labTestName === datalab?.labTestName
+      : datalab?.packageName && datalab?.packageName.length > 0 && datalab?.packageName !== '-'
+      ? prevItemData?.packageName === datalab?.packageName
+      : prevItemData?.labTestName === datalab?.labTestName;
 
   const getDateFormatted = () => {
     const date_text = (date_t: any) => {
@@ -111,14 +129,32 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
       : date_text(datahospitalization?.date || '') || '';
   };
 
+  const renderTrackerImage = () => {
+    return clubFilterData ? null : <TrackerBig />;
+  };
+
+  const getFilterAppliedText = () => {
+    return datalab && filterApplied === FILTER_TYPE.DATE
+      ? getDateFormatted()
+      : filterApplied === FILTER_TYPE.TEST
+      ? datalab?.labTestName
+      : datalab?.packageName && datalab?.packageName.length > 0 && datalab?.packageName !== '-'
+      ? datalab?.packageName
+      : datalab?.labTestName;
+  };
+
   return (
     <View style={styles.viewStyle}>
       <View style={styles.trackerViewStyle}>
-        <TrackerBig />
+        {datalab ? renderTrackerImage() : <TrackerBig />}
         <View style={styles.trackerLineStyle} />
       </View>
       <View style={styles.rightViewStyle}>
-        <Text style={styles.labelTextStyle}>{getDateFormatted()}</Text>
+        {datalab && clubFilterData ? null : (
+          <Text style={styles.labelTextStyle}>
+            {dateFilterApplied ? getFilterAppliedText() : getDateFormatted()}
+          </Text>
+        )}
         <TouchableOpacity
           activeOpacity={1}
           style={[styles.cardContainerStyle]}
@@ -131,10 +167,12 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.doctorNameStyles}>
-                  {dataprescription?.prescriptionName ||
-                    datalab?.labTestName ||
-                    healthCheckName ||
-                    hospitalizationDoctorName}
+                  {datalab && filterApplied && filterApplied !== FILTER_TYPE.DATE
+                    ? getDateFormatted()
+                    : dataprescription?.prescriptionName ||
+                      datalab?.labTestName ||
+                      healthCheckName ||
+                      hospitalizationDoctorName}
                 </Text>
                 {disableDelete ? null : (
                   <TouchableOpacity onPress={props.onPressDelete}>
