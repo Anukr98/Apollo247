@@ -12,13 +12,17 @@ import { MedSearchSuggestions } from '@aph/mobile-patients/src/components/Search
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { GET_PATIENT_PAST_MEDICINE_SEARCHES } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_PATIENT_PAST_MEDICINE_SEARCHES,
+  SAVE_SEARCH,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPatientPastMedicineSearches,
   getPatientPastMedicineSearchesVariables,
   getPatientPastMedicineSearches_getPatientPastMedicineSearches,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastMedicineSearches';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { SaveSearchInput, SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   getMedicineSearchSuggestionsApi,
   MedicineProduct,
@@ -99,9 +103,18 @@ export const SearchMedicineOverlay: React.FC<Props> = ({
     }
   };
 
-  const saveSearch = () => {
-    // TODO: save past search
-    // client.mutate()
+  const navigate = (appRoute: AppRoutes, params: { [key: string]: any }) => {
+    onBackPress(); // This will fire callback to close overlay
+    navigation.navigate(appRoute, params);
+  };
+
+  const saveSearch = (input: SaveSearchInput) => {
+    try {
+      client.mutate<saveSearch, saveSearchVariables>({
+        mutation: SAVE_SEARCH,
+        variables: { saveSearchInput: input },
+      });
+    } catch (error) {}
   };
 
   const renderHeader = () => {
@@ -129,7 +142,7 @@ export const SearchMedicineOverlay: React.FC<Props> = ({
     return (
       <MedSearchBar
         value={searchText}
-        onChangeText={setSearchText}
+        onChangeText={setSearchText} // TODO: Implement Debounce
         onFocus={() => setSearchFocused(true)}
         onBlur={() => setSearchFocused(false)}
         isFocused={isSearchFocused}
@@ -164,12 +177,22 @@ export const SearchMedicineOverlay: React.FC<Props> = ({
   };
 
   const renderProducts = (array: RecentSearch[]) => {
+    const onPress = (sku: string, name: string) => {
+      navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'recent-search' });
+      saveSearch({
+        typeId: sku,
+        typeName: name,
+        type: SEARCH_TYPE.MEDICINE,
+        patient: currentPatient?.id,
+      });
+    };
+
     return array.map(({ typeId, name, image }) => (
       <MedSearchSectionProductView
         key={typeId!}
         title={name!}
         image={image || ''}
-        onPress={() => navigation.navigate(AppRoutes.MedicineDetailsScene, { sku: typeId })}
+        onPress={() => onPress(typeId!, name!)}
         containerStyle={styles.medSearchSectionProductViewContainer}
       />
     ));
@@ -226,9 +249,16 @@ export const SearchMedicineOverlay: React.FC<Props> = ({
   const renderSearchResults = () => {
     if (!searchResults.length) return null;
 
-    const onPress = (sku: string) => {
-      navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'search' });
+    const onPress = (sku: string, name: string) => {
+      navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'search' });
+      saveSearch({
+        typeId: sku,
+        typeName: name,
+        type: SEARCH_TYPE.MEDICINE,
+        patient: currentPatient?.id,
+      });
     };
+
     const onPressNotify = (name: string) => {
       showAphAlert!({
         title: 'Okay! :)',
@@ -237,6 +267,7 @@ export const SearchMedicineOverlay: React.FC<Props> = ({
     };
 
     const onPressAddToCart = (item: MedicineProduct) => {
+      setItemsAddingToCart({ ...itemsAddingToCart, [item.sku]: true });
       addPharmaItemToCart(
         formatToCartItem(item),
         pharmacyPincode!,
@@ -258,21 +289,21 @@ export const SearchMedicineOverlay: React.FC<Props> = ({
         data: item,
         quantity: qty,
         maxOrderQty: item.MaxOrderQty,
-        onPress: () => onPress(id),
+        onPress: () => onPress(id, item.name),
         onPressAddToCart: () => onPressAddToCart(item),
         onPressAdd: () => {
           if (qty < item.MaxOrderQty) {
-            updateCartItem!({ id, quantity: qty - 1 });
+            updateCartItem!({ id, quantity: qty + 1 });
           }
         },
         onPressSubstract: () => {
           qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
         },
         onPressNotify: () => onPressNotify(item.name),
-        loading: false,
+        loading: itemsAddingToCart[item.sku],
       };
     });
-    return <MedSearchSuggestions products={products} />;
+    return <MedSearchSuggestions data={products} />;
   };
 
   return (
