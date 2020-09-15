@@ -490,12 +490,6 @@ export const Maps: React.FC<MapProps> = (props) => {
     );
   };
 
-  // const onMarkerDragEnd = (event: MapEvent) => {
-  //   const coordinates = event.nativeEvent.coordinate;
-  //   setLatitude(coordinates?.latitude);
-  //   setLongitude(coordinates?.longitude);
-  // };
-
   /** to drag the map */
   /** set lat-long when drag has been stopped */
   const _onRegionChangeComplete = (region: RegionObject) => {
@@ -612,17 +606,7 @@ export const Maps: React.FC<MapProps> = (props) => {
         onDoublePress={_setMapDragging}
         onPanDrag={_setMapDragging}
         // initialRegion={{latitude: latitude,longitude: longitude,latitudeDelta: latitudeDelta,longitudeDelta: longitudeDelta,}}
-      >
-        {/**drag the marker */}
-        {/* <Marker
-          coordinate={{
-            latitude: latitude,
-            longitude: longitude
-          }}
-          draggable={true}
-          onDragEnd={(e) => onMarkerDragEnd(e)}
-        /> */}
-      </MapView>
+      ></MapView>
     );
   };
 
