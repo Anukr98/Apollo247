@@ -488,11 +488,8 @@ export const Header: React.FC<HeaderProps> = (props) => {
                                 <li>
                                   <Link to={clientRoutes.healthRecords()}>
                                     <span>
-                                      <img
-                                        src={require('images/ic_notificaiton_accounts.svg')}
-                                        alt=""
-                                      />{' '}
-                                      Health Records
+                                      <img src={require('images/ic_myhealth.svg')} alt="" /> Health
+                                      Records
                                     </span>
                                     <img src={require('images/ic_arrow_right.svg')} alt="" />
                                   </Link>

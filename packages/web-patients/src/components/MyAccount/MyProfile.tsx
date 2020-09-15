@@ -232,7 +232,7 @@ export const MyProfile: React.FC = (props) => {
                 title={'View health records'}
               >
                 <span className={classes.serviceImg}>
-                  <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />
+                  <img src={require('images/ic_myhealth.svg')} alt="" />
                 </span>
                 <span className={classes.linkText}>Health Records</span>
                 <span className={classes.rightArrow}>
@@ -373,7 +373,7 @@ export const MyProfile: React.FC = (props) => {
                     title={'View health records'}
                   >
                     <span className={classes.serviceImg}>
-                      <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />
+                      <img src={require('images/ic_myhealth.svg')} alt="" />
                     </span>
                     <span className={classes.linkText}>Health Records</span>
                     <span className={classes.rightArrow}>
