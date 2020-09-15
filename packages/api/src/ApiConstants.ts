@@ -286,6 +286,7 @@ export enum ApiConstants {
   KALEYRA_OTP_SENDER = 'APOLLO',
   KALEYRA_OTP_SMS_METHOD = 'sms',
   OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
+  OTP_NON_WHITELISTED_NUMBER = 'OTP cannot be sent to non-whitelisted mobile number for lower environment',
   OTP_FAIL_MESSAGE = 'OTP sending failed',
   INVALID_RESEND_MESSAGE = 'Invalid resend details',
   NOTIFICATION_MSG_FOR_DR_CALL = 'Hi {0}, {1} will call you from the number {2}. Please pick up the call to connect with the doctor.',
@@ -447,12 +448,12 @@ export enum ApiConstants {
   MEDICINE_ORDER_REFUND_PROCESSED_EVENT_NAME = 'Refund Processed',
   MEDICINE_ORDER_REFUND_SUCCESSFUL_EVENT_NAME = 'Refund Successful',
 
-  WHATSAPP_SD_CONSULT_REMINDER_15 = 'inf_sd_consult_reminder_15_min',
-  WHATSAPP_SD_CHAT_NOTIFICATION_ID = 'inf_sd_chat_notification',
-  WHATSAPP_SD_OTP = 'inf_sd_otp_message',
-  WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation',
+  WHATSAPP_SD_CONSULT_REMINDER_15 = 'inf_sd_consult_reminder_15_min_namaste',
+  WHATSAPP_SD_CHAT_NOTIFICATION_ID = 'inf_sd_chat_notification_namaste1',
+  WHATSAPP_SD_OTP = 'inf_sd_otp_message_namaste',
+  WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation_namaste1',
   WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
-  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_button_2',
+  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_namaste3',
 
   ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE = 'R000247',
 

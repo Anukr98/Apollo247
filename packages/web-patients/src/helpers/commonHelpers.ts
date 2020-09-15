@@ -199,8 +199,8 @@ const getDiffInHours = (doctorAvailableSlots: string) => {
   }
 };
 const acceptedFilesNamesForFileUpload = ['png', 'jpg', 'jpeg', 'pdf'];
-const MAX_FILE_SIZE_FOR_UPLOAD = 2000000;
-const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 2MB';
+const MAX_FILE_SIZE_FOR_UPLOAD = 3000000;
+const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 3MB';
 const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
@@ -450,16 +450,18 @@ const isPastAppointment = (appointmentDateTime: string) =>
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const followUpDayMoment = moment(appointmentTime).add(7, 'days');
   const diffInDays = followUpDayMoment.diff(moment(), 'days');
-  if (diffInDays <= 0) {
+  if (diffInDays === 0) {
     const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
     const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
     return diffInHours > 0
-      ? `${diffInHours} hours free chat remaining`
+      ? `You can follow up with the doctor via text (${diffInHours} hours left)`
       : diffInMinutes > 0
-      ? `${diffInMinutes} minutes free chat remaining`
+      ? `You can follow up with the doctor via text (${diffInMinutes} minutes left)`
       : '';
+  } else if (diffInDays > 0) {
+    return `You can follow up with the doctor via text (${diffInDays} days left)`;
   } else {
-    return `${diffInDays} days free chat remaining`;
+    return '';
   }
 };
 

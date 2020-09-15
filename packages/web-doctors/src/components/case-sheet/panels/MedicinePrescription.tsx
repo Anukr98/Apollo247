@@ -332,6 +332,7 @@ const useStyles = makeStyles((theme: Theme) =>
         fontWeight: 600,
       },
       '& h2': {
+        textTransform: 'uppercase',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -355,7 +356,6 @@ const useStyles = makeStyles((theme: Theme) =>
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        textTransform: 'uppercase',
         '& button': {
           position: 'static',
           minWidth: 'auto',
@@ -753,9 +753,6 @@ const useStyles = makeStyles((theme: Theme) =>
           lineHeight: '16px',
         },
         '& button': {
-          position: 'absolute',
-          top: 10,
-          right: 0,
           padding: 0,
         },
       },
@@ -780,26 +777,13 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 10,
       right: 10,
       '& button': {
-        position: 'static !important',
+        position: 'static',
       },
     },
     mb10: {
       marginBottom: 10,
     },
     selectedList: {
-      height: 300,
-      overflow: 'auto',
-
-      '&::-webkit-scrollbar': {
-        width: 2,
-      },
-      '&::-webkit-scrollbar-track': {
-        background: 'transparent',
-        margin: '0 10px 0 0',
-      },
-      '&::-webkit-scrollbar-thumb': {
-        background: '#888',
-      },
       '& li': {
         padding: '10px 40px 10px 10px !important',
         background: 'rgba(0,0,0,0.02)',
@@ -818,6 +802,16 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 12,
       color: '#FC9916',
       fontWeight: 600,
+    },
+    addList: {
+      '& li': {
+        '& h5': {
+          width: 160,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        },
+      },
     },
   })
 );
@@ -949,6 +943,9 @@ export const MedicinePrescription: React.FC = () => {
   >([]);
   const [medicineCopyArr, setMedicineCopyArr] = React.useState<
     (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null
+  >([]);
+  const [medicineCopyAddedArr, setMedicineCopyAddedArr] = React.useState<
+    GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList[]
   >([]);
 
   const [favMedicineName, setFavMedicineName] = React.useState<string>('');
@@ -2579,6 +2576,12 @@ export const MedicinePrescription: React.FC = () => {
   const medicineCopyHtml = (type: string) => {
     const isPresent = type === 'present';
     const existedMedicineArr =
+      medicineCopyAddedArr && medicineCopyAddedArr.length > 0
+        ? medicineCopyAddedArr.map(function(e: any) {
+            return e.medicineName;
+          })
+        : [];
+    const existedAddedMedicineArr =
       selectedMedicinesArr && selectedMedicinesArr.length > 0
         ? selectedMedicinesArr.map(function(e: any) {
             return e.medicineName;
@@ -2652,7 +2655,8 @@ export const MedicinePrescription: React.FC = () => {
         }
 
         const actionButtons =
-          existedMedicineArr.indexOf(medicine.medicineName) > -1
+          existedMedicineArr.indexOf(medicine.medicineName) > -1 ||
+          existedAddedMedicineArr.indexOf(medicine.medicineName) > -1
             ? [
                 <AphButton variant="contained" color="primary" classes={{ root: classes.addedBtn }}>
                   Added
@@ -2664,7 +2668,7 @@ export const MedicinePrescription: React.FC = () => {
                   color="primary"
                   classes={{ root: classes.updateSymptom }}
                   onClick={() => {
-                    saveMedicineAction(medicine);
+                    setMedicineCopyAddedArr([...medicineCopyAddedArr, medicine]);
                   }}
                 >
                   <img src={require('images/add_doctor_white.svg')} alt="" />
@@ -2673,7 +2677,9 @@ export const MedicinePrescription: React.FC = () => {
         const genericName = (
           <span>
             {medicine.includeGenericNameInPrescription! &&
-              medicine.genericName!.trim().length > 0 && (
+              medicine.genericName &&
+              medicine.genericName !== null &&
+              medicine.genericName.trim().length > 0 && (
                 <h6>{`Contains ${medicine.genericName}`}</h6>
               )}
           </span>
@@ -2981,9 +2987,9 @@ export const MedicinePrescription: React.FC = () => {
         : [];
 
     return (
-      medicines &&
-      medicines.length > 0 &&
-      medicines!.map((_medicine: any, index: number) => {
+      medicineCopyAddedArr &&
+      medicineCopyAddedArr.length > 0 &&
+      medicineCopyAddedArr!.map((_medicine: any, index: number) => {
         const medicine = _medicine!;
         const forHtml = medicine.medicineConsumptionDurationInDays
           ? ` for ${Number(medicine.medicineConsumptionDurationInDays)}`
@@ -3053,7 +3059,15 @@ export const MedicinePrescription: React.FC = () => {
                 variant="contained"
                 color="primary"
                 classes={{ root: classes.updateSymptom }}
-                onClick={() => deletemedicine(index)}
+                onClick={() => {
+                  setMedicineCopyAddedArr(
+                    medicineCopyAddedArr.filter(
+                      (item) =>
+                        item.medicineName.toLowerCase().trim() !==
+                        medicine.medicineName.toLowerCase().trim()
+                    )
+                  );
+                }}
               >
                 <Typography className={classes.removeBtn}>REMOVE</Typography>
               </AphButton>,
@@ -3094,90 +3108,86 @@ export const MedicinePrescription: React.FC = () => {
               )}
           </span>
         );
-        if (addedMedicineArr.indexOf(medicine.medicineName) > -1) {
-          return (
-            <li style={{ position: 'relative' }} className={classes.added} key={index}>
-              {medicine.medicineCustomDetails ? (
-                <div className={classes.medicineCard}>
-                  {isPresent ? (
-                    <h5>{medicine.medicineName}</h5>
-                  ) : (
-                    <h5>
-                      <s>{medicine.medicineName}</s>
-                    </h5>
-                  )}
-                  {genericName}
+        return (
+          <li style={{ position: 'relative' }} className={classes.added} key={index}>
+            {medicine.medicineCustomDetails ? (
+              <div className={classes.medicineCard}>
+                {isPresent ? (
+                  <h5>{medicine.medicineName}</h5>
+                ) : (
+                  <h5>
+                    <s>{medicine.medicineName}</s>
+                  </h5>
+                )}
+                {genericName}
 
-                  {!isPresent && (
-                    <p className={classes.removed}>This medicine has been discontinued </p>
-                  )}
+                {!isPresent && (
+                  <p className={classes.removed}>This medicine has been discontinued </p>
+                )}
 
-                  {medicine.medicineCustomDetails && <h6>{medicine.medicineCustomDetails}</h6>}
-                </div>
-              ) : (
-                <div className={classes.medicineCard}>
-                  {isPresent ? (
-                    <h5>{medicine.medicineName}</h5>
-                  ) : (
-                    <h5>
-                      <s>{medicine.medicineName}</s>
-                    </h5>
-                  )}
-                  {genericName}
-                  {!isPresent && (
-                    <p className={classes.removed}>This medicine has been discontinued </p>
-                  )}
-                  <h6>
-                    {`${
-                      medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
-                    } ${dosageHtml.toLowerCase()}${
-                      timesString.length > 0 &&
-                      medicine.medicineCustomDosage &&
-                      medicine.medicineCustomDosage !== ''
-                        ? ' (' + timesString + ') '
-                        : ' '
-                    }${
-                      medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
-                        ? ''
+                {medicine.medicineCustomDetails && <h6>{medicine.medicineCustomDetails}</h6>}
+              </div>
+            ) : (
+              <div className={classes.medicineCard}>
+                {isPresent ? (
+                  <h5>{medicine.medicineName}</h5>
+                ) : (
+                  <h5>
+                    <s>{medicine.medicineName}</s>
+                  </h5>
+                )}
+                {genericName}
+                {!isPresent && (
+                  <p className={classes.removed}>This medicine has been discontinued </p>
+                )}
+                <h6>
+                  {`${
+                    medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
+                  } ${dosageHtml.toLowerCase()}${
+                    timesString.length > 0 &&
+                    medicine.medicineCustomDosage &&
+                    medicine.medicineCustomDosage !== ''
+                      ? ' (' + timesString + ') '
+                      : ' '
+                  }${
+                    medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
+                      ? ''
+                      : medicine.medicineFrequency
+                      ? medicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                        ? 'STAT (Immediately)'
                         : medicine.medicineFrequency
-                        ? medicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
-                          ? 'STAT (Immediately)'
-                          : medicine.medicineFrequency
-                              .split('_')
-                              .join(' ')
-                              .toLowerCase()
-                        : dosageFrequency[0].id
                             .split('_')
                             .join(' ')
                             .toLowerCase()
-                    }
+                      : dosageFrequency[0].id
+                          .split('_')
+                          .join(' ')
+                          .toLowerCase()
+                  }
                 ${duration} ${whenString.length > 0 ? whenString : ''} ${
-                      timesString.length > 0 &&
-                      medicine.medicineCustomDosage &&
-                      medicine.medicineCustomDosage !== ''
-                        ? ''
-                        : timesString
-                    }
+                    timesString.length > 0 &&
+                    medicine.medicineCustomDosage &&
+                    medicine.medicineCustomDosage !== ''
+                      ? ''
+                      : timesString
+                  }
                 `}
-                  </h6>
-                  {medicine.routeOfAdministration && (
-                    <h6>{`${
-                      medicine.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'
-                    }: ${medicine.routeOfAdministration
-                      .split('_')
-                      .join(' ')
-                      .toLowerCase()}`}</h6>
-                  )}
-                  {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
-                </div>
-              )}
+                </h6>
+                {medicine.routeOfAdministration && (
+                  <h6>{`${
+                    medicine.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'
+                  }: ${medicine.routeOfAdministration
+                    .split('_')
+                    .join(' ')
+                    .toLowerCase()}`}</h6>
+                )}
+                {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
+              </div>
+            )}
 
-              {caseSheetEdit && <div className={classes.addRemove}>{actionButtons}</div>}
-            </li>
-          );
-        } else {
-          return null;
-        }
+            {caseSheetEdit && <div>{actionButtons}</div>}
+          </li>
+        );
       })
     );
   };
@@ -3402,7 +3412,7 @@ export const MedicinePrescription: React.FC = () => {
               onClick={() => {
                 handlePastMedicinesTabs(0);
                 setIsPrevMedDialogOpen(true);
-                if(pastAppointmentsArr && pastAppointmentsArr.length > 0){
+                if (pastAppointmentsArr && pastAppointmentsArr.length > 0) {
                   getMedicineCopy(pastAppointmentsArr[0]);
                 }
               }}
@@ -3411,11 +3421,7 @@ export const MedicinePrescription: React.FC = () => {
               <span className={classes.lowercase}>x</span>
             </AphButton>
           ) : (
-            <span
-              className={classes.noPrevPresc}
-            >
-              No previous prescriptions
-            </span>
+            <span className={classes.noPrevPresc}>No previous prescriptions</span>
           )}
         </>
       )}
@@ -4038,9 +4044,7 @@ export const MedicinePrescription: React.FC = () => {
                           item.appointmentDateTime === selectedDate ? classes.dateTabsActive : ''
                         }`}
                         onClick={() => {
-                          getMedicineCopy(
-                            item
-                          );
+                          getMedicineCopy(item);
                         }}
                       >
                         {`${format(new Date(item.appointmentDateTime), 'dd  MMMMMMMMMMMM')}`}
@@ -4072,19 +4076,33 @@ export const MedicinePrescription: React.FC = () => {
                             className={classes.selectedDate}
                             onClick={() => {
                               const addedMedicineArr =
+                                medicineCopyAddedArr && medicineCopyAddedArr.length > 0
+                                  ? medicineCopyAddedArr.map(function(e: any) {
+                                      return e.medicineName.toLowerCase();
+                                    })
+                                  : [];
+                              const existedAddedMedicineArr =
                                 selectedMedicinesArr && selectedMedicinesArr.length > 0
                                   ? selectedMedicinesArr.map(function(e: any) {
                                       return e.medicineName;
                                     })
                                   : [];
-                              medicineCopyArr.forEach((medicine: any, index: number) => {
-                                if (
-                                  medicine &&
-                                  addedMedicineArr.indexOf(medicine.medicineName) < 0
-                                ) {
-                                  saveMedicineAction(medicine);
-                                }
-                              });
+                              const medicineFilterCopyArr =
+                                medicineCopyArr && medicineCopyArr.length > 0
+                                  ? medicineCopyArr.filter(function(e: any) {
+                                      return (
+                                        addedMedicineArr!.indexOf(e.medicineName.toLowerCase()) <
+                                          0 &&
+                                        existedAddedMedicineArr!.indexOf(
+                                          e.medicineName.toLowerCase()
+                                        ) < 0
+                                      );
+                                    })
+                                  : [];
+                              const medCopyAddedArray = medicineCopyAddedArr.concat(
+                                medicineFilterCopyArr
+                              );
+                              setMedicineCopyAddedArr(medCopyAddedArray);
                             }}
                           >
                             <img src={require('images/selected.svg')} alt="" />
@@ -4102,7 +4120,7 @@ export const MedicinePrescription: React.FC = () => {
                             <Typography>Added Medicine</Typography>
                           </div>
                           <div className={classes.medicineContent}>
-                            <ul className={classes.medicineList}>
+                            <ul className={`${classes.medicineList} ${classes.addList}`}>
                               {/* Add 'added' class to li of this ul for the color as per design  */}
                               {medicineAddedCopyHtml('present')}
                               {/* {medicineHtml('removed')} */}
@@ -4133,6 +4151,17 @@ export const MedicinePrescription: React.FC = () => {
               variant="contained"
               color="primary"
               onClick={() => {
+                const addedMedicineArr =
+                  selectedMedicinesArr && selectedMedicinesArr.length > 0
+                    ? selectedMedicinesArr.map(function(e: any) {
+                        return e.medicineName;
+                      })
+                    : [];
+                medicineCopyAddedArr.forEach((medicine: any, index: number) => {
+                  if (medicine && addedMedicineArr.indexOf(medicine.medicineName) < 0) {
+                    saveMedicineAction(medicine);
+                  }
+                });
                 setIsPrevMedDialogOpen(false);
               }}
             >

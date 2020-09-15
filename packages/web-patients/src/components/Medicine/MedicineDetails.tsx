@@ -51,6 +51,10 @@ const useStyles = makeStyles((theme: Theme) => {
       maxWidth: 1064,
       margin: 'auto',
     },
+    visibilityHidden: {
+      visibility: 'hidden',
+      position: 'absolute',
+    },
     medicineDetailsPage: {
       backgroundColor: '#f7f8f5',
       [theme.breakpoints.down('xs')]: {
@@ -839,10 +843,8 @@ export const MedicineDetails: React.FC = (props) => {
   const history = useHistory();
 
   useEffect(() => {
-    if (!medicineDetails) {
-      getMedicineDetails(params.sku);
-    }
-  }, [medicineDetails]);
+    getMedicineDetails(params.sku);
+  }, [params.sku]);
 
   useEffect(() => {
     if (params && params.searchText) {
@@ -990,9 +992,12 @@ export const MedicineDetails: React.FC = (props) => {
     if (typeof overView !== 'string') {
       return data.map((item, index) => (
         <div
-          style={{ display: tabValue === index ? 'block' : 'none' }}
           key={index}
-          className={classes.tabContainer}
+          className={
+            tabValue === index
+              ? `${classes.tabContainer}`
+              : `${classes.tabContainer} ${classes.visibilityHidden}`
+          }
         >
           {item.value.split(';').map((description, idx) => {
             if (item.key === 'Usage') {

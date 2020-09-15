@@ -506,6 +506,7 @@ export const ChatRoom: React.FC = () => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
   const [jrDoctorJoined, setJrDoctorJoined] = useState<boolean>(false);
+  const [srDoctorJoined, setSrDoctorJoined] = useState<boolean>(false);
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
   const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
@@ -514,6 +515,7 @@ export const ChatRoom: React.FC = () => {
   const [apiLoading, setApiLoading] = useState<boolean>(false);
   const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
   const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
+  const [isConsultCompleted, setIsConsultCompleted] = useState<boolean>(false);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const patientId = (currentPatient && currentPatient.id) || '';
@@ -580,10 +582,7 @@ export const ChatRoom: React.FC = () => {
 
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
     setIsNextSlotLoading(true);
-    const todayDate = moment
-      .utc(date)
-      .local()
-      .format('YYYY-MM-DD');
+    const todayDate = moment.utc(date).local().format('YYYY-MM-DD');
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
         try {
@@ -669,6 +668,8 @@ export const ChatRoom: React.FC = () => {
                     handleRescheduleOpen={handleRescheduleOpen}
                     doctorDetails={data}
                     appointmentDetails={appointmentDetails}
+                    srDoctorJoined={srDoctorJoined}
+                    isConsultCompleted={isConsultCompleted}
                   />
                 )}
               </div>
@@ -677,10 +678,11 @@ export const ChatRoom: React.FC = () => {
                   {displayId && <span className={classes.caseNumber}>Case #{displayId} </span>}
                   {appointmentDetails &&
                     appointmentDetails.status !== STATUS.CANCELLED &&
-                    appointmentDetails.status !== STATUS.COMPLETED && (
+                    appointmentDetails.status !== STATUS.COMPLETED &&
+                    !srDoctorJoined && (
                       <div className={classes.headerActions}>
                         <AphButton
-                          disabled={appointmentDetails.isSeniorConsultStarted}
+                          disabled={appointmentDetails.isSeniorConsultStarted || srDoctorJoined}
                           classes={{
                             root: classes.viewButton,
                             disabled: classes.disabledButton,
@@ -699,6 +701,7 @@ export const ChatRoom: React.FC = () => {
                   <ChatWindow
                     doctorDetails={data}
                     jrDoctorJoined={jrDoctorJoined}
+                    setSrDoctorJoined={setSrDoctorJoined}
                     setJrDoctorJoined={setJrDoctorJoined}
                     isModalOpen={isModalOpen}
                     setIsModalOpen={setIsModalOpen}
@@ -706,6 +709,7 @@ export const ChatRoom: React.FC = () => {
                     availableNextSlot={nextAvailableSlot}
                     rescheduleAPI={rescheduleAPI}
                     appointmentDetails={appointmentDetails}
+                    setIsConsultCompleted={setIsConsultCompleted}
                   />
                 )}
               </div>
@@ -756,9 +760,9 @@ export const ChatRoom: React.FC = () => {
                     ) : (
                       <h6>
                         {'Since you have already rescheduled 3 times with Dr. '}
-                        {`${data &&
-                          data.getDoctorDetailsById &&
-                          data.getDoctorDetailsById.fullName}`}{' '}
+                        {`${
+                          data && data.getDoctorDetailsById && data.getDoctorDetailsById.fullName
+                        }`}{' '}
                         {`, We will consider this a new paid appointment.`}
                       </h6>
                     )}
