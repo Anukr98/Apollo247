@@ -23,28 +23,57 @@
     </script>
 
     <link
+      rel="preload"
       href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,400,500,600,700&display=swap"
-      rel="stylesheet"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript
+      ><link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,400,500,600,700&display=swap"
+    /></noscript>
+
     <link
-      rel="stylesheet"
-      type="text/css"
-      charset="UTF-8"
+      rel="preload"
       href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.min.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript
+      ><link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.min.css"
+    /></noscript>
+
     <link
-      rel="stylesheet"
-      type="text/css"
+      rel="preload"
       href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick-theme.min.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript
+      ><link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick-theme.min.css"
+    /></noscript>
+
     <link
-      rel="stylesheet"
-      type="text/css"
+      rel="preload"
       href="https://cdn.jsdelivr.net/npm/react-image-gallery@0.9.1/styles/css/image-gallery.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript
+      ><link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/react-image-gallery@0.9.1/styles/css/image-gallery.css"
+    /></noscript>
+
     <link rel="shortcut icon" href="favicon.svg" type="image/svg/ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no" />
-    <style>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <style type="text/css">
       a {
         text-decoration: none;
         color: inherit;
@@ -54,60 +83,6 @@
         padding-right: 0 !important;
       }
 
-      /* .OT_publisher .OT_edge-bar-item,
-      .OT_subscriber .OT_edge-bar-item {
-        display: none !important;
-      } */
-    </style>
-    <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
-    <script id="_webengage_script_tag" type="text/javascript">
-      var webengage;
-      const licenseCode = '<%= licenseCode %>';
-      !(function(w, e, b, n, g) {
-        function o(e, t) {
-          e[t[t.length - 1]] = function() {
-            r.__queue.push([t.join('.'), arguments]);
-          };
-        }
-        var i,
-          s,
-          r = w[b],
-          z = ' ',
-          l = 'init options track screen onReady'.split(z),
-          a = 'feedback survey notification'.split(z),
-          c = 'options render clear abort'.split(z),
-          p = 'Open Close Submit Complete View Click'.split(z),
-          u = 'identify login logout setAttribute'.split(z);
-        if (!r || !r.__v) {
-          for (w[b] = r = { __queue: [], __v: '6.0', user: {} }, i = 0; i < l.length; i++)
-            o(r, [l[i]]);
-          for (i = 0; i < a.length; i++) {
-            for (r[a[i]] = {}, s = 0; s < c.length; s++) o(r[a[i]], [a[i], c[s]]);
-            for (s = 0; s < p.length; s++) o(r[a[i]], [a[i], 'on' + p[s]]);
-          }
-          for (i = 0; i < u.length; i++) o(r.user, ['user', u[i]]);
-          setTimeout(function() {
-            var f = e.createElement('script'),
-              d = e.getElementById('_webengage_script_tag');
-            (f.type = 'text/javascript'),
-              (f.async = !0),
-              (f.src =
-                ('https:' == e.location.protocol
-                  ? 'https://widgets.in.webengage.com'
-                  : 'http://widgets.in.webengage.com') + '/js/webengage-min-v-6.0.js'),
-              d.parentNode.insertBefore(f, d);
-          });
-        }
-      })(window, document, 'webengage');
-      webengage.init(licenseCode);
-    </script>
-  </head>
-
-  <body>
-    <noscript>Your browser does not support JavaScript!</noscript>
-    <div id="root"></div>
-
-    <style>
       .OT_subscriber {
         width: 100% !important;
         min-height: calc(100vh - 186px) !important;
@@ -152,5 +127,52 @@
         height: auto !important;
       }
     </style>
+  </head>
+
+  <body>
+    <noscript>Your browser does not support JavaScript!</noscript>
+    <div id="root"></div>
+
+    <script id="_webengage_script_tag" type="text/javascript" async defer>
+      var webengage;
+      const licenseCode = '<%= licenseCode %>';
+      !(function(w, e, b, n, g) {
+        function o(e, t) {
+          e[t[t.length - 1]] = function() {
+            r.__queue.push([t.join('.'), arguments]);
+          };
+        }
+        var i,
+          s,
+          r = w[b],
+          z = ' ',
+          l = 'init options track screen onReady'.split(z),
+          a = 'feedback survey notification'.split(z),
+          c = 'options render clear abort'.split(z),
+          p = 'Open Close Submit Complete View Click'.split(z),
+          u = 'identify login logout setAttribute'.split(z);
+        if (!r || !r.__v) {
+          for (w[b] = r = { __queue: [], __v: '6.0', user: {} }, i = 0; i < l.length; i++)
+            o(r, [l[i]]);
+          for (i = 0; i < a.length; i++) {
+            for (r[a[i]] = {}, s = 0; s < c.length; s++) o(r[a[i]], [a[i], c[s]]);
+            for (s = 0; s < p.length; s++) o(r[a[i]], [a[i], 'on' + p[s]]);
+          }
+          for (i = 0; i < u.length; i++) o(r.user, ['user', u[i]]);
+          setTimeout(function() {
+            var f = e.createElement('script'),
+              d = e.getElementById('_webengage_script_tag');
+            (f.type = 'text/javascript'),
+              (f.async = !0),
+              (f.src =
+                ('https:' == e.location.protocol
+                  ? 'https://widgets.in.webengage.com'
+                  : 'http://widgets.in.webengage.com') + '/js/webengage-min-v-6.0.js'),
+              d.parentNode.insertBefore(f, d);
+          });
+        }
+      })(window, document, 'webengage');
+      webengage.init(licenseCode);
+    </script>
   </body>
 </html>

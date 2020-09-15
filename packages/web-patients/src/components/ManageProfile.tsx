@@ -7,6 +7,7 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import React, { useRef, useEffect } from 'react';
 import _isEmpty from 'lodash/isEmpty';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { LazyIntersection } from './lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -98,7 +99,7 @@ export const ManageProfile: React.FC = (props) => {
             onClick={() => (isProtected ? protectWithLoginPopup() : setIsPopoverOpen(true))}
             title={'Need Help?'}
           >
-            <img src={require('images/ic-mascot.png')} alt="Need Help" title="Need Help" />
+            <LazyIntersection src={require('images/ic-mascot.png')} alt="Need Help" />
             {isSigningIn && (
               <CircularProgress style={{ position: 'absolute', top: 17, left: 17 }} />
             )}
