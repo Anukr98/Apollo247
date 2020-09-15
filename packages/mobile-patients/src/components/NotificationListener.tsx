@@ -776,30 +776,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           const userName = data.patientName;
           const doctorType = data.doctorType;
           aphConsole.log('chat_room');
-          showAphAlert!({
-            title: `Hi ${userName} :)`,
-            description: `Dr. ${
-              doctorType == DoctorType.JUNIOR ? doctorName + '`s' + ' team doctor' : doctorName
-            } is waiting to start your consultation. Please proceed to the Consult Room`,
-            unDismissable: true,
-            CTAs: [
-              {
-                text: 'CANCEL',
-                type: 'white-button',
-                onPress: () => {
-                  hideAphAlert && hideAphAlert();
-                },
-              },
-              {
-                text: 'CONSULT ROOM',
-                type: 'orange-button',
-                onPress: () => {
-                  console.log('data.appointmentId', data.appointmentId);
-                  getAppointmentData(data.appointmentId, notificationType, '', '');
-                },
-              },
-            ],
-          });
+          getAppointmentData(data.appointmentId, notificationType, '', '');
         }
         break;
 
@@ -810,15 +787,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           const doctorName = data.doctorName;
           const userName = data.patientName;
           // setLoading;
-          getCallStatus(
-            data.appointmentCallId,
-            data.appointmentId,
-            notificationType,
-            data.callType,
-            doctorName,
-            userName,
-            data.doctorType
-          );
+          getAppointmentData(data.appointmentId, notificationType, data.callType, '');
         }
         break;
 
@@ -890,8 +859,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         .notifications()
         .displayNotification(localNotification)
         .catch((err) => console.error(err));
-
-      processNotification(notification);
+      if (notification.data.type !== 'chat_room' && notification.data.type !== 'call_started') {
+        processNotification(notification);
+      }
     });
 
     /*
