@@ -41,6 +41,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     quoteId: String
     shopId: String
     shopAddress: String
+    tatType: String
     estimatedAmount: Float
     patientId: ID!
     deliveryType: MEDICINE_DELIVERY_TYPE!
@@ -82,6 +83,9 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     isPrescriptionNeeded: Int
     mou: Int
     isMedicine: String
+    itemValue: Float
+    itemDiscount: Float
+    specialPrice: Float
   }
 
   type MedicineOrderOMSShipment {
@@ -536,7 +540,13 @@ const getMedicineOrderOMSDetails: Resolver<
             reasonCode.statusMessage = '';
           }
         } catch (e) {
-          console.log(e);
+          log(
+            'profileServiceLogger',
+            'getMedicineOrderOMSDetails error',
+            'getMedicineOrderOMSDetails()->CATCH_BLOCK',
+            '',
+            JSON.stringify(e)
+          );
         }
       }
     }
@@ -664,7 +674,6 @@ const updateMedicineDataRedis: Resolver<
   if (process.env.NODE_ENV != 'local') {
     fileDirectory = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
-  console.log(fileDirectory + '/Online_Master.xlsx');
 
   const rowData = excelToJson({
     sourceFile: fileDirectory + '/Online_Master.xlsx',
@@ -911,7 +920,13 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
             reasonCode.statusMessage = '';
           }
         } catch (e) {
-          console.log(e);
+          log(
+            'profileServiceLogger',
+            'getMedicineOrderOMSDetailsWithAddress error',
+            'getMedicineOrderOMSDetailsWithAddress()->CATCH_BLOCK',
+            '',
+            JSON.stringify(e)
+          );
         }
       }
     }

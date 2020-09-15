@@ -19,6 +19,8 @@ import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
 import { format, addMinutes } from 'date-fns';
+import { syncInventory } from 'helpers/inventorySync';
+import { SYNC_TYPE } from 'types/inventorySync';
 
 export const medicineOrderCancelOMSTypeDefs = gql`
   input MedicineOrderCancelOMSInput {
@@ -157,6 +159,11 @@ const cancelMedicineOrderOMS: Resolver<
     },
   };
   postEvent(postBody);
+
+  orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
+    orderDetails.id
+  );
+  syncInventory(orderDetails, SYNC_TYPE.CANCEL);
 
   return { orderStatus: MEDICINE_ORDER_STATUS.CANCEL_REQUEST };
 };

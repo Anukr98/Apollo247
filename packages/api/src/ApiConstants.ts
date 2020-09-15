@@ -164,7 +164,7 @@ export enum ApiConstants {
   DAILY_APPOINTMENT_SUMMARY_RESPONSE = 'Daily Appointment summaries have been sent to {0} Doctor(s) successfully',
   FOLLOW_UP_NOTIFICATION_RESPONSE = 'Follow up notifications sent to {0} patients successfully',
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
-  PRESCRIPTION_READY_BODY = 'Hi {0}! Your prescription from consultation with Doctor {1} for appointment {2} on {3} is ready :)',
+  PRESCRIPTION_READY_BODY = 'Namaste {0}, {1} has shared the prescription with you.',
 
   REFERRAL_CODE_TEXT = 'Hi {0}, Use code "CARE247" to avail discount up to Rs. 149  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
   REFERRAL_CODE_TEXT_WITH_COUPON = 'Hi {0}, Use code "{1}" to avail discount up to Rs. 299  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/XF7MWPebtkw',
@@ -286,6 +286,7 @@ export enum ApiConstants {
   KALEYRA_OTP_SENDER = 'APOLLO',
   KALEYRA_OTP_SMS_METHOD = 'sms',
   OTP_SUCCESS_MESSAGE = 'OTP sent to the mobile number successfully',
+  OTP_NON_WHITELISTED_NUMBER = 'OTP cannot be sent to non-whitelisted mobile number for lower environment',
   OTP_FAIL_MESSAGE = 'OTP sending failed',
   INVALID_RESEND_MESSAGE = 'Invalid resend details',
   NOTIFICATION_MSG_FOR_DR_CALL = 'Hi {0}, {1} will call you from the number {2}. Please pick up the call to connect with the doctor.',
@@ -365,7 +366,7 @@ export enum ApiConstants {
   MEDICINE_TIMINGS = '(morning, noon, evening & night)',
   FREE_CHAT_DAYS = 7,
   CHAT_DAYS_LIMIT = 30,
-  AUTO_SUBMIT_BY_SD_SMS_TEXT = 'Hi {0}, Dr. {1} has fast-tracked your consultation, to join the consultation, please click here {2}.',
+  AUTO_SUBMIT_BY_SD_SMS_TEXT = 'Hi {0}, Dr. {1} has fast-tracked your consultation. To join the consultation, please click here {2}.',
   DOCTOR_CHAT_SMS_TEXT = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply.',
   DOCTOR_CHAT_SMS_LAST_DAY = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',
   CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
@@ -390,7 +391,9 @@ export enum ApiConstants {
   DOCTOR_DEEPLINK_CONSTANT = 'apollopatients://Doctor?',
   DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO = 'AEkA',
   DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO = 'MGY5',
-
+  PATIENT_APPT_DEEPLINK = 'apollopatients://Consult',
+  PATIENT_CHATROOM_DEEPLINK = 'apollopatients://ChatRoom?',
+  PATIENT_PRESCRIPTION_DEEPLINK = 'apollopatients://ConsultDetails?',
   // whatsapp constants
   WEB_ENGAGE_AUTHORIZATION = 'fe30a7fd-5dd7-48a8-9ce0-be85b5eb4de7',
 
@@ -445,19 +448,19 @@ export enum ApiConstants {
   MEDICINE_ORDER_REFUND_PROCESSED_EVENT_NAME = 'Refund Processed',
   MEDICINE_ORDER_REFUND_SUCCESSFUL_EVENT_NAME = 'Refund Successful',
 
-  WHATSAPP_SD_CONSULT_REMINDER_15 = 'inf_sd_consult_reminder_15_min',
-  WHATSAPP_SD_CHAT_NOTIFICATION_ID = 'inf_sd_chat_notification',
-  WHATSAPP_SD_OTP = 'inf_sd_otp_message',
-  WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation',
+  WHATSAPP_SD_CONSULT_REMINDER_15 = 'inf_sd_consult_reminder_15_min_namaste',
+  WHATSAPP_SD_CHAT_NOTIFICATION_ID = 'inf_sd_chat_notification_namaste1',
+  WHATSAPP_SD_OTP = 'inf_sd_otp_message_namaste',
+  WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation_namaste1',
   WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
-  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_button_2',
+  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_namaste3',
 
   ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE = 'R000247',
 
   PARTNER_SBI = 'SBIYONO',
 
-  PRESCRIPTION_DEEPLINK_PLACEHOLDER = '<caseSheetId>',
-  PRESCRIPTION_CLICK_HERE = 'Click here:',
+  PRESCRIPTION_DEEPLINK_PLACEHOLDER = '<appointmentId>',
+  PRESCRIPTION_CLICK_HERE = 'You can now access it from here:',
 }
 
 export enum PATIENT_REPO_RELATIONS {

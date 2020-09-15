@@ -49,7 +49,10 @@ const bugsnagClient = bugsnag({
 const sessionClient = bugsnagClient.startSession();
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
-  return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
+  return (promise.then(
+    (data: R) => [data, null],
+    (err: E) => [null, err]
+  ) as any) as [R, E];
 }
 
 export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
@@ -82,6 +85,8 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
     | ((p: GetDoctorDetails_getDoctorDetails_doctorSecretary_secretary | null) => void)
     | null;
   sessionClient: any;
+  chatDays: number | null;
+  setChatDays: (days: number) => void;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -111,6 +116,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
   doctorSecretary: null,
   addDoctorSecretary: null,
   sessionClient: sessionClient,
+  chatDays: null,
+  setChatDays: null,
 });
 const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -177,6 +184,8 @@ export const AuthProvider: React.FC = (props) => {
   const [doctorSecretary, addDoctorSecretary] = useState<AuthContextProps['doctorSecretary']>(null);
 
   const [currentUserId, setCurrentUserId] = useState<AuthContextProps['currentUserId']>(null);
+  const [chatDays, setChatDays] = useState<AuthContextProps['chatDays']>(null);
+
   const loginApiCall = async (mobileNumber: string) => {
     const [loginResult, loginError] = await wait(
       apolloClient.mutate<Login, LoginVariables>({
@@ -494,6 +503,7 @@ export const AuthProvider: React.FC = (props) => {
             return;
           }
           const doctors = signInResult.data.getDoctorDetails;
+          setChatDays(doctors.chatDays);
           if (
             doctors &&
             doctors.onlineStatus === DOCTOR_ONLINE_STATUS.AWAY &&
@@ -555,6 +565,8 @@ export const AuthProvider: React.FC = (props) => {
             doctorSecretary,
             addDoctorSecretary,
             sessionClient,
+            chatDays,
+            setChatDays,
           }}
         >
           {props.children}

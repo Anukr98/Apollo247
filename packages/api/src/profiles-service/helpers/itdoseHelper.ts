@@ -13,7 +13,6 @@ export const getToken = async (
     let token
     // get cache
     token = cache.get('token')
-    console.log("get cache ", token)
     if (token) {
         return token
     }
@@ -39,7 +38,6 @@ export const getToken = async (
     const getToken = await fetch(apiUrl, options)
         .then((res) => res.json())
         .catch((error) => {
-            console.log(error)
             log(
                 'profileServiceLogger',
                 'ITdose_LOGIN_API',
@@ -62,7 +60,6 @@ export const getToken = async (
     const expirationInMS = differenceInMilliseconds(parsedDate, new Date())
 
     // set cache with expiration
-    console.log('cache set with expiration', expirationInMS)
     cache.set('token', token, expirationInMS)
 
     return token

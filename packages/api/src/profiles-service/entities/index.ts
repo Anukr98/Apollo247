@@ -27,7 +27,6 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
 
-
 export interface PaginateParams {
   take?: number;
   skip?: number;
@@ -380,6 +379,9 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({ nullable: true })
   siteId: string;
+
+  @Column({ nullable: true })
+  tatType: string;
 
   @Column({ nullable: true })
   shopId: string;
@@ -1237,15 +1239,13 @@ export class Patient extends BaseEntity {
   @AfterUpdate()
   async setPatientCache() {
     try {
-      console.log(`Setting cache`);
+      log('profileServiceLogger', 'setting Cache', 'profilesService->setPatientCache()', '', '');
       await setCache(
         `patient:${this.id}`,
         JSON.stringify(this),
         ApiConstants.CACHE_EXPIRATION_3600
       );
-    } catch (ex) {
-      console.log(`Exception #`, ex);
-    }
+    } catch (ex) {}
   }
 }
 //patient Ends
