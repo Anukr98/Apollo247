@@ -7259,6 +7259,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
         type={FEEDBACKTYPE.CONSULT}
         isVisible={showFeedback}
+        containerStyle={{ paddingTop: 100 }}
       />
       {loading && <Spinner />}
       {showPDF && (
