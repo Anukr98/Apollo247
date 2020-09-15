@@ -70,6 +70,4 @@ export interface GetCurrentPatients {
 export interface GetCurrentPatientsVariables {
   appVersion?: string | null;
   deviceType?: DEVICE_TYPE | null;
-  deviceToken?: string | null;
-  deviceOS?: string | null;
 }

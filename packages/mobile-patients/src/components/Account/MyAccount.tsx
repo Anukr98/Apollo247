@@ -293,7 +293,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
 
     const input = {
-      deviceToken: currentDeviceToken,
+      deviceToken: currentDeviceToken.deviceToken,
       patientId: currentPatient ? currentPatient && currentPatient.id : '',
     };
     console.log('deleteDeviceTokenInput', input);
