@@ -333,12 +333,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           ] || stateCode;
         const updateaddressInput: UpdatePatientAddressInput = {
           id: addressData.id,
-          addressLine1: addressLine1,
-          addressLine2: areaDetails,
+          addressLine1: addressLine1.trim(),
+          addressLine2: areaDetails.trim(),
           city: city || '',
           state: state || '',
           zipcode: pincode,
-          landmark: landMark,
+          landmark: landMark.trim() || '',
           mobileNumber: phoneNumber,
           addressType: addressType,
           otherAddressType: optionalAddress,
@@ -368,13 +368,13 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         ] || stateCode;
       const addressInput: Object = {
         id: userId,
-        addressLine1: addressLine1,
-        addressLine2: areaDetails,
+        addressLine1: addressLine1.trim(),
+        addressLine2: areaDetails.trim(),
         city: city || '',
         state: state || '',
         /** look for the area details, attribute & name and phone number  ~ mobileNumber*/
         zipcode: pincode,
-        landmark: landMark || '',
+        landmark: landMark.trim() || '',
         mobileNumber: phoneNumber, //with respect to address
         addressType: addressType,
         otherAddressType: optionalAddress,
@@ -546,12 +546,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           ] || stateCode;
         const updateaddressInputForEdit: UpdatePatientAddressInput = {
           id: addressData.id,
-          addressLine1: addressLine1,
-          addressLine2: areaDetails,
+          addressLine1: addressLine1.trim(),
+          addressLine2: areaDetails.trim(),
           city: city || '',
           state: state || '',
           zipcode: pincode,
-          landmark: landMark,
+          landmark: landMark.trim() || '',
           mobileNumber: phoneNumber,
           addressType: addressType,
           otherAddressType: optionalAddress,

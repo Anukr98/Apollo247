@@ -69,6 +69,7 @@ import { FileBig, GreenTickIcon } from '../ui/Icons';
 import { TextInputComponent } from '../ui/TextInputComponent';
 import { EPrescriptionCard } from '../ui/EPrescriptionCard';
 import { Spinner } from '../ui/Spinner';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -136,6 +137,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: theme.colors.CARD_BG,
     marginHorizontal: 20,
+  },
+  greenTickStyle: {
+    width: 20,
+    marginRight: 10,
+    marginLeft: 10,
+    paddingHorizontal: 8,
   },
 });
 
@@ -450,8 +457,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
         justifyContent: 'flex-end',
         marginVertical: 18,
       },
-      description:
-        'Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).',
+      description: string.Prescription_Success,
       unDismissable: true,
       CTAs: [
         {
@@ -555,14 +561,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
             value={item.title}
           />
         </View>
-        <GreenTickIcon
-          style={{
-            width: 20,
-            marginRight: 10,
-            marginLeft: 10,
-            paddingHorizontal: 8,
-          }}
-        />
+        <GreenTickIcon style={styles.greenTickStyle} />
       </View>
     );
   };

@@ -246,14 +246,12 @@ export const Maps: React.FC<MapProps> = (props) => {
       addressObject?.state,
       addressObject?.zipcode,
     ];
-    address = removeConsecutiveComma(newAddr.filter((v) => v).join(','))
-      .split(',')
-      .map((v) => v.trim())
-      .filter((item, idx, array) => array.indexOf(item) === idx)
-      .join(', ');
-    setAddress(address);
+
+    address = newAddr.filter(Boolean).join(', ');
+    address = address.replace(/,+/g, ',').replace(/(,\s*$)|(^,*)/, ''); //for replacing two consecutive comma
 
     setAddress(address);
+
     //check this condition for initial cases
     getLatLongFromAddress(address)
       .then(({ data }) => {
