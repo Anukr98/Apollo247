@@ -57,7 +57,7 @@ const postDoctorConsultEvent: Resolver<
   const consultsDb = getConnection();
   const appointmentRepo = consultsDb.getRepository(Appointment);
   const appointmentDetails = await appointmentRepo.findOne({
-    select: ['displayId', 'appointmentType'],
+    select: ['displayId', 'appointmentType', 'doctorId', 'patientId'],
     where: { id: doctorConsultEventInput.consultID },
   });
 
