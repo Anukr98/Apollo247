@@ -124,9 +124,8 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 0,
     },
     scheduleCalendar: {
-      // display: 'none',
       padding: 10,
-      minHeight: 278,
+      minHeight: 318,
       marginBottom: 0,
     },
     scheduleTimeSlots: {
