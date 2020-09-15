@@ -702,12 +702,12 @@ export const SearchByMedicine: React.FC = (props) => {
                 onClick={() =>
                   (window.location.href = clientRoutes.searchByMedicine(
                     'deals-of-the-day',
-                    'offer1'
+                    'exclusive-offers' // this is hardcoded as per the request.
                   ))
                 }
               >
                 <span>
-                  <img src={require('images/offer-icon.svg')} alt="" />
+                  <img src={require('images/offer-icon.svg')} alt="Offer Icon" />
                 </span>
                 <span>Special offers</span>
               </div>
