@@ -977,7 +977,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return (
       <View>
         <View style={{ margin: 20 }}>
-          {diffInDays! > 0 ? renderInconvenienceView() : null}
+          {diffInDays! < 0 ? renderInconvenienceView() : null}
           {statusList.map((order, index, array) => {
             return (
               <OrderProgressCard
