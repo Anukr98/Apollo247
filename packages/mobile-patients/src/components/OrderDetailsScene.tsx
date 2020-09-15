@@ -109,9 +109,6 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
-const INCONVENIENCE_TEXT =
-  'We are trying our best to expedite the process.\nSorry for the inconvenience';
-const CHAT_WITH_US_TEXT = 'CHAT WITH US';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -1083,15 +1080,21 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       <View>
         <View style={styles.cardStyle}>
           <PendingIcon style={styles.pendingIconStyle} />
-          <Text style={styles.inconvenienceText}>{INCONVENIENCE_TEXT}</Text>
+          <Text style={styles.inconvenienceText}>
+            {string.OrderSummery.tatBreach_InconvenienceText}
+          </Text>
         </View>
         <View style={styles.chatWithUsView}>
           <TouchableOpacity
             style={styles.chatWithUsTouch}
-            onPress={() => console.log('to whatsapp')}
+            onPress={() => {
+              Linking.openURL(
+                AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+              ).catch((err) => CommonBugFender(`${AppRoutes.OrderModifiedScreen}_TATBreach`, err));
+            }}
           >
             <WhatsAppIcon style={styles.whatsappIconStyle} />
-            <Text style={styles.chatWithUsText}>{CHAT_WITH_US_TEXT}</Text>
+            <Text style={styles.chatWithUsText}>{string.OrderSummery.chatWithUs}</Text>
           </TouchableOpacity>
         </View>
       </View>
