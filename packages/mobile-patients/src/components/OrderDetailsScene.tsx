@@ -49,6 +49,7 @@ import {
   postWebEngageEvent,
   reOrderMedicines,
   formatOrderAddress,
+  formatAddressWithLandmark,
   extractUrlFromString,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -294,7 +295,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       const address = addresses.find((a) => a.id == order!.patientAddressId);
       let formattedAddress = '';
       if (address) {
-        formattedAddress = formatOrderAddress(address);
+        formattedAddress = formatAddressWithLandmark(address);
       } else {
         const getPatientAddressByIdResponse = await client.query<
           getPatientAddressById,
@@ -303,7 +304,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           query: GET_PATIENT_ADDRESS_BY_ID,
           variables: { id: order!.patientAddressId },
         });
-        formattedAddress = formatOrderAddress(
+        formattedAddress = formatAddressWithLandmark(
           getPatientAddressByIdResponse.data.getPatientAddressById
             .patientAddress as savePatientAddress_savePatientAddress_patientAddress
         );

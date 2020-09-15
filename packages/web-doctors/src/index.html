@@ -24,6 +24,7 @@
     <script id="_webengage_script_tag" type="text/javascript">
       var webengage;
       const licenseCode = '<%= licenseCode %>';
+      console.log(licenseCode ? licenseCode : 'no key');
       !(function(w, e, b, n, g) {
         function o(e, t) {
           e[t[t.length - 1]] = function() {
