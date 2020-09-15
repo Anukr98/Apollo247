@@ -62,6 +62,7 @@ export interface MedicineOrderBilledItem {
 
 export interface MedicineProductsResponse {
   product_count: number;
+  count: number;
   products: MedicineProduct[];
   search_heading?: string;
 }

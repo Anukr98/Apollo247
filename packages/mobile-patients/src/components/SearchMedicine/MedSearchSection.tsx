@@ -35,7 +35,7 @@ export const MedSearchSection: React.FC<Props> = ({
 const { text, card } = theme.viewStyles;
 const styles = StyleSheet.create({
   container: {
-    ...card(0, 0, 0, '#fff', 10),
+    ...card(0, 0, 0, '#fff', 5),
     shadowOpacity: 0.3,
     paddingVertical: 15,
     marginBottom: 10,

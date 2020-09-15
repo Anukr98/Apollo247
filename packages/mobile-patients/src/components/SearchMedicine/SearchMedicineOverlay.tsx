@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     flexGrow: 100,
   },
   headerContainer: {
-    ...card(0, 0, 0, '#fff', 10),
+    ...card(0, 0, 0, '#fff', 6),
     borderBottomWidth: 0,
     zIndex: 1,
   },
