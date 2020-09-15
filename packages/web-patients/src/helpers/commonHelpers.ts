@@ -8,7 +8,8 @@ import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
 import fetchUtil from 'helpers/fetch';
-import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentDetails } from 'graphql/types/GetPatientAllAppointments';
+import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import { GetPatientByMobileNumber_getPatientByMobileNumber_patients as CurrentPatient } from 'graphql/types/GetPatientByMobileNumber';
 
 declare global {
   interface Window {
@@ -473,7 +474,10 @@ const HEALTH_RECORDS_NO_DATA_FOUND =
 const HEALTH_RECORDS_NOTE =
   'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
 
-export const consultWebengageEventsInfo = (doctorDetail: any, currentPatient: any) => {
+export const consultWebengageEventsInfo = (
+  doctorDetail: DoctorDetails,
+  currentPatient: CurrentPatient
+) => {
   const patientAge =
     new Date().getFullYear() - new Date(currentPatient && currentPatient.dateOfBirth).getFullYear();
   const doctorAddressDetail =
