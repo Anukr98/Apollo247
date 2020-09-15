@@ -103,12 +103,21 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     sort: String
     pageNo: Int
     pageSize: Int
+    searchText: String
   }
   extend type Query {
     getDoctorsBySpecialtyAndFilters(filterInput: FilterDoctorInput): FilterDoctorsResult
     getDoctorList(filterInput: FilterDoctorInput): DoctorListResult
   }
 `;
+
+const ES_FIELDS_PRIORITY = {
+  doctor_fullName: 5,
+  speciality_name: 4,
+  speciality_groupName: 3,
+  speciality_commonSearchTerm: 2,
+  speciality_userFriendlyNomenclature: 1,
+};
 
 type DefaultfilterType = {
   name: string;
@@ -186,6 +195,7 @@ export type FilterDoctorInput = {
   sort: string;
   pageNo: number;
   pageSize: number;
+  searchText: String;
 };
 
 export type ConsultModeAvailability = {
@@ -737,7 +747,7 @@ const getDoctorList: Resolver<
   //create first order curried method with first 4 static parameters being passed.
   const searchLogger = debugLog(
     'doctorSearchAPILogger',
-    'getDoctorsBySpecialtyAndFilters',
+    'getDoctorList',
     apiCallId,
     callStartTime,
     identifier
@@ -751,7 +761,7 @@ const getDoctorList: Resolver<
 
   let apolloDoctorCount: number = 0,
     partnerDoctorCount: number = 0;
-
+  const searchTextLowerCase = args.filterInput.searchText.trim().toLowerCase();
   args.filterInput.sort = args.filterInput.sort || 'availablity';
   const pageNo = args.filterInput.pageNo ? args.filterInput.pageNo : 1;
   const pageSize = args.filterInput.pageSize ? args.filterInput.pageSize : 1000;
@@ -760,6 +770,43 @@ const getDoctorList: Resolver<
   const elasticSlotDateAvailability: { [index: string]: any } = [];
   const elasticSlotAvailabileNow: { [index: string]: any } = [];
   // check elastic search index  /package/api/helpers/elasticIndex.ts
+  if (args.filterInput.searchText) {
+    elasticMatch.push({
+      bool: {
+        should: [
+          {
+            multi_match: {
+              fields: [
+                `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
+                `displayName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
+                `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
+                `specialty.groupName^${ES_FIELDS_PRIORITY.speciality_groupName}`,
+                `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
+                `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
+              ],
+              type: 'phrase_prefix',
+              query: `*${searchTextLowerCase}*`,
+            },
+          },
+          {
+            query_string: {
+              fields: [
+                `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
+                `displayName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
+                `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
+                `specialty.groupName^${ES_FIELDS_PRIORITY.speciality_groupName}`,
+                `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
+                `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
+              ],
+              fuzziness: 'AUTO',
+              query: `*${searchTextLowerCase}*`,
+            },
+          },
+        ],
+      },
+    });
+  }
+
   if (args.filterInput.availability && args.filterInput.availability.length > 0) {
     args.filterInput.availability.forEach((availability) => {
       elasticSlotDateAvailability.push({
@@ -804,6 +851,7 @@ const getDoctorList: Resolver<
   elasticMatch.push({
     nested: {
       path: 'doctorSlots.slots',
+      inner_hits: { size: 1 },
       query: {
         bool: {
           must: [
@@ -838,7 +886,7 @@ const getDoctorList: Resolver<
   }
   if (
     (!args.filterInput.specialtyName || args.filterInput.specialtyName.length === 0) &&
-    !args.filterInput.specialty
+    !args.filterInput.specialty && !args.filterInput.searchText
   ) {
     elasticMatch.push({ match: { 'specialty.name': ApiConstants.GENERAL_PHYSICIAN.toString() } });
   }
@@ -885,43 +933,66 @@ const getDoctorList: Resolver<
 
   elasticMatch.push({ match: { isSearchable: 'true' } });
 
-  if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
-    elasticSort.push({
-      _geo_distance: {
-        'facility.location': {
-          lat: args.filterInput.geolocation.latitude,
-          lon: args.filterInput.geolocation.longitude,
+  if(!args.filterInput.searchText){
+    if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
+      elasticSort.push({
+        _geo_distance: {
+          'facility.location': {
+            lat: args.filterInput.geolocation.latitude,
+            lon: args.filterInput.geolocation.longitude,
+          },
+          order: 'asc',
+          unit: 'km',
         },
-        order: 'asc',
-        unit: 'km',
-      },
-    });
-  } else {
-    elasticSort.push({
-      'doctorSlots.slots.slot': {
-        order: 'asc',
-        mode: 'min',
-        nested_path: 'doctorSlots.slots',
-        nested_filter: {
-          range: {
-            'doctorSlots.slots.slot': {
-              gte: 'now',
+      });
+    } else {
+      elasticSort.push({
+        'doctorSlots.slots.slot': {
+          order: 'asc',
+          mode: 'min',
+          nested_path: 'doctorSlots.slots',
+          nested_filter: {
+            bool: {
+              must: [
+                { match: { 'doctorSlots.slots.status': 'OPEN' } },
+                {
+                  range: {
+                    'doctorSlots.slots.slotThreshold': { gt: 'now' },
+                  },
+                },
+              ],
             },
           },
         },
+      });
+    }
+    elasticSort.push({
+      _script: {
+        type: 'number',
+        script: {
+          lang: 'painless',
+          source:
+            "if( doc['doctorType.keyword'].value == 'STAR_APOLLO'){ params.STAR_APOLLO }else {params.OTHERS}",
+          params: {
+            STAR_APOLLO: 1,
+            OTHERS: 0,
+          },
+        },
+        order: 'desc',
       },
     });
   }
-
+  
   if (!process.env.ELASTIC_INDEX_DOCTORS) {
     throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
   }
 
   const searchParams: RequestParams.Search = {
-    index: process.env.ELASTIC_INDEX_DOCTORS,
+   index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
       from: offset,
       size: pageSize,
+      sort: elasticSort,
       _source: [
         'doctorId',
         'displayName',
@@ -933,9 +1004,9 @@ const getDoctorList: Resolver<
         'onlineConsultationFees',
         'physicalConsultationFees',
         'doctorType',
-        'facility',
-        'consultHours',
-        'doctorSlots',
+        'facility.name',
+        'facility.city',
+        'consultHours.consultMode',
       ],
       query: {
         bool: {
@@ -982,10 +1053,10 @@ const getDoctorList: Resolver<
     doctorObj['specialistSingularTerm'] = doctor.specialty.specialistSingularTerm;
     doctorObj['specialtydisplayName'] = doctor.specialty.userFriendlyNomenclature;
     doctorObj['consultMode'] = [];
-    let bufferTime = 5;
-    let activeSlotCount = 0;
+    doctorObj['slot'] = null;
+    doctorObj['earliestSlotInMinutes'] = null;
+
     for (const consultHour of doctor.consultHours) {
-      bufferTime = consultHour['consultBuffer'];
       if (!doctorObj['consultMode'].includes(consultHour.consultMode)) {
         doctorObj['consultMode'].push(consultHour.consultMode);
       }
@@ -994,18 +1065,9 @@ const getDoctorList: Resolver<
       doctorObj['consultMode'] = ['BOTH'];
     }
     doctorObj['consultMode'] = doctorObj['consultMode'].toString();
-    for (const slots of doctor.doctorSlots) {
-      for (const slot of slots['slots']) {
-        if (
-          slot.status == 'OPEN' &&
-          differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
-        ) {
-          if (activeSlotCount === 0) {
-            doctorObj['slot'] = slot.slot;
-          }
-          activeSlotCount += 1;
-        }
-      }
+    for(const slot of doc.inner_hits['doctorSlots.slots'].hits.hits){
+      doctorObj['slot'] = slot._source.slot;
+      doctorObj['earliestSlotInMinutes'] = differenceInMinutes(new Date(slot._source.slot), callStartTime);;
     }
     doctors.push(doctorObj);
   }
