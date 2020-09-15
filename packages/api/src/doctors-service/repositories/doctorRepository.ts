@@ -6,7 +6,6 @@ import {
   DOCTOR_ONLINE_STATUS,
   CityPincodeMapper,
   ConsultHours,
-  Secretary,
 } from 'doctors-service/entities';
 import { ES_DOCTOR_SLOT_STATUS } from 'consults-service/entities';
 import {
@@ -90,7 +89,7 @@ export class DoctorRepository extends Repository<Doctor> {
         },
       };
       slotsAdded += doctorId + ' - ' + format(stDate, 'yyyy-MM-dd') + ',';
-      const updateResp = await client.update(doc1);
+      await client.update(doc1);
       stDate = addDays(stDate, 1);
     }
     return slotsAdded;
