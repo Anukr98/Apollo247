@@ -1132,7 +1132,7 @@ export const MedicineDetails: React.FC = (props) => {
                       onClick={() =>
                         (window.location.href = clientRoutes.searchByMedicine(
                           'deals-of-the-day',
-                          'pulse-oximeters' // this is hardcoded as per the request.
+                          'exclusive-offers' // this is hardcoded as per the request.
                         ))
                       }
                     >
