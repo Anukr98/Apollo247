@@ -35,7 +35,6 @@ export interface MedicineSearchSuggestionItemProps {
   showSeparator?: boolean;
   loading?: boolean;
   data: MedicineProduct;
-  maxOrderQty: number;
 }
 
 export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItemProps> = (

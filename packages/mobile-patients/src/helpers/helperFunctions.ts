@@ -14,6 +14,7 @@ import {
   MEDICINE_ORDER_STATUS,
   Relation,
   MEDICINE_UNIT,
+  SaveSearchInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from '@react-native-community/geolocation';
@@ -42,7 +43,8 @@ import {
   searchDiagnostics,
   searchDiagnosticsVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
-import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
+import { SAVE_SEARCH, SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
+import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -1352,6 +1354,15 @@ export const formatToCartItem = ({
     productType: type_id,
     isInStock: is_in_stock == 1,
   };
+};
+
+export const savePastSearch = (client: ApolloClient<object>, input: SaveSearchInput) => {
+  try {
+    client.mutate<saveSearch, saveSearchVariables>({
+      mutation: SAVE_SEARCH,
+      variables: { saveSearchInput: input },
+    });
+  } catch (error) {}
 };
 
 export const addPharmaItemToCart = (
