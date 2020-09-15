@@ -348,6 +348,10 @@ export const styles = StyleSheet.create({
   },
   headerView: {
     marginHorizontal: 16,
-    marginBottom: 8
-  }
+    marginBottom: 8,
+  },
+  activeBorderColor: {
+    borderColor: theme.colors.INPUT_CURSOR_COLOR,
+    minHeight: 64,
+  },
 });

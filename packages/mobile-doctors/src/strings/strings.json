@@ -443,25 +443,49 @@
     "audio": "Audio",
     "video": "Video",
     "audioReviews": [
-      {"responseValue": "Patient Did not pick up the call", "responseName": "AUDIO_CALL_NOT_PICKED"},
-      {"responseValue": "Call Disconnected Abruptly", "responseName": "AUDIO_CALL_DISCONNECTED_ABRUPTLY"},
-      {"responseValue": "Could not hear any sound", "responseName": "AUDIO_NO_SOUND_HEARED"},
-      {"responseValue": "Patient could not hear me", "responseName": "AUDIO_NO_SOUND_RECEIVED"},
-      {"responseValue": "Audio Echo was heard", "responseName": "AUDIO_ECHO"},
-      {"responseValue": "I heard a strange noise (not background noise)", "responseName": "AUDIO_STRANGE_NOISE"},
-      {"responseValue": "Volume was low", "responseName": "AUDIO_VOLUME_LOW"},
-      {"responseValue": "Other", "responseName": "AUDIO_OTHER"}
+      {
+        "responseValue": "Patient Did not pick up the call",
+        "responseName": "AUDIO_CALL_NOT_PICKED"
+      },
+      {
+        "responseValue": "Call Disconnected Abruptly",
+        "responseName": "AUDIO_CALL_DISCONNECTED_ABRUPTLY"
+      },
+      { "responseValue": "Could not hear any sound", "responseName": "AUDIO_NO_SOUND_HEARED" },
+      { "responseValue": "Patient could not hear me", "responseName": "AUDIO_NO_SOUND_RECEIVED" },
+      { "responseValue": "Audio Echo was heard", "responseName": "AUDIO_ECHO" },
+      {
+        "responseValue": "I heard a strange noise (not background noise)",
+        "responseName": "AUDIO_STRANGE_NOISE"
+      },
+      { "responseValue": "Volume was low", "responseName": "AUDIO_VOLUME_LOW" },
+      { "responseValue": "Other", "responseName": "AUDIO_OTHER" }
     ],
     "videoReviews": [
-      {"responseValue": "Patient Did not pick up the call", "responseName": "VIDEO_CALL_NOT_PICKED"},
-      {"responseValue": "Call Disconnected Abruptly", "responseName": "VIDEO_CALL_DISCONNECTED_ABRUPTLY"},
-      {"responseValue": "Could not see anything in the video", "responseName": "VIDEO_NOT_VISIBLE"},
-      {"responseValue": "Video was working but video was not clear", "responseName": "VIDEO_NOT_CLEAR"},
-      {"responseValue": "Patient could not see my video", "responseName": "VIDEO_NOT_RECEIVED"},
-      {"responseValue": "Video froze during the call", "responseName": "VIDEO_FREEZE"},
-      {"responseValue": "Video Stopped working during the call", "responseName": "VIDEO_STOPPED"},
-      {"responseValue": "Video and audio was not in sync", "responseName": "VIDEO_AUDIO_NOT_SYNC"},
-      {"responseValue": "Other", "responseName": "VIDEO_OTHER"}
+      {
+        "responseValue": "Patient Did not pick up the call",
+        "responseName": "VIDEO_CALL_NOT_PICKED"
+      },
+      {
+        "responseValue": "Call Disconnected Abruptly",
+        "responseName": "VIDEO_CALL_DISCONNECTED_ABRUPTLY"
+      },
+      {
+        "responseValue": "Could not see anything in the video",
+        "responseName": "VIDEO_NOT_VISIBLE"
+      },
+      {
+        "responseValue": "Video was working but video was not clear",
+        "responseName": "VIDEO_NOT_CLEAR"
+      },
+      { "responseValue": "Patient could not see my video", "responseName": "VIDEO_NOT_RECEIVED" },
+      { "responseValue": "Video froze during the call", "responseName": "VIDEO_FREEZE" },
+      { "responseValue": "Video Stopped working during the call", "responseName": "VIDEO_STOPPED" },
+      {
+        "responseValue": "Video and audio was not in sync",
+        "responseName": "VIDEO_AUDIO_NOT_SYNC"
+      },
+      { "responseValue": "Other", "responseName": "VIDEO_OTHER" }
     ],
     "othersReasonPlaceholder": "Others,  Please specify",
     "feedbackResponseType": {
@@ -470,14 +494,10 @@
       "audioVideo": "AUDIOVIDEO"
     },
     "notes": "Notes",
-    "jrDoctor": "Junior Doctor",
     "diagnosticTestResults": "Diagnostic Test Results",
     "clinicalNotes": "Clinical observations/notes",
     "jrDoctorNotes": "Junior Doctor Notes",
-    "seniorDoctor": "Senior Doctor",
-    "clinicNotes": "Clinic Observations/notes",
     "typeYourNotes": "Type your notes here ...."
-
   },
   "consult_room": {
     "patient_is_not_acitve_descr": "We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult.",

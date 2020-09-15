@@ -576,8 +576,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     value: string.case_sheet.select_Speciality,
   });
   const [referralReason, setReferralReason] = useState<string>('');
-  const [seniorDrDiagnosticTestResults, setSeniorDrDiagnosticTestResults] = useState<string>('');
-  const [seniorDrClinicNotes, setSeniorDrClinicNotes] = useState<string>('');
+  const [diagnosticTestResults, setDiagnosticTestResults] = useState<string>('');
+  const [clinicalNotes, setClinicalNotes] = useState<string>('');
   const [seniorDrPersonalNotes, setSeniorDrPersonalNotes] = useState<string>('');
 
   const getFamilyHistoryText = (
@@ -1107,7 +1107,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       bp: medicalHistory ? medicalHistory.bp || '' : '',
       referralSpecialtyName: selectedReferral.key !== '-1' ? selectedReferral.value : null,
       referralDescription: selectedReferral.key !== '-1' ? referralReason : null,
-      // seniorDrDiagnosticTestResults: seniorDrDiagnosticTestResults
+      // diagnosticTestResults: diagnosticTestResults,
     } as ModifyCaseSheetInput;
   };
 
@@ -2214,10 +2214,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   setSelectedReferral={setSelectedReferral}
                   referralReason={referralReason}
                   setReferralReason={setReferralReason}
-                  seniorDrDiagnosticTestResults={seniorDrDiagnosticTestResults}
-                  setSeniorDrDiagnosticTestResults={setSeniorDrDiagnosticTestResults}
-                  seniorDrClinicNotes={seniorDrClinicNotes}
-                  setSeniorDrClinicNotes={setSeniorDrClinicNotes}
+                  diagnosticTestResults={diagnosticTestResults}
+                  setDiagnosticTestResults={setDiagnosticTestResults}
+                  clinicalNotes={clinicalNotes}
+                  setClinicalNotes={setClinicalNotes}
                   seniorDrPersonalNotes={seniorDrPersonalNotes}
                   setSeniorDrPersonalNotes={setSeniorDrPersonalNotes}
                 />
