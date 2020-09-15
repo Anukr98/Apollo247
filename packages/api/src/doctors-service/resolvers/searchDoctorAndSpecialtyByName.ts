@@ -140,7 +140,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             },
             { match: { isSearchable: true } },
             {
-              multi_match: {
+              query_string: {
+                fuzziness: 0,
+                query: `*${searchTextLowerCase}*`,
                 fields: [
                   `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
                   `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
@@ -148,8 +150,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                   `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                 ],
-                type: 'phrase_prefix',
-                query: `*${searchTextLowerCase}*`,
               },
             },
           ],
