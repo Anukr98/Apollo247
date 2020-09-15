@@ -22,6 +22,7 @@ import { getLabResultpdf, getLabResultpdfVariables } from 'graphql/types/getLabR
 import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Alerts } from 'components/Alerts/Alerts';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -447,6 +448,10 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [localLabResultsData, setLocalLabResultsData] = useState<Array<{
+    key: string;
+    value: LabResultsType[];
+  }> | null>(null);
 
   const sortByTypeRecords = (type: FILTER_TYPE) => {
     return (
@@ -456,14 +461,14 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           type === FILTER_TYPE.DATE
             ? moment(data1.date).toDate().getTime()
             : type === FILTER_TYPE.TEST
-            ? data1.labTestName
-            : data1.packageName;
+            ? _lowerCase(data1.labTestName)
+            : _lowerCase(data1.packageName);
         const filteredData2 =
           type === FILTER_TYPE.DATE
             ? moment(data2.date).toDate().getTime()
             : type === FILTER_TYPE.TEST
-            ? data2.labTestName
-            : data2.packageName;
+            ? _lowerCase(data2.labTestName)
+            : _lowerCase(data2.packageName);
         if (type === FILTER_TYPE.DATE) {
           return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
         }
@@ -475,6 +480,46 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   useEffect(() => {
     const filteredData = sortByTypeRecords(filterApplied);
     if (filteredData) {
+      const finalData: { key: string; value: LabResultsType[] }[] = [];
+      if (filterApplied) {
+        const filterAppliedString =
+          filterApplied === FILTER_TYPE.DATE
+            ? 'date'
+            : filterApplied === FILTER_TYPE.PACKAGE
+            ? 'packageName'
+            : 'labTestName';
+        filteredData.forEach((dataObject: LabResultsType) => {
+          const dataObjectArray: LabResultsType[] = [];
+          const dateExistsAt = finalData.findIndex(
+            (data: { key: string; value: LabResultsType[] }) => {
+              if (
+                filterApplied === FILTER_TYPE.PACKAGE &&
+                (!dataObject.packageName || dataObject.packageName === '-')
+              ) {
+                return data.key === dataObject.labTestName;
+              }
+              return data.key === dataObject[filterAppliedString];
+            }
+          );
+          if (dateExistsAt === -1 || finalData.length === 0) {
+            dataObjectArray.push(dataObject);
+            const obj = {
+              key:
+                filterApplied === FILTER_TYPE.PACKAGE &&
+                (!dataObject.packageName || dataObject.packageName === '-')
+                  ? dataObject.labTestName
+                  : dataObject[filterAppliedString],
+              value: dataObjectArray,
+            };
+            finalData.push(obj);
+          } else {
+            const array = finalData[dateExistsAt].value;
+            array.push(dataObject);
+            finalData[dateExistsAt].value = array;
+          }
+        });
+      }
+      setLocalLabResultsData(finalData);
       setLabResults(filteredData);
       setActiveData(filteredData[0]);
     }
@@ -484,6 +529,15 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
     const formattedDate = moment(combinedData.date).format('DD MMM YYYY');
     return dateFor === 'title' &&
       moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY') ? (
+      <span>Today , {formattedDate}</span>
+    ) : (
+      <span>{formattedDate}</span>
+    );
+  };
+
+  const getFormattedTitleDate = (date: string) => {
+    const formattedDate = moment(date).format('DD MMM YYYY');
+    return moment().format('DD/MM/YYYY') === moment(date).format('DD/MM/YYYY') ? (
       <span>Today , {formattedDate}</span>
     ) : (
       <span>{formattedDate}</span>
@@ -545,16 +599,14 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
             <img src={require('images/ic_addfile.svg')} />
           </Link>
         </div>
-        {allCombinedData && allCombinedData.length > 0 && (
-          <div className={classes.filterIcon}>
-            <img
-              ref={locationRef}
-              onClick={() => setShowPopover(true)}
-              src={require('images/ic_filter.svg')}
-              alt=""
-            />
-          </div>
-        )}
+        <div className={classes.filterIcon}>
+          <img
+            ref={locationRef}
+            onClick={() => setShowPopover(true)}
+            src={require('images/ic_filter.svg')}
+            alt=""
+          />
+        </div>
         <Scrollbars
           autoHide={true}
           autoHeight
@@ -567,52 +619,56 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           }
         >
           <div className={classes.consultationsList}>
-            {allCombinedData &&
-              allCombinedData.length > 0 &&
-              allCombinedData.map((combinedData: LabResultsType) => (
-                <div
-                  className={classes.consultGroup}
-                  onClick={() => {
-                    setActiveData(combinedData);
-                    if (isSmallScreen) {
-                      setShowMobileDetails(true);
-                    }
-                  }}
-                >
-                  <div className={classes.consultGroupHeader}>
-                    <div className={classes.circle}></div>
-                    <span>
-                      {filterApplied === FILTER_TYPE.DATE
-                        ? getFormattedDate(combinedData, 'title')
-                        : filterApplied === FILTER_TYPE.TEST
-                        ? combinedData.labTestName
-                        : combinedData.packageName &&
-                          combinedData.packageName.length > 0 &&
-                          combinedData.packageName !== '-'
-                        ? combinedData.packageName
-                        : combinedData.labTestName}
-                    </span>
-                  </div>
-                  <MedicalCard
-                    deleteReport={deleteReport}
-                    name={
-                      filterApplied === FILTER_TYPE.DATE
-                        ? combinedData.labTestName
-                        : getStringDate(combinedData)
-                    }
-                    source={
-                      combinedData && combinedData.siteDisplayName
-                        ? combinedData.siteDisplayName
-                        : !!combinedData.labTestSource
-                        ? combinedData.labTestSource
-                        : '-'
-                    }
-                    type={'LabResults'}
-                    id={`LabResults-${combinedData.id}`}
-                    isActiveCard={activeData && activeData === combinedData}
-                  />
-                </div>
-              ))}
+            {localLabResultsData &&
+              localLabResultsData.length > 0 &&
+              localLabResultsData.map(
+                (localLabResultsDataDetails: { key: string; value: LabResultsType[] }) =>
+                  localLabResultsDataDetails && (
+                    <>
+                      <div className={classes.consultGroup}>
+                        <div className={classes.consultGroupHeader}>
+                          <div className={classes.circle}></div>
+                          <span>
+                            {filterApplied === FILTER_TYPE.DATE
+                              ? getFormattedTitleDate(localLabResultsDataDetails.key)
+                              : localLabResultsDataDetails.key}
+                          </span>
+                        </div>
+                        {localLabResultsDataDetails.value &&
+                          localLabResultsDataDetails.value.length > 0 &&
+                          localLabResultsDataDetails.value.map((combinedData: LabResultsType) => (
+                            <div
+                              onClick={() => {
+                                setActiveData(combinedData);
+                                if (isSmallScreen) {
+                                  setShowMobileDetails(true);
+                                }
+                              }}
+                            >
+                              <MedicalCard
+                                deleteReport={deleteReport}
+                                name={
+                                  filterApplied === FILTER_TYPE.DATE
+                                    ? combinedData.labTestName
+                                    : getStringDate(combinedData)
+                                }
+                                source={
+                                  combinedData && combinedData.siteDisplayName
+                                    ? combinedData.siteDisplayName
+                                    : !!combinedData.labTestSource
+                                    ? combinedData.labTestSource
+                                    : '-'
+                                }
+                                type={'LabResults'}
+                                id={`LabResults-${combinedData.id}`}
+                                isActiveCard={activeData && activeData === combinedData}
+                              />
+                            </div>
+                          ))}
+                      </div>
+                    </>
+                  )
+              )}
           </div>
           {isSmallScreen && allCombinedData && allCombinedData.length === 0 && (
             <div className={classes.noRecordFoundWrapper}>
@@ -796,29 +852,3 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
     </div>
   );
 };
-
-// const getName = (combinedData: any, type: string) => {
-//   switch (type) {
-//     case 'lab':
-//       return combinedData.labTestName;
-//     case 'prescription':
-//       return combinedData.prescriptionName;
-//     default:
-//       return '';
-//   }
-// };
-
-// const getSource = (activeData: any, type: string) => {
-//   switch (type) {
-//     case 'lab':
-//       return activeData && activeData.siteDisplayName
-//         ? activeData.siteDisplayName
-//         : !!activeData.labTestSource
-//         ? activeData.labTestSource
-//         : '-';
-//     case 'prescription':
-//       return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
-//     default:
-//       return '-';
-//   }
-// };
