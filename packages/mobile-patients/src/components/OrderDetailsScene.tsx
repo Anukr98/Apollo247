@@ -111,6 +111,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
 const INCONVENIENCE_TEXT =
   'We are trying our best to expedite the process.\nSorry for the inconvenience';
+const CHAT_WITH_US_TEXT = 'CHAT WITH US';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -162,11 +163,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     flex: 1,
   },
-  pendingIcon: { height: 24, width: 24, resizeMode: 'contain' },
+  pendingIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
   inconvenienceText: {
     marginHorizontal: 10,
     ...theme.fonts.IBMPlexSansRegular(13),
     color: theme.colors.SHERPA_BLUE,
+  },
+  chatWithUsView: { paddingBottom: 10, paddingTop: 4 },
+  chatWithUsTouch: { flexDirection: 'row', justifyContent: 'flex-end' },
+  whatsappIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
+  chatWithUsText: {
+    textAlign: 'center',
+    paddingRight: 0,
+    marginHorizontal: 5,
+    ...theme.viewStyles.text('B', 14, '#fcb716'),
   },
 });
 
@@ -1072,19 +1082,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return (
       <View>
         <View style={styles.cardStyle}>
-          <PendingIcon style={styles.pendingIcon} />
+          <PendingIcon style={styles.pendingIconStyle} />
           <Text style={styles.inconvenienceText}>{INCONVENIENCE_TEXT}</Text>
         </View>
-        <View
-          style={{
-            flexDirection: 'row',
-            width: '100%',
-            backgroundColor: 'pink',
-            right: 0,
-          }}
-        >
-          <WhatsAppIcon style={{ height: 15, width: 15, resizeMode: 'contain' }} />
-          <Text>Chat with us </Text>
+        <View style={styles.chatWithUsView}>
+          <TouchableOpacity
+            style={styles.chatWithUsTouch}
+            onPress={() => console.log('to whatsapp')}
+          >
+            <WhatsAppIcon style={styles.whatsappIconStyle} />
+            <Text style={styles.chatWithUsText}>{CHAT_WITH_US_TEXT}</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
