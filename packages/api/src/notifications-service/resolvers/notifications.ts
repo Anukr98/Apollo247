@@ -399,9 +399,13 @@ const sendAppointmentSummaryOps: Resolver<
               logContent = 'appointmentLegth: ' + docApptDetails.length + ': \n';
               fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
               totalAppointments = totalAppointments + docApptDetails.length;
-              docApptDetails.forEach((docAppointment) => {
+              docApptDetails.forEach((docAppointment, index) => {
                 rowHeadx += 20;
-                rowx += 18;
+                if (index % 3 == 0) {
+                  rowx += 24;
+                } else {
+                  rowx += 18;
+                }
                 writeRow(pdfDoc, rowHeadx);
                 textInRow(pdfDoc, docAppointment.patientId.substring(0, 5), rowx, 30);
                 textInRow(
@@ -418,6 +422,15 @@ const sendAppointmentSummaryOps: Resolver<
                 currentAdminMobNumber = `${adminDoctor.admindoctormapper[0].adminuser.mobileNumber}$${adminDoctor.admindoctormapper[0].adminuser.userName}`;
               });
             });
+            pdfDoc
+              .lineCap('butt')
+              .moveTo(200, 90)
+              .lineTo(200, rowHeadx + 20)
+              .moveTo(340, 90)
+              .lineTo(340, rowHeadx + 20)
+              .moveTo(420, 90)
+              .lineTo(420, rowHeadx + 20)
+              .stroke();
             pdfDoc.end();
             const fp = `${uploadPath}$${fileName}$${totalAppointments}$${currentAdminMobNumber}`;
             allPdfs.push(fp);
