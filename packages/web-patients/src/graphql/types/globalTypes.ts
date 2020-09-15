@@ -117,17 +117,17 @@ export enum DiscountType {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
-  APOLLO_CLINIC = "APOLLO_CLINIC",
-  APOLLO_CRADLE = "APOLLO_CRADLE",
-  APOLLO_FERTILITY = "APOLLO_FERTILITY",
   APOLLO_HOMECARE = "APOLLO_HOMECARE",
-  APOLLO_HOSPITALS = "APOLLO_HOSPITALS",
-  APOLLO_SPECTRA_HOSPITALS = "APOLLO_SPECTRA_HOSPITALS",
-  APOLLO_SUGAR_CLINICS = "APOLLO_SUGAR_CLINICS",
-  APOLLO_WHITE_DENTAL = "APOLLO_WHITE_DENTAL",
+  CLINIC = "CLINIC",
+  CRADLE = "CRADLE",
   DOCTOR_CONNECT = "DOCTOR_CONNECT",
+  FERTILITY = "FERTILITY",
   JUNIOR = "JUNIOR",
+  PAYROLL = "PAYROLL",
+  SPECTRA = "SPECTRA",
   STAR_APOLLO = "STAR_APOLLO",
+  SUGAR = "SUGAR",
+  WHITE_DENTAL = "WHITE_DENTAL",
 }
 
 export enum FEEDBACKTYPE {
@@ -774,6 +774,7 @@ export interface OrderLineItems {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
+  couponFree?: boolean | null;
 }
 
 export interface OtpVerificationInput {

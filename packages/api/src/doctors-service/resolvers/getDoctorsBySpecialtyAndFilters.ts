@@ -558,8 +558,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
     if (doctor['activeSlotCount'] > 0 && availability) {
       if (doctor['earliestSlotavailableInMinutes'] < minsForSort) {
-        if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === DoctorType.APOLLO) {
-          if (doctor.doctorType === DoctorType.STAR_APOLLO) {
+        if (doctor.facility[0].name.includes('Apollo') || doctor.doctorType === 'PAYROLL') {
+          if (doctor.doctorType === 'STAR_APOLLO') {
             earlyAvailableStarApolloDoctors.push(doctor);
           } else {
             earlyAvailableNonStarApolloDoctors.push(doctor);
@@ -568,7 +568,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
           earlyAvailableNonApolloDoctors.push(doctor);
         }
       } else {
-        if (doctor.doctorType === DoctorType.STAR_APOLLO) {
+        if (doctor.doctorType === 'STAR_APOLLO') {
           starDoctor.push(doctor);
         } else {
           nonStarDoctor.push(doctor);

@@ -26,7 +26,6 @@ import _startCase from 'lodash/startCase';
 import { useMutation } from 'react-apollo-hooks';
 import {
   JOIN_JDQ_WITH_AUTOMATED_QUESTIONS,
-  GET_APPOINTMENT_DATA,
   UPDATE_APPOINTMENT_SESSION,
   PAST_APPOINTMENTS_COUNT,
   UPDATE_SAVE_EXTERNAL_CONNECT,
@@ -818,6 +817,7 @@ interface AutoMessageStrings {
   doctorAutoResponse: string;
   leaveChatRoom: string;
   patientJoinedMeetingRoom: string;
+  patientRejectedCall: string;
 }
 
 interface ChatWindowProps {
@@ -875,6 +875,7 @@ const autoMessageStrings: AutoMessageStrings = {
   doctorAutoResponse: '^^#doctorAutoResponse',
   leaveChatRoom: '^^#leaveChatRoom',
   patientJoinedMeetingRoom: '^^#patientJoinedMeetingRoom',
+  patientRejectedCall: '^^#PATIENT_REJECTED_CALL',
 };
 
 type Params = { appointmentId: string; doctorId: string };
@@ -921,6 +922,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const scrollDivRef = useRef(null);
   const apolloClient = useApolloClient();
   const doctorDetail = props.doctorDetails && props.doctorDetails.getDoctorDetailsById;
+
+  // console.log(currentPatient.id, '------------------------', appointmentDetails.doctorId);
 
   //AV states
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
@@ -1047,10 +1050,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       // adding listener
       pubnubClient.addListener({
         status: (status) => {
-          console.log('status...............', status);
+          // console.log('status...............', status);
         },
         message: (message) => {
-          console.log(message);
+          // console.log(message);
           if (
             message.message &&
             (message.message.message === autoMessageStrings.videoCallMsg ||
@@ -1079,6 +1082,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         { channel: appointmentId, count: 100, stringifiedTimeToken: true },
         (status: PubnubStatus, response: HistoryResponse) => {
           if (response.messages.length === 0) sendWelcomeMessage();
+
+          console.log(response.messages, 'pubnub messages history.....');
 
           const newmessage: MessagesObjectProps[] = messages;
           response.messages.forEach((element: any, index: number) => {
@@ -2133,9 +2138,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               >
                 {messages.map((messageDetails: any) => {
                   const cardType = getCardType(messageDetails);
-
                   const message =
                     messageDetails && messageDetails.message ? messageDetails.message : '';
+
                   if (
                     messageDetails.message === autoMessageStrings.typingMsg ||
                     messageDetails.message === autoMessageStrings.endCallMsg ||
@@ -2152,7 +2157,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.stopConsultJr ||
                     messageDetails.message === autoMessageStrings.languageQue ||
                     messageDetails.message === autoMessageStrings.consultPatientStartedMsg ||
-                    messageDetails.message === autoMessageStrings.patientJoinedMeetingRoom
+                    messageDetails.message === autoMessageStrings.patientJoinedMeetingRoom ||
+                    messageDetails.message === autoMessageStrings.patientRejectedCall ||
+                    messageDetails.message === autoMessageStrings.endCallMsg
                   ) {
                     props.setSrDoctorJoined(
                       messageDetails.message === autoMessageStrings.startConsultMsg

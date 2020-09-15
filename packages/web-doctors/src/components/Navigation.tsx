@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useAuth } from 'hooks/authHooks';
 import { LoggedInUserType } from 'graphql/types/globalTypes';
+import { webEngageEventTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -88,6 +89,11 @@ export const Navigation: React.FC = (props) => {
           </Link>
           <Link
             title="Patients"
+            onClick={() => {
+              webEngageEventTracking(null,
+                'Front_end - Doctor Clicked on the Patient Log'
+              );
+            }}
             className={`${window.location.href.includes('/patientlog') && classes.menuItemActive}`}
             to={clientRoutes.PatientLog()}
           >

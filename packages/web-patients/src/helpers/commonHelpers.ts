@@ -449,18 +449,25 @@ const isPastAppointment = (appointmentDateTime: string) =>
     .isBefore(moment());
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
-  const followUpDayMoment = moment(appointmentTime).add(7, 'days');
-  const diffInDays = followUpDayMoment.diff(moment(), 'days');
-  if (diffInDays <= 0) {
+  const appointmentDate = moment(appointmentTime);
+  const followUpDayMoment = appointmentDate.add(7, 'days');
+  let diffInDays = followUpDayMoment.diff(moment(), 'days'); // it will applicable if appointmentDate > followupDayMoment and diff shouldn't cross 7
+  if (appointmentDate < followUpDayMoment) {
+    // diff(moment(), 'days') gives 6 days x hours as 6days, to show it as 7 days adding +1
+    diffInDays += 1;
+  }
+  if (diffInDays === 0) {
     const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
     const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
     return diffInHours > 0
-      ? `You can follow up with the doctor via text (${diffInHours} hours left)`
+      ? `Valid for ${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'}`
       : diffInMinutes > 0
-      ? `You can follow up with the doctor via text (${diffInMinutes} minutes left)`
+      ? `Valid for ${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'}`
       : '';
+  } else if (diffInDays > 0) {
+    return `Valid for ${diffInDays} ${diffInDays === 1 ? 'day' : 'days'}`;
   } else {
-    return `You can follow up with the doctor via text (${diffInDays} days left)`;
+    return '';
   }
 };
 

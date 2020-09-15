@@ -110,6 +110,7 @@ import {
 } from 'graphql/types/saveAppointmentCallFeedback';
 import Alert from 'components/Alert';
 import moment from 'moment';
+import { webEngageEventTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -324,6 +325,15 @@ const storageClient = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
 );
+interface WebengageConsultTrackingProps {
+  doctorName: string;
+  patientName: string;
+  patientMobileNumber: string;
+  doctorMobileNumber: string;
+  appointmentDateTime: string;
+  appointmentDisplayId: string;
+  appointmentId: string;
+}
 interface MessagesObjectProps {
   id: string;
   message: string;
@@ -350,6 +360,17 @@ export const ConsultTabs: React.FC = () => {
     variables: {
       appointmentId: paramId,
     },
+  });
+  const [webengageConsultTrackingObject, setWebengageConsultTrackingObject] = useState<
+    WebengageConsultTrackingProps
+  >({
+    doctorName: '',
+    patientName: '',
+    patientMobileNumber: '',
+    doctorMobileNumber: '',
+    appointmentDateTime: '',
+    appointmentDisplayId: '',
+    appointmentId: '',
   });
   const [isClickedOnEdit, setIsClickedOnEdit] = useState(false);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
@@ -551,7 +572,20 @@ export const ConsultTabs: React.FC = () => {
   }, []);
 
   const postDoctorConsultEventAction = (eventType: WebEngageEvent, displayId: string) => {
-    console.log(eventType, displayId);
+    if (eventType === WebEngageEvent.DOCTOR_SENT_MESSAGE) {
+      webEngageEventTracking(
+        {
+          'Doctor name': webengageConsultTrackingObject.doctorName,
+          'Patient name': webengageConsultTrackingObject.patientName,
+          'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
+          'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
+          'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+          'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
+          'Appointment ID': webengageConsultTrackingObject.appointmentId,
+        },
+        'Front_end - Doctor Sent a message to the patient after End consult'
+      );
+    }
     let consultTypeMode: ConsultMode = ConsultMode.BOTH;
     if (consultType.includes(ConsultMode.ONLINE)) {
       consultTypeMode = ConsultMode.ONLINE;
@@ -691,6 +725,27 @@ export const ConsultTabs: React.FC = () => {
           variables: { appointmentId: appointmentId },
         })
         .then((_data) => {
+          const webEngageData = {
+            doctorName: (currentPatient && currentPatient.fullName) || '',
+            doctorMobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
+            patientName:
+              _data!.data!.getCaseSheet!.patientDetails &&
+              _data!.data!.getCaseSheet!.patientDetails!.firstName
+                ? _data!.data!.getCaseSheet!.patientDetails!.firstName +
+                  _data!.data!.getCaseSheet!.patientDetails!.lastName
+                : '',
+            patientMobileNumber:
+              _data!.data!.getCaseSheet!.patientDetails &&
+              _data!.data!.getCaseSheet!.patientDetails!.mobileNumber
+                ? _data!.data!.getCaseSheet!.patientDetails!.mobileNumber
+                : '',
+            appointmentDateTime: _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!
+              .appointmentDateTime,
+            appointmentDisplayId: _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!
+              .displayId,
+            appointmentId: appointmentId,
+          };
+          setWebengageConsultTrackingObject(webEngageData);
           setCasesheetInfo(_data.data);
           setError('');
           if (_data!.data!.getCaseSheet!.caseSheetDetails.doctorId !== doctorId && !isSecretary) {
@@ -1453,6 +1508,34 @@ export const ConsultTabs: React.FC = () => {
           );
           setPrescriptionPdf(url);
           setShowConfirmPrescription(false);
+          if (casesheetVersion < 2) {
+            webEngageEventTracking(
+              {
+                'Doctor name': webengageConsultTrackingObject.doctorName,
+                'Patient name': webengageConsultTrackingObject.patientName,
+                'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
+                'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
+                'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+                'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
+                'Appointment ID': webengageConsultTrackingObject.appointmentId,
+              },
+              'Front_end - Doctor Send Prescription'
+            );
+          } else {
+            webEngageEventTracking(
+              {
+                'Doctor name': webengageConsultTrackingObject.doctorName,
+                'Patient name': webengageConsultTrackingObject.patientName,
+                'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
+                'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
+                'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+                'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
+                'Appointment ID': webengageConsultTrackingObject.appointmentId,
+                'Blob URL': url,
+              },
+              'Front_end - Doctor re-issued new Prescription'
+            );
+          }
         }
         if (
           _data &&
@@ -1677,6 +1760,18 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        webEngageEventTracking(
+          {
+            'Doctor name': webengageConsultTrackingObject.doctorName,
+            'Patient name': webengageConsultTrackingObject.patientName,
+            'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
+            'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
+            'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+            'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
+            'Appointment ID': webengageConsultTrackingObject.appointmentId,
+          },
+          'Front_end - Doctor Ended the consult'
+        );
         endCallNotificationAction(false);
         setAppointmentStatus('COMPLETED');
         setIsClickedOnPriview(true);
@@ -2072,6 +2167,7 @@ export const ConsultTabs: React.FC = () => {
               tabValue={tabValue}
               showConfirmPrescription={showConfirmPrescription}
               setShowConfirmPrescription={(flag: boolean) => setShowConfirmPrescription(flag)}
+              webengageConsultTrackingObject={webengageConsultTrackingObject}
             />
             <div className={classes.tabContainer}>
               <div
