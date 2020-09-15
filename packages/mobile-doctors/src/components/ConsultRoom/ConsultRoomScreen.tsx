@@ -3224,7 +3224,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 },
                 (status, response) => {}
               );
-              props.navigation.push(AppRoutes.TabBar);
+              setDisplayReSchedulePopUp(false);
+              showAphAlert &&
+                showAphAlert({
+                  title: string.common.alert,
+                  description: string.alerts.reschedule_alert,
+                  onPressOk: () => {
+                    setLoading && setLoading(true);
+                    backDataFunctionality();
+                    hideAphAlert && hideAphAlert();
+                  },
+                });
             }}
           />
         )}
