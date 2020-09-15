@@ -418,10 +418,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           if (medicineDetails.id == 0) {
             return null;
           }
-          const existingCartItem = cartItems.filter(
-            (item) => item.id == medicineDetails.sku
-          );
-          let quantity = couponProducts[index]!.quantity;
 
           return {
             id: medicineDetails!.sku!,
@@ -429,7 +425,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             name: medicineDetails!.name,
             price: medicineDetails.price,
             specialPrice: Number(couponProducts[index]!.specialPrice),
-            quantity,
+            quantity: couponProducts[index]!.quantity,
             prescriptionRequired: medicineDetails.is_prescription_required == '1',
             isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
             thumbnail: medicineDetails.thumbnail || medicineDetails.image,
