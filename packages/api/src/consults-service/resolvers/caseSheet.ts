@@ -888,6 +888,11 @@ const modifyCaseSheet: Resolver<
     // }
   }
 
+  if (!getCaseSheetData.followUpAfterInDays && (inputArguments.followUpAfterInDays === undefined || inputArguments.followUpAfterInDays === null)) {
+    // this check is necessary til doctor-app's new version is not released
+    getCaseSheetData.followUpAfterInDays = 7;
+  }
+
   if (!(inputArguments.status === undefined)) {
     getCaseSheetData.status = inputArguments.status;
   }
