@@ -1919,6 +1919,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         if (isJoin) {
           callOptions.setCallAccepted(true);
           hideFloatingContainer();
+          setTimeout(() => {
+            callData.setVideoEnabled(false);
+          }, 1000);
         }
         callType === 'A' ? callOptions.setIsAudio(true) : callOptions.setIsAudio(false);
         callType === 'V' ? callOptions.setIsVideo(true) : callOptions.setIsVideo(false);
