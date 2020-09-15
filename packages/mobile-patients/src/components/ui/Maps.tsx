@@ -238,33 +238,22 @@ export const Maps: React.FC<MapProps> = (props) => {
     const getLongtitude = addressObject?.longitude;
     const getLandmark = addressObject?.landmark || '';
     let address;
-    if (getLandmark != '') {
-      address =
-        addressObject?.addressLine1?.trim() +
-        ', ' +
-        addressObject?.addressLine2?.trim() +
-        ', ' +
-        getLandmark.trim() +
-        ', ' +
-        addressObject?.city +
-        ', ' +
-        addressObject?.state +
-        ', ' +
-        addressObject?.zipcode;
-    } else {
-      address =
-        addressObject?.addressLine1?.trim() +
-        ', ' +
-        addressObject?.addressLine2?.trim() +
-        ', ' +
-        addressObject?.city +
-        ', ' +
-        addressObject?.state +
-        ', ' +
-        addressObject?.zipcode;
-    }
+    const newAddr = [
+      addressObject?.addressLine1,
+      addressObject?.addressLine2,
+      getLandmark,
+      addressObject?.city,
+      addressObject?.state,
+      addressObject?.zipcode,
+    ];
+    address = removeConsecutiveComma(newAddr.filter((v) => v).join(','))
+      .split(',')
+      .map((v) => v.trim())
+      .filter((item, idx, array) => array.indexOf(item) === idx)
+      .join(', ');
+    setAddress(address);
 
-    setAddress(removeConsecutiveComma(address));
+    setAddress(address);
     //check this condition for initial cases
     getLatLongFromAddress(address)
       .then(({ data }) => {
