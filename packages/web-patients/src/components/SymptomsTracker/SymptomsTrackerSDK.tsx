@@ -377,7 +377,7 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
   );
 };
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
-export const SymptomsTrackerSDK: React.FC = () => {
+const SymptomsTrackerSDK: React.FC = () => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
@@ -727,3 +727,5 @@ export const SymptomsTrackerSDK: React.FC = () => {
     </div>
   );
 };
+
+export default SymptomsTrackerSDK;

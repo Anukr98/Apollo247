@@ -453,3 +453,5 @@ export const SearchByTest: React.FC = (props) => {
     </div>
   );
 };
+
+export default SearchByTest;

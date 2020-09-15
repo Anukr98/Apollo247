@@ -87,7 +87,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const TermsAndConditions: React.FC = () => {
+const TermsAndConditions: React.FC = () => {
   const classes = useStyles({});
 
   return (
@@ -191,3 +191,5 @@ export const TermsAndConditions: React.FC = () => {
     </div>
   );
 };
+
+export default TermsAndConditions;
