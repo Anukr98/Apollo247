@@ -255,12 +255,12 @@ export const UIElementsProvider: React.FC = (props) => {
               {icon ? icon : null}
               <View style={[styles.popUpPointer, popUpPointerStyle]} />
               <View style={{ flex: 1 }}>
-                {title && <Text style={[styles.popUpTitleText, titleStyle]}>{title}</Text>}
-                {description && (
+                {title ? <Text style={[styles.popUpTitleText, titleStyle]}>{title}</Text> : null}
+                {description ? (
                   <Text style={[styles.popUpDescriptionText, descriptionTextStyle]}>
                     {description}
                   </Text>
-                )}
+                ) : null}
                 {!hideOk ? (
                   <TouchableOpacity
                     style={[styles.okContainer, okContainerStyle]}
