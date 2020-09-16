@@ -915,12 +915,14 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                     </div>
                     <div className={classes.consultChatContainer}>
                       <div className={classes.consultRow}>
-                        {appointmentDetails.appointmentState ===
-                          APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
-                          <AphButton className={classes.errorButton}>
-                            Sorry, we had to reschedule this appointment. Please pick another slot.
-                          </AphButton>
-                        )}
+                        {props.pastOrCurrent !== 'past' &&
+                          appointmentDetails.appointmentState ===
+                            APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
+                            <AphButton className={classes.errorButton}>
+                              Sorry, we had to reschedule this appointment. Please pick another
+                              slot.
+                            </AphButton>
+                          )}
                         <div className={classes.consultChat}>
                           {/* <h5>Previous Prescription</h5>
                         <AphButton className={classes.presButton}>
@@ -929,27 +931,26 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           <img src={require('images/ic_arrow_right_white.svg')} alt="" />
                         </AphButton> */}
                           {(appointmentDetails.status === STATUS.COMPLETED ||
-                            props.pastOrCurrent === 'past') &&
-                            appointmentDetails.isFollowUp === 'false' && (
-                              <div className={classes.bookFollowup}>
-                                <Route
-                                  render={({ history }) => (
-                                    <h3
-                                      style={{ cursor: 'pointer' }}
-                                      onClick={() => {
-                                        if (props.pastOrCurrent === 'past') {
-                                          history.push(
-                                            clientRoutes.chatRoom(appointmentId, doctorId)
-                                          );
-                                        }
-                                      }}
-                                    >
-                                      {props.pastOrCurrent !== 'past' ? '' : 'VIEW CHAT'}
-                                    </h3>
-                                  )}
-                                />
-                              </div>
-                            )}
+                            props.pastOrCurrent === 'past') && (
+                            <div className={classes.bookFollowup}>
+                              <Route
+                                render={({ history }) => (
+                                  <h3
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => {
+                                      if (props.pastOrCurrent === 'past') {
+                                        history.push(
+                                          clientRoutes.chatRoom(appointmentId, doctorId)
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    {props.pastOrCurrent !== 'past' ? '' : 'VIEW CHAT'}
+                                  </h3>
+                                )}
+                              />
+                            </div>
+                          )}
                           <Route
                             render={({ history }) => (
                               <div
@@ -985,11 +986,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                               >
                                 <h3>
                                   {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-                                    ? showAppointmentAction(
-                                        appointmentState,
-                                        status,
-                                        isConsultStarted
-                                      )
+                                    ? props.pastOrCurrent === 'past'
+                                      ? ''
+                                      : showAppointmentAction(
+                                          appointmentState,
+                                          status,
+                                          isConsultStarted
+                                        )
                                     : 'VIEW DETAILS'}
                                 </h3>
                               </div>
