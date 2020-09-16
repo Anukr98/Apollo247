@@ -234,7 +234,7 @@ export const caseSheetTypeDefs = gql`
     juniorDoctorNotes: String
     juniorDoctorCaseSheet: CaseSheet
     allowedDosages: [String]
-    diagonasticTestResult: String
+    diagnosticTestResult: String
     clinicalObservationNotes: String
   }
 
@@ -279,7 +279,7 @@ export const caseSheetTypeDefs = gql`
     referralSpecialtyName: String
     referralDescription: String
     version: Int
-    diagonasticTestResult: String
+    diagnosticTestResult: String
     clinicalObservationNotes: String
   }
 
@@ -521,7 +521,7 @@ export const caseSheetTypeDefs = gql`
     occupationHistory: String
     referralSpecialtyName: String
     referralDescription: String
-    diagonasticTestResult: String
+    diagnosticTestResult: String
     clinicalObservationNotes: String
   }
 
@@ -659,7 +659,7 @@ const getCaseSheet: Resolver<
     juniorDoctorCaseSheet: CaseSheet;
     allowedDosages: string[];
     clinicalObservationNotes: string;
-    diagonasticTestResult: string;
+    diagnosticTestResult: string;
   }
 > = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
   //check appointment id
@@ -695,7 +695,7 @@ const getCaseSheet: Resolver<
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   let juniorDoctorNotes = '';
   let clinicalObservationNotes = '';
-  let diagonasticTestResult = '';
+  let diagnosticTestResult = '';
 
   //check whether there is a senior doctor case-sheet
   const caseSheetDetails = await caseSheetRepo.getSeniorDoctorLatestCaseSheet(appointmentData.id);
@@ -704,12 +704,8 @@ const getCaseSheet: Resolver<
   if (juniorDoctorCaseSheet == null)
     throw new AphError(AphErrorMessages.JUNIOR_DOCTOR_CASESHEET_NOT_CREATED);
   juniorDoctorNotes = juniorDoctorCaseSheet.notes;
-  clinicalObservationNotes =
-    caseSheetDetails.clinicalObservationNotes ||
-    juniorDoctorCaseSheet.clinicalObservationNotes ||
-    '';
-  diagonasticTestResult =
-    caseSheetDetails.diagonasticTestResult || juniorDoctorCaseSheet.diagonasticTestResult || '';
+  clinicalObservationNotes = patientDetails.patientMedicalHistory.clinicalObservationNotes || '';
+  diagnosticTestResult = patientDetails.patientMedicalHistory.diagnosticTestResult || '';
   const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
 
   //get past appointment details
@@ -753,7 +749,7 @@ const getCaseSheet: Resolver<
     pastAppointments: pastAppointmentsWithUnreadMessages,
     juniorDoctorNotes,
     clinicalObservationNotes,
-    diagonasticTestResult,
+    diagnosticTestResult,
     juniorDoctorCaseSheet,
     allowedDosages: ApiConstants.ALLOWED_DOSAGES.split(','),
   };
@@ -795,7 +791,7 @@ type ModifyCaseSheetInput = {
   occupationHistory?: string;
   referralSpecialtyName?: string;
   referralDescription?: string;
-  diagonasticTestResult?: string;
+  diagnosticTestResult?: string;
   clinicalObservationNotes?: string;
 };
 
@@ -838,8 +834,6 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.notes = inputArguments.notes;
   }
 
-  getCaseSheetData.diagonasticTestResult = inputArguments?.diagonasticTestResult || '';
-  getCaseSheetData.clinicalObservationNotes = inputArguments?.clinicalObservationNotes || '';
   if (!(inputArguments.diagnosis === undefined)) {
     if (inputArguments.diagnosis && inputArguments.diagnosis.length === 0)
       throw new AphError(AphErrorMessages.INVALID_DIAGNOSIS_LIST);
@@ -979,6 +973,9 @@ const modifyCaseSheet: Resolver<
   const medicalHistoryInputs: Partial<PatientMedicalHistory> = {
     patient: patientData,
   };
+  medicalHistoryInputs.clinicalObservationNotes = inputArguments.clinicalObservationNotes || '';
+  medicalHistoryInputs.diagnosticTestResult = inputArguments.diagnosticTestResult || '';
+
   if (patientData.patientMedicalHistory) {
     medicalHistoryInputs.id = patientData.patientMedicalHistory.id;
   }

@@ -20137,7 +20137,7 @@
             "deprecationReason": null
           },
           {
-            "name": "diagonasticTestResult",
+            "name": "diagnosticTestResult",
             "description": null,
             "args": [],
             "type": {
@@ -23512,7 +23512,7 @@
             "deprecationReason": null
           },
           {
-            "name": "diagonasticTestResult",
+            "name": "diagnosticTestResult",
             "description": null,
             "args": [],
             "type": {
@@ -43100,7 +43100,7 @@
             "defaultValue": null
           },
           {
-            "name": "diagonasticTestResult",
+            "name": "diagnosticTestResult",
             "description": null,
             "type": {
               "kind": "SCALAR",
