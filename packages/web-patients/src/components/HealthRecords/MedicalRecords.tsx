@@ -732,7 +732,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     )}
                     {!!activeData.labTestRefferedBy && (
                       <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
-                        <div>Dr. {activeData.labTestRefferedBy}</div>
+                        <div>{activeData.labTestRefferedBy}</div>
                       </div>
                     )}
                     {activeData.siteDisplayName && (
