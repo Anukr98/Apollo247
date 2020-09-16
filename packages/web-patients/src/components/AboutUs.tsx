@@ -81,7 +81,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const AboutUs: React.FC = () => {
+const AboutUs: React.FC = () => {
   const classes = useStyles({});
 
   return (
@@ -149,3 +149,5 @@ export const AboutUs: React.FC = () => {
     </div>
   );
 };
+
+export default AboutUs;

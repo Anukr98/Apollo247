@@ -378,7 +378,7 @@ export const getItemSpecialPrice = (cartItemDetails: MedicineCartItem) => {
   return cartItemDetails.special_price || cartItemDetails.price;
 };
 
-export const PayMedicine: React.FC = (props) => {
+const PayMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const [checked, setChecked] = React.useState(false);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1177,3 +1177,5 @@ export const PayMedicine: React.FC = (props) => {
     </div>
   );
 };
+
+export default PayMedicine;

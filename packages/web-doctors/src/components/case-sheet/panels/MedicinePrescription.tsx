@@ -753,9 +753,6 @@ const useStyles = makeStyles((theme: Theme) =>
           lineHeight: '16px',
         },
         '& button': {
-          position: 'absolute',
-          top: 10,
-          right: 0,
           padding: 0,
         },
       },
