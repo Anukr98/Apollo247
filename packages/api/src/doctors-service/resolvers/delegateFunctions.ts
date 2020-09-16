@@ -201,12 +201,11 @@ const getSecretaryDetailsByDoctorId: Resolver<
   DoctorsServiceContext,
   Secretary | null
 > = async (parent, args, { mobileNumber, doctorsDb }) => {
-  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.getDoctorSecretary(args.doctorId);
-  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-
-  const secretaryDetails = doctorData.doctorSecretary ? doctorData.doctorSecretary.secretary : null;
-  return secretaryDetails;
+  const doctorSecretaryRepository = doctorsDb.getCustomRepository(DoctorSecretaryRepository);
+  const secretaryDetails = await doctorSecretaryRepository.getSecretaryDetailsByDoctorId(
+    args.doctorId
+  );
+  return secretaryDetails ? secretaryDetails.secretary : null;
 };
 
 export const delegateFunctionsResolvers = {
