@@ -605,72 +605,22 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const onAddToCart = () => {
-    setLoading && setLoading(true);
-
     const medPrescription = (caseSheetDetails!.medicinePrescription || []).filter(
       (item) => item!.id
     );
-
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
-    Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
-      .then((result) => {
-        console.log('Promise.all medPrescription result', { result });
-        setLoading && setLoading(false);
-        const medicinesAll = result.map(({ data: { productdp } }, index) => {
-          const medicineDetails = (productdp && productdp[0]) || {};
-          if (medicineDetails.id == 0) {
-            return null;
-          }
-          const item = medPrescription[index]!;
-          const qty = getQuantity(
-            item.medicineUnit,
-            item.medicineTimings,
-            item.medicineDosage,
-            item.medicineCustomDosage,
-            item.medicineConsumptionDurationInDays,
-            item.medicineConsumptionDurationUnit,
-            parseInt(medicineDetails.mou || '1', 10)
-          );
-
-          return {
-            id: medicineDetails!.sku!,
-            mou: medicineDetails.mou,
-            name: medicineDetails!.name,
-            price: medicineDetails!.price,
-            specialPrice: medicineDetails.special_price
-              ? typeof medicineDetails.special_price == 'string'
-                ? Number(medicineDetails.special_price)
-                : medicineDetails.special_price
-              : undefined,
-            quantity: qty,
-            prescriptionRequired: medicineDetails.is_prescription_required == '1',
-            isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
-            thumbnail: medicineDetails.thumbnail || medicineDetails.image,
-            isInStock: !!medicineDetails.is_in_stock,
-            maxOrderQty: medicineDetails.MaxOrderQty,
-            productType: medicineDetails.type_id,
-          } as ShoppingCartItem;
-        });
-        const medicines = medicinesAll.filter((item) => !!item);
-        const presToAdd = {
-          id: caseSheetDetails!.id,
-          date: moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MMM YYYY'),
-          doctorName: g(data, 'displayName') || '',
-          forPatient: (currentPatient && currentPatient.firstName) || '',
-          medicines: (medicines || []).map((item) => item!.name).join(', '),
-          uploadedUrl: docUrl,
-        } as EPrescription;
-        props.navigation.navigate(AppRoutes.UploadPrescription, {
-          ePrescriptionsProp: [presToAdd],
-          type: 'E-Prescription',
-        });
-      })
-      .catch((e) => {
-        CommonBugFender('ConsultDetails_onAddToCart', e);
-        setLoading && setLoading(false);
-        console.log({ e });
-        handleGraphQlError(e);
-      });
+    const presToAdd = {
+      id: caseSheetDetails!.id,
+      date: moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MMM YYYY'),
+      doctorName: g(data, 'displayName') || '',
+      forPatient: (currentPatient && currentPatient.firstName) || '',
+      medicines: (medPrescription || []).map((item) => item!.medicineName).join(', '),
+      uploadedUrl: docUrl,
+    } as EPrescription;
+    props.navigation.navigate(AppRoutes.UploadPrescription, {
+      ePrescriptionsProp: [presToAdd],
+      type: 'E-Prescription',
+    });
   };
 
   const medicineDescription = (
