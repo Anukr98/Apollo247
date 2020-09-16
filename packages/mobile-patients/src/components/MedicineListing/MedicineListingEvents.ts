@@ -1,0 +1,42 @@
+import { trackTagalysEvent } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+
+type CategoryListGridView = WebEngageEvents[WebEngageEventName.CATEGORY_LIST_GRID_VIEW];
+type SearchEnterClick = WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK];
+type PharmacySearchResults = WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS];
+type Search = WebEngageEvents[WebEngageEventName.SEARCH];
+
+export const MedicineListingEvents = {
+  categoryListGridView: (attributes: CategoryListGridView) => {
+    postWebEngageEvent(WebEngageEventName.CATEGORY_LIST_GRID_VIEW, attributes);
+  },
+
+  search: (attributes: Search) => {
+    postWebEngageEvent(WebEngageEventName.SEARCH, attributes);
+  },
+
+  pharmacySearchResults: (attributes: PharmacySearchResults) => {
+    postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, attributes);
+  },
+
+  searchEnterClick: (attributes: SearchEnterClick) => {
+    postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, attributes);
+  },
+
+  tagalysSearch: (patientId: string, attributes: Tagalys.ProductList) => {
+    try {
+      trackTagalysEvent(
+        {
+          event_type: 'product_list',
+          details: attributes,
+        },
+        patientId
+      );
+    } catch (error) {}
+  },
+};

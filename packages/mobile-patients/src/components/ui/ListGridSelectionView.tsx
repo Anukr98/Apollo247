@@ -7,6 +7,46 @@ import {
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
+export interface Props {
+  isListView: boolean;
+  onPressListView: () => void;
+  onPressGridView: () => void;
+}
+
+export const ListGridSelectionView: React.FC<Props> = ({
+  isListView,
+  onPressListView,
+  onPressGridView,
+}) => {
+  return (
+    <View style={styles.filterAndListViewStyle}>
+      <View style={styles.listViewMainStyle}>
+        <TouchableOpacity
+          onPress={onPressListView}
+          style={[styles.listViewIconViewStyle, isListView && { backgroundColor: COLOR }]}
+        >
+          {isListView ? (
+            <WhiteListViewIcon style={styles.listViewIconStyle} />
+          ) : (
+            <BlackListViewIcon style={styles.listViewIconStyle} />
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={onPressGridView}
+          style={[styles.gridViewIconViewStyle, , !isListView && { backgroundColor: COLOR }]}
+        >
+          {isListView ? (
+            <BlackGridViewIcon style={styles.gridViewIconStyle} />
+          ) : (
+            <WhiteGridViewIcon style={styles.gridViewIconStyle} />
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+const COLOR = '#02475b';
 const styles = StyleSheet.create({
   filterAndListViewStyle: {
     alignSelf: 'flex-end',
@@ -17,7 +57,7 @@ const styles = StyleSheet.create({
   listViewMainStyle: {
     flexDirection: 'row',
     borderWidth: 0.5,
-    borderColor: '#02475b',
+    borderColor: COLOR,
     borderRadius: 3,
     marginLeft: 8,
   },
@@ -35,41 +75,3 @@ const styles = StyleSheet.create({
   listViewIconStyle: { width: 14, height: 9 },
   gridViewIconStyle: { width: 11, height: 11 },
 });
-
-export interface Props {
-  isListView: boolean;
-  onPressListView: () => void;
-  onPressGridView: () => void;
-}
-
-export const ListGridSelectionView: React.FC<Props> = (props) => {
-  return (
-    <View style={[styles.filterAndListViewStyle, { marginRight: props.isListView ? 20 : 5 }]}>
-      <View style={styles.listViewMainStyle}>
-        <TouchableOpacity
-          onPress={props.onPressListView}
-          style={[styles.listViewIconViewStyle, props.isListView && { backgroundColor: '#02475b' }]}
-        >
-          {props.isListView ? (
-            <WhiteListViewIcon style={styles.listViewIconStyle} />
-          ) : (
-            <BlackListViewIcon style={styles.listViewIconStyle} />
-          )}
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={props.onPressGridView}
-          style={[
-            styles.gridViewIconViewStyle,
-            !props.isListView && { backgroundColor: '#02475b' },
-          ]}
-        >
-          {props.isListView ? (
-            <BlackGridViewIcon style={styles.gridViewIconStyle} />
-          ) : (
-            <WhiteGridViewIcon style={styles.gridViewIconStyle} />
-          )}
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-};

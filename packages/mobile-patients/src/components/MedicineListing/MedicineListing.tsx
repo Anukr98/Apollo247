@@ -1,6 +1,7 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { MedicineListingEvents } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingEvents';
 import {
   MedListingProductProps,
   MedListingProducts,
@@ -37,7 +38,6 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
-  Alert,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -74,7 +74,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const [productsTotal, setProductsTotal] = useState<number>(0);
   const [pageId, setPageId] = useState(1);
   const [pageTitle, setPageTitle] = useState(titleNavProp);
-  const [sortBy, setSortBy] = useState('Price: Low to High');
+  const [sortBy, setSortBy] = useState(sortByOptions[0]);
   const [sortByVisible, setSortByVisible] = useState<boolean>(false);
 
   // global contexts
@@ -115,8 +115,20 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       updateLoading(pageId, false);
       setPageId(pageId + 1);
       setPageTitle(data.search_heading || '');
+      if (pageId == 1) {
+        MedicineListingEvents.searchEnterClick({
+          keyword: searchText,
+          numberofresults: data.product_count,
+        });
+      }
+      MedicineListingEvents.tagalysSearch(currentPatient?.id, {
+        pl_type: 'search',
+        pl_details: { q: searchText },
+        pl_products: products?.map((p) => p.sku) || [],
+        pl_page: pageId,
+        pl_total: data.product_count,
+      });
     } catch (error) {
-      Alert.alert('error', JSON.stringify(error));
       updateLoading(pageId, false);
       renderAlert();
     }
@@ -311,12 +323,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderSortByOverlay = () => {
-    const sortByOptions = [
-      'Recommended',
-      'Price : Low to High',
-      'Price : High to Low',
-      'Discount : High to Low',
-    ];
     return (
       sortByVisible && (
         <OptionSelectionOverlay
@@ -373,7 +379,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
             icon: <Filter />, // TODO: Replace icon
             title: 'Filter By',
             subtitle: 'Apply filters',
-            onPress: () => navigation.navigate(AppRoutes.AddAddress),
+            onPress: () => navigation.navigate(AppRoutes.Medicine),
           },
           {
             icon: (
@@ -383,7 +389,16 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
                 onPressListView={() => setShowListView(true)}
               />
             ),
-            onPress: () => setShowListView(!showListView),
+            onPress: () => {
+              setShowListView(!showListView);
+              MedicineListingEvents.categoryListGridView({
+                Source: searchText ? 'Search' : 'Category',
+                Type: showListView ? 'List' : 'Grid',
+                'Category id': !searchText ? categoryId : undefined,
+                'Category name': !searchText ? pageTitle : undefined,
+              });
+            },
+            itemContainerProps: { style: styles.optionsDisplayViewItem },
           },
         ]}
       />
@@ -408,6 +423,13 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
+
+const sortByOptions = [
+  'Recommended',
+  'Price : Low to High',
+  'Price : High to Low',
+  'Discount : High to Low',
+];
 
 const { text, card, container } = theme.viewStyles;
 const styles = StyleSheet.create({
@@ -436,4 +458,5 @@ const styles = StyleSheet.create({
     ...text('R', 14, '#02475B'),
   },
   divider: { marginVertical: 10 },
+  optionsDisplayViewItem: { marginLeft: '10%' },
 });

@@ -94,7 +94,6 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    width: '33%',
   },
   titleSubtitleContainer: {
     paddingHorizontal: 5,
