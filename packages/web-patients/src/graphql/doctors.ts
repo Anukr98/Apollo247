@@ -22,6 +22,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       physicalConsultationFees
       qualification
       doctorType
+      chatDays
       starTeam {
         associatedDoctor {
           fullName
