@@ -280,8 +280,6 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setDiagnosticTestResults: React.Dispatch<React.SetStateAction<string>>;
   clinicalNotes: string;
   setClinicalNotes: React.Dispatch<React.SetStateAction<string>>;
-  seniorDrPersonalNotes: string;
-  setSeniorDrPersonalNotes: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -371,8 +369,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     setDiagnosticTestResults,
     clinicalNotes,
     setClinicalNotes,
-    seniorDrPersonalNotes,
-    setSeniorDrPersonalNotes,
   } = props;
 
   const basicAppointmentData = {
@@ -1195,7 +1191,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   setDiagnosticTestResults(text);
                 }
               },
-              strings.case_sheet.typeYourNotes,
+              strings.case_sheet.typeDiagnosticTestResults,
               true,
               theme.colors.placeholderTextColor,
               styles.activeBorderColor
@@ -1208,7 +1204,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   setClinicalNotes(text);
                 }
               },
-              strings.case_sheet.typeYourNotes,
+              strings.case_sheet.typeClinicalNotes,
               true,
               theme.colors.placeholderTextColor,
               styles.activeBorderColor

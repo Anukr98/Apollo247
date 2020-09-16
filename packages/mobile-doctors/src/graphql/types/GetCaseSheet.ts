@@ -461,6 +461,8 @@ export interface GetCaseSheet_getCaseSheet {
   juniorDoctorNotes: string | null;
   juniorDoctorCaseSheet: GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet | null;
   allowedDosages: (string | null)[] | null;
+  diagonasticTestResult: string | null;
+  clinicalObservationNotes: string | null;
 }
 
 export interface GetCaseSheet {
