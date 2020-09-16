@@ -96,7 +96,7 @@ export function textInRow(doc: PDFKit.PDFDocument, text: string, heigth: number,
 export function writeRow(doc: PDFKit.PDFDocument, heigth: number) {
   doc
     .lineJoin('miter')
-    .rect(30, heigth, 500, 20)
+    .rect(30, heigth, 500, 30)
     .stroke();
   return doc;
 }
