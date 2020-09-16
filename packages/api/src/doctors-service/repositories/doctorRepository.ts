@@ -405,7 +405,7 @@ export class DoctorRepository extends Repository<Doctor> {
 
   getDoctorSecretary(id: string) {
     return this.findOne({
-      where: [{ id, isActive: true }],
+      where: [{ id }],
       relations: [
         'doctorSecretary',
         'doctorSecretary.secretary',

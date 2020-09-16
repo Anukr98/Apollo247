@@ -38,6 +38,7 @@ export const delegateFunctionsTypeDefs = gql`
 
   extend type Query {
     getSecretaryList: [SecretaryDetails]
+    getSecretaryDetailsByDoctorId(doctorId: String): SecretaryDetails
   }
 `;
 type SaveExternalConnectResult = {
@@ -194,6 +195,20 @@ const updateSaveExternalConnect: Resolver<
   return { status: true };
 };
 
+const getSecretaryDetailsByDoctorId: Resolver<
+  null,
+  { doctorId: string },
+  DoctorsServiceContext,
+  Secretary | null
+> = async (parent, args, { mobileNumber, doctorsDb }) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.getDoctorSecretary(args.doctorId);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  const secretaryDetails = doctorData.doctorSecretary ? doctorData.doctorSecretary.secretary : null;
+  return secretaryDetails;
+};
+
 export const delegateFunctionsResolvers = {
   Mutation: {
     updateDelegateNumber,
@@ -203,5 +218,8 @@ export const delegateFunctionsResolvers = {
     updateSaveExternalConnect,
   },
 
-  Query: { getSecretaryList },
+  Query: {
+    getSecretaryList,
+    getSecretaryDetailsByDoctorId,
+  },
 };
