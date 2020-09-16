@@ -1139,7 +1139,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           ? `${doctorClinics[0].facility.city}`
           : '',
       'Secretary Name': secretaryData.name,
-      'Secretary Number': secretaryData.mobileNumber,
+      'Secretary Mobile Number': secretaryData.mobileNumber,
+      'Doctor Mobile Number': g(doctorDetails, 'mobileNumber')!,
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {

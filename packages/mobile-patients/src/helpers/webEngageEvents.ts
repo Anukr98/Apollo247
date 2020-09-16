@@ -648,7 +648,8 @@ export interface WebEngageEvents {
     'Hospital Name': string;
     'Hospital City': string;
     'Secretary Name': string;
-    'Secretary Number': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.TYPE_OF_CONSULT_SELECTED]: {
     'Consultation Type': string;
@@ -979,7 +980,8 @@ export interface WebEngageEvents {
     'Mobile Number': string;
     'Customer ID': string;
     'Secretary Name': string;
-    'Secretary Number': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
 
   [WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER]: {
@@ -999,7 +1001,8 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
     'Secretary Name': string;
-    'Secretary Number': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.FILL_MEDICAL_DETAILS]: {
     'Doctor Name': string;
@@ -1091,7 +1094,8 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
     'Secretary Name': string;
-    'Secretary Number': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.CONTINUE_CONSULTATION_CLICKED]: {
     'Doctor Name': string;
@@ -1111,7 +1115,8 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
     'Secretary Name': string;
-    'Secretary Number': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.CANCEL_CONSULTATION_CLICKED]: {
     'Doctor Name': string;
@@ -1131,7 +1136,8 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
     'Secretary Name': string;
-    'Secretary Number': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.PRESCRIPTION_RECEIVED]: {
     'Doctor Name': string;
