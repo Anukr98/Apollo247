@@ -308,6 +308,9 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                 properties={{
                   publishAudio: isPublishAudio,
                   publishVideo: subscribeToVideo,
+                  resolution: '640x480',
+                  audioBitrate: 30000,
+                  frameRate: 15,
                 }}
                 onError={(error: any) => {
                   console.log('Publisher Error', error, error.name);
