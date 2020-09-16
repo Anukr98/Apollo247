@@ -39,6 +39,7 @@ export const GET_APPOINTMENT_DATA = gql`
         symptoms
         caseSheet {
           followUpAfterInDays
+          doctorType
         }
         doctorInfo {
           id

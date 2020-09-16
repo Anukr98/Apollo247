@@ -482,14 +482,14 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     const caseSheets =
       appointmentDetails && appointmentDetails.caseSheet ? appointmentDetails.caseSheet : [];
 
-    // const srdCaseSheet = caseSheets!.find(
-    //   (item) =>
-    //     item!.doctorType == DoctorType.STAR_APOLLO ||
-    //     item!.doctorType == DoctorType.APOLLO ||
-    //     item!.doctorType == DoctorType.PAYROLL
-    // );
+    const srdCaseSheet = caseSheets!.find(
+      (item) =>
+        item!.doctorType == DoctorType.STAR_APOLLO ||
+        item!.doctorType == DoctorType.APOLLO ||
+        item!.doctorType == DoctorType.PAYROLL
+    );
 
-    const srdCaseSheet: any = null;
+    // const srdCaseSheet: any = null;
 
     const followUpInDays =
       srdCaseSheet && srdCaseSheet.followUpAfterInDays ? srdCaseSheet.followUpAfterInDays : 7;
@@ -666,7 +666,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                       <span>
                         {getAvailableFreeChatDays(
                           appointmentDetails.appointmentDateTime,
-                          followUpInDays
+                          Number(followUpInDays)
                         )}
                       </span>
                     </div>
