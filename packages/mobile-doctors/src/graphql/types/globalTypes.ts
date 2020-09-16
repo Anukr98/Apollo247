@@ -448,6 +448,8 @@ export interface ModifyCaseSheetInput {
   occupationHistory?: string | null;
   referralSpecialtyName?: string | null;
   referralDescription?: string | null;
+  diagonasticTestResult?: string | null;
+  clinicalObservationNotes?: string | null;
 }
 
 export interface OtherInstructionsInput {

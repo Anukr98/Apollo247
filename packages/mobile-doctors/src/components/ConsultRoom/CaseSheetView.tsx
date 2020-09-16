@@ -105,6 +105,8 @@ import {
   TouchableOpacity,
   View,
   Keyboard,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -274,6 +276,10 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setSelectedReferral: React.Dispatch<React.SetStateAction<OptionsObject>>;
   referralReason: string;
   setReferralReason: React.Dispatch<React.SetStateAction<string>>;
+  diagnosticTestResults: string;
+  setDiagnosticTestResults: React.Dispatch<React.SetStateAction<string>>;
+  clinicalNotes: string;
+  setClinicalNotes: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -359,6 +365,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     existingMedicineId,
     removedMedicinePrescriptionData,
     setRemovedMedicinePrescriptionData,
+    diagnosticTestResults,
+    setDiagnosticTestResults,
+    clinicalNotes,
+    setClinicalNotes,
   } = props;
 
   const basicAppointmentData = {
@@ -903,7 +913,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     data: string,
     onChange: (text: string) => void,
     placeHolder?: string,
-    multiline?: boolean
+    multiline?: boolean,
+    placeholderTextColor?: string,
+    styles?: StyleProp<ViewStyle>
   ) => {
     return (
       <View>
@@ -911,15 +923,18 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {heading}
         </Text>
         <View
-          style={{
-            minHeight: 44,
-            marginTop: 8,
-            marginBottom: 16,
-            backgroundColor: 'rgba(0, 0, 0, 0.03)',
-            borderWidth: 1,
-            borderRadius: 5,
-            borderColor: theme.colors.darkBlueColor(0.15),
-          }}
+          style={[
+            {
+              minHeight: 44,
+              marginTop: 8,
+              marginBottom: 16,
+              backgroundColor: 'rgba(0, 0, 0, 0.03)',
+              borderWidth: 1,
+              borderRadius: 5,
+              borderColor: theme.colors.darkBlueColor(0.15),
+            },
+            styles,
+          ]}
         >
           <TextInput
             style={{
@@ -934,7 +949,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             value={data}
             multiline={multiline}
             placeholder={placeHolder || ''}
-            placeholderTextColor={theme.colors.darkBlueColor(1)}
+            placeholderTextColor={placeholderTextColor || theme.colors.darkBlueColor(1)}
             textAlignVertical={multiline ? 'top' : undefined}
             selectionColor={theme.colors.INPUT_CURSOR_COLOR}
             onChange={(text) => onChange && caseSheetEdit && onChange(text.nativeEvent.text)}
@@ -1150,12 +1165,63 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View>
         <CollapseCard
-          heading={strings.case_sheet.jr_doctor_notes}
+          heading={strings.case_sheet.notes}
           collapse={juniorshow}
           onPress={() => setJuniorShow(!juniorshow)}
         >
-          <View style={styles.symptomsInputView}>
-            <Text style={[styles.symptomsText, { marginRight: 12 }]}>{juniordoctornotes}</Text>
+          <View style={styles.headerView}>
+            {renderHeaderText(strings.case_sheet.jrDoctorNotes)}
+          </View>
+          <View style={[styles.symptomsInputView, { borderRadius: 5 }]}>
+            <Text
+              style={[
+                styles.symptomsText,
+                { marginRight: 12, ...theme.fonts.IBMPlexSansRegular(14) },
+              ]}
+            >
+              {juniordoctornotes}
+            </Text>
+          </View>
+          <View style={{ marginHorizontal: 16 }}>
+            {renderFields(
+              strings.case_sheet.diagnosticTestResults,
+              diagnosticTestResults,
+              (text) => {
+                if (isValidSearch(text)) {
+                  setDiagnosticTestResults(text);
+                }
+              },
+              strings.case_sheet.typeDiagnosticTestResults,
+              true,
+              theme.colors.placeholderTextColor,
+              styles.activeBorderColor
+            )}
+            {renderFields(
+              strings.case_sheet.clinicalNotes,
+              clinicalNotes,
+              (text) => {
+                if (isValidSearch(text)) {
+                  setClinicalNotes(text);
+                }
+              },
+              strings.case_sheet.typeClinicalNotes,
+              true,
+              theme.colors.placeholderTextColor,
+              styles.activeBorderColor
+            )}
+            {renderFields(
+              strings.case_sheet.personal_note,
+              doctorNotes,
+              (text) => {
+                if (isValidSearch(text)) {
+                  setDoctorNotes(text);
+                }
+              },
+              strings.case_sheet.typeYourNotes,
+              true,
+              theme.colors.placeholderTextColor,
+              styles.activeBorderColor
+            )}
           </View>
         </CollapseCard>
       </View>
@@ -2701,26 +2767,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             {renderFollowUpView()}
             {renderAdviceInstruction()}
             {renderReferral()}
-            <View style={{ zIndex: -1 }}>
-              {/* {renderOtherInstructionsView()} */}
-              <View style={styles.underlineend} />
-              <View style={styles.inputBorderView}>
-                <View style={{ margin: 16 }}>
-                  <Text style={styles.notes}>{strings.case_sheet.personal_note}</Text>
-                  <TextInput
-                    placeholder={strings.case_sheet.note_placeholder}
-                    textAlignVertical={'top'}
-                    placeholderTextColor={theme.colors.placeholderTextColor}
-                    style={styles.inputView}
-                    multiline={true}
-                    value={doctorNotes}
-                    onChangeText={(value) => caseSheetEdit && setDoctorNotes(value)}
-                    autoCorrect={true}
-                    editable={caseSheetEdit}
-                  />
-                </View>
-              </View>
-            </View>
             {showPopUp && CallPopUp()}
           </ScrollView>
         </KeyboardAwareScrollView>

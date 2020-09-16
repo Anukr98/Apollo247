@@ -493,7 +493,14 @@
       "audio": "AUDIO",
       "video": "VIDEO",
       "audioVideo": "AUDIOVIDEO"
-    }
+    },
+    "notes": "Notes",
+    "diagnosticTestResults": "Diagnostic Test Results",
+    "clinicalNotes": "Clinical observations/notes",
+    "jrDoctorNotes": "Junior Doctor Notes",
+    "typeYourNotes": "Type your notes here ....",
+    "typeDiagnosticTestResults": "Type your diagnostic test results here ....",
+    "typeClinicalNotes": "Type your clinical observations/notes here ...."
   },
   "consult_room": {
     "patient_is_not_acitve_descr": "We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult.",

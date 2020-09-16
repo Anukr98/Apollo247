@@ -346,4 +346,12 @@ export const styles = StyleSheet.create({
     ...theme.viewStyles.text('R', 12, theme.colors.APP_GREEN, 1, 16, 1),
     marginLeft: 12,
   },
+  headerView: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+  },
+  activeBorderColor: {
+    borderColor: theme.colors.INPUT_CURSOR_COLOR,
+    minHeight: 64,
+  },
 });

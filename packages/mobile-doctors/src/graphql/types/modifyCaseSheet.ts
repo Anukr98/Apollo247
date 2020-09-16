@@ -258,6 +258,8 @@ export interface modifyCaseSheet_modifyCaseSheet {
   referralSpecialtyName: string | null;
   referralDescription: string | null;
   version: number | null;
+  diagonasticTestResult: string | null;
+  clinicalObservationNotes: string | null;
 }
 
 export interface modifyCaseSheet {
