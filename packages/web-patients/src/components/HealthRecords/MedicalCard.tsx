@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
+import { MedicalRecordType } from '../../graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -109,7 +110,7 @@ const useStyles = makeStyles((theme: Theme) => {
 type MedicalCardProps = {
   name: string;
   source: string;
-  type: string;
+  type: MedicalRecordType;
   isActiveCard: boolean;
   deleteReport: (id: string, type: string) => void;
   id: string;
@@ -127,7 +128,14 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
           <div className={classes.doctorName}>{name}</div>
         </div>
       </div>
-      {source && source !== '-' && <div className={classes.consultType}>{source}</div>}
+      {source && source !== '-' && (
+        <div className={classes.consultType}>
+          {/* {source === '247self' ? <img /> : <img />} // first image should have person image and second one should be hospital  */}
+          {type !== MedicalRecordType.HOSPITALIZATION && source === '247self'
+            ? 'Self upload'
+            : source}
+        </div>
+      )}
       <AphDialog
         open={showPopup}
         disableBackdropClick

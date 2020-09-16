@@ -480,6 +480,7 @@ export const ConsultTabs: React.FC = () => {
   const [showConfirmPrescription, setShowConfirmPrescription] = React.useState<boolean>(false);
 
   const [giveRating, setGiveRating] = useState<boolean>(false);
+  const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
 
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
@@ -502,6 +503,11 @@ export const ConsultTabs: React.FC = () => {
       //setFollowUp(followUp);
     }
   }, [startAppointment]);
+
+  const handleSetIsCallAccepted = React.useCallback((value) => {
+    setIsCallAccepted(value);
+  }, []);
+
   function getCookieValue(cookieName: string) {
     const name = cookieName + '=';
     const ca = document.cookie.split(';');
@@ -2168,6 +2174,8 @@ export const ConsultTabs: React.FC = () => {
               showConfirmPrescription={showConfirmPrescription}
               setShowConfirmPrescription={(flag: boolean) => setShowConfirmPrescription(flag)}
               webengageConsultTrackingObject={webengageConsultTrackingObject}
+              setIsCallAccepted={handleSetIsCallAccepted}
+              isCallAccepted={isCallAccepted}
             />
             <div className={classes.tabContainer}>
               <div
@@ -2230,6 +2238,8 @@ export const ConsultTabs: React.FC = () => {
                         lastMsg={lastMsg}
                         messages={messages}
                         appointmentStatus={appointmentStatus}
+                        setIsCallAccepted={handleSetIsCallAccepted}
+                        isCallAccepted={isCallAccepted}
                         postDoctorConsultEventAction={(
                           eventType: WebEngageEvent,
                           displayId: string
