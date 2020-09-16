@@ -276,10 +276,6 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setSelectedReferral: React.Dispatch<React.SetStateAction<OptionsObject>>;
   referralReason: string;
   setReferralReason: React.Dispatch<React.SetStateAction<string>>;
-  diagnosticTestResults: string;
-  setDiagnosticTestResults: React.Dispatch<React.SetStateAction<string>>;
-  clinicalNotes: string;
-  setClinicalNotes: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -365,10 +361,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     existingMedicineId,
     removedMedicinePrescriptionData,
     setRemovedMedicinePrescriptionData,
-    diagnosticTestResults,
-    setDiagnosticTestResults,
-    clinicalNotes,
-    setClinicalNotes,
   } = props;
 
   const basicAppointmentData = {
@@ -1161,7 +1153,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-  const renderJuniorDoctorNotes = () => {
+  const renderNotes = () => {
     return (
       <View>
         <CollapseCard
@@ -1185,10 +1177,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           <View style={{ marginHorizontal: 16 }}>
             {renderFields(
               strings.case_sheet.diagnosticTestResults,
-              diagnosticTestResults,
+              (medicalHistory && medicalHistory.diagnosticTestResult) || '',
               (text) => {
                 if (isValidSearch(text)) {
-                  setDiagnosticTestResults(text);
+                  setMedicalHistory({
+                    ...medicalHistory,
+                    diagnosticTestResult: text,
+                  } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
                 }
               },
               strings.case_sheet.typeDiagnosticTestResults,
@@ -1198,10 +1193,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             )}
             {renderFields(
               strings.case_sheet.clinicalNotes,
-              clinicalNotes,
+              (medicalHistory && medicalHistory.clinicalObservationNotes) || '',
               (text) => {
                 if (isValidSearch(text)) {
-                  setClinicalNotes(text);
+                  setMedicalHistory({
+                    ...medicalHistory,
+                    clinicalObservationNotes: text,
+                  } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
                 }
               },
               strings.case_sheet.typeClinicalNotes,
@@ -2760,7 +2758,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             {renderVitals()}
             {renderPatientHistoryLifestyle()}
             {renderPatientHealthWallet()}
-            {renderJuniorDoctorNotes()}
+            {renderNotes()}
             {renderDiagnosisView()}
             {renderMedicinePrescription()}
             {renderDiagonisticPrescription()}

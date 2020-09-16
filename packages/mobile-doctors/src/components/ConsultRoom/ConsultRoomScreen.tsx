@@ -593,8 +593,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     value: string.case_sheet.select_Speciality,
   });
   const [referralReason, setReferralReason] = useState<string>('');
-  const [diagnosticTestResults, setDiagnosticTestResults] = useState<string>('');
-  const [clinicalNotes, setClinicalNotes] = useState<string>('');
 
   const basicAppointmentData = {
     'Doctor name': g(doctorDetails, 'fullName') || '',
@@ -892,8 +890,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       setReferralReason(g(caseSheet, 'caseSheetDetails', 'referralDescription') || '');
     }
     setCaseSheetVersion(g(caseSheet, 'caseSheetDetails', 'version') || 1);
-    setClinicalNotes(g(caseSheet, 'clinicalObservationNotes') || '');
-    setDiagnosticTestResults(g(caseSheet, 'diagonasticTestResult') || '');
   };
   const getCaseSheetAPI = (callBack?: () => void) => {
     setLoading && setLoading(true);
@@ -1008,8 +1004,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     selectedReferral,
     referralReason,
     removedMedicinePrescriptionData,
-    diagnosticTestResults,
-    clinicalNotes,
   ]);
 
   const getInputData = () => {
@@ -1167,8 +1161,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       bp: medicalHistory ? medicalHistory.bp || '' : '',
       referralSpecialtyName: selectedReferral.key !== '-1' ? selectedReferral.value : null,
       referralDescription: selectedReferral.key !== '-1' ? referralReason : null,
-      diagonasticTestResult: diagnosticTestResults || '',
-      clinicalObservationNotes: clinicalNotes || '',
+      diagnosticTestResult: medicalHistory ? medicalHistory.diagnosticTestResult || '' : '',
+      clinicalObservationNotes: medicalHistory ? medicalHistory.clinicalObservationNotes || '' : '',
     } as ModifyCaseSheetInput;
   };
 
@@ -1192,13 +1186,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           const modifiedData = {
             ...caseSheet,
             caseSheetDetails: g(_data, 'data', 'modifyCaseSheet'),
-            clinicalObservationNotes: g(
-              _data,
-              'data',
-              'modifyCaseSheet',
-              'clinicalObservationNotes'
-            ),
-            diagonasticTestResult: g(_data, 'data', 'modifyCaseSheet', 'diagonasticTestResult'),
           } as GetCaseSheet_getCaseSheet | null | undefined;
           if (!autoSave) {
             setcaseSheet(modifiedData);
@@ -2330,10 +2317,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   setSelectedReferral={setSelectedReferral}
                   referralReason={referralReason}
                   setReferralReason={setReferralReason}
-                  diagnosticTestResults={diagnosticTestResults}
-                  setDiagnosticTestResults={setDiagnosticTestResults}
-                  clinicalNotes={clinicalNotes}
-                  setClinicalNotes={setClinicalNotes}
                 />
               </View>
               <View style={{ width: width }}>
