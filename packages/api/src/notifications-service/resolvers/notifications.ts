@@ -229,8 +229,8 @@ const sendDailyAppointmentSummary: Resolver<
           .lineTo(200, rowHeadx + 30)
           .moveTo(340, 90)
           .lineTo(340, rowHeadx + 30)
-          .moveTo(420, 90)
-          .lineTo(420, rowHeadx + 30)
+          .moveTo(440, 90)
+          .lineTo(440, rowHeadx + 30)
           .stroke();
         pdfDoc.end();
         const fp = `${uploadPath}$${fileName}$${totalAppointments}$${doctorDetails[0].mobileNumber}$${doctorDetails[0].firstName}`;
@@ -283,7 +283,7 @@ const sendDailyAppointmentSummary: Resolver<
             const templateData: string[] = [
               blobUrl,
               todaysDate + ' Appointments List',
-              `{todaysDate} as of 8 AM`,
+              `${todaysDate} as of 8 AM`,
               docPdfDetails[2],
               docPdfDetails[4],
               appLink,
@@ -440,8 +440,8 @@ const sendAppointmentSummaryOps: Resolver<
               .lineTo(200, rowHeadx + 30)
               .moveTo(340, 90)
               .lineTo(340, rowHeadx + 30)
-              .moveTo(420, 90)
-              .lineTo(420, rowHeadx + 30)
+              .moveTo(440, 90)
+              .lineTo(440, rowHeadx + 30)
               .stroke();
             pdfDoc.end();
             const fp = `${uploadPath}$${fileName}$${totalAppointments}$${currentAdminMobNumber}`;
