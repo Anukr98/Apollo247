@@ -1,6 +1,7 @@
 import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import React from 'react';
 import { FlatList, FlatListProps, ListRenderItemInfo, StyleSheet, View, Text } from 'react-native';
+// import { SearchMedicineCard } from '@aph/mobile-patients/src/components/ui/SearchMedicineCard';
 
 export interface MedListingProductProps extends MedicineProduct {
   onPress: () => void;
@@ -13,6 +14,7 @@ export interface MedListingProductProps extends MedicineProduct {
 type ListProps = FlatListProps<MedListingProductProps>;
 
 export interface Props extends Omit<ListProps, 'renderItem'> {
+  // export interface Props extends ListProps {
   view: 'list' | 'grid';
 }
 
@@ -24,6 +26,8 @@ export const MedListingProducts: React.FC<Props> = ({
   ...restOfProps
 }) => {
   const renderItem = ({ item, index }: ListRenderItemInfo<MedicineProduct>) => {
+    // return <SearchMedicineCard style={styles.medicineCard} {...item} />;
+    // console.log('MedListingProducts => ', item);
     return (
       <View style={{ height: 100, width: '100%', backgroundColor: 'blue' }}>
         <Text style={{ color: 'white', fontSize: 30 }}>{index}</Text>
@@ -55,8 +59,6 @@ export const MedListingProducts: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   flatList: {},
-  flatListContainer: {
-    marginHorizontal: 20,
-  },
+  flatListContainer: {},
   item: {},
 });

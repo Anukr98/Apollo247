@@ -5,6 +5,8 @@ import {
   MedListingProductProps,
   MedListingProducts,
 } from '@aph/mobile-patients/src/components/MedicineListing/MedListingProducts';
+import { OptionsDisplayView } from '@aph/mobile-patients/src/components/MedicineListing/OptionsDisplayView';
+import { OptionSelectionOverlay } from '@aph/mobile-patients/src/components/Medicines/OptionSelectionOverlay';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   Props as SearchMedicineOverlayProps,
@@ -13,7 +15,8 @@ import {
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CartIcon, WhiteSearchIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CartIcon, Filter, WhiteSearchIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ListGridSelectionView } from '@aph/mobile-patients/src/components/ui/ListGridSelectionView';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -41,6 +44,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 
 export interface Props
@@ -70,6 +74,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const [productsTotal, setProductsTotal] = useState<number>(0);
   const [pageId, setPageId] = useState(1);
   const [pageTitle, setPageTitle] = useState(titleNavProp);
+  const [sortBy, setSortBy] = useState('Price: Low to High');
+  const [sortByVisible, setSortByVisible] = useState<boolean>(false);
 
   // global contexts
   const { currentPatient } = useAllCurrentPatients();
@@ -198,7 +204,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         {cartItemsCount > 0 && <Badge label={cartItemsCount} />}
       </TouchableOpacity>,
     ];
-    const paddingView = <View style={styles.paddingView} />;
 
     return (
       <View style={styles.headerRightView}>
@@ -206,6 +211,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       </View>
     );
   };
+
+  const paddingView = <View style={styles.paddingView} />;
 
   const getMedListingProducts = (products: MedicineProduct[]): MedListingProductProps[] => {
     const onPress = (sku: string, name: string) => {
@@ -275,9 +282,10 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       <MedListingProducts
         data={isLoading ? [] : getMedListingProducts(products)}
         view={showListView ? 'list' : 'grid'}
-        initialNumToRender={10}
         onEndReached={onEndReached}
         onEndReachedThreshold={1}
+        ListHeaderComponent={renderSections()}
+        ListFooterComponent={renderLoading()}
       />
     );
   };
@@ -302,6 +310,33 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     );
   };
 
+  const renderSortByOverlay = () => {
+    const sortByOptions = [
+      'Recommended',
+      'Price : Low to High',
+      'Price : High to Low',
+      'Discount : High to Low',
+    ];
+    return (
+      sortByVisible && (
+        <OptionSelectionOverlay
+          isVisible={true}
+          title={'SORT BY'}
+          options={sortByOptions.map((option) => ({
+            title: option,
+            isSelected: sortBy === option,
+            onPress: () => {
+              setSortByVisible(false);
+              setSortBy(option);
+            },
+          }))}
+          onRequestClose={() => setSortByVisible(false)}
+          onBackdropPress={() => setSortByVisible(false)}
+        />
+      )
+    );
+  };
+
   const renderLoading = () => {
     return isLoading ? <ActivityIndicator color="green" size="large" /> : null;
   };
@@ -315,19 +350,46 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     const _pageTitle = (searchText && pageTitle) || titleNavProp || '';
     const _productsTotal =
       categoryId && !searchText && productsTotal ? ` | ${productsTotal} Products` : '';
+
     const pageTitleView = !!_pageTitle && (
       <Text style={styles.pageTitle}>
         {_pageTitle}
         {!!_productsTotal && <Text style={styles.productsTotal}>{_productsTotal}</Text>}
       </Text>
     );
-    const changeView = (
-      <Text onPress={() => setShowListView(!showListView)} style={{ color: 'black', fontSize: 20 }}>
-        {'CHANGE VIEW'}
-      </Text>
+
+    const divider = !!_pageTitle && <Divider style={styles.divider} />;
+
+    const optionsView = (
+      <OptionsDisplayView
+        options={[
+          {
+            icon: <CartIcon />, // TODO: Replace icon
+            title: 'Sort By',
+            subtitle: sortBy,
+            onPress: () => setSortByVisible(true),
+          },
+          {
+            icon: <Filter />, // TODO: Replace icon
+            title: 'Filter By',
+            subtitle: 'Apply filters',
+            onPress: () => navigation.navigate(AppRoutes.AddAddress),
+          },
+          {
+            icon: (
+              <ListGridSelectionView
+                isListView={showListView}
+                onPressGridView={() => setShowListView(false)}
+                onPressListView={() => setShowListView(true)}
+              />
+            ),
+            onPress: () => setShowListView(!showListView),
+          },
+        ]}
+      />
     );
-    const views = [pageTitleView, changeView];
-    const paddingView = <View style={styles.paddingView} />;
+
+    const views = [pageTitleView, [divider, optionsView]];
 
     return (
       <View style={styles.sectionWrapper}>
@@ -339,10 +401,9 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={container}>
       {renderHeader()}
-      {renderSections()}
-      {renderLoading()}
       {renderProducts()}
       {renderLoadingMore()}
+      {renderSortByOverlay()}
       {renderSearchOverlay()}
     </SafeAreaView>
   );
@@ -362,9 +423,10 @@ const styles = StyleSheet.create({
     marginLeft: '-75%',
   },
   headerRightView: { justifyContent: 'flex-end', flexDirection: 'row' },
-  paddingView: { width: 20, height: 10 },
+  paddingView: { width: 20, height: 0 },
   sectionWrapper: {
     ...card(20, 0, 0, '#fff', 5),
+    paddingVertical: 10,
     marginBottom: 16,
   },
   pageTitle: {
@@ -373,4 +435,5 @@ const styles = StyleSheet.create({
   productsTotal: {
     ...text('R', 14, '#02475B'),
   },
+  divider: { marginVertical: 10 },
 });

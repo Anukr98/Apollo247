@@ -1,58 +1,31 @@
-{
-  /* <MedSortByOverlay
-isVisible={true}
-title="SORT BY"
-options={[
-  {
-    title: 'New Arrivals',
-    isSelected: false,
-  },
-  {
-    title: 'Price : High to Low',
-    isSelected: true,
-  },
-  {
-    title: 'Price : Low to High',
-    isSelected: false,
-  },
-]}
-onPressOption={() => {}}
-/> */
-}
 import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-// import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { CheckBox, Divider, Overlay, OverlayProps } from 'react-native-elements';
 
-type Option = { title: string; isSelected: boolean };
+type Option = { title: string; isSelected: boolean; onPress: () => void };
 
 export interface Props extends Omit<OverlayProps, 'children'> {
   title: string;
   options: Option[];
-  onPressOption: (option: Option) => void;
 }
 
-export const MedSortByOverlay: React.FC<Props> = ({
-  title,
-  options,
-  onPressOption,
-  ...otherProps
-}) => {
+export const OptionSelectionOverlay: React.FC<Props> = ({ title, options, ...otherProps }) => {
   const renderTitleAndSeparator = () => {
-    return [<Text style={styles.title}>SORT BY</Text>, <Divider style={styles.divider} />];
+    return [<Text style={styles.title}>{title}</Text>, <Divider style={styles.divider} />];
   };
 
   const renderOptions = () => {
-    return options.map(({ title, isSelected }) => (
+    return options.map(({ title, isSelected, onPress }) => (
       <CheckBox
+        key={title}
         title={title}
         checked={isSelected}
-        onPress={() => onPressOption({ title, isSelected })}
+        onPress={onPress}
         checkedIcon={<RadioButtonIcon />}
         uncheckedIcon={<RadioButtonUnselectedIcon />}
         containerStyle={styles.checkBoxContainer}
