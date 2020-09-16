@@ -444,9 +444,7 @@ const getCouponByUserMobileNumber = () => {
 };
 
 const isPastAppointment = (appointmentDateTime: string) =>
-  moment(appointmentDateTime)
-    .add(7, 'days')
-    .isBefore(moment());
+  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const appointmentDate = moment(appointmentTime);
