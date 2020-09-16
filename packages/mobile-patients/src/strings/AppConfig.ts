@@ -860,6 +860,16 @@ export const NeedHelp = [
   },
 ];
 
+export const CancelConsultation = {
+  reason :[
+    string.ReasonFor_Cancel_Consultation.doctorDidNotJoin,
+    string.ReasonFor_Cancel_Consultation.bookedForWrongUser,
+    string.ReasonFor_Cancel_Consultation.doctorDeniedMode,
+    string.ReasonFor_Cancel_Consultation.audioVideoIssue,
+    string.ReasonFor_Cancel_Consultation.otherReasons,
+  ]
+}
+
 type SpecialitiesType = {
   [key: string]: string[];
 };

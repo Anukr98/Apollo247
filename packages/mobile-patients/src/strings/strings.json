@@ -404,5 +404,14 @@
     "symptomTracker": "Symptom Tracker",
     "addAnotherSymptom": "Would you like to report another symptom?"
   },
-  "Prescription_Success":"Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM)."
+  "Prescription_Success":"Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).",
+  "cancelConsultationHeading":"Cancel Consultation",
+  "cancelConsultationReasonHeading": "Why are you cancelling this consultation?",
+  "ReasonFor_Cancel_Consultation":{
+    "doctorDidNotJoin" : "Doctor did not join the consult",
+    "bookedForWrongUser":"Booked with wrong user details",
+    "doctorDeniedMode":"Doctor denied your preferable mode of consult",
+    "audioVideoIssue": "Audio Video Issues",
+    "otherReasons":"Others (Please specifiy)"
+  }
 }
