@@ -127,7 +127,12 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
           <div className={classes.doctorName}>{name}</div>
         </div>
       </div>
-      {source && source !== '-' && <div className={classes.consultType}>{source}</div>}
+      {source && source !== '-' && (
+        <div className={classes.consultType}>
+          {/* {source === '247self' ? <img /> : <img />} // first image should have person image and second one should be hospital  */}
+          {type !== 'Hospitalization' && source === '247self' ? 'Self upload' : source}
+        </div>
+      )}
       <AphDialog
         open={showPopup}
         disableBackdropClick
