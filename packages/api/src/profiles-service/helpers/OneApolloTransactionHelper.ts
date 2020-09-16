@@ -234,11 +234,11 @@ const addProductNameAndCat = (
   itemTypemap: ItemsSkuTypeMap,
   totalCreditsRedeemed: number
 ): [number, TransactionLineItems[]] => {
-  const fmcgItems: TransactionLineItems[] = [];
-  const pharmaItems: TransactionLineItems[] = [];
-  const plItems: TransactionLineItems[] = [];
+  let fmcgItems: TransactionLineItems[] = [];
+  let pharmaItems: TransactionLineItems[] = [];
+  let plItems: TransactionLineItems[] = [];
   let availableCredits = totalCreditsRedeemed;
-  transactionLineItems.forEach((val, i, arr) => {
+  transactionLineItems.forEach((val) => {
     const lineItem = _consumePointsForDiscountedItems(val);
     const productType = itemTypemap[lineItem.ProductCode].toLowerCase();
     switch (productType) {
@@ -267,38 +267,31 @@ const addProductNameAndCat = (
   });
 
   if (availableCredits && fmcgItems.length) {
-    fmcgItems.forEach(_updatePointsNetAmount);
+    fmcgItems = fmcgItems.map(_updatePointsNetAmount);
   }
   if (availableCredits && pharmaItems.length) {
-    pharmaItems.forEach(_updatePointsNetAmount);
+    pharmaItems = pharmaItems.map(_updatePointsNetAmount);
   }
 
   if (availableCredits && plItems.length) {
-    plItems.forEach(_updatePointsNetAmount);
+    plItems = plItems.map(_updatePointsNetAmount);
   }
 
   /**
    * Once points are consumed in discounted Items, consume points in non discounted items with following priority
    * #1 fmcg #2 pharma #3 private label
    * @param curItem TransactionLineItem
-   * @param i
-   * @param arr
    */
-  function _updatePointsNetAmount(
-    curItem: TransactionLineItems,
-    i: number,
-    arr: TransactionLineItems[]
-  ) {
-    if (availableCredits && !curItem.PointsRedeemed) {
+  function _updatePointsNetAmount(curItem: TransactionLineItems) {
+    if (!curItem.PointsRedeemed) {
       const pointsRedeemed =
         curItem.NetAmount > availableCredits ? availableCredits : curItem.NetAmount;
       const netAmount = +new Decimal(curItem.NetAmount).minus(pointsRedeemed);
       availableCredits = +new Decimal(availableCredits).minus(pointsRedeemed);
-      if (arr && arr[i]) {
-        arr[i].PointsRedeemed = pointsRedeemed;
-        arr[i].NetAmount = netAmount;
-      }
+      curItem.PointsRedeemed = pointsRedeemed;
+      curItem.NetAmount = netAmount;
     }
+    return curItem;
   }
 
   /**
