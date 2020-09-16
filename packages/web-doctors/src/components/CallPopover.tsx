@@ -1130,6 +1130,8 @@ interface CallPopoverProps {
   setShowConfirmPrescription: (flag: boolean) => void;
   casesheetInfo: any;
   setGiveRating: (flag: boolean) => void;
+  setIsCallAccepted: (flag: boolean) => void;
+  isCallAccepted: boolean;
   webengageConsultTrackingObject: any;
 }
 let countdowntimer: any;
@@ -1237,6 +1239,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [showToastMessage, setShowToastMessage] = useState<boolean>(false);
 
   const [floatingJoinPrompt, setFloatingJoinPrompt] = useState<boolean>(false);
+
   const [joinPrompt, setJoinPrompt] = useState<boolean>(false);
   const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
 
@@ -1473,7 +1476,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   // audioVideoChat start
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
-  const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
@@ -1497,10 +1499,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setShowVideoChat(!showVideoChat);
   };
   useEffect(() => {
-    if (isCallAccepted) {
+    if (props.isCallAccepted) {
       startIntervalTimer(0);
     }
-  }, [isCallAccepted]);
+  }, [props.isCallAccepted]);
 
   useEffect(() => {
     return () => {
@@ -1546,14 +1548,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   const stopAudioVideoCall = () => {
     props.setGiveRating(true);
-    setIsCallAccepted(false);
+    props.setIsCallAccepted(false);
     setShowVideo(false);
     setShowVideoChat(false);
     setDisableOnCancel(false);
     clearInterval(intervalMissCall);
     setPlayRingtone(false);
 
-    if (!isCallAccepted) sendCallDisconnectNotification();
+    if (!props.isCallAccepted) sendCallDisconnectNotification();
 
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
@@ -1661,7 +1663,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const stopAudioVideoCallpatient = () => {
-    setIsCallAccepted(false);
+    props.setIsCallAccepted(false);
     setShowVideo(false);
     setShowVideoChat(false);
     clearInterval(intervalMissCall);
@@ -1914,7 +1916,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         patientMsgs.push(lastMsg.message.message);
       }
       if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
-        setIsCallAccepted(true);
+        props.setIsCallAccepted(true);
         setPlayRingtone(false);
         setPlayJoinTone(true);
         setPlayExitTone(false);
@@ -2000,18 +2002,18 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         (status: any, response: any) => {}
       );
     } else {
-      webEngageEventTracking(	
-        {	
-          'Doctor name': props.webengageConsultTrackingObject.doctorName,	
-          'Patient name': props.webengageConsultTrackingObject.patientName,	
-          'Patient mobile number': props.webengageConsultTrackingObject.patientMobileNumber,	
-          'Doctor Mobile number': props.webengageConsultTrackingObject.doctorMobileNumber,	
-          'Appointment Date time': props.webengageConsultTrackingObject.appointmentDateTime,	
-          'Appointment display ID': props.webengageConsultTrackingObject.appointmentDisplayId,	
-          'Appointment ID': props.webengageConsultTrackingObject.appointmentId,	
-          'Blob URL': props.prescriptionPdf,	
-        },	
-        'Front_end - Doctor resent Prescription'	
+      webEngageEventTracking(
+        {
+          'Doctor name': props.webengageConsultTrackingObject.doctorName,
+          'Patient name': props.webengageConsultTrackingObject.patientName,
+          'Patient mobile number': props.webengageConsultTrackingObject.patientMobileNumber,
+          'Doctor Mobile number': props.webengageConsultTrackingObject.doctorMobileNumber,
+          'Appointment Date time': props.webengageConsultTrackingObject.appointmentDateTime,
+          'Appointment display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+          'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
+          'Blob URL': props.prescriptionPdf,
+        },
+        'Front_end - Doctor resent Prescription'
       );
       setIsResendLoading(true);
     }
@@ -2193,26 +2195,26 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       fetchPolicy: 'no-cache',
     })
       .then(({ data }: any) => {
-        webEngageEventTracking(	
-          {	
-            'Doctor name': props.webengageConsultTrackingObject.doctorName,	
-            'Patient name': props.webengageConsultTrackingObject.patientName,	
-            'Patient mobile number': props.webengageConsultTrackingObject.patientMobileNumber,	
-            'Doctor Mobile number': props.webengageConsultTrackingObject.doctorMobileNumber,	
-            'Appointment Date time': props.webengageConsultTrackingObject.appointmentDateTime,	
-            'Appointment display ID': props.webengageConsultTrackingObject.appointmentDisplayId,	
-            'Appointment ID': props.webengageConsultTrackingObject.appointmentId,	
-            'Reschedule date':	
-              dateSelected && timeSelected	
-                ? moment(dateSelected + 'T' + timeSelected + ':00.000').format('DD/MM/YYYY')	
-                : moment(doctorNextAvailableSlot).format('ddd, DD/MM/YYYY'),	
-            'Reschedule time':	
-              dateSelected && timeSelected	
-                ? moment(dateSelected + 'T' + timeSelected + ':00.000').format('h:mm a')	
-                : moment(doctorNextAvailableSlot).format('h:mm a'),	
-            'Reschedule reason': reason === 'Other' ? otherTextValue : reason,	
-          },	
-          'Front_end - Doctor rescheduled the appointment'	
+        webEngageEventTracking(
+          {
+            'Doctor name': props.webengageConsultTrackingObject.doctorName,
+            'Patient name': props.webengageConsultTrackingObject.patientName,
+            'Patient mobile number': props.webengageConsultTrackingObject.patientMobileNumber,
+            'Doctor Mobile number': props.webengageConsultTrackingObject.doctorMobileNumber,
+            'Appointment Date time': props.webengageConsultTrackingObject.appointmentDateTime,
+            'Appointment display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+            'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
+            'Reschedule date':
+              dateSelected && timeSelected
+                ? moment(dateSelected + 'T' + timeSelected + ':00.000').format('DD/MM/YYYY')
+                : moment(doctorNextAvailableSlot).format('ddd, DD/MM/YYYY'),
+            'Reschedule time':
+              dateSelected && timeSelected
+                ? moment(dateSelected + 'T' + timeSelected + ':00.000').format('h:mm a')
+                : moment(doctorNextAvailableSlot).format('h:mm a'),
+            'Reschedule reason': reason === 'Other' ? otherTextValue : reason,
+          },
+          'Front_end - Doctor rescheduled the appointment'
         );
         let rescheduledDateTime = '';
         let rescheduleCount = 0;
@@ -2655,21 +2657,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     props.setIsClickedOnEdit(true);
                     props.setIsClickedOnPriview(false);
                     isConsultStarted = true;
-                    webEngageEventTracking(	
-                      {	
-                        'Doctor name': props.webengageConsultTrackingObject.doctorName,	
-                        'Patient name': props.webengageConsultTrackingObject.patientName,	
-                        'Patient mobile number':	
-                          props.webengageConsultTrackingObject.patientMobileNumber,	
-                        'Doctor Mobile number':	
-                          props.webengageConsultTrackingObject.doctorMobileNumber,	
-                        'Appointment Date time':	
-                          props.webengageConsultTrackingObject.appointmentDateTime,	
-                        'Appointment display ID':	
-                          props.webengageConsultTrackingObject.appointmentDisplayId,	
-                        'Appointment ID': props.webengageConsultTrackingObject.appointmentId,	
-                      },	
-                      'Front_end - Doctor started the consult'	
+                    webEngageEventTracking(
+                      {
+                        'Doctor name': props.webengageConsultTrackingObject.doctorName,
+                        'Patient name': props.webengageConsultTrackingObject.patientName,
+                        'Patient mobile number':
+                          props.webengageConsultTrackingObject.patientMobileNumber,
+                        'Doctor Mobile number':
+                          props.webengageConsultTrackingObject.doctorMobileNumber,
+                        'Appointment Date time':
+                          props.webengageConsultTrackingObject.appointmentDateTime,
+                        'Appointment display ID':
+                          props.webengageConsultTrackingObject.appointmentDisplayId,
+                        'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
+                      },
+                      'Front_end - Doctor started the consult'
                     );
                   }}
                 >
@@ -2692,7 +2694,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   (appointmentInfo && appointmentInfo.appointmentState === 'AWAITING_RESCHEDULE') ||
                   props.appointmentStatus === STATUS.NO_SHOW ||
                   props.appointmentStatus === STATUS.CALL_ABANDON ||
-                  isCallAccepted
+                  props.isCallAccepted
                 }
                 onClick={() => {
                   setLoading(true);
@@ -2830,22 +2832,22 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       setIsVideoCall(false);
                       missedCallIntervalTimer(45);
                       setIscall(true);
-                      webEngageEventTracking(	
-                        {	
-                          'Doctor name': props.webengageConsultTrackingObject.doctorName,	
-                          'Patient name': props.webengageConsultTrackingObject.patientName,	
-                          'Patient mobile number':	
-                            props.webengageConsultTrackingObject.patientMobileNumber,	
-                          'Doctor Mobile number':	
-                            props.webengageConsultTrackingObject.doctorMobileNumber,	
-                          'Appointment Date time':	
-                            props.webengageConsultTrackingObject.appointmentDateTime,	
-                          'Appointment display ID':	
-                            props.webengageConsultTrackingObject.appointmentDisplayId,	
-                          'Appointment ID': props.webengageConsultTrackingObject.appointmentId,	
-                          'Type of call': 'Audio',	
-                        },	
-                        'Front_end - Doctor Started the Audio call'	
+                      webEngageEventTracking(
+                        {
+                          'Doctor name': props.webengageConsultTrackingObject.doctorName,
+                          'Patient name': props.webengageConsultTrackingObject.patientName,
+                          'Patient mobile number':
+                            props.webengageConsultTrackingObject.patientMobileNumber,
+                          'Doctor Mobile number':
+                            props.webengageConsultTrackingObject.doctorMobileNumber,
+                          'Appointment Date time':
+                            props.webengageConsultTrackingObject.appointmentDateTime,
+                          'Appointment display ID':
+                            props.webengageConsultTrackingObject.appointmentDisplayId,
+                          'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
+                          'Type of call': 'Audio',
+                        },
+                        'Front_end - Doctor Started the Audio call'
                       );
                     }}
                   >
@@ -2865,22 +2867,22 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       setDisableOnCancel(true);
                       missedCallIntervalTimer(45);
                       setIscall(true);
-                      webEngageEventTracking(	
-                        {	
-                          'Doctor name': props.webengageConsultTrackingObject.doctorName,	
-                          'Patient name': props.webengageConsultTrackingObject.patientName,	
-                          'Patient mobile number':	
-                            props.webengageConsultTrackingObject.patientMobileNumber,	
-                          'Doctor Mobile number':	
-                            props.webengageConsultTrackingObject.doctorMobileNumber,	
-                          'Appointment Date time':	
-                            props.webengageConsultTrackingObject.appointmentDateTime,	
-                          'Appointment display ID':	
-                            props.webengageConsultTrackingObject.appointmentDisplayId,	
-                          'Appointment ID': props.webengageConsultTrackingObject.appointmentId,	
-                          'Type of call': 'Video',	
-                        },	
-                        'Front_end - Doctor Started the Video call'	
+                      webEngageEventTracking(
+                        {
+                          'Doctor name': props.webengageConsultTrackingObject.doctorName,
+                          'Patient name': props.webengageConsultTrackingObject.patientName,
+                          'Patient mobile number':
+                            props.webengageConsultTrackingObject.patientMobileNumber,
+                          'Doctor Mobile number':
+                            props.webengageConsultTrackingObject.doctorMobileNumber,
+                          'Appointment Date time':
+                            props.webengageConsultTrackingObject.appointmentDateTime,
+                          'Appointment display ID':
+                            props.webengageConsultTrackingObject.appointmentDisplayId,
+                          'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
+                          'Type of call': 'Video',
+                        },
+                        'Front_end - Doctor Started the Video call'
                       );
                     }}
                   >
@@ -3070,21 +3072,24 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         fetchPolicy: 'no-cache',
                       });
-                      webEngageEventTracking({
-                        'Doctor name': props.webengageConsultTrackingObject.doctorName,	
-                        'Patient name': props.webengageConsultTrackingObject.patientName,	
-                        'Patient mobile number':	
-                          props.webengageConsultTrackingObject.patientMobileNumber,	
-                        'Doctor Mobile number':	
-                          props.webengageConsultTrackingObject.doctorMobileNumber,	
-                        'Appointment Date time':	
-                          props.webengageConsultTrackingObject.appointmentDateTime,	
-                        'Appointment display ID':	
-                          props.webengageConsultTrackingObject.appointmentDisplayId,	
-                        'Appointment ID': props.webengageConsultTrackingObject.appointmentId,	
-                        'Type of call': 'Telephonic',	
-                        'Exotel number': process.env.EXOTEL_CALLER_ID,
-                      },'Front_end - Doctor Started the Exotel call');
+                      webEngageEventTracking(
+                        {
+                          'Doctor name': props.webengageConsultTrackingObject.doctorName,
+                          'Patient name': props.webengageConsultTrackingObject.patientName,
+                          'Patient mobile number':
+                            props.webengageConsultTrackingObject.patientMobileNumber,
+                          'Doctor Mobile number':
+                            props.webengageConsultTrackingObject.doctorMobileNumber,
+                          'Appointment Date time':
+                            props.webengageConsultTrackingObject.appointmentDateTime,
+                          'Appointment display ID':
+                            props.webengageConsultTrackingObject.appointmentDisplayId,
+                          'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
+                          'Type of call': 'Telephonic',
+                          'Exotel number': process.env.EXOTEL_CALLER_ID,
+                        },
+                        'Front_end - Doctor Started the Exotel call'
+                      );
 
                       const text = {
                         id: props.doctorId,
@@ -3432,23 +3437,23 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     },
                   })
                     .then((response) => {
-                      webEngageEventTracking(	
-                        {	
-                          'Doctor name': props.webengageConsultTrackingObject.doctorName,	
-                          'Patient name': props.webengageConsultTrackingObject.patientName,	
-                          'Patient mobile number':	
-                            props.webengageConsultTrackingObject.patientMobileNumber,	
-                          'Doctor Mobile number':	
-                            props.webengageConsultTrackingObject.doctorMobileNumber,	
-                          'Appointment Date time':	
-                            props.webengageConsultTrackingObject.appointmentDateTime,	
-                          'Appointment display ID':	
-                            props.webengageConsultTrackingObject.appointmentDisplayId,	
-                          'Appointment ID': props.webengageConsultTrackingObject.appointmentId,	
-                          'Cancel reason':	
-                            cancelReason === 'Other' ? otherTextCancelValue : cancelReason,	
-                        },	
-                        'Front_end - Doctor cancelled appointment'	
+                      webEngageEventTracking(
+                        {
+                          'Doctor name': props.webengageConsultTrackingObject.doctorName,
+                          'Patient name': props.webengageConsultTrackingObject.patientName,
+                          'Patient mobile number':
+                            props.webengageConsultTrackingObject.patientMobileNumber,
+                          'Doctor Mobile number':
+                            props.webengageConsultTrackingObject.doctorMobileNumber,
+                          'Appointment Date time':
+                            props.webengageConsultTrackingObject.appointmentDateTime,
+                          'Appointment display ID':
+                            props.webengageConsultTrackingObject.appointmentDisplayId,
+                          'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
+                          'Cancel reason':
+                            cancelReason === 'Other' ? otherTextCancelValue : cancelReason,
+                        },
+                        'Front_end - Doctor cancelled appointment'
                       );
                       if (showVideo) {
                         stopAudioVideoCall();
@@ -3524,7 +3529,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               token={props.token}
               timerMinuts={timerMinuts}
               timerSeconds={timerSeconds}
-              isCallAccepted={isCallAccepted}
+              isCallAccepted={props.isCallAccepted}
               isNewMsg={isNewMsg}
               convertCall={() => convertCall()}
               setSessionError={setSessionError}
@@ -3906,18 +3911,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             setIsVideoCall(true);
             setDisableOnCancel(true);
             setIscall(true);
-            webEngageEventTracking(	
-              {	
-                'Doctor name': props.webengageConsultTrackingObject.doctorName,	
-                'Patient name': props.webengageConsultTrackingObject.patientName,	
-                'Patient mobile number': props.webengageConsultTrackingObject.patientMobileNumber,	
-                'Doctor Mobile number': props.webengageConsultTrackingObject.doctorMobileNumber,	
-                'Appointment Date time': props.webengageConsultTrackingObject.appointmentDateTime,	
-                'Appointment display ID': props.webengageConsultTrackingObject.appointmentDisplayId,	
-                'Appointment ID': props.webengageConsultTrackingObject.appointmentId,	
-                'Type of call': 'Join Acceptance',	
-              },	
-              'Front_end - Accepted to Join the session'	
+            props.setIsCallAccepted(true);
+            webEngageEventTracking(
+              {
+                'Doctor name': props.webengageConsultTrackingObject.doctorName,
+                'Patient name': props.webengageConsultTrackingObject.patientName,
+                'Patient mobile number': props.webengageConsultTrackingObject.patientMobileNumber,
+                'Doctor Mobile number': props.webengageConsultTrackingObject.doctorMobileNumber,
+                'Appointment Date time': props.webengageConsultTrackingObject.appointmentDateTime,
+                'Appointment display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
+                'Type of call': 'Join Acceptance',
+              },
+              'Front_end - Accepted to Join the session'
             );
           }}
         >
@@ -3970,6 +3976,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 setDisableOnCancel(true);
                 setIscall(true);
                 setJoinPrompt(false);
+                props.setIsCallAccepted(true);
               }}
             >
               {'JOIN'}
