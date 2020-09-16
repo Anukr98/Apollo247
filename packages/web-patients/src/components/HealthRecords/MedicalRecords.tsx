@@ -23,6 +23,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Alerts } from 'components/Alerts/Alerts';
 import _lowerCase from 'lodash/lowerCase';
+import { MedicalRecordType } from '../../graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -659,7 +660,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                                     ? combinedData.labTestSource
                                     : '-'
                                 }
-                                type={'LabResults'}
+                                type={MedicalRecordType.TEST_REPORT}
                                 id={`LabResults-${combinedData.id}`}
                                 isActiveCard={activeData && activeData === combinedData}
                               />
@@ -732,7 +733,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     )}
                     {!!activeData.labTestRefferedBy && (
                       <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
-                        <div>Dr. {activeData.labTestRefferedBy}</div>
+                        <div>{activeData.labTestRefferedBy}</div>
                       </div>
                     )}
                     {activeData.siteDisplayName && (
