@@ -343,8 +343,8 @@ export interface WebEngageEvents {
   [WebEngageEventName.CATEGORY_LIST_GRID_VIEW]: {
     'Category name'?: string;
     'Category id'?: string;
-    'Type': 'Grid' | 'List';
-    'Source': 'Search' | 'Category';
+    Type: 'Grid' | 'List';
+    Source: 'Search' | 'Category';
   };
   [WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED]: {
     value: boolean;
@@ -647,6 +647,8 @@ export interface WebEngageEvents {
     'Speciality ID': string;
     'Hospital Name': string;
     'Hospital City': string;
+    'Secretary Name': string;
+    'Secretary Number': string;
   };
   [WebEngageEventName.TYPE_OF_CONSULT_SELECTED]: {
     'Consultation Type': string;
@@ -976,6 +978,8 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Number': string;
   };
 
   [WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER]: {
@@ -994,6 +998,8 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Number': string;
   };
   [WebEngageEventName.FILL_MEDICAL_DETAILS]: {
     'Doctor Name': string;
@@ -1084,6 +1090,8 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Number': string;
   };
   [WebEngageEventName.CONTINUE_CONSULTATION_CLICKED]: {
     'Doctor Name': string;
@@ -1102,6 +1110,8 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Number': string;
   };
   [WebEngageEventName.CANCEL_CONSULTATION_CLICKED]: {
     'Doctor Name': string;
@@ -1120,6 +1130,8 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Number': string;
   };
   [WebEngageEventName.PRESCRIPTION_RECEIVED]: {
     'Doctor Name': string;
@@ -1288,7 +1300,7 @@ export interface WebEngageEvents {
     source: 'deeplink' | 'widget' | 'search';
     ProductId: string;
     ProductName: string;
-    "Stock availability": YesOrNo;
+    'Stock availability': YesOrNo;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink';

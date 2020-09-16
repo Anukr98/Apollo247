@@ -731,6 +731,14 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       registrationNumber
       onlineConsultationFees
       physicalConsultationFees
+      doctorSecretary {
+        secretary {
+          id
+          name
+          mobileNumber
+          isActive
+        }
+      }
       doctorHospital {
         facility {
           id
@@ -2996,6 +3004,17 @@ export const SAVE_VOIP_DEVICE_TOKEN = gql`
       response
       patientId
       voipToken
+    }
+  }
+`;
+
+export const GET_SECRETARY_DETAILS_BY_DOCTOR_ID = gql`
+  query getSecretaryDetailsByDoctorId($doctorId: String!) {
+    getSecretaryDetailsByDoctorId(doctorId: $doctorId) {
+      id
+      name
+      mobileNumber
+      isActive
     }
   }
 `;

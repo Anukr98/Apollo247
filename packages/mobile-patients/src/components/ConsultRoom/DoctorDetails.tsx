@@ -24,7 +24,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getNextAvailableSlots,
+  getSecretaryDetailsByDoctor,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   callPermissions,
@@ -218,6 +221,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [consultType, setConsultType] = useState<ConsultMode>(ConsultMode.BOTH);
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
+  const [secretaryData, setSecretaryData] = useState<any>([]);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -247,6 +251,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       .then((status) => {
         if (status) {
           fetchDoctorDetails();
+          getSecretaryData();
           fetchAppointmentHistory();
         } else {
           setshowSpinner(false);
@@ -267,6 +272,19 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     setConsultMode(props.navigation.getParam('consultModeSelected'));
     setShowVideo(props.navigation.getParam('onVideoPressed'));
   }, [props.navigation.state.params]);
+
+  const getSecretaryData = () => {
+    getSecretaryDetailsByDoctor(client, doctorId)
+      .then((apiResponse: any) => {
+        console.log('apiResponse', apiResponse);
+        const secretaryDetails = g(apiResponse, 'data', 'data', 'getSecretaryDetailsByDoctorId');
+        setSecretaryData(secretaryDetails);
+        console.log('apiResponse');
+      })
+      .catch((error) => {
+        console.log('error', error);
+      });
+  };
 
   const fetchAppointmentHistory = () => {
     client
@@ -1043,9 +1061,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     item: getAppointmentHistory_getAppointmentHistory_appointmentsHistory
   ) => {
     const symptomsJson = g(item, 'caseSheet');
-    console.log('symptomsJson', symptomsJson);
     if (symptomsJson && symptomsJson.length != 0) {
-      console.log('symptomsJson-----', symptomsJson);
       return (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {symptomsJson &&
@@ -1122,6 +1138,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics[0].facility.city}`
           : '',
+      'Secretary Name': secretaryData.name,
+      'Secretary Number': secretaryData.mobileNumber,
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {
