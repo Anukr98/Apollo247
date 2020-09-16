@@ -58,6 +58,7 @@ import { isPastAppointment } from 'helpers/commonHelpers';
 import { useParams } from 'hooks/routerHooks';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
 import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
+import { DoctorType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -981,6 +982,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         });
     });
   };
+
   const pubnubClient = new PubNub({
     publishKey: process.env.PUBLISH_KEY,
     subscribeKey: process.env.SUBSCRIBE_KEY,
@@ -1149,6 +1151,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     };
     publishMessage(appointmentId, composeMessage);
   };
+
   const toggelChatVideo = () => {
     setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
@@ -1238,6 +1241,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       },
     }
   );
+
   const updateAppointmentSessionCall = () => {
     mutationResponse()
       .then((data) => {
@@ -2028,8 +2032,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     sliderRef.current.slickNext();
   };
 
+  const caseSheets =
+    appointmentDetails && appointmentDetails.caseSheet ? appointmentDetails.caseSheet : [];
+
+  const srdCaseSheet = caseSheets!.find(
+    (item) =>
+      item!.doctorType == DoctorType.STAR_APOLLO ||
+      item!.doctorType == DoctorType.APOLLO ||
+      item!.doctorType == DoctorType.PAYROLL
+  );
+
+  // const srdCaseSheet: any = null;
+
+  const followUpInDays =
+    srdCaseSheet && srdCaseSheet.followUpAfterInDays ? srdCaseSheet.followUpAfterInDays : 7;
+
   const pastAppointment =
-    appointmentDetails && isPastAppointment(appointmentDetails.appointmentDateTime);
+    appointmentDetails &&
+    isPastAppointment(appointmentDetails.appointmentDateTime, Number(followUpInDays));
 
   // console.log(messages, 'messages from pubnub.....');
 
