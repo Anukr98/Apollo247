@@ -11,6 +11,7 @@ import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response as HealthCheckType } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
+import { MedicalRecordType } from '../../graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -442,7 +443,7 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
                     deleteReport={deleteReport}
                     name={combinedData.healthCheckName || combinedData.healthCheckType || '-'}
                     source={combinedData.source || '-'}
-                    type={'HealthCheck'}
+                    type={MedicalRecordType.HEALTHCHECK}
                     id={`HealthCheck-${combinedData.id}`}
                     isActiveCard={activeData && activeData.id === combinedData.id}
                   />
