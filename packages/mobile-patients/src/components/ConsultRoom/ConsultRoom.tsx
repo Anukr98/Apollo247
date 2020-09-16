@@ -40,15 +40,20 @@ import {
   CommonLogEvent,
   CommonSetUserBugsnag,
   DeviceHelper,
-  isIos,
   setBugFenderLog,
+  isIos,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
+  SAVE_DEVICE_TOKEN,
   SAVE_VOIP_DEVICE_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
-import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  saveDeviceToken,
+  saveDeviceTokenVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
 import {
   GenerateTokenforCM,
   notifcationsApi,
@@ -67,6 +72,7 @@ import {
   getlocationDataFromLatLang,
   postFirebaseEvent,
   postWebEngageEvent,
+  UnInstallAppsFlyer,
   setWebEngageScreenNames,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
@@ -99,14 +105,16 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
-import VoipPushNotification from 'react-native-voip-push-notification';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps } from 'react-navigation';
-import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
 import { getPatientPersonalizedAppointmentList } from '../../helpers/clientCalls';
 import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
+import VoipPushNotification from 'react-native-voip-push-notification';
+import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
+import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
 
 const { Vitals } = NativeModules;
 
@@ -156,15 +164,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     justifyContent: 'center',
     alignItems: 'flex-start',
-  },
-  gotItStyles: {
-    height: 60,
-    paddingRight: 25,
-    backgroundColor: 'transparent',
-  },
-  gotItTextStyles: {
-    paddingTop: 16,
-    ...theme.viewStyles.yellowTextStyle,
   },
   hiTextStyle: {
     marginLeft: 20,
@@ -791,12 +790,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setshowPopUp(false);
       } else {
         setshowPopUp(true);
+        setTimeout(() => {
+          setshowPopUp(false);
+          CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
+          AsyncStorage.setItem('gotIt', 'true');
+        }, 5000);
       }
       const CMEnabled = await AsyncStorage.getItem('CMEnable');
       const eneabled = CMEnabled ? JSON.parse(CMEnabled) : false;
       setEnableCM(eneabled);
     }
     fetchData();
+    callDeviceTokenAPI();
   }, []);
 
   useEffect(() => {
@@ -920,7 +925,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   fullName,
                   keyHash,
                   buildSpecify,
-                  currentDeviceToken
+                  currentDeviceToken.deviceToken
                 );
             }
           }
@@ -943,16 +948,71 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const client = useApolloClient();
 
+  const callDeviceTokenAPI = async () => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
+    firebase
+      .messaging()
+      .getToken()
+      .then((token) => {
+        console.log('token', token);
+        // console.log('DeviceInfo', DeviceInfo);
+        UnInstallAppsFlyer(token);
+        if (token !== deviceToken2.deviceToken) {
+          const input = {
+            deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+            deviceToken: token,
+            deviceOS: '',
+            // deviceOS: Platform.OS === 'ios' ? '' : DeviceInfo.getBaseOS(),
+            patientId: currentPatient ? currentPatient.id : '',
+          };
+          console.log('input', input);
+
+          if (currentPatient && !deviceTokenApICalled) {
+            setDeviceTokenApICalled(true);
+            client
+              .mutate<saveDeviceToken, saveDeviceTokenVariables>({
+                mutation: SAVE_DEVICE_TOKEN,
+                variables: {
+                  SaveDeviceTokenInput: input,
+                },
+                fetchPolicy: 'no-cache',
+              })
+              .then((data: any) => {
+                console.log('APICALLED', data.data.saveDeviceToken.deviceToken);
+                AsyncStorage.setItem(
+                  'deviceToken',
+                  JSON.stringify(data.data.saveDeviceToken.deviceToken)
+                );
+              })
+              .catch((e) => {
+                CommonBugFender('ConsultRoom_setDeviceTokenApICalled', e);
+                console.log('Error occured while adding Doctor', e);
+              });
+          }
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('ConsultRoom_callDeviceTokenAPI', e);
+      });
+  };
+
   const getPersonalizesAppointments = async () => {
+    // const uhid = g(details, 'uhid');
+
     const storedUhid: any = await AsyncStorage.getItem('selectUserUHId');
 
     const selectedUHID = storedUhid ? storedUhid : g(currentPatient, 'uhid');
 
     const uhidSelected = await AsyncStorage.getItem('UHIDused');
+    // console.log('selectedUHID', selectedUHID);
+    // console.log('selectUserId', selectUserId);
 
     if (uhidSelected !== null) {
       if (uhidSelected === selectedUHID) {
         if (Object.keys(appointmentsPersonalized).length != 0) {
+          // console.log('appointmentsPersonalized', appointmentsPersonalized);
+
           setPersonalizedData(appointmentsPersonalized as any);
           setisPersonalizedCard(true);
         }
@@ -1636,24 +1696,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </SafeAreaView>
       {renderBottomTabBar()}
       {showPopUp && (
-        <BottomPopUp
-          title={`Hi ${(currentPatient && currentPatient.firstName) || ''}`}
-          description={string.home.welcome_popup.description}
-        >
-          <View style={{ height: 60, alignItems: 'flex-end' }}>
-            <TouchableOpacity
-              activeOpacity={1}
-              style={styles.gotItStyles}
-              onPress={() => {
-                CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
-                AsyncStorage.setItem('gotIt', 'true');
-                setshowPopUp(false);
-              }}
-            >
-              <Text style={styles.gotItTextStyles}>{string.home.welcome_popup.cta_label}</Text>
-            </TouchableOpacity>
-          </View>
-        </BottomPopUp>
+        <>
+          <BottomPopUp
+            title={`Hi ${(currentPatient && currentPatient.firstName) || ''}`}
+            description={string.home.welcome_popup.description}
+          >
+            <View style={{ height: 20, alignItems: 'flex-end' }} />
+          </BottomPopUp>
+          <TouchableOpacity
+            onPress={() => {
+              CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
+              AsyncStorage.setItem('gotIt', 'true');
+              setshowPopUp(false);
+            }}
+            style={{
+              backgroundColor: 'transparent',
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+            }}
+          />
+        </>
       )}
       {showSpinner && <Spinner />}
       {isLocationSearchVisible && (

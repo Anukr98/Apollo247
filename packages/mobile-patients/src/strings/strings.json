@@ -294,7 +294,9 @@
     "coupon_discount": "Coupon Discount",
     "delivery_charges": "Delivery Charges",
     "packaging_charges": "Packaging Charges",
-    "orderCancellationAfterBillingAlert": "Your order has already Billed and therefore cannot be cancelled from the App. In case you still wish to Cancel, please click on the link below to chat with out customer care executives for assistance during working hours (9:00 AM to 8:30 PM)"
+    "orderCancellationAfterBillingAlert": "Your order has already Billed and therefore cannot be cancelled from the App. In case you still wish to Cancel, please click on the link below to chat with out customer care executives for assistance during working hours (9:00 AM to 8:30 PM)",
+    "chatWithUs":"CHAT WITH US",
+    "tatBreach_InconvenienceText":"We are trying our best to expedite the process.\nSorry for the inconvenience"
   },
   "OrderSummaryText": {
     "total_order_billed": "Total Ordered Value",
@@ -403,5 +405,6 @@
     "restartSymptomTrackerDiscription": "This will end your symptom tracking and you’ll have to start it again. Do you want to continue tracking your symptoms or go back?",
     "symptomTracker": "Symptom Tracker",
     "addAnotherSymptom": "Would you like to report another symptom?"
-  }
+  },
+  "Prescription_Success":"Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM)."
 }

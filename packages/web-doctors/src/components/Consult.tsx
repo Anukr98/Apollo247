@@ -386,6 +386,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   properties={{
                     publishAudio: isPublishAudio,
                     publishVideo: subscribeToVideo,
+                    resolution: '640x480',
+                    audioBitrate: 30000,
+                    frameRate: 15,
                   }}
                   eventHandlers={publisherHandler}
                   onError={(error: any) => {

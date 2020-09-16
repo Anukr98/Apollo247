@@ -1,69 +1,73 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
 import { CountDownTimer } from '@aph/mobile-patients/src/components/ui/CountDownTimer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  ArrowDisabled,
-  ArrowYellow,
   BackArrow,
   Loader,
+  ArrowDisabled,
+  ArrowYellow,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { LandingDataView } from '@aph/mobile-patients/src/components/ui/LandingDataView';
-import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import { OTPTextView } from '@aph/mobile-patients/src/components/ui/OTPTextView';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   CommonBugFender,
   CommonLogEvent,
+  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  AppsFlyerEventName,
-  AppsFlyerEvents,
-} from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
-import {
   getNetStatus,
-  postAppsFlyerEvent,
   postWebEngageEvent,
+  postAppsFlyerEvent,
   SetAppsFlyerCustID,
-  UnInstallAppsFlyer,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import {
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import AsyncStorage from '@react-native-community/async-storage';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
-  AppState,
-  AppStateStatus,
   BackHandler,
   Dimensions,
   EmitterSubscription,
-  ImageBackground,
   Keyboard,
+  ImageBackground,
+  ScrollView,
   Platform,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
+  AppState,
+  AppStateStatus,
+  TextInput,
 } from 'react-native';
+// import { WebView } from 'react-native-webview';
 import firebase from 'react-native-firebase';
 import Hyperlink from 'react-native-hyperlink';
-import SmsRetriever from 'react-native-sms-retriever';
-import { WebView } from 'react-native-webview';
+// import SmsListener from 'react-native-android-sms-listener';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { resendOTP, verifyOTP } from '@aph/mobile-patients/src/helpers/loginCalls';
-import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
-import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { BottomPopUp } from './ui/BottomPopUp';
+import moment from 'moment';
+import { verifyOTP, resendOTP } from '../helpers/loginCalls';
+import { WebView } from 'react-native-webview';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  AppsFlyerEventName,
+  AppsFlyerEvents,
+} from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { useApolloClient } from 'react-apollo-hooks';
+import { Relation } from '../graphql/types/globalTypes';
+import { ApolloLogo } from './ApolloLogo';
+import AsyncStorage from '@react-native-community/async-storage';
+import SmsRetriever from 'react-native-sms-retriever';
 
 const { height, width } = Dimensions.get('window');
 
@@ -144,7 +148,7 @@ const styles = StyleSheet.create({
   },
 });
 
-let timer = 900;
+let timer = 120;
 export type ReceivedSmsMessage = {
   originatingAddress: string;
   body: string;
@@ -163,7 +167,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [isValidOTP, setIsValidOTP] = useState<boolean>(false);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
   const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
-  const [remainingTime, setRemainingTime] = useState<number>(900);
+  const [remainingTime, setRemainingTime] = useState<number>(120);
   const [intervalId, setIntervalId] = useState<number>(0);
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
@@ -267,10 +271,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             const seconds = Math.ceil(dif / 1000);
             console.log(seconds, 'seconds');
             if (obj.invalidAttems === 3) {
-              if (seconds < 900) {
+              if (seconds < 120) {
                 setInvalidOtpCount(3);
                 setIsValidOTP(false);
-                timer = 900 - seconds;
+                timer = 120 - seconds;
                 console.log(timer, 'timertimer');
                 setRemainingTime(timer);
                 // startInterval(timer);
@@ -634,7 +638,19 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   useEffect(() => {
-    getDeviceToken();
+    // const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
+    //   const newOtp = message.body.match(/-*[0-9]+/);
+    //   const otpString = newOtp ? newOtp[0] : '';
+    //   console.log(otpString, otpString.length, 'otpString');
+    //   setOtp(otpString.trim());
+    //   setIsValidOTP(true);
+    // });
+    // setSubscriptionId(subscriptionId);
+    // textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
+    // backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+    //   console.log('hardwareBackPress');
+    //   return false;
+    // });
     AppState.addEventListener('change', _handleAppStateChange);
     if (Platform.OS === 'android') {
       smsListenerAndroid();
@@ -653,22 +669,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     };
   }, [subscriptionId]);
 
-  const getDeviceToken = () => {
-    firebase
-      .messaging()
-      .getToken()
-      .then((token) => {
-        console.log('token', token);
-        AsyncStorage.setItem('deviceToken', JSON.stringify(token));
-        UnInstallAppsFlyer(token);
-      })
-      .catch((e) => {
-        CommonBugFender('OTPVerification_getDeviceToken', e);
-      });
-  };
-
   const onStopTimer = () => {
-    setRemainingTime(900);
+    setRemainingTime(120);
     setShowErrorMsg(false);
     setInvalidOtpCount(0);
     setIsValidOTP(true);

@@ -30,9 +30,8 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 6,
     },
     scheduleTimeSlots: {
-      // display: 'none',
       padding: 10,
-      minHeight: 278,
+      minHeight: 318,
       marginBottom: 0,
     },
     showTimeSlot: {

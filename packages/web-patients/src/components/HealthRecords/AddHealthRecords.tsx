@@ -44,7 +44,12 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { addRecordClickTracking } from '../../webEngageTracking';
 import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
-import { INVALID_FILE_SIZE_ERROR, toBase64 } from 'helpers/commonHelpers';
+import {
+  INVALID_FILE_SIZE_ERROR,
+  toBase64,
+  MAX_FILE_SIZE_FOR_UPLOAD,
+  acceptedFilesNamesForFileUpload,
+} from 'helpers/commonHelpers';
 import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -793,7 +798,15 @@ export const AddHealthRecords: React.FC = (props) => {
                             <Grid item sm={4} className={classes.gridWidth}>
                               <div className={classes.uploadedImage}>
                                 <div className={classes.docImg}>
-                                  <img src={doc.imageUrl} alt="" />
+                                  {doc.fileType === 'pdf' ? (
+                                    <img
+                                      src={require('images/pdf-file-format-symbol.svg')}
+                                      width="70"
+                                      height="70"
+                                    />
+                                  ) : (
+                                    <img src={doc.imageUrl} alt="" />
+                                  )}
                                 </div>
                                 <div className={classes.documentDetails}>
                                   <span>{doc.name}</span>
@@ -829,14 +842,15 @@ export const AddHealthRecords: React.FC = (props) => {
                                   const file = fileNames[0] || null;
                                   const fileExtension = file.name.split('.').pop();
                                   const fileSize = file.size;
-                                  if (fileSize > 2000000) {
+                                  if (fileSize > MAX_FILE_SIZE_FOR_UPLOAD) {
                                     setIsAlertOpen(true);
                                     setAlertMessage(INVALID_FILE_SIZE_ERROR);
                                   } else if (
                                     fileExtension &&
-                                    (fileExtension.toLowerCase() === 'png' ||
-                                      fileExtension.toLowerCase() === 'jpg' ||
-                                      fileExtension.toLowerCase() === 'jpeg')
+                                    fileExtension &&
+                                    acceptedFilesNamesForFileUpload.includes(
+                                      fileExtension.toLowerCase()
+                                    )
                                   ) {
                                     setIsUploading(true);
                                     if (file) {
@@ -1137,6 +1151,14 @@ export const AddHealthRecords: React.FC = (props) => {
                             <Grid item sm={6} className={classes.gridWidth}>
                               <div className={classes.formGroup}>
                                 <label>Unit</label>
+                                {/* <AphTextField
+                                  disabled={showSpinner}
+                                  value={record.result}
+                                  onChange={(e) =>
+                                    setParametersData('unit', e.target.value as string, idx)
+                                  }
+                                  placeholder="Enter value"
+                                /> */}
                                 <AphSelect
                                   disabled={showSpinner}
                                   value={record.unit}

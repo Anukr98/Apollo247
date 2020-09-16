@@ -63,7 +63,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
     infinite: true,
     speed: 500,
     slidesToShow: 6,
-    slidesToScroll: 1,
+    slidesToScroll: 3,
     nextArrow: <img src={require('images/ic_arrow_right.svg')} alt="" />,
     prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
     responsive: [

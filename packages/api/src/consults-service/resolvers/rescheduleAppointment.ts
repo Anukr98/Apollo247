@@ -665,10 +665,15 @@ const bookRescheduleAppointment: Resolver<
   if (!rescheduledapptDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
+  console.log('docdetails', docDetails.doctorHospital);
+  let facilityDetsString = 'N/A';
+  let hospitalCity = 'N/A';
+  if (docDetails.doctorHospital.length > 0) {
+    const facilityDets = docDetails.doctorHospital[0].facility;
+    facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
+    hospitalCity = docDetails.doctorHospital[0].facility.city;
+  }
 
-  const hospitalCity = docDetails.doctorHospital[0].facility.city;
-  const facilityDets = docDetails.doctorHospital[0].facility;
-  const facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
   //const istDateTime = addMilliseconds(rescheduledapptDetails.appointmentDateTime, 19800000);
   const apptDate = format(
     addMinutes(new Date(rescheduledapptDetails.appointmentDateTime), +330),

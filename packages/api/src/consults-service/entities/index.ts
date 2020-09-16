@@ -946,6 +946,12 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   notes: string;
 
+  @Column({ nullable: true, type: 'text' })
+  clinicalObservationNotes: string;
+
+  @Column({ nullable: true, type: 'text' })
+  diagonasticTestResult: string;
+
   @Column({ nullable: true, type: 'json' })
   otherInstructions: string;
 
