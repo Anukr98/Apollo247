@@ -776,7 +776,7 @@ const getDoctorList: Resolver<
   if (args.filterInput.availability || args.filterInput.availableNow) {
     elasticMatch.push(elasticDoctorAvailabilityFilter(args.filterInput));
   }
-  console.log(JSON.stringify(elasticMatch));
+
   elasticMatch.push(elasticDoctorLatestSlotFilter());
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
     elasticMatch.push({ match: { 'specialty.name': args.filterInput.specialtyName.join(',') } });
@@ -845,10 +845,8 @@ const getDoctorList: Resolver<
   if (!process.env.ELASTIC_INDEX_DOCTORS) {
     throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
   }
-  console.log(JSON.stringify(elasticMatch));
-  const searchParams: RequestParams.Search = elasticDoctorSearch(offset,pageSize,elasticSort,elasticMatch);
-  console.log(JSON.stringify(searchParams));
 
+  const searchParams: RequestParams.Search = elasticDoctorSearch(offset,pageSize,elasticSort,elasticMatch);
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const getDetails = await client.search(searchParams);
 
