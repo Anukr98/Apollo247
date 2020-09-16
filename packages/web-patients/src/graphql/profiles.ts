@@ -73,6 +73,14 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
+export const CREATE_ONE_APOLLO_USER = gql`
+  mutation createOneAPolloUser($patientId: String!) {
+    createOneApolloUser(patientId: $patientId) {
+      success
+    }
+  }
+`;
+
 export const CANCEL_APPOINTMENT = gql`
   mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
     cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
@@ -605,6 +613,24 @@ export const ADD_MEDICAL_RECORD = gql`
   }
 `;
 
+export const ADD_HEALTHCHECK_RECORD = gql`
+  mutation addPatientHealthCheckRecord($AddHealthCheckRecordInput: AddHealthCheckRecordInput) {
+    addPatientHealthCheckRecord(addHealthCheckRecordInput: $AddHealthCheckRecordInput) {
+      status
+    }
+  }
+`;
+
+export const ADD_HOSPITALIZATION_RECORD = gql`
+  mutation addPatientHospitalizationRecord(
+    $AddHospitalizationRecordInput: AddHospitalizationRecordInput
+  ) {
+    addPatientHospitalizationRecord(addHospitalizationRecordInput: $AddHospitalizationRecordInput) {
+      status
+    }
+  }
+`;
+
 export const UPLOAD_DOCUMENT = gql`
   mutation uploadDocument($UploadDocumentInput: UploadDocumentInput) {
     uploadDocument(uploadDocumentInput: $UploadDocumentInput) {
@@ -858,6 +884,49 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
       errorMessage
       orderId
       displayId
+    }
+  }
+`;
+
+export const GET_SITEMAP = gql`
+  mutation generateSitemap {
+    generateSitemap {
+      specialityUrls {
+        urlName
+        url
+      }
+      doctorUrls {
+        urlName
+        url
+      }
+      articleUrls {
+        urlName
+        url
+      }
+      healthAreasUrls {
+        urlName
+        url
+      }
+      shopByCategoryUrls {
+        urlName
+        url
+      }
+      medicinesUrls {
+        urlName
+        url
+      }
+      staticPageUrls {
+        urlName
+        url
+      }
+    }
+  }
+`;
+
+export const GET_LAB_RESULT_PDF = gql`
+  query getLabResultpdf($patientId: ID!, $recordId: String!) {
+    getLabResultpdf(patientId: $patientId, recordId: $recordId) {
+      url
     }
   }
 `;

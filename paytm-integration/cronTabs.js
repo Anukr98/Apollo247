@@ -174,6 +174,37 @@ exports.DailyAppointmentSummary = (req, res) => {
     });
 };
 
+exports.DailyAppointmentSummaryOps = (req, res) => {
+  const requestJSON = {
+    query: Constants.DAILY_APPOINTMENT_SUMMARY_OPS,
+  };
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      const fileName =
+        process.env.PHARMA_LOGS_PATH +
+        new Date().toDateString() +
+        '-dailyAppointmentSummaryOps.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        response.data.data.sendDailyAppointmentSummaryOps +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function(err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
+
 exports.PhysicalApptReminder = (req, res) => {
   const requestJSON = {
     query: Constants.PHYSICAL_APPT_REMINDER.replace('{0}', req.query.inNextMin),

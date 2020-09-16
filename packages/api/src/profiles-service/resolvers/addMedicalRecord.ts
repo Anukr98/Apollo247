@@ -40,6 +40,8 @@ export const addPatientMedicalRecordTypeDefs = gql`
     PHYSICAL_EXAMINATION
     OPERATIVE_REPORT
     PATHOLOGY_REPORT
+    HEALTHCHECK
+    HOSPITALIZATION
   }
 
   input AddMedicalRecordInput {

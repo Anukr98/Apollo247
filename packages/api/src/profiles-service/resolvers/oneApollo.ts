@@ -5,8 +5,10 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { OneApollo } from 'helpers/oneApollo';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-
+import { format } from 'date-fns';
 import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+import { Patient } from 'profiles-service/entities';
+import { winstonLogger } from 'customWinstonLogger';
 
 export const oneApolloTypeDefs = gql`
   type UserDetailResponse {
@@ -14,6 +16,8 @@ export const oneApolloTypeDefs = gql`
     earnedHC: Float!
     availableHC: Float!
     tier: String!
+    burnedCredits: Float!
+    blockedCredits: Float
   }
 
   type TransactionDetails {
@@ -25,17 +29,35 @@ export const oneApolloTypeDefs = gql`
     grossAmount: Float!
   }
 
+  type CreateOneApolloUserResult {
+    success: Boolean
+    message: String
+    referenceNumber: String
+  }
+
+  extend type Mutation {
+    createOneApolloUser(patientId: String!): CreateOneApolloUserResult
+  }
+
   extend type Query {
     getOneApolloUser(patientId: String): UserDetailResponse
     getOneApolloUserTransactions: [TransactionDetails]
   }
 `;
 
+type CreateOneApolloUserResult = {
+  message: string;
+  success: boolean;
+  referenceNumber: string;
+};
+
 type UserDetailResponse = {
   name: string | null;
   earnedHC: number;
   availableHC: number;
   tier: string;
+  burnedCredits: number;
+  blockedCredits: number;
 };
 
 type TransactionDetails = {
@@ -46,6 +68,8 @@ type TransactionDetails = {
   netAmount: number;
   grossAmount: number;
 };
+
+const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
 
 const getOneApolloUser: Resolver<
   null,
@@ -62,20 +86,13 @@ const getOneApolloUser: Resolver<
     const patient = await patientRepo.getPatientDetails(args.patientId);
 
     if (patient) {
-      let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
-      if (patient.iosVersion) {
-        storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
-      }
-      if (patient.androidVersion) {
-        storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
-      }
       const userCreateResponse = await oneApollo.createOneApolloUser({
         FirstName: patient.firstName,
         LastName: patient.lastName,
         BusinessUnit: <string>process.env.ONEAPOLLO_BUSINESS_UNIT,
         MobileNumber: mobNumberIN,
         Gender: patient.gender,
-        StoreCode: storeCode,
+        StoreCode: getStoreCode(patient),
         CustomerId: patient.uhid,
       });
       if (userCreateResponse.Success) {
@@ -90,11 +107,15 @@ const getOneApolloUser: Resolver<
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
     }
   }
+  const userData = response.CustomerData;
+  const individualData = userData.Individual;
   return {
-    name: response.CustomerData.Name,
-    earnedHC: response.CustomerData.EarnedCredits,
-    availableHC: response.CustomerData.AvailableCredits,
-    tier: response.CustomerData.Tier,
+    name: userData.Name,
+    earnedHC: individualData ? individualData.EarnedCredits : userData.EarnedCredits,
+    availableHC: userData.AvailableCredits < 0 ? 0 : userData.AvailableCredits,
+    tier: individualData ? individualData.Tier : userData.Tier,
+    burnedCredits: individualData ? individualData.BurnedCredits : userData.BurnedCredits,
+    blockedCredits: individualData ? individualData.BlockedCredits : userData.BlockedCredits,
   };
 };
 
@@ -135,9 +156,78 @@ const getOneApolloUserTransactions: Resolver<
   }
 };
 
+const createOneApolloUser: Resolver<
+  null,
+  { patientId: string },
+  ProfilesServiceContext,
+  CreateOneApolloUserResult
+> = async (parent, { patientId }, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const oneApollo = new OneApollo();
+  if (!patientId) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  //check patient in apollo247
+  const patient = await patientRepo.getPatientDetails(patientId);
+  if (patient) {
+    let mobileNumber = '';
+    if (patient.mobileNumber.length === 13) {
+      mobileNumber = patient.mobileNumber.slice(3);
+    } else {
+      mobileNumber = patient.mobileNumber;
+    }
+    const userPayload = {
+      FirstName: patient.firstName,
+      LastName: patient.lastName,
+      BusinessUnit: <string>process.env.ONEAPOLLO_BUSINESS_UNIT,
+      MobileNumber: mobileNumber,
+      DOB: format(patient.dateOfBirth, 'yyyy-MM-dd'),
+      Gender: patient.gender,
+      Email: patient.emailAddress,
+      StoreCode: getStoreCode(patient),
+      CustomerId: patient.uhid,
+    };
+    //adding log for prod, remove it once testing is done...
+    profilesLogger.log('info', `createOneApolloUser payload - ${JSON.stringify(userPayload)}`);
+
+    const userCreateResponse = await oneApollo.createOneApolloUser(userPayload);
+
+    if (userCreateResponse.Success) {
+      return {
+        success: userCreateResponse.Success,
+        message: userCreateResponse.Message,
+        referenceNumber: userCreateResponse.ReferenceNumber,
+      };
+    } else {
+      throw new AphError(userCreateResponse.Message, undefined, {});
+    }
+  } else {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+};
+
+/**
+ * helper fn
+ */
+const getStoreCode = (patient: Patient) => {
+  let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
+  if (patient.iosVersion) {
+    storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
+  }
+  if (patient.androidVersion) {
+    storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
+  }
+  return storeCode;
+};
+/**
+ * expose one apollo resolvers
+ */
 export const oneApolloResolvers = {
   Query: {
     getOneApolloUser,
     getOneApolloUserTransactions,
+  },
+  Mutation: {
+    createOneApolloUser,
   },
 };

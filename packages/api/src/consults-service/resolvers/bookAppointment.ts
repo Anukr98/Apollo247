@@ -140,6 +140,7 @@ type AppointmentBooking = {
   status: STATUS;
   patientName: string;
   appointmentState: APPOINTMENT_STATE;
+  patientType: PATIENT_TYPE;
 };
 
 type AppointmentBookingResult = {
@@ -299,20 +300,23 @@ const bookAppointment: Resolver<
     throw new AphError(AphErrorMessages.BOOKING_LIMIT_EXCEEDED, undefined, {});
   }
 
-  const appointmentDetails = await apptsrepo.getAppointmentsByDocId(appointmentInput.doctorId);
-  let prevPatientId = '0';
-  if (appointmentDetails.length) {
-    //forEach loops do not support await
-    for (let k = 0, totalItems = appointmentDetails.length; k < totalItems; k++) {
-      const appointmentData = appointmentDetails[k];
-      if (appointmentData.patientId != prevPatientId) {
-        prevPatientId = appointmentData.patientId;
-        await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.NEW);
-      } else {
-        await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.REPEAT);
-      }
-    }
-  }
+  const patientAppointmentCountWithThisDoctor: number = await apptsrepo.getAppointmentsCountByDoctorIdandPatientId(
+    appointmentInput.doctorId,
+    appointmentInput.patientId
+  );
+  // let prevPatientId = '0';
+  // if (appointmentDetails.length) {
+  //   //forEach loops do not support await
+  //   for (let k = 0, totalItems = appointmentDetails.length; k < totalItems; k++) {
+  //     const appointmentData = appointmentDetails[k];
+  //     if (appointmentData.patientId != prevPatientId) {
+  //       prevPatientId = appointmentData.patientId;
+  //       await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.NEW);
+  //     } else {
+  //       await apptsrepo.updatePatientType(appointmentData, PATIENT_TYPE.REPEAT);
+  //     }
+  //   }
+  // }
 
   //calculate coupon discount value
   if (appointmentInput.couponCode) {
@@ -370,6 +374,7 @@ const bookAppointment: Resolver<
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
     appointmentDateTime: new Date(appointmentInput.appointmentDateTime.toISOString()),
     appointmentState: APPOINTMENT_STATE.NEW,
+    patientType: patientAppointmentCountWithThisDoctor > 0 ? PATIENT_TYPE.REPEAT : PATIENT_TYPE.NEW,
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
 

@@ -261,7 +261,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       marginBottom: 12,
-      padding: 14,
+      padding: '14px 14px 14px 18px',
       '& hr': {
         opacity: '0.2',
       },
@@ -279,7 +279,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     reportsDetails: {
-      paddingLeft: 10,
+      paddingLeft: 0,
       paddingRight: 10,
       [theme.breakpoints.down('xs')]: {
         paddingLeft: 5,
@@ -334,11 +334,12 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 5,
     },
     testName: {
-      fontSize: 16,
+      fontSize: 20,
       color: '#01475b',
       fontWeight: 500,
       marginBottom: 12,
-      lineHeight: '21px',
+      lineHeight: '28px',
+      wordBreak: 'break-all',
     },
     checkDate: {
       fontSize: 14,
@@ -402,7 +403,10 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
       <div className={classes.leftSection}>
         <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
-          <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
+          <Link
+            className={classes.addReportMobile}
+            to={clientRoutes.addHealthRecords('healthCheck')}
+          >
             <img src={require('images/ic_addfile.svg')} />
           </Link>
         </div>
@@ -452,17 +456,17 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
             </div>
           )}
         </Scrollbars>
-        {/* <div className={classes.addReportActions}>
+        <div className={classes.addReportActions}>
           <AphButton
             color="primary"
             onClick={() => {
-              window.location.href = clientRoutes.addRecords();
+              window.location.href = clientRoutes.addHealthRecords('healthCheck');
             }}
             fullWidth
           >
             Add Record
           </AphButton>
-        </div> */}
+        </div>
       </div>
       <div
         className={`${classes.rightSection} ${
@@ -535,13 +539,15 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
               )}
             </Scrollbars>
             {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
-              <a href={activeData.fileUrl}>
-                <div className={classes.addReportActions}>
-                  <AphButton color="primary" fullWidth>
-                    DOWNLOAD HEALTH SUMMARY
-                  </AphButton>
-                </div>
-              </a>
+              <div className={classes.addReportActions}>
+                <AphButton
+                  onClick={() => window.open(activeData.fileUrl, '_blank')}
+                  color="primary"
+                  fullWidth
+                >
+                  DOWNLOAD HEALTH SUMMARY
+                </AphButton>
+              </div>
             )}
           </>
         ) : (

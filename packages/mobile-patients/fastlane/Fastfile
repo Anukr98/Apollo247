@@ -24,12 +24,7 @@ APPCENTER_APP_NAME_ANDROID = "Apollo-1"
 APPCENTER_DISTRIBUTE_DESTINATIONS = "Internal Testers,Apollo247_Internal"
 # Edit Release Notes Here
 # Update $release_version below else it'll ask at the time of build generation
-APPCENTER_DISTRIBUTE_RELEASE_NOTES = "
-| Key | | Value |
-| :--- | :----: | :--- |
-| Environment | | #{APP_ENVIRONMENT} |
-| Release | | $release_version |
-"
+APPCENTER_DISTRIBUTE_RELEASE_NOTES = "Environment: #{APP_ENVIRONMENT} | Release: $release_version"
 # Set to false if you don't want to notify testers of your new release
 APPCENTER_DISTRIBUTE_NOTIFY_TESTERS = true 
 
@@ -182,7 +177,7 @@ platform :ios do
 		build_app(
 			scheme: "ApolloPatient", 
 			workspace: "./ios/ApolloPatient.xcworkspace", 
-			# clean: true,
+			clean: true,
 			silent: true,
 			output_directory: "./builds",
 			output_name: "Apollo 247.ipa",

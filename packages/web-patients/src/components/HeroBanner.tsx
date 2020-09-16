@@ -246,8 +246,7 @@ export const HeroBanner: React.FC = () => {
                 );
               })}
               <MenuItem classes={{ selected: classes.menuSelected }}>
-                {/* @TODO: Uncomment this after fixing */}
-                {/* <AphButton
+                <AphButton
                   color="primary"
                   classes={{ root: classes.addMemberBtn }}
                   onClick={() => {
@@ -256,13 +255,13 @@ export const HeroBanner: React.FC = () => {
                   title={'Add Member'}
                 >
                   Add Member
-                </AphButton> */}
+                </AphButton>
               </MenuItem>
             </AphSelect>
           </Typography>
         ) : (
-            <span className={classes.mainHead}>hello there!</span>
-          )}
+          <span className={classes.mainHead}>hello there!</span>
+        )}
         <p>How can we help you today? :)</p>
         <OurServices />
       </div>

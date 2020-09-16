@@ -46,7 +46,7 @@ import {
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
-  SAVE_VOIP_DEVICE_TOKEN
+  SAVE_VOIP_DEVICE_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -164,15 +164,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     justifyContent: 'center',
     alignItems: 'flex-start',
-  },
-  gotItStyles: {
-    height: 60,
-    paddingRight: 25,
-    backgroundColor: 'transparent',
-  },
-  gotItTextStyles: {
-    paddingTop: 16,
-    ...theme.viewStyles.yellowTextStyle,
   },
   hiTextStyle: {
     marginLeft: 20,
@@ -570,12 +561,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 5,
-      title: 'Understand Symptoms',
+      title: 'Track Symptoms',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.TRACK_SYMPTOMS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.TRACK_SYMPTOMS);
-        props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' });
+        props.navigation.navigate(AppRoutes.SymptomTracker);
       },
     },
     {
@@ -799,6 +790,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setshowPopUp(false);
       } else {
         setshowPopUp(true);
+        setTimeout(() => {
+          setshowPopUp(false);
+          CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
+          AsyncStorage.setItem('gotIt', 'true');
+        }, 5000);
       }
       const CMEnabled = await AsyncStorage.getItem('CMEnable');
       const eneabled = CMEnabled ? JSON.parse(CMEnabled) : false;
@@ -812,7 +808,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (isIos()) {
       initializeVoip();
     }
-  }, [])
+  }, []);
 
   const initializeVoip = () => {
     VoipPushNotification.requestPermissions();
@@ -821,7 +817,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     VoipPushNotification.addEventListener('register', (token: string) => {
       if (token) setVoipDeviceToken(token);
     });
-  }
+  };
 
   useEffect(() => {
     if (voipDeviceToken) {
@@ -829,25 +825,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         callVoipDeviceTokenAPI(); // for safer side(to get currentPatient.id)
       }, 2000);
     }
-  }, [voipDeviceToken])
+  }, [voipDeviceToken]);
 
   const callVoipDeviceTokenAPI = async () => {
-      const input = {
-        patientId: currentPatient ? currentPatient.id : '',
-        voipToken: voipDeviceToken
-      }
-      client.mutate<addVoipPushToken, addVoipPushTokenVariables>({
+    const input = {
+      patientId: currentPatient ? currentPatient.id : '',
+      voipToken: voipDeviceToken,
+    };
+    client
+      .mutate<addVoipPushToken, addVoipPushTokenVariables>({
         mutation: SAVE_VOIP_DEVICE_TOKEN,
         variables: {
-          voipPushTokenInput: input
+          voipPushTokenInput: input,
         },
-        fetchPolicy: 'no-cache'
-      }).then((data: any) => {
-      }).catch((e) => {
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {})
+      .catch((e) => {
         CommonBugFender('ConsultRoom_callDeviceVoipTokenAPI', e);
         console.log('Error occured while sending voip token', e);
-      })
-  }
+      });
+  };
 
   const getTokenforCM = async () => {
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
@@ -1530,7 +1528,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
       });
     } catch (e) {}
-
   };
 
   const renderCovidScanBanner = () => {
@@ -1699,24 +1696,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </SafeAreaView>
       {renderBottomTabBar()}
       {showPopUp && (
-        <BottomPopUp
-          title={`Hi ${(currentPatient && currentPatient.firstName) || ''}`}
-          description={string.home.welcome_popup.description}
-        >
-          <View style={{ height: 60, alignItems: 'flex-end' }}>
-            <TouchableOpacity
-              activeOpacity={1}
-              style={styles.gotItStyles}
-              onPress={() => {
-                CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
-                AsyncStorage.setItem('gotIt', 'true');
-                setshowPopUp(false);
-              }}
-            >
-              <Text style={styles.gotItTextStyles}>{string.home.welcome_popup.cta_label}</Text>
-            </TouchableOpacity>
-          </View>
-        </BottomPopUp>
+        <>
+          <BottomPopUp
+            title={`Hi ${(currentPatient && currentPatient.firstName) || ''}`}
+            description={string.home.welcome_popup.description}
+          >
+            <View style={{ height: 20, alignItems: 'flex-end' }} />
+          </BottomPopUp>
+          <TouchableOpacity
+            onPress={() => {
+              CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
+              AsyncStorage.setItem('gotIt', 'true');
+              setshowPopUp(false);
+            }}
+            style={{
+              backgroundColor: 'transparent',
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+            }}
+          />
+        </>
       )}
       {showSpinner && <Spinner />}
       {isLocationSearchVisible && (

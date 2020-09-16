@@ -3,6 +3,7 @@ import { Theme, CircularProgress, Grid } from '@material-ui/core';
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
+import { AphCheckbox } from 'components/AphCheckbox';
 import { AphCalendar } from 'components/AphCalendar';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -137,13 +138,11 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 0,
     },
     scheduleCalendar: {
-      // display: 'none',
       padding: 10,
-      minHeight: 278,
+      minHeight: 318,
       marginBottom: 0,
     },
     scheduleTimeSlots: {
-      // display: 'none',
       padding: 10,
       minHeight: 278,
       marginBottom: 0,
@@ -185,6 +184,34 @@ const useStyles = makeStyles((theme: Theme) => {
       '& button': {
         minWidth: 288,
       },
+    },
+    marBottomMedium: {
+      marginBottom: 20,
+    },
+    checkbox: {
+      alignItems: 'baseline',
+      margin: '0 0 0 auto',
+      '&:hover': {
+        backgroundColor: 'transparent !important',
+      },
+      '&:focus': {
+        backgroundColor: 'transparent',
+      },
+    },
+    whatsupTxt: {
+      fontSize: 15,
+      lineHeight: '19px',
+      color: '#01475b',
+      fontWeight: 500,
+      marginLeft: 8,
+      '& img': {
+        margin: '0 3px',
+        position: 'relative',
+        top: 3,
+      },
+    },
+    whatsUpContent: {
+      margin: '10px 0',
     },
   };
 });
@@ -249,7 +276,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   let slotAvailableNext = '',
     consultNowSlotTime = '';
 
-  const doctorName = doctorDetails && doctorDetails.firstName ? doctorDetails.firstName : '';
+  const doctorName = doctorDetails && doctorDetails.fullName ? doctorDetails.fullName : '';
 
   const onlineConsultationFees =
     doctorDetails && doctorDetails.onlineConsultationFees
@@ -588,7 +615,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
         <div className={classes.customScrollBar}>
-          <div className={classes.consultGroup}>
+          <div className={`${classes.consultGroup} ${classes.marBottomMedium}`}>
             <p>{`Dr. ${doctorName} is ${availabilityMarkup()}! Would you like to
                 consult now or schedule for later?`}</p>
             <div className={classes.actions}>
@@ -626,22 +653,22 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 Schedule For Later
               </AphButton>
             </div>
-            {showCalendar || scheduleLater || !consultNowAvailable ? (
+            {/* {showCalendar || scheduleLater || !consultNowAvailable ? (
               ''
             ) : (
               <p className={classes.consultNowInfo}>
                 Please note that after booking, you will need to download the Apollo 247 app to
                 continue with your consultation.
               </p>
-            )}
+            )} */}
           </div>
 
           {(!consultNow || showCalendar || scheduleLater || !consultNowAvailable) && (
             <>
-              <p className={classes.consultGroup}>
+              {/* <p className={classes.consultGroup}>
                 Please note that after booking, you will need to download the Apollo 247 app to
                 continue with your consultation.
-              </p>
+              </p> */}
 
               <Grid container spacing={2}>
                 <Grid item sm={6} xs={12}>
@@ -684,6 +711,13 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             rights to visit a physician and opt for a physical examination at any point in time and
             I am free at any time during the consultation to request for the same.
           </p>
+          <div className={classes.whatsUpContent}>
+            <AphCheckbox disabled={mutationLoading} className={classes.checkbox} color="primary" />
+            <span className={classes.whatsupTxt}>
+              Receive status updates on <img src={require('images/ic_whatsup.svg')} alt="" />{' '}
+              Whatsapp
+            </span>
+          </div>
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>

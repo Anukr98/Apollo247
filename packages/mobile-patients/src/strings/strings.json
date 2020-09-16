@@ -25,7 +25,7 @@
     "covidYouCanText": "You can also",
     "Rs": "₹",
     "KavachText": "Explore the Apollo Kavach Program",
-    "joinConsultRoomDescription": "Please click on 'Join' to start the\nconsult with",
+    "joinConsultRoomDescription": "Please click here to\n Join the Call with",
     "waitForDoctirToJoinCall": "doctor_name is not in the room yet.\nPlease wait for few seconds while doctor joins the call....",
     "exotelMessage": " is trying to call you from the number ",
     "requestMessage": ". Request you to answer the call."
@@ -34,14 +34,15 @@
     "mainHeading": "How would you like to consult with",
     "checkBoxText": "I have consulted with {0} before",
     "online": {
-      "heading": "CHAT/AUDIO/VIDEO",
+      "heading": "In-App AUDIO/VIDEO",
       "question": "How to consult via chat/audio/video?",
       "point1": "Choose the doctor",
       "point2": "Book a slot",
       "point3": "Make payment",
-      "point4": "Speak to the doctor via video/audio/chat",
-      "point5": "Receive prescriptions instantly",
-      "point6": "Chat with the doctor for 7 days after your consult"
+      "point4": "Be present in the consult room within Apollo247 app at the time of consult",
+      "point5": "Speak to the doctor via video/audio/chat",
+      "point6": "Receive prescriptions instantly",
+      "point7": "Follow Up via text - valid for 7 days"
     },
     "inperson": {
       "heading": "MEET IN PERSON",
@@ -51,9 +52,9 @@
       "point3": "Make payment",
       "point4": "Visit the doctor at Hospital/Clinic",
       "point5": "Receive prescriptions instantly",
-      "point6": "Chat with the doctor for 7 days after your consult"
+      "point6": "Follow Up via text - valid for 7 days"
     },
-    "follow_up_chat_days_text": "Follow Up chat for minimum of {0} days",
+    "follow_up_chat_days_text": "Follow Up via text - valid for {0} days",
     "follow_up_chat_message": "is available for a minimum of {0} days for free follow-up chat post Consult. However, doctor can decide to increase the follow-up chat days as per case basis.",
     "chatDisabledHeader": "Free follow up chat days with the doctor are over. Please book a new appointment for consulting with {0} again!"
   },
@@ -384,5 +385,24 @@
     "block_Calendar": "Block Calendar",
     "manage_calendar": "Manage Calendar"
   },
-  "ChatRoom_NotRecorded_Value": "Not Recorded"
+  "ChatRoom_NotRecorded_Value": "Not Recorded",
+  "symptomChecker": {
+    "howItWorks": "HOW IT WORKS?",
+    "patientDetails": "Patient Details",
+    "name": "Name",
+    "age": "Age",
+    "gender": "Gender",
+    "selectAnotherMember": "Select Another Member",
+    "typeSymptomOrChooseFromList": "Type symptom here or choose from the list",
+    "addSelectedSymptom": "ADD SELECTED SYMPTOMS",
+    "symptoms": "Symptoms",
+    "noOtherSymptoms": "NO OTHER SYMPTOM",
+    "thanksForGivingAnswers": "Thanks {{name}}, for helping us with your answers.\n\nBelow is a summary of your symptoms.",
+    "restart": "RESTART",
+    "consultDoctor": "Consult Doctor",
+    "restartSymptomTrackerDiscription": "This will end your symptom tracking and you’ll have to start it again. Do you want to continue tracking your symptoms or go back?",
+    "symptomTracker": "Symptom Tracker",
+    "addAnotherSymptom": "Would you like to report another symptom?"
+  },
+  "Prescription_Success":"Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM)."
 }

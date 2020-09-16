@@ -261,7 +261,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       marginBottom: 12,
-      padding: 14,
+      padding: '14px 14px 14px 18px',
       '& hr': {
         opacity: '0.2',
       },
@@ -279,7 +279,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     reportsDetails: {
-      paddingLeft: 10,
+      paddingLeft: 0,
       paddingRight: 10,
       [theme.breakpoints.down('xs')]: {
         paddingLeft: 5,
@@ -332,6 +332,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#0087BA',
       fontWeight: 500,
       marginBottom: 5,
+      wordBreak: 'break-all',
     },
     testName: {
       fontSize: 16,
@@ -377,7 +378,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
   const { allCombinedData, loading, activeData, setActiveData, error, deleteReport } = props;
 
   const getFormattedDate = (combinedData: HospitalizationType, dateFor: string) => {
-    return dateFor === 'title' ? (
+    return dateFor === 'title' && combinedData.dateOfHospitalization !== 0 ? (
       <span>
         From {moment(combinedData.dateOfHospitalization).format('DD MMM, YYYY')} to{' '}
         {moment(combinedData.date).format('DD MMM, YYYY')}
@@ -404,7 +405,10 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
       <div className={classes.leftSection}>
         <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
-          <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
+          <Link
+            className={classes.addReportMobile}
+            to={clientRoutes.addHealthRecords('hospitalization')}
+          >
             <img src={require('images/ic_addfile.svg')} />
           </Link>
         </div>
@@ -454,17 +458,17 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
             </div>
           )}
         </Scrollbars>
-        {/* <div className={classes.addReportActions}>
+        <div className={classes.addReportActions}>
           <AphButton
             color="primary"
             onClick={() => {
-              window.location.href = clientRoutes.addRecords();
+              window.location.href = clientRoutes.addHealthRecords('hospitalization');
             }}
             fullWidth
           >
             Add Record
           </AphButton>
-        </div> */}
+        </div>
       </div>
       <div
         className={`${classes.rightSection} ${
@@ -542,13 +546,15 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
               )}
             </Scrollbars>
             {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
-              <a href={activeData.fileUrl}>
-                <div className={classes.addReportActions}>
-                  <AphButton color="primary" fullWidth>
-                    DOWNLOAD DISCHARGE SUMMARY
-                  </AphButton>
-                </div>
-              </a>
+              <div className={classes.addReportActions}>
+                <AphButton
+                  onClick={() => window.open(activeData.fileUrl, '_blank')}
+                  color="primary"
+                  fullWidth
+                >
+                  DOWNLOAD DISCHARGE SUMMARY
+                </AphButton>
+              </div>
             )}
           </>
         ) : (

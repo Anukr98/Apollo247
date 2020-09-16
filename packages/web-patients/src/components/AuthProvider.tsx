@@ -12,11 +12,19 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import _isEmpty from 'lodash/isEmpty';
 import _uniqueId from 'lodash/uniqueId';
-import { GET_PATIENT_BY_MOBILE_NUMBER, GET_CURRENT_PATIENTS } from 'graphql/profiles';
+import {
+  GET_PATIENT_BY_MOBILE_NUMBER,
+  GET_CURRENT_PATIENTS,
+  CREATE_ONE_APOLLO_USER,
+} from 'graphql/profiles';
 import { Login, LoginVariables } from 'graphql/types/Login';
 import { verifyLoginOtp, verifyLoginOtpVariables } from 'graphql/types/verifyLoginOtp';
+import {
+  createOneAPolloUser,
+  createOneAPolloUserVariables,
+} from 'graphql/types/createOneAPolloUser';
 import { LOGIN_TYPE } from 'graphql/types/globalTypes';
-import { clientRoutes } from 'helpers/clientRoutes';
+
 import {
   CUSTOM_LOGIN,
   CUSTOM_LOGIN_VERIFY_OTP,
@@ -27,6 +35,7 @@ import { gtmTracking, _urTracking } from '../gtmTracking';
 import { webengageUserLoginTracking, webengageUserLogoutTracking } from '../webEngageTracking';
 import { GetPatientByMobileNumber } from 'graphql/types/GetPatientByMobileNumber';
 import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
+
 // import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
 // import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 
@@ -305,6 +314,17 @@ export const AuthProvider: React.FC = (props) => {
     }
   };
 
+  const registerUserOneApollo = async (patientId: string) => {
+    await wait(
+      apolloClient.mutate<createOneAPolloUser, createOneAPolloUserVariables>({
+        variables: {
+          patientId,
+        },
+        mutation: CREATE_ONE_APOLLO_USER,
+      })
+    );
+  };
+
   const resendOtpApiCall = async (mobileNumber: string, loginId: string) => {
     const [resendOtpResult, resendOtpError] = await wait(
       apolloClient.mutate<ResendOtp, ResendOtpVariables>({
@@ -443,6 +463,8 @@ export const AuthProvider: React.FC = (props) => {
                     res.data.getCurrentPatients.patients &&
                     res.data.getCurrentPatients.patients[0].id;
                   localStorage.setItem('currentUser', userId);
+                  // register the user in one-apollo
+                  registerUserOneApollo(userId);
                   setCurrentPatientId(userId);
                   gtmTracking({
                     category: 'Profile',

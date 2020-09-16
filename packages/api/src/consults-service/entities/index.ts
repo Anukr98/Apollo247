@@ -27,7 +27,6 @@ import {
   trackWebEngageEventForCasesheetUpdate,
   trackWebEngageEventForCasesheetInsert,
   trackWebEngageEventForExotelCall,
-  trackWebEngageEventForAppointmentComplete,
 } from 'notifications-service/resolvers/webEngageAPI';
 
 import { AppointmentCallFeedback } from './appointmentCallFeedbackEntity';
@@ -425,11 +424,6 @@ export class Appointment extends BaseEntity {
   }
 
   @AfterUpdate()
-  trackWebEngageEventForAppointmentComplete() {
-    trackWebEngageEventForAppointmentComplete(this);
-  }
-
-  @AfterUpdate()
   async trackWebEngageEventForCancellation() {
     trackWebEngageEventForDoctorCancellation(this);
   }
@@ -707,8 +701,11 @@ export class AppointmentCallDetails extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
-  @OneToOne(() => AppointmentCallFeedback, (appointmentCallFeedback) => appointmentCallFeedback.appointmentCallDetails)
-  appointmentCallFeedback: AppointmentCallFeedback
+  @OneToOne(
+    () => AppointmentCallFeedback,
+    (appointmentCallFeedback) => appointmentCallFeedback.appointmentCallDetails
+  )
+  appointmentCallFeedback: AppointmentCallFeedback;
 
   @BeforeInsert()
   updateDateCreation() {
@@ -949,6 +946,12 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   notes: string;
 
+  @Column({ nullable: true, type: 'text' })
+  clinicalObservationNotes: string;
+
+  @Column({ nullable: true, type: 'text' })
+  diagonasticTestResult: string;
+
   @Column({ nullable: true, type: 'json' })
   otherInstructions: string;
 
@@ -1021,7 +1024,6 @@ export class CaseSheet extends BaseEntity {
 ///////////////////////////////////////////////////////////
 @Entity()
 export class ConsultQueueItem extends BaseEntity {
-
   @Index('ConsultQueueItem_appointmentId')
   @Column({ nullable: false })
   appointmentId: string;

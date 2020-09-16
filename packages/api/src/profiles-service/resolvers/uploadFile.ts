@@ -5,6 +5,7 @@ import fs from 'fs';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { format } from 'date-fns';
 import path from 'path';
+import { log } from 'customWinstonLogger';
 
 export const uploadFileTypeDefs = gql`
   enum UPLOAD_FILE_TYPES {
@@ -41,7 +42,6 @@ const uploadFile: Resolver<
     format(new Date(), 'ddmmyyyy-HHmmss') + '_' + randomNumber + '.' + args.fileType.toLowerCase();
   const uploadPath = assetsDir + '/' + fileName;
   fs.writeFile(uploadPath, args.base64FileInput, { encoding: 'base64' }, (err) => {
-    console.log(err);
   });
   const client = new AphStorageClient(
     process.env.AZURE_STORAGE_CONNECTION_STRING_API,
@@ -49,37 +49,99 @@ const uploadFile: Resolver<
   );
 
   if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
-    console.log('deleting container...');
     await client
       .deleteContainer()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error deleting', error));
-
-    console.log('setting service properties...');
+      .then((res) => {
+        log(
+          'profileServiceLogger',
+          'uploadFile deleteContainer response',
+          'uploadFile()->deleteContainer()->THEN_BLOCK',
+          '',
+          JSON.stringify(res)
+        );
+      })
+      .catch((error) => {
+        log(
+          'profileServiceLogger',
+          'uploadFile deleteContainer error',
+          'uploadFile()->deleteContainer()->CATCH_BLOCK',
+          '',
+          JSON.stringify(error)
+        );
+      });
     await client
       .setServiceProperties()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error setting service properties', error));
-
-    console.log('creating container...');
+      .then((res) => {
+        log(
+          'profileServiceLogger',
+          'uploadFile setServiceProperties response',
+          'uploadFile()->setServiceProperties()->THEN_BLOCK',
+          '',
+          JSON.stringify(res)
+        );
+      })
+      .catch((error) => {
+        log(
+          'profileServiceLogger',
+          'uploadFile setServiceProperties error',
+          'uploadFile()->setServiceProperties()->CATCH_BLOCK',
+          '',
+          JSON.stringify(error)
+        );
+      });
     await client
       .createContainer()
-      .then((res) => console.log(res))
-      .catch((error) => console.log('error creating', error));
+      .then((res) => {
+        log(
+          'profileServiceLogger',
+          'uploadFile createContainer response',
+          'uploadFile()->createContainer()->THEN_BLOCK',
+          '',
+          JSON.stringify(res)
+        );
+      })
+      .catch((error) => {
+        log(
+          'profileServiceLogger',
+          'uploadFile createContainer error',
+          'uploadFile()->createContainer()->CATCH_BLOCK',
+          '',
+          JSON.stringify(error)
+        );
+      });
   }
-
-  console.log('testing storage connection...');
   await client
     .testStorageConnection()
-    .then((res) => console.log(res))
-    .catch((error) => console.log('error testing', error));
+    .then((res) => {
+      log(
+        'profileServiceLogger',
+        'uploadFile testStorageConnection response',
+        'uploadFile()->testStorageConnection()->THEN_BLOCK',
+        '',
+        JSON.stringify(res)
+      );
+    })
+    .catch((error) => {
+      log(
+        'profileServiceLogger',
+        'uploadFile testStorageConnection error',
+        'uploadFile()->testStorageConnection()->CATCH_BLOCK',
+        '',
+        JSON.stringify(error)
+      );
+    });
 
   const localFilePath = assetsDir + '/' + fileName;
-  console.log(`uploading ${localFilePath}`);
   const readmeBlob = await client
     .uploadFile({ name: fileName, filePath: localFilePath })
     .catch((error) => {
-      console.log('error final', error);
+      log(
+        'profileServiceLogger',
+        'uploadFile error',
+        'uploadFile()->CATCH_BLOCK',
+        '',
+        JSON.stringify(error)
+      );
       throw error;
     });
   fs.unlinkSync(localFilePath);

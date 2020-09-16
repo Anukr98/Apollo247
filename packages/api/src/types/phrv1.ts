@@ -184,6 +184,10 @@ export interface GetAuthTokenResponse {
   response: string;
 }
 
+export interface GetLabResultpdfResponse {
+  url: string
+}
+
 export interface HealthChecksResponse {
   errorCode: number;
   errorMsg: string;
@@ -210,6 +214,29 @@ export interface HealthChecksResponse {
     healthCheckType: string;
     followupDate: number;
   }[];
+}
+
+export interface HealthCheckUploadRequest {
+  healthCheckName: string;
+  healthCheckType: string;
+  healthCheckDate: string | number;
+  healthCheckSummary: string;
+  followupDate: string | number;
+  source: string;
+  healthCheckFiles: {
+    id: string;
+    fileName: string;
+    mimeType: string;
+    dateCreated: string | number;
+    content: string;
+  }[];
+}
+
+export interface HealthCheckUploadResponse {
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
+  response: string;
 }
 
 export interface DischargeSummaryResponse {
@@ -246,4 +273,32 @@ export interface DischargeSummaryResponse {
     }
   ]
 
+}
+
+export interface DischargeSummaryUploadRequest {
+  hospitalName: string;
+  dateOfHospitalization: number | string,
+  doctorName: string;
+  reasonForAdmission: string;
+  diagnosisNotes: string;
+  dateOfDischarge: number;
+  dischargeSummary: string;
+  doctorInstruction: string;
+  dateOfNextVisit: number | string;
+  source: string;
+  hospitalizationFiles: {
+    id: string;
+    fileName: string;
+    mimeType: string;
+    dateCreated: number;
+    content: string
+  }[];
+
+}
+
+export interface DischargeSummaryUploadResponse {
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
+  response: string;
 }

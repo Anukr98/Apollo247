@@ -26,7 +26,6 @@ import _startCase from 'lodash/startCase';
 import { useMutation } from 'react-apollo-hooks';
 import {
   JOIN_JDQ_WITH_AUTOMATED_QUESTIONS,
-  GET_APPOINTMENT_DATA,
   UPDATE_APPOINTMENT_SESSION,
   PAST_APPOINTMENTS_COUNT,
   UPDATE_SAVE_EXTERNAL_CONNECT,
@@ -54,9 +53,10 @@ import { UploadChatPrescription } from 'components/Consult/V2/ChatRoom/UploadCha
 import { UploadChatEPrescriptionCard } from 'components/Consult/V2/ChatRoom/UploadChatEPrescriptionCard';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { BookAppointmentCard } from 'components/Consult/V2/ChatRoom/BookAppointmentCard';
-import { isPastAppointment } from 'helpers/commonHelpers';
+import { isPastAppointment, consultWebengageEventsInfo } from 'helpers/commonHelpers';
 import { useParams } from 'hooks/routerHooks';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import { medicalDetailsFillTracking, callReceiveClickTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -278,7 +278,7 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: '75px',
         marginBottom: 15,
         borderLeft: '1px solid #00B38E',
-        padding: '0px 0 0px 10px !important',
+        padding: '0px 45px 0px 10px !important',
       },
     },
     consultRoom: {
@@ -687,7 +687,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     quesSubmitBtn: {
-      marginTop: 40,
+      marginTop: 50,
       background: 'transparent',
       border: 'none',
       cursor: 'pointer',
@@ -817,6 +817,7 @@ interface AutoMessageStrings {
   doctorAutoResponse: string;
   leaveChatRoom: string;
   patientJoinedMeetingRoom: string;
+  patientRejectedCall: string;
 }
 
 interface ChatWindowProps {
@@ -828,6 +829,8 @@ interface ChatWindowProps {
   rescheduleAPI: (bookRescheduleInput: BookRescheduleAppointmentInput) => void;
   jrDoctorJoined: boolean;
   setJrDoctorJoined: (jrDoctorJoined: boolean) => void;
+  setSrDoctorJoined: (srDoctorJoined: boolean) => void;
+  setIsConsultCompleted: (isConsultCompleted: boolean) => void;
   appointmentDetails: AppointmentHistory;
 }
 
@@ -872,6 +875,7 @@ const autoMessageStrings: AutoMessageStrings = {
   doctorAutoResponse: '^^#doctorAutoResponse',
   leaveChatRoom: '^^#leaveChatRoom',
   patientJoinedMeetingRoom: '^^#patientJoinedMeetingRoom',
+  patientRejectedCall: '^^#PATIENT_REJECTED_CALL',
 };
 
 type Params = { appointmentId: string; doctorId: string };
@@ -917,6 +921,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const doctorDisplayName = props.doctorDetails.getDoctorDetailsById.displayName;
   const scrollDivRef = useRef(null);
   const apolloClient = useApolloClient();
+  const doctorDetail = props.doctorDetails && props.doctorDetails.getDoctorDetailsById;
+
+  // console.log(currentPatient.id, '------------------------', appointmentDetails.doctorId);
 
   //AV states
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
@@ -1043,10 +1050,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       // adding listener
       pubnubClient.addListener({
         status: (status) => {
-          console.log('status...............', status);
+          // console.log('status...............', status);
         },
         message: (message) => {
-          console.log(message);
+          // console.log(message);
           if (
             message.message &&
             (message.message.message === autoMessageStrings.videoCallMsg ||
@@ -1075,6 +1082,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         { channel: appointmentId, count: 100, stringifiedTimeToken: true },
         (status: PubnubStatus, response: HistoryResponse) => {
           if (response.messages.length === 0) sendWelcomeMessage();
+
+          console.log(response.messages, 'pubnub messages history.....');
 
           const newmessage: MessagesObjectProps[] = messages;
           response.messages.forEach((element: any, index: number) => {
@@ -1222,6 +1231,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     startIntervalTimer(0);
     setCookiesAcceptcall();
     setShowVideo(true);
+    const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
+    callReceiveClickTracking(eventInfo);
   };
 
   const mutationResponse = useMutation<UpdateAppointmentSession, UpdateAppointmentSessionVariables>(
@@ -1575,6 +1586,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             >
               No
             </AphButton>
+            <AphButton
+              className={`${classes.quesButton}  ${
+                smokeHabit === 'ex-smoker' ? classes.btnActive : ''
+              }`}
+              onClick={() => setSmokeHabit('ex-smoker')}
+            >
+              Ex-Smoker
+            </AphButton>
           </Grid>
           <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
@@ -1585,7 +1604,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   showNextSlide();
                   const composeMessage = {
                     id: currentPatient && currentPatient.id,
-                    message: `Smoke:\n${_startCase(smokeHabit)}`,
+                    message: `Smoke:\n${
+                      smokeHabit === 'ex-smoker' ? 'Ex-Smoker' : _startCase(smokeHabit) // needed for lodash
+                    }`,
                     automatedText: '',
                     duration: '',
                     url: '',
@@ -1594,8 +1615,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     cardType: 'patient',
                   };
                   publishMessage(appointmentId, composeMessage);
-                  if (smokeHabit === 'yes') showNextSlide();
-                  else slickGotoSlide(8);
+                  if (smokeHabit === 'yes') {
+                    showNextSlide();
+                  } else if (smokeHabit === 'ex-smoker') {
+                    setSmokes('Ex-Smoker');
+                    slickGotoSlide(8);
+                  } else {
+                    slickGotoSlide(8);
+                  }
                 }
               }}
             >
@@ -1882,7 +1909,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 if (temperature.length > 0) {
                   const composeMessage = {
                     id: currentPatient && currentPatient.id,
-                    message: `Temperature:\n${temperature}°F`,
+                    message: `Temperature:\n${temperature} ${
+                      temperature !== 'No Idea' ? '°F' : ''
+                    }`,
                     automatedText: '',
                     duration: '',
                     url: '',
@@ -1978,6 +2007,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   })
                     .then((response) => {
                       setAutoQuestionsCompleted(true);
+                      const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
+                      medicalDetailsFillTracking(eventInfo);
                       // console.log(response, 'response after mutation is.....');
                     })
                     .catch((error) => {
@@ -2107,9 +2138,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               >
                 {messages.map((messageDetails: any) => {
                   const cardType = getCardType(messageDetails);
-
                   const message =
                     messageDetails && messageDetails.message ? messageDetails.message : '';
+
                   if (
                     messageDetails.message === autoMessageStrings.typingMsg ||
                     messageDetails.message === autoMessageStrings.endCallMsg ||
@@ -2124,8 +2155,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.jdThankyou ||
                     messageDetails.message === autoMessageStrings.startConsultjr ||
                     messageDetails.message === autoMessageStrings.stopConsultJr ||
-                    messageDetails.message === autoMessageStrings.languageQue
+                    messageDetails.message === autoMessageStrings.languageQue ||
+                    messageDetails.message === autoMessageStrings.consultPatientStartedMsg ||
+                    messageDetails.message === autoMessageStrings.patientJoinedMeetingRoom ||
+                    messageDetails.message === autoMessageStrings.patientRejectedCall ||
+                    messageDetails.message === autoMessageStrings.endCallMsg
                   ) {
+                    props.setSrDoctorJoined(
+                      messageDetails.message === autoMessageStrings.startConsultMsg
+                    );
+                    props.setIsConsultCompleted(
+                      messageDetails.message === autoMessageStrings.appointmentComplete
+                    );
                     return null;
                   }
                   const duration = messageDetails.duration;

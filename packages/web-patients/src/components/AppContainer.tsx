@@ -32,7 +32,7 @@ import { MyAccount } from 'components/MyAccount/MyAccount';
 import { NotificationSettings } from 'components/Notifications/NotificationSettings';
 import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
 import { PHRLanding } from 'components/HealthRecords/PHRLanding';
-import { AddRecords } from 'components/HealthRecords/AddRecords';
+import { AddHealthRecords } from 'components/HealthRecords/AddHealthRecords';
 import { OrdersLanding } from 'components/Orders/OrdersLanding';
 import { StoragePoc } from 'components/StoragePoc';
 import { SearchByMedicine } from 'components/Medicine/SearchByMedicine';
@@ -54,9 +54,6 @@ import { Privacy } from 'components/Privacy';
 import { Faq } from 'components/Faq';
 import { SbiLandingPage } from 'components/Partners/SBI/SbiLandingPage';
 import { ContactUs } from 'components/ContactUs';
-// import CovidLanding from 'components/Covid/CovidLanding';
-// import KavachLanding from 'components/Covid/KavachLanding';
-// import CovidArticleDetails from 'components/Covid/CovidArticleDetails';
 const CovidLanding = loadable(() => import('components/Covid/CovidLanding'));
 const KavachLanding = loadable(() => import('components/Covid/KavachLanding'));
 const CovidArticleDetails = loadable(() => import('components/Covid/CovidArticleDetails'));
@@ -112,137 +109,122 @@ const App: React.FC = () => {
   }, [signInError]);
 
   return (
-      <div className={`${classes.app}`}>
-        <Helmet>
-          <script
-            src={`https://maps.googleapis.com/maps/api/js?key=${process.env.PLACE_API_KEY}&libraries=places`}
-          ></script>
-        </Helmet>
-        <Switch>
-          <Route exact path={clientRoutes.welcome()} component={Welcome} />
-          <Route exact path={clientRoutes.aboutUs()} component={AboutUs} />
-          <Route exact path={clientRoutes.covidLanding()} component={CovidLanding} />
-          <Route exact path={clientRoutes.kavachLanding()} component={KavachLanding} />
-          <Route exact path={clientRoutes.covidDetails()} component={CovidArticleDetails} />
-          <Route exact path={clientRoutes.patients()} component={PatientsList} />
-          <Route exact path={clientRoutes.cartPoc()} component={CartPoc} />
-          <Route exact path={clientRoutes.storagePoc()} component={StoragePoc} />
-          <Route exact path={clientRoutes.termsConditions()} component={TermsAndConditions} />
-          <Route exact path={clientRoutes.privacy()} component={Privacy} />
-          <Route exact path={clientRoutes.FAQ()} component={Faq} />
-          <Route exact path={clientRoutes.contactUs()} component={ContactUs} />
-          <Route exact path={clientRoutes.partnerSBI()} component={SbiLandingPage} />
-          <AuthRouted exact path={clientRoutes.testsCart()} component={TestsCartLanding} />
-          <Route
-            exact
-            path={clientRoutes.doctorDetails(':name', ':id')}
-            component={DoctorDetails}
-          />
-          <Route
-            exact
-            path={clientRoutes.specialtyDoctorDetails(':specialty', ':name', ':id')}
-            component={DoctorDetails}
-          />
-          <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
-          <Route exact path={clientRoutes.specialties(':specialty')} component={SpecialtyDetails} />
-          <Route
-            exact
-            path={clientRoutes.citySpecialties(':city', ':specialty')}
-            component={SpecialtyDetails}
-          />
-          <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
-          <Route exact path={clientRoutes.medicineSearch()} component={MedicineSearch} />
-          <Route exact path={clientRoutes.medicinesLandingViewCart()} component={MedicineLanding} />
-          <AuthRouted exact path={clientRoutes.payMedicine(':payType')} component={PayMedicine} />
-          <AuthRouted
-            exact
-            path={clientRoutes.medicinesCartInfo(':orderAutoId', ':orderStatus')}
-            component={MedicineLanding}
-          />
-          <Route exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
-          <Route exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />
-          <Route exact path={clientRoutes.medicineDetails(':sku')} component={MedicineDetails} />
-          <Route
-            exact
-            path={clientRoutes.medicineCategoryDetails(
-              ':searchMedicineType',
-              ':searchText',
-              ':sku'
-            )}
-            component={MedicineDetails}
-          />
-          <Route
-            exact
-            path={clientRoutes.medicinesCartFailed(':orderAutoId', ':orderStatus')}
-            component={MedicineCartLanding}
-          />
-          <Route
-            exact
-            path={clientRoutes.searchByMedicine(':searchMedicineType', ':searchText')}
-            component={SearchByMedicine}
-          />
-          <Route exact path={clientRoutes.medicineSearchByBrand(':id')} component={SearchByBrand} />
-          <AuthRouted
-            exact
-            path={clientRoutes.prescriptionsLanding()}
-            component={PrescriptionsLanding}
-          />
-          <AuthRouted exact path={clientRoutes.appointments()} component={Appointments} />
-          <AuthRouted exact path={clientRoutes.appointmentSuccess()} component={Appointments} />
-          <AuthRouted
-            exact
-            path={clientRoutes.chatRoom(':appointmentId', ':doctorId')}
-            component={ChatRoom}
-          />
-          <AuthRouted exact path={clientRoutes.myAccount()} component={MyAccount} />
-          <AuthRouted exact path={clientRoutes.addressBook()} component={AddressBook} />
-          <AuthRouted exact path={clientRoutes.needHelp()} component={Help} />
-          <AuthRouted exact path={clientRoutes.myPayments()} component={MyPayments} />
-          <AuthRouted
-            exact
-            path={clientRoutes.notificationSettings()}
-            component={NotificationSettings}
-          />
-          <AuthRouted exact path={clientRoutes.healthRecords()} component={PHRLanding} />
-          <AuthRouted exact path={clientRoutes.addRecords()} component={AddRecords} />
-          <AuthRouted exact path={clientRoutes.yourOrders()} component={OrdersLanding} />
-          <Route exact path={clientRoutes.symptomsTrackerFor()} component={SymptomsTracker} />
-          <Route exact path={clientRoutes.symptomsTracker()} component={SymptomsTrackerSDK} />
-          <AuthRouted exact path={clientRoutes.tests()} component={TestsLanding} />
-          <AuthRouted
-            exact
-            path={clientRoutes.testDetails(':searchTestType', ':itemName', ':itemId')}
-            component={TestDetails}
-          />
-          <AuthRouted
-            exact
-            path={clientRoutes.searchByTest(':searchType', ':searchTestText')}
-            component={SearchByTest}
-          />
-          <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
-          <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />
-          <AuthRouted exact path={clientRoutes.payOnlineConsult()} component={OnlineCheckout} />
-          <AuthRouted
-            exact
-            path={clientRoutes.payOnlineClinicConsult()}
-            component={ClinicCheckout}
-          />
-          <Route exact path={clientRoutes.prescriptionReview()} component={PrescriptionReview} />
-          <Route exact path={clientRoutes.specialityListing()} component={SpecialityListing} />
-          <Route
-            exact
-            path={clientRoutes.medicinePrescription()}
-            component={MedicinePrescriptions}
-          />
-          <Route exact path={clientRoutes.covidProtocol()} component={covidProtocolLanding} />
-          <Route
-            exact
-            path={clientRoutes.prescription(':appointmentId')}
-            component={Prescription}
-          />
-          <Route exact path={clientRoutes.sitemap()} component={Sitemap} />
-        </Switch>
-      </div>
+    <div className={`${classes.app}`}>
+      <Helmet>
+        <script
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.PLACE_API_KEY}&libraries=places`}
+        ></script>
+      </Helmet>
+      <Switch>
+        <Route exact path={clientRoutes.welcome()} component={Welcome} />
+        <Route exact path={clientRoutes.aboutUs()} component={AboutUs} />
+        <Route exact path={clientRoutes.covidLanding()} component={CovidLanding} />
+        <Route exact path={clientRoutes.kavachLanding()} component={KavachLanding} />
+        <Route exact path={clientRoutes.covidDetails()} component={CovidArticleDetails} />
+        <Route exact path={clientRoutes.patients()} component={PatientsList} />
+        <Route exact path={clientRoutes.cartPoc()} component={CartPoc} />
+        <Route exact path={clientRoutes.storagePoc()} component={StoragePoc} />
+        <Route exact path={clientRoutes.termsConditions()} component={TermsAndConditions} />
+        <Route exact path={clientRoutes.privacy()} component={Privacy} />
+        <Route exact path={clientRoutes.FAQ()} component={Faq} />
+        <Route exact path={clientRoutes.contactUs()} component={ContactUs} />
+        <Route exact path={clientRoutes.partnerSBI()} component={SbiLandingPage} />
+        <AuthRouted exact path={clientRoutes.testsCart()} component={TestsCartLanding} />
+        <Route exact path={clientRoutes.doctorDetails(':name', ':id')} component={DoctorDetails} />
+        <Route
+          exact
+          path={clientRoutes.specialtyDoctorDetails(':specialty', ':name', ':id')}
+          component={DoctorDetails}
+        />
+        <Route exact path={clientRoutes.doctorsLanding()} component={DoctorsLanding} />
+        <Route exact path={clientRoutes.specialties(':specialty')} component={SpecialtyDetails} />
+        <Route
+          exact
+          path={clientRoutes.citySpecialties(':city', ':specialty')}
+          component={SpecialtyDetails}
+        />
+        <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
+        <Route exact path={clientRoutes.medicineSearch()} component={MedicineSearch} />
+        <Route exact path={clientRoutes.medicinesLandingViewCart()} component={MedicineLanding} />
+        <AuthRouted exact path={clientRoutes.payMedicine(':payType')} component={PayMedicine} />
+        <AuthRouted
+          exact
+          path={clientRoutes.medicinesCartInfo(':orderAutoId', ':orderStatus')}
+          component={MedicineLanding}
+        />
+        <Route exact path={clientRoutes.medicinesCart()} component={MedicineCartLanding} />
+        <Route exact path={clientRoutes.medicineAllBrands()} component={ViewAllBrands} />
+        <Route exact path={clientRoutes.medicineDetails(':sku')} component={MedicineDetails} />
+        <Route
+          exact
+          path={clientRoutes.medicineCategoryDetails(':searchMedicineType', ':searchText', ':sku')}
+          component={MedicineDetails}
+        />
+        <Route
+          exact
+          path={clientRoutes.medicinesCartFailed(':orderAutoId', ':orderStatus')}
+          component={MedicineCartLanding}
+        />
+        <Route
+          exact
+          path={clientRoutes.searchByMedicine(':searchMedicineType', ':searchText')}
+          component={SearchByMedicine}
+        />
+        <Route exact path={clientRoutes.medicineSearchByBrand(':id')} component={SearchByBrand} />
+        <AuthRouted
+          exact
+          path={clientRoutes.prescriptionsLanding()}
+          component={PrescriptionsLanding}
+        />
+        <AuthRouted exact path={clientRoutes.appointments()} component={Appointments} />
+        <AuthRouted exact path={clientRoutes.appointmentSuccess()} component={Appointments} />
+        <AuthRouted
+          exact
+          path={clientRoutes.chatRoom(':appointmentId', ':doctorId')}
+          component={ChatRoom}
+        />
+        <AuthRouted exact path={clientRoutes.myAccount()} component={MyAccount} />
+        <AuthRouted exact path={clientRoutes.addressBook()} component={AddressBook} />
+        <AuthRouted exact path={clientRoutes.needHelp()} component={Help} />
+        <AuthRouted exact path={clientRoutes.myPayments()} component={MyPayments} />
+        <AuthRouted
+          exact
+          path={clientRoutes.notificationSettings()}
+          component={NotificationSettings}
+        />
+        <AuthRouted exact path={clientRoutes.healthRecords()} component={PHRLanding} />
+        <AuthRouted
+          exact
+          path={clientRoutes.addHealthRecords(':type')}
+          component={AddHealthRecords}
+        />
+        <AuthRouted exact path={clientRoutes.yourOrders()} component={OrdersLanding} />
+        <Route exact path={clientRoutes.symptomsTrackerFor()} component={SymptomsTracker} />
+        <Route exact path={clientRoutes.symptomsTracker()} component={SymptomsTrackerSDK} />
+        <AuthRouted exact path={clientRoutes.tests()} component={TestsLanding} />
+        <AuthRouted
+          exact
+          path={clientRoutes.testDetails(':searchTestType', ':itemName', ':itemId')}
+          component={TestDetails}
+        />
+        <AuthRouted
+          exact
+          path={clientRoutes.searchByTest(':searchType', ':searchTestText')}
+          component={SearchByTest}
+        />
+        <AuthRouted exact path={clientRoutes.testOrders()} component={OrderDetails} />
+        <AuthRouted exact path={clientRoutes.orderSummary(':id')} component={OrderSummary} />
+        <AuthRouted exact path={clientRoutes.payOnlineConsult()} component={OnlineCheckout} />
+        <AuthRouted exact path={clientRoutes.payOnlineClinicConsult()} component={ClinicCheckout} />
+        <Route exact path={clientRoutes.prescriptionReview()} component={PrescriptionReview} />
+        <Route exact path={clientRoutes.specialityListing()} component={SpecialityListing} />
+        <Route exact path={clientRoutes.medicinePrescription()} component={MedicinePrescriptions} />
+        <Route exact path={clientRoutes.covidProtocol()} component={covidProtocolLanding} />
+        <Route exact path={clientRoutes.prescription(':appointmentId')} component={Prescription} />
+        <Route exact path={clientRoutes.sitemap(':sitemap')} component={Sitemap} />
+        <Route exact path={clientRoutes.childSitemap(':sitemap', ':pageNo')} component={Sitemap} />
+      </Switch>
+    </div>
   );
 };
 // @ts-ignore

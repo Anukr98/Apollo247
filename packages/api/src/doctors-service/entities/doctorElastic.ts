@@ -149,7 +149,6 @@ export async function addDoctorElastic(allDocsInfo: Doctor) {
         id: allDocsInfo.id,
         body: doctorData,
     });
-    console.log(resp, 'index resp');
 }
 
 
@@ -175,15 +174,12 @@ export async function updateDoctorSlotStatusES(
             .toString()
             .padStart(2, '0')}:00.000Z`;
 
-    console.log(slotApptDt, apptDt, slot, appointment.doctorId, 'appoint date time');
-
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
 
     if (!process.env.ELASTIC_INDEX_DOCTORS) {
         throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
     }
 
-    //naman_change index name
     const updateDoc: RequestParams.Update = {
         index: process.env.ELASTIC_INDEX_DOCTORS,
         id: doctorId,

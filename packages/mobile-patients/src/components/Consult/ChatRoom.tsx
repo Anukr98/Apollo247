@@ -2252,9 +2252,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const successSteps = [
     'Let’s get you feeling better by following simple steps :)\n',
     '1. Answer some quick questions\n',
-    '2. Connect with your doctor\n',
-    '3. Get a prescription and meds, if necessary\n',
-    '4. Chat with your doctor for 7 days\n\n',
+    '2. Please be present in this consult room at the time of consult\n',
+    '3. Connect with your doctor via In-App Audio/Video call\n',
+    '4. Get a prescription and meds, if necessary\n',
+    '5. Follow up via text (valid for 7 days)\n\n',
     `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
   ];
 
@@ -3147,7 +3148,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               {convertChatTime(rowData)}
             </Text>
           </View>
-          {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
+          {/* {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
             <View
               style={{
                 width: 244,
@@ -3273,7 +3274,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 {convertChatTime(rowData)}
               </Text>
             </View>
-          )}
+          )} */}
           {/* {checkReschudule && reschduleLoadView(rowData, index, 'Followup')} */}
         </View>
       </>
@@ -4841,13 +4842,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (diffMin <= 0) {
         time = `Will be joining soon`;
       } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
-        time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
+        time = `Joining in Some time`;
       } else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
-        time = `Joining in ${diffHours} hour${diffHours === 1 ? '' : 's'}`;
+        time = `Joining in Some time`;
       } else if (diffDays > 0 && diffDays < 31 && diffMonths <= 1) {
-        time = `Joining in ${diffDays} day${diffDays === 1 ? '' : 's'}`;
+        time = `Joining in Some time`;
       } else {
-        time = `Joining in ${diffMonths} month${diffMonths === 1 ? '' : 's'}`;
+        time = `Joining in Some time`;
       }
     }
     return (
@@ -7258,6 +7259,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }}
         type={FEEDBACKTYPE.CONSULT}
         isVisible={showFeedback}
+        containerStyle={{ paddingTop: 100 }}
       />
       {loading && <Spinner />}
       {showPDF && (
