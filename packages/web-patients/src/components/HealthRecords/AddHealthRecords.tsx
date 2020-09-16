@@ -18,6 +18,7 @@ import { Link } from 'react-router-dom';
 import { MedicalTest } from './DetailedFindings';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import InputAdornment from '@material-ui/core/InputAdornment';
 import {
   MedicalTestUnit,
   AddMedicalRecordParametersInput,
@@ -361,6 +362,20 @@ const useStyles = makeStyles((theme: Theme) => {
     footerLinks: {
       [theme.breakpoints.down(900)]: {
         display: 'none',
+      },
+    },
+    adornment: {
+      marginRight: 2,
+      '& p': {
+        color: '#02475b',
+        fontSize: 15,
+      },
+    },
+    adornmentInput: {
+      '& div': {
+        '&:before': {
+          borderBottom: '2px solid #00b38e',
+        },
       },
     },
   };
@@ -983,7 +998,15 @@ export const AddHealthRecords: React.FC = (props) => {
                                 disabled={showSpinner}
                                 value={doctorIssuedPrescription}
                                 onChange={(e) => setDoctorIssuedPrescription(e.target.value)}
+                                className={classes.adornmentInput}
                                 placeholder="Enter doctor name"
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment className={classes.adornment} position="start">
+                                      Dr.
+                                    </InputAdornment>
+                                  ),
+                                }}
                               />
                             </div>
                           </Grid>
@@ -1032,6 +1055,13 @@ export const AddHealthRecords: React.FC = (props) => {
                                 value={doctorName}
                                 onChange={(e) => setDoctorName(e.target.value)}
                                 placeholder="Enter doctor name"
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment className={classes.adornment} position="start">
+                                      Dr.
+                                    </InputAdornment>
+                                  ),
+                                }}
                               />
                             </div>
                           </Grid>
@@ -1214,6 +1244,16 @@ export const AddHealthRecords: React.FC = (props) => {
                                   value={referringDoctor}
                                   onChange={(e) => setReferringDoctor(e.target.value)}
                                   placeholder="Enter name"
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment
+                                        className={classes.adornment}
+                                        position="start"
+                                      >
+                                        Dr.
+                                      </InputAdornment>
+                                    ),
+                                  }}
                                 />
                               </div>
                             </Grid>
