@@ -279,6 +279,8 @@ export const caseSheetTypeDefs = gql`
     referralSpecialtyName: String
     referralDescription: String
     version: Int
+    diagonasticTestResult: String
+    clinicalObservationNotes: String
   }
 
   type Diagnosis {
