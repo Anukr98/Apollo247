@@ -200,8 +200,8 @@ const getDiffInHours = (doctorAvailableSlots: string) => {
   }
 };
 const acceptedFilesNamesForFileUpload = ['png', 'jpg', 'jpeg', 'pdf'];
-const MAX_FILE_SIZE_FOR_UPLOAD = 10000000;
-const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 10MB';
+const MAX_FILE_SIZE_FOR_UPLOAD = 3000000;
+const INVALID_FILE_SIZE_ERROR = 'Invalid File Size. File size must be less than 3MB';
 const INVALID_FILE_TYPE_ERROR =
   'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.';
 const NO_SERVICEABLE_MESSAGE = 'Sorry, not serviceable in your area';
@@ -444,9 +444,7 @@ const getCouponByUserMobileNumber = () => {
 };
 
 const isPastAppointment = (appointmentDateTime: string) =>
-  moment(appointmentDateTime)
-    .add(7, 'days')
-    .isBefore(moment());
+  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const appointmentDate = moment(appointmentTime);
