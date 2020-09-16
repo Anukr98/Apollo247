@@ -918,6 +918,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const doctorDisplayName = props.doctorDetails.getDoctorDetailsById.displayName;
+  const doctorChatDays = props.doctorDetails.getDoctorDetailsById.chatDays;
   const scrollDivRef = useRef(null);
   const apolloClient = useApolloClient();
 
@@ -2162,7 +2163,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   }
                   const duration = messageDetails.duration;
                   if (cardType === 'welcome') {
-                    return <WelcomeCard doctorName={doctorDisplayName} />;
+                    return <WelcomeCard doctorName={doctorDisplayName} chatDays={doctorChatDays} />;
                   } else if (cardType === 'doctor') {
                     return (
                       <DoctorCard

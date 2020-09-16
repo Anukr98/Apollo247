@@ -294,16 +294,19 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const physcalFee = doctorDetails && doctorDetails.physicalConsultationFees;
   const onlineFee = doctorDetails && doctorDetails.onlineConsultationFees;
   const doctorId = doctorDetails && doctorDetails.id;
+  const chatDays = doctorDetails && doctorDetails.chatDays;
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+
+  // console.log('doctor details...............', doctorDetails);
 
   const consultMode =
     doctorAvailableOnlineSlot.length > 0 && doctorAvailablePhysicalSlots.length > 0
       ? ConsultMode.BOTH
       : doctorAvailableOnlineSlot.length > 0
-        ? ConsultMode.ONLINE
-        : doctorAvailablePhysicalSlots.length > 0
-          ? ConsultMode.PHYSICAL
-          : null;
+      ? ConsultMode.ONLINE
+      : doctorAvailablePhysicalSlots.length > 0
+      ? ConsultMode.PHYSICAL
+      : null;
 
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
 
@@ -345,7 +348,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span
                   className={`${classes.availability} ${
                     differenceInOnlineMinutes < 15 ? classes.availableNow : null
-                    }`}
+                  }`}
                 >
                   {availabilityMarkup('online')}
                 </span>
@@ -367,7 +370,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span
                   className={`${classes.availability} ${
                     differenceInPhysicalMinutes < 15 ? classes.availableNow : null
-                    }`}
+                  }`}
                 >
                   {availabilityMarkup('physical')}
                 </span>
@@ -387,7 +390,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             />
           </span>
           <div className={classes.groupDetails}>
-            <h4>{physicalDirection ? 'Meet in person' : 'How to consult ON WEB via  audio/video ?'}</h4>
+            <h4>
+              {physicalDirection ? 'Meet in person' : 'How to consult ON WEB via  audio/video ?'}
+            </h4>
             {(physicalDirection || (isSmallScreen && onlineDirection)) && (
               <p
                 className={
@@ -396,8 +401,8 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                       ? classes.availableSoon
                       : ''
                     : differenceInOnlineMinutes < 15
-                      ? classes.availableSoon
-                      : ''
+                    ? classes.availableSoon
+                    : ''
                 }
               >
                 {availabilityMarkup(physicalDirection ? 'physical' : 'online')}
@@ -445,9 +450,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             <li>
               <span>
                 <img
-                  src={require(onlineDirection
-                    ? 'images/ic-video.svg'
-                    : 'images/ic_hospital.svg')}
+                  src={require(onlineDirection ? 'images/ic-video.svg' : 'images/ic_hospital.svg')}
                   alt=""
                 />
               </span>
@@ -469,7 +472,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span>
                   <img src={require('images/ic-followchat.svg')} alt="" />
                 </span>
-                <span>Follow Up via text - validity 7 days</span>
+                <span>Follow Up via text - validity {chatDays} days</span>
               </li>
             )}
           </ul>
@@ -519,7 +522,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               }}
               // fullWidth
               color="primary"
-            // className={classes.bottomActions}
+              // className={classes.bottomActions}
             >
               {popupLoading ? <CircularProgress size={22} color="secondary" /> : 'BOOK APPOINTMENT'}
             </AphButton>
