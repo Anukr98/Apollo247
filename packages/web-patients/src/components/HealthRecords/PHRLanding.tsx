@@ -35,6 +35,7 @@ import {
   phrMedicalRecordsTabClickTracking,
 } from '../../webEngageTracking';
 import { BottomLinks } from 'components/BottomLinks';
+import { MedicalRecordType } from '../../graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -329,17 +330,17 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
 
   const deleteReportMutation = useMutation(DELETE_PATIENT_MEDICAL_RECORD);
 
-  const deleteReport = (id: string, type: string) => {
+  const deleteReport = (id: string, type: MedicalRecordType) => {
     setMedicalLoading(true);
     deleteReportMutation({
       variables: { recordId: id },
       fetchPolicy: 'no-cache',
     })
       .then((_data) => {
-        if (type === 'lab') {
+        if (type === MedicalRecordType.TEST_REPORT) {
           const newRecords = labResults && labResults.filter((record: any) => record.id !== id);
           setLabResults(newRecords);
-        } else if (type === 'prescription') {
+        } else if (type === MedicalRecordType.PRESCRIPTION) {
           const newRecords =
             prescriptions && prescriptions.filter((record: any) => record.id !== id);
           setPrescriptions(newRecords);
