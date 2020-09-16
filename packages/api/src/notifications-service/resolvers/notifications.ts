@@ -21,7 +21,7 @@ import {
   sendBrowserNotitication,
 } from 'notifications-service/handlers';
 import PDFDocument from 'pdfkit';
-import { textInRow, writeRow } from 'helpers/uploadFileToBlob';
+import { textInRow, writeRow, writeBigRow } from 'helpers/uploadFileToBlob';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { Doctor } from 'doctors-service/entities';
 import { getPatientDeeplink } from 'helpers/appsflyer';
@@ -229,8 +229,8 @@ const sendDailyAppointmentSummary: Resolver<
           .lineTo(200, rowHeadx + 30)
           .moveTo(340, 90)
           .lineTo(340, rowHeadx + 30)
-          .moveTo(420, 90)
-          .lineTo(420, rowHeadx + 30)
+          .moveTo(440, 90)
+          .lineTo(440, rowHeadx + 30)
           .stroke();
         pdfDoc.end();
         const fp = `${uploadPath}$${fileName}$${totalAppointments}$${doctorDetails[0].mobileNumber}$${doctorDetails[0].firstName}`;
@@ -283,7 +283,7 @@ const sendDailyAppointmentSummary: Resolver<
             const templateData: string[] = [
               blobUrl,
               todaysDate + ' Appointments List',
-              `{todaysDate} as of 8 AM`,
+              `${todaysDate} as of 8 AM`,
               docPdfDetails[2],
               docPdfDetails[4],
               appLink,
@@ -339,6 +339,7 @@ const sendAppointmentSummaryOps: Resolver<
     }
     let rowHeadx = 100;
     let rowx = 100;
+    let facilityDetsString = 'N/A';
     const docIds: string[] = [];
     allAppts.forEach((appt) => {
       docIds.push(appt.doctorId);
@@ -369,19 +370,29 @@ const sendAppointmentSummaryOps: Resolver<
           fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
           fileName = format(new Date(), 'dd-MM-yyyy-hh-mm-ss') + '_' + adminId + '.pdf';
           uploadPath = assetsDir + '/' + fileName;
-          pdfDoc = new PDFDocument();
+          pdfDoc = new PDFDocument({
+            size: [970, 900],
+            margins: {
+              top: 10,
+              bottom: 50,
+              left: 10,
+              right: 10,
+            },
+          });
           //console.log('came here', onlineAppointments, fileName);
           fileStream = fs.createWriteStream(uploadPath);
           pdfDoc.pipe(fileStream);
-          rowHeadx = 90;
-          rowx = 87;
-          writeRow(pdfDoc, rowHeadx);
-          textInRow(pdfDoc, 'Patient Name', 100, 30);
-          textInRow(pdfDoc, 'Appointment Date Time', 100, 201);
-          textInRow(pdfDoc, 'Appt.Type', 94, 346);
-          textInRow(pdfDoc, 'Display ID', 109, 446);
-          textInRow(pdfDoc, '(Online/Physical)', 109, 334);
-          textInRow(pdfDoc, 'Appointment', 94, 441);
+          rowHeadx = 45;
+          rowx = 35;
+          writeBigRow(pdfDoc, rowHeadx);
+          textInRow(pdfDoc, 'Doctor Name', 50, 25);
+          textInRow(pdfDoc, 'Patient Name', 50, 140);
+          textInRow(pdfDoc, 'Appointment Date Time', 50, 250);
+          textInRow(pdfDoc, 'Appt. Display ID', 50, 392);
+          textInRow(pdfDoc, 'Appt. Status', 50, 495);
+          textInRow(pdfDoc, 'Doctor Type', 50, 710);
+          textInRow(pdfDoc, 'Doctor Specialization', 50, 580);
+          textInRow(pdfDoc, 'Doctor Hospital Name', 50, 830);
           //get all the doctors associated with the admin id
           const doctorDetails: Doctor[] = [];
           allAdminDetails.filter((item) => {
@@ -408,18 +419,19 @@ const sendAppointmentSummaryOps: Resolver<
               fs.appendFile(assetsDir + '/' + logFileName, logContent, (err) => {});
               totalAppointments = totalAppointments + docApptDetails.length;
               docApptDetails.forEach((docAppointment, index) => {
-                if (rowHeadx == 90) {
+                if (rowHeadx == 45) {
                   rowx += 16;
                 }
-                if (index == 0) {
-                  rowHeadx += 10;
+                if (index % 3 == 0) {
+                  rowHeadx += 20;
                 } else {
-                  rowHeadx += 10;
+                  rowHeadx += 20;
                 }
-                rowHeadx += 20;
+                rowHeadx += 10;
                 rowx += 30;
-                writeRow(pdfDoc, rowHeadx);
-                textInRow(pdfDoc, docAppointment.patientId.substring(0, 5), rowx, 30);
+                writeBigRow(pdfDoc, rowHeadx);
+                textInRow(pdfDoc, doctorDetails[0].displayName, rowx, 25);
+                textInRow(pdfDoc, docAppointment.patientName, rowx, 140);
                 textInRow(
                   pdfDoc,
                   format(
@@ -427,21 +439,37 @@ const sendAppointmentSummaryOps: Resolver<
                     'hh:mm a, dd MMM yyyy'
                   ),
                   rowx,
-                  201
+                  250
                 );
-                textInRow(pdfDoc, docAppointment.appointmentType, rowx, 341);
-                textInRow(pdfDoc, docAppointment.displayId.toString(), rowx, 441);
+
+                //textInRow(pdfDoc, docAppointment.appointmentType, rowx, 280);
+                if (doctorDetails[0].doctorHospital.length > 0) {
+                  facilityDetsString = doctorDetails[0].doctorHospital[0].facility.name;
+                }
+                textInRow(pdfDoc, docAppointment.displayId.toString(), rowx, 392);
+                textInRow(pdfDoc, docAppointment.status, rowx, 495);
+                textInRow(pdfDoc, doctorDetails[0].doctorType, rowx, 710);
+                textInRow(pdfDoc, doctorDetails[0].specialty.name, rowx, 580);
+                textInRow(pdfDoc, facilityDetsString, rowx, 830);
                 currentAdminMobNumber = `${adminDoctor.admindoctormapper[0].adminuser.mobileNumber}$${adminDoctor.admindoctormapper[0].adminuser.userName}`;
               });
             });
             pdfDoc
               .lineCap('butt')
-              .moveTo(200, 90)
-              .lineTo(200, rowHeadx + 30)
-              .moveTo(340, 90)
-              .lineTo(340, rowHeadx + 30)
-              .moveTo(420, 90)
-              .lineTo(420, rowHeadx + 30)
+              .moveTo(138, 45)
+              .lineTo(138, rowHeadx + 30)
+              .moveTo(248, 45)
+              .lineTo(248, rowHeadx + 30)
+              .moveTo(390, 45)
+              .lineTo(390, rowHeadx + 30)
+              .moveTo(493, 45)
+              .lineTo(493, rowHeadx + 30)
+              .moveTo(578, 45)
+              .lineTo(578, rowHeadx + 30)
+              .moveTo(708, 45)
+              .lineTo(708, rowHeadx + 30)
+              .moveTo(829, 45)
+              .lineTo(829, rowHeadx + 30)
               .stroke();
             pdfDoc.end();
             const fp = `${uploadPath}$${fileName}$${totalAppointments}$${currentAdminMobNumber}`;
