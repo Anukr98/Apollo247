@@ -20,7 +20,7 @@ import {
   DoctorSlotAvailabilityObject,
   DoctorsObject,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
-import { format, differenceInMinutes, addMinutes, addDays } from 'date-fns';
+import { format, differenceInMinutes, addMinutes, addDays, subMinutes } from 'date-fns';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -91,7 +91,6 @@ export class DoctorRepository extends Repository<Doctor> {
       };
       slotsAdded += doctorId + ' - ' + format(stDate, 'yyyy-MM-dd') + ',';
       const updateResp = await client.update(doc1);
-      console.log(updateResp, 'updateResp');
       stDate = addDays(stDate, 1);
     }
     return slotsAdded;
@@ -190,6 +189,10 @@ export class DoctorRepository extends Repository<Doctor> {
                   const slotInfo = {
                     slotId: ++slotCount,
                     slot: generatedSlot,
+                    slotThreshold: subMinutes(
+                      new Date(generatedSlot),
+                      timeSlot.consultBuffer > 0 ? timeSlot.consultBuffer : 5
+                    ),
                     status: ES_DOCTOR_SLOT_STATUS.OPEN,
                     slotType: timeSlot.consultMode,
                   };
@@ -339,6 +342,13 @@ export class DoctorRepository extends Repository<Doctor> {
   findByMobileNumber(mobileNumber: string, isActive: Boolean) {
     return this.findOne({
       where: [{ mobileNumber, isActive }],
+      relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
+    });
+  }
+
+  findByMobileNumberWithRelations(mobileNumber: string, isActive: Boolean) {
+    return this.findOne({
+      where: [{ mobileNumber, isActive }],
       relations: [
         'specialty',
         'doctorHospital',
@@ -357,6 +367,8 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
+  getDoctorDetailswithRelations() {}
+
   updateFirebaseId(id: string, firebaseToken: string) {
     return this.update(id, { firebaseToken: firebaseToken });
   }
@@ -367,6 +379,10 @@ export class DoctorRepository extends Repository<Doctor> {
 
   updateDoctorSignature(id: string, signature: string) {
     return this.update(id, { signature });
+  }
+
+  updateDoctorChatDays(id: string, chatDays: number) {
+    return this.update(id, { chatDays });
   }
 
   findById(id: string) {

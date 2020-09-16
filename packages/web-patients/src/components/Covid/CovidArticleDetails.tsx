@@ -224,7 +224,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CovidArticleDetails: React.FC = (props: any) => {
+const CovidArticleDetails: React.FC = (props: any) => {
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
@@ -377,7 +377,7 @@ export const CovidArticleDetails: React.FC = (props: any) => {
                   />
                   {sourceUrl && sourceUrl.length && (
                     <>
-                      <a href={sourceUrl} target="_blank">
+                      <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
                         <div>SOURCE</div>
                         <div className={classes.sourceUrl}>{sourceUrl}</div>
                       </a>
@@ -442,3 +442,5 @@ export const CovidArticleDetails: React.FC = (props: any) => {
     </div>
   );
 };
+
+export default CovidArticleDetails;

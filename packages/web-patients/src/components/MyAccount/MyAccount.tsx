@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MyAccount: React.FC = (props) => {
+const MyAccount: React.FC = (props) => {
   const classes = useStyles({});
 
   return (
@@ -78,3 +78,5 @@ export const MyAccount: React.FC = (props) => {
     </div>
   );
 };
+
+export default MyAccount;

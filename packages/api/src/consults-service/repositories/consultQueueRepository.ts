@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Connection } from 'typeorm';
+import { EntityRepository, Repository, Connection, In } from 'typeorm';
 import { ConsultQueueItem, Appointment, APPOINTMENT_STATE } from 'consults-service/entities';
 import { format, addDays } from 'date-fns';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -53,9 +53,7 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
     });
     let minCount = -1,
       minDoctorId: string = '0';
-    console.log(onlineJrDocs.length, 'jd length online');
     if (onlineJrDocs.length > 0) {
-      console.log('entered here');
       await getQueueCounts();
       return minDoctorId;
     } else {
@@ -68,12 +66,10 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
           const queueCount = await ConsultQueueItem.count({
             where: { doctorId: doctor.id, isActive: true },
           });
-          console.log('each doctor', doctor.id, queueCount);
           if (minCount == -1 || minCount > queueCount) {
             minCount = queueCount;
             minDoctorId = doctor.id;
           }
-          console.log('selected count', minCount, minDoctorId);
           if (serialNo == onlineJrDocs.length) {
             resolve(minDoctorId);
           }
@@ -128,4 +124,30 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .limit(limit)
       .getMany();
   }
+
+  async getInvalidConsultQueueItems(appointmentStatuses: string[], isActive: boolean = true){
+    return await this.createQueryBuilder('consultQueueItem')
+    .select([
+      'consultQueueItem.id' as 'id' 
+    ])
+    .innerJoinAndSelect(
+      'consultQueueItem.appointment',
+      'appointment',
+      'consultQueueItem.appointmentId = appointment.id'
+    )
+    .where('consultQueueItem.isActive = :isActive', { isActive })
+    .andWhere('appointment.status IN (:...appointmentStatuses)', {
+      appointmentStatuses,
+    })
+    .getMany();
+  }
+
+  async bulkUpdateInvalidConsultQueueItems(csQueueIds : number[]){
+    await this.createQueryBuilder()
+    .update(ConsultQueueItem)
+    .set({ isActive: false })
+    .where({ id: In(csQueueIds) })
+    .execute();
+  }
+
 }

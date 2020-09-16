@@ -5,7 +5,7 @@ import { AphButton } from '@aph/web-ui-components';
 import Slider from 'react-slick';
 import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Link } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
 import { gtmTracking } from '../../../gtmTracking';
 import {
@@ -14,6 +14,7 @@ import {
   removeFromCartTracking,
   pharmacyProductClickedTracking,
 } from 'webEngageTracking';
+import { LazyIntersection } from '../../lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -58,9 +59,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       textAlign: 'center',
       paddingTop: 8,
-      minHeight: 70,
-      maxHeight: 70,
+      minHeight: 60,
       overflow: 'hidden',
+      display: '-webkit-box',
+      '-webkit-line-clamp': '3',
+      '-webkit-box-orient': 'vertical',
     },
     bottomSection: {
       borderTop: 'solid 0.5px rgba(2, 71, 91, 0.3)',
@@ -179,7 +182,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
     url: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
 
-  const { cartItems, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const { cartItems, addCartItem, updateCartItem, removeCartItemSku } = useShoppingCart();
 
   const itemIndexInCart = (item: MedicineProduct) => {
     const index = cartItems.findIndex((cartItem) => cartItem.id == item.id);
@@ -209,27 +212,36 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         </span>
                       </div>
                     )}
-                  <Link
-                    to={clientRoutes.medicineDetails(hotSeller.url_key)}
-                    onClick={() => {
-                      pharmacyConfigSectionTracking({
-                        sectionName: props.section,
-                        productId: hotSeller.sku,
-                        productName: hotSeller.name,
-                      });
-                      pharmacyProductClickedTracking({
-                        productName: hotSeller.name,
-                        source: 'Home',
-                        productId: hotSeller.sku,
-                        sectionName: props.section,
-                      });
-                    }}
-                  >
-                    <div className={classes.productIcon}>
-                      <img src={`${apiDetails.url}${hotSeller.small_image}`} alt="" />
-                    </div>
-                    <div className={classes.productTitle}>{hotSeller.name}</div>
-                  </Link>
+                  <Route
+                    render={({ history }) => (
+                      <a
+                        href={clientRoutes.medicineDetails(hotSeller.url_key)}
+                        onClick={() => {
+                          // history.push(clientRoutes.medicineDetails(hotSeller.url_key));
+                          pharmacyConfigSectionTracking({
+                            sectionName: props.section,
+                            productId: hotSeller.sku,
+                            productName: hotSeller.name,
+                          });
+                          pharmacyProductClickedTracking({
+                            productName: hotSeller.name,
+                            source: 'Home',
+                            productId: hotSeller.sku,
+                            sectionName: props.section,
+                          });
+                        }}
+                      >
+                        <div className={classes.productIcon}>
+                          {/* <img src={`${apiDetails.url}${hotSeller.thumbnail}`} alt="" /> */}
+                          <LazyIntersection
+                            src={`${apiDetails.url}${hotSeller.thumbnail}`}
+                            alt={hotSeller.name}
+                          />
+                        </div>
+                        <div className={classes.productTitle}>{hotSeller.name}</div>
+                      </a>
+                    )}
+                  />
                   <div className={classes.bottomSection}>
                     <div className={classes.priceGroup}>
                       {hotSeller &&
@@ -356,7 +368,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                               },
                             });
                             /**Gtm code End  */
-                            removeCartItem && removeCartItem(hotSeller.id);
+                            removeCartItemSku && removeCartItemSku(hotSeller.sku);
                           }}
                         >
                           Remove

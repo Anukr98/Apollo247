@@ -151,6 +151,8 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
         doctorId
         availableModes
       }
+      apolloDoctorCount
+      partnerDoctorCount
     }
   }
 `;
@@ -369,6 +371,17 @@ export const GET_PATIENT_APPOINTMENTS = gql`
   query GetPatientAppointments($patientAppointmentsInput: PatientAppointmentsInput) {
     getPatinetAppointments(patientAppointmentsInput: $patientAppointmentsInput) {
       patinetAppointments {
+        appointmentPayments {
+          id
+          amountPaid
+          paymentRefId
+          paymentStatus
+          paymentDateTime
+          responseCode
+          responseMessage
+          bankTxnId
+          orderId
+        }
         id
         patientId
         doctorId
@@ -377,10 +390,19 @@ export const GET_PATIENT_APPOINTMENTS = gql`
         hospitalId
         status
         bookingDate
+        rescheduleCount
         isConsultStarted
         appointmentState
         isFollowUp
-
+        displayId
+        isConsultStarted
+        isJdQuestionsComplete
+        isSeniorConsultStarted
+        symptoms
+        paymentOrderId
+        couponCode
+        actualAmount
+        discountedAmount
         doctorInfo {
           id
           firstName
@@ -419,6 +441,32 @@ export const GET_PATIENT_APPOINTMENTS = gql`
               latitude
               longitude
             }
+          }
+          consultHours {
+            consultMode
+            consultType
+            endTime
+            facility {
+              city
+              country
+              facilityType
+              id
+              imageUrl
+              latitude
+              longitude
+              name
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+            id
+            isActive
+            startTime
+            weekDay
+            consultDuration
+            consultBuffer
           }
         }
       }
@@ -540,6 +588,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
             weekDay
             consultDuration
             consultBuffer
+            actualDay
           }
           doctorHospital {
             facility {
@@ -583,6 +632,35 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           }
           starTeam {
             isActive
+            associatedDoctor {
+              fullName
+              firstName
+              lastName
+              experience
+              qualification
+              id
+              photoUrl
+              specialty {
+                id
+                name
+                image
+              }
+              doctorHospital {
+                facility {
+                  name
+                  facilityType
+                  streetLine1
+                  streetLine2
+                  streetLine3
+                  city
+                  country
+                  latitude
+                  longitude
+                  id
+                  imageUrl
+                }
+              }
+            }
           }
         }
       }

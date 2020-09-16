@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import {
+  MedicineOrdersRepository,
+  SaveMedicineInfoInput,
+} from 'profiles-service/repositories/MedicineOrdersRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import {
   MedicineOrders,
@@ -13,7 +16,7 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { getUnixTime, format } from 'date-fns';
-import { hgetAllCache, hmsetCache } from 'profiles-service/database/connectRedis';
+import { hgetAllCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger';
 
@@ -38,6 +41,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     quoteId: String
     shopId: String
     shopAddress: String
+    tatType: String
     estimatedAmount: Float
     patientId: ID!
     deliveryType: MEDICINE_DELIVERY_TYPE!
@@ -79,6 +83,9 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     isPrescriptionNeeded: Int
     mou: Int
     isMedicine: String
+    itemValue: Float
+    itemDiscount: Float
+    specialPrice: Float
   }
 
   type MedicineOrderOMSShipment {
@@ -217,6 +224,32 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     quantity: String
   }
 
+  input SaveMedicineInfoInput {
+    sku: String!
+    name: String
+    status: String
+    price: String
+    special_price: String
+    special_price_from: String
+    special_price_to: String
+    qty: Int
+    description: String
+    url_key: String
+    base_image: String
+    is_prescription_required: String
+    category_name: String
+    product_discount_category: String
+    sell_online: String
+    molecules: String
+    mou: Int
+    gallery_images: String
+    manufacturer: String
+  }
+
+  type SaveMedicineResult {
+    status: Boolean
+  }
+
   extend type Query {
     getMedicineOrdersOMSList(patientId: String): MedicineOrdersOMSListResult!
     getMedicineOrderOMSDetails(
@@ -234,6 +267,12 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
       orderAutoId: Int
       billNumber: String
     ): MedicineOrderOMSDetailsResult!
+  }
+
+  extend type Mutation {
+    updateMedicineDataRedisFromMagento(
+      saveMedicineInfoInput: SaveMedicineInfoInput
+    ): SaveMedicineResult!
   }
 `;
 
@@ -276,6 +315,12 @@ type RecommendedProducts = {
   MaxOrderQty: number;
 };
 
+type SaveMedicineResult = {
+  status: boolean;
+};
+
+type SaveMedicineInfoInputArgs = { saveMedicineInfoInput: SaveMedicineInfoInput };
+
 type ProductAvailabilityResult = {
   productAvailabilityList: ProductAvailability[];
 };
@@ -312,7 +357,7 @@ const getMedicineOrdersOMSList: Resolver<
   }
   const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  let medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
+  const medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
     primaryPatientIds
   );
 
@@ -495,7 +540,13 @@ const getMedicineOrderOMSDetails: Resolver<
             reasonCode.statusMessage = '';
           }
         } catch (e) {
-          console.log(e);
+          log(
+            'profileServiceLogger',
+            'getMedicineOrderOMSDetails error',
+            'getMedicineOrderOMSDetails()->CATCH_BLOCK',
+            '',
+            JSON.stringify(e)
+          );
         }
       }
     }
@@ -623,7 +674,6 @@ const updateMedicineDataRedis: Resolver<
   if (process.env.NODE_ENV != 'local') {
     fileDirectory = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
-  console.log(fileDirectory + '/Online_Master.xlsx');
 
   const rowData = excelToJson({
     sourceFile: fileDirectory + '/Online_Master.xlsx',
@@ -657,9 +707,11 @@ const updateMedicineDataRedis: Resolver<
       },
     ],
   });
+  const medicineRepo = context.profilesDb.getCustomRepository(MedicineOrdersRepository);
   const updatedSkus: string[] = [];
   for (let k = args.offset; k <= args.offset + args.limit - 1; k++) {
-    const skuKey = 'medicine:sku:' + rowData.Sheet1[k].sku;
+    await medicineRepo.saveMedicneInfoRedis(rowData.Sheet1[k]);
+    /*const skuKey = 'medicine:sku:' + rowData.Sheet1[k].sku;
     await hmsetCache(skuKey, {
       sku: encodeURIComponent(rowData.Sheet1[k].sku),
       name: encodeURIComponent(rowData.Sheet1[k].name),
@@ -692,12 +744,28 @@ const updateMedicineDataRedis: Resolver<
       mou: encodeURIComponent(rowData.Sheet1[k].mou),
       gallery_images: encodeURIComponent(rowData.Sheet1[k].gallery_images),
       manufacturer: encodeURIComponent(rowData.Sheet1[k].manufacturer),
-    });
+    });*/
     if (!updatedSkus.includes(rowData.Sheet1[k].sku)) {
       updatedSkus.push(rowData.Sheet1[k].sku);
     }
   }
   return { updatedSkus: updatedSkus };
+};
+
+const updateMedicineDataRedisFromMagento: Resolver<
+  null,
+  SaveMedicineInfoInputArgs,
+  ProfilesServiceContext,
+  SaveMedicineResult
+> = async (parent, { saveMedicineInfoInput }, context) => {
+  const medicineRepo = context.profilesDb.getCustomRepository(MedicineOrdersRepository);
+  const updatedSku = await medicineRepo.saveMedicneInfoRedis(saveMedicineInfoInput);
+  let response = true;
+  if (!updatedSku) {
+    response = false;
+  }
+
+  return { status: response };
 };
 
 const getLatestMedicineOrder: Resolver<
@@ -852,7 +920,13 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
             reasonCode.statusMessage = '';
           }
         } catch (e) {
-          console.log(e);
+          log(
+            'profileServiceLogger',
+            'getMedicineOrderOMSDetailsWithAddress error',
+            'getMedicineOrderOMSDetailsWithAddress()->CATCH_BLOCK',
+            '',
+            JSON.stringify(e)
+          );
         }
       }
     }
@@ -874,5 +948,8 @@ export const getMedicineOrdersOMSListResolvers = {
     updateMedicineDataRedis,
     getLatestMedicineOrder,
     getMedicineOrderOMSDetailsWithAddress,
+  },
+  Mutation: {
+    updateMedicineDataRedisFromMagento,
   },
 };

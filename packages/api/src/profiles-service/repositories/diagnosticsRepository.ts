@@ -1,12 +1,12 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { Diagnostics, DiagnosticPincodeHubs } from 'profiles-service/entities';
+import { DiagnosticItdosePincodeHubs } from 'profiles-service/entities/diagnostic_itdose_pincode_hub'
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 @EntityRepository(Diagnostics)
 export class DiagnosticsRepository extends Repository<Diagnostics> {
   async searchDiagnostics(itemName: string, city: string) {
-    console.log('itemName', itemName, 'city', city);
     //return this.find({ where: { itemName } });
     return await this.createQueryBuilder('diagnostics')
       .where('diagnostics.itemName like :name', { name: '%' + itemName + '%' })
@@ -16,7 +16,6 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
   }
 
   async searchDiagnosticswithoutcity(itemName: string) {
-    console.log('itemName', itemName, 'city', 'diagnosioticsrepo');
     //return this.find({ where: { itemName } });
     return await this.createQueryBuilder('diagnostics')
       .where('diagnostics.itemName like :name', { name: '%' + itemName + '%' })
@@ -25,7 +24,6 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
   }
 
   async getDiagnosticsCites(cityName: string) {
-    console.log('cityName', cityName);
     return await this.createQueryBuilder('diagnostics')
       .select([
         'max("city") as cityName',
@@ -43,6 +41,10 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
 
   findHubByZipCode(pincode: string) {
     return DiagnosticPincodeHubs.findOne({ where: { pincode } });
+  }
+
+  findAreabyZipCode(pincode: string) {
+    return DiagnosticItdosePincodeHubs.findOne({ where: { pincode } })
   }
 
   findDiagnosticById(itemId: number) {

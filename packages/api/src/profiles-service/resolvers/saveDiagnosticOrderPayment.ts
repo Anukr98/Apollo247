@@ -6,10 +6,8 @@ import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
-import {
-  sendDiagnosticOrderStatusNotification,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
+import { sendDiagnosticOrderStatusNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 
 export const saveDiagnosticOrderPaymentTypeDefs = gql`
   input DiagnosticPaymentInput {
@@ -75,7 +73,6 @@ const saveDiagnosticOrderPayment: Resolver<
   ProfilesServiceContext,
   SaveDiagnosticOrderPaymentResult
 > = async (parent, { diagnosticPaymentInput }, { profilesDb }) => {
-  console.log('diagnosticPaymentInput:', diagnosticPaymentInput);
   log(
     'profileServiceLogger',
     `DEBUG_LOG`,
@@ -90,7 +87,6 @@ const saveDiagnosticOrderPayment: Resolver<
   const diagnosticOrder = await diagnosticOrdersRepo.getOrderDetails(
     diagnosticPaymentInput.diagnosticOrderId
   );
-  console.log('diagnosticOrderDetails', diagnosticOrder);
   log(
     'profileServiceLogger',
     `DEBUG_LOG`,
@@ -122,8 +118,6 @@ const saveDiagnosticOrderPayment: Resolver<
     cardType: diagnosticPaymentInput.cardType,
     diagnosticOrders: diagnosticOrder,
   };
-
-  console.log('paymentAttrs==>', paymentAttrs);
   log(
     'profileServiceLogger',
     `DEBUG_LOG`,
@@ -132,8 +126,6 @@ const saveDiagnosticOrderPayment: Resolver<
     ''
   );
   const savePaymentDetails = await diagnosticOrdersRepo.saveDiagnosticOrderPayment(paymentAttrs);
-
-  console.log('savePaymentDetails', savePaymentDetails);
   log(
     'profileServiceLogger',
     `DEBUG_LOG`,

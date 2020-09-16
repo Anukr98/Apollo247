@@ -2,8 +2,6 @@ import { webPatientsBaseUrl } from '@aph/universal/dist/aphRoutes';
 
 export const clientRoutes = {
   patients: () => '/patients',
-  cartPoc: () => '/cart-poc',
-  storagePoc: () => '/storage-poc',
 
   welcome: () => '/',
   doctorDetails: (doctorName: string, doctorId: string) => `/doctors/${doctorName}-${doctorId}`,
@@ -73,6 +71,9 @@ export const clientRoutes = {
   membershipPlanLocked: () => '/partners/hdfc-membership-locked',
   membershipPlanDetail: () => '/partners/hdfc-membership-plan-detail',
   covidProtocol: () => '/medical-condition',
+  prescription: (appointmentId: string) => `/prescription/${appointmentId}`,
+  // sitemap: (sitemap: string) => `/${sitemap}`,
+  // childSitemap: (sitemap: string, pageNo: string) => `/${sitemap}/${pageNo}`,
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

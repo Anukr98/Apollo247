@@ -3,7 +3,7 @@ import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { AphRadio, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
-import _each from 'lodash';
+//import _each from 'lodash';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { gtmTracking } from '../../gtmTracking';
 import fetchUtil from 'helpers/fetch';

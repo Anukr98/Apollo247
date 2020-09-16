@@ -55,7 +55,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const PatientsOverview: React.FC = () => {
+const PatientsOverview: React.FC = () => {
   const classes = useStyles({});
 
   const { currentPatient } = useAllCurrentPatients();
@@ -133,3 +133,5 @@ export const PatientsOverview: React.FC = () => {
     </div>
   );
 };
+
+export default PatientsOverview;

@@ -7,12 +7,44 @@ import path from 'path';
 import fs from 'fs';
 import { format } from 'date-fns';
 import { keyCache, hgetAllCache } from 'doctors-service/database/connectRedis';
+import { log } from 'customWinstonLogger';
 
 export const sitemapTypeDefs = gql`
+  type SitemapUrls {
+    urlName: String
+    url: String
+  }
+
+  type SitemapResult {
+    specialityUrls: [SitemapUrls]
+    doctorUrls: [SitemapUrls]
+    articleUrls: [SitemapUrls]
+    healthAreasUrls: [SitemapUrls]
+    shopByCategoryUrls: [SitemapUrls]
+    medicinesUrls: [SitemapUrls]
+    staticPageUrls: [SitemapUrls]
+    sitemapFilePath: String
+  }
   extend type Mutation {
-    generateSitemap: String
+    generateSitemap: SitemapResult!
   }
 `;
+
+type SitemapUrls = {
+  urlName: string;
+  url: string;
+};
+
+type SitemapResult = {
+  specialityUrls: SitemapUrls[];
+  doctorUrls: SitemapUrls[];
+  articleUrls: SitemapUrls[];
+  healthAreasUrls: SitemapUrls[];
+  shopByCategoryUrls: SitemapUrls[];
+  medicinesUrls: SitemapUrls[];
+  staticPageUrls: SitemapUrls[];
+  sitemapFilePath: string;
+};
 
 function readableParam(param: string) {
   const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;';
@@ -31,13 +63,22 @@ function readableParam(param: string) {
     .replace(/-+$/, ''); // Trim - from end of text
 }
 
-const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async (
+const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> = async (
   parent,
   args,
   { doctorsDb }
 ) => {
+  console.log(await hgetAllCache('apollo247:staticpages:*'), 'static pages');
   const specialtyRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+  const specialityUrls: SitemapUrls[] = [],
+    doctorUrls: SitemapUrls[] = [],
+    articleUrls: SitemapUrls[] = [],
+    healthAreasUrls: SitemapUrls[] = [],
+    shopByCategoryUrls: SitemapUrls[] = [],
+    medicinesUrls: SitemapUrls[] = [],
+    staticPageUrls: SitemapUrls[] = [];
+
   const specialitiesList = await specialtyRepo.findAll();
   let sitemapStr =
     '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">\n<!-- Doctor Specilaities -->\n';
@@ -47,14 +88,14 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   if (specialitiesList.length > 0) {
     specialitiesList.forEach(async (specialty) => {
       const specialtyName = readableParam(specialty.name);
+      const url = process.env.SITEMAP_BASE_URL + 'specialties/' + specialtyName;
+      const urlInfo: SitemapUrls = {
+        url,
+        urlName: specialty.specialistPluralTerm,
+      };
+      specialityUrls.push(urlInfo);
       const specialtyStr =
-        '<url>\n<loc>' +
-        process.env.SITEMAP_BASE_URL +
-        'specialties/' +
-        specialtyName +
-        '</loc>\n<lastmod>' +
-        modifiedDate +
-        '</lastmod>\n</url>\n';
+        '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
       sitemapStr += specialtyStr;
     });
   }
@@ -63,18 +104,18 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   if (doctorList.length > 0) {
     doctorList.forEach((doctor) => {
       const doctorName = readableParam(doctor.displayName) + '-' + doctor.id;
+      const url = process.env.SITEMAP_BASE_URL + 'doctors/' + doctorName;
+      const urlInfo: SitemapUrls = {
+        url,
+        urlName: doctor.displayName,
+      };
+      doctorUrls.push(urlInfo);
       const docStr =
-        '<url>\n<loc>' +
-        process.env.SITEMAP_BASE_URL +
-        'doctors/' +
-        doctorName +
-        '</loc>\n<lastmod>' +
-        modifiedDate +
-        '</lastmod>\n</url>\n';
+        '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
       doctorsStr += docStr;
     });
   }
-
+  //const fetch = require('node-fetch');
   let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
@@ -89,7 +130,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   );
   const textRes = await listResp.text();
   const cmsUrlsList = JSON.parse(textRes);
-
+  console.log(cmsUrlsList, 'cmsUrlsList');
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cmsUrlsList.data.forEach((link: any) => {
@@ -99,6 +140,11 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
       } else {
         url += 'report' + link.slug;
       }
+      const urlInfo: SitemapUrls = {
+        url,
+        urlName: link.slug,
+      };
+      articleUrls.push(urlInfo);
       cmsUrls += '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
   }
@@ -128,10 +174,18 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const healthAreaTextRes = await healthAreaListResp.text();
   const healthAreasUrlsList = JSON.parse(healthAreaTextRes);
   let healthAreaUrls = '\n<!--Health Area links-->\n';
-  if (healthAreasUrlsList.healthareas && healthAreasUrlsList.healthareas.length > 0) {
+  if (
+    healthAreasUrlsList.shop_by_healthareas &&
+    healthAreasUrlsList.shop_by_healthareas.length > 0
+  ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    healthAreasUrlsList.healthareas.forEach((link: any) => {
+    healthAreasUrlsList.shop_by_healthareas.forEach((link: any) => {
       const url = process.env.SITEMAP_BASE_URL + 'medicine/healthareas/' + link.url_key;
+      const urlInfo: SitemapUrls = {
+        url,
+        urlName: link.title,
+      };
+      healthAreasUrls.push(urlInfo);
       healthAreaUrls +=
         '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
@@ -141,6 +195,11 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     healthAreasUrlsList.shop_by_category.forEach((link: any) => {
       const url = process.env.SITEMAP_BASE_URL + 'medicine/shop-by-category/' + link.url_key;
+      const urlInfo: SitemapUrls = {
+        url,
+        urlName: link.title,
+      };
+      shopByCategoryUrls.push(urlInfo);
       ShopByCategory +=
         '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
@@ -150,7 +209,11 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   let medicineUrls = '\n<!--Medicines list-->\n';
   if (redisMedKeys && redisMedKeys.length > 0) {
     let medCount = redisMedKeys.length;
-    if (process.env.NODE_ENV == 'local' || process.env.NODE_ENV == 'dev') {
+    if (
+      process.env.NODE_ENV == 'local' ||
+      process.env.NODE_ENV == 'dev' ||
+      process.env.NODE_ENV == 'staging'
+    ) {
       medCount = 100;
     }
     for (let k = 0; k < medCount; k++) {
@@ -162,9 +225,28 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
         skuDets.url_key &&
         (skuDets.status == 'Enabled' || skuDets.status == 'enabled')
       ) {
-        medicineUrls += `<url>\n<loc>${
-          process.env.SITEMAP_BASE_URL
-        }medicine/${skuDets.url_key.toString()}</loc>\n<lastmod>${modifiedDate}</lastmod>\n</url>\n`;
+        const url = process.env.SITEMAP_BASE_URL + 'medicine/' + skuDets.url_key.toString();
+        const urlInfo: SitemapUrls = {
+          url,
+          urlName: decodeURIComponent(skuDets.name),
+        };
+        medicinesUrls.push(urlInfo);
+        medicineUrls += `<url>\n<loc>${url}</loc>\n<lastmod>${modifiedDate}</lastmod>\n</url>\n`;
+      }
+    }
+  }
+
+  //read static page urls from redis cache
+  const staticPages = await keyCache('apollo247:staticpages:*');
+  if (staticPages && staticPages.length > 0) {
+    for (let k = 0; k < staticPages.length; k++) {
+      const pageDets = await hgetAllCache(staticPages[k]);
+      if (pageDets) {
+        const urlInfo: SitemapUrls = {
+          url: pageDets.pageUrl,
+          urlName: decodeURIComponent(pageDets.pageName),
+        };
+        staticPageUrls.push(urlInfo);
       }
     }
   }
@@ -180,9 +262,25 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, string> = async
   const fileName = 'sitemap.xml';
   const uploadPath = assetsDir + '/' + fileName;
   fs.writeFile(uploadPath, sitemapStr, {}, (err) => {
-    console.log(err, 'err');
+    log(
+      'doctorServiceLogger',
+      'sitemamap generateSitemap error',
+      'sitemamap()->generateSitemap()',
+      '',
+      JSON.stringify(err)
+    );
   });
-  return 'Sitemap generated :) ' + uploadPath;
+  //return 'Sitemap generated :) ' + uploadPath;
+  return {
+    sitemapFilePath: uploadPath,
+    specialityUrls,
+    doctorUrls,
+    articleUrls,
+    healthAreasUrls,
+    shopByCategoryUrls,
+    medicinesUrls,
+    staticPageUrls,
+  };
 };
 
 export const sitemapResolvers = {

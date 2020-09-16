@@ -1,4 +1,5 @@
 import gql from 'graphql-tag';
+import { GraphQLScalarType, Kind } from 'graphql'
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { DiagnosticOrdersRepository } from 'profiles-service/repositories/diagnosticOrdersRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -12,25 +13,41 @@ import {
   DiagnosticOrdersStatus,
   BOOKING_SOURCE,
   DEVICE_TYPE,
+  Diagnostics,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
-import { AphError } from 'AphError';
+import { AphError, AphUserInputError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
+import { getToken } from 'profiles-service/helpers/itdoseHelper'
 import {
   DiagnosticPreBookingResult,
   DiagnosticOrderTest,
   ItdosTestDetails,
   AddProcessResult,
 } from 'types/diagnosticOrderTypes';
+import FormData from 'form-data'
+import fetch from 'node-fetch';
 import { format, differenceInYears } from 'date-fns';
 import { log } from 'customWinstonLogger';
-import {
-  sendDiagnosticOrderStatusNotification,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
+import { sendDiagnosticOrderStatusNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
+
+const slotIDScalarType = new GraphQLScalarType({
+  name: 'slotIDScalar',
+  description: 'String custom scalar type',
+  serialize(value) {
+    // Implement custom behavior by setting the 'result' variable
+    return "" + value;
+  },
+  parseValue(value) {
+    // Implement custom behavior here by setting the 'result' variable
+    return "" + value;
+  },
+});
 
 export const saveDiagnosticOrderTypeDefs = gql`
+  scalar slotIDScalar
   enum DIAGNOSTIC_ORDER_STATUS {
     PICKUP_REQUESTED
     PICKUP_CONFIRMED
@@ -53,7 +70,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     state: String!
     stateId: String!
     slotTimings: String!
-    employeeSlotId: Int!
+    employeeSlotId: slotIDScalar
     diagnosticEmployeeCode: String!
     diagnosticBranchCode: String!
     totalPrice: Float!
@@ -68,6 +85,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     deviceType: DEVICETYPE
     paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE
     items: [DiagnosticLineItem]
+    slotId: String
   }
 
   input DiagnosticLineItem {
@@ -107,7 +125,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     patientAddressId: ID!
     city: String!
     slotTimings: String!
-    employeeSlotId: Int!
+    employeeSlotId: String!
     diagnosticEmployeeCode: String!
     diagnosticBranchCode: String!
     totalPrice: Float!
@@ -145,6 +163,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
 
   extend type Mutation {
     SaveDiagnosticOrder(diagnosticOrderInput: DiagnosticOrderInput): SaveDiagnosticOrderResult!
+    SaveItdoseHomeCollectionDiagnosticOrder(diagnosticOrderInput: DiagnosticOrderInput): SaveDiagnosticOrderResult!
   }
   extend type Query {
     getDiagnosticOrdersList(patientId: String): DiagnosticOrdersResult!
@@ -160,7 +179,7 @@ type DiagnosticOrderInput = {
   state: string;
   stateId: string;
   slotTimings: string;
-  employeeSlotId: number;
+  employeeSlotId: string;
   diagnosticEmployeeCode: string;
   diagnosticBranchCode: string;
   totalPrice: number;
@@ -175,12 +194,14 @@ type DiagnosticOrderInput = {
   deviceType: DEVICE_TYPE;
   paymentType: DIAGNOSTIC_ORDER_PAYMENT_TYPE;
   items: [DiagnosticLineItem];
+  slotId: string;
 };
 
 type DiagnosticLineItem = {
   itemId: number;
   price: number;
   quantity: number;
+  itemName: string;
 };
 
 type SaveDiagnosticOrderResult = {
@@ -212,14 +233,14 @@ const SaveDiagnosticOrder: Resolver<
     errorMessage = '',
     orderId = '',
     displayId = '';
-
   if (!diagnosticOrderInput.items) {
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
   }
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(diagnosticOrderInput.patientId);
   let patientAddress = '',
-    addressZipcode = '';
+    addressZipcode = '',
+    landmark = '';
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -237,6 +258,7 @@ const SaveDiagnosticOrder: Resolver<
     }
     patientAddress = patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
     addressZipcode = patientAddressDetails.zipcode;
+    landmark = patientAddressDetails.landmark;
   }
 
   const diagnosticOrderattrs: Partial<DiagnosticOrders> = {
@@ -244,7 +266,8 @@ const SaveDiagnosticOrder: Resolver<
     patientAddressId: diagnosticOrderInput.patientAddressId,
     totalPrice: diagnosticOrderInput.totalPrice,
     slotTimings: diagnosticOrderInput.slotTimings,
-    employeeSlotId: diagnosticOrderInput.employeeSlotId,
+    employeeSlotId: 0,
+    slotId: diagnosticOrderInput.employeeSlotId,
     diagnosticBranchCode: diagnosticOrderInput.diagnosticBranchCode,
     diagnosticEmployeeCode: diagnosticOrderInput.diagnosticEmployeeCode,
     city: diagnosticOrderInput.city,
@@ -277,12 +300,14 @@ const SaveDiagnosticOrder: Resolver<
   const saveOrder = await diagnosticOrdersRepo.saveDiagnosticOrder(diagnosticOrderattrs);
   const orderLineItems: DiagnosticOrderTest[] = [];
   const itdosLineItems: ItdosTestDetails[] = [];
+  const orderItemDetails: Diagnostics[] = []
   const promises: object[] = [];
   function getItemDetails(itemId: number, quantity: number) {
     return new Promise(async (resolve, reject) => {
       const details = await diagnosticRepo.findDiagnosticById(itemId);
       if (details == null)
         throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+      orderItemDetails.push(details)
       const lineItem = {
         TestCode: details.itemCode,
         ItemId: details.itemId.toString(),
@@ -447,7 +472,6 @@ const SaveDiagnosticOrder: Resolver<
         JSON.stringify(preBookingInput),
         ''
       );
-      console.log(preBookingInput, preBookingUrl, 'preBookingInput');
       const preBookingResp = await fetch(preBookingUrl, {
         method: 'POST',
         body: JSON.stringify(preBookingInput),
@@ -465,7 +489,6 @@ const SaveDiagnosticOrder: Resolver<
       );
 
       const preBookResp: DiagnosticPreBookingResult = JSON.parse(textRes);
-      console.log(preBookResp, preBookResp.PreBookingID, 'text response');
       await diagnosticOrdersRepo.updateDiagnosticOrder(
         saveOrder.id,
         preBookResp.PreBookingID,
@@ -495,150 +518,95 @@ const SaveDiagnosticOrder: Resolver<
       const hubDetails = await diagnosticRepo.getHubDetails(
         diagnosticOrderInput.diagnosticBranchCode
       );
-      if (process.env.NODE_ENV === 'dev' || process.env.NODE_ENV === 'as') {
-        patientDob = '1 Jan 2000';
-        if (patientDetails.dateOfBirth) {
-          patientDob = format(patientDetails.dateOfBirth, 'dd MMM yyyy');
-        }
-      } else {
-        patientDob = '30';
-        if (patientDetails.dateOfBirth) {
-          patientDob = Math.abs(
-            differenceInYears(new Date(), patientDetails.dateOfBirth)
-          ).toString();
-        }
+      patientDob = '1 Jan 2000';
+      if (patientDetails.dateOfBirth) {
+        patientDob = format(patientDetails.dateOfBirth, 'dd MMM yyyy');
       }
-      const addProcessInput = [
-        {
-          processDefinitionCode: 'home_collection',
-          processData: {
-            time_slot: diagnosticTimings[0].trim().toString() + ':00',
-            first_name: patientDetails.firstName,
-            last_name: patientDetails.lastName,
-            dob: patientDob,
-            sex: patientDetails.gender == null ? 'Male' : patientDetails.gender,
-            address: patientAddress,
-            pincode: addressZipcode,
-            email_address: patientDetails.emailAddress == null ? '' : patientDetails.emailAddress,
-            investigation: itdosLineItems,
-            discount: '0',
-            remarks: 'remarks',
-            city: diagnosticOrderInput.city,
-            branch_ds: diagnosticOrderInput.diagnosticBranchCode,
-            mobile_number: patientDetails.mobileNumber.substr(3),
-            booking_date: format(diagnosticOrderInput.diagnosticDate, 'yyyy-MM-dd'),
-            last_test_taken: '',
-            landmark: '',
-            last_test_date1: '',
-            last_feedback_given: '',
-            last_rating_given: '',
-            totalCalculatedPrice: diagnosticOrderInput.totalPrice.toString(),
-            tempTotal: '',
-            last_total_amount_collected: '',
-            pincod_area_name: hubDetails ? hubDetails.pincodeAreaname : '',
-            alternate_contact_number: '',
-            mode_of_payment: 'Cash',
-            pcc_drop_point: '2',
-            current_city: diagnosticOrderInput.city,
-            list_additional_customer_details: [],
-            cce_name: '2',
-            pcc_email: '2',
-            branch: diagnosticOrderInput.diagnosticBranchCode,
-            source_of_collection: 'PRE BOOKING',
-            client: 'Others',
-            Patient_ID: patientDetails.id,
-            visit_id: '',
-            doctor_id: '',
-            title: patientTitle,
-            payment_mode_id: '1',
-            locality_id: '0',
-            house_no: '',
-            locality: '',
-            city_id: diagnosticOrderInput.cityId.toString(),
-            state_id: diagnosticOrderInput.stateId.toString(),
-            state: diagnosticOrderInput.state,
-            patient_id_proof: '',
-            patient_id_proof_no: '',
-            lab_reference_no: '21',
-            attachments: 'na',
-            gross_amt: '0',
-            disc_amt: '0',
-            net_amt: '0',
-            payment_ref_no: '',
-            pay_u_transaction_id: '',
-            pay_u_payment_id: '1',
-            coupon_code: '',
-            is_first_customer: '',
-            id: '8660',
-            mode: 'M',
-            status1: 'success',
-            un_mapped_status: 'capture',
-            key: 'JnQwXs',
-            txn_id: '',
-            product_info: 'Apollo',
-            hash1:
-              'e02266c5a83cc2c2e5b5166e43d275e326f7596f2be556b12001874f965e03ff35822f0e3677986f3ffab080cf2cf8fbd630375a3f29e200620dab0362baeb3d',
-            field8: 'Success',
-            field9: 'Transact',
-            payment_source: 'payu',
-            pg_type: 'ng',
-            bank_ref_no: '',
-            ibibo_code: 'AIRNB',
-            error_code: 'E000',
-            error_message: 'No Erro',
-            is_seamless: '2',
-            surl: 'https://payu.herokuapp.com/success',
-            furl: 'https://payu.herokuapp.com/failure',
-            pg_aggregator_name: 'PayU',
-            other_doctor: '',
-            label: '',
-            middle_name: '',
-          },
-          processUserMappings: [
-            {
-              flowCode: 'home_collection',
-              cityCode: hubDetails ? hubDetails.city : '',
-              branchCode: diagnosticOrderInput.diagnosticBranchCode,
-              employeeCode: diagnosticOrderInput.diagnosticEmployeeCode,
-              slot: diagnosticOrderInput.employeeSlotId.toString(),
-              scheduleDate: format(diagnosticOrderInput.diagnosticDate, 'yyyy-MM-dd'),
-            },
-          ],
-        },
-      ];
-      const addProcessUrl = process.env.DIAGNOSTIC_ADD_PROCESS_URL
-        ? process.env.DIAGNOSTIC_ADD_PROCESS_URL
-        : '';
-      console.log(addProcessInput, 'addProcessInput');
-      log(
-        'profileServiceLogger',
-        `EXTERNAL_API_CALL_DIAGNOSTICS: ${addProcessUrl}`,
-        'SaveDiagnosticOrder()->addProcessUrlApi->API_CALL_STARTING',
-        JSON.stringify(addProcessInput),
-        ''
-      );
+      const area = await diagnosticRepo.findAreabyZipCode(addressZipcode.toString());
+      if (!area || !area?.area_id) {
+        throw new AphUserInputError(AphErrorMessages.INVALID_ZIPCODE)
+      }
 
-      const addProcessResp = await fetch(addProcessUrl, {
+      let homeCollectionData = {
+        'Patient_ID': patientId,
+        'Title': patientTitle,
+        'PName': `${patientDetails.firstName} ${patientDetails.lastName}`,
+        'Gender': patientGender,
+        'DOB': patientDob,
+        'Mobile': patientDetails.mobileNumber,
+        'Alternatemobileno': patientDetails.mobileNumber,
+        'Email': patientDetails.emailAddress,
+        'LocalityID': area?.area_id,
+        'Pincode': addressZipcode,
+        'House_No': patientAddress,
+        'Landmark': landmark,
+        'Appdatetime': format(diagnosticOrderInput.diagnosticDate, 'dd-MMM-yyyy hh:mm'),
+        'Client': '24*7',
+        'Paymentmode': diagnosticOrderInput.paymentType,
+        'Latitude': '0',
+        'Longitude': '0',
+        'SlotID': diagnosticOrderInput.employeeSlotId,
+        'ReferedDoctor': 'Self',
+        'DoctorID': 0,
+        'TestDetail': new Array()
+      }
+
+      diagnosticOrderInput.items.forEach((element) => {
+        orderItemDetails.forEach((item) => {
+          if (item.itemId === element.itemId) {
+            const itemHomeCollection = {
+              'DiscAmt': '0',
+              'itemid': element.itemId,
+              'ItemName': item.itemName,
+              'Itemtype': item.itemType,
+              'NetAmt': element.price * element.quantity,
+              'Rate': element.price,
+              'SubCategoryID': item.labID,
+              'TestCode': item.labCode
+            }
+            homeCollectionData.TestDetail.push(itemHomeCollection)
+          }
+        })
+      })
+
+      const form = new FormData();
+      form.append('HomeCollectionData', JSON.stringify(homeCollectionData))
+
+      const token = await getToken()
+      let options = {
         method: 'POST',
-        body: JSON.stringify(addProcessInput),
-        headers: { 'Content-Type': 'application/json' },
-      });
+        body: form,
+        headers: { authorization: `Bearer ${token}`, ...form.getHeaders() }
+      }
+      const diagnosticProcessURL = process.env.DIAGNOSTIC_ITDOSE_HOMEBOOKING_URL
+      if (!diagnosticProcessURL) {
+        throw new AphError(AphErrorMessages.SAVE_ITDOSE_DIAGNOSTIC_ORDER_ERROR, undefined, { "cause": "add env DIAGNOSTICS_ITDOSE_LOGIN_URL" })
+      }
+      const diagnosticProcess = await fetch(`${diagnosticProcessURL}`, options)
+        .then((res) => res.json())
+        .catch((error) => {
+          log(
+            'profileServiceLogger',
+            'API_CALL_ERROR',
+            'getDiagnosticSlots()->CATCH_BLOCK',
+            '',
+            JSON.stringify(error)
+          );
+          throw new AphError(AphErrorMessages.SAVE_ITDOSE_DIAGNOSTIC_ORDER_ERROR, undefined, { "cause": error.toString() });
+        });
 
-      //console.log(addProcessResp, 'add process resp');
-      const textProcessRes = await addProcessResp.text();
       log(
         'profileServiceLogger',
         'API_CALL_RESPONSE',
         'SaveDiagnosticOrder()->preBookingApi()->API_CALL_RESPONSE',
-        textProcessRes,
+        diagnosticProcess,
         ''
       );
 
-      const addProceResp: AddProcessResult = JSON.parse(textProcessRes);
-      if (addProceResp.failureList.length > 0) {
+      if (diagnosticProcess.status != true || !diagnosticProcess.data) {
         errorCode = -1;
-        errorMessage = addProceResp.failureList[0].failReason;
-        orderId = '';
+        errorMessage = diagnosticProcess.message;
+        orderId = saveOrder.id;
         await diagnosticOrdersRepo.updateDiagnosticOrder(
           saveOrder.id,
           '',
@@ -646,10 +614,11 @@ const SaveDiagnosticOrder: Resolver<
           DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED
         );
       } else {
+        const preBookingID = diagnosticProcess.data.replace('PrebookingID:', '')
         await diagnosticOrdersRepo.updateDiagnosticOrder(
           saveOrder.id,
+          preBookingID,
           '',
-          addProceResp.successList[0],
           DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
         );
         const diagnosticOrderStatusAttrs: Partial<DiagnosticOrdersStatus> = {
@@ -677,6 +646,275 @@ const SaveDiagnosticOrder: Resolver<
     displayId,
   };
 };
+
+const SaveItdoseHomeCollectionDiagnosticOrder: Resolver<
+  null,
+  DiagnosticOrderInputInputArgs,
+  ProfilesServiceContext,
+  SaveDiagnosticOrderResult
+> = async (parent, { diagnosticOrderInput }, { profilesDb }) => {
+  let errorCode = 0,
+    errorMessage = '',
+    orderId = '',
+    displayId = '';
+
+  if (!diagnosticOrderInput.slotId) {
+    throw new AphError(AphErrorMessages.NO_SLOT_ID)
+  }
+
+  if (!diagnosticOrderInput.items) {
+    throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
+  }
+
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(diagnosticOrderInput.patientId);
+  let patientAddress = '',
+    addressZipcode = '',
+    landmark = '';
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+
+  if (
+    diagnosticOrderInput.patientAddressId != '' &&
+    diagnosticOrderInput.patientAddressId != null
+  ) {
+    const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+    const patientAddressDetails = await patientAddressRepo.findById(
+      diagnosticOrderInput.patientAddressId
+    );
+    if (!patientAddressDetails) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+    }
+    patientAddress = patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
+    addressZipcode = patientAddressDetails.zipcode;
+    landmark = patientAddressDetails.landmark;
+  }
+
+  const diagnosticOrderattrs: Partial<DiagnosticOrders> = {
+    patient: patientDetails,
+    orderStatus: DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING,
+    patientAddressId: diagnosticOrderInput.patientAddressId,
+    totalPrice: diagnosticOrderInput.totalPrice,
+    slotTimings: diagnosticOrderInput.slotTimings,
+    employeeSlotId: 0,
+    slotId: diagnosticOrderInput.slotId,
+    diagnosticBranchCode: diagnosticOrderInput.diagnosticBranchCode,
+    diagnosticEmployeeCode: diagnosticOrderInput.diagnosticEmployeeCode,
+    city: diagnosticOrderInput.city,
+    prescriptionUrl: diagnosticOrderInput.prescriptionUrl,
+    diagnosticDate: diagnosticOrderInput.diagnosticDate,
+    centerCity: diagnosticOrderInput.centerCity,
+    centerCode: diagnosticOrderInput.centerCode,
+    centerName: diagnosticOrderInput.centerName,
+    centerLocality: diagnosticOrderInput.centerLocality,
+    centerState: diagnosticOrderInput.centerState,
+    bookingSource: diagnosticOrderInput.bookingSource,
+    deviceType: diagnosticOrderInput.deviceType
+  };
+
+  if (
+    diagnosticOrderInput.paymentType &&
+    diagnosticOrderInput.paymentType === DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
+  ) {
+    diagnosticOrderattrs.orderStatus =
+      diagnosticOrderInput.centerCode != ''
+        ? DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED
+        : DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED;
+  } else {
+    diagnosticOrderattrs.orderStatus = DIAGNOSTIC_ORDER_STATUS.PAYMENT_PENDING;
+  }
+
+  const diagnosticOrdersRepo = profilesDb.getCustomRepository(DiagnosticOrdersRepository);
+  const diagnosticRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
+  const saveOrder = await diagnosticOrdersRepo.saveDiagnosticOrder(diagnosticOrderattrs);
+  const orderLineItems: DiagnosticOrderTest[] = [];
+  const orderItemDetails: Diagnostics[] = []
+  const promises: object[] = [];
+  function getItemDetails(itemId: number, quantity: number) {
+    return new Promise(async (resolve, reject) => {
+      const details = await diagnosticRepo.findDiagnosticById(itemId);
+      if (details == null)
+        throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID);
+      orderItemDetails.push(details)
+      const lineItem = {
+        TestCode: details.itemCode,
+        ItemId: details.itemId.toString(),
+        ItemName: details.itemName,
+        Rate: details.rate.toString(),
+        ItemType: details.itemType,
+      };
+      orderLineItems.push(lineItem);
+      resolve(orderLineItems);
+    });
+  }
+  if (saveOrder) {
+    orderId = saveOrder.id;
+    displayId = saveOrder.displayId.toString();
+    await diagnosticOrderInput.items.map(async (item) => {
+      promises.push(getItemDetails(item.itemId, item.quantity));
+      const details = await diagnosticRepo.findDiagnosticById(item.itemId);
+      const orderItemAttrs: Partial<DiagnosticOrderLineItems> = {
+        diagnosticOrders: saveOrder,
+        diagnostics: details,
+        ...item,
+      };
+      await diagnosticOrdersRepo.saveDiagnosticOrderLineItem(orderItemAttrs);
+      //console.log(lineItemOrder);	
+    });
+    await Promise.all(promises);
+
+    if (
+      diagnosticOrderInput.paymentType &&
+      diagnosticOrderInput.paymentType != DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
+    ) {
+      return {
+        errorCode,
+        errorMessage,
+        orderId,
+        displayId,
+      };
+    }
+
+    let patientDob = '10-Jan-1989';
+    if (patientDetails.dateOfBirth != null) {
+      patientDob = format(patientDetails.dateOfBirth, 'dd-MMM-yyyy');
+    }
+
+    let patientGender = Gender.MALE;
+    if (patientDetails.gender != null) {
+      patientGender = patientDetails.gender;
+    }
+
+    let patientId = '0';
+    if (patientDetails.uhid != '' && patientDetails.uhid != null) {
+      patientId = patientDetails.uhid;
+    } else {
+      patientId = await patientRepo.createNewUhid(patientDetails);
+      if (patientId == '') {
+        patientId = '0';
+      }
+    }
+
+    const patientTitle = patientGender == Gender.FEMALE ? 'Ms.' : 'Mr.';
+
+    patientDob = '1 Jan 2000';
+    if (patientDetails.dateOfBirth) {
+      patientDob = format(patientDetails.dateOfBirth, 'dd MMM yyyy');
+    }
+
+    const area = await diagnosticRepo.findAreabyZipCode(addressZipcode.toString());
+    if (!area || !area?.area_id) {
+      throw new AphUserInputError(AphErrorMessages.INVALID_ZIPCODE)
+    }
+
+    let homeCollectionData = {
+      'Patient_ID': patientId,
+      'Title': patientTitle,
+      'PName': `${patientDetails.firstName} ${patientDetails.lastName}`,
+      'Gender': patientGender,
+      'DOB': patientDob,
+      'Mobile': patientDetails.mobileNumber,
+      'Alternatemobileno': patientDetails.mobileNumber,
+      'Email': patientDetails.emailAddress,
+      'LocalityID': area?.area_id,
+      'Pincode': addressZipcode,
+      'House_No': patientAddress,
+      'Landmark': landmark,
+      'Appdatetime': format(diagnosticOrderInput.diagnosticDate, 'dd-MMM-yyyy hh:mm'),
+      'Client': '24*7',
+      'Paymentmode': diagnosticOrderInput.paymentType,
+      'Latitude': '0',
+      'Longitude': '0',
+      'SlotID': diagnosticOrderInput.slotId,
+      'TestDetail': new Array()
+    }
+
+    diagnosticOrderInput.items.forEach((element) => {
+      orderItemDetails.forEach((item) => {
+        if (item.itemId === element.itemId) {
+          const itemHomeCollection = {
+            'DiscAmt': '0',
+            'itemid': element.itemId,
+            'ItemName': item.itemName,
+            'Itemtype': item.itemType,
+            'NetAmt': element.price * element.quantity,
+            'Rate': element.price,
+            'SubCategoryID': item.labID,
+            'TestCode': item.labCode
+          }
+          homeCollectionData.TestDetail.push(itemHomeCollection)
+        }
+      })
+    })
+
+    const form = new FormData();
+    form.append('HomeCollectionData', JSON.stringify(homeCollectionData))
+
+    const token = await getToken()
+    let options = {
+      method: 'POST',
+      body: form,
+      headers: { authorization: `Bearer ${token}`, ...form.getHeaders() }
+    }
+    const diagnosticProcessURL = process.env.DIAGNOSTIC_ITDOSE_HOMEBOOKING_URL
+    if (!diagnosticProcessURL) {
+      throw new AphError(AphErrorMessages.SAVE_ITDOSE_DIAGNOSTIC_ORDER_ERROR, undefined, { "cause": "add env DIAGNOSTICS_ITDOSE_LOGIN_URL" })
+    }
+    const diagnosticProcess = await fetch(`${diagnosticProcessURL}`, options)
+      .then((res) => res.json())
+      .catch((error) => {
+        log(
+          'profileServiceLogger',
+          'API_CALL_ERROR',
+          'getDiagnosticSlots()->CATCH_BLOCK',
+          '',
+          JSON.stringify(error)
+        );
+        throw new AphError(AphErrorMessages.SAVE_ITDOSE_DIAGNOSTIC_ORDER_ERROR, undefined, { "cause": error.toString() });
+      });
+
+    if (diagnosticProcess.status != true || !diagnosticProcess.data) {
+      errorCode = -1;
+      errorMessage = diagnosticProcess.message;
+      orderId = saveOrder.id;
+      await diagnosticOrdersRepo.updateDiagnosticOrder(
+        saveOrder.id,
+        '',
+        '',
+        DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED
+      );
+    } else {
+      const preBookingID = diagnosticProcess.data.replace('PrebookingID:', '')
+      await diagnosticOrdersRepo.updateDiagnosticOrder(
+        saveOrder.id,
+        preBookingID,
+        '',
+        DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
+      );
+      const diagnosticOrderStatusAttrs: Partial<DiagnosticOrdersStatus> = {
+        diagnosticOrders: saveOrder,
+        orderStatus: diagnosticOrderattrs.orderStatus,
+        statusDate: new Date(),
+        hideStatus: false,
+      };
+      await diagnosticOrdersRepo.saveDiagnosticOrderStatus(diagnosticOrderStatusAttrs);
+
+      //send order out for delivery notification	
+      sendDiagnosticOrderStatusNotification(
+        NotificationType.DIAGNOSTIC_ORDER_SUCCESS,
+        saveOrder,
+        profilesDb
+      );
+    }
+  }
+  return {
+    errorCode,
+    errorMessage,
+    orderId,
+    displayId,
+  };
+}
 
 const getDiagnosticOrdersList: Resolver<
   null,
@@ -707,8 +945,10 @@ const getDiagnosticOrderDetails: Resolver<
 };
 
 export const saveDiagnosticOrderResolvers = {
+  slotIDScalar: slotIDScalarType,
   Mutation: {
     SaveDiagnosticOrder,
+    SaveItdoseHomeCollectionDiagnosticOrder,
   },
   Query: {
     getDiagnosticOrdersList,

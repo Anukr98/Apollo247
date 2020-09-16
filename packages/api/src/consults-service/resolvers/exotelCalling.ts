@@ -184,7 +184,7 @@ const initateConferenceTelephoneCall: Resolver<
     throw new AphError(AphErrorMessages.GET_PATIENTS_ERROR, undefined, {});
   }
 
-  const doctor = await doctorRepo.findByMobileNumber(mobileNumber, true);
+  const doctor = await doctorRepo.searchDoctorByMobileNumber(mobileNumber, true);
 
   if (!doctor) {
     throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});

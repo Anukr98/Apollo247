@@ -1,13 +1,14 @@
-import axios, { AxiosError, AxiosResponse } from 'axios';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
 import moment from 'moment';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as LatestOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 const apiDetails = {
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   service_url: process.env.PHARMACY_SERVICE_AVAILABILITY,
   cartItemDetails: process.env.PHARMACY_MED_CART_ITEM_DETAILS,
+  medicineDetails: process.env.PHARMACY_MED_PROD_DETAIL_URL,
 };
 
 export interface MedicineProduct {
@@ -30,6 +31,7 @@ export interface MedicineProduct {
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
   category_id: string;
+  sell_online: boolean;
 }
 export interface Brand {
   url_key: string;
@@ -54,6 +56,7 @@ export interface PharmaOverview {
 }
 
 export interface MedicineProductDetails extends MedicineProduct {
+  similar_products: MedicineProduct[];
   PharmaOverview: PharmaOverview[];
 }
 
@@ -248,23 +251,45 @@ export interface GetPackageDataResponse {
 }
 
 export const checkServiceAvailability = (zipCode: string) => {
+  return axios.get(`${process.env.INVENTORY_SYNC_URL}/serviceable?pincode=${zipCode}`, {
+    headers: {
+      Authorization: process.env.INVENTORY_SYNC_TOKEN,
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const checkSkuAvailability = (sku: string, pincode: string) => {
+  return axios.get(`${process.env.INVENTORY_SYNC_URL}/availability?sku=${sku}&pincode=${pincode}`, {
+    headers: {
+      Authorization: process.env.INVENTORY_SYNC_TOKEN,
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const checkTatAvailability = (items: Items[], pincode: string, lat: string, lng: string) => {
   return axios.post(
-    apiDetails.service_url || '',
+    `${process.env.INVENTORY_SYNC_URL}/tat`,
     {
-      postalcode: zipCode || '',
-      skucategory: [
-        {
-          SKU: 'PHARMA',
-        },
-      ],
+      items,
+      pincode,
+      lat,
+      lng,
     },
     {
       headers: {
-        Authorization: apiDetails.authToken,
+        Authorization: process.env.INVENTORY_SYNC_TOKEN,
+        'Content-Type': 'application/json',
       },
     }
   );
 };
+
+export interface Items {
+  sku: string;
+  qty: number;
+}
 
 export interface MedicineOrderBilledItem {
   itemId: string;
@@ -323,11 +348,11 @@ export const reOrderItems = async (
       : lineItems.filter((item) => item.medicineSKU).map((item) => item.medicineSKU!);
 
     const lineItemsDetails = (await medCartItemsDetailsApi(lineItemsSkus)).data.productdp.filter(
-      (lineItem) => lineItem.sku && lineItem.name
+      (lineItem: any) => lineItem.sku && lineItem.name
     );
-    const availableLineItemsSkus = lineItemsDetails.map((lineItem) => lineItem.sku);
+    const availableLineItemsSkus = lineItemsDetails.map((lineItem: any) => lineItem.sku);
     const cartItemsToAdd = lineItemsDetails.map(
-      (item, index) =>
+      (item: any, index: any) =>
         item.sku &&
         ({
           ...item,
@@ -365,9 +390,9 @@ export const reOrderItems = async (
         ({
           id: item,
           date: moment().format('DD MMM YYYY'),
-          doctorName: `Meds Rx ${
-            (orderDetails.id && orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) || ''
-          }`,
+          doctorName: `Meds Rx ${(orderDetails.id &&
+            orderDetails.id.substring(0, orderDetails.id.indexOf('-'))) ||
+            ''}`,
           forPatient: patientName,
           medicines: medicineNames,
           uploadedUrl: item,
@@ -382,4 +407,18 @@ export const reOrderItems = async (
       unavailableItemsCount: unAvailableItems.length,
     };
   }
+};
+
+export const getMedicineDetailsApi = (
+  productSku: string
+): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
+  return axios.post(
+    apiDetails.medicineDetails,
+    { params: productSku },
+    {
+      headers: {
+        Authorization: apiDetails.authToken,
+      },
+    }
+  );
 };
