@@ -69,7 +69,11 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = (props) => {
         <p>2. Please be present in this Consult Room at the time of consult</p>
         <p>3. Connect with your doctor on web via Audio/Video call.</p>
         <p>4. Get a prescription and meds, if necessary</p>
-        <p>5. Follow up via text (validity {props.chatDays} days)</p>
+        {props.chatDays > 0 && (
+          <p>
+            5. Follow up via text (validity {props.chatDays} day{props.chatDays > 0 ? 's' : ''})
+          </p>
+        )}
       </div>
       <div className={`${classes.blueBubble} ${classes.petient} `}>
         <p>

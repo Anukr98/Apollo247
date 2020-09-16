@@ -576,7 +576,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     getAppointmentStatus(status, isConsultStarted);
   };
 
-  const getConsultationUpdateText = (appointmentDetails: AppointmentDetails) => {
+  const getConsultationUpdateText = (
+    appointmentDetails: AppointmentDetails,
+    followUpInDays: number
+  ) => {
     const {
       isSeniorConsultStarted,
       isJdQuestionsComplete,
@@ -585,7 +588,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       status,
     } = appointmentDetails;
     if (isFollowUp === 'false' && status === STATUS.COMPLETED) {
-      return getAvailableFreeChatDays(appointmentDetails.appointmentDateTime);
+      return getAvailableFreeChatDays(appointmentDetails.appointmentDateTime, followUpInDays);
     } else if (status !== STATUS.COMPLETED) {
       if (!isConsultStarted) {
         return 'Fill vitals to get started with the consult journey';
@@ -662,7 +665,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
             actualDay,
           };
         });
-
+      const chatDays = 7; // this must be supplied from the api. but missing. so added as a default value
       return {
         __typename: 'DoctorDetails',
         firstName,
@@ -689,6 +692,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         experience,
         consultHours: consultHours as GetDoctorDetailsById_getDoctorDetailsById_consultHours[],
         id,
+        chatDays,
       } as DoctorDetails;
     }
   };
@@ -775,6 +779,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       <div className={classes.consultationSection}>
         <Grid container spacing={2}>
           {props.appointments.map((appointmentDetails, index) => {
+            // console.log(appointmentDetails, 'appointment details.........');
             if (appointmentDetails) {
               const appointmentId = appointmentDetails.id;
               const {
@@ -796,7 +801,20 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 specialty = doctorInfo.specialty;
                 doctorHospital = doctorInfo.doctorHospital;
               }
-
+              const caseSheets =
+                appointmentDetails && appointmentDetails.caseSheet
+                  ? appointmentDetails.caseSheet
+                  : [];
+              const srdCaseSheet = caseSheets!.find(
+                (item) =>
+                  item!.doctorType == DoctorType.STAR_APOLLO ||
+                  item!.doctorType == DoctorType.APOLLO ||
+                  item!.doctorType == DoctorType.PAYROLL
+              );
+              const followUpInDays =
+                srdCaseSheet && srdCaseSheet.followUpAfterInDays
+                  ? srdCaseSheet.followUpAfterInDays
+                  : 7;
               const doctorImage = photoUrl || require('images/no_photo.png');
               const specialization =
                 specialty && !_isNull(specialty.name) ? specialty.specialistSingularTerm : '';
@@ -804,7 +822,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
               const appointmentTime = new Date(appointmentDateTime).getTime();
               const difference = Math.round((appointmentTime - currentTime) / 60000);
               shouldRefreshComponent(difference);
-              const day1 = moment(appointmentDetails.appointmentDateTime).add(7, 'days');
+              const day1 = moment(appointmentDetails.appointmentDateTime).add(
+                followUpInDays,
+                'days'
+              );
               const day2 = moment(new Date());
               const comparingDays = () => {
                 return day1.diff(day2, 'days') == 0
@@ -965,10 +986,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                 <h3>
                                   {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
                                     ? showAppointmentAction(
-                                      appointmentState,
-                                      status,
-                                      isConsultStarted
-                                    )
+                                        appointmentState,
+                                        status,
+                                        isConsultStarted
+                                      )
                                     : 'VIEW DETAILS'}
                                 </h3>
                               </div>
@@ -977,7 +998,12 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           {appointmentDetails.appointmentState !==
                             APPOINTMENT_STATE.AWAITING_RESCHEDULE &&
                             props.pastOrCurrent !== 'past' && (
-                              <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
+                              <h6>
+                                {getConsultationUpdateText(
+                                  appointmentDetails,
+                                  Number(followUpInDays)
+                                )}
+                              </h6>
                             )}
                         </div>
                       </div>

@@ -447,8 +447,8 @@ const isPastAppointment = (appointmentDateTime: string) =>
     .add(7, 'days')
     .isBefore(moment());
 
-const getAvailableFreeChatDays = (appointmentTime: string) => {
-  const followUpDayMoment = moment(appointmentTime).add(7, 'days');
+const getAvailableFreeChatDays = (appointmentTime: string, followUpInDays: number = 7) => {
+  const followUpDayMoment = moment(appointmentTime).add(followUpInDays, 'days');
   const diffInDays = followUpDayMoment.diff(moment(), 'days');
   if (diffInDays === 0) {
     const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
