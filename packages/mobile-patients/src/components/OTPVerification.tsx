@@ -4,8 +4,6 @@ import { CountDownTimer } from '@aph/mobile-patients/src/components/ui/CountDown
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   BackArrow,
-  OkText,
-  OkTextDisabled,
   Loader,
   ArrowDisabled,
   ArrowYellow,
@@ -150,7 +148,7 @@ const styles = StyleSheet.create({
   },
 });
 
-let timer = 900;
+let timer = 120;
 export type ReceivedSmsMessage = {
   originatingAddress: string;
   body: string;
@@ -169,7 +167,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [isValidOTP, setIsValidOTP] = useState<boolean>(false);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
   const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
-  const [remainingTime, setRemainingTime] = useState<number>(900);
+  const [remainingTime, setRemainingTime] = useState<number>(120);
   const [intervalId, setIntervalId] = useState<number>(0);
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
@@ -273,10 +271,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             const seconds = Math.ceil(dif / 1000);
             console.log(seconds, 'seconds');
             if (obj.invalidAttems === 3) {
-              if (seconds < 900) {
+              if (seconds < 120) {
                 setInvalidOtpCount(3);
                 setIsValidOTP(false);
-                timer = 900 - seconds;
+                timer = 120 - seconds;
                 console.log(timer, 'timertimer');
                 setRemainingTime(timer);
                 // startInterval(timer);
@@ -671,22 +669,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     };
   }, [subscriptionId]);
 
-  // useEffect(() => {
-  //   if (timer === 1 || timer === 0) {
-  //     console.log('timer', 'wedfrtgy5u676755ertyuiojkhgfghjkgf');
-  //     timer = 900;
-  //     setRemainingTime(900);
-  //     setShowErrorMsg(false);
-  //     setInvalidOtpCount(0);
-  //     setIsValidOTP(true);
-  //     clearInterval(intervalId);
-  //     _removeFromStore();
-  //   }
-  // }, [intervalId, _removeFromStore]);
-
   const onStopTimer = () => {
-    // timer = 900;
-    setRemainingTime(900);
+    setRemainingTime(120);
     setShowErrorMsg(false);
     setInvalidOtpCount(0);
     setIsValidOTP(true);

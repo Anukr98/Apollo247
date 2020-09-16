@@ -95,6 +95,14 @@ target 'ApolloPatient' do
   pod 'RNDateTimePicker', :path => '../node_modules/@react-native-community/datetimepicker'
   pod 'RNCallKeep', :path => '../node_modules/react-native-callkeep'
   pod 'RNVoipPushNotification', :path => '../node_modules/react-native-voip-push-notification'
+
+  # React Native Maps dependencies
+  rn_maps_path = '../node_modules/react-native-maps'
+  pod 'react-native-maps', path: rn_maps_path
+  pod 'GoogleMaps', '~> 3.9.0' 
+  
+  pod 'react-native-document-picker', :path => '../node_modules/react-native-document-picker'
+  pod 'react-native-image-resizer', :path => '../node_modules/react-native-image-resizer'
   
   # ServiceExtension Target
 
@@ -110,3 +118,14 @@ target 'ApolloPatient' do
   end
 
 end
+#for static dependencies
+pre_install do |installer|
+  Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_no_static_framework_transitive_dependencies) {}
+end
+
+post_install do |installer|
+  rnfirebase = installer.pods_project.targets.find { |target| target.name == 'RNFirebase' }
+  rnfirebase.build_configurations.each do |config|
+    config.build_settings['HEADER_SEARCH_PATHS'] = '$(inherited) ${PODS_ROOT}/Headers/Public/**'
+  end
+end  

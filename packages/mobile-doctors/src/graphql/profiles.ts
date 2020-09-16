@@ -137,6 +137,15 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
         isFollowUp
         followUpParentId
         isJdQuestionsComplete
+        doctorInfo {
+          id
+          displayName
+          mobileNumber
+          firstName
+          lastName
+          fullName
+          doctorType
+        }
         caseSheet {
           id
           blobName
@@ -261,6 +270,7 @@ export const GET_PATIENT_LOG = gql`
         appointmentdatetime
         patientInfo {
           firstName
+          lastName
           dateOfBirth
           id
           emailAddress
@@ -1551,6 +1561,7 @@ export const SEND_CALL_NOTIFICATION = gql`
     $callSource: BOOKINGSOURCE
     $appVersion: String
     $numberOfParticipants: Int
+    $patientId: String
   ) {
     sendCallNotification(
       appointmentId: $appointmentId
@@ -1560,6 +1571,7 @@ export const SEND_CALL_NOTIFICATION = gql`
       callSource: $callSource
       appVersion: $appVersion
       numberOfParticipants: $numberOfParticipants
+      patientId: $patientId
     ) {
       status
       callDetails {
@@ -1570,8 +1582,16 @@ export const SEND_CALL_NOTIFICATION = gql`
 `;
 
 export const END_CALL_NOTIFICATION = gql`
-  query EndCallNotification($appointmentCallId: String) {
-    endCallNotification(appointmentCallId: $appointmentCallId) {
+  query EndCallNotification(
+    $appointmentCallId: String
+    $patientId: String
+    $numberOfParticipants: Int
+  ) {
+    endCallNotification(
+      appointmentCallId: $appointmentCallId
+      patientId: $patientId
+      numberOfParticipants: $numberOfParticipants
+    ) {
       status
     }
   }

@@ -6,7 +6,6 @@ import {
   DOCTOR_ONLINE_STATUS,
   CityPincodeMapper,
   ConsultHours,
-  Secretary,
 } from 'doctors-service/entities';
 import { ES_DOCTOR_SLOT_STATUS } from 'consults-service/entities';
 import {
@@ -90,8 +89,7 @@ export class DoctorRepository extends Repository<Doctor> {
         },
       };
       slotsAdded += doctorId + ' - ' + format(stDate, 'yyyy-MM-dd') + ',';
-      const updateResp = await client.update(doc1);
-      console.log(updateResp, 'updateResp');
+      await client.update(doc1);
       stDate = addDays(stDate, 1);
     }
     return slotsAdded;
@@ -190,7 +188,10 @@ export class DoctorRepository extends Repository<Doctor> {
                   const slotInfo = {
                     slotId: ++slotCount,
                     slot: generatedSlot,
-                    slotThreshold: subMinutes(new Date(generatedSlot), timeSlot.consultBuffer > 0 ? timeSlot.consultBuffer : 5),
+                    slotThreshold: subMinutes(
+                      new Date(generatedSlot),
+                      timeSlot.consultBuffer > 0 ? timeSlot.consultBuffer : 5
+                    ),
                     status: ES_DOCTOR_SLOT_STATUS.OPEN,
                     slotType: timeSlot.consultMode,
                   };
@@ -340,6 +341,13 @@ export class DoctorRepository extends Repository<Doctor> {
   findByMobileNumber(mobileNumber: string, isActive: Boolean) {
     return this.findOne({
       where: [{ mobileNumber, isActive }],
+      relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
+    });
+  }
+
+  findByMobileNumberWithRelations(mobileNumber: string, isActive: Boolean) {
+    return this.findOne({
+      where: [{ mobileNumber, isActive }],
       relations: [
         'specialty',
         'doctorHospital',
@@ -357,6 +365,8 @@ export class DoctorRepository extends Repository<Doctor> {
       ],
     });
   }
+
+  getDoctorDetailswithRelations() {}
 
   updateFirebaseId(id: string, firebaseToken: string) {
     return this.update(id, { firebaseToken: firebaseToken });
@@ -1106,6 +1116,13 @@ export class DoctorRepository extends Repository<Doctor> {
 
   getAllDocsById(ids: string[]) {
     return this.find({ where: { id: In(ids) } });
+  }
+
+  getAllDocAdminsById(ids: string[]) {
+    return this.find({
+      where: { id: In(ids) },
+      relations: ['admindoctormapper', 'admindoctormapper.adminuser'],
+    });
   }
 
   getAllDoctors(doctorId: string, limit: number, offset: number) {

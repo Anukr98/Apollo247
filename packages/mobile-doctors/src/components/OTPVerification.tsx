@@ -7,7 +7,7 @@ import { BackArrow, OkText, OkTextDisabled } from '@aph/mobile-doctors/src/compo
 import { NoInterNetPopup } from '@aph/mobile-doctors/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { getNetStatus } from '@aph/mobile-doctors/src/helpers/helperFunctions';
-import { setDoctorDetails } from '@aph/mobile-doctors/src/helpers/localStorage';
+import { setDoctorDetails, clearUserData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import {
   default as string,
@@ -37,6 +37,11 @@ import { resendOTP, verifyOTP } from '../helpers/loginCalls';
 import SmsRetriever from 'react-native-sms-retriever';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import {
+  postWebEngageEvent,
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 const styles = OTPVerificationStyles;
 
@@ -132,13 +137,11 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    console.log(getDoctorDetailsError, doctorDetails, 'getDoctorDetailsError');
     async function OtpCheck() {
       const isProfileFlowDone = await AsyncStorage.getItem('isProfileFlowDone');
-      console.log(isProfileFlowDone, 'isProfileFlowDone');
-
       if (isOtpVerified) {
-        setTimeout(() => {
+        if (doctorDetails) {
+          postWebEngageEvent(WebEngageEventName.DOCTOR_LOGIN, {});
           if (isProfileFlowDone === 'true') {
             props.navigation.dispatch(
               StackActions.reset({
@@ -149,15 +152,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             );
           } else {
             if (doctorDetails && doctorDetails.id) {
-              console.log(
-                doctorDetails,
-                'doctorDetails doctorType',
-                doctorDetails.doctorType,
-                doctorDetails.doctorType != 'JUNIOR'
-              );
               if (doctorDetails.doctorType !== 'JUNIOR') {
-                console.log('doctorType JUNIOR');
-
                 props.navigation.dispatch(
                   StackActions.reset({
                     index: 0,
@@ -167,36 +162,17 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 );
               } else if (!errorAlertShown) {
                 errorAlertShown = true;
-                console.log('doctorType JUNIOR else');
-
                 AsyncStorage.setItem('isLoggedIn', 'false');
                 setDoctorDetails(null);
                 clearFirebaseUser && clearFirebaseUser();
+                clearUserData();
                 Alert.alert(strings.common.error, strings.otp.reach_out_admin, [
                   {
                     text: 'OK',
                     onPress: () => {
-                      console.log('OK Pressed');
                       errorAlertShown = false;
-                    },
-                  },
-                ]);
-                setshowSpinner(false);
-              }
-            } else {
-              console.log(getDoctorDetailsError, 'getDoctorDetailsError else');
 
-              if (getDoctorDetailsError === true && !errorAlertShown) {
-                errorAlertShown = true;
-                AsyncStorage.setItem('isLoggedIn', 'false');
-                setDoctorDetails(null);
-                clearFirebaseUser && clearFirebaseUser();
-                Alert.alert(strings.common.error, strings.otp.reach_out_admin, [
-                  {
-                    text: 'OK',
-                    onPress: () => {
-                      console.log('OK Pressed');
-                      errorAlertShown = false;
+                      props.navigation.goBack();
                     },
                   },
                 ]);
@@ -204,12 +180,31 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               }
             }
           }
-        }, 2000);
+        }
+        if (getDoctorDetailsError) {
+          if (getDoctorDetailsError === true && !errorAlertShown) {
+            errorAlertShown = true;
+            AsyncStorage.setItem('isLoggedIn', 'false');
+            setDoctorDetails(null);
+            clearFirebaseUser && clearFirebaseUser();
+            clearUserData();
+            Alert.alert(strings.common.error, strings.otp.reach_out_admin, [
+              {
+                text: 'OK',
+                onPress: () => {
+                  errorAlertShown = false;
+                  props.navigation.goBack();
+                },
+              },
+            ]);
+            setshowSpinner(false);
+          }
+        }
       }
     }
 
     OtpCheck();
-  }, [doctorDetails, isOtpVerified, props.navigation, getDoctorDetailsError, clearFirebaseUser]);
+  }, [doctorDetails, isOtpVerified, getDoctorDetailsError]);
 
   const _removeFromStore = useCallback(async () => {
     try {

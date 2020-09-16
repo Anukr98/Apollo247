@@ -162,6 +162,26 @@ const styles = StyleSheet.create({
     paddingTop: 11,
     paddingBottom: 16,
   },
+  postConsultTextStyles1: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: '#02475b',
+    opacity: 0.6,
+    letterSpacing: 0.04,
+    textAlign: 'right',
+    paddingBottom: 16,
+    fontWeight: '500',
+  },
+  postConsultTextStyles2: {
+    ...theme.fonts.IBMPlexSansSemiBold(10),
+    color: '#02475b',
+    opacity: 0.6,
+    letterSpacing: 0.04,
+    textAlign: 'right',
+
+    marginTop: 2,
+    marginRight: 15,
+    paddingLeft: 3,
+  },
 });
 
 export interface ConsultProps extends NavigationScreenProps {
@@ -342,16 +362,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   | any = [];
                 data.getPatientAllAppointments.appointments.forEach((item) => {
                   const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
-                  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpChatDays');
-                  const followUpChatDays =
-                    caseSheetChatDays || caseSheetChatDays === 0
-                      ? caseSheetChatDays === 0
+                  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+                  const followUpAfterInDays =
+                    caseSheetChatDays || caseSheetChatDays === '0'
+                      ? caseSheetChatDays === '0'
                         ? 0
-                        : caseSheetChatDays - 1
+                        : Number(caseSheetChatDays) - 1
                       : 6;
                   if (
                     moment(new Date(item.appointmentDateTime))
-                      .add(followUpChatDays, 'days')
+                      .add(followUpAfterInDays, 'days')
                       .startOf('day')
                       .isSameOrAfter(moment(new Date()).startOf('day'))
                   ) {
@@ -515,12 +535,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           let appointmentDateTomarrow = moment(item.appointmentDateTime).format('DD MMM');
           // console.log(appointmentDateTomarrow, 'apptomorrow', tomorrowDate);
           const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
-          const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpChatDays');
-          const followUpChatDays =
-            caseSheetChatDays || caseSheetChatDays === 0
-              ? caseSheetChatDays === 0
+          const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+          const followUpAfterInDays =
+            caseSheetChatDays || caseSheetChatDays === '0'
+              ? caseSheetChatDays === '0'
                 ? 2
-                : caseSheetChatDays + 1
+                : Number(caseSheetChatDays) + 1
               : 8;
           const appointmentDateTime = moment
             .utc(item.appointmentDateTime)
@@ -544,10 +564,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             // .set('hour', 0)
             // .set('minute', 0)
             .startOf('day')
-            .add(followUpChatDays, 'days'); // since we're calculating as EOD
+            .add(followUpAfterInDays, 'days'); // since we're calculating as EOD
           const day2 = moment(new Date());
           day1.diff(day2, 'days'); // 1
-
+          const numberDaysToConsultText =
+            '(' +
+            day1.diff(day2, 'days') +
+            (day1.diff(day2, 'days') == 1 ? ' day left)' : ' days left)');
           return (
             <View style={{}}>
               {/* <View style={{ width: 312 }}> */}
@@ -844,7 +867,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         >
                           {item.doctorInfo && selectedTab === tabs[1].title
                             ? 'VIEW CHAT'
-                            : 'CHAT WITH DOCTOR'}
+                            : 'TEXT CONSULT'}
                         </Text>
                         {day1.diff(day2, 'days') > 0 ? (
                           <View
@@ -855,36 +878,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                               opacity: selectedTab === tabs[0].title ? 1 : 0.5,
                             }}
                           >
-                            <Text
-                              style={{
-                                ...theme.fonts.IBMPlexSansMedium(12),
-                                color: '#02475b',
-                                opacity: 0.6,
-                                letterSpacing: 0.04,
-                                textAlign: 'right',
-                                paddingBottom: 16,
-                              }}
-                            >
-                              {'You can chat with the doctor for '}
+                            <Text style={styles.postConsultTextStyles1}>
+                              {'You can follow up with the doctor via text '}
                             </Text>
 
-                            <Text
-                              style={{
-                                ...theme.fonts.IBMPlexSansSemiBold(12),
-                                color: '#02475b',
-                                opacity: 0.6,
-                                letterSpacing: 0.04,
-                                textAlign: 'right',
-                                paddingBottom: 16,
-                                marginRight: 15,
-                                paddingLeft: 3,
-                              }}
-                            >
-                              {day1.diff(day2, 'days') == 1
-                                ? 'Today'
-                                : day1.diff(day2, 'days') +
-                                  ' more ' +
-                                  (day1.diff(day2, 'days') == 1 ? 'day' : 'days')}
+                            <Text style={styles.postConsultTextStyles2}>
+                              {numberDaysToConsultText}
                             </Text>
                           </View>
                         ) : (

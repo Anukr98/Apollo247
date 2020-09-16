@@ -27,7 +27,7 @@ import {
 } from '@aph/mobile-doctors/src/graphql/types/getPatientLog';
 import { patientLogSort, patientLogType } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import { callPermissions, isValidSearch } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { callPermissions, isValidSearch, g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -44,6 +44,11 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import AsyncStorage from '@react-native-community/async-storage';
+import {
+  postWebEngageEvent,
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 export interface PatientsProps extends NavigationScreenProps {}
 
@@ -334,6 +339,16 @@ export const Patients: React.FC<PatientsProps> = (props) => {
             })
             .reduce((a, b) => a + b, 0)
         : 0;
+    const webEngageData = {
+      'Doctor name': `${g(doctorDetails, 'firstName')} ${g(doctorDetails, 'lastName')}`.trim(),
+      'Patient name': `${g(item, 'patientInfo', 'firstName')} ${g(
+        item,
+        'patientInfo',
+        'lastName'
+      )}`,
+      'Patient mobile number': g(item, 'patientInfo', 'mobileNumber') || '',
+      'Doctor Mobile number': g(doctorDetails, 'mobileNumber') || '',
+    };
     return item &&
       item.appointmentids &&
       !searchSpinner &&
@@ -345,7 +360,7 @@ export const Patients: React.FC<PatientsProps> = (props) => {
           containerStyle={
             index === 0 ? (showSearch && searchInput ? { marginTop: 10 } : { marginTop: 30 }) : {}
           }
-          doctorname={item.patientInfo!.firstName}
+          patientName={g(item, 'patientInfo', 'firstName') || ''}
           icon={
             moment(new Date(item.appointmentdatetime))
               .add(6, 'days')
@@ -355,6 +370,10 @@ export const Patients: React.FC<PatientsProps> = (props) => {
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => {
+                    postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED_PATIENT_LOG_CHAT, {
+                      ...webEngageData,
+                      'Button Type': unReadCount > 0 ? 'reply' : 'chat',
+                    } as WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED_PATIENT_LOG_CHAT]);
                     callPermissions(() => {
                       props.navigation.push(AppRoutes.ConsultRoomScreen, {
                         DoctorId: (doctorDetails && doctorDetails.id) || '',
@@ -392,13 +411,17 @@ export const Patients: React.FC<PatientsProps> = (props) => {
           consults={item.consultscount}
           lastconsult={moment(item.appointmentdatetime).format('DD/MM/YYYY')}
           //typeValue={item.type}
-          onPress={() =>
+          onPress={() => {
+            postWebEngageEvent(
+              WebEngageEventName.DOCTOR_CLICKED_PATIENT_LOG,
+              webEngageData as WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED_PATIENT_LOG]
+            );
             props.navigation.push(AppRoutes.PatientDetailsPage, {
               patientId:
                 item.appointmentids && item.appointmentids.length ? item.appointmentids[0] : '',
               PatientInfo: item.patientInfo,
-            })
-          }
+            });
+          }}
         />
       </View>
     ) : null;

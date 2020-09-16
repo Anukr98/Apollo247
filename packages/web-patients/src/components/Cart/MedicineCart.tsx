@@ -80,6 +80,7 @@ import { getItemSpecialPrice } from '../PayMedicine';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
 import fetchUtil from 'helpers/fetch';
+import { checkTatAvailability } from 'helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -639,6 +640,27 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    medicinesAddmore: {
+      fontWeight: 500,
+      fontSize: 14,
+      lineHeight: '20px',
+      padding: 10,
+      background: '#F7F8F5',
+      boxShadow: '0px 5px 20px rgba(128, 128, 128, 0.3)',
+      borderRadius: 5,
+      margin: '20px 15px 10px 20px',
+      '& img': {
+        position: 'relative',
+        top: 3,
+      },
+    },
+    addmoreAmount: {
+      color: '#FC9916',
+    },
+    nudgeAddMore: {
+      color: '#0087BA',
+      paddingLeft: 5,
+    },
   };
 });
 
@@ -662,6 +684,7 @@ export interface CartProduct {
   quantity: number;
   discountAmt: number;
   onMrp: boolean;
+  couponFree: boolean;
 }
 
 export const MedicineCart: React.FC = (props) => {
@@ -723,14 +746,16 @@ export const MedicineCart: React.FC = (props) => {
   const [validityStatus, setValidityStatus] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [shopId, setShopId] = useState<string>('');
+  const [tatType, setTatType] = useState<string>('');
   const [couponDiscount, setCouponDiscount] = useState<number>(0);
+  const [latitude, setLatitude] = React.useState<string>('');
+  const [longitude, setLongitude] = React.useState<string>('');
 
   const apiDetails = {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     bulk_product_info_url: process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL,
     priceUpdateToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
     getInventoryUrl: process.env.PHARMACY_GET_STORE_INVENTORY,
-    url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
   };
 
   useEffect(() => {
@@ -760,9 +785,16 @@ export const MedicineCart: React.FC = (props) => {
     }
   }, [showOrderPopup]);
 
-  const checkForPriceUpdate = (sId: string) => {
+  const checkForPriceUpdate = (
+    sId: string,
+    pincode: string,
+    lat: string,
+    lng: string,
+    tatType: string
+  ) => {
     setShopId(sId);
-    checkForCartChanges(sId);
+    setTatType(tatType);
+    checkForCartChanges(pincode, lat, lng);
   };
 
   const getSpecialPriceFromRelativePrices = (
@@ -776,28 +808,15 @@ export const MedicineCart: React.FC = (props) => {
     const result = diffP > 25 || diffP < -25;
     return result;
   };
-  const checkForCartChanges = async (shopId: string) => {
-    const productSKUs = cartItems.map((item: MedicineCartItem) => {
-      return { ItemId: item.sku };
+  const checkForCartChanges = async (pincode: string, lat: string, lng: string) => {
+    const items = cartItems.map((item: MedicineCartItem) => {
+      return { sku: item.sku, qty: item.quantity, couponFree: item.couponFree };
     });
-    if (sessionStorage.getItem('tatFail') === 'true' || shopId === '') return Promise.resolve(true);
-    return await axios
-      .post(
-        apiDetails.getInventoryUrl || '',
-        {
-          shopId: shopId,
-          itemDetails: productSKUs,
-        },
-        {
-          headers: {
-            Authentication: apiDetails.priceUpdateToken,
-          },
-        }
-      )
-      .then((res) => {
-        const updatedCartItems = res.data.itemDetails;
+    return await checkTatAvailability(items, pincode, lat, lng)
+      .then((res: any) => {
+        const updatedCartItems = res && res.data && res.data.response && res.data.response.items;
         cartItems.map((item, index) => {
-          const itemToBeMatched = _find(updatedCartItems, { itemId: item.sku });
+          const itemToBeMatched = _find(updatedCartItems, { sku: item.sku });
           const storeItemPrice =
             (itemToBeMatched.mrp &&
               Number((itemToBeMatched.mrp * Number(item.mou || 1)).toFixed(2))) ||
@@ -881,15 +900,27 @@ export const MedicineCart: React.FC = (props) => {
     });
     return sum;
   };
+  const getCouponDiscountTotal = () => {
+    let sum = 0;
+    cartItems.forEach((item) => {
+      if (item.special_price === 0) {
+        sum += Number(item.price) * item.quantity;
+      }
+    });
+    return sum;
+  };
   const mrpTotal = getMRPTotal();
+  const couponDiscountTotal = getCouponDiscountTotal();
   let productDiscount = mrpTotal - cartTotal;
+  console.log('cartTotal', cartTotal);
   // below variable is for calculating delivery charges after applying coupon discount
   const modifiedAmountForCharges =
     validateCouponResult &&
     validateCouponResult.discount &&
     validateCouponResult.discount >= productDiscount
-      ? Number(cartTotal) - Number(validateCouponResult.discount)
+      ? Number(cartTotal) - couponDiscount
       : Number(cartTotal);
+
   const deliveryCharges =
     modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
     modifiedAmountForCharges <= 0 ||
@@ -901,8 +932,7 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult &&
     validateCouponResult.discount &&
     Number(validateCouponResult.discount.toFixed(2)) > Number(productDiscount.toFixed(2))
-      ? Number(totalAmount) -
-        (Number(validateCouponResult.discount.toFixed(2)) - Number(productDiscount.toFixed(2)))
+      ? Number(totalAmount) - couponDiscount
       : Number(totalAmount);
 
   const disableSubmit =
@@ -941,7 +971,9 @@ export const MedicineCart: React.FC = (props) => {
   const getDiscountedLineItemPrice = (sku: string) => {
     if (couponCode.length > 0 && validateCouponResult && validateCouponResult.products) {
       const item: any = validateCouponResult.products.find((item: any) => item.sku === sku);
-      return item.specialPrice.toFixed(2);
+      return item.onMrp
+        ? (item.mrp - item.discountAmt).toFixed(2)
+        : (item.specialPrice - item.discountAmt).toFixed(2);
     }
   };
 
@@ -966,9 +998,15 @@ export const MedicineCart: React.FC = (props) => {
               ).toFixed(2)
             ),
             mrp: cartItemDetails.price,
+            couponFree: cartItemDetails.couponFree || false,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
-            isMedicine: _lowerCase(cartItemDetails.type_id) === 'pharma' ? '1' : '0',
+            isMedicine:
+              _lowerCase(cartItemDetails.type_id) === 'pharma'
+                ? '1'
+                : _lowerCase(cartItemDetails.type_id) === 'pl'
+                ? '2'
+                : '0',
             specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
           };
         })
@@ -984,11 +1022,12 @@ export const MedicineCart: React.FC = (props) => {
         coupon: couponCode,
         pinCode: localStorage.getItem('pharmaPincode'),
         products: cartItems.map((item) => {
-          const { sku, quantity, special_price, price, type_id } = item;
+          const { sku, quantity, special_price, price, type_id, couponFree } = item;
           return {
             sku,
             mrp: item.price,
             quantity,
+            couponFree: couponFree || false,
             categoryId: type_id || '',
             specialPrice: special_price || price,
           };
@@ -998,10 +1037,22 @@ export const MedicineCart: React.FC = (props) => {
         .then((resp: any) => {
           if (resp.errorCode == 0) {
             if (resp.response.valid) {
+              const freeProductsSet = new Set(
+                resp.response.products && resp.response.products.length
+                  ? resp.response.products.filter((cartItem: any) => cartItem.couponFree)
+                  : []
+              );
+              if (freeProductsSet.size) {
+                setValidateCouponResult(resp.response);
+                addDiscountedProducts(resp.response);
+                setErrorMessage('');
+                return;
+              }
               if (Number(resp.response.discount.toFixed(2)) <= Number(productDiscount.toFixed(2))) {
                 setErrorMessage(
                   'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
                 );
+                removeAllFreeProducts();
                 localStorage.removeItem('pharmaCoupon');
                 setCouponCode && setCouponCode('');
                 return;
@@ -1014,6 +1065,7 @@ export const MedicineCart: React.FC = (props) => {
               setErrorMessage(
                 'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
               );
+              removeAllFreeProducts();
               localStorage.removeItem('pharmaCoupon');
               setCouponCode && setCouponCode('');
             }
@@ -1024,9 +1076,6 @@ export const MedicineCart: React.FC = (props) => {
             setCouponCode && setCouponCode('');
           }
         })
-        .then((resp: any) => {
-          addDiscountedProducts(resp.response);
-        })
         .catch((e: any) => {
           console.log(e);
         });
@@ -1034,56 +1083,62 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   const addDiscountedProducts = (response: any) => {
-    const promises: Promise<any>[] = [];
+    const skus: Array<string> = [];
     if (response.products && Array.isArray(response.products) && response.products.length) {
       try {
         const cartSkuSet = new Set(
           cartItems && cartItems.length ? cartItems.map((cartItem) => cartItem.sku) : []
         );
         response.products.forEach((data: any) => {
-          if (!cartSkuSet.has(data.sku))
-            promises.push(
-              axios.post(
-                apiDetails.url || '',
-                { params: data.sku },
-                {
-                  headers: {
-                    Authorization: apiDetails.authToken,
-                  },
-                }
-              )
-            );
+          if (!cartSkuSet.has(data.sku) && data.couponFree) skus.push(data.sku);
         });
+
         const allData: MedicineCartItem[] = [];
-        Promise.all(promises)
-          .then((data: any) => {
-            data.forEach((e: any) => {
-              const cartItem: MedicineCartItem = {
-                MaxOrderQty: 1,
-                url_key: e.data.productdp[0].url_key,
-                description: e.data.productdp[0].description,
-                id: e.data.productdp[0].id,
-                image: e.data.productdp[0].image,
-                is_in_stock: e.data.productdp[0].is_in_stock,
-                is_prescription_required: e.data.productdp[0].is_prescription_required,
-                name: e.data.productdp[0].name,
-                price: 0,
-                sku: e.data.productdp[0].sku,
-                special_price: 0,
-                small_image: e.data.productdp[0].small_image,
-                status: e.data.productdp[0].status,
-                thumbnail: e.data.productdp[0].thumbnail,
-                type_id: e.data.productdp[0].type_id,
-                mou: e.data.productdp[0].mou,
-                quantity: 1,
-                isShippable: true,
-              };
-              allData.push(cartItem);
+        if (skus && skus.length) {
+          axios
+            .post(
+              apiDetails.bulk_product_info_url || '',
+              { params: skus.join(',') },
+              {
+                headers: {
+                  Authorization: apiDetails.authToken,
+                },
+              }
+            )
+            .then((resp) => {
+              if (resp && resp.data && resp.data.productdp && resp.data.productdp.length) {
+                resp &&
+                  resp.data &&
+                  resp.data.productdp.forEach((e: any) => {
+                    const cartItem: MedicineCartItem = {
+                      MaxOrderQty: 1,
+                      url_key: e.url_key,
+                      description: e.description,
+                      id: e.id,
+                      image: e.image,
+                      is_in_stock: e.is_in_stock,
+                      is_prescription_required: e.is_prescription_required,
+                      name: e.name,
+                      price: e.price,
+                      sku: e.sku,
+                      special_price: 0,
+                      couponFree: true,
+                      small_image: e.small_image,
+                      status: e.status,
+                      thumbnail: e.thumbnail,
+                      type_id: e.type_id,
+                      mou: e.mou,
+                      quantity: 1,
+                      isShippable: true,
+                    };
+                    allData.push(cartItem);
+                  });
+              }
+            })
+            .then(() => {
+              addCartItems(allData);
             });
-          })
-          .then(() => {
-            addCartItems(allData);
-          });
+        }
       } catch (e) {
         console.error(e);
         throw e;
@@ -1595,6 +1650,25 @@ export const MedicineCart: React.FC = (props) => {
                 </>
               ) : null}
             </div>
+            {deliveryCharges !== 0 && (
+              <div className={`${classes.medicineListGroup} ${classes.medicinesAddmore}`}>
+                <img src={require('images/ic_priority_high.svg')} alt="info icon" />
+                Add{' '}
+                <span className={classes.addmoreAmount}>
+                  {(Number(pharmacyMinDeliveryValue) - cartTotal).toFixed(2)}
+                </span>{' '}
+                of eligible items to your order to qualify for FREE Delivery.
+                <span>
+                  <Link
+                    className={classes.nudgeAddMore}
+                    to={clientRoutes.medicines()}
+                    title={'Add Items'}
+                  >
+                    Add Items
+                  </Link>
+                </span>
+              </div>
+            )}
           </Scrollbars>
         </div>
         <div className={classes.rightSection}>
@@ -1648,6 +1722,10 @@ export const MedicineCart: React.FC = (props) => {
                             setDeliveryTime={setDeliveryTime}
                             deliveryTime={deliveryTime}
                             checkForPriceUpdate={checkForPriceUpdate}
+                            setLatitude={setLatitude}
+                            setLongitude={setLongitude}
+                            latitude={latitude}
+                            longitude={longitude}
                           />
                         </TabContainer>
                       )}
@@ -1730,11 +1808,15 @@ export const MedicineCart: React.FC = (props) => {
                             <>
                               <div className={classes.appliedCoupon}>
                                 {Number(validateCouponResult.discount.toFixed(2)) >
-                                  Number(productDiscount.toFixed(2)) && (
+                                  Number(productDiscount.toFixed(2)) ||
+                                (validateCouponResult.products &&
+                                  validateCouponResult.products.length &&
+                                  validateCouponResult.products.filter(({ mrp }) => mrp === 0)
+                                    .length) ? (
                                   <span className={classes.linkText}>
                                     <span>{couponCode}</span> applied
                                   </span>
-                                )}
+                                ) : null}
                                 <span className={classes.rightArrow}>
                                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                                 </span>
@@ -1748,11 +1830,10 @@ export const MedicineCart: React.FC = (props) => {
                       </div>
                       {couponCode.length > 0 &&
                         validateCouponResult &&
-                        validateCouponResult.discount &&
+                        !!validateCouponResult.discount &&
                         validateCouponResult.discount > 0 &&
                         Number(validateCouponResult.discount.toFixed(2)) >
                           Number(productDiscount.toFixed(2)) && (
-
                           <div className={classes.discountTotal}>
                             {`Savings of Rs.
                           ${couponDiscount}
@@ -1845,7 +1926,7 @@ export const MedicineCart: React.FC = (props) => {
                           uploadMultipleFiles(prescriptions);
                         }
                         if (
-                          checkForCartChanges(shopId).then((res) => {
+                          checkForCartChanges(selectedZip, latitude, longitude).then((res) => {
                             if (res) {
                               if (isChennaiZipCode(zipCodeInt)) {
                                 // redirect to chennai orders form
@@ -1859,13 +1940,13 @@ export const MedicineCart: React.FC = (props) => {
                                   couponValue: couponDiscount,
                                   totalWithCouponDiscount:
                                     validateCouponResult && validateCouponResult.discount
-                                      ? Number(totalAmount) -
-                                        (Number(validateCouponResult.discount.toFixed(2)) -
-                                          Number(productDiscount.toFixed(2)))
-                                      : Number(totalAmount) - Number(productDiscount.toFixed(2)),
+                                      ? totalWithCouponDiscount
+                                      : Number(totalAmount),
                                   deliveryTime: deliveryTime,
                                   validateCouponResult: validateCouponResult,
                                   shopId: shopId,
+                                  deliveryAddressId,
+                                  tatType,
                                 })
                               );
                               history.push(clientRoutes.payMedicine('pharmacy'));
@@ -1961,7 +2042,7 @@ export const MedicineCart: React.FC = (props) => {
                       uploadMultipleFiles(prescriptions);
                     }
                     if (
-                      checkForCartChanges(shopId).then((res) => {
+                      checkForCartChanges(selectedZip, latitude, longitude).then((res) => {
                         if (res) {
                           if (isChennaiZipCode(zipCodeInt)) {
                             // redirect to chennai orders form
@@ -1974,12 +2055,14 @@ export const MedicineCart: React.FC = (props) => {
                               couponCode: couponCode == '' ? null : couponCode,
                               couponValue: couponDiscount,
                               totalWithCouponDiscount:
-                                Number(totalAmount) -
-                                (Number(validateCouponResult.discount.toFixed(2)) -
-                                  Number(productDiscount.toFixed(2))),
+                                validateCouponResult && validateCouponResult.discount
+                                  ? totalWithCouponDiscount
+                                  : Number(totalAmount),
                               deliveryTime: deliveryTime,
                               validateCouponResult: validateCouponResult,
                               shopId: shopId,
+                              deliveryAddressId,
+                              tatType,
                             })
                           );
                           history.push(clientRoutes.payMedicine('pharmacy'));

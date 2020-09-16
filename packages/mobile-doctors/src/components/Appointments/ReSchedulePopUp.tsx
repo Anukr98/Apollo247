@@ -57,6 +57,7 @@ export interface ReSchedulePopUpProps {
     doctorId: string;
     reschduleCount: React.ReactText;
     reschduleId: string;
+    reason: string;
   }) => void;
 }
 
@@ -172,6 +173,9 @@ export const ReSchedulePopUp: React.FC<ReSchedulePopUpProps> = (props) => {
               reschduleId: data.initiateRescheduleAppointment.rescheduleAppointment
                 ? data.initiateRescheduleAppointment.rescheduleAppointment.id
                 : '',
+              reason: reasons.find((i) => i.key === selectedReason)
+                ? reasons.find((i) => i.key === selectedReason)!.value
+                : 'Other',
             };
             props.onDone(reschduleObject);
           }

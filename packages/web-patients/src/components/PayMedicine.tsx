@@ -397,14 +397,10 @@ export const PayMedicine: React.FC = (props) => {
   const [consultCouponCode, setConsultCouponCode] = React.useState<string>('');
   const [revisedAmount, setRevisedAmount] = React.useState<number>(0);
   const [consult, setConsult] = useState<boolean>(false);
+  const [isPharmaFailure, setIsPharmaFailure] = useState<boolean>(false);
+
   const [validityStatus, setValidityStatus] = useState<boolean>(false);
-  const {
-    cartTotal,
-    deliveryAddressId,
-    prescriptions,
-    ePrescriptionData,
-    cartItems,
-  } = useShoppingCart();
+  const { cartTotal, prescriptions, ePrescriptionData, cartItems } = useShoppingCart();
 
   const params = useParams<{
     payType: string;
@@ -440,6 +436,8 @@ export const PayMedicine: React.FC = (props) => {
     totalWithCouponDiscount,
     validateCouponResult,
     shopId,
+    deliveryAddressId,
+    tatType,
   } = cartValues;
   const deliveryCharges =
     cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
@@ -533,7 +531,9 @@ export const PayMedicine: React.FC = (props) => {
   const getDiscountedLineItemPrice = (sku: string) => {
     if (couponCode.length > 0 && validateCouponResult && validateCouponResult.products) {
       const item: any = validateCouponResult.products.find((item: any) => item.sku === sku);
-      return item.specialPrice.toFixed(2);
+      return item.onMrp
+        ? (item.mrp - item.discountAmt).toFixed(2)
+        : (item.specialPrice - item.discountAmt).toFixed(2);
     }
   };
 
@@ -548,6 +548,7 @@ export const PayMedicine: React.FC = (props) => {
                 ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
+            couponFree: cartItemDetails.couponFree || false,
             itemValue: Number((cartItemDetails.quantity * cartItemDetails.price).toFixed(2)),
             itemDiscount: Number(
               (
@@ -560,8 +561,15 @@ export const PayMedicine: React.FC = (props) => {
             mrp: cartItemDetails.price,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
-            isMedicine: _lowerCase(cartItemDetails.type_id) === 'pharma' ? '1' : '0',
-            specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
+            isMedicine:
+              _lowerCase(cartItemDetails.type_id) === 'pharma'
+                ? '1'
+                : _lowerCase(cartItemDetails.type_id) === 'pl'
+                ? '2'
+                : '0',
+            specialPrice: cartItemDetails.couponFree
+              ? 0
+              : Number(getItemSpecialPrice(cartItemDetails)),
           };
         })
       : [];
@@ -592,6 +600,7 @@ export const PayMedicine: React.FC = (props) => {
           coupon: couponCode ? couponCode : null,
           deviceType: getDeviceType(),
           shopId: shopId,
+          tatType,
         },
       },
     }
@@ -744,12 +753,13 @@ export const PayMedicine: React.FC = (props) => {
           action: 'Order',
           label: 'Failed / Cancelled',
         });
+        setIsPharmaFailure(true);
         /**Gtm code End  */
         console.log(e);
         setMutationLoading(false);
         setIsLoading(false);
-        localStorage.removeItem(`${currentPatient && currentPatient.id}`);
-        sessionStorage.setItem('cartValues', '');
+        // localStorage.removeItem(`${currentPatient && currentPatient.id}`);
+        // sessionStorage.setItem('cartValues', '');
         setIsAlertOpen(true);
         setAlertMessage('Something went wrong, please try later.');
       });
@@ -1008,9 +1018,8 @@ export const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${
-                          totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)
-                        } on delivery`
+                        `Pay Rs.${totalWithCouponDiscount &&
+                          totalWithCouponDiscount.toFixed(2)} on delivery`
                       )}
                     </AphButton>
                   )}
@@ -1163,6 +1172,7 @@ export const PayMedicine: React.FC = (props) => {
         isAlertOpen={isAlertOpen}
         setIsAlertOpen={setIsAlertOpen}
         consult={consult}
+        isPharmaFailure={isPharmaFailure}
       />
     </div>
   );

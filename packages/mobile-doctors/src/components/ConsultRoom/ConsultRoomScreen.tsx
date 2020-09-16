@@ -161,6 +161,11 @@ import {
   saveAppointmentCallFeedback,
   saveAppointmentCallFeedbackVariables,
 } from '@aph/mobile-doctors/src/graphql/types/saveAppointmentCallFeedback';
+import {
+  postWebEngageEvent,
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 const { width } = Dimensions.get('window');
 // let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
@@ -264,7 +269,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [selectedReason, setselectedReason] = useState<string>(reasons[0]);
   const [otherReason, setotherReason] = useState<string>('');
   const [isAutoSaved, setIsAutoSaved] = useState<boolean>(false);
-  const [giveRating, setGiveRating] = useState<boolean>(false);
 
   const [savedTime, setSavedTime] = useState<string>('');
   const mutationCancelSrdConsult = useMutation<cancelAppointment, cancelAppointmentVariables>(
@@ -282,7 +286,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     // favTestLoading,
     // favTestError,
   } = CaseSheetAPI();
-  const { setOpenTokKeys, setCallBacks, callData, callOptions, errorPopup } = useAudioVideo();
+
+  const {
+    setOpenTokKeys,
+    setCallBacks,
+    callData,
+    callOptions,
+    errorPopup,
+    setGiveRating,
+    giveRating,
+  } = useAudioVideo();
   useEffect(() => {
     getSpecialties();
     // callAbandonmentCall();
@@ -320,6 +333,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       AsyncStorage.removeItem('callDataSend');
       AsyncStorage.removeItem('patientName');
       AsyncStorage.removeItem('postWebEngageData');
+      AsyncStorage.removeItem('basicAppointmentData');
       AsyncStorage.setItem('AppointmentSelect', 'false');
       KeepAwake.deactivate();
       pubnub.unsubscribeAll();
@@ -395,7 +409,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 });
               }}
             >
-              <Minimize />
+              <View style={styles.exobuttonContainer}>
+                <Text style={styles.notNowText}>Not Now</Text>
+                <Minimize />
+              </View>
             </TouchableOpacity>
           </View>
           <View style={styles.joinTextContainer}>
@@ -579,6 +596,33 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [diagnosticTestResults, setDiagnosticTestResults] = useState<string>('');
   const [clinicalNotes, setClinicalNotes] = useState<string>('');
   const [seniorDrPersonalNotes, setSeniorDrPersonalNotes] = useState<string>('');
+
+  const basicAppointmentData = {
+    'Doctor name': g(doctorDetails, 'fullName') || '',
+    'Patient name': `${g(caseSheet, 'caseSheetDetails', 'patientDetails', 'firstName') ||
+      g(patientDetails, 'firstName')} ${g(
+      caseSheet,
+      'caseSheetDetails',
+      'patientDetails',
+      'lastName'
+    ) || g(patientDetails, 'lastName')}`.trim(),
+    'Patient mobile number':
+      g(caseSheet, 'caseSheetDetails', 'patientDetails', 'mobileNumber') ||
+      g(patientDetails, 'mobileNumber') ||
+      '',
+    'Doctor Mobile number': g(doctorDetails, 'mobileNumber') || '',
+    'Appointment Date time':
+      g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || '',
+    'Appointment display ID':
+      g(appointmentData, 'displayId') ||
+      g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') ||
+      '',
+    'Appointment ID': AppId || g(caseSheet, 'caseSheetDetails', 'appointment', 'id') || '',
+  };
+
+  useEffect(() => {
+    AsyncStorage.setItem('basicAppointmentData', JSON.stringify(basicAppointmentData));
+  }, [basicAppointmentData]);
 
   const getFamilyHistoryText = (
     familyValues:
@@ -860,59 +904,72 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       })
       .then((_data) => {
         const caseSheet = g(_data, 'data', 'getCaseSheet');
-        setcaseSheet(caseSheet);
-        setData(caseSheet);
-        if (props.navigation.getParam('prevCaseSheet')) {
-          setExistingMedicingId([
-            ...((g(props.navigation.getParam('prevCaseSheet'), 'medicinePrescription') || [])
-              .filter(
-                (item, index, self) =>
-                  index ===
-                  self.findIndex(
-                    (t) =>
-                      t &&
-                      item &&
-                      (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
-                        (item.externalId || item.id || item.medicineName || '').toLowerCase()
-                  )
-              )
-              .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
-              .filter((i) => i !== null || i !== '') as string[]),
-          ]);
+        if (g(caseSheet, 'caseSheetDetails', 'doctorId') !== g(doctorDetails, 'id')) {
+          showAphAlert &&
+            showAphAlert({
+              title: string.common.alert,
+              description: 'Unauthorized Access',
+              unDismissable: true,
+              onPressOk: () => {
+                backDataFunctionality();
+                hideAphAlert && hideAphAlert();
+              },
+            });
         } else {
-          setExistingMedicingId([
-            ...((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
-              .filter(
-                (item, index, self) =>
-                  index ===
-                  self.findIndex(
-                    (t) =>
-                      t &&
-                      item &&
-                      (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
-                        (item.externalId || item.id || item.medicineName || '').toLowerCase()
-                  )
-              )
-              .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
-              .filter((i) => i !== null || i !== '') as string[]),
-            ...((g(caseSheet, 'caseSheetDetails', 'removedMedicinePrescription') || [])
-              .filter(
-                (item, index, self) =>
-                  index ===
-                  self.findIndex(
-                    (t) =>
-                      t &&
-                      item &&
-                      (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
-                        (item.externalId || item.id || item.medicineName || '').toLowerCase()
-                  )
-              )
-              .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
-              .filter((i) => i !== null || i !== '') as string[]),
-          ]);
+          setcaseSheet(caseSheet);
+          setData(caseSheet);
+          if (props.navigation.getParam('prevCaseSheet')) {
+            setExistingMedicingId([
+              ...((g(props.navigation.getParam('prevCaseSheet'), 'medicinePrescription') || [])
+                .filter(
+                  (item, index, self) =>
+                    index ===
+                    self.findIndex(
+                      (t) =>
+                        t &&
+                        item &&
+                        (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                          (item.externalId || item.id || item.medicineName || '').toLowerCase()
+                    )
+                )
+                .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
+                .filter((i) => i !== null || i !== '') as string[]),
+            ]);
+          } else {
+            setExistingMedicingId([
+              ...((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
+                .filter(
+                  (item, index, self) =>
+                    index ===
+                    self.findIndex(
+                      (t) =>
+                        t &&
+                        item &&
+                        (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                          (item.externalId || item.id || item.medicineName || '').toLowerCase()
+                    )
+                )
+                .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
+                .filter((i) => i !== null || i !== '') as string[]),
+              ...((g(caseSheet, 'caseSheetDetails', 'removedMedicinePrescription') || [])
+                .filter(
+                  (item, index, self) =>
+                    index ===
+                    self.findIndex(
+                      (t) =>
+                        t &&
+                        item &&
+                        (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                          (item.externalId || item.id || item.medicineName || '').toLowerCase()
+                    )
+                )
+                .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
+                .filter((i) => i !== null || i !== '') as string[]),
+            ]);
+          }
+          callBack && callBack();
+          setLoading && setLoading(false);
         }
-        callBack && callBack();
-        setLoading && setLoading(false);
       })
       .catch((e) => {
         const message = e.message ? e.message.split(':')[1].trim() : '';
@@ -1418,6 +1475,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               ? AppConfig.Configuration.iOS_Version
               : AppConfig.Configuration.Android_Version,
           numberOfParticipants: count,
+          patientId: g(caseSheet, 'patientDetails', 'id'),
         },
       })
       .then((_data) => {
@@ -1433,17 +1491,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const endCallNotificationAPI = (isCall: boolean) => {
-    if ((isCall && callId) || (!isCall && chatId)) {
-      client
-        .query<EndCallNotification, EndCallNotificationVariables>({
-          query: END_CALL_NOTIFICATION,
-          fetchPolicy: 'no-cache',
-          variables: {
-            appointmentCallId: isCall ? callId : chatId,
-          },
-        })
-        .catch((error) => {});
-    }
+    pubnubPresence((patient: number, doctor: number) => {
+      if ((isCall && callId) || (!isCall && chatId)) {
+        client
+          .query<EndCallNotification, EndCallNotificationVariables>({
+            query: END_CALL_NOTIFICATION,
+            fetchPolicy: 'no-cache',
+            variables: {
+              appointmentCallId: isCall ? callId : chatId,
+              patientId: g(caseSheet, 'patientDetails', 'id'),
+              numberOfParticipants: patient + doctor,
+            },
+          })
+          .catch((error) => {});
+      }
+    });
   };
 
   // const startInterval = (timer: number) => { //Consult remaning time
@@ -1559,9 +1621,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               break;
             case 'Audio call ended':
               audioVideoMethod();
+              setGiveRating(true);
               break;
             case 'Video call ended':
               audioVideoMethod();
+              setGiveRating(true);
               break;
             case messageCodes.patientJoined:
               AsyncStorage.multiGet(['isAudio', 'isVideo']).then((data) => {
@@ -1581,6 +1645,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               errorPopup('Patient has rejected the call.', theme.colors.APP_YELLOW, 10);
               break;
             case messageCodes.exotelCall:
+              addMessages(message);
+              break;
+            case messageCodes.startConsultMsg:
               addMessages(message);
               break;
             default:
@@ -1806,6 +1873,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       (status, response) => {
         if (g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED) {
           postBackendWebEngage(WebEngageEvent.DOCTOR_SENT_MESSAGE);
+          postWebEngageEvent(WebEngageEventName.DOCTOR_SEND_MSG, {
+            ...basicAppointmentData,
+          } as WebEngageEvents[WebEngageEventName.DOCTOR_SEND_MSG]);
         }
         console.log(response, 'response');
       }
@@ -1839,7 +1909,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         const startConsultStorage = JSON.parse(
           (await AsyncStorage.getItem('showInAppNotification')) || 'false'
         );
-
+        const storedBasicAppointmentData = JSON.parse(
+          (await AsyncStorage.getItem('basicAppointmentData')) || 'false'
+        );
         if (!startConsult && startConsultStorage) {
           Alert.alert(string.common.apollo, string.consult_room.please_start_consultation);
           return;
@@ -1851,6 +1923,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         if (isJoin) {
           callOptions.setCallAccepted(true);
           hideFloatingContainer();
+          setTimeout(() => {
+            callData.setVideoEnabled(false);
+          }, 1000);
         }
         callType === 'A' ? callOptions.setIsAudio(true) : callOptions.setIsAudio(false);
         callType === 'V' ? callOptions.setIsVideo(true) : callOptions.setIsVideo(false);
@@ -1863,15 +1938,30 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               sendEndCallNotificationAPI(
                 callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO
               );
-            } else {
-              setGiveRating(true);
             }
+            setGiveRating(true);
             firebase
               .analytics()
               .logEvent(callType == 'A' ? 'Doctor_audio_call_end' : 'Doctor_video_call_end', {
                 caseSheet: caseSheet,
                 callDuration: callDuration,
               });
+            postWebEngageEvent(
+              !isJoin
+                ? callType === 'V'
+                  ? WebEngageEventName.DOCTOR_STOP_VIDEO_CALL
+                  : WebEngageEventName.DOCTOR_STOP_AUDIO_CALL
+                : WebEngageEventName.DOCTOR_ACCEPTED_JOIN_END,
+              {
+                ...(storedBasicAppointmentData || basicAppointmentData),
+                'Type of call': !isJoin
+                  ? callType === 'V'
+                    ? 'Video'
+                    : 'Audio'
+                  : 'Join Acceptance',
+                'Call Duration': callDuration,
+              }
+            );
             AsyncStorage.setItem('callDataSend', 'true');
             pubnub.publish(
               {
@@ -1904,6 +1994,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         });
         Keyboard.dismiss();
         AsyncStorage.setItem('callDisconnected', 'false');
+        postWebEngageEvent(
+          !isJoin
+            ? callType === 'V'
+              ? WebEngageEventName.DOCTOR_START_VIDEO_CALL
+              : WebEngageEventName.DOCTOR_START_AUDIO_CALL
+            : WebEngageEventName.DOCTOR_ACCEPTED_JOIN,
+          {
+            ...(storedBasicAppointmentData || basicAppointmentData),
+            'Type of call': !isJoin ? (callType === 'V' ? 'Video' : 'Audio') : 'Join Acceptance',
+          }
+        );
         firebase
           .analytics()
           .logEvent(
@@ -1932,6 +2033,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               if (response) {
                 callOptions.startMissedCallTimer(45, (count) => {
                   stopAllCalls(callType);
+                  setGiveRating(true);
                   // if (missedCallCounter < 2) {
 
                   // } else {
@@ -2079,6 +2181,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const onEndConsult = () => {
     stopAllCalls();
     endCallNotificationAPI(false);
+    postWebEngageEvent(WebEngageEventName.DOCTOR_STOP_CONSULT, {
+      ...basicAppointmentData,
+    } as WebEngageEvents[WebEngageEventName.DOCTOR_STOP_CONSULT]);
     firebase.analytics().logEvent('Doctor_end_consult', {
       doctorName: doctorDetails ? doctorDetails.fullName : doctorId,
       patientName: patientDetails
@@ -2299,6 +2404,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const onStartConsult = (successCallback?: () => void) => {
     getNetStatus().then((connected) => {
+      postWebEngageEvent(WebEngageEventName.DOCTOR_START_CONSULT, {
+        ...basicAppointmentData,
+      } as WebEngageEvents[WebEngageEventName.DOCTOR_START_CONSULT]);
       if (connected) {
         setShowLoading(true);
         client
@@ -2339,9 +2447,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             pubnub.publish(
               {
                 message: {
+                  id: g(doctorDetails, 'id'),
                   isTyping: true,
                   message: messageCodes.startConsultMsg,
+                  automatedText: g(doctorDetails, 'displayName') + ' has joined the consult room!',
                   messageDate: new Date(),
+                  sentBy: REQUEST_ROLES.DOCTOR,
                 },
                 channel: channel,
                 storeInHistory: true,
@@ -2497,7 +2608,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               },
             })
               .then((response) => {
-                console.log(response, 'cancel response');
+                postWebEngageEvent(WebEngageEventName.DOCTOR_APPOINTMETNT_CANCELLED, {
+                  ...basicAppointmentData,
+                  'Cancel reason': selectedReason === 'Other' ? otherReason : selectedReason,
+                } as WebEngageEvents[WebEngageEventName.DOCTOR_APPOINTMETNT_CANCELLED]);
                 const text = {
                   id: doctorDetails ? doctorDetails.id : '',
                   message: messageCodes.cancelConsultInitiated,
@@ -2610,6 +2724,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   'Try again',
               });
           } else {
+            postWebEngageEvent(WebEngageEventName.DOCTOR_START_EXOTEL_CALL, {
+              ...basicAppointmentData,
+              'Type of call': 'Telephonic',
+              'Exotel number': string.exoTel.exotelNumber,
+            } as WebEngageEvents[WebEngageEventName.DOCTOR_START_EXOTEL_CALL]);
             pubnub.publish(
               {
                 message: {
@@ -3089,7 +3208,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           flex: 1,
         }}
       >
-        {showRateCallModal()}
+        {/* {showRateCallModal()} */}
         {showHeaderView()}
         {overlayDisplay}
         {showExoPopup && exoTelPopup()}
@@ -3101,6 +3220,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             date={Appintmentdatetime}
             loading={(val) => setLoading && setLoading(val)}
             onDone={(reschduleObject) => {
+              postWebEngageEvent(WebEngageEventName.DOCTOR_APPOINTMENT_RESCHEDULED, {
+                ...basicAppointmentData,
+                'Reschedule date ': moment(reschduleObject.transferDateTime).format('DD-MM-YYYY'),
+                'Reschedule time': moment(reschduleObject.transferDateTime).format('hh:mm A'),
+                'Reschedule reason ': reschduleObject.reason,
+              } as WebEngageEvents[WebEngageEventName.DOCTOR_APPOINTMENT_RESCHEDULED]);
               console.log(reschduleObject, 'reschduleObject');
               pubnub.publish(
                 {

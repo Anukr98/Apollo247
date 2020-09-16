@@ -332,8 +332,12 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         ))}
                       </AphCustomDropdown>
                     </div>
-                    {validateCouponResult && validateCouponResult.products ? (
+                    {validateCouponResult &&
+                    validateCouponResult.products &&
+                    validateCouponResult.products[idx] &&
+                    !validateCouponResult.products[idx].couponFree ? (
                       <>
+                        {/* {JSON.stringify(validateCouponResult.products[idx])} */}
                         <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
                           {validateCouponResult.products[idx].specialPrice !==
                           validateCouponResult.products[idx].mrp ? (
@@ -364,14 +368,17 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                     ) : (
                       <>
                         <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
-                          {item.special_price ? (
+                          {item.special_price === 0 || item.special_price ? (
                             <span className={classes.lineThrough}>Rs. {item.price}</span>
                           ) : null}
                           <div className={classes.mrpText}>(MRP)</div>
                         </div>
 
                         <div className={classes.medicinePrice}>
-                          Rs. {item.special_price || item.price}
+                          Rs.{' '}
+                          {item.special_price === 0 || item.special_price
+                            ? item.special_price
+                            : item.price}
                         </div>
                       </>
                     )}

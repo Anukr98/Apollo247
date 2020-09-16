@@ -37,6 +37,7 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider, useMutation } from 'react-apollo-hooks';
 import _uniqueId from 'lodash/uniqueId';
 import bugsnag from '@bugsnag/js';
+import { webengageUserDetailTracking, webengageUserLoginTracking, webEngageEventTracking } from 'webEngageTracking';
 
 const bugsnagClient = bugsnag({
   apiKey: `${process.env.BUGSNAG_API_KEY}`,
@@ -49,7 +50,10 @@ const bugsnagClient = bugsnag({
 const sessionClient = bugsnagClient.startSession();
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
-  return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
+  return (promise.then(
+    (data: R) => [data, null],
+    (err: E) => [null, err]
+  ) as any) as [R, E];
 }
 
 export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
@@ -82,6 +86,8 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
     | ((p: GetDoctorDetails_getDoctorDetails_doctorSecretary_secretary | null) => void)
     | null;
   sessionClient: any;
+  chatDays: number | null;
+  setChatDays: (days: number) => void;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -111,6 +117,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
   doctorSecretary: null,
   addDoctorSecretary: null,
   sessionClient: sessionClient,
+  chatDays: null,
+  setChatDays: null,
 });
 const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -177,6 +185,8 @@ export const AuthProvider: React.FC = (props) => {
   const [doctorSecretary, addDoctorSecretary] = useState<AuthContextProps['doctorSecretary']>(null);
 
   const [currentUserId, setCurrentUserId] = useState<AuthContextProps['currentUserId']>(null);
+  const [chatDays, setChatDays] = useState<AuthContextProps['chatDays']>(null);
+
   const loginApiCall = async (mobileNumber: string) => {
     const [loginResult, loginError] = await wait(
       apolloClient.mutate<Login, LoginVariables>({
@@ -368,9 +378,15 @@ export const AuthProvider: React.FC = (props) => {
       setIsVerifyingOtp(true);
       otpCheckApiCall(otp, loginId).then((res) => {
         if (!res) {
+          webEngageEventTracking({'Successful' : 'No'},	
+            'Front_end - Doctor OTP Verification'	
+          );
           setVerifyOtpError(true);
           setIsSigningIn(false);
         } else {
+          webEngageEventTracking({'Successful' : 'Yes'},	
+            'Front_end - Doctor OTP Verification'	
+          );
           setVerifyOtpError(false);
           app.auth().signInWithCustomToken(res);
         }
@@ -494,6 +510,7 @@ export const AuthProvider: React.FC = (props) => {
             return;
           }
           const doctors = signInResult.data.getDoctorDetails;
+          setChatDays(doctors.chatDays);
           if (
             doctors &&
             doctors.onlineStatus === DOCTOR_ONLINE_STATUS.AWAY &&
@@ -515,6 +532,13 @@ export const AuthProvider: React.FC = (props) => {
             setSignInError(false);
             setIsSigningIn(false);
           }
+          webengageUserLoginTracking(doctors.id);	
+          webengageUserDetailTracking({	
+            emailAddress: doctors && doctors.emailAddress ? doctors.emailAddress : '',	
+            firstName: doctors && doctors.firstName ? doctors.firstName : '',	
+            lastName: doctors && doctors.lastName ? doctors.lastName : '',	
+            mobileNumber: doctors && doctors.mobileNumber ? doctors.mobileNumber : '',	
+          });
         } else if (
           res.data &&
           res.data.findLoggedinUserDetails &&
@@ -555,6 +579,8 @@ export const AuthProvider: React.FC = (props) => {
             doctorSecretary,
             addDoctorSecretary,
             sessionClient,
+            chatDays,
+            setChatDays,
           }}
         >
           {props.children}

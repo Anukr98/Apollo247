@@ -19,7 +19,10 @@ import { useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { formatAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  formatAddressWithLandmark,
+  formatAddress,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 
@@ -38,7 +41,14 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(14),
     lineHeight: 20,
     color: theme.colors.SHERPA_BLUE,
+    // paddingTop: 7,
   },
+  headingTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    lineHeight: 20,
+    color: theme.colors.SHERPA_BLUE,
+  },
+  headingTextView: { flexDirection: 'row', width: '80%' },
 });
 
 export interface AddressBookProps extends NavigationScreenProps {}
@@ -109,7 +119,24 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
         onPress={() => updateDataAddres('Update', address)}
       >
         <View style={styles.cardStyle} key={index}>
-          <Text style={styles.textStyle}>{formatAddress(address)}</Text>
+          <View>
+            {address.name! && (
+              <View style={[styles.headingTextView, { marginTop: 4 }]}>
+                <Text style={styles.headingTextStyle}>Name:{'     '}</Text>
+                <Text style={[styles.textStyle]}>{address.name}</Text>
+              </View>
+            )}
+            {address.mobileNumber! && (
+              <View style={styles.headingTextView}>
+                <Text style={styles.headingTextStyle}>Number: </Text>
+                <Text style={[styles.textStyle, { margin: 2 }]}>{address.mobileNumber}</Text>
+              </View>
+            )}
+            <View style={styles.headingTextView}>
+              <Text style={styles.headingTextStyle}>Address: </Text>
+              <Text style={styles.textStyle}>{formatAddressWithLandmark(address)}</Text>
+            </View>
+          </View>
           <CapsuleView
             title={
               address.addressType === PATIENT_ADDRESS_TYPE.OTHER

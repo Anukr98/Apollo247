@@ -90,6 +90,10 @@ import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/
 import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
+import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTracker';
+import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSelection';
+
+import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
@@ -170,6 +174,9 @@ export enum AppRoutes {
   ConsultTypeScreen = 'ConsultTypeScreen',
   CommonWebView = 'CommonWebView',
   RefundStatus = 'RefundStatus',
+  SymptomTracker = 'SymptomTracker',
+  SymptomSelection = 'SymptomSelection',
+  Maps = 'Maps',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -206,6 +213,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.OTPVerification]: {
     screen: OTPVerification,
+    navigationOptions: {
+      gesturesEnabled: false,
+    },
   },
   [AppRoutes.ConsultRoom]: {
     screen: ConsultRoom,
@@ -445,6 +455,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.RefundStatus]: {
     screen: RefundStatus,
+  },
+  [AppRoutes.SymptomTracker]: {
+    screen: SymptomTracker,
+  },
+  [AppRoutes.SymptomSelection]: {
+    screen: SymptomSelection,
+  },
+  [AppRoutes.Maps]: {
+    screen: Maps,
   },
 };
 

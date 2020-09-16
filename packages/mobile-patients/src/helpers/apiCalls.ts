@@ -13,6 +13,7 @@ export interface MedicineProduct {
   mou: string; // minimum order unit
   name: string;
   price: number;
+  sell_online: 0 | 1;
   sku: string;
   small_image: string;
   special_price?: string | number;
@@ -119,26 +120,43 @@ export interface GetStoreInventoryResponse {
   }[];
 }
 
-export interface TatApiInput {
-  postalcode: string;
-  ordertype: 'pharma' | 'fmcg' | 'both';
-  lookup: { sku: string; qty: number }[];
+export interface TatApiInput247 {
+  pincode: string;
+  lat: number;
+  lng: number;
+  items: {
+    sku: string;
+    qty: number;
+  }[];
 }
 
-export interface GetDeliveryTimeResponse {
-  tat: {
-    artCode: string;
-    deliverydate: string;
-    siteId: string;
+export interface ServiceAbilityApiInput {
+  pincode: string;
+  sku: string;
+}
+
+export interface GetAvailabilityResponse247 {
+  response: {
+    sku: string;
+    exist: boolean;
   }[];
   errorMSG?: string;
 }
 
-export interface GetDeliveryTimeHeaderTatResponse {
-  tat?: {
-    deliverydate: string; // format: 16-Jul-2020 20:00
-    siteId: string;
-  }[];
+export interface GetTatResponse247 {
+  response: {
+    items: {
+      sku: string;
+      qty: number;
+      mrp: number;
+      exist: boolean;
+    }[];
+    storeCode: string;
+    tat: string;
+    tatU: number;
+    inventoryExist: boolean;
+    storeType: string;
+  };
   errorMSG?: string;
 }
 
@@ -316,6 +334,90 @@ export interface NotificationResponse {
   data: { data: [] };
 }
 
+export interface SymptomTrackerChatRequest {
+  userID: string;
+  profileID: string;
+  userProfile: SymptomTrackerUserProfile;
+}
+
+interface SymptomTrackerUserProfile {
+  age: number;
+  gender: string;
+}
+
+export interface SymptomTrackerChatResponse {
+  dialogue: SymptomTrackerInfo;
+  id: string;
+  msg?: string;
+}
+
+interface SymptomTrackerInfo {
+  options: DefaultSymptoms[];
+  sender?: string;
+  status?: string;
+  text: string;
+}
+
+export interface DefaultSymptoms {
+  name: string;
+  id: string;
+  description: string;
+  url?: string;
+}
+
+export interface AutoCompleteSymptomsParams {
+  text: string;
+  filter: string;
+}
+
+interface AutoCompleteSymptomsResponse {
+  hits?: number;
+  results: AutoCompleteSymptoms[];
+  status?: string;
+}
+
+export interface AutoCompleteSymptoms {
+  name: string;
+  id: string;
+  description: string;
+  url?: string;
+  type?: string;
+}
+
+export interface UpdateSymptomTrackerChatRequest {
+  dialogue: {
+    text: string;
+    options: [];
+    status: string;
+    sender: string;
+  };
+}
+
+interface SymptomsTrackerResultResponse {
+  diseases: SymptomsDiseases[];
+  specialities: SymptomsSpecialities[];
+  symptoms: {
+    id: string;
+    name: string;
+  }[];
+}
+
+interface SymptomsDiseases {
+  description: string;
+  id: string;
+  name: string;
+  score: number;
+  speciality: string;
+  url?: string;
+}
+
+export interface SymptomsSpecialities {
+  departmentID?: string[];
+  description?: string;
+  diseases?: string[];
+  name: string;
+}
+
 const config = AppConfig.Configuration;
 
 export const getMedicineDetailsApi = (
@@ -405,23 +507,32 @@ export const getStoreInventoryApi = (
   );
 };
 
-export const pinCodeServiceabilityApi = (
-  pinCode: string
-): Promise<AxiosResponse<{ Availability: boolean }>> => {
+export const pinCodeServiceabilityApi247 = (
+  pincode: string
+): Promise<AxiosResponse<{ response: boolean }>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/serviceable?pincode=${pincode}`;
   return Axios.post(
-    // `${config.PHARMA_UAT_BASE_URL}/pincode_api.php`,
-    `${config.PIN_SERVICEABILITY[0]}/servicability_api.php`, //Production
-    {
-      postalcode: pinCode,
-      skucategory: [
-        {
-          SKU: 'PHARMA',
-        },
-      ],
-    },
+    url,
+    {},
     {
       headers: {
-        Authorization: config.PIN_SERVICEABILITY[1],
+        Authorization: config.UATTAT_CONFIG[1],
+      },
+    }
+  );
+};
+
+export const availabilityApi247 = (
+  pincode: string,
+  sku: string
+): Promise<AxiosResponse<GetAvailabilityResponse247>> => {
+  const url = `${config.UATTAT_CONFIG[0]}/availability?sku=${sku}&pincode=${pincode}`;
+  return Axios.post(
+    url,
+    {},
+    {
+      headers: {
+        Authorization: config.UATTAT_CONFIG[1],
       },
     }
   );
@@ -535,6 +646,13 @@ export const getPlaceInfoByPlaceId = (
   return Axios.get(url);
 };
 
+export const getLatLongFromAddress = (
+  address: string
+): Promise<AxiosResponse<PlacesApiResponse>> => {
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}`;
+  return Axios.get(url);
+};
+
 // let cancelAutoCompletePlaceSearchApi: Canceler | undefined;
 
 export const autoCompletePlaceSearch = (
@@ -552,40 +670,21 @@ export const autoCompletePlaceSearch = (
   });
 };
 
-let cancelGetDeliveryTimeApi: Canceler | undefined;
+let cancelGetDeliveryTAT247: Canceler | undefined;
 
-export const getDeliveryTime = (
-  params: TatApiInput
-): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
+export const getDeliveryTAT247 = (
+  params: TatApiInput247
+): Promise<AxiosResponse<GetTatResponse247>> => {
   const CancelToken = Axios.CancelToken;
-  cancelGetDeliveryTimeApi && cancelGetDeliveryTimeApi();
-  return Axios.post(config.GET_DELIVERY_TIME[0], params, {
+  cancelGetDeliveryTAT247 && cancelGetDeliveryTAT247();
+  const url = `${config.UATTAT_CONFIG[0]}/tat`;
+  return Axios.post(url, params, {
     headers: {
-      Authentication: config.GET_DELIVERY_TIME[1],
+      Authorization: config.UATTAT_CONFIG[1],
     },
     timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
     cancelToken: new CancelToken((c) => {
-      // An executor function receives a cancel function as a parameter
-      cancelGetDeliveryTimeApi = c;
-    }),
-  });
-};
-
-let cancelDeliveryTimeHeaderTatApi: Canceler | undefined;
-
-export const getDeliveryTimeHeaderTat = (
-  params: TatApiInput
-): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
-  const CancelToken = Axios.CancelToken;
-  cancelDeliveryTimeHeaderTatApi && cancelDeliveryTimeHeaderTatApi();
-  return Axios.post(config.GET_DELIVERY_TIME_HEADER_TAT[0], params, {
-    headers: {
-      Authentication: config.GET_DELIVERY_TIME_HEADER_TAT[1],
-    },
-    timeout: config.TAT_API_TIMEOUT_IN_SEC * 1000,
-    cancelToken: new CancelToken((c) => {
-      // An executor function receives a cancel function as a parameter
-      cancelDeliveryTimeHeaderTatApi = c;
+      cancelGetDeliveryTAT247 = c;
     }),
   });
 };
@@ -718,5 +817,40 @@ export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> =>
 export const userSpecificCoupon = (mobileNumber: string): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
   const url = `${baseUrl}/availableCoupons?mobile=${mobileNumber}`;
+  return Axios.get(url);
+};
+
+export const startSymptomTrackerChat = async (
+  data: SymptomTrackerChatRequest
+): Promise<AxiosResponse<SymptomTrackerChatResponse>> => {
+  const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
+  return Axios.post(baseUrl, data);
+};
+
+export const fetchAutocompleteSymptoms = (
+  chatId: string,
+  params: AutoCompleteSymptomsParams
+): Promise<AxiosResponse<AutoCompleteSymptomsResponse>> => {
+  const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
+  const url = `${baseUrl}/${chatId}/autosuggest`;
+  return Axios.get(url, {
+    params: params,
+  });
+};
+
+export const updateSymptomTrackerChat = async (
+  chatId: string,
+  data: UpdateSymptomTrackerChatRequest
+): Promise<AxiosResponse<SymptomTrackerChatResponse>> => {
+  const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
+  const url = `${baseUrl}/${chatId}`;
+  return Axios.patch(url, data);
+};
+
+export const getSymptomsTrackerResult = (
+  chatId: string
+): Promise<AxiosResponse<SymptomsTrackerResultResponse>> => {
+  const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
+  const url = `${baseUrl}/${chatId}/specialities`;
   return Axios.get(url);
 };

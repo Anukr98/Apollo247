@@ -8,13 +8,16 @@ import {
   Grid,
 } from '@material-ui/core';
 import { MedicalTestUnit } from 'graphql/types/globalTypes';
+import {
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response_labTestResults as LabTestResultsType,
+} from '../../graphql/types/getPatientPrismMedicalRecords';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      backgroundColor: theme.palette.common.white,
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-      borderRadius: 10,
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
       marginBottom: '12px !important',
       '&:before': {
         display: 'none',
@@ -22,7 +25,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     panelHeader: {
       padding: '4px 20px',
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: 500,
       color: '#02475b',
       textTransform: 'uppercase',
@@ -35,22 +38,23 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     panelDetails: {
+      backgroundColor: theme.palette.common.white,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      borderRadius: 10,
       padding: 20,
-      paddingTop: 0,
       display: 'inline-block',
       width: '100%',
     },
     cardTitle: {
       fontSize: 14,
-      fontWeight: 500,
-      color: '#01475b',
+      fontWeight: 600,
+      color: '#02475b',
       letterSpacing: 0.02,
       paddingBottom: 8,
-      opacity: 0.8,
     },
     cardSection: {
-      padding: 16,
-      backgroundColor: '#f7f8f5',
+      padding: '16px 10px',
+      backgroundColor: 'transparent',
       borderRadius: 5,
       fontSize: 14,
       fontWeight: 500,
@@ -73,11 +77,15 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     resultGroup: {
+      display: 'flex',
       '& label': {
-        fontSize: 12,
-        fontWeight: 500,
+        fontSize: 14,
+        fontWeight: 'normal',
         color: '#01475b',
       },
+    },
+    resultGroupLastrow: {
+      display: 'block',
     },
     result: {
       fontSize: 14,
@@ -85,15 +93,44 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: 1.43,
       letterSpacing: 0.04,
       color: '#0087ba',
+      marginLeft: 'auto',
+      // float: 'right',
+    },
+    resultField: {
+      fontSize: 13,
+      fontWeight: 'normal',
+      float: 'none',
+      marginTop: 10,
+      paddingLeft: 17,
     },
     resultError: {
       color: '#d10001',
+    },
+    labtest: {
+      marginRight: 18,
+      position: 'relative',
+      top: 6,
+      left: 3,
+    },
+    bullet: {
+      width: 5,
+      height: 5,
+      borderRadius: '50%',
+      backgroundColor: 'rgba(2,71,91,0.6)',
+      display: 'inline-block',
+      marginRight: 12,
+    },
+    cardTitleName: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: '#02475b',
+      paddingLeft: 27,
     },
   };
 });
 
 type DetailedFindingsProps = {
-  activeData: any;
+  activeData: LabResultsType;
 };
 
 export const MedicalTest = [
@@ -110,46 +147,62 @@ export const MedicalTest = [
 
 export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
   const classes = useStyles({});
-  const { data } = props.activeData;
+  const { activeData } = props;
   return (
-    <ExpansionPanel className={classes.root} defaultExpanded={true}>
-      <ExpansionPanelSummary
-        expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-        classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
-      >
-        Detailed Findings
-      </ExpansionPanelSummary>
-      <ExpansionPanelDetails className={classes.panelDetails}>
-        <Grid container spacing={2}>
-          {data &&
-            (data.labTestResults && data.labTestResults).map((detail: any) => {
+    activeData &&
+    activeData.labTestResults &&
+    activeData.labTestResults.length > 0 && (
+      <ExpansionPanel className={classes.root} defaultExpanded={true}>
+        <ExpansionPanelSummary
+          expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
+          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
+        >
+          Detailed Findings
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails className={classes.panelDetails}>
+          <Grid container spacing={2}>
+            <div className={classes.cardTitle}>
+              <img
+                className={classes.labtest}
+                src={require('images/ic_labtest.svg')}
+                alt=""
+              />
+              Impressions
+            </div>
+            {activeData.labTestResults.map((detail: LabTestResultsType) => {
               const unit = MedicalTest.find((item) => item.key === detail.unit);
               return (
                 <Grid item xs={12} sm={12}>
-                  <div className={classes.cardTitle}>{detail.parameterName}</div>
+                  <div className={classes.cardTitleName}>{detail.parameterName}</div>
                   <div className={classes.cardSection}>
                     <Grid container spacing={2}>
-                      <Grid item xs={6} sm={4}>
+                      <Grid item xs={12} sm={12}>
                         <div className={classes.resultGroup}>
-                          <label>Result</label>
-                          <div className={classes.result}>{detail.result || 'N/A'}</div>
+                          <label>
+                            <span className={classes.bullet}></span>Normal Range
+                          </label>
+                          <div className={`${classes.result}`}>
+                            {detail.range ? detail.range : '-'}
+                          </div>
                         </div>
                       </Grid>
-                      <Grid item xs={6} sm={4}>
+                      <Grid item xs={12} sm={12}>
                         <div className={classes.resultGroup}>
-                          <label>Units</label>
+                          <label>
+                            <span className={classes.bullet}></span>Units
+                          </label>
                           <div className={classes.result}>
                             {unit ? unit.value : detail.unit || 'N/A'}
                           </div>
                         </div>
                       </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <div className={classes.resultGroup}>
-                          <label>Normal Range</label>
-                          <div className={`${classes.result}`}>
-                            {detail.range
-                              ? detail.range
-                              : `${detail.minimum || ''} - ${detail.maximum || ''}`}
+                      <Grid item xs={12} sm={12}>
+                        <div className={`${classes.resultGroup} ${classes.resultGroupLastrow}`}>
+                          <label>
+                            <span className={classes.bullet}></span>Result
+                          </label>
+                          <div className={`${classes.result} ${classes.resultField}`}>
+                            {detail.result || 'N/A'}
                           </div>
                         </div>
                       </Grid>
@@ -158,8 +211,9 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
                 </Grid>
               );
             })}
-        </Grid>
-      </ExpansionPanelDetails>
-    </ExpansionPanel>
+          </Grid>
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
+    )
   );
 };

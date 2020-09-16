@@ -1,82 +1,58 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
-import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/AddFilePopup';
-// import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  CrossYellow,
-  PrescriptionThumbnail,
-  DropdownGreen,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  InputDropdown,
-  InputDropdownMenu,
-} from '@aph/mobile-patients/src/components/ui/InputDropdown';
+import { CrossYellow, DropdownGreen, FileBig } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import {
-  ADD_MEDICAL_RECORD,
-  UPLOAD_FILE,
-  UPLOAD_DOCUMENT,
-  UPLOAD_LAB_RESULTS,
-  UPLOAD_HEALTH_RECORD_PRESCRIPTION,
-  DOWNLOAD_DOCUMENT,
-} from '@aph/mobile-patients/src/graphql/profiles';
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  addPatientMedicalRecord,
-  addPatientMedicalRecordVariables,
-} from '@aph/mobile-patients/src/graphql/types/addPatientMedicalRecord';
+  ADD_MEDICAL_RECORD,
+  ADD_PATIENT_HEALTH_CHECK_RECORD,
+  ADD_PATIENT_HOSPITALIZATION_RECORD,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { addPatientMedicalRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalRecord';
+import { addPatientHealthCheckRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHealthCheckRecord';
+import { addPatientHospitalizationRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHospitalizationRecord';
 import {
   AddMedicalRecordParametersInput,
-  MedicalRecordType,
   MedicalTestUnit,
-  prescriptionSource,
-  UPLOAD_FILE_TYPES,
+  mediaPrescriptionSource,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
 import {
   g,
-  isValidSearch,
   isValidText,
-  isValidName,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
+  Dimensions,
+  Image,
   Keyboard,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Image,
-  Dimensions,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { uploadDocumentVariables, uploadDocument } from '../../graphql/types/uploadDocument';
-import {
-  downloadDocuments,
-  downloadDocumentsVariables,
-} from '../../graphql/types/downloadDocuments';
-import { BottomPopUp } from '../ui/BottomPopUp';
+import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
 import { string } from '../../strings/string';
-import { useUIElements } from '../UIElementsProvider';
 import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
-import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
+import { BottomPopUp } from '../ui/BottomPopUp';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -134,39 +110,32 @@ export enum MedicRecordType {
   TEST_REPORT = 'TEST_REPORT',
   CONSULTATION = 'CONSULTATION',
   PRESCRIPTION = 'PRESCRIPTION',
+  HEALTHCHECK = 'HEALTHCHECK',
+  HOSPITALIZATION = 'HOSPITALIZATION',
 }
 const RecordType: RecordTypeType[] = [
   {
     value: MedicRecordType.TEST_REPORT.toLowerCase().replace('_', ' '),
     key: MedicRecordType.TEST_REPORT,
   },
-  // {
-  //   value: MedicRecordType.CONSULTATION.toLowerCase().replace('_', ' '),
-  //   key: MedicRecordType.CONSULTATION,
-  // },
   {
     value: MedicRecordType.PRESCRIPTION.toLowerCase().replace('_', ' '),
     key: MedicRecordType.PRESCRIPTION,
   },
-  // {
-  //   value: MedicalRecordType.PHYSICAL_EXAMINATION.toLowerCase().replace('_', ' '),
-  //   key: MedicalRecordType.PHYSICAL_EXAMINATION,
-  // },
+  {
+    value: 'Health Check',
+    key: MedicRecordType.HEALTHCHECK,
+  },
+  {
+    value: 'Discharge Summary',
+    key: MedicRecordType.HOSPITALIZATION,
+  },
 ];
 
 const charactersList = {
   _PERCENT_: '%',
   _SLASH_: '/',
 };
-
-// const replaceStringWithChar = (str: string) => {
-//   const ss = str;
-//   Object.entries(charactersList).forEach(([key, value]) => {
-//     ss.replace(key, value);
-//   });
-
-//   return ss.toLowerCase();
-// };
 
 export const MedicalTest: RecordTypeType[] = [
   { value: 'gm', key: MedicalTestUnit.GM },
@@ -209,16 +178,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [medicalRecordParameters, setmedicalRecordParameters] = useState<
     AddMedicalRecordParametersInput[]
   >([MedicalRecordInitialValues]);
-  // const [showRecordTypePopup, setshowRecordTypePopup] = useState<boolean>(false);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
 
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
-  // const [selectedUnitIndex, setselectedUnitIndex] = useState<number>();
   const { showAphAlert } = useUIElements();
 
-  // const [Images, setImages] = useState<PickerImage>(
-  //   props.navigation.state.params ? props.navigation.state.params.images : []
-  // );
   const [Images, setImages] = useState<PickerImage>(props.navigation.state.params ? [] : []);
 
   const navigatedFrom = props.navigation.state.params!.navigatedFrom
@@ -236,73 +200,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const client = useApolloClient();
 
-  // const multiplePhysicalPrescriptionUpload = (prescriptions: PickerImage[]) => {
-  //   return Promise.all(
-  //     prescriptions.map((item) =>
-  //       client.mutate<uploadFile, uploadFileVariables>({
-  //         mutation: UPLOAD_FILE,
-  //         fetchPolicy: 'no-cache',
-  //         variables: {
-  //           fileType: item.path!.substring(item.path!.lastIndexOf('.') + 1),
-  //           base64FileInput: item.data,
-  //         },
-  //       })
-  //     )
-  //   );
-  // };
-
-  const multiplePhysicalPrescriptionUpload = (prescriptions: PickerImage[]) => {
-    console.log(prescriptions, 'prescriptions');
-
-    return Promise.all(
-      prescriptions.map((item) =>
-        typeofRecord === MedicRecordType.TEST_REPORT
-          ? client.mutate({
-              mutation: UPLOAD_LAB_RESULTS,
-              fetchPolicy: 'no-cache',
-              variables: {
-                LabResultsUploadRequest: {
-                  labTestName: testName,
-                  labTestDate:
-                    dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
-                  labTestResults: [],
-                  testResultFiles: [
-                    {
-                      fileName: item.title,
-                      mimeType: mimeType(item.title + '.' + item.fileType),
-                      content: item.base64,
-                    },
-                  ],
-                },
-                uhid: g(currentPatient, 'uhid'),
-              },
-            })
-          : client.mutate({
-              mutation: UPLOAD_HEALTH_RECORD_PRESCRIPTION,
-              fetchPolicy: 'no-cache',
-              variables: {
-                PrescriptionUploadRequest: {
-                  prescribedBy: docName,
-                  dateOfPrescription:
-                    dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
-                  startDate: null,
-                  endDate: null,
-                  prescriptionSource: prescriptionSource.SELF,
-                  prescriptionFiles: [
-                    {
-                      fileName: item.title,
-                      mimeType: mimeType(item.title + '.' + item.fileType),
-                      content: item.base64,
-                    },
-                  ],
-                },
-                uhid: g(currentPatient, 'uhid'),
-              },
-            })
-      )
-    );
-  };
-
   const isRecordParameterFilled = () => {
     const medicalRecordsVaild = medicalRecordParameters
       .map((item) => {
@@ -316,7 +213,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           : undefined;
       })
       .filter((item) => item !== undefined) as AddMedicalRecordParametersInput[];
-    console.log(medicalRecordsVaild);
 
     if (medicalRecordsVaild.length > 0) {
       setmedicalRecordParameters(medicalRecordsVaild);
@@ -329,20 +225,17 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const isValid = () => {
     const validRecordDetails1 = typeofRecord && testName && dateOfTest ? true : false;
     const validRecordDetails2 = typeofRecord && locationName && dateOfTest ? true : false;
-    const validRecordDetails3 = typeofRecord && docName && dateOfTest ? true : false;
-
-    console.log(validRecordDetails1, 'validRecordDetails', typeofRecord);
-    console.log(validRecordDetails2, 'validRecordDetails2', typeofRecord);
-    console.log(validRecordDetails3, 'validRecordDetails3', typeofRecord);
+    const validRecordDetails3 =
+      typeofRecord && typeofRecord === MedicRecordType.PRESCRIPTION && docName && dateOfTest
+        ? true
+        : false;
+    const validRecordDetails4 =
+      typeofRecord && testName && dateOfTest && locationName ? true : false;
 
     const valid = isRecordParameterFilled().map((item) => {
       return {
         maxmin: (item.maximum || item.minimum) && item.maximum! > item.minimum!,
-        changed:
-          // item.parameterName !== MedicalRecordInitialValues.parameterName
-          // &&item.result !== MedicalRecordInitialValues.result?
-          true,
-        // : false,
+        changed: true,
         notinitial:
           item.parameterName === '' &&
           item.result === 0 &&
@@ -354,16 +247,26 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     let message = typeofRecord
       ? testName || docName || locationName
         ? dateOfTest
-          ? ''
+          ? !locationName && typeofRecord === MedicRecordType.HOSPITALIZATION
+            ? 'Enter hospital name'
+            : ''
           : typeofRecord === MedicRecordType.PRESCRIPTION
           ? 'Enter Date of Prescription'
+          : typeofRecord === MedicRecordType.HOSPITALIZATION
+          ? 'Enter Date of Discharge'
           : 'Enter Date of Test'
         : typeofRecord === MedicRecordType.PRESCRIPTION
         ? 'Enter doctor name'
+        : !docName && typeofRecord === MedicRecordType.HOSPITALIZATION
+        ? 'Enter doctor name'
+        : typeofRecord === MedicRecordType.HOSPITALIZATION
+        ? 'Enter hospital name'
         : typeofRecord === MedicRecordType.CONSULTATION
         ? 'Enter Location of Consultation'
         : typeofRecord === MedicRecordType.TEST_REPORT
         ? 'Enter test name'
+        : typeofRecord === MedicRecordType.HEALTHCHECK
+        ? 'Enter name of health check'
         : 'Enter Name'
       : 'Select the Record Type';
 
@@ -380,8 +283,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       ? true
       : validRecordDetails3
       ? true
+      : validRecordDetails4
+      ? true
       : false;
-    console.log(finval, 'finval');
 
     return {
       isvalid: finval,
@@ -410,138 +314,178 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         : parseFloat(value);
     return number || 0;
   };
+
+  const addMedicalRecord = () => {
+    const inputData =
+      Images.length > 0
+        ? {
+            patientId: currentPatient ? currentPatient.id : '',
+            testName: testName,
+            issuingDoctor: docName,
+            location: locationName,
+            testDate:
+              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+            recordType: typeofRecord,
+            referringDoctor: referringDoctor,
+            sourceName: mediaPrescriptionSource.SELF,
+            observations: observations,
+            additionalNotes: additionalNotes,
+            medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
+            documentURLs: '',
+            prismFileIds: '',
+            testResultFiles: {
+              fileName: Images[0].title + '.' + Images[0].fileType,
+              mimeType: mimeType(Images[0].title + '.' + Images[0].fileType),
+              content: Images[0].base64,
+            },
+          }
+        : {
+            patientId: currentPatient ? currentPatient.id : '',
+            testName: testName,
+            issuingDoctor: docName,
+            location: locationName,
+            testDate:
+              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+            recordType: typeofRecord,
+            referringDoctor: referringDoctor,
+            sourceName: mediaPrescriptionSource.SELF,
+            observations: observations,
+            additionalNotes: additionalNotes,
+            medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
+            documentURLs: '',
+            prismFileIds: '',
+          };
+    client
+      .mutate<addPatientMedicalRecord>({
+        mutation: ADD_MEDICAL_RECORD,
+        variables: {
+          AddMedicalRecordInput: inputData,
+        },
+      })
+      .then(({ data }) => {
+        setshowSpinner(false);
+        const status = g(data, 'addPatientMedicalRecord', 'status');
+        if (status) {
+          props.navigation.goBack();
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('AddRecord_ADD_MEDICAL_RECORD', e);
+        setshowSpinner(false);
+        console.log(JSON.stringify(e), 'eeeee');
+        Alert.alert('Alert', 'Please fill all the details', [
+          { text: 'OK', onPress: () => console.log('OK Pressed') },
+        ]);
+      });
+  };
+
+  const addPatientHealthCheckRecords = () => {
+    let inputData =
+      Images.length > 0
+        ? {
+            patientId: currentPatient ? currentPatient.id : '',
+            healthCheckName: testName,
+            healthCheckDate:
+              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+            recordType: typeofRecord,
+            healthCheckFiles: {
+              fileName: Images[0].title + '.' + Images[0].fileType,
+              mimeType: mimeType(Images[0].title + '.' + Images[0].fileType),
+              content: Images[0].base64,
+            },
+          }
+        : {
+            patientId: currentPatient ? currentPatient.id : '',
+            healthCheckName: testName,
+            healthCheckDate:
+              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+            recordType: typeofRecord,
+          };
+    client
+      .mutate<addPatientHealthCheckRecord>({
+        mutation: ADD_PATIENT_HEALTH_CHECK_RECORD,
+        variables: {
+          AddHealthCheckRecordInput: inputData,
+        },
+      })
+      .then(({ data }) => {
+        setshowSpinner(false);
+        const status = g(data, 'addPatientHealthCheckRecord', 'status');
+        if (status) {
+          props.navigation.goBack();
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('AddRecord_ADD_PATIENT_HEALTH_CHECK_RECORD', e);
+        setshowSpinner(false);
+        console.log(JSON.stringify(e), 'eeeee');
+        Alert.alert('Alert', 'Please fill all the details', [
+          { text: 'OK', onPress: () => console.log('OK Pressed') },
+        ]);
+      });
+  };
+
+  const addPatientHospitalizationRecords = () => {
+    const inputData =
+      Images.length > 0
+        ? {
+            patientId: currentPatient ? currentPatient.id : '',
+            doctorName: docName,
+            dischargeDate:
+              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+            recordType: typeofRecord,
+            hospitalName: locationName,
+            hospitalizationFiles: {
+              fileName: Images[0].title + '.' + Images[0].fileType,
+              mimeType: mimeType(Images[0].title + '.' + Images[0].fileType),
+              content: Images[0].base64,
+            },
+          }
+        : {
+            patientId: currentPatient ? currentPatient.id : '',
+            doctorName: docName,
+            dischargeDate:
+              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+            recordType: typeofRecord,
+            hospitalName: locationName,
+          };
+    client
+      .mutate<addPatientHospitalizationRecord>({
+        mutation: ADD_PATIENT_HOSPITALIZATION_RECORD,
+        variables: {
+          AddHospitalizationRecordInput: inputData,
+        },
+      })
+      .then(({ data }) => {
+        setshowSpinner(false);
+        const status = g(data, 'addPatientHospitalizationRecord', 'status');
+        if (status) {
+          props.navigation.goBack();
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('AddRecord_ADD_PATIENT_HOSPITALIZATION_RECORD', e);
+        setshowSpinner(false);
+        console.log(JSON.stringify(e), 'eeeee');
+        Alert.alert('Alert', 'Please fill all the details', [
+          { text: 'OK', onPress: () => console.log('OK Pressed') },
+        ]);
+      });
+  };
+
   const onSavePress = () => {
-    console.log('images', Images);
     const valid = isValid();
-    console.log('valid', valid);
     if (valid.isvalid && !valid.isValidParameter) {
       setshowSpinner(true);
-      if (Images.length > 0) {
-        // multiplePhysicalPrescriptionUpload(Images)
-        //   .then((data) => {
-        //     console.log('uploaddocument', data);
-        //     const uploadUrlscheck =
-        //       typeofRecord === MedicRecordType.TEST_REPORT
-        //         ? data.map((item) =>
-        //             item.data!.uploadLabResults && item.data!.uploadLabResults.fileUrl
-        //               ? item.data!.uploadLabResults
-        //               : null
-        //           )
-        //         : data.map((item) =>
-        //             item.data!.uploadPrescriptions && item.data!.uploadPrescriptions.fileUrl
-        //               ? item.data!.uploadPrescriptions
-        //               : null
-        //           );
-        //     console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
-        //     var filtered = uploadUrlscheck.filter(function(el) {
-        //       return el != null;
-        //     });
-        //     console.log('filtered', filtered);
-        // if (filtered.length > 0) {
-        const inputData = {
-          patientId: currentPatient ? currentPatient.id : '',
-          testName: testName,
-          issuingDoctor: docName,
-          location: locationName,
-          testDate: dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
-          recordType: typeofRecord,
-          referringDoctor: referringDoctor,
-          sourceName: prescriptionSource.SELF,
-          observations: observations,
-          additionalNotes: additionalNotes,
-          medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
-          documentURLs: '',
-          prismFileIds: '',
-          testResultFiles: {
-            fileName: Images[0].title + '.' + Images[0].fileType,
-            mimeType: mimeType(Images[0].title + '.' + Images[0].fileType),
-            content: Images[0].base64,
-          },
-        };
-        console.log('in', inputData);
-        client
-          .mutate<addPatientMedicalRecord>({
-            mutation: ADD_MEDICAL_RECORD,
-            variables: {
-              AddMedicalRecordInput: inputData,
-            },
-          })
-          .then(({ data }) => {
-            setshowSpinner(false);
-            console.log('suceessfully added', data);
-            const status = g(data, 'addPatientMedicalRecord', 'status');
-            if (status) {
-              props.navigation.goBack();
-            }
-          })
-          .catch((e) => {
-            CommonBugFender('AddRecord_ADD_MEDICAL_RECORD_multiplePhysicalPrescriptionUpload', e);
-            setshowSpinner(false);
-            console.log(JSON.stringify(e), 'eeeee');
-            Alert.alert('Alert', 'Please fill all the details', [
-              { text: 'OK', onPress: () => console.log('OK Pressed') },
-            ]);
-          });
-        // } else {
-        //   Alert.alert('Download image url not getting');
-        // }
-        // } else {
-        //   setshowSpinner(false);
-        //   showAphAlert!({
-        //     title: `Hi ${(currentPatient && currentPatient.firstName!.toLowerCase()) || ''},`,
-        //     description: 'Your upload images are failed ',
-        //   });
-        // }
-        // })
-        // .catch((e) => {
-        //   CommonBugFender('AddRecord_multiplePhysicalPrescriptionUpload', e);
-        //   showAphAlert!({
-        //     title: `Hi ${(currentPatient && currentPatient.firstName!.toLowerCase()) || ''},`,
-        //     description: 'Your upload images are failed ',
-        //   });
-        //   setshowSpinner(false);
-        //   console.log({ e });
-        // });
+      if (
+        typeofRecord === MedicRecordType.TEST_REPORT ||
+        typeofRecord === MedicRecordType.PRESCRIPTION
+      ) {
+        addMedicalRecord();
+      } else if (typeofRecord === MedicRecordType.HEALTHCHECK) {
+        addPatientHealthCheckRecords();
       } else {
-        const inputData = {
-          patientId: currentPatient ? currentPatient.id : '',
-          testName: testName,
-          issuingDoctor: docName,
-          location: locationName,
-          testDate: dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
-          recordType: typeofRecord,
-          referringDoctor: referringDoctor,
-          sourceName: prescriptionSource.SELF,
-          observations: observations,
-          additionalNotes: additionalNotes,
-          medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
-          documentURLs: '',
-          prismFileIds: '',
-        };
-        console.log('in', inputData);
-        client
-          .mutate<addPatientMedicalRecord>({
-            mutation: ADD_MEDICAL_RECORD,
-            variables: {
-              AddMedicalRecordInput: inputData,
-            },
-          })
-          .then(({ data }) => {
-            setshowSpinner(false);
-            console.log('suceessfully added', data);
-            const status = g(data, 'addPatientMedicalRecord', 'status');
-            if (status) {
-              props.navigation.goBack();
-            }
-          })
-          .catch((e) => {
-            CommonBugFender('AddRecord_ADD_MEDICAL_RECORD', e);
-            setshowSpinner(false);
-            console.log(JSON.stringify(e), 'eeeee');
-            Alert.alert('Alert', 'Please fill all the details', [
-              { text: 'OK', onPress: () => console.log('OK Pressed') },
-            ]);
-          });
+        addPatientHospitalizationRecords();
       }
     } else {
       showAphAlert!({
@@ -552,11 +496,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const renderImagesRow = (data: PickerImage, i: number) => {
-    console.log(data, 'renderImagesRow');
-
-    var base64Icon = 'data:image/png;base64,';
+    const base64Icon = 'data:image/png;base64,';
     fin = base64Icon.concat(data.base64);
-    console.log(fin, 'fin');
+    const fileType = data.fileType;
+
     return (
       <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
         <View
@@ -580,8 +523,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               width: 54,
             }}
           >
-            {fin == '' ? (
-              <PrescriptionThumbnail />
+            {fileType === 'pdf' || fileType === 'application/pdf' ? (
+              <FileBig
+                style={{
+                  height: 45,
+                  width: 30,
+                }}
+              />
             ) : (
               <Image
                 style={{
@@ -591,7 +539,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 source={{ uri: fin }}
               />
             )}
-            {/* <PrescriptionThumbnail /> */}
           </View>
           <View style={{ flex: 1 }}>
             <Text>{data.title}</Text>
@@ -636,15 +583,20 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               renderItem={({ item, index }) => renderImagesRow(item, index)}
               keyExtractor={(_, index) => index.toString()}
             />
-            <Text
-              style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
-              onPress={() => {
-                CommonLogEvent('ADD_RECORD', 'Display order popup');
-                setdisplayOrderPopup(true);
-              }}
-            >
-              ADD DOCUMENT
-            </Text>
+            {Images.length === 0 && (
+              <Text
+                style={[
+                  theme.viewStyles.yellowTextStyle,
+                  { textAlign: 'right', paddingBottom: 16 },
+                ]}
+                onPress={() => {
+                  CommonLogEvent('ADD_RECORD', 'Display order popup');
+                  setdisplayOrderPopup(true);
+                }}
+              >
+                ADD DOCUMENT
+              </Text>
+            )}
           </View>
         </CollapseCard>
       </View>
@@ -710,6 +662,23 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             {renderDateInpt()}
           </View>
         );
+      case MedicRecordType.HEALTHCHECK:
+        return (
+          <View>
+            <TextInputComponent
+              label={'Name of Health Check'}
+              value={testName}
+              placeholder={'Enter name of health check'}
+              onChangeText={(testName) => {
+                if (isValidText(testName)) {
+                  settestName(testName);
+                }
+              }}
+            />
+            <TextInputComponent label={'Date of Test'} noInput={true} />
+            {renderDateInpt()}
+          </View>
+        );
       case MedicRecordType.PRESCRIPTION:
         return (
           <View>
@@ -729,6 +698,31 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               label={'Location (optional)'}
               value={locationName}
               placeholder={'Enter Location '}
+              onChangeText={(name) => {
+                setLocationName(name);
+              }}
+            />
+          </View>
+        );
+      case MedicRecordType.HOSPITALIZATION:
+        return (
+          <View>
+            <TextInputComponent
+              label={'Name of Doctor'}
+              value={docName}
+              placeholder={'Enter doctor name'}
+              onChangeText={(docName) => {
+                if (isValidText(docName)) {
+                  setDocName(docName);
+                }
+              }}
+            />
+            <TextInputComponent label={'Date of Discharge'} noInput={true} />
+            {renderDateInpt()}
+            <TextInputComponent
+              label={'Name of Hospital'}
+              value={locationName}
+              placeholder={'Enter hospital name'}
               onChangeText={(name) => {
                 setLocationName(name);
               }}
@@ -800,7 +794,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }
               }}
               selectedTextStyle={{ color: theme.colors.APP_GREEN }}
-              // setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}
             >
               <TextInputComponent
                 label={'Type of Record'}
@@ -835,17 +828,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       </View>
     );
   };
-
-  // const setParametersData = (key: string, value: string, i: number, isNumber?: boolean) => {
-  //   const dataCopy = [...medicalRecordParameters];
-  //   dataCopy[i] = {
-  //     ...dataCopy[i],
-  //     [key]: isNumber ? Number(value) : value,
-  //   };
-  //   console.log('da', dataCopy);
-
-  //   setmedicalRecordParameters(dataCopy);
-  // };
 
   const renderReportDetails = () => {
     return (
@@ -904,24 +886,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                       />
                     </View>
                     <View style={{ flex: 1, marginLeft: 8 }}>
-                      {/* <TextInputComponent
-                        label={'Unit'}
-                        placeholder={'Select unit'}
-                        value={(item.unit || '').toString()}
-                        onChangeText={(value) => setParametersData('unit', value, i)}
-                      /> */}
                       <MaterialMenu
                         options={MedicalTest}
                         selectedText={typeofRecord}
                         onPress={(data) => {
                           setParametersData('unit', data.key as MedicalTestUnit, i);
-                          // setselectedUnitIndex(i);
                         }}
-                        // setShowPopup={(showpopup) => setshowUnitPopup(showpopup)}
-                        // setSelectedOption={(value: MedicalTestUnit) => {
-                        //   console.log(value, 'value', selectedUnitIndex);
-                        //   selectedUnitIndex !== undefined && setParametersData('unit', value, selectedUnitIndex);
-                        // }}
                       >
                         <TextInputComponent
                           label={'Unit'}
@@ -949,24 +919,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                             </View>
                           </View>
                         </View>
-                        {/* <TextInputComponent
-                          label={'Unit'}
-                          noInput={true}
-                          conatinerstyles={{
-                            paddingBottom: 0,
-                          }}
-                        />
-                        <InputDropdown
-                          setShowPopup={(showpopup) => {
-                            setshowUnitPopup(showpopup);
-                            setselectedUnitIndex(i);
-                          }}
-                          containerStyle={{
-                            paddingBottom: 10,
-                          }}
-                          label={(item.unit || '').toString()}
-                          placeholder={'Select unit'}
-                        /> */}
                       </MaterialMenu>
                     </View>
                   </View>
@@ -1064,7 +1016,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       >
         {renderUploadedImages()}
         {renderRecordDetails()}
-        {renderReportDetails()}
+        {typeofRecord === MedicRecordType.TEST_REPORT ||
+        typeofRecord === MedicRecordType.PRESCRIPTION
+          ? renderReportDetails()
+          : null}
       </View>
     );
   };
@@ -1124,27 +1079,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setdisplayOrderPopup(false);
             if (selectedType == 'CAMERA_AND_GALLERY') {
               if (response.length == 0) return;
-              console.log(response, 'response');
-
               setImages(response);
               setdisplayOrderPopup(false);
-              // props.navigation.navigate(AppRoutes.UploadPrescription, {
-              //   phyPrescriptionsProp: response,
-              // });
             }
           }}
         />
-        // <AddFilePopup
-        //   onClickClose={() => {
-        //     setdisplayOrderPopup(false);
-        //   }}
-        //   getData={(data: (PickerImage | PickerImage[])[]) => {
-        //     console.log('dataimage', data);
-
-        //     setImages([...(Images as PickerImage[]), ...(data as PickerImage[])]);
-        //     setdisplayOrderPopup(false);
-        //   }}
-        // />
       )}
 
       {showSpinner && <Spinner />}

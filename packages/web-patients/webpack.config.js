@@ -16,12 +16,16 @@ const dotEnvConfig = dotenv.config({ path: envFile });
 if (dotEnvConfig.error) throw dotEnvConfig.error;
 Object.values(dotEnvConfig).forEach((val, KEY) => (process.env[KEY] = val));
 const isLocal = process.env.NODE_ENV === 'local';
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = process.env.NODE_ENV === 'dev';
 const isStaging = process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'vapt';
 const isProduction = process.env.NODE_ENV === 'production';
 const imageCdnBaseUrl = process.env.IMAGE_BASE_URL;
 const distDir = path.resolve(__dirname, 'dist');
-
+const srcDir = path.resolve(__dirname, 'src');
+const PWA_IMG_URL =
+  isStaging || isProduction
+    ? `${imageCdnBaseUrl}/apollo_logo.png`
+    : `${srcDir}/images/apollo_logo.png`;
 const plugins = [
   new DotenvWebpack({ path: envFile }),
   new CircularDependencyPlugin({
@@ -45,50 +49,54 @@ const plugins = [
   new MomentLocalesPlugin(),
   // new BundleAnalyzerPlugin(),
 
-  new WorkboxPlugin.GenerateSW({
-    // these options encourage the ServiceWorkers to get in there fast
-    // and not allow any straggling "old" SWs to hang around
-    clientsClaim: true,
-    skipWaiting: true,
-    maximumFileSizeToCacheInBytes: 50000000,
-  }),
-  new WebpackPwaManifest({
-    name: 'Apollo 247',
-    short_name: 'Apollo 247',
-    description:
-      'Apollo 24|7 helps you get treated from Apollo certified doctors at any time of the day, wherever you are. The mobile app has features like e-consultation in 15 minutes, online pharmacy to doorstep delivery of medicines, home diagnostic test and digital vault where you can upload all your medical history.',
-    background_color: '#ffffff',
-    theme_color: '#fdb714',
-    ios: true,
-    icons: [
-      {
-        src: path.resolve('src/images/apollo_logo.png'),
-        sizes: [96, 128, 192, 256, 384, 512], // multiple sizes
-      },
-      {
-        src: path.resolve('src/images/apollo_logo.jpg'),
-        size: '1024x1024',
-        purpose: 'maskable',
-      },
-      {
-        src: path.resolve('src/images/apollo_logo.png'),
-        sizes: [120, 152, 167, 180, 1024],
-        destination: path.join('icons', 'ios'),
-        ios: true,
-      },
-      {
-        src: path.resolve('src/images/apollo_logo.png'),
-        size: 1024,
-        destination: path.join('icons', 'ios'),
-        ios: 'startup',
-      },
-      {
-        src: path.resolve('src/images/apollo_logo.png'),
-        sizes: [36, 48, 72, 96, 144, 192, 512],
-        destination: path.join('icons', 'android'),
-      },
-    ],
-  }),
+  // new WebpackPwaManifest({
+  //   name: 'Apollo 247',
+  //   short_name: 'Apollo 247',
+  //   description:
+  //     'Apollo 24|7 helps you get treated from Apollo certified doctors at any time of the day, wherever you are. The mobile app has features like e-consultation in 15 minutes, online pharmacy to doorstep delivery of medicines, home diagnostic test and digital vault where you can upload all your medical history.',
+  //   background_color: '#ffffff',
+  //   theme_color: '#fdb714',
+  //   ios: true,
+  //   icons: [
+  //     {
+  //       src: PWA_IMG_URL,
+  //       sizes: [96, 128, 192, 256, 384, 512], // multiple sizes
+  //     },
+  //     {
+  //       src:
+  //         isStaging || isProduction
+  //           ? `${imageCdnBaseUrl}/apollo_logo.jpg`
+  //           : `${srcDir}/images/apollo_logo.jpg`,
+  //       size: '1024x1024',
+  //       purpose: 'maskable',
+  //     },
+  //     {
+  //       src: PWA_IMG_URL,
+  //       sizes: [120, 152, 167, 180, 1024],
+  //       destination: path.join('icons', 'ios'),
+  //       ios: true,
+  //     },
+  //     {
+  //       src: PWA_IMG_URL,
+  //       size: 1024,
+  //       destination: path.join('icons', 'ios'),
+  //       ios: 'startup',
+  //     },
+  //     {
+  //       src: PWA_IMG_URL,
+  //       sizes: [36, 48, 72, 96, 144, 192, 512],
+  //       destination: path.join('icons', 'android'),
+  //     },
+  //   ],
+  // }),
+  // new WorkboxPlugin.GenerateSW({
+  //   // these options encourage the ServiceWorkers to get in there fast
+  //   // and not allow any straggling "old" SWs to hang around
+  //   cleanupOutdatedCaches: true,
+  //   clientsClaim: true,
+  //   skipWaiting: true,
+  //   maximumFileSizeToCacheInBytes: 50000000,
+  // }),
 ];
 if (isLocal) {
   plugins.push(
@@ -157,19 +165,18 @@ module.exports = {
         loader: 'file-loader',
         options: {
           publicPath: (url, resourcePath, context) => {
-            const imageName = resourcePath.split('/').pop()         
-            if(isProduction || isStaging) {
-              console.log('resourcePath', resourcePath.split('/').pop())   
+            const imageName = resourcePath.split('/').pop();
+            if (isProduction || isStaging) {
+              // console.log('resourcePath', resourcePath.split('/').pop());
               return `${imageCdnBaseUrl}/${imageName}`;
             }
-            return `/images/${imageName}`
+            return `/images/${imageName}`;
           },
-          name: (isProduction || isStaging) ? '' : '[path][name].[ext]',
-          outputPath: (isProduction || isStaging) ? 'images': '',
+          name: '[path][name].[ext]',
+          // outputPath: isProduction || isStaging ? 'images' : '',
         },
       },
     ],
-    
   },
 
   resolve: {
@@ -209,7 +216,7 @@ module.exports = {
           maxAsyncRequests: 30,
           maxInitialRequests: 30,
           automaticNameDelimiter: '~',
-          enforceSizeThreshold: 50000,
+          // enforceSizeThreshold: 50000,
           cacheGroups: {
             defaultVendors: {
               test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,

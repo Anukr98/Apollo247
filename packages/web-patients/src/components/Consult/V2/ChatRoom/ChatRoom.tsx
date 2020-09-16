@@ -40,6 +40,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { GET_APPOINTMENT_DATA } from 'graphql/consult';
 import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import { removeGraphQLKeyword } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -351,6 +352,8 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
       lineHeight: 1.85,
       backgroundColor: '#fff',
+      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      minWidth: 135,
       '&:hover': {
         backgroundColor: '#fff',
       },
@@ -505,6 +508,7 @@ export const ChatRoom: React.FC = () => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
   const [jrDoctorJoined, setJrDoctorJoined] = useState<boolean>(false);
+  const [srDoctorJoined, setSrDoctorJoined] = useState<boolean>(false);
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
   const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
@@ -513,6 +517,7 @@ export const ChatRoom: React.FC = () => {
   const [apiLoading, setApiLoading] = useState<boolean>(false);
   const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
   const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
+  const [isConsultCompleted, setIsConsultCompleted] = useState<boolean>(false);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const patientId = (currentPatient && currentPatient.id) || '';
@@ -560,7 +565,9 @@ export const ChatRoom: React.FC = () => {
         console.log(e);
         setApiLoading(false);
         setIsAlertOpen(true);
-        setAlertMessage(`Error occured while rescheduling the appointment, ${e}`);
+        setAlertMessage(
+          `Error occured while rescheduling the appointment(${removeGraphQLKeyword(e)})`
+        );
       });
   };
 
@@ -663,6 +670,8 @@ export const ChatRoom: React.FC = () => {
                     handleRescheduleOpen={handleRescheduleOpen}
                     doctorDetails={data}
                     appointmentDetails={appointmentDetails}
+                    srDoctorJoined={srDoctorJoined}
+                    isConsultCompleted={isConsultCompleted}
                   />
                 )}
               </div>
@@ -671,10 +680,11 @@ export const ChatRoom: React.FC = () => {
                   {displayId && <span className={classes.caseNumber}>Case #{displayId} </span>}
                   {appointmentDetails &&
                     appointmentDetails.status !== STATUS.CANCELLED &&
-                    appointmentDetails.status !== STATUS.COMPLETED && (
+                    appointmentDetails.status !== STATUS.COMPLETED &&
+                    !srDoctorJoined && (
                       <div className={classes.headerActions}>
                         <AphButton
-                          disabled={jrDoctorJoined}
+                          disabled={appointmentDetails.isSeniorConsultStarted || srDoctorJoined}
                           classes={{
                             root: classes.viewButton,
                             disabled: classes.disabledButton,
@@ -693,6 +703,7 @@ export const ChatRoom: React.FC = () => {
                   <ChatWindow
                     doctorDetails={data}
                     jrDoctorJoined={jrDoctorJoined}
+                    setSrDoctorJoined={setSrDoctorJoined}
                     setJrDoctorJoined={setJrDoctorJoined}
                     isModalOpen={isModalOpen}
                     setIsModalOpen={setIsModalOpen}
@@ -700,6 +711,7 @@ export const ChatRoom: React.FC = () => {
                     availableNextSlot={nextAvailableSlot}
                     rescheduleAPI={rescheduleAPI}
                     appointmentDetails={appointmentDetails}
+                    setIsConsultCompleted={setIsConsultCompleted}
                   />
                 )}
               </div>
@@ -751,7 +763,7 @@ export const ChatRoom: React.FC = () => {
                       <h6>
                         {'Since you have already rescheduled 3 times with Dr. '}
                         {`${
-                          data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName
+                          data && data.getDoctorDetailsById && data.getDoctorDetailsById.fullName
                         }`}{' '}
                         {`, We will consider this a new paid appointment.`}
                       </h6>
@@ -759,9 +771,7 @@ export const ChatRoom: React.FC = () => {
                     <br />
                     <h6>
                       Next slot for Dr.{' '}
-                      {`${
-                        data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName
-                      }`}
+                      {`${data && data.getDoctorDetailsById && data.getDoctorDetailsById.fullName}`}{' '}
                       is available on -
                     </h6>
                     <br />
@@ -828,7 +838,7 @@ export const ChatRoom: React.FC = () => {
               <img src={require('images/ic-mascot.png')} alt="" />
             </div>
             <div className={classes.windowBody}>
-              <p>`Hi! :)`</p>
+              <p>Hi! :)</p>
               <p>
                 Your appointment with Dr.
                 {` ${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName} `}

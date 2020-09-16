@@ -49,6 +49,10 @@ import {
   paymentStatusResolvers,
 } from 'profiles-service/resolvers/pharmaPaymentStatus';
 import {
+  refundOrderTypeDefs,
+  refundInitResolver,
+} from 'profiles-service/resolvers/pharmaOrderRefund';
+import {
   saveMedicineOrderOMSTypeDefs,
   saveMedicineOrderOMSResolvers,
 } from 'profiles-service/resolvers/saveMedicineOrdersOMS';
@@ -215,6 +219,16 @@ import {
   patientDeviceVoipTokenResolvers,
 } from 'profiles-service/resolvers/savepatientDeviceVoipToken';
 
+import {
+  addPatientHealthCheckRecordTypeDefs,
+  addPatientHealthCheckRecordsResolvers,
+} from 'profiles-service/resolvers/addHealthCheckRecords';
+
+import {
+  addPatientHospitalizationRecordTypeDefs,
+  addPatientHospitalizationRecordResolvers
+} from 'profiles-service/resolvers/addHospitalizationRecords';
+
 (async () => {
   await connect();
   const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
@@ -365,6 +379,10 @@ import {
         resolvers: uhidResolvers,
       },
       {
+        typeDefs: refundOrderTypeDefs,
+        resolvers: refundInitResolver,
+      },
+      {
         typeDefs: updateOrderStatusTypeDefs,
         resolvers: updateOrderStatusResolvers,
       },
@@ -475,6 +493,14 @@ import {
       {
         typeDefs: patientDeviceVoipTokenTypeDefs,
         resolvers: patientDeviceVoipTokenResolvers,
+      },
+      {
+        typeDefs: addPatientHealthCheckRecordTypeDefs,
+        resolvers: addPatientHealthCheckRecordsResolvers
+      },
+      {
+        typeDefs: addPatientHospitalizationRecordTypeDefs,
+        resolvers: addPatientHospitalizationRecordResolvers,
       },
     ]),
     plugins: [

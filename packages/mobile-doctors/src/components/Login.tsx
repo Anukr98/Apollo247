@@ -32,6 +32,11 @@ import { NavigationScreenProps } from 'react-navigation';
 import { loginAPI } from '../helpers/loginCalls';
 import AsyncStorage from '@react-native-community/async-storage';
 import { AppSignature } from '@aph/mobile-doctors/src/helpers/AppSignature';
+import {
+  postWebEngageEvent,
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 const styles = LoginStyles;
 
@@ -154,6 +159,9 @@ export const Login: React.FC<LoginProps> = (props) => {
                 setShowSpinner(false);
                 const errorMessage = error.graphQLErrors[0].message;
                 if (errorMessage === 'NOT_A_DOCTOR') {
+                  postWebEngageEvent(WebEngageEventName.NOT_REGISTERED, {
+                    mobileNumber: '+91' + phoneNumber,
+                  } as WebEngageEvents[WebEngageEventName.NOT_REGISTERED]);
                   showAphAlert &&
                     showAphAlert({
                       title: strings.common.alert,

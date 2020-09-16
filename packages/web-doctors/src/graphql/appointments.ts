@@ -5,6 +5,7 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
     getDoctorAppointments(doctorId: $doctorId, startDate: $startDate, endDate: $endDate) {
       appointmentsHistory {
         id
+        displayId
         patientId
         isJdQuestionsComplete
         appointmentDateTime
@@ -23,6 +24,7 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
           id
           firstName
           lastName
+          mobileNumber
           photoUrl
         }
       }

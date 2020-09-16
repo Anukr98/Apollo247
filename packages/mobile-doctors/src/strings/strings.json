@@ -43,7 +43,8 @@
     "oops_msg_saving": "Oops! seems like we are having an issue while saving case sheet. Please try again.",
     "custom": "custom",
     "default": "default",
-    "contact_mailId": "admin@apollo247.com"
+    "contact_mailId": "admin@apollo247.com",
+    "imageLoading": "Loading Image"
   },
   "login": {
     "hello": "hello!",

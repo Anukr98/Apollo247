@@ -121,6 +121,11 @@ import firebase from 'react-native-firebase';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { AddMedicinePrescriptionPopUp } from '@aph/mobile-doctors/src/components/ui/AddMedicinePrescriptionPopUp';
+import {
+  postWebEngageEvent,
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 const { width } = Dimensions.get('window');
 
@@ -370,6 +375,23 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     setSeniorDrPersonalNotes,
   } = props;
 
+  const basicAppointmentData = {
+    'Doctor name': g(doctorDetails, 'fullName') || '',
+    'Patient name': `${g(caseSheet, 'caseSheetDetails', 'patientDetails', 'firstName')} ${g(
+      caseSheet,
+      'caseSheetDetails',
+      'patientDetails',
+      'lastName'
+    )}`.trim(),
+    'Patient mobile number':
+      g(caseSheet, 'caseSheetDetails', 'patientDetails', 'mobileNumber') || '',
+    'Doctor Mobile number': g(doctorDetails, 'mobileNumber') || '',
+    'Appointment Date time':
+      g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || '',
+    'Appointment display ID': g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') || '',
+    'Appointment ID': AppId || g(caseSheet, 'caseSheetDetails', 'appointment', 'id') || '',
+  };
+
   const sendToPatientAction = (callBack?: () => void) => {
     setLoading && setLoading(true);
     client
@@ -446,20 +468,25 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const followUpMessage = (pdf?: string) => {
     const followupObj = {
       appointmentId: AppId,
-      folloupDateTime: followup
-        ? moment(
-            g(props.caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') ||
-              new Date()
-          )
-            .add(Number(followupChatDays.key), 'd')
-            .format('YYYY-MM-DD')
-        : '',
+      folloupDateTime: '',
       doctorId: g(props.caseSheet, 'caseSheetDetails', 'doctorId'),
       caseSheetId: g(props.caseSheet, 'caseSheetDetails', 'id'),
       doctorInfo: doctorDetails,
       pdfUrl: pdf || prescriptionPdf,
       isResend: pdf === undefined,
     };
+    postWebEngageEvent(
+      caseSheetVersion > 1
+        ? WebEngageEventName.DOCTOR_ISSUE_NEW_PRESCRIPTION
+        : pdf
+        ? WebEngageEventName.DOCTOR_SEND_PRESCRIPTION
+        : WebEngageEventName.DOCTOR_RESEND_PRESCRIPTION,
+      {
+        ...basicAppointmentData,
+        'Blob URL': pdf || prescriptionPdf,
+      } as WebEngageEvents[WebEngageEventName.DOCTOR_SEND_PRESCRIPTION]
+    );
+
     props.messagePublish &&
       props.messagePublish({
         id: followupObj.doctorId,
@@ -1583,21 +1610,27 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                                           i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
                                         ) =>
                                           ((i || {}).externalId || (i || {}).id) !==
-                                          (data.externalId || data.id)
+                                          (data.externalId || data.medicineName)
                                       ) || []),
-                                      data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                                      {
+                                        ...data,
+                                        externalId: data.externalId || data.medicineName,
+                                      } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
                                     ]);
                                   } else {
                                     setMedicinePrescriptionData([
-                                      data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                                      {
+                                        ...data,
+                                        externalId: data.externalId || data.medicineName,
+                                      } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
                                     ]);
                                   }
                                   setSelectedMedicinesId(
                                     [
                                       ...selectedMedicinesId.filter(
-                                        (i) => i !== (data.externalId || data.id)
+                                        (i) => i !== (data.externalId || data.medicineName)
                                       ),
-                                      data.externalId || data.id || '',
+                                      data.externalId || data.medicineName || '',
                                     ].filter((i) => i !== '')
                                   );
                                 }}
@@ -2610,7 +2643,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             source={{
               uri: (patientDetails && patientDetails.photoUrl) || '',
             }}
-            style={{ height: width, width: width }}
+            style={{ height: width, width: width, backgroundColor: theme.colors.WHITE }}
             resizeMode={'contain'}
             placeholderStyle={{
               height: width,
@@ -2619,7 +2652,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               backgroundColor: 'transparent',
             }}
             PlaceholderContent={
-              loading ? <></> : <Spinner style={{ backgroundColor: 'transparent' }} />
+              loading ? (
+                <></>
+              ) : (
+                <Spinner
+                  style={{ backgroundColor: 'transparent' }}
+                  message={strings.common.imageLoading}
+                />
+              )
             }
           />
         ) : (

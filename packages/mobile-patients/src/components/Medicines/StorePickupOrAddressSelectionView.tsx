@@ -4,12 +4,19 @@ import { TabsComponent } from '../ui/TabsComponent';
 import { theme } from '../../theme/theme';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 // import { TextInputComponent } from '../ui/TextInputComponent';
-import { searchPickupStoresApi, pinCodeServiceabilityApi, Store } from '../../helpers/apiCalls';
+import { searchPickupStoresApi, Store, pinCodeServiceabilityApi247 } from '../../helpers/apiCalls';
 import { RadioSelectionItem } from './RadioSelectionItem';
 import { AppRoutes } from '../NavigatorContainer';
 import { savePatientAddress_savePatientAddress_patientAddress } from '../../graphql/types/savePatientAddress';
 import { useUIElements } from '../UIElementsProvider';
-import { aphConsole, handleGraphQlError, formatAddress, g, postWebEngageEvent } from '../../helpers/helperFunctions';
+import {
+  aphConsole,
+  handleGraphQlError,
+  formatAddressWithLandmark,
+  formatNameNumber,
+  g,
+  postWebEngageEvent,
+} from '../../helpers/helperFunctions';
 import React, { useState, useEffect } from 'react';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
@@ -33,6 +40,11 @@ const styles = StyleSheet.create({
   rowSpaceBetweenStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  subtitleStyle: {
+    ...theme.fonts.IBMPlexSansMedium(13),
+    color: theme.colors.SHERPA_BLUE,
+    marginBottom: 5,
   },
 });
 
@@ -163,10 +175,10 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
     }
     setDeliveryAddressId!('');
     setCheckingServicability(true);
-    pinCodeServiceabilityApi(address.zipcode!)
-      .then(({ data: { Availability } }) => {
+    pinCodeServiceabilityApi247(address.zipcode!)
+      .then(({ data: { response } }) => {
         setCheckingServicability(false);
-        if (Availability) {
+        if (response) {
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
           showAphAlert!({
@@ -175,9 +187,12 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
           });
         }
         const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED] = {
-          Serviceable: Availability ? 'Yes' : 'No',
+          Serviceable: response ? 'Yes' : 'No',
         };
-        postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED, eventAttributes);
+        postWebEngageEvent(
+          WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED,
+          eventAttributes
+        );
       })
       .catch((e) => {
         CommonBugFender('StorePickupOrAddressSelectionView_pinCodeServiceabilityApi', e);
@@ -283,7 +298,14 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
           return (
             <RadioSelectionItem
               key={item.id}
-              title={formatAddress(item)}
+              title={formatAddressWithLandmark(item)}
+              showMultiLine={true}
+              subtitle={formatNameNumber(item)}
+              subtitleStyle={styles.subtitleStyle}
+              showEditIcon={true}
+              onPressEdit={() =>
+                _navigateToEditAddress('Update', item, AppRoutes.YourCartUploadPrescriptions)
+              }
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
                 checkServicability(item);
@@ -318,6 +340,14 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
         </View>
       </View>
     );
+  };
+
+  const _navigateToEditAddress = (dataname: string, address: any, comingFrom: string) => {
+    props.navigation.push(AppRoutes.AddAddress, {
+      KeyName: dataname,
+      DataAddress: address,
+      ComingFrom: comingFrom,
+    });
   };
 
   const renderDelivery = () => {

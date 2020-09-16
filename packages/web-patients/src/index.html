@@ -3,27 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <title>Apollo</title>
+    <link rel="alternate" href="android-app://com.apollopatient/https/www.apollo247.com/" />
     <script type="application/ld+json">
-      <head>
-        <meta charset="utf-8" />
-        <title>Apollo</title>
-        <link rel="alternate" href="android-app://com.apollopatient/https/www.apollo247.com/" />
-        <script type="application/ld+json">
-          {
-            "@context": "https://schema.org",
-            "@type": "MedicalOrganization",
-            "name": "Apollo24|7",
-            "alternateName": "Apollo24|7",
-            "url": "https://www.apollo247.com/",
-            "logo": "https://www.apollo247.com/campaign/online-medical-consultation/images/logo.png",
-            "sameAs": [
-              "https://www.facebook.com/Apollo24x7/",
-              "https://twitter.com/apollo24x7",
-              "https://www.youtube.com/channel/UCcu5m4OXFqKCqL2HaYREhcg",
-              "https://in.linkedin.com/company/apollo247",
-              "https://www.apollo247.com/"
-            ]
-          }
+      {
+        "@context": "https://schema.org",
+        "@type": "MedicalOrganization",
+        "name": "Apollo24|7",
+        "alternateName": "Apollo24|7",
+        "url": "https://www.apollo247.com/",
+        "logo": "https://www.apollo247.com/campaign/online-medical-consultation/images/logo.png",
+        "sameAs": [
+          "https://www.facebook.com/Apollo24x7/",
+          "https://twitter.com/apollo24x7",
+          "https://www.youtube.com/channel/UCcu5m4OXFqKCqL2HaYREhcg",
+          "https://in.linkedin.com/company/apollo247",
+          "https://www.apollo247.com/"
+        ]
+      }
     </script>
 
     <link
@@ -47,7 +43,7 @@
       href="https://cdn.jsdelivr.net/npm/react-image-gallery@0.9.1/styles/css/image-gallery.css"
     />
     <link rel="shortcut icon" href="favicon.svg" type="image/svg/ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no" />
     <style>
       a {
         text-decoration: none;
@@ -121,8 +117,9 @@
       .chatVideo .OT_subscriber {
         position: absolute;
         width: 100% !important;
-        /* min-height: auto !important; */
+        min-height: auto !important;
         bottom: 0;
+        height: auto !important;
       }
 
       .chatVideo .OT_publisher {
@@ -148,6 +145,11 @@
       .OT_publisher .OT_edge-bar-item,
       .OT_subscriber .OT_edge-bar-item {
         display: none !important;
+      }
+
+      .hideVideoContainer .OT_subscriber {
+        min-height: auto !important;
+        height: auto !important;
       }
     </style>
   </body>

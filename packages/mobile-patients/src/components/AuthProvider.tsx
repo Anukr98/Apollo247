@@ -109,25 +109,42 @@ export const AuthProvider: React.FC = (props) => {
   const hasAuthToken = !_isEmpty(authToken);
 
   const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
-  const setNewToken = () => {
-    // const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
-    // if(userLoggedIn == 'true'){ // no need to refresh jwt token on login
-    try {
-      firebase.auth().onAuthStateChanged(async (user) => {
-        // console.log('authprovider', user);
-        if (user) {
-          // console.log('authprovider login');
-          const jwt = await user.getIdToken(true).catch((error) => {
-            setIsSigningIn(false);
-            setSignInError(true);
-            setAuthToken('');
-            throw error;
-          });
-          setAuthToken(jwt);
-        }
-      });
-    } catch (e) {}
-  // }
+  const setNewToken = async () => {
+    const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
+    if (userLoggedIn == 'true') {
+      // no need to refresh jwt token on login
+      try {
+        firebase.auth().onAuthStateChanged(async (user) => {
+          // console.log('authprovider', user);
+          if (user) {
+            // console.log('authprovider login');
+            const jwt = await user.getIdToken(true).catch((error) => {
+              setIsSigningIn(false);
+              setSignInError(true);
+              setAuthToken('');
+              throw error;
+            });
+            setAuthToken(jwt);
+          }
+        });
+      } catch (e) {}
+    }
+  };
+
+  const validateAndUpdate = (authToken: any) => {
+    if (authToken) {
+      const jwtDecode = require('jwt-decode');
+      const millDate = jwtDecode(authToken).exp;
+      const currentTime = new Date().valueOf() / 1000;
+      // console.log('millDate', millDate, currentTime, millDate > currentTime);
+      if (millDate < currentTime) {
+        getFirebaseToken();
+      } else {
+        setAuthToken(authToken);
+      }
+    } else {
+      getFirebaseToken();
+    }
   };
   const buildApolloClient = (authToken: string, handleUnauthenticated: any) => {
     if (authToken) {
@@ -243,10 +260,11 @@ export const AuthProvider: React.FC = (props) => {
     async function fetchData() {
       let jwtToken: any = await AsyncStorage.getItem('jwt');
       jwtToken = JSON.parse(jwtToken);
-      console.log('jwtToken', jwtToken);
+      // console.log('jwtToken', jwtToken);
 
-      setAuthToken(jwtToken);
-      getFirebaseToken();
+      // setAuthToken(jwtToken);
+      // getFirebaseToken();
+      validateAndUpdate(jwtToken);
     }
     fetchData();
   }, [auth]);
@@ -281,16 +299,16 @@ export const AuthProvider: React.FC = (props) => {
             apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
             authStateRegistered = false;
             resolve(jwt);
-            getNetStatus()
-              .then(async (item) => {
-                const userLoggedIn = await AsyncStorage.getItem('logginHappened');
-                if (userLoggedIn == 'true') {
-                  item && getPatientApiCall();
-                }
-              })
-              .catch((e) => {
-                CommonBugFender('AuthProvider_getNetStatus', e);
-              });
+            // getNetStatus()
+            //   .then(async (item) => {
+            //     const userLoggedIn = await AsyncStorage.getItem('logginHappened');
+            //     if (userLoggedIn == 'true') {
+            //       item && getPatientApiCall();
+            //     }
+            //   })
+            //   .catch((e) => {
+            //     CommonBugFender('AuthProvider_getNetStatus', e);
+            //   });
           }
           setIsSigningIn(false);
         });

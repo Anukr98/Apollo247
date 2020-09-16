@@ -170,7 +170,7 @@ type AddNewAddressProps = {
   currentAddress?: GetPatientAddressList_getPatientAddressList_addressList;
   disableActions?: boolean;
   forceRefresh?: (forceRefresh: boolean) => void;
-  checkServiceAvailability?: (zipCode: string | null) => AxiosPromise;
+  checkServiceAvailability?: (zipCode: string | null) => any;
   setDeliveryTime?: (deliveryTime: string) => void;
 };
 
@@ -273,9 +273,11 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   // ------------------------------------------------
   useEffect(() => {
     if (pincode && pincode.length === 6) {
+      const pincodeAndAddress = [pincode, address1].filter((v) => (v || '').trim()).join(',');
+
       axios
         .get(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
+          `https://maps.googleapis.com/maps/api/geocode/json?address=pincode:${pincodeAndAddress}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
         )
         .then(({ data }) => {
           if (data && data.results.length === 0) {
@@ -518,8 +520,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       if (props.checkServiceAvailability) {
                         props
                           .checkServiceAvailability(pincode)
-                          .then((res: AxiosResponse) => {
-                            if (res && res.data && res.data.Availability) {
+                          .then((res: any) => {
+                            if (res && res.data && res.data.response) {
                               /**Gtm code start  */
                               gtmTracking({
                                 category: 'Profile',

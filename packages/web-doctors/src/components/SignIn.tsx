@@ -8,6 +8,8 @@ import {
   Theme,
   Typography,
   Button,
+  Modal,
+  Paper
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphInput } from '@aph/web-ui-components';
@@ -19,6 +21,7 @@ import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import { AphTextField } from '@aph/web-ui-components';
 import { HelpPopup } from 'components/Help';
 import isNumeric from 'validator/lib/isNumeric';
+import { webEngageEventTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -136,6 +139,49 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: 'transparent',
       },
     },
+    modalBoxCancel: {
+      maxWidth: 436,
+      minHeight: 220,
+      margin: "auto",
+      marginTop: 88,
+      backgroundColor: "white",
+      position: "relative",
+      outline: "none",
+    },
+    tabHeader: {
+      background: "white",
+      height: 35,
+      borderTopLeftRadius: "10px",
+      borderTopRightRadius: "10px",
+      "& h4": {
+        fontSize: "13px",
+        fontWeight: 600,
+        letterSpacing: "0.5px",
+        color: "#01475b",
+        textTransform: "uppercase",
+        padding: "17px 20px",
+      },
+    },
+    tabBody: {
+      background: "white",
+      minHeight: 80,
+      margin: 20,
+      borderRadius: 5,
+      padding: "10px 15px 15px 15px",
+      "& h3": {
+        fontSize: 18,
+        color: "#02475b",
+      },
+      "& p": {
+        margin: 0,
+        fontSize: "15px",
+        fontWeight: 500,
+        lineHeight: 1.2,
+        color: "#01475b",
+        paddingBottom: 5,
+        paddingTop: 4,
+      },
+    },
     loader: {
       color: '#fff',
     },
@@ -145,6 +191,11 @@ const useStyles = makeStyles((theme: Theme) => {
       top: '10px',
       fontSize: '16px',
       color: '#02475b',
+    },
+    blueBubble: {
+      //backgroundColor: '#0087ba',
+      color: '#0087ba',
+      marginBottom: 5,
     },
   };
 });
@@ -176,6 +227,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
   const [submitCount, setSubmitCount] = useState(0);
   const [showTimer, setShowTimer] = useState(false);
   const [showBackArrow, setShowBackArrow] = useState(true);
+  const [isErrorPopoverOpen, setIsErrorPopoverOpen] = useState(false);
   const countDown = useRef(179);
   const [timer, setTimer] = useState(179);
 
@@ -290,6 +342,9 @@ export const SignIn: React.FC<PopupProps> = (props) => {
               }}
               onKeyPress={(e) => {
                 if (otp.join('').length === numOtpDigits && e.key == 'Enter') {
+                  webEngageEventTracking(null,
+                    'Front_end - Doctor OTP Entered'
+                  );
                   verifyOtp(otp.join(''), loginId);
                   setSubmitCount(submitCount + 1);
                 }
@@ -340,6 +395,9 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           variant="text"
           className={classes.resendBtn}
           onClick={() => {
+            webEngageEventTracking(null,
+              'Front_end - Doctor Clicked on the help'
+            );
             setDisplayGetHelp(true);
             setMobileNumber('');
           }}
@@ -352,11 +410,14 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           className={classes.resendBtn}
           disabled={isSendingOtp}
           onClick={() => {
+            webEngageEventTracking(null, 'Front_end - Doctor OTP Resend');
             setOtp([]);
             setSubmitCount(0);
             sendOtp(mobileNumberWithPrefix, loginId).then((res: any) => {
               if (res) {
                 setLoginId(res);
+              }else{
+                setIsErrorPopoverOpen(true);
               }
             });
           }}
@@ -370,6 +431,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
         <Fab
           color="primary"
           onClick={() => {
+            webEngageEventTracking(null, 'Front_end - Doctor OTP Entered');
             verifyOtp(otp.join(''), loginId).then(() => setDisplayOtpInput(true));
             setSubmitCount(submitCount + 1);
           }}
@@ -417,11 +479,21 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           }
           onKeyPress={(e) => {
             if (!showErrorMessage && mobileNumber.length === 10 && e.key == 'Enter') {
+              webEngageEventTracking(
+                {
+                  'Doctor mobile Number': mobileNumberWithPrefix,
+                },
+                'Front_end - Doctor Mobile Number entered'
+              );
               sendOtp(mobileNumberWithPrefix, '').then((res: any) => {
                 if (res) {
                   setLoginId(res);
+                  setDisplayOtpInput(true);
+                }else{
+                  setIsErrorPopoverOpen(true);
+                  //alert('error in mobile number');
                 }
-                setDisplayOtpInput(true);
+  
               });
               setStickyPopupValue();
             }
@@ -434,7 +506,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           }
         />
         <FormHelperText component="div" className={classes.helpText} error={showErrorMessage}>
-          {sendOtpError ? 'Error sending OTP' : phoneMessage}
+        {sendOtpError ? '' : phoneMessage}
         </FormHelperText>
       </FormControl>
       <Button
@@ -442,6 +514,9 @@ export const SignIn: React.FC<PopupProps> = (props) => {
         className={classes.resendBtn}
         disabled={!showErrorMessage}
         onClick={() => {
+          webEngageEventTracking(null,
+            'Front_end - Doctor Clicked on the help'
+          );
           setDisplayGetHelp(true);
           setStickyPopupValue();
         }}
@@ -456,11 +531,19 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             !isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10 || isSendingOtp
           }
           onClick={() => {
+            webEngageEventTracking(
+              {
+                'Doctor mobile Number': mobileNumberWithPrefix,
+              },
+              'Front_end - Doctor Mobile Number entered'
+            );
             sendOtp(mobileNumberWithPrefix, '').then((res: any) => {
               if (res) {
                 setLoginId(res);
+                setDisplayOtpInput(true);
+              }else{
+                setIsErrorPopoverOpen(true);
               }
-              setDisplayOtpInput(true);
             });
             setStickyPopupValue();
           }}
@@ -473,6 +556,32 @@ export const SignIn: React.FC<PopupProps> = (props) => {
         </Fab>
       </div>
       <div className={classes.captcha} ref={placeRecaptchaAfterMe} />
+        <Modal
+          open={isErrorPopoverOpen}
+          onClose={() => {
+            setIsErrorPopoverOpen(false);
+          }}
+        >
+          <Paper className={classes.modalBoxCancel}>
+            <div className={classes.tabHeader}>
+              {/* <h4>Cancel CONSULT</h4> */}
+              <Button className={classes.cross}>
+                <img
+                  src={require("images/ic_cross.svg")}
+                  alt=""
+                  onClick={() => {
+                    setIsErrorPopoverOpen(false);
+                  }}
+                />
+              </Button>
+            </div>
+            <div className={classes.tabBody}>
+              <p>Seems like the mobile no. you entered is either not registered with us or your account has been disabled. If you are a doctor and wish to enroll with us, please contact admin@apollo247.com. If you are a patient, please 
+              <a className={classes.blueBubble}
+            href="https://www.apollo247.com"> Click here</a></p>
+            </div>
+          </Paper>
+        </Modal>
     </div>
   );
 };

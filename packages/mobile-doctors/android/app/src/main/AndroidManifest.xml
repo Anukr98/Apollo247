@@ -47,6 +47,7 @@
         <meta-data
             android:name="com.bugsnag.android.API_KEY"
             android:value="7839e425f4acbd8e6ff3f907281addca" />
+        <meta-data android:name="com.webengage.sdk.android.environment" android:value="in" />
         <!-- Set color used with incoming notification messages. This is used when no color is set for the incoming
         notification message. See README(https://goo.gl/6BKBk7) for more. -->
         <receiver android:name="io.invertase.firebase.notifications.RNFirebaseNotificationReceiver" />
