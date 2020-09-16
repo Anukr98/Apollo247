@@ -310,29 +310,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     index: number
   ) => {
     if (
-      !rowData.message &&
-      ([
-        messageCodes.typingMsg,
-        messageCodes.endCallMsg,
-        messageCodes.audioCallMsg,
-        messageCodes.videoCallMsg,
-        messageCodes.acceptedCallMsg,
-        messageCodes.rescheduleconsult,
-        messageCodes.followupconsult,
-        messageCodes.appointmentComplete,
-        messageCodes.firstMessage,
-        messageCodes.secondMessage,
-        messageCodes.covertVideoMsg,
-        messageCodes.covertAudioMsg,
-        messageCodes.callAbandonment,
-        messageCodes.stopConsultMsg,
-        messageCodes.jdThankyou,
-        messageCodes.cancelConsultInitiated,
-        messageCodes.autoResponse,
-        messageCodes.leaveChatRoom,
-        messageCodes.patientJoined,
-        messageCodes.patientRejected,
-      ].includes(rowData.message) ||
+      !rowData.message ||
+      ((rowData.message &&
+        [
+          messageCodes.typingMsg,
+          messageCodes.endCallMsg,
+          messageCodes.audioCallMsg,
+          messageCodes.videoCallMsg,
+          messageCodes.acceptedCallMsg,
+          messageCodes.rescheduleconsult,
+          messageCodes.followupconsult,
+          messageCodes.appointmentComplete,
+          messageCodes.firstMessage,
+          messageCodes.secondMessage,
+          messageCodes.covertVideoMsg,
+          messageCodes.covertAudioMsg,
+          messageCodes.callAbandonment,
+          messageCodes.stopConsultMsg,
+          messageCodes.jdThankyou,
+          messageCodes.cancelConsultInitiated,
+          messageCodes.autoResponse,
+          messageCodes.leaveChatRoom,
+          messageCodes.patientJoined,
+          messageCodes.patientRejected,
+        ].includes(rowData.message)) ||
         JSON.stringify(messageCodes.patientRejected) === JSON.stringify(rowData))
     ) {
       return null;
