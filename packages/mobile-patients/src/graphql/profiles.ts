@@ -1996,6 +1996,14 @@ export const ADD_PATIENT_HOSPITALIZATION_RECORD = gql`
   }
 `;
 
+export const ADD_PATIENT_LAB_TEST_RECORD = gql`
+  mutation addPatientLabTestRecord($AddLabTestRecordInput: AddLabTestRecordInput) {
+    addPatientLabTestRecord(addLabTestRecordInput: $AddLabTestRecordInput) {
+      status
+    }
+  }
+`;
+
 export const GET_MEDICAL_RECORD = gql`
   query getPatientMedicalRecords($patientId: ID!) {
     getPatientMedicalRecords(patientId: $patientId) {
