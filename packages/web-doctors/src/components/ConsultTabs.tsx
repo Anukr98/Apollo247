@@ -1123,10 +1123,10 @@ export const ConsultTabs: React.FC = () => {
               _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.mobileNumber
                 ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.mobileNumber
                 : '',
-            appointmentDateTime: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!
-              .appointmentDateTime,
-            appointmentDisplayId: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!
-              .displayId,
+            appointmentDateTime: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.appointmentDateTime,
+            appointmentDisplayId: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.displayId,
             appointmentId: appointmentId,
           };
           setWebengageConsultTrackingObject(webEngageData);
@@ -2149,19 +2149,11 @@ export const ConsultTabs: React.FC = () => {
             style={{ height: 'calc(100vh - 65px)' }}
 
           > */}
-<<<<<<< HEAD
-          <RateCall
-            visible={giveRating}
-            setGiveRating={setGiveRating}
-            submitRatingCallback={(data) => submitRatingHandler(data)}
-          />
-=======
           {/* <RateCall
             visible={giveRating}
             setGiveRating={setGiveRating}
             submitRatingCallback={(data) => submitRatingHandler(data)}
           /> */}
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
           <div className={classes.container}>
             <CallPopover
               setGiveRating={setGiveRating}
@@ -2203,12 +2195,9 @@ export const ConsultTabs: React.FC = () => {
               tabValue={tabValue}
               showConfirmPrescription={showConfirmPrescription}
               setShowConfirmPrescription={(flag: boolean) => setShowConfirmPrescription(flag)}
-<<<<<<< HEAD
               webengageConsultTrackingObject={webengageConsultTrackingObject}
               setIsCallAccepted={handleSetIsCallAccepted}
               isCallAccepted={isCallAccepted}
-=======
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
             />
             <div className={classes.tabContainer}>
               <div
@@ -2271,11 +2260,8 @@ export const ConsultTabs: React.FC = () => {
                         lastMsg={lastMsg}
                         messages={messages}
                         appointmentStatus={appointmentStatus}
-<<<<<<< HEAD
                         setIsCallAccepted={handleSetIsCallAccepted}
                         isCallAccepted={isCallAccepted}
-=======
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                         postDoctorConsultEventAction={(
                           eventType: WebEngageEvent,
                           displayId: string

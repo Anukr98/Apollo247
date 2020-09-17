@@ -50,11 +50,7 @@ import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 // import Pagination from '@material-ui/lab/Pagination';
-<<<<<<< HEAD
-
-=======
 import axios from 'axios';
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 let currentPage = 1;
 let apolloDoctorCount = 0;
 let partnerDoctorCount = 0;

@@ -20,11 +20,8 @@ import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
 import { Alerts } from 'components/Alerts/Alerts';
 import { webengageUserLoginTracking, webengageUserDetailTracking } from '../webEngageTracking';
-<<<<<<< HEAD
 import { useAuth, useLoginPopupState } from 'hooks/authHooks';
-=======
 import { LazyIntersection } from './lib/LazyIntersection';
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 
 const isoDatePattern = 'yyyy-MM-dd';
 const clientDatePattern = 'dd/MM/yyyy';

@@ -448,11 +448,7 @@ export const HowItWorks: React.FC = (props) => {
                     <Typography>Make payment</Typography>
                   </li>
                   <li>
-<<<<<<< HEAD
-                    <img src={require('images/ic-mobile.svg')} />
-=======
                     <img src={require('images/ic-mobile.svg')} className={classes.mobileIcon} />
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                     <Typography>
                       Be present in the consult room on apollo247.com at the time of consult
                     </Typography>
@@ -505,7 +501,9 @@ export const HowItWorks: React.FC = (props) => {
       </div>
       <div className={classes.appDetails}>
         {/* <Typography component="h6">Consultation works only on our mobile app</Typography> */}
-        <Typography>To enjoy services provided by Apollo 247 on Mobile, download our App</Typography>
+        <Typography>
+          To enjoy services provided by Apollo 247 on Mobile, download our App
+        </Typography>
         <a href={getAppStoreLink()} target={'_blank'}>
           <div className={classes.appDownload}>
             <img src={require('images/apollo247.png')} />
