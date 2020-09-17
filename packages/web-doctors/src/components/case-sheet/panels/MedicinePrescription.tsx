@@ -753,9 +753,6 @@ const useStyles = makeStyles((theme: Theme) =>
           lineHeight: '16px',
         },
         '& button': {
-          position: 'absolute',
-          top: 10,
-          right: 0,
           padding: 0,
         },
       },
@@ -780,13 +777,14 @@ const useStyles = makeStyles((theme: Theme) =>
       top: 10,
       right: 10,
       '& button': {
-        position: 'static !important',
+        position: 'static',
       },
     },
     mb10: {
       marginBottom: 10,
     },
     selectedList: {
+<<<<<<< HEAD
       // height: 300,
       // overflow: 'auto',
 
@@ -800,6 +798,8 @@ const useStyles = makeStyles((theme: Theme) =>
       // '&::-webkit-scrollbar-thumb': {
       //   background: '#888',
       // },
+=======
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
       '& li': {
         padding: '10px 40px 10px 10px !important',
         background: 'rgba(0,0,0,0.02)',
@@ -960,7 +960,13 @@ export const MedicinePrescription: React.FC = () => {
   const [medicineCopyArr, setMedicineCopyArr] = React.useState<
     (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null
   >([]);
+<<<<<<< HEAD
   const [medicineCopyAddedArr, setMedicineCopyAddedArr] = React.useState<GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList[]>([]);
+=======
+  const [medicineCopyAddedArr, setMedicineCopyAddedArr] = React.useState<
+    GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList[]
+  >([]);
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 
   const [favMedicineName, setFavMedicineName] = React.useState<string>('');
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
@@ -2590,13 +2596,21 @@ export const MedicinePrescription: React.FC = () => {
   const medicineCopyHtml = (type: string) => {
     const isPresent = type === 'present';
     const existedMedicineArr =
+<<<<<<< HEAD
     medicineCopyAddedArr && medicineCopyAddedArr.length > 0
+=======
+      medicineCopyAddedArr && medicineCopyAddedArr.length > 0
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
         ? medicineCopyAddedArr.map(function(e: any) {
             return e.medicineName;
           })
         : [];
     const existedAddedMedicineArr =
+<<<<<<< HEAD
     selectedMedicinesArr && selectedMedicinesArr.length > 0
+=======
+      selectedMedicinesArr && selectedMedicinesArr.length > 0
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
         ? selectedMedicinesArr.map(function(e: any) {
             return e.medicineName;
           })
@@ -2669,7 +2683,12 @@ export const MedicinePrescription: React.FC = () => {
         }
 
         const actionButtons =
+<<<<<<< HEAD
           existedMedicineArr.indexOf(medicine.medicineName) > -1 || existedAddedMedicineArr.indexOf(medicine.medicineName) > -1
+=======
+          existedMedicineArr.indexOf(medicine.medicineName) > -1 ||
+          existedAddedMedicineArr.indexOf(medicine.medicineName) > -1
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
             ? [
                 <AphButton variant="contained" color="primary" classes={{ root: classes.addedBtn }}>
                   Added
@@ -3073,9 +3092,20 @@ export const MedicinePrescription: React.FC = () => {
                 color="primary"
                 classes={{ root: classes.updateSymptom }}
                 onClick={() => {
+<<<<<<< HEAD
                     setMedicineCopyAddedArr(medicineCopyAddedArr.filter(item => item.medicineName.toLowerCase().trim() !== medicine.medicineName.toLowerCase().trim()))
                   }
                 }
+=======
+                  setMedicineCopyAddedArr(
+                    medicineCopyAddedArr.filter(
+                      (item) =>
+                        item.medicineName.toLowerCase().trim() !==
+                        medicine.medicineName.toLowerCase().trim()
+                    )
+                  );
+                }}
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
               >
                 <Typography className={classes.removeBtn}>REMOVE</Typography>
               </AphButton>,
@@ -3116,6 +3146,7 @@ export const MedicinePrescription: React.FC = () => {
               )}
           </span>
         );
+<<<<<<< HEAD
           return (
             <li style={{ position: 'relative' }} className={classes.added} key={index}>
               {medicine.medicineCustomDetails ? (
@@ -3128,74 +3159,94 @@ export const MedicinePrescription: React.FC = () => {
                     </h5>
                   )}
                   {genericName}
+=======
+        return (
+          <li style={{ position: 'relative' }} className={classes.added} key={index}>
+            {medicine.medicineCustomDetails ? (
+              <div className={classes.medicineCard}>
+                {isPresent ? (
+                  <h5>{medicine.medicineName}</h5>
+                ) : (
+                  <h5>
+                    <s>{medicine.medicineName}</s>
+                  </h5>
+                )}
+                {genericName}
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 
-                  {!isPresent && (
-                    <p className={classes.removed}>This medicine has been discontinued </p>
-                  )}
+                {!isPresent && (
+                  <p className={classes.removed}>This medicine has been discontinued </p>
+                )}
 
-                  {medicine.medicineCustomDetails && <h6>{medicine.medicineCustomDetails}</h6>}
-                </div>
-              ) : (
-                <div className={classes.medicineCard}>
-                  {isPresent ? (
-                    <h5>{medicine.medicineName}</h5>
-                  ) : (
-                    <h5>
-                      <s>{medicine.medicineName}</s>
-                    </h5>
-                  )}
-                  {genericName}
-                  {!isPresent && (
-                    <p className={classes.removed}>This medicine has been discontinued </p>
-                  )}
-                  <h6>
-                    {`${
-                      medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
-                    } ${dosageHtml.toLowerCase()}${
-                      timesString.length > 0 &&
-                      medicine.medicineCustomDosage &&
-                      medicine.medicineCustomDosage !== ''
-                        ? ' (' + timesString + ') '
-                        : ' '
-                    }${
-                      medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
-                        ? ''
+                {medicine.medicineCustomDetails && <h6>{medicine.medicineCustomDetails}</h6>}
+              </div>
+            ) : (
+              <div className={classes.medicineCard}>
+                {isPresent ? (
+                  <h5>{medicine.medicineName}</h5>
+                ) : (
+                  <h5>
+                    <s>{medicine.medicineName}</s>
+                  </h5>
+                )}
+                {genericName}
+                {!isPresent && (
+                  <p className={classes.removed}>This medicine has been discontinued </p>
+                )}
+                <h6>
+                  {`${
+                    medicine.medicineFormTypes === 'OTHERS' ? 'Take' : 'Apply'
+                  } ${dosageHtml.toLowerCase()}${
+                    timesString.length > 0 &&
+                    medicine.medicineCustomDosage &&
+                    medicine.medicineCustomDosage !== ''
+                      ? ' (' + timesString + ') '
+                      : ' '
+                  }${
+                    medicine.medicineCustomDosage && medicine.medicineCustomDosage !== ''
+                      ? ''
+                      : medicine.medicineFrequency
+                      ? medicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
+                        ? 'STAT (Immediately)'
                         : medicine.medicineFrequency
-                        ? medicine.medicineFrequency === MEDICINE_FREQUENCY.STAT
-                          ? 'STAT (Immediately)'
-                          : medicine.medicineFrequency
-                              .split('_')
-                              .join(' ')
-                              .toLowerCase()
-                        : dosageFrequency[0].id
                             .split('_')
                             .join(' ')
                             .toLowerCase()
-                    }
+                      : dosageFrequency[0].id
+                          .split('_')
+                          .join(' ')
+                          .toLowerCase()
+                  }
                 ${duration} ${whenString.length > 0 ? whenString : ''} ${
-                      timesString.length > 0 &&
-                      medicine.medicineCustomDosage &&
-                      medicine.medicineCustomDosage !== ''
-                        ? ''
-                        : timesString
-                    }
+                    timesString.length > 0 &&
+                    medicine.medicineCustomDosage &&
+                    medicine.medicineCustomDosage !== ''
+                      ? ''
+                      : timesString
+                  }
                 `}
-                  </h6>
-                  {medicine.routeOfAdministration && (
-                    <h6>{`${
-                      medicine.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'
-                    }: ${medicine.routeOfAdministration
-                      .split('_')
-                      .join(' ')
-                      .toLowerCase()}`}</h6>
-                  )}
-                  {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
-                </div>
-              )}
+                </h6>
+                {medicine.routeOfAdministration && (
+                  <h6>{`${
+                    medicine.medicineFormTypes === 'OTHERS' ? 'To be taken' : 'To be Applied'
+                  }: ${medicine.routeOfAdministration
+                    .split('_')
+                    .join(' ')
+                    .toLowerCase()}`}</h6>
+                )}
+                {medicine.medicineInstructions && <h6>{medicine.medicineInstructions}</h6>}
+              </div>
+            )}
 
+<<<<<<< HEAD
               {caseSheetEdit && <div>{actionButtons}</div>}
             </li>
           );
+=======
+            {caseSheetEdit && <div>{actionButtons}</div>}
+          </li>
+        );
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
       })
     );
   };
@@ -4084,21 +4135,47 @@ export const MedicinePrescription: React.FC = () => {
                             className={classes.selectedDate}
                             onClick={() => {
                               const addedMedicineArr =
+<<<<<<< HEAD
                               medicineCopyAddedArr && medicineCopyAddedArr.length > 0
+=======
+                                medicineCopyAddedArr && medicineCopyAddedArr.length > 0
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                                   ? medicineCopyAddedArr.map(function(e: any) {
                                       return e.medicineName.toLowerCase();
                                     })
                                   : [];
                               const existedAddedMedicineArr =
+<<<<<<< HEAD
                               selectedMedicinesArr && selectedMedicinesArr.length > 0
+=======
+                                selectedMedicinesArr && selectedMedicinesArr.length > 0
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                                   ? selectedMedicinesArr.map(function(e: any) {
                                       return e.medicineName;
                                     })
                                   : [];
+<<<<<<< HEAD
                                   const medicineFilterCopyArr =  medicineCopyArr && medicineCopyArr.length > 0 ? medicineCopyArr.filter(function(e: any) {
                                     return addedMedicineArr!.indexOf(e.medicineName.toLowerCase()) < 0 && existedAddedMedicineArr!.indexOf(e.medicineName.toLowerCase()) < 0;
                                   }) : [];   
                               const medCopyAddedArray = medicineCopyAddedArr.concat(medicineFilterCopyArr);
+=======
+                              const medicineFilterCopyArr =
+                                medicineCopyArr && medicineCopyArr.length > 0
+                                  ? medicineCopyArr.filter(function(e: any) {
+                                      return (
+                                        addedMedicineArr!.indexOf(e.medicineName.toLowerCase()) <
+                                          0 &&
+                                        existedAddedMedicineArr!.indexOf(
+                                          e.medicineName.toLowerCase()
+                                        ) < 0
+                                      );
+                                    })
+                                  : [];
+                              const medCopyAddedArray = medicineCopyAddedArr.concat(
+                                medicineFilterCopyArr
+                              );
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                               setMedicineCopyAddedArr(medCopyAddedArray);
                             }}
                           >
@@ -4149,6 +4226,7 @@ export const MedicinePrescription: React.FC = () => {
               color="primary"
               onClick={() => {
                 const addedMedicineArr =
+<<<<<<< HEAD
                                 selectedMedicinesArr && selectedMedicinesArr.length > 0
                                   ? selectedMedicinesArr.map(function(e: any) {
                                       return e.medicineName;
@@ -4159,6 +4237,15 @@ export const MedicinePrescription: React.FC = () => {
                     medicine &&
                     addedMedicineArr.indexOf(medicine.medicineName) < 0
                   ) {
+=======
+                  selectedMedicinesArr && selectedMedicinesArr.length > 0
+                    ? selectedMedicinesArr.map(function(e: any) {
+                        return e.medicineName;
+                      })
+                    : [];
+                medicineCopyAddedArr.forEach((medicine: any, index: number) => {
+                  if (medicine && addedMedicineArr.indexOf(medicine.medicineName) < 0) {
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                     saveMedicineAction(medicine);
                   }
                 });

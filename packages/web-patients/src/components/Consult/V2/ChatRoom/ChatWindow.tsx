@@ -57,6 +57,7 @@ import { isPastAppointment, consultWebengageEventsInfo } from 'helpers/commonHel
 import { useParams } from 'hooks/routerHooks';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
 import { medicalDetailsFillTracking, callReceiveClickTracking } from 'webEngageTracking';
+import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -1082,9 +1083,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         { channel: appointmentId, count: 100, stringifiedTimeToken: true },
         (status: PubnubStatus, response: HistoryResponse) => {
           if (response.messages.length === 0) sendWelcomeMessage();
-
-          console.log(response.messages, 'pubnub messages history.....');
-
           const newmessage: MessagesObjectProps[] = messages;
           response.messages.forEach((element: any, index: number) => {
             const item = element.entry;
@@ -2032,7 +2030,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     );
   };
 
-  console.log(autoQuestionsCompleted);
+  // console.log(autoQuestionsCompleted);
 
   const showNextSlide = () => {
     sliderRef.current.slickNext();
@@ -2167,7 +2165,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     props.setIsConsultCompleted(
                       messageDetails.message === autoMessageStrings.appointmentComplete
                     );
-                    return null;
+                    return messageDetails.message === '^^#startconsult' ? (
+                      <DoctorJoinedMessageCard
+                        doctorName={doctorDisplayName}
+                        messageDate={messageDetails.messageDate}
+                      />
+                    ) : null;
                   }
                   const duration = messageDetails.duration;
                   if (cardType === 'welcome') {

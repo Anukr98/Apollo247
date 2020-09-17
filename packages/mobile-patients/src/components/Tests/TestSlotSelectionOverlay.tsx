@@ -3,16 +3,19 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { GET_DIAGNOSTIC_IT_DOSE_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  GetDiagnosticItDoseSlots,
-  GetDiagnosticItDoseSlotsVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetDiagnosticItDoseSlots';
+  getDiagnosticSlots,
+  getDiagnosticSlotsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
 import {
   formatTestSlot,
   g,
+  getTestSlotDetailsByTime,
+  getUniqueTestSlots,
   handleGraphQlError,
   isValidTestSlot,
+  TestSlot,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -20,7 +23,6 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
-import { TestSlot } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -77,29 +79,65 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
   const [spinner, showSpinner] = useState(false);
   const { zipCode, onSchedule, isVisible, ...attributes } = props;
   const aphOverlayProps: AphOverlayProps = { ...attributes, loading: spinner, isVisible };
+  const uniqueSlots = getUniqueTestSlots(slots);
+  type UniqueSlotType = typeof uniqueSlots[0];
 
   const fetchSlots = () => {
     if (!isVisible || !zipCode) return;
     showSpinner(true);
     client
-      .query<GetDiagnosticItDoseSlots, GetDiagnosticItDoseSlotsVariables>({
-        query: GET_DIAGNOSTIC_IT_DOSE_SLOTS,
+      .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
+        query: GET_DIAGNOSTIC_SLOTS,
         fetchPolicy: 'no-cache',
         variables: {
           patientId: g(currentPatient, 'id'),
+          hubCode: 'HYD_HUB1',
           selectedDate: moment(date).format('YYYY-MM-DD'),
-          zipCode: Number(zipCode),
+          zipCode: zipCode,
         },
       })
       .then(({ data }) => {
-        const diagnosticSlots =
-          (g(data, 'getDiagnosticItDoseSlots', 'slotInfo') as TestSlot[]) || [];
-        const slotsArray = diagnosticSlots.filter((slot) => isValidTestSlot(slot, date));
+        const diagnosticSlots = g(data, 'getDiagnosticSlots', 'diagnosticSlot') || [];
+        // console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
+        console.log(
+          'ORIGINAL DIAGNOSTIC SLOTS',
+          diagnosticSlots.map((item) => ({
+            code: item!.employeeCode,
+            // slotsLength: item!.slotInfo!.length,
+            slots: item!.slotInfo!.map((item) => item!.startTime + `\t ${item!.status}` + '\n'),
+          }))
+        );
+
+        const slotsArray: TestSlot[] = [];
+        diagnosticSlots!.forEach((item) => {
+          item!.slotInfo!.forEach((slot) => {
+            if (isValidTestSlot(slot!, date)) {
+              slotsArray.push({
+                employeeCode: item!.employeeCode,
+                employeeName: item!.employeeName,
+                slotInfo: slot,
+                date: date,
+                diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode'),
+              } as TestSlot);
+            }
+          });
+        });
+
+        const uniqueSlots = getUniqueTestSlots(slotsArray);
+
+        // console.log('ARRAY OF SLOTS', { slotsArray });
+        // console.log('UNIQUE SLOTS', { uniqueSlots });
+        console.log('ARRAY OF SLOTS', slotsArray.length);
+        console.log('UNIQUE SLOTS', uniqueSlots.length);
+
         setSlots(slotsArray);
-        setSlotInfo(slotsArray[0]);
+        uniqueSlots.length &&
+          setSlotInfo(
+            getTestSlotDetailsByTime(slotsArray, uniqueSlots[0].startTime!, uniqueSlots[0].endTime!)
+          );
       })
       .catch((e) => {
-        console.log('getDiagnosticItDoseSlots Error', { e });
+        console.log('getDiagnosticSlots Error', { e });
         const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
         if (!noHubSlots) {
           handleGraphQlError(e);
@@ -115,13 +153,13 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
   }, [date]);
 
   const renderSlotSelectionView = () => {
-    const dropDownOptions = slots.map((val) => ({
-      key: val.TimeslotID!,
-      value: `${formatTestSlot(val.Timeslot!)}`,
+    const dropDownOptions = uniqueSlots.map((val) => ({
+      key: `${formatTestSlot(val.startTime)} - ${formatTestSlot(val.endTime)}`,
+      value: `${formatTestSlot(val.startTime)} - ${formatTestSlot(val.endTime)}`,
       data: val,
     }));
 
-    console.log('dropDownOptions', { dropDownOptions });
+    console.log('dropDownOptions', { dropDownOptions, uniqueSlots });
 
     const { width } = Dimensions.get('window');
 
@@ -131,7 +169,12 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
         <View style={styles.optionsView}>
           <MaterialMenu
             options={dropDownOptions}
-            selectedText={slotInfo && `${formatTestSlot(slotInfo.Timeslot!)}`}
+            selectedText={
+              slotInfo &&
+              `${formatTestSlot(slotInfo.slotInfo.startTime!)} - ${formatTestSlot(
+                slotInfo.slotInfo.endTime!
+              )}`
+            }
             menuContainerStyle={{
               alignItems: 'flex-end',
               marginTop: 24,
@@ -141,19 +184,28 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
             selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
             onPress={({ data }) => {
               console.log('selectedSlot', { data });
-              setSlotInfo(data);
+
+              const selectedSlot = getTestSlotDetailsByTime(
+                slots,
+                (data as UniqueSlotType).startTime,
+                (data as UniqueSlotType).endTime
+              );
+              console.log('selectedSlot\n\n', { selectedSlot });
+              setSlotInfo(selectedSlot);
             }}
           >
             <View style={{ flexDirection: 'row', marginBottom: 8 }}>
               <View style={[styles.placeholderViewStyle]}>
                 <Text
-                  style={[styles.placeholderTextStyle, slotInfo ? null : styles.placeholderStyle]}
+                  style={[styles.placeholderTextStyle, , slotInfo ? null : styles.placeholderStyle]}
                 >
                   {spinner
                     ? 'Loading...'
                     : dropDownOptions.length
                     ? slotInfo
-                      ? `${formatTestSlot(slotInfo.Timeslot!)}`
+                      ? `${formatTestSlot(slotInfo.slotInfo.startTime!)} - ${formatTestSlot(
+                          slotInfo.slotInfo.endTime!
+                        )}`
                       : 'Please select a slot'
                     : 'No slots available'}
                 </Text>
@@ -194,7 +246,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
       style={{ margin: 16, marginTop: 32, width: 'auto' }}
       onPress={() => {
         if (!isDoneBtnDisabled) {
-          onSchedule(date, slotInfo!);
+          onSchedule(date!, slotInfo!);
         }
       }}
       disabled={isDoneBtnDisabled}

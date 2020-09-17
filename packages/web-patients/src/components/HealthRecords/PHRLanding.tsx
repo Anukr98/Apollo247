@@ -134,7 +134,7 @@ type LandingProps = {
   };
 };
 
-export const PHRLanding: React.FC<LandingProps> = (props) => {
+const PHRLanding: React.FC<LandingProps> = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = useState<number>(0);
   const { currentPatient } = useAllCurrentPatients();
@@ -460,3 +460,4 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
     </div>
   );
 };
+export default PHRLanding;

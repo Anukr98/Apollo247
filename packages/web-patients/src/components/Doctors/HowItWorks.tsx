@@ -118,7 +118,14 @@ const useStyles = makeStyles((theme: Theme) => {
           paddingBottom: 10,
           '& span': {
             '&:first-child': {
-              paddingRight: 12,
+              width: 20,
+              display: 'inline-block',
+              textAlign: 'center',
+              marginRight: 10,
+            },
+            '&:last-child': {
+              display: 'inline-block',
+              width: 'calc(100% - 30px)',
             },
           },
           '& img': {
@@ -339,6 +346,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       fontWeight: 500,
     },
+    mobileIcon: {
+      position: 'relative',
+      top: 3,
+    },
   });
 });
 
@@ -437,7 +448,11 @@ export const HowItWorks: React.FC = (props) => {
                     <Typography>Make payment</Typography>
                   </li>
                   <li>
+<<<<<<< HEAD
                     <img src={require('images/ic-mobile.svg')} />
+=======
+                    <img src={require('images/ic-mobile.svg')} className={classes.mobileIcon} />
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                     <Typography>
                       Be present in the consult room on apollo247.com at the time of consult
                     </Typography>

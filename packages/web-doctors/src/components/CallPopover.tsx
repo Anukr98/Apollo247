@@ -1130,9 +1130,12 @@ interface CallPopoverProps {
   setShowConfirmPrescription: (flag: boolean) => void;
   casesheetInfo: any;
   setGiveRating: (flag: boolean) => void;
+<<<<<<< HEAD
   setIsCallAccepted: (flag: boolean) => void;
   isCallAccepted: boolean;
   webengageConsultTrackingObject: any;
+=======
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 }
 let countdowntimer: any;
 let intervalId: any;
@@ -1543,14 +1546,22 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   const stopAudioVideoCall = () => {
     props.setGiveRating(true);
+<<<<<<< HEAD
     props.setIsCallAccepted(false);
+=======
+    setIsCallAccepted(false);
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
     setShowVideo(false);
     setShowVideoChat(false);
     setDisableOnCancel(false);
     clearInterval(intervalMissCall);
     setPlayRingtone(false);
 
+<<<<<<< HEAD
     if (!props.isCallAccepted) sendCallDisconnectNotification();
+=======
+    if (!isCallAccepted) sendCallDisconnectNotification();
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
