@@ -6718,7 +6718,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 style={{
                   width: 58,
                   height: 50,
-                  marginTop: 10,
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -6823,7 +6822,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 style={{
                   width: 58,
                   height: 50,
-                  marginTop: 10,
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -6937,7 +6935,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 style={{
                   width: 58,
                   height: 50,
-                  marginTop: 10,
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
