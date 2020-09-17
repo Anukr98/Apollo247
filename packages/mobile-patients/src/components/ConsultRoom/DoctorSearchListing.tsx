@@ -1217,11 +1217,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           )
         : filteredDoctorsList;
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: false });
-<<<<<<< HEAD
-    DoctorsflatListRef.scrollToOffset({ x: 0, y: 0, animated: false });
-=======
     doctors.length > 0 && DoctorsflatListRef.scrollToOffset({ x: 0, y: 0, animated: false });
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
   };
 
   const renderPopup = () => {

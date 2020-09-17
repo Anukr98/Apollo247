@@ -31,10 +31,7 @@ import {
   postWebEngageEvent,
   doRequestAndAccessLocationModified,
   distanceBwTwoLatLng,
-<<<<<<< HEAD
   removeConsecutiveComma,
-=======
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   getLatLongFromAddress,

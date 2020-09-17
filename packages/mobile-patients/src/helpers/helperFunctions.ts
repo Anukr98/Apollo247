@@ -138,27 +138,16 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
 };
 
 export const formatAddressWithLandmark = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-<<<<<<< HEAD
   const addrLine1 = removeConsecutiveComma([address.addressLine1, address.addressLine2].filter((v) => v).join(', '));
   const landmark = [address.landmark];
   // to handle state value getting twice
   const addrLine2 = removeConsecutiveComma([address.city, address.state]
-=======
-  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
-  const landmark = [address.landmark];
-  // to handle state value getting twice
-  const addrLine2 = [address.city, address.state]
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
     .filter((v) => v)
     .join(', ')
     .split(',')
     .map((v) => v.trim())
     .filter((item, idx, array) => array.indexOf(item) === idx)
-<<<<<<< HEAD
     .join(', '));
-=======
-    .join(', ');
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   if(address.landmark!=''){
     return `${addrLine1},\nLandmark: ${landmark}\n${addrLine2}${formattedZipcode}`;
@@ -170,16 +159,12 @@ export const formatAddressWithLandmark = (address: savePatientAddress_savePatien
 };
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-<<<<<<< HEAD
   if(address.name!){
     return `${address.name}\n${address.mobileNumber}`;
   }
   else{
     return `${address.mobileNumber}`;
   }
-=======
-  return `${address.name}\n${address.mobileNumber}`;
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 };
 
 export const followUpChatDaysCaseSheet = (

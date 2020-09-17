@@ -333,13 +333,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 console.log(error, 'geocode error');
               });
           },
-<<<<<<< HEAD
           (error) => {},
-=======
-          (error) => {
-            console.log(error.code, error.message, 'getCurrentPosition error');
-          },
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
           { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
         );
         console.log('pincode');
@@ -1602,11 +1596,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           zipCode={parseInt(zipCode, 10)}
           slotInfo={selectedTimeSlot}
           onSchedule={(date: Date, slotInfo: TestSlot) => {
-<<<<<<< HEAD
-=======
             console.log({ slotInfo });
 
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
             setDate(date);
             setselectedTimeSlot(slotInfo);
             setDiagnosticSlot!({

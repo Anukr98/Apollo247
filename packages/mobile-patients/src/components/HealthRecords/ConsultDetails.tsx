@@ -167,11 +167,7 @@ const styles = StyleSheet.create({
   subDataTextStyle: {
     color: theme.colors.SKY_BLUE,
     lineHeight: 24,
-<<<<<<< HEAD
     ...theme.fonts.IBMPlexSansMedium(14),
-=======
-    ...theme.fonts.IBMPlexSansMedium(14)
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
   },
   labelViewStyle: {
     borderBottomWidth: 0.5,
@@ -436,7 +432,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         <View style={styles.labelViewStyle}>
                           <Text style={styles.labelStyle}>{item.symptom}</Text>
                         </View>
-<<<<<<< HEAD
                         {!!item?.since && (
                           <Text style={styles.dataTextStyle}>Since: {item.since}</Text>
                         )}
@@ -446,17 +441,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         {!!item?.severity && (
                           <Text style={styles.subDataTextStyle}>Severity: {item.severity}</Text>
                         )}
-=======
-                        {!!(item?.since) && <Text style={styles.dataTextStyle}>
-                          Since: {item.since}
-                        </Text>}
-                        {!!(item?.howOften) && <Text style={styles.subDataTextStyle}>
-                          How Often: {item.howOften}
-                        </Text>}
-                        {!!(item?.severity) && <Text style={styles.subDataTextStyle}>
-                          Severity: {item.severity}
-                        </Text>}
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                       </View>
                     );
                 })}
