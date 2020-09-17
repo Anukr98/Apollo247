@@ -660,7 +660,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                                     ? combinedData.labTestSource
                                     : '-'
                                 }
-                                type={MedicalRecordType.TEST_REPORT}
+                                recordType={MedicalRecordType.TEST_REPORT}
                                 id={`LabResults-${combinedData.id}`}
                                 isActiveCard={activeData && activeData === combinedData}
                               />

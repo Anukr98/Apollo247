@@ -111,7 +111,7 @@ const useStyles = makeStyles((theme: Theme) => {
 type MedicalCardProps = {
   name: string;
   source: string;
-  type: MedicalRecordType;
+  recordType: MedicalRecordType;
   isActiveCard: boolean;
   deleteReport: (id: string, type: string) => void;
   id: string;
@@ -120,7 +120,7 @@ type MedicalCardProps = {
 export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
   const classes = useStyles({});
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const { name, source, type, isActiveCard, deleteReport, id } = props;
+  const { name, source, recordType, isActiveCard, deleteReport, id } = props;
 
   return (
     <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
@@ -132,7 +132,7 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
       {source && source !== '-' && (
         <div className={classes.consultType}>
           {/* {source === '247self' ? <img /> : <img />} // first image should have person image and second one should be hospital  */}
-          {type !== MedicalRecordType.HOSPITALIZATION &&
+          {recordType !== MedicalRecordType.HOSPITALIZATION &&
           (source === '247self' || _lowerCase(source) === 'self')
             ? 'Self upload'
             : source}
@@ -162,7 +162,7 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
           <AphButton
             color="primary"
             onClick={() => {
-              deleteReport(id, type);
+              deleteReport(id, recordType);
               setShowPopup(false);
             }}
             autoFocus

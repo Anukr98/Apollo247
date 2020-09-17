@@ -445,7 +445,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
                     deleteReport={deleteReport}
                     name={combinedData.doctorName ? `Dr. ${combinedData.doctorName}` : '-'}
                     source={combinedData.hospitalName || '-'}
-                    type={MedicalRecordType.HOSPITALIZATION}
+                    recordType={MedicalRecordType.HOSPITALIZATION}
                     id={`Hospitalization-${combinedData.id}`}
                     isActiveCard={activeData && activeData.id === combinedData.id}
                   />
