@@ -4,11 +4,21 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { DoctorPlaceholderImage, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import string from '@aph/mobile-patients/src/strings/strings.json';
+import {
+  DoctorPlaceholderImage,
+  More,
+  DropdownGreen,
+  CrossPopup,
+  BackArrow,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { Overlay } from 'react-native-elements';
+import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -70,7 +80,9 @@ import {
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { CancelConsultation } from '../../strings/AppConfig';
 
+const OTHER_REASON = string.ReasonFor_Cancel_Consultation.otherReasons;
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -174,6 +186,64 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   cancelMainView: { margin: 0, height: height, width: width, backgroundColor: 'transparent' },
+  dropdownOverlayStyle: {
+    padding: 0,
+    margin: 0,
+    height: 'auto',
+    borderRadius: 10,
+  },
+  cancelReasonHeadingView: {
+    ...theme.viewStyles.cardContainer,
+    backgroundColor: theme.colors.WHITE,
+    padding: 18,
+    marginBottom: 24,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    flexDirection: 'row',
+  },
+  cancelReasonHeadingText: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    color: theme.colors.SHERPA_BLUE,
+    textAlign: 'center',
+    marginHorizontal: '20%',
+  },
+  cancelReasonContentHeading: {
+    marginBottom: 12,
+    color: '#0087ba',
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+  },
+  cancelReasonContentView: { flexDirection: 'row', alignItems: 'center' },
+  cancelReasonContentText: {
+    flex: 0.9,
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.SHERPA_BLUE,
+  },
+  reasonCancelDropDownExtraView: {
+    marginTop: 5,
+    backgroundColor: '#00b38e',
+    height: 2,
+  },
+  cancelReasonSubmitButton: { margin: 16, marginTop: 32, width: 'auto' },
+  reasonCancelOverlay: {
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'flex-start',
+    flex: 1,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+  },
+  reasonCancelCrossTouch: { marginTop: 80, alignSelf: 'flex-end' },
+  reasonCancelView: {
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
+  },
 });
 
 type rescheduleType = {
@@ -191,6 +261,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     .state.params!.data;
   const doctorDetails = data.doctorInfo!;
   const movedFrom = props.navigation.state.params!.from;
+  const cancellationReasons = CancelConsultation.reason;
   console.log('******DATA*********', { data, doctorDetails });
 
   const fifteenMinutesLater = new Date();
@@ -199,6 +270,12 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   );
   const [cancelAppointment, setCancelAppointment] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
+
+  const [isCancelVisible, setCancelVisible] = useState<boolean>(false);
+  const [overlayDropdown, setOverlayDropdown] = useState(false);
+  const [selectedReason, setSelectedReason] = useState('');
+  const [comment, setComment] = useState('');
+
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [resheduleoverlay, setResheduleoverlay] = useState<boolean>(false);
   const [appointmentTime, setAppointmentTime] = useState<string>('');
@@ -215,6 +292,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
+
+  const isSubmitDisableForOther = selectedReason == OTHER_REASON && comment == '';
 
   useEffect(() => {
     getSecretaryData();
@@ -328,10 +407,11 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const cancelAppointmentApi = async () => {
     setshowSpinner(true);
     const userId = await dataSavedUserID('selectedProfileId');
+    const reasonForCancellation = selectedReason != OTHER_REASON ? selectedReason : comment;
 
     const appointmentTransferInput = {
       appointmentId: data.id,
-      cancelReason: '',
+      cancelReason: reasonForCancellation,
       cancelledBy: REQUEST_ROLES.PATIENT, //appointmentDate,
       cancelledById: userId ? userId : data.patientId,
     };
@@ -509,6 +589,126 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     setdisplayoverlay(true), setResheduleoverlay(false);
   };
 
+  const onPressConfirmCancelConsultation = () => {
+    setCancelVisible(false);
+    cancelAppointmentApi();
+  };
+
+  const renderReasonForCancelPopUp = () => {
+    const optionsDropdown = overlayDropdown && (
+      <Overlay
+        onBackdropPress={() => setOverlayDropdown(false)}
+        isVisible={overlayDropdown}
+        overlayStyle={styles.dropdownOverlayStyle}
+      >
+        <DropDown
+          cardContainer={{
+            margin: 0,
+          }}
+          options={cancellationReasons.map(
+            (cancellationReasons, i) =>
+              ({
+                onPress: () => {
+                  setSelectedReason(cancellationReasons!);
+                  setOverlayDropdown(false);
+                },
+                optionText: cancellationReasons,
+              } as Option)
+          )}
+        />
+      </Overlay>
+    );
+
+    const heading = (
+      <View style={styles.cancelReasonHeadingView}>
+        <BackArrow />
+        <Text style={styles.cancelReasonHeadingText}>{string.cancelConsultationHeading}</Text>
+      </View>
+    );
+
+    const content = (
+      <View style={{ paddingHorizontal: 16 }}>
+        <Text style={styles.cancelReasonContentHeading}>
+          {string.cancelConsultationReasonHeading}
+        </Text>
+        {selectedReason != OTHER_REASON ? (
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {
+              setOverlayDropdown(true);
+            }}
+          >
+            <View style={styles.cancelReasonContentView}>
+              <Text
+                style={[styles.cancelReasonContentText, selectedReason ? {} : { opacity: 0.3 }]}
+                numberOfLines={1}
+              >
+                {selectedReason || 'Select reason for cancelling'}
+              </Text>
+              <View style={{ flex: 0.1 }}>
+                <DropdownGreen style={{ alignSelf: 'flex-end' }} />
+              </View>
+            </View>
+            <View style={styles.reasonCancelDropDownExtraView} />
+          </TouchableOpacity>
+        ) : (
+          <TextInputComponent
+            value={comment}
+            onChangeText={(text) => {
+              text.startsWith(' ') ? null : setComment(text);
+            }}
+            placeholder={'Write your reason'}
+          />
+        )}
+        {selectedReason != OTHER_REASON ? (
+          <TextInputComponent
+            value={comment}
+            onChangeText={(text) => {
+              text.startsWith(' ') ? null : setComment(text);
+            }}
+            label={'Add Comments (Optional)'}
+            placeholder={'Enter your comments here…'}
+          />
+        ) : null}
+      </View>
+    );
+
+    const bottomButton = (
+      <Button
+        style={styles.cancelReasonSubmitButton}
+        onPress={onPressConfirmCancelConsultation}
+        disabled={!!selectedReason ? isSubmitDisableForOther : true}
+        title={'SUBMIT REQUEST'}
+      />
+    );
+
+    return (
+      isCancelVisible && (
+        <View style={styles.reasonCancelOverlay}>
+          <View style={{ marginHorizontal: 20 }}>
+            <TouchableOpacity
+              style={styles.reasonCancelCrossTouch}
+              onPress={() => {
+                setCancelVisible(!isCancelVisible);
+                setSelectedReason('');
+                setComment('');
+              }}
+            >
+              <CrossPopup />
+            </TouchableOpacity>
+            <View style={{ height: 16 }} />
+            <View style={styles.reasonCancelView}>
+              {optionsDropdown}
+              {heading}
+              {content}
+              {bottomButton}
+            </View>
+          </View>
+        </View>
+      )
+    );
+  };
+
   const postAppointmentWEGEvents = (
     type:
       | WebEngageEventName.RESCHEDULE_CLICKED
@@ -554,6 +754,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       dateIsAfter || isAwaitingReschedule ? true : data.status == STATUS.PENDING && minutes <= -30;
     return (
       <View style={styles.viewStyles}>
+        {renderReasonForCancelPopUp()}
         <SafeAreaView style={styles.indexValue}>
           <Header
             title="UPCOMING ONLINE VISIT"
@@ -729,6 +930,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               onPress={() => {
                 CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CancelAppointment Clicked');
                 setCancelAppointment(false);
+                setCancelVisible(false);
               }}
             >
               <View style={styles.cancelMainView}>
@@ -785,7 +987,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                     postAppointmentWEGEvents(WebEngageEventName.CANCEL_CONSULTATION_CLICKED);
                     CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
                     setShowCancelPopup(false);
-                    cancelAppointmentApi();
+                    setCancelVisible(true); //to show the reasons for cancelling the consultation
                   }}
                 >
                   <Text style={styles.gotItTextStyles}>{'CANCEL CONSULT'}</Text>
