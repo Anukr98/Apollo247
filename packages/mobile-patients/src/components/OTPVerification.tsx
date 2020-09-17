@@ -22,6 +22,7 @@ import {
   postWebEngageEvent,
   postAppsFlyerEvent,
   SetAppsFlyerCustID,
+  UnInstallAppsFlyer,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -68,6 +69,7 @@ import { Relation } from '../graphql/types/globalTypes';
 import { ApolloLogo } from './ApolloLogo';
 import AsyncStorage from '@react-native-community/async-storage';
 import SmsRetriever from 'react-native-sms-retriever';
+import { saveTokenDevice } from '../helpers/clientCalls';
 
 const { height, width } = Dimensions.get('window');
 
@@ -591,6 +593,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         navigateTo(AppRoutes.MultiSignup);
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
+        deviceTokenAPI(mePatient.id);
         navigateTo(AppRoutes.ConsultRoom);
       }
     } else {
@@ -602,6 +605,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         navigateTo(AppRoutes.SignUp);
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
+        deviceTokenAPI(mePatient.id);
         navigateTo(AppRoutes.ConsultRoom);
       }
     }
@@ -638,19 +642,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   useEffect(() => {
-    // const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
-    //   const newOtp = message.body.match(/-*[0-9]+/);
-    //   const otpString = newOtp ? newOtp[0] : '';
-    //   console.log(otpString, otpString.length, 'otpString');
-    //   setOtp(otpString.trim());
-    //   setIsValidOTP(true);
-    // });
-    // setSubscriptionId(subscriptionId);
-    // textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
-    // backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-    //   console.log('hardwareBackPress');
-    //   return false;
-    // });
+    getDeviceToken();
     AppState.addEventListener('change', _handleAppStateChange);
     if (Platform.OS === 'android') {
       smsListenerAndroid();
@@ -668,6 +660,26 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       // backHandler && backHandler.remove();
     };
   }, [subscriptionId]);
+
+  const getDeviceToken = () => {
+    firebase
+      .messaging()
+      .getToken()
+      .then((token) => {
+        console.log('token', token);
+        AsyncStorage.setItem('deviceToken', JSON.stringify(token));
+        UnInstallAppsFlyer(token);
+      })
+      .catch((e) => {
+        CommonBugFender('OTPVerification_getDeviceToken', e);
+      });
+  };
+
+  const deviceTokenAPI = async (patientId: string) => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
+    saveTokenDevice(client, deviceToken2, patientId);
+  };
 
   const onStopTimer = () => {
     setRemainingTime(120);
