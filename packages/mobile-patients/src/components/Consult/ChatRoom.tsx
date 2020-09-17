@@ -680,7 +680,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
       BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     });
-    callPermissions();
+    if (!disableChat && status !== STATUS.COMPLETED) {
+      callPermissions();
+    }
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
@@ -2281,7 +2283,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (appointmentData.isJdQuestionsComplete) {
       console.log({});
       requestToJrDoctor();
-      checkNudgeScreenVisibility();
+      if (!disableChat && status !== STATUS.COMPLETED) {
+        checkNudgeScreenVisibility();
+      }
       // startJoinTimer(0);
       // thirtySecondCall();
       // minuteCaller();
