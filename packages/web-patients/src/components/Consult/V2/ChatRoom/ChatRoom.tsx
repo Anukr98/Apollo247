@@ -748,6 +748,7 @@ export const ChatRoom: React.FC = () => {
                     rescheduleAPI={rescheduleAPI}
                     appointmentDetails={appointmentDetails}
                     setIsConsultCompleted={setIsConsultCompleted}
+                    secretaryData={secretaryData}
                   />
                 )}
               </div>
