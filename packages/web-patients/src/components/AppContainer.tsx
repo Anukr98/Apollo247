@@ -19,8 +19,8 @@ import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
 
 const Welcome = loadable(() => import('components/Welcome'));
 
-const NotificationSettings = loadable(() =>
-  import('components/Notifications/NotificationSettings')
+const NotificationSettings = loadable(
+  () => import('components/Notifications/NotificationSettings')
 );
 const SbiLandingPage = loadable(() => import('components/Partners/SBI/SbiLandingPage'));
 const PatientsList = loadable(() => import('components/PatientsList'));
@@ -51,7 +51,7 @@ const ChatRoom = loadable(() => import('components/Consult/V2/ChatRoom/ChatRoom'
 const Prescription = loadable(() => import('components/Consult/V2/Prescription'));
 const OrdersLanding = loadable(() => import('components/Orders/OrdersLanding'));
 const PayMedicine = loadable(() => import('components/PayMedicine'));
-const AddRecords = loadable(() => import('components/HealthRecords/AddRecords'));
+const AddHealthRecords = loadable(() => import('components/HealthRecords/AddHealthRecords'));
 const PHRLanding = loadable(() => import('components/HealthRecords/PHRLanding'));
 const MedicinePrescriptions = loadable(() => import('./Prescriptions/MedicinePrescriptions'));
 const PrescriptionsLanding = loadable(() => import('./Prescriptions/PrescriptionsLanding'));
