@@ -360,6 +360,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     zIndex: 1,
   },
+  textInputContainerStyles: {
+    backgroundColor: 'white',
+    alignItems: 'center',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 15,
+  },
 });
 
 const urlRegEx = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jfif|jpeg|JPEG)/;
@@ -369,6 +377,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const fromIncomingCall = props.navigation.state.params!.isCall;
   const { isIphoneX } = DeviceHelper();
+  const [contentHeight, setContentHeight] = useState(0);
 
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
@@ -6756,6 +6765,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
+                  zIndex: 1000,
                 }}
                 onPress={async () => {
                   if (!disableChat) {
@@ -6777,7 +6787,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   {'Upload Records'}
                 </Text>
               </TouchableOpacity>
-              <View>
+              <View style={styles.textInputContainerStyles}>
                 <TextInput
                   autoCorrect={false}
                   placeholder="Type here…"
@@ -6785,10 +6795,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     marginLeft: 6,
                     marginTop: 5,
-                    height: 40,
+                    height: Math.max(35, contentHeight),
                     width: width - 120,
                     ...theme.fonts.IBMPlexSansMedium(16),
+                    display: 'flex',
+                    flexGrow: 1,
+                    flexWrap: 'wrap',
+                    alignSelf: 'center',
                   }}
+                  onContentSizeChange={(event) => {
+                    setContentHeight(event.nativeEvent.contentSize.height);
+                  }}
+                  numberOfLines={6}
                   value={messageText}
                   blurOnSubmit={false}
                   // returnKeyType="send"
@@ -6812,10 +6830,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={{
-                  width: 40,
-                  height: 40,
-                  marginTop: 10,
-                  marginLeft: 2,
+                  width: 50,
+                  height: 50,
+                  position: 'absolute',
+                  top: 10,
+                  right: 5,
                 }}
                 onPress={async () => {
                   if (!disableChat) {
@@ -6829,6 +6848,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
 
                     send(textMessage);
+                    setContentHeight(35);
                   }
                 }}
               >
@@ -6870,6 +6890,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
+                  zIndex: 1000,
                 }}
                 onPress={async () => {
                   if (!disableChat) {
@@ -6892,7 +6913,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   {'Upload Records'}
                 </Text>
               </TouchableOpacity>
-              <View>
+              <View style={styles.textInputContainerStyles}>
                 <TextInput
                   autoCorrect={false}
                   placeholder="Type here…"
@@ -6900,10 +6921,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     marginLeft: 6,
                     marginTop: 5,
-                    height: 40,
+                    height: Math.max(35, contentHeight),
                     width: width - 120,
                     ...theme.fonts.IBMPlexSansMedium(16),
+                    display: 'flex',
+                    flexGrow: 1,
+                    flexWrap: 'wrap',
+                    alignSelf: 'center',
                   }}
+                  onContentSizeChange={(event) => {
+                    setContentHeight(event.nativeEvent.contentSize.height);
+                  }}
+                  numberOfLines={6}
                   value={messageText}
                   blurOnSubmit={false}
                   // returnKeyType="send"
@@ -6927,10 +6956,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={{
-                  width: 40,
-                  height: 40,
-                  marginTop: 10,
-                  marginLeft: 2,
+                  width: 50,
+                  height: 50,
+                  position: 'absolute',
+                  top: 10,
+                  right: 5,
                 }}
                 onPress={async () => {
                   if (!disableChat) {
@@ -6944,6 +6974,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
 
                     send(textMessage);
+                    setContentHeight(35);
                   }
                 }}
               >
