@@ -2,6 +2,7 @@ import { AudioVideoStyles } from '@aph/mobile-doctors/src/components/Chat/AudioV
 import {
   BackCameraIcon,
   ChatIcon,
+  CloseWhite,
   EndCallIcon,
   FrontCameraIcon,
   FullScreenIcon,
@@ -10,24 +11,23 @@ import {
   UserPlaceHolder,
   VideoOffIcon,
   VideoOnIcon,
-  CloseWhite,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { StatusBar, Text, TouchableOpacity, View, AppState, AppStateStatus } from 'react-native';
-import { Image } from 'react-native-elements';
-import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
-import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
-import CallDetectorManager from 'react-native-call-detection';
-import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import RNSound from 'react-native-sound';
-import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import SystemSetting from 'react-native-system-setting';
-import AsyncStorage from '@react-native-community/async-storage';
 // import InCallManager from 'react-native-incall-manager';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
+import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
+import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { AppState, AppStateStatus, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import CallDetectorManager from 'react-native-call-detection';
+import { Image } from 'react-native-elements';
+import RNSound from 'react-native-sound';
+import SystemSetting from 'react-native-system-setting';
 
 export type OpenTokKeys = {
   sessionId: string;
@@ -40,7 +40,7 @@ type OpentokConnect = {
 };
 
 type OpentokError = {
-  code: string;
+  code: string | number;
   message: string;
 };
 type OpentokArchive = {
@@ -114,6 +114,10 @@ export type CallOptions = {
 };
 
 export type CallData = {
+  audioEnabled: boolean;
+  setAudioEnabled: (value: boolean) => void;
+  videoEnabled: boolean;
+  setVideoEnabled: (value: boolean) => void;
   messageReceived: boolean;
   setMessageReceived: (value: boolean) => void;
   callDuration: string;
@@ -133,6 +137,9 @@ export interface AudioVideoContextPorps {
   setOpenTokKeys: (value: OpenTokKeys) => void;
   callBacks: CallBackOptions;
   setCallBacks: (value: CallBackOptions) => void;
+  errorPopup: (message: string, color: string, time?: number) => void;
+  giveRating: boolean;
+  setGiveRating: (rating: boolean) => void;
 }
 
 export const AudioVideoContext = createContext<AudioVideoContextPorps>({
@@ -150,6 +157,10 @@ export const AudioVideoContext = createContext<AudioVideoContextPorps>({
     stopMissedCallTimer: () => {},
   },
   callData: {
+    audioEnabled: false,
+    setAudioEnabled: () => {},
+    videoEnabled: false,
+    setVideoEnabled: () => {},
     messageReceived: false,
     setMessageReceived: () => {},
     callDuration: '00 : 00',
@@ -171,6 +182,9 @@ export const AudioVideoContext = createContext<AudioVideoContextPorps>({
     onCallMinimize: () => {},
   },
   setCallBacks: () => {},
+  errorPopup: (message: string, color: string, time?: number) => {},
+  giveRating: false,
+  setGiveRating: () => {},
 });
 let timerId: NodeJS.Timeout;
 let missedCallTimer: NodeJS.Timeout;
@@ -179,6 +193,9 @@ let connectionCount = 0;
 let callDetector: any = null;
 RNSound.setCategory('Playback');
 let audioTrack: RNSound | null = null;
+let joinAudioTrack: RNSound | null = null;
+let leftAudioTrack: RNSound | null = null;
+
 export const AudioVideoProvider: React.FC = (props) => {
   const [isAudio, setIsAudio] = useState<boolean>(false);
   const [isVideo, setIsVideo] = useState<boolean>(false);
@@ -209,6 +226,7 @@ export const AudioVideoProvider: React.FC = (props) => {
   const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>('front');
   const otSessionRef = React.createRef();
   const callType = isAudio ? 'Audio' : isVideo ? 'Video' : '';
+  const [giveRating, setGiveRating] = useState<boolean>(false);
 
   const setPrevVolume = async () => {
     // InCallManager.setSpeakerphoneOn(false);
@@ -236,6 +254,7 @@ export const AudioVideoProvider: React.FC = (props) => {
         audioTrack.stop();
       }
     } else if (callAccepted) {
+      setCallDuraion('00 : 01');
       if (audioTrack) {
         setPrevVolume();
         audioTrack.stop();
@@ -246,6 +265,12 @@ export const AudioVideoProvider: React.FC = (props) => {
 
   useEffect(() => {
     audioTrack = new RNSound('phone_ringing.mp3', RNSound.MAIN_BUNDLE, (error) => {
+      CommonBugFender('Loading_callertune__failed', error);
+    });
+    joinAudioTrack = new RNSound('join_sound.mp3', RNSound.MAIN_BUNDLE, (error) => {
+      CommonBugFender('Loading_callertune__failed', error);
+    });
+    leftAudioTrack = new RNSound('left_sound.mp3', RNSound.MAIN_BUNDLE, (error) => {
       CommonBugFender('Loading_callertune__failed', error);
     });
   }, []);
@@ -291,6 +316,7 @@ export const AudioVideoProvider: React.FC = (props) => {
   };
 
   const startTimer = (timer: number) => {
+    stopTimer();
     timerId = setInterval(() => {
       timer = timer + 1;
       const callMinutes = Math.floor(timer / 60);
@@ -345,7 +371,12 @@ export const AudioVideoProvider: React.FC = (props) => {
             placeholderStyle={
               isMinimized ? styles.placeHolderLoaderMinimizedStyle : styles.placeHolderLoaderStyle
             }
-            PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
+            PlaceholderContent={
+              <Spinner
+                style={{ backgroundColor: 'transparent' }}
+                message={strings.common.imageLoading}
+              />
+            }
           />
         ) : (
           <UserPlaceHolder
@@ -519,7 +550,7 @@ export const AudioVideoProvider: React.FC = (props) => {
       </View>
     );
   };
-  const errorPopup = (message: string, color: string) => {
+  const errorPopup = (message: string, color: string, time?: number) => {
     showPopup({
       description: message,
       style: [styles.exoToastContainer, { backgroundColor: color }],
@@ -532,7 +563,7 @@ export const AudioVideoProvider: React.FC = (props) => {
           <CloseWhite style={{ width: 16, height: 16 }} />
         </View>
       ),
-      timer: 8,
+      timer: time || 8,
     });
   };
 
@@ -600,7 +631,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     },
     videoDisabled: (event: OpentokVideoWarn) => {
       if (event.reason === 'quality') {
-        errorPopup(strings.toastMessages.fallback, theme.colors.APP_YELLOW);
+        errorPopup(strings.toastMessages.fallback, theme.colors.APP_RED);
         setDowngradeToAudio(true);
         setVideoEnabled(false);
       }
@@ -615,9 +646,7 @@ export const AudioVideoProvider: React.FC = (props) => {
       console.log('Subscriber stream videoEnabled!', event);
     },
     videoDisableWarning: () => {
-      errorPopup(strings.toastMessages.fallback, theme.colors.APP_YELLOW);
-      setDowngradeToAudio(true);
-      setVideoEnabled(false);
+      errorPopup(strings.toastMessages.willFallback, theme.colors.APP_YELLOW);
       console.log('Subscriber stream videoDisableWarning!');
     },
     videoDisableWarningLifted: () => {
@@ -637,20 +666,51 @@ export const AudioVideoProvider: React.FC = (props) => {
   const sessionEventHandlers = {
     error: (error: OpentokError) => {
       AsyncStorage.setItem('callDisconnected', 'true');
-      errorPopup(error.message, theme.colors.APP_RED);
+      let message = error.message;
+      if (
+        [
+          'ConnectionDropped',
+          'ConnectionFailed',
+          'ConnectionRefused',
+          'SessionStateFailed',
+          'SessionConnectionTimeout',
+          1022,
+          1006,
+          1023,
+          1020,
+          1021,
+        ].includes(error.code)
+      ) {
+        message = 'Check the network connection.';
+        callEnd(false);
+      } else if (['AuthorizationFailure', 'InvalidSessionId', 1004, 1005].includes(error.code)) {
+        message = 'There is an error, please restart application/consult';
+      }
+      setTimeout(() => {
+        errorPopup(message, theme.colors.APP_RED);
+      }, 50);
       console.log('session stream error!', error);
     },
     otrnError: (event: string) => {
+      AsyncStorage.getItem('callDisconnected').then((data) => {
+        if (!JSON.parse(data || 'false')) {
+          errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
+        }
+      });
       AsyncStorage.setItem('callDisconnected', 'true');
-      errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
       console.log('session stream otrnError!', event);
     },
     connectionCreated: (event: string) => {
       connectionCount++;
       setCallConnected(true);
+      setCallAccepted(true);
       if (audioTrack) {
         setPrevVolume();
-        audioTrack.stop(() => {});
+        audioTrack.stop(() => {
+          if (joinAudioTrack) {
+            joinAudioTrack.play();
+          }
+        });
       }
       hidePopup();
       // console.log('otSessionRef', otSessionRef);
@@ -660,9 +720,15 @@ export const AudioVideoProvider: React.FC = (props) => {
     connectionDestroyed: (event: string) => {
       AsyncStorage.getItem('callDisconnected').then((data) => {
         if (!JSON.parse(data || 'false')) {
+          setGiveRating(true);
           errorPopup(strings.toastMessages.callDisconnected, theme.colors.APP_RED);
         }
       });
+      if (connectionCount > 0) {
+        if (leftAudioTrack) {
+          leftAudioTrack.play();
+        }
+      }
       connectionCount--;
       setIsVideo(false);
       setIsAudio(false);
@@ -673,6 +739,10 @@ export const AudioVideoProvider: React.FC = (props) => {
       setMessageReceived(false);
       setDowngradeToAudio(false);
       setStremConnected(false);
+      if (audioTrack) {
+        setPrevVolume();
+        audioTrack.stop();
+      }
       console.log('session stream connectionDestroyed!', event);
     },
     sessionConnected: (event: OpenTokSessionConnect) => {
@@ -748,6 +818,9 @@ export const AudioVideoProvider: React.FC = (props) => {
                 audioTrack: audioEnabled,
                 audioVolume: 100,
                 name: name,
+                resolution: '640x480',
+                audioBitrate: 30000,
+                frameRate: 15,
               }}
               eventHandlers={publisherEventHandlers}
             />
@@ -758,6 +831,7 @@ export const AudioVideoProvider: React.FC = (props) => {
                 subscribeToAudio: true,
                 subscribeToVideo: isVideo ? true : false,
                 audioVolume: 100,
+                resolution: '640x480', // setting this resolution to avoid over heating of device
               }}
             />
           </OTSession>
@@ -784,6 +858,10 @@ export const AudioVideoProvider: React.FC = (props) => {
           stopMissedCallTimer,
         },
         callData: {
+          audioEnabled,
+          setAudioEnabled,
+          videoEnabled,
+          setVideoEnabled,
           messageReceived,
           setMessageReceived,
           callDuration,
@@ -799,6 +877,9 @@ export const AudioVideoProvider: React.FC = (props) => {
         setOpenTokKeys,
         callBacks,
         setCallBacks,
+        errorPopup,
+        giveRating,
+        setGiveRating,
       }}
     >
       <View style={{ flex: 1 }}>

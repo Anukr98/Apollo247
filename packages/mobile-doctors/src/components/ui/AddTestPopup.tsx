@@ -1,11 +1,8 @@
-import AddTestPopupStyles from '@aph/mobile-doctors/src/components/ui/AddTestPopup.styles';
-import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
+import { AddTestPopupStyles } from '@aph/mobile-doctors/src/components/ui/AddTestPopup.styles';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { ChipIconView } from '@aph/mobile-doctors/src/components/ui/ChipIconView';
 import { DropDown, Option } from '@aph/mobile-doctors/src/components/ui/DropDown';
-import { AddPlus } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
-import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
+import { AddPlus, Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { SEARCH_DIAGNOSTICS } from '@aph/mobile-doctors/src/graphql/profiles';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
@@ -14,20 +11,35 @@ import {
   searchDiagnosticsVariables,
   searchDiagnostics_searchDiagnostics_diagnostics,
 } from '@aph/mobile-doctors/src/graphql/types/searchDiagnostics';
+import { string } from '@aph/mobile-doctors/src/strings/string';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { ActivityIndicator, Alert, Keyboard, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  BackHandler,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 const styles = AddTestPopupStyles;
 
 export interface AddTestPopupProps {
   searchTestVal?: string;
+  instructionVal?: string;
   onClose: () => void;
   onPressDone: (
     searchTestVal: string,
-    tempTestArray: searchDiagnostics_searchDiagnostics_diagnostics[]
+    tempTestArray: searchDiagnostics_searchDiagnostics_diagnostics[],
+    instuction?: string
   ) => void;
   data?:
     | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
@@ -37,10 +49,13 @@ export interface AddTestPopupProps {
       | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
       | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
   ) => void;
+  hasInstructions?: boolean;
 }
 
 export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
+  const { hasInstructions, instructionVal } = props;
   const [searchTestVal, setsearchTestVal] = useState<string>(props.searchTestVal || '');
+  const [instuction, setInstruction] = useState<string>(instructionVal || '');
   const [loading, setLoading] = useState<boolean>(false);
   const [istestsSearchList, settestsSearchList] = useState<
     (searchDiagnostics_searchDiagnostics_diagnostics | null)[] | null
@@ -51,25 +66,47 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
   const [tempTestArray, settempTestArray] = useState<
     searchDiagnostics_searchDiagnostics_diagnostics[]
   >([]);
-  const tabsData = [
-    { title: 'ADD TEST' },
-    //  { title: 'SCANS & HEALTH CHECK' }
-  ];
-  const [selectedTab, setSelectedTab] = useState<string>(tabsData[0].title);
 
   const client = useApolloClient();
+  const handleBack = async () => {
+    props.onClose();
+    return false;
+  };
 
   useEffect(() => {
     if (props.searchTestVal) {
-      GetSearchDiagnostics(props.searchTestVal.replace(/\s+/g, ' '));
+      if (!hasInstructions) {
+        GetSearchDiagnostics(props.searchTestVal.replace(/\s+/g, ' '));
+      } else {
+        getTempTestArray({
+          __typename: 'Diagnostics',
+          id: '',
+          itemId: -1,
+          itemName: props.searchTestVal,
+          gender: '',
+          rate: -1,
+          itemRemarks: `Add “${props.searchTestVal}”`,
+          city: '',
+          state: '',
+          itemType: null,
+          fromAgeInDays: -1,
+          toAgeInDays: -1,
+          testPreparationData: '',
+          collectionType: null,
+        } as searchDiagnostics_searchDiagnostics_diagnostics);
+      }
     }
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
   }, []);
 
   const getTempTestArray = (
     Testitemname: searchDiagnostics_searchDiagnostics_diagnostics | null
   ) => {
     if (Testitemname) {
-      if (tempTestArray.length > 0) {
+      if (tempTestArray.length > 0 && !hasInstructions) {
         for (let i = 0; i < tempTestArray.length; i++) {
           if (tempTestArray[i].itemName === Testitemname.itemName) {
             Alert.alert(strings.common.alert, 'Test existed in the list.');
@@ -85,35 +122,32 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
   };
 
   const GetSearchResultOfTests = () => {
-    return (
-      istestsSearchList &&
-      istestsSearchList.length != 0 && (
-        <View style={styles.searchTestDropdown}>
-          <DropDown
-            viewStyles={{
-              flexDirection: 'row-reverse',
-              justifyContent: 'space-between',
-            }}
-            containerStyle={{ height: 200 }}
-            options={istestsSearchList.map(
-              (item, i) =>
-                ({
-                  optionText: item!.itemName,
-                  onPress: () => {
-                    Keyboard.dismiss();
-                    // getTempTestArray(item);
-                    getTempTestArray(item);
-                    setsearchTestVal('');
-                    // isSearchTestListVisible;
-                    setisSearchTestListVisible(!isSearchTestListVisible);
-                  },
-                  icon: <AddPlus />,
-                } as Option)
-            )}
-          />
-        </View>
-      )
-    );
+    return istestsSearchList && istestsSearchList.length != 0 ? (
+      <View style={styles.searchTestDropdown}>
+        <DropDown
+          viewStyles={{
+            flexDirection: 'row-reverse',
+            justifyContent: 'space-between',
+          }}
+          containerStyle={{ height: 300, margin: 0 }}
+          options={istestsSearchList.map(
+            (item, i) =>
+              ({
+                optionText: item!.itemId === -1 ? item!.itemRemarks : item!.itemName,
+                onPress: () => {
+                  Keyboard.dismiss();
+                  // getTempTestArray(item);
+                  getTempTestArray(item);
+                  setsearchTestVal(hasInstructions ? item!.itemName : '');
+                  // isSearchTestListVisible;
+                  setisSearchTestListVisible(!isSearchTestListVisible);
+                },
+                icon: <AddPlus />,
+              } as Option)
+          )}
+        />
+      </View>
+    ) : null;
   };
 
   const GetSearchDiagnostics = (search_value: string) => {
@@ -145,7 +179,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
                 itemName: search_value.trim(),
                 gender: '',
                 rate: -1,
-                itemRemarks: '',
+                itemRemarks: `Add “${search_value.trim()}”`,
                 city: '',
                 state: '',
                 itemType: null,
@@ -172,7 +206,7 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
               itemName: search_value.trim(),
               gender: '',
               rate: -1,
-              itemRemarks: '',
+              itemRemarks: `Add “${search_value.trim()}”`,
               city: '',
               state: '',
               itemType: null,
@@ -188,128 +222,148 @@ export const AddTestPopup: React.FC<AddTestPopupProps> = (props) => {
       setisSearchTestListVisible(false);
     }
   };
-  return (
-    <AphOverlay
-      headingViewStyle={{
-        paddingVertical: 0,
-      }}
-      onClose={() => {
-        props.onClose();
-      }}
-      isVisible={true}
-      customHeader={
-        <View
-          style={{
-            borderTopRightRadius: 10,
-            borderTopLeftRadius: 10,
-            overflow: 'hidden',
-            backgroundColor: theme.colors.WHITE,
-            paddingVertical: 18,
-          }}
-        >
-          <TabsComponent
-            titleStyle={styles.tabTitle}
-            selectedTitleStyle={styles.tabTitle}
-            tabViewStyle={styles.tabViewstyle}
-            onChange={(title) => {
-              setSelectedTab(title);
+
+  const renderInstruction = () => {
+    return (
+      <View>
+        <Text style={styles.instructionText}>{string.smartPrescr.additional_instru}</Text>
+        <TextInput
+          placeholder={strings.smartPrescr.type_here}
+          style={styles.additionalInstrInputstyle}
+          placeholderTextColor={theme.colors.placeholderTextColor}
+          textAlignVertical={'top'}
+          multiline={true}
+          value={instuction}
+          onChange={(text) => setInstruction(text.nativeEvent.text)}
+          selectionColor={theme.colors.INPUT_CURSOR_COLOR}
+        />
+      </View>
+    );
+  };
+
+  const renderHeader = () => {
+    return (
+      <View style={styles.headerStyles}>
+        <Text style={styles.medNameStyles}>{'ADD TEST'}</Text>
+      </View>
+    );
+  };
+
+  const renderButton = () => {
+    return tempTestArray.length > 0 && !isSearchTestListVisible ? (
+      <View style={styles.buttonContainer}>
+        <View style={styles.doneButtonStyle}>
+          <Button
+            title={strings.buttons.done}
+            disabled={!tempTestArray.length}
+            onPress={() => {
+              props.onPressDone(searchTestVal, tempTestArray, instuction);
             }}
-            data={tabsData}
-            selectedTab={selectedTab}
           />
         </View>
-      }
-    >
+      </View>
+    ) : null;
+  };
+
+  const renderSearchInput = () => {
+    return (
+      <TextInput
+        placeholder={strings.smartPrescr.search_test}
+        style={styles.inputView}
+        placeholderTextColor={theme.colors.placeholderTextColor}
+        textAlignVertical={'top'}
+        autoFocus={true}
+        multiline={true}
+        value={searchTestVal}
+        onChangeText={(value) => {
+          GetSearchDiagnostics(value.replace(/\s+/g, ' '));
+        }}
+        selectionColor={theme.colors.INPUT_CURSOR_COLOR}
+      />
+    );
+  };
+
+  const renderTestList = () => {
+    return (
       <View
         style={{
-          flex: 1,
-          borderRadius: 10,
-          backgroundColor: '#f7f7f7',
+          marginTop: 16,
+          flexDirection: 'row',
+          flexWrap: 'wrap',
         }}
       >
-        <View style={{ flex: 1 }}>
-          {/* {selectedTab == 'ADD TEST' ? ( */}
-          <View>
-            <View
-              style={{
-                marginVertical: 20,
-                padding: 20,
-                backgroundColor: '#ffffff',
-                zIndex: 16,
-                elevation: 16,
-                shadowColor: '#808080',
-                shadowOffset: { width: 2, height: 10 },
-                shadowOpacity: 0.2,
-                shadowRadius: 10,
-                // marginBottom: 100,
-              }}
-            >
-              <View>
-                <TextInputComponent
-                  placeholder={strings.smartPrescr.search_test}
-                  inputStyle={styles.inputView}
-                  multiline={true}
-                  value={searchTestVal}
-                  onChangeText={(value) => {
-                    GetSearchDiagnostics(value.replace(/\s+/g, ' '));
-                  }}
-                  autoFocus={true}
-                />
-              </View>
-              {loading ? (
-                <ActivityIndicator animating={true} size="small" color="green" />
-              ) : (
-                <>
-                  <View style={{ top: -36, bottom: 0, marginLeft: -20 }}>
-                    {isSearchTestListVisible && GetSearchResultOfTests()}
-                  </View>
-                  <View style={{ marginRight: 20 }}>
-                    {tempTestArray &&
-                      tempTestArray.map((item, index) => {
-                        return (
-                          <ChipIconView
-                            title={item.itemName || ''}
-                            onPress={() => {
-                              settempTestArray(tempTestArray.slice(1));
-                              setsearchTestVal('');
-                              setisSearchTestListVisible(false);
-                            }}
-                          />
-                        );
-                      })}
-                  </View>
-                </>
-              )}
-            </View>
-            <View style={{ backgroundColor: '#ffffff' }}>
-              <View style={styles.doneButtonStyle}>
-                <Button
-                  title={strings.buttons.done}
-                  disabled={!tempTestArray.length}
-                  onPress={() => {
-                    props.onPressDone(searchTestVal, tempTestArray);
-                    //   settestsSearchList([]);
-                    //   settempTestArray([]);
-                    //   setsearchTestVal('');
-                  }}
-                />
-              </View>
-            </View>
-          </View>
-          {/* ) : (
-            <View>
-              <View style={{ marginVertical: 20, padding: 20, backgroundColor: '#ffffff' }}>
-                <View style={{ alignItems: 'center', ...theme.fonts.IBMPlexSansMedium(20) }}>
-                  <Text>Coming Soon.</Text>
-                </View>
-              </View>
-              <View style={styles.doneButtonStyle}>
-                <Button title={strings.buttons.done} />
-              </View>
-            </View>
-          )} */}
-        </View>
+        {tempTestArray &&
+          tempTestArray.map((item, index) => {
+            return (
+              <ChipIconView
+                containerStyle={{ marginRight: 10 }}
+                title={item.itemName || ''}
+                onPress={() => {
+                  settempTestArray(tempTestArray.filter((i) => i.itemName !== item.itemName));
+                  setsearchTestVal('');
+                  setisSearchTestListVisible(false);
+                }}
+              />
+            );
+          })}
       </View>
-    </AphOverlay>
+    );
+  };
+
+  return (
+    <View style={styles.mainView}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
+      >
+        <View
+          style={{
+            paddingHorizontal: 30,
+          }}
+        >
+          <View
+            style={{
+              alignItems: 'flex-end',
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                props.onClose();
+              }}
+              style={styles.touchableCloseIcon}
+            >
+              <Remove style={styles.closeIcon} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.contenteView}>
+            {renderHeader()}
+            <ScrollView bounces={false}>
+              <View style={styles.scrollViewStyles}>
+                {renderSearchInput()}
+                {loading ? (
+                  <ActivityIndicator
+                    animating={true}
+                    size="large"
+                    color="green"
+                    style={styles.listSpinner}
+                  />
+                ) : (
+                  <View>
+                    {isSearchTestListVisible && GetSearchResultOfTests()}
+                    {!isSearchTestListVisible
+                      ? hasInstructions && tempTestArray.length > 0
+                        ? renderInstruction()
+                        : renderTestList()
+                      : null}
+                  </View>
+                )}
+              </View>
+            </ScrollView>
+            {renderButton()}
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </View>
   );
 };

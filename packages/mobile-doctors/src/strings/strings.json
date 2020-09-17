@@ -42,7 +42,9 @@
     "oops_msg": "Oops! seems like we are having an issue. Please try again.",
     "oops_msg_saving": "Oops! seems like we are having an issue while saving case sheet. Please try again.",
     "custom": "custom",
-    "default": "default"
+    "default": "default",
+    "contact_mailId": "admin@apollo247.com",
+    "imageLoading": "Loading Image"
   },
   "login": {
     "hello": "hello!",
@@ -72,12 +74,17 @@
     "helpText": "Don’t worry. We are here for\nyou :)",
     "interaction_cancelled_by_user": "The interaction was cancelled by the user.",
     "terms_conditions": "Terms & Conditions",
-    "by_signingup_descr": "By signing up, I agree to the https://www.apollo247.com/TnC.html of Apollo24x7",
-    "signout_error": "Something went wrong while signing you out."
+    "by_signingup_descr": "By signing up, I agree to the https://www.apollo247.com/terms of Apollo247",
+    "signout_error": "Something went wrong while signing you out.",
+    "not_doctor_message": "Seems like the mobile no. you entered is either not registered with us or your account has been disabled. If you are a doctor and wish to enroll with us, please contact admin@apollo247.com. If you are a patient, please click here to download application for patients.",
+    "contact": "Contact",
+    "download_patients": "Download Patients App",
+    "download_patients_android": "https://play.google.com/store/apps/details?id=com.apollo.patientapp",
+    "download_patients_ios": "https://apps.apple.com/in/app/apollo247/id1496740273"
   },
   "alerts": {
     "successfully_updated_delegate_num": "Successfully Updated Delegate Number",
-    "something_went_wrong": "Something went wrong.",
+    "something_went_wrong": "Something went wrong. Try again!",
     "error_code": "Error Code:",
     "enter_all": "Please enter all fields",
     "update_cs": "UpdateCaseSheet",
@@ -90,7 +97,8 @@
     "missing_referral_description": "It seems referral description field is empty. Please fill the referral section's description field under the Case Sheet tab.",
     "casesheet_already_send": "Case sheet cannot be modified now as the consult is already completed",
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image.",
-    "disable_Casesheet_view": "Case sheet view not allowed during the Audio/video call."
+    "disable_Casesheet_view": "Case sheet view not allowed during the Audio/video call.",
+    "reschedule_alert": "Reschedule request has been send to patient"
   },
   "popUP": {
     "awaiting_reschedule": "This appointment has been rescheduled. We’re waiting for the patient to confirm the slot."
@@ -121,7 +129,8 @@
     "call_me": "CALL ME",
     "skip": "SKIP",
     "update_symptom": "UPDATE SYMPTOM",
-    "ok_got_it": "OK, GOT IT"
+    "ok_got_it": "OK, GOT IT",
+    "submit": "SUBMIT"
   },
   "account": {
     "add_doct_to_your_team": "Add a doctor to your team",
@@ -134,6 +143,7 @@
     "fees": "Fees",
     "smart_prescr": "Smart Prescription",
     "settings": "Settings",
+    "logout": "Logout",
     "ac_num": "A/C Number: *********",
     "consultation_fees": " Consultation Fees",
     "consult_fee_q": " consultation fees?",
@@ -160,7 +170,7 @@
     "enter_mobile_num_to_access_ac": "Enter the mobile number you’d like to assign access of your account to",
     "add_consult_hours": "ADD CONSULTATION HOURS",
     "thanku_dr": "thank you, dr.",
-    "profile_tab_descr": "Let’s go over now to see the Apollo24x7 portal and start consultations!",
+    "profile_tab_descr": "Let’s go over now to see the Apollo247 portal and start consultations!",
     "share_heading": "Share a link with your contacts\nprivately to book a consult with you",
     "share_text": "SHARE MY PROFILE",
     "share_header": "SHARE YOUR PROFILE",
@@ -191,7 +201,8 @@
     "subHeading": "Please follow the steps to connect to your patient :",
     "point1": "Answer the call from ‘040-48214566’ to connect.",
     "point2": "Wait for the patient to connect.",
-    "toastMessage": "You will get a call from 040-48214566.\nPlease pick up the call !"
+    "toastMessage": "You will get a call from 040-48214566.\nPlease pick up the call !",
+    "exotelNumber": "040-48214566"
   },
   "smartPrescr": {
     "smart_prescr_header": "SMART PRESCRIPTION",
@@ -365,13 +376,14 @@
     "test_prescription": "Test Prescription",
     "medicine_prescription": "Medicine Prescription",
     "patient_health_vault": "Patient Health Vault",
-    "follow_up": "Follow Up",
+    "follow_up": "Follow Up Chat Days",
     "first_follow_up_descr": " (The first follow up for the patient will be free for upto 7 days)",
     "do_you_recommend_followup": "Do you recommend a follow up?",
     "follow_up_after": "Follow Up After",
     "recommend_consult_type": "Recommended Consult Type",
     "in_person": "In-person",
     "diagnosis": "Diagnosis",
+    "followup_instruction": "The follow up chat days count will be changed for this individual patient. Your default follow up chat day count is set at {0}.",
     "instructions_to_patient": "Instructions to the patient",
     "how_do_you_talk": "How do you want to talk to the patient?",
     "advice_instructions": "Advice/Instructions",
@@ -391,7 +403,7 @@
     "diet_allergies": "Diet Allergies/Restrictions",
     "lifestyle_habits": "Personal History, Lifestyle & Habits",
     "occupational_history": "Environmental & Occupational History",
-    "menstrual_history": "Menstrual History",
+    "menstrual_history": "Menstrual and Obstetric History",
     "family_medical_history": "Family Medical History",
     "tests": "Tests",
     "no_medicine_Added": "No Medicine Added",
@@ -420,14 +432,86 @@
     "submitted_by": "Submitted by Dr.",
     "on": "on",
     "select_Speciality": "Select Speciality",
-    "med_remove": "This medicine has been discontinued"
+    "med_remove": "This medicine has been discontinued",
+    "whatsapp": "WhatsApp",
+    "whatsapp_number": "+91 9355031397",
+    "email": "E-mail",
+    "help_desk_email": "Helpdesk@apollo247.com",
+    "join_heading": "Patient “{0}” is waiting on the call. Please click on the 'Join' button to join the call.",
+    "howWasYourExperience": "How was your experience ?\nPlease rate us !",
+    "thankYou": "Thank you !",
+    "thankyou_subtitle": "we will keep up the service !",
+    "what_went_wrong": "What went wrong ?",
+    "let_us_know": "We are sorry, please let us know",
+    "audio": "Audio",
+    "video": "Video",
+    "audioReviews": [
+      {
+        "responseValue": "Patient Did not pick up the call",
+        "responseName": "AUDIO_CALL_NOT_PICKED"
+      },
+      {
+        "responseValue": "Call Disconnected Abruptly",
+        "responseName": "AUDIO_CALL_DISCONNECTED_ABRUPTLY"
+      },
+      { "responseValue": "Could not hear any sound", "responseName": "AUDIO_NO_SOUND_HEARED" },
+      { "responseValue": "Patient could not hear me", "responseName": "AUDIO_NO_SOUND_RECEIVED" },
+      { "responseValue": "Audio Echo was heard", "responseName": "AUDIO_ECHO" },
+      {
+        "responseValue": "I heard a strange noise (not background noise)",
+        "responseName": "AUDIO_STRANGE_NOISE"
+      },
+      { "responseValue": "Volume was low", "responseName": "AUDIO_VOLUME_LOW" },
+      { "responseValue": "Other", "responseName": "AUDIO_OTHER" }
+    ],
+    "videoReviews": [
+      {
+        "responseValue": "Patient Did not pick up the call",
+        "responseName": "VIDEO_CALL_NOT_PICKED"
+      },
+      {
+        "responseValue": "Call Disconnected Abruptly",
+        "responseName": "VIDEO_CALL_DISCONNECTED_ABRUPTLY"
+      },
+      {
+        "responseValue": "Could not see anything in the video",
+        "responseName": "VIDEO_NOT_VISIBLE"
+      },
+      {
+        "responseValue": "Video was working but video was not clear",
+        "responseName": "VIDEO_NOT_CLEAR"
+      },
+      { "responseValue": "Patient could not see my video", "responseName": "VIDEO_NOT_RECEIVED" },
+      { "responseValue": "Video froze during the call", "responseName": "VIDEO_FREEZE" },
+      { "responseValue": "Video Stopped working during the call", "responseName": "VIDEO_STOPPED" },
+      {
+        "responseValue": "Video and audio was not in sync",
+        "responseName": "VIDEO_AUDIO_NOT_SYNC"
+      },
+      { "responseValue": "Other", "responseName": "VIDEO_OTHER" }
+    ],
+    "othersReasonPlaceholder": "Others,  Please specify",
+    "feedbackResponseType": {
+      "audio": "AUDIO",
+      "video": "VIDEO",
+      "audioVideo": "AUDIOVIDEO"
+    },
+    "notes": "Notes",
+    "diagnosticTestResults": "Diagnostic Test Results",
+    "clinicalNotes": "Clinical observations/notes",
+    "jrDoctorNotes": "Junior Doctor Notes",
+    "typeYourNotes": "Type your notes here ....",
+    "typeDiagnosticTestResults": "Type your diagnostic test results here ....",
+    "typeClinicalNotes": "Type your clinical observations/notes here ...."
   },
   "consult_room": {
     "patient_is_not_acitve_descr": "We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult.",
     "continue": "Continue",
     "reschedule": "Reschedule",
     "you_missed_voice_call": "You missed a voice call",
+    "patient_missed_voice_call": "Patient missed a voice call",
     "you_missed_video_call": "You missed a video call",
+    "patient_missed_video_call": "Patient missed a video call",
     "duration": "Duration",
     "your_appnt_with": "Your appointment with ",
     "is_scheduled_to_start": "is scheduled to start at",
@@ -468,6 +552,7 @@
   },
   "toastMessages": {
     "error": "Something went wrong!! Trying to connect",
+    "willFallback": "Will fall-back to audio if network drops further",
     "fallback": "Falling back to audio due to bad network",
     "reconnecting": "There is a problem with network connection. Reconnecting, Please wait...",
     "videoBack": "Network improved switching back to video",
@@ -480,5 +565,24 @@
     "noPatientText2": "Please try checking your spelling or use another term.",
     "searchResult": "Search results with “{0}”",
     "searchCharLimit": "Enter atleast 3 characters to search."
+  },
+  "settings": {
+    "ivrHeading": "Set-up an IVR as a reminder for appointment booking",
+    "yes": "YES",
+    "no": "NO",
+    "ivrOptionSelect": "Select the type of appointment for",
+    "ivrOnlineHeading": "Select the time of call before online appointment.",
+    "ivrInPersonHeading": "Select the time of call before in-person appointment.",
+    "inMins": "in mins",
+    "notificationHeader": "Set up Notification prefrences",
+    "followupHeader": "Set up your patient follow up days",
+    "saveText": "The last changes saved on {0}.",
+    "followupInfo": "This Value will be default for all patients, However you can change the follow-up chat day count on individual patient's Case-sheet."
+  },
+  "medicinePrescriptionPopup": {
+    "heading": "Previous prescriptions",
+    "casesheetHeading": "Select a Casesheet",
+    "remove": "REMOVE ALL FROM THE SELECTED DATE",
+    "addAll": "ADD ALL FROM SELECTED DATE"
   }
 }

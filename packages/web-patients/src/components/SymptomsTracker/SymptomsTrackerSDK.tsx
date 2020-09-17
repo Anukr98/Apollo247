@@ -687,7 +687,7 @@ const SymptomsTrackerSDK: React.FC = () => {
           </Popover>
         </div>
       }
-      {!isSignedIn && !isSigningIn  && (
+      {!isSignedIn && !isSigningIn && (
         <Popover
           open={loggedOutUserDetailPopover}
           anchorEl={anchorEl}
