@@ -560,13 +560,7 @@ const getStoreDetails = async (shopId: string) => {
   const authToken = process.env.INVENTORY_SYNC_TOKEN || '';
   const apiUrl = `${inventoryBaseUrl}/getstore?storeCode=${shopId}`;
 
-  log(
-    'profileServiceLogger',
-    `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
-    'FETCH_STORE_DETAILS_API_CALL_STARTING',
-    '',
-    ''
-  );
+  log('profileServiceLogger', `FETCH_STORE_DETAILS:${shopId}`, 'saveMedicineOrderOMS', '', '');
 
   const pharmaResp = await fetch(apiUrl, {
     headers: { 'Content-Type': 'application/json', Authorization: authToken },
@@ -575,10 +569,10 @@ const getStoreDetails = async (shopId: string) => {
   if (pharmaResp.status != 200) {
     log(
       'profileServiceLogger',
-      `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
-      'FETCH_STORE_DETAILS_API_CALL_FAILED',
+      `FETCH_STORE_DETAILS: ${shopId}`,
+      'saveMedicineOrderOMS',
       JSON.stringify(pharmaResp),
-      ''
+      'FETCH_STORE_DETAILS_API_CALL_FAILED'
     );
     return {};
   }
@@ -588,17 +582,17 @@ const getStoreDetails = async (shopId: string) => {
   if (storeDetails.errorMsg) {
     log(
       'profileServiceLogger',
-      `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
-      'FETCH_STORE_DETAILS_API_CALL_FAILED',
+      `FETCH_STORE_DETAILS:${shopId}`,
+      'saveMedicineOrderOMS',
       JSON.stringify(storeDetails),
-      ''
+      'FETCH_STORE_DETAILS_API_CALL_FAILED'
     );
     return {};
   }
   log(
     'profileServiceLogger',
-    `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
-    'FETCH_STORE_DETAILS_API_CALL_SUCCESS',
+    `FETCH_STORE_DETAILS_SUCCESS`,
+    'saveMedicineOrderOMS',
     JSON.stringify(storeDetails),
     ''
   );
