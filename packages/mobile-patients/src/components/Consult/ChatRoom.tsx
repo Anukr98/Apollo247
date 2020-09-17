@@ -6716,7 +6716,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={{
-                  width: 50,
+                  width: 58,
                   height: 50,
                   marginTop: 10,
                   marginLeft: 5,
@@ -6737,7 +6737,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 7, '#fff', 1, undefined, -0.03),
-                    marginTop: 5,
+                    marginTop: 2,
                     textAlign: 'center',
                   }}
                 >
@@ -6821,7 +6821,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={{
-                  width: 50,
+                  width: 58,
                   height: 50,
                   marginTop: 10,
                   marginLeft: 5,
@@ -6841,7 +6841,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
-                    marginTop: 5,
+                    marginTop: 2,
                     textAlign: 'center',
                   }}
                 >
@@ -6935,7 +6935,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={{
-                  width: 50,
+                  width: 58,
                   height: 50,
                   marginTop: 10,
                   marginLeft: 5,
@@ -6956,7 +6956,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
-                    marginTop: 5,
+                    marginTop: 2,
                     textAlign: 'center',
                   }}
                 >
