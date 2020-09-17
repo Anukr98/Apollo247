@@ -125,7 +125,7 @@ const addPatientLabTestRecord: Resolver<
 
 
     if (addLabTestRecordInput.testResultFiles && addLabTestRecordInput.testResultFiles.length) {
-        addLabTestRecordInput.testResultFiles.forEach(function (file) {
+        addLabTestRecordInput.testResultFiles.forEach((file) => {
             if (file && file.fileName) {
                 labTestFilesInput.push({
                     id: "",
