@@ -1972,6 +1972,12 @@ export class PatientMedicalHistory extends BaseEntity {
   @Column({ nullable: true })
   weight: string;
 
+  @Column({ nullable: true, type: 'text' })
+  clinicalObservationNotes: string;
+
+  @Column({ nullable: true, type: 'text' })
+  diagnosticTestResult: string;
+
   @BeforeInsert()
   updateDateCreation() {
     this.createdDate = new Date();

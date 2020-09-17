@@ -693,22 +693,23 @@ const bookRescheduleAppointment: Resolver<
     rescheduledapptNo: rescheduledapptDetails.displayId.toString() || 'N/A',
     docfirstName: docDetails.firstName || 'N/A',
   });
-
-  const secretaryTemplateData: string[] = [
-    patientDetails.firstName + ' ' + patientDetails.lastName,
-    patientDetails.uhid,
-    docDetails.salutation + ' ' + docDetails.firstName,
-    facilityDetsString,
-    oldApptDate,
-    apptDate,
-    apptTime,
-    rescheduledapptDetails.appointmentType,
-  ];
-  sendDoctorNotificationWhatsapp(
-    ApiConstants.WHATSAPP_DOC_SECRETARY_RESCHDULE,
-    docDetails.doctorSecretary.secretary.mobileNumber,
-    secretaryTemplateData
-  );
+  if (docDetails.doctorSecretary) {
+    const secretaryTemplateData: string[] = [
+      patientDetails.firstName + ' ' + patientDetails.lastName,
+      patientDetails.uhid,
+      docDetails.salutation + ' ' + docDetails.firstName,
+      facilityDetsString,
+      oldApptDate,
+      apptDate,
+      apptTime,
+      rescheduledapptDetails.appointmentType,
+    ];
+    sendDoctorNotificationWhatsapp(
+      ApiConstants.WHATSAPP_DOC_SECRETARY_RESCHDULE,
+      docDetails.doctorSecretary.secretary.mobileNumber,
+      secretaryTemplateData
+    );
+  }
 
   const emailsubject = _.template(`
     Appointment rescheduled for ${hospitalCity},  Hosp Doctor – ${apptDate} ${apptTime}hrs, Dr. ${docDetails.firstName} ${docDetails.lastName}`);
