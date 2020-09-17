@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { MedicalRecordType } from '../../graphql/types/globalTypes';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -131,7 +132,8 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
       {source && source !== '-' && (
         <div className={classes.consultType}>
           {/* {source === '247self' ? <img /> : <img />} // first image should have person image and second one should be hospital  */}
-          {type !== MedicalRecordType.HOSPITALIZATION && source === '247self'
+          {type !== MedicalRecordType.HOSPITALIZATION &&
+          (source === '247self' || _lowerCase(source) === 'self')
             ? 'Self upload'
             : source}
         </div>
