@@ -21,6 +21,7 @@ import {
   GET_APPOINTMENT_RESCHEDULE_DETAILS,
   SAVE_SEARCH,
   SAVE_DEVICE_TOKEN,
+  GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { linkUhidsVariables } from '@aph/mobile-patients/src/graphql/types/linkUhids';
@@ -80,6 +81,10 @@ import {
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import { saveDeviceToken, saveDeviceTokenVariables } from '../graphql/types/saveDeviceToken';
 import { Platform } from 'react-native';
+import {
+  getSecretaryDetailsByDoctorId,
+  getSecretaryDetailsByDoctorIdVariables,
+} from '../graphql/types/getSecretaryDetailsByDoctorId';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -603,5 +608,24 @@ export const saveTokenDevice = (client: ApolloClient<object>, token: any, patien
       SaveDeviceTokenInput: input,
     },
     fetchPolicy: 'no-cache',
+  });
+};
+
+export const getSecretaryDetailsByDoctor = (client: ApolloClient<object>, doctorId: string) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getSecretaryDetailsByDoctorId, getSecretaryDetailsByDoctorIdVariables>({
+        query: GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
+        variables: {
+          doctorId: doctorId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        rej({ error: e });
+      });
   });
 };
