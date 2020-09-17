@@ -140,13 +140,9 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             },
             { match: { isSearchable: true } },
             {
-<<<<<<< HEAD
-              multi_match: {
-=======
               query_string: {
                 fuzziness: 0,
                 query: `*${searchTextLowerCase}*`,
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                 fields: [
                   `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
                   `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
@@ -154,11 +150,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                   `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                 ],
-<<<<<<< HEAD
-                type: 'phrase_prefix',
-                query: `*${searchTextLowerCase}*`,
-=======
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
               },
             },
           ],
@@ -573,42 +564,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
   }
 
-<<<<<<< HEAD
-  function fieldCompare(field: string, order: string = 'asc') {
-    return function sort(objectA: any, objectB: any) {
-      if (!objectA.hasOwnProperty(field) || !objectB.hasOwnProperty(field)) {
-        return 0;
-      }
-      const fieldA = parseFloat(objectA[field]);
-      const fieldB = parseFloat(objectB[field]);
-      let comparison = 0;
-      if (fieldA > fieldB) {
-        comparison = 1;
-      } else if (fieldA < fieldB) {
-        comparison = -1;
-      }
-      return order === 'desc' ? comparison * -1 : comparison;
-    };
-  }
-
-  finalMatchedDoctors = perfectMatchedDoctors
-    .sort(fieldCompare('earliestSlotavailableInMinutes'))
-    .concat(earlyAvailableApolloMatchedDoctors.sort(fieldCompare('earliestSlotavailableInMinutes')))
-    .concat(
-      earlyAvailableNonApolloMatchedDoctors.sort(fieldCompare('earliestSlotavailableInMinutes'))
-    )
-    .concat(matchedDoctors.sort(fieldCompare('earliestSlotavailableInMinutes')));
-
-  finalPossibleDoctors = earlyAvailableApolloPossibleDoctors
-    .sort(fieldCompare('earliestSlotavailableInMinutes'))
-    .concat(
-      earlyAvailableNonApolloPossibleDoctors.sort(fieldCompare('earliestSlotavailableInMinutes'))
-    )
-    .concat(possibleDoctors.sort(fieldCompare('earliestSlotavailableInMinutes')));
-
-  matchedDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
-  possibleDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
-=======
   finalMatchedDoctors = perfectMatchedDoctors
     .concat(earlyAvailableApolloMatchedDoctors)
     .concat(earlyAvailableNonApolloMatchedDoctors)
@@ -620,7 +575,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
   // matchedDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
   // possibleDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 
   searchLogger(`API_CALL___END`);
   return {
