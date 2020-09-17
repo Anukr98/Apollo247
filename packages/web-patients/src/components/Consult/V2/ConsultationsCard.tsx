@@ -550,11 +550,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       case STATUS.NO_SHOW || STATUS.CALL_ABANDON:
         return 'PICK ANOTHER SLOT';
       case STATUS.COMPLETED:
-<<<<<<< HEAD
         return props.pastOrCurrent === 'past' ? 'BOOK FOLLOW UP' : 'TEXT CONSULT';
-=======
-        return props.pastOrCurrent === 'past' ? '' : 'TEXT CONSULT';
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
       case STATUS.IN_PROGRESS:
         return 'GO TO CONSULT ROOM';
       case STATUS.CANCELLED:
@@ -744,14 +740,11 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     rescheduleAPI(bookRescheduleInput, TRANSFER_INITIATED_TYPE.DOCTOR);
   };
 
-<<<<<<< HEAD
   const callSlotScreen = (appointmentDetails: AppointmentDetails) => {
     setAppointmentData(appointmentDetails);
     setOpenSlotPopup(true);
   };
 
-=======
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
   const getAppointmentNextSlotInitiatedByDoctor = (appointmentDetails: AppointmentDetails) => {
     setAppointmentData(appointmentDetails);
     setRescheduleCount(appointmentDetails.rescheduleCount);
@@ -809,7 +802,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 specialty = doctorInfo.specialty;
                 doctorHospital = doctorInfo.doctorHospital;
               }
-
               const doctorImage = photoUrl || require('images/no_photo.png');
               const specialization =
                 specialty && !_isNull(specialty.name) ? specialty.specialistSingularTerm : '';
@@ -907,7 +899,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                     </div>
                     <div className={classes.consultChatContainer}>
                       <div className={classes.consultRow}>
-<<<<<<< HEAD
                         {props.pastOrCurrent !== 'past' &&
                           appointmentDetails.appointmentState ===
                             APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
@@ -916,14 +907,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                               slot.
                             </AphButton>
                           )}
-=======
-                        {appointmentDetails.appointmentState ===
-                          APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
-                          <AphButton className={classes.errorButton}>
-                            Sorry, we had to reschedule this appointment. Please pick another slot.
-                          </AphButton>
-                        )}
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                         <div className={classes.consultChat}>
                           {/* <h5>Previous Prescription</h5>
                         <AphButton className={classes.presButton}>
@@ -944,7 +927,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                           history.push(
                                             clientRoutes.chatRoom(appointmentId, doctorId)
                                           );
-<<<<<<< HEAD
                                         } else {
                                           callSlotScreen(appointmentDetails);
                                         }
@@ -953,12 +935,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                       {props.pastOrCurrent !== 'past'
                                         ? 'BOOK FOLLOW UP'
                                         : 'VIEW CHAT'}
-=======
-                                        }
-                                      }}
-                                    >
-                                      {props.pastOrCurrent !== 'past' ? '' : 'VIEW CHAT'}
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                                     </h3>
                                   )}
                                 />
@@ -969,20 +945,11 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                               <div
                                 style={{ cursor: 'pointer' }}
                                 onClick={() => {
-<<<<<<< HEAD
-=======
-                                  const pickAnotherSlot =
-                                    appointmentDetails.status === STATUS.NO_SHOW ||
-                                    appointmentDetails.status === STATUS.CALL_ABANDON ||
-                                    appointmentDetails.appointmentState ===
-                                      APPOINTMENT_STATE.AWAITING_RESCHEDULE;
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                                   const doctorName =
                                     appointmentDetails.doctorInfo &&
                                     appointmentDetails.doctorInfo.fullName
                                       ? readableParam(appointmentDetails.doctorInfo.fullName)
                                       : '';
-<<<<<<< HEAD
                                   if (
                                     appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
                                   ) {
@@ -1023,29 +990,11 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                         appointmentDetails.doctorId
                                       )
                                     );
-=======
-                                  if (pickAnotherSlot) {
-                                    getAppointmentNextSlotInitiatedByDoctor(appointmentDetails);
-                                  } else {
-                                    appointmentDetails.status === STATUS.CANCELLED ||
-                                    (appointmentDetails.status === STATUS.COMPLETED &&
-                                      props.pastOrCurrent === 'past')
-                                      ? history.push(
-                                          clientRoutes.doctorDetails(
-                                            doctorName,
-                                            appointmentDetails.doctorId
-                                          )
-                                        )
-                                      : history.push(
-                                          clientRoutes.chatRoom(appointmentId, doctorId)
-                                        );
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                                   }
                                 }}
                               >
                                 <h3>
                                   {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-<<<<<<< HEAD
                                     ? props.pastOrCurrent === 'past'
                                       ? 'BOOK FOLLOW UP'
                                       : showAppointmentAction(
@@ -1053,13 +1002,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                           status,
                                           isConsultStarted
                                         )
-=======
-                                    ? showAppointmentAction(
-                                      appointmentState,
-                                      status,
-                                      isConsultStarted
-                                    )
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                                     : 'VIEW DETAILS'}
                                 </h3>
                               </div>
@@ -1153,7 +1095,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         </Modal>
       )}
       {appointmentData && (
-<<<<<<< HEAD
         <Modal
           open={openSlotPopup}
           onClose={() => setOpenSlotPopup(false)}
@@ -1168,8 +1109,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         </Modal>
       )}
       {appointmentData && (
-=======
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
         <Popover
           open={isRescheduleSuccess}
           anchorEl={mascotRef.current}

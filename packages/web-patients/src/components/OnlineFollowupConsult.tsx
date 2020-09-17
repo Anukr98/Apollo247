@@ -15,16 +15,7 @@ import { AppointmentType } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { GET_DOCTOR_NEXT_AVAILABILITY } from 'graphql/doctors';
-<<<<<<< HEAD
 import { format } from 'date-fns';
-=======
-import {
-  makeAppointmentPayment,
-  makeAppointmentPaymentVariables,
-} from 'graphql/types/makeAppointmentPayment';
-import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
-import format from 'date-fns/format';
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,

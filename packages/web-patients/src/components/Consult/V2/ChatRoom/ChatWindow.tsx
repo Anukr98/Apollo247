@@ -56,11 +56,8 @@ import { BookAppointmentCard } from 'components/Consult/V2/ChatRoom/BookAppointm
 import { isPastAppointment, consultWebengageEventsInfo } from 'helpers/commonHelpers';
 import { useParams } from 'hooks/routerHooks';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
-<<<<<<< HEAD
 import { medicalDetailsFillTracking, callReceiveClickTracking } from 'webEngageTracking';
-=======
 import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -1086,12 +1083,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         { channel: appointmentId, count: 100, stringifiedTimeToken: true },
         (status: PubnubStatus, response: HistoryResponse) => {
           if (response.messages.length === 0) sendWelcomeMessage();
-<<<<<<< HEAD
-
-          console.log(response.messages, 'pubnub messages history.....');
-
-=======
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
           const newmessage: MessagesObjectProps[] = messages;
           response.messages.forEach((element: any, index: number) => {
             const item = element.entry;
@@ -2174,16 +2165,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     props.setIsConsultCompleted(
                       messageDetails.message === autoMessageStrings.appointmentComplete
                     );
-<<<<<<< HEAD
-                    return null;
-=======
                     return messageDetails.message === '^^#startconsult' ? (
                       <DoctorJoinedMessageCard
                         doctorName={doctorDisplayName}
                         messageDate={messageDetails.messageDate}
                       />
                     ) : null;
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                   }
                   const duration = messageDetails.duration;
                   if (cardType === 'welcome') {
