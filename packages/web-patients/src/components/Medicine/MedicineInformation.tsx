@@ -363,16 +363,6 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
-    addedtoCart: {
-      fontSize: 14,
-      color: '#fcb716',
-      fontWeight: 500,
-      position: 'relative',
-      width: '40%',
-      marginLeft: '7%',
-      textAlign: 'center',
-      top: -10,
-    },
   });
 });
 
@@ -681,7 +671,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     if (showAddMessage) {
       setTimeout(() => {
         setShowAddMessage(false);
-      }, 5000);
+      }, 3000);
     }
   }, [showAddMessage]);
 
@@ -961,6 +951,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                     {' '}
                     {addMutationLoading ? (
                       <CircularProgress size={22} color="secondary" />
+                    ) : showAddMessage ? (
+                      'Added To Cart'
                     ) : (
                       'Add To Cart'
                     )}
@@ -997,9 +989,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       'Buy Now'
                     )}
                   </AphButton>
-                </div>
-                <div className={classes.addedtoCart}>
-                  {showAddMessage && <span>Added to cart</span>}
                 </div>
               </>
             ) : null}
