@@ -260,7 +260,9 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
                 </Text>
                 <Text style={styles.drnametext}>
                   {formatSpecialityAndExperience(
-                    profileData.specialty!.name,
+                    g(profileData, 'specialty', 'specialistSingularTerm') ||
+                      g(profileData, 'specialty', 'name') ||
+                      '',
                     profileData.experience || ''
                   )}
                 </Text>
@@ -290,12 +292,12 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
                 onReload={props.onReload}
               />
             ) : null}
-            <View>
+            {/* <View>
               <Text style={styles.login}>{strings.account.secretay_login}</Text>
               {renderMobilePhoneView()}
               {isLoading ? <Loader flex1 /> : null}
               {renderButtonsView()}
-            </View>
+            </View> */}
           </SquareCardWithTitle>
         </ScrollView>
       </KeyboardAwareScrollView>

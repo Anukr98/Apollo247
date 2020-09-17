@@ -17,11 +17,11 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       flexDirection: 'column',
       minHeight: '100vh',
-      width: 'calc(100% - 40px)',
+      width: '100%',
       color: 'rgba(0, 0, 0, 0.6)',
       marginRight: 20,
-      marginLeft: 20,
       marginBottom: 20,
+      marginTop: 20,
       padding: 20,
     },
     pageHeader: {
@@ -189,29 +189,28 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
   }
 
   return (
-    <div className={classes.root}>
-      <div className={classes.prescriptionPreview}>
-        <div className={classes.pageContent}>
-          {(otherInstructions && otherInstructions.length > 0) ||
-          !isEmpty(referralSpecialtyName) ||
-          !isEmpty(referralDescription) ? (
-            <div className={classes.prescriptionSection}>
-              <div className={classes.sectionHeader}>
-                <img src={require('images/ic-doctors-2.svg')} />
-                ADVICE/INSTRUCTIONS
-              </div>
-              <div className={classes.adviceInstruction}>
-                {otherInstructions && otherInstructions.length > 0 && (
-                  <div className={classes.advice}>
-                    <span>Doctor’s Advice</span>
-                    <div>
-                      {otherInstructions.map((instruction) => (
-                        <div className={classes.instruction}>{instruction.instruction}</div>
-                      ))}
-                    </div>
+    <div className={classes.prescriptionPreview}>
+      <div className={classes.pageContent}>
+        {(otherInstructions && otherInstructions.length > 0) ||
+        !isEmpty(referralSpecialtyName) ||
+        !isEmpty(referralDescription) ? (
+          <div className={classes.prescriptionSection}>
+            <div className={classes.sectionHeader}>
+              <img src={require('images/ic-doctors-2.svg')} />
+              ADVICE/INSTRUCTIONS
+            </div>
+            <div className={classes.adviceInstruction}>
+              {otherInstructions && otherInstructions.length > 0 && (
+                <div className={classes.advice}>
+                  <span>Doctor’s Advice</span>
+                  <div>
+                    {otherInstructions.map((instruction) => (
+                      <div className={classes.instruction}>{instruction.instruction}</div>
+                    ))}
                   </div>
-                )}
-                {/* {followUp[0] && parseInt(followUpAfterInDays[0]) > 0
+                </div>
+              )}
+              {/* {followUp[0] && parseInt(followUpAfterInDays[0]) > 0
                     ? (
                       <div className={classes.advice}>
                         <span>Follow Up</span>
@@ -222,89 +221,88 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
                     )
                     : null} */}
 
-                {(!isEmpty(referralSpecialtyName) || !isEmpty(referralDescription)) && (
-                  <div className={classes.advice}>
-                    <span>Referral</span>
-                    <div>
-                      {!isEmpty(referralSpecialtyName) && (
-                        <div className={classes.followContent} style={{ marginBottom: 5 }}>
-                          {`Consult a ${referralSpecialtyName}`}
-                        </div>
-                      )}
-                      {!isEmpty(referralDescription) && (
-                        <div className={classes.instruction}>{referralDescription}</div>
-                      )}
-                    </div>
+              {(!isEmpty(referralSpecialtyName) || !isEmpty(referralDescription)) && (
+                <div className={classes.advice}>
+                  <span>Referral</span>
+                  <div>
+                    {!isEmpty(referralSpecialtyName) && (
+                      <div className={classes.followContent} style={{ marginBottom: 5 }}>
+                        {`Consult a ${referralSpecialtyName}`}
+                      </div>
+                    )}
+                    {!isEmpty(referralDescription) && (
+                      <div className={classes.instruction}>{referralDescription}</div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-          ) : null}
-
-          {createdDoctorProfile && (
-            <div className={classes.prescriptionHeader}>
-              {((sdConsultationDate && sdConsultationDate !== '') ||
-                (appointmentInfo && appointmentInfo!.appointmentDateTime)) && (
-                <h6>
-                  Prescribed on{' '}
-                  {sdConsultationDate && sdConsultationDate !== ''
-                    ? moment(sdConsultationDate).format('DD/MM/YYYY')
-                    : moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}{' '}
-                  by
-                </h6>
-              )}
-              {createdDoctorProfile!.signature && (
-                <div className={classes.followUpContent}>
-                  <img src={createdDoctorProfile.signature} />
                 </div>
               )}
-              {(createdDoctorProfile!.salutation ||
-                createdDoctorProfile!.firstName ||
-                createdDoctorProfile!.lastName ||
-                createdDoctorProfile!.registrationNumber ||
-                (createdDoctorProfile!.specialty &&
-                  createdDoctorProfile!.specialty!.specialistSingularTerm)) && (
-                <div className={classes.signInformation}>
-                  {(createdDoctorProfile.salutation ||
-                    createdDoctorProfile.firstName ||
-                    createdDoctorProfile.lastName) && (
-                    <h3 className={classes.followUpContent}>
-                      {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
-                    </h3>
-                  )}
+            </div>
+          </div>
+        ) : null}
 
-                  {/* {currentDoctor.qualification && (
+        {createdDoctorProfile && (
+          <div className={classes.prescriptionHeader}>
+            {((sdConsultationDate && sdConsultationDate !== '') ||
+              (appointmentInfo && appointmentInfo!.appointmentDateTime)) && (
+              <h6>
+                Prescribed on{' '}
+                {sdConsultationDate && sdConsultationDate !== ''
+                  ? moment(sdConsultationDate).format('DD/MM/YYYY')
+                  : moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}{' '}
+                by
+              </h6>
+            )}
+            {createdDoctorProfile!.signature && (
+              <div className={classes.followUpContent}>
+                <img src={createdDoctorProfile.signature} />
+              </div>
+            )}
+            {(createdDoctorProfile!.salutation ||
+              createdDoctorProfile!.firstName ||
+              createdDoctorProfile!.lastName ||
+              createdDoctorProfile!.registrationNumber ||
+              (createdDoctorProfile!.specialty &&
+                createdDoctorProfile!.specialty!.specialistSingularTerm)) && (
+              <div className={classes.signInformation}>
+                {(createdDoctorProfile.salutation ||
+                  createdDoctorProfile.firstName ||
+                  createdDoctorProfile.lastName) && (
+                  <h3 className={classes.followUpContent}>
+                    {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
+                  </h3>
+                )}
+
+                {/* {currentDoctor.qualification && (
                       <p className={`${classes.specialty} ${classes.qualification}`}>
                         {currentDoctor.qualification}
                       </p>
                     )} */}
-                  {((createdDoctorProfile.specialty &&
-                    createdDoctorProfile.specialty.specialistSingularTerm) ||
-                    createdDoctorProfile.registrationNumber) && (
-                    <p className={classes.specialty}>
-                      {createdDoctorProfile.specialty.specialistSingularTerm
-                        ? `${createdDoctorProfile.specialty.specialistSingularTerm} | `
-                        : ''}
-                      {createdDoctorProfile.registrationNumber
-                        ? `Reg. No. ${createdDoctorProfile.registrationNumber}`
-                        : ''}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-        <div className={classes.gerenalInfo}>
-          <div className={classes.pageNumbers}>Page 2 of 2</div>
-          <div className={classes.disclaimer}>
-            <span>Disclaimer:</span>
-            <span>
-              This prescription is issued on the basis of your inputs during teleconsultation. It is
-              valid from the date of issue until the specific period/dosage of each medicine as
-              advised.
-            </span>
+                {((createdDoctorProfile.specialty &&
+                  createdDoctorProfile.specialty.specialistSingularTerm) ||
+                  createdDoctorProfile.registrationNumber) && (
+                  <p className={classes.specialty}>
+                    {createdDoctorProfile.specialty.specialistSingularTerm
+                      ? `${createdDoctorProfile.specialty.specialistSingularTerm} | `
+                      : ''}
+                    {createdDoctorProfile.registrationNumber
+                      ? `Reg. No. ${createdDoctorProfile.registrationNumber}`
+                      : ''}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
+        )}
+      </div>
+      <div className={classes.gerenalInfo}>
+        <div className={classes.pageNumbers}>Page 2 of 2</div>
+        <div className={classes.disclaimer}>
+          <span>Disclaimer:</span>
+          <span>
+            This prescription is issued on the basis of your inputs during teleconsultation. It is
+            valid from the date of issue until the specific period/dosage of each medicine as
+            advised.
+          </span>
         </div>
       </div>
     </div>

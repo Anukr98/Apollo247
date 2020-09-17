@@ -118,7 +118,14 @@ const useStyles = makeStyles((theme: Theme) => {
           paddingBottom: 10,
           '& span': {
             '&:first-child': {
-              paddingRight: 12,
+              width: 20,
+              display: 'inline-block',
+              textAlign: 'center',
+              marginRight: 10,
+            },
+            '&:last-child': {
+              display: 'inline-block',
+              width: 'calc(100% - 30px)',
             },
           },
           '& img': {
@@ -339,6 +346,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       fontWeight: 500,
     },
+    mobileIcon: {
+      position: 'relative',
+      top: 3,
+    },
   });
 });
 
@@ -437,7 +448,7 @@ export const HowItWorks: React.FC = (props) => {
                     <Typography>Make payment</Typography>
                   </li>
                   <li>
-                    <img src={require('images/ic-mobile.svg')} />
+                    <img src={require('images/ic-mobile.svg')} className={classes.mobileIcon} />
                     <Typography>
                       Be present in the consult room on apollo247.com at the time of consult
                     </Typography>
@@ -490,7 +501,9 @@ export const HowItWorks: React.FC = (props) => {
       </div>
       <div className={classes.appDetails}>
         {/* <Typography component="h6">Consultation works only on our mobile app</Typography> */}
-        <Typography>To enjoy services provided by Apollo 247 on Mobile, download our App</Typography>
+        <Typography>
+          To enjoy services provided by Apollo 247 on Mobile, download our App
+        </Typography>
         <a href={getAppStoreLink()} target={'_blank'}>
           <div className={classes.appDownload}>
             <img src={require('images/apollo247.png')} />

@@ -511,9 +511,7 @@ export const pinCodeServiceabilityApi247 = (
   pincode: string
 ): Promise<AxiosResponse<{ response: boolean }>> => {
   const url = `${config.UATTAT_CONFIG[0]}/serviceable?pincode=${pincode}`;
-  return Axios.post(
-    url,
-    {},
+  return Axios.get(url,
     {
       headers: {
         Authorization: config.UATTAT_CONFIG[1],
@@ -527,9 +525,7 @@ export const availabilityApi247 = (
   sku: string
 ): Promise<AxiosResponse<GetAvailabilityResponse247>> => {
   const url = `${config.UATTAT_CONFIG[0]}/availability?sku=${sku}&pincode=${pincode}`;
-  return Axios.post(
-    url,
-    {},
+  return Axios.get(url,
     {
       headers: {
         Authorization: config.UATTAT_CONFIG[1],

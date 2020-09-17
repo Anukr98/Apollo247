@@ -11,7 +11,7 @@ import {
 } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { ViewAllClinicAddress } from 'components/Tests/Cart/ViewAllClinicAddress';
-import axios, { AxiosError, Cancel } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { LocationContext } from 'components/LocationProvider';
 import { useDiagnosticsCart, Clinic } from '../DiagnosticsCartProvider';
 
