@@ -32,6 +32,7 @@ export interface GetAppointmentData_getAppointmentData_appointmentsHistory_docto
 
 export interface GetAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo {
   __typename: "DoctorDetailsWithStatusExclude";
+  mobileNumber: string;
   id: string;
   salutation: string | null;
   firstName: string;
