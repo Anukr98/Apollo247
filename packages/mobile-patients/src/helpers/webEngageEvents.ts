@@ -159,6 +159,9 @@ export enum WebEngageEventName {
   HOME_PAGE_VIEWED = 'Pharmacy Home page viewed',
   PRODUCT_PAGE_VIEWED = 'Product page viewed',
   CATEGORY_PAGE_VIEWED = 'Category page viewed',
+
+  //chatRoom Events
+  PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
 }
 
 export interface PatientInfo {
@@ -749,6 +752,48 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Patient UHID': string;
   };
+
+  //chat room
+  [WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
+  };
+  [WebEngageEventName.CHAT_WITH_DOCTOR]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
+  };
   // confirm the type of data for the below
   [WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
     'Consult Mode': 'Online' | 'Physical';
@@ -1244,23 +1289,6 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.ORDER_TESTS_FROM_PRESCRIPTION_DETAILS]: {
-    'Doctor Name': string;
-    'Speciality Name': string;
-    'Speciality ID': string;
-    'Doctor Category': DoctorType;
-    'Consult Date Time': Date;
-    'Consult Mode': 'Online' | 'Physical';
-    'Hospital Name': string;
-    'Hospital City': string;
-    'Consult ID': string;
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Customer ID': string;
-  };
-  [WebEngageEventName.CHAT_WITH_DOCTOR]: {
     'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;

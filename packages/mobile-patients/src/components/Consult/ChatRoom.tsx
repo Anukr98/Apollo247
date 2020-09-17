@@ -90,6 +90,7 @@ import {
   insertMessage,
   getPastAppoinmentCount,
   updateExternalConnect,
+  getSecretaryDetailsByDoctor,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   WebEngageEventName,
@@ -529,6 +530,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
   const patientJoinedCall = useRef<boolean>(false); // using ref to get the current values on listener events
   const subscriberConnected = useRef<boolean>(false);
+  const [secretaryData, setSecretaryData] = useState<any>([]);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -665,6 +667,55 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     postWebEngageEvent(type, eventAttributes);
   };
 
+  const postConsultCardEvents = (
+    type:
+      | WebEngageEventName.CHAT_WITH_DOCTOR
+      | WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT
+  ) => {
+    try {
+      const eventAttributes:
+        | WebEngageEvents[WebEngageEventName.CHAT_WITH_DOCTOR]
+        | WebEngageEvents[WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT] = {
+        'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+        'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
+        'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
+        'Doctor Category': g(appointmentData, 'doctorInfo', 'doctorType')!,
+        'Consult Date Time': moment(g(appointmentData, 'appointmentDateTime')).toDate(),
+        'Consult Mode':
+          g(appointmentData, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+        'Hospital Name': g(
+          appointmentData,
+          'doctorInfo',
+          'doctorHospital',
+          '0' as any,
+          'facility',
+          'name'
+        )!,
+        'Hospital City': g(
+          appointmentData,
+          'doctorInfo',
+          'doctorHospital',
+          '0' as any,
+          'facility',
+          'city'
+        )!,
+        'Consult ID': g(appointmentData, 'id')!,
+        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        Relation: g(currentPatient, 'relation'),
+        'Patient Age': Math.round(
+          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        'Patient Gender': g(currentPatient, 'gender'),
+        'Customer ID': g(currentPatient, 'id'),
+        'Secretary Name': g(secretaryData, 'name'),
+        'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
+        'Doctor Mobile Number': g(appointmentData, 'doctorInfo', 'mobileNumber')!,
+      };
+      postWebEngageEvent(type, eventAttributes);
+    } catch (error) {}
+  };
+
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
@@ -721,6 +772,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setuserName(userName);
     setUserAnswers({ appointmentId: channel });
     getAppointmentCount();
+    getSecretaryData();
     // requestToJrDoctor();
     // updateSessionAPI();
     setTimeout(() => {
@@ -805,6 +857,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const client = useApolloClient();
+
+  const getSecretaryData = () => {
+    getSecretaryDetailsByDoctor(client, doctorId)
+      .then((apiResponse: any) => {
+        console.log('apiResponse', apiResponse);
+        const secretaryDetails = g(apiResponse, 'data', 'data', 'getSecretaryDetailsByDoctorId');
+        setSecretaryData(secretaryDetails);
+        console.log('apiResponse');
+      })
+      .catch((error) => {
+        console.log('error', error);
+      });
+  };
 
   const getAppointmentCount = async () => {
     try {
@@ -2708,6 +2773,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }
         }
       );
+
+      if (status !== STATUS.COMPLETED) {
+        postConsultCardEvents(WebEngageEventName.CHAT_WITH_DOCTOR);
+      } else {
+        postConsultCardEvents(WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT);
+      }
     } catch (error) {
       CommonBugFender('ChatRoom_send_try', error);
     }
@@ -6645,8 +6716,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={{
-                  width: 58,
+                  width: 50,
                   height: 50,
+                  marginTop: 10,
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -6665,7 +6737,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 7, '#fff', 1, undefined, -0.03),
-                    marginTop: 2,
+                    marginTop: 5,
                     textAlign: 'center',
                   }}
                 >
@@ -6749,8 +6821,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={{
-                  width: 58,
+                  width: 50,
                   height: 50,
+                  marginTop: 10,
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -6768,7 +6841,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
-                    marginTop: 2,
+                    marginTop: 5,
                     textAlign: 'center',
                   }}
                 >
@@ -6862,8 +6935,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={{
-                  width: 58,
+                  width: 50,
                   height: 50,
+                  marginTop: 10,
                   marginLeft: 5,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -6882,7 +6956,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
-                    marginTop: 2,
+                    marginTop: 5,
                     textAlign: 'center',
                   }}
                 >
