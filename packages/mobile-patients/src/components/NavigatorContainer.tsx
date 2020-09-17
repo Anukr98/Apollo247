@@ -92,6 +92,8 @@ import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
 import { MedicineCart } from '@aph/mobile-patients/src/components/MedicineCart/MedicineCart';
 import { CartSummary } from '@aph/mobile-patients/src/components/MedicineCart/CartSummary';
+import { StorePickup } from '@aph/mobile-patients/src/components/MedicineCart/StorePickup';
+import { PickUpCartSummary } from '@aph/mobile-patients/src/components/MedicineCart/PickUpCartSummary';
 import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 
 export enum AppRoutes {
@@ -176,6 +178,8 @@ export enum AppRoutes {
   RefundStatus = 'RefundStatus',
   MedicineCart = 'MedicineCart',
   CartSummary = 'CartSummary',
+  StorePickup = 'StorePickup',
+  PickUpCartSummary = 'PickUpCartSummary',
   Maps = 'Maps',
 }
 
@@ -458,6 +462,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CartSummary]: {
     screen: CartSummary,
+  },
+  [AppRoutes.StorePickup]: {
+    screen: StorePickup,
+  },
+  [AppRoutes.PickUpCartSummary]: {
+    screen: PickUpCartSummary,
   },
   [AppRoutes.Maps]: {
     screen: Maps,

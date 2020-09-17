@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, FlatList, View, ScrollView } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   useShoppingCart,
@@ -7,11 +7,21 @@ import {
   EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { PrescriptionIcon, GreenTickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-export interface PrescriptionsProps {}
+import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
+import { PhysicalPrescriptionCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/PhysicalPrescriptionCard';
+export interface PrescriptionsProps {
+  onPressUploadMore: () => void;
+  screen?: string;
+}
 
 export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
-  const { physicalPrescriptions, ePrescriptions } = useShoppingCart();
-  console.log(ePrescriptions);
+  const {
+    physicalPrescriptions,
+    ePrescriptions,
+    removeEPrescription,
+    removePhysicalPrescription,
+  } = useShoppingCart();
+  const { onPressUploadMore, screen } = props;
 
   const renderHeader = () => {
     return (
@@ -20,49 +30,87 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
       </View>
     );
   };
-
-  const renderPrescriptionMessage = () => {
+  const renderLabel = (label: string, rightText?: string) => {
     return (
+      <View style={styles.labelView}>
+        <Text style={styles.labelTextStyle}>{label}</Text>
+        {rightText && <Text style={styles.labelTextStyle}>{rightText}</Text>}
+      </View>
+    );
+  };
+  const renderPrescriptionMessage = () => {
+    return screen == 'summary' ? (
       <View style={styles.prescriptionMsgCard}>
         <Text style={styles.prescriptionMsg}>
           Items in your cart marked with 'Rx' need prescriptions
         </Text>
       </View>
+    ) : null;
+  };
+
+  const PhysicalPrescription = (item: PhysicalPrescription, i: number, arrayLength: number) => {
+    return (
+      <PhysicalPrescriptionCard
+        item={item}
+        i={i}
+        arrayLength={arrayLength}
+        onRemove={() => {
+          removePhysicalPrescription && removePhysicalPrescription(item.title);
+        }}
+      />
     );
   };
 
   const renderPhysicalPrescriptions = () => {
-    return <View></View>;
+    return (
+      <View style={{ flex: 1 }}>
+        {renderLabel(`Physical Prescription${physicalPrescriptions.length == 1 ? '' : 's'}`)}
+        <ScrollView>
+          {physicalPrescriptions.map((item, index, array) => {
+            return PhysicalPrescription(item, index, array.length);
+          })}
+        </ScrollView>
+      </View>
+    );
   };
 
   const EPrescription = (item: EPrescription, i: number, arrayLength: number) => {
     return (
-      <View style={styles.prescriptionCard}>
-        <PrescriptionIcon />
-        <View style={{ flex: 1 }}>
-          <View style={styles.upperContainer}>
-            <Text style={styles.doctorName}>{item.doctorName}</Text>
-            <GreenTickIcon />
-          </View>
-          <View style={{ flexDirection: 'row', marginLeft: 20, marginTop: 4 }}>
-            <Text style={styles.date}>{item.date}</Text>
-            <Text style={{ ...styles.date, marginLeft: 20 }}>{item.forPatient}</Text>
-          </View>
-        </View>
-      </View>
+      <EPrescriptionCard
+        style={{
+          marginTop: i === 0 ? 15 : 4,
+          marginBottom: arrayLength === i + 1 ? 16 : 4,
+        }}
+        medicines={item.medicines}
+        actionType="removal"
+        date={item.date}
+        doctorName={item.doctorName}
+        forPatient={item.forPatient}
+        onRemove={() => {
+          removeEPrescription && removeEPrescription(item.id);
+        }}
+      />
     );
   };
 
   const renderEprescriptions = () => {
     return (
       <View style={{ flex: 1 }}>
+        {renderLabel(`Prescription${ePrescriptions.length == 1 ? '' : 's'} From Health Records`)}
         <ScrollView>
           {ePrescriptions.map((item, index, array) => {
             return EPrescription(item, index, array.length);
           })}
-          <Text style={styles.upload}>UPLOAD MORE</Text>
         </ScrollView>
       </View>
+    );
+  };
+
+  const renderUploadMore = () => {
+    return (
+      <TouchableOpacity onPress={onPressUploadMore}>
+        <Text style={styles.upload}>UPLOAD MORE</Text>
+      </TouchableOpacity>
     );
   };
 
@@ -74,8 +122,9 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     <View>
       {renderHeader()}
       <View style={styles.card}>
-        {renderPhysicalPrescriptions()}
-        {renderEprescriptions()}
+        {physicalPrescriptions.length > 0 && renderPhysicalPrescriptions()}
+        {ePrescriptions.length > 0 && renderEprescriptions()}
+        {renderUploadMore()}
       </View>
     </View>
   ) : (
@@ -114,45 +163,12 @@ const styles = StyleSheet.create({
   },
   card: {
     ...theme.viewStyles.cardViewStyle,
-    marginTop: 20,
+    marginTop: 15,
     marginHorizontal: 13,
     borderRadius: 10,
     marginBottom: 9,
-    flexDirection: 'row',
     paddingVertical: 8,
-    paddingTop: 16,
     paddingHorizontal: 7,
-  },
-  doctorName: {
-    ...theme.fonts.IBMPlexSansMedium(16),
-    lineHeight: 21,
-    color: '#02475B',
-  },
-  prescriptionCard: {
-    backgroundColor: '#F7F8F5',
-    flexDirection: 'row',
-    borderRadius: 5,
-    paddingTop: 16,
-    paddingHorizontal: 10,
-    paddingBottom: 8,
-  },
-  upperContainer: {
-    marginLeft: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: 0.5,
-    borderColor: '#rgba(2,71,91, 0.2)',
-    paddingBottom: 6,
-  },
-  date: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    lineHeight: 20,
-    color: '#02475B',
-    opacity: 0.6,
-    flex: 0.5,
-    borderRightWidth: 0.5,
-    borderRightColor: '#rgba(2,71,91, 0.3)',
   },
   upload: {
     ...theme.fonts.IBMPlexSansBold(13),
@@ -162,5 +178,21 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 8,
     marginRight: 8,
+  },
+  labelView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 4,
+    borderBottomWidth: 0.5,
+    borderColor: 'rgba(2,71,91, 0.3)',
+    marginHorizontal: 20,
+  },
+  labelTextStyle: {
+    color: theme.colors.FILTER_CARD_LABEL,
+    ...theme.fonts.IBMPlexSansBold(13),
+  },
+  yellowTextStyle: {
+    ...theme.viewStyles.yellowTextStyle,
+    padding: 16,
   },
 });

@@ -3,6 +3,7 @@ import { StyleSheet, Text, Dimensions, View, TouchableOpacity } from 'react-nati
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { EditAddressIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -23,20 +24,6 @@ export const ChooseAddress: React.FC<ChooseAddressProps> = (props) => {
     onPressSelectAddress,
   } = props;
 
-  function getformattedAddress(item: savePatientAddress_savePatientAddress_patientAddress) {
-    return (
-      (item.addressLine1 && item.addressLine1 + ', ') +
-      '' +
-      (item.addressLine2 && item.addressLine2 + ', ') +
-      '' +
-      (item.city && item.city + ',') +
-      '' +
-      (item.state && item.state + ',') +
-      '' +
-      (item.zipcode && item.zipcode)
-    );
-  }
-
   const renderAddress = (item: savePatientAddress_savePatientAddress_patientAddress) => {
     console.log(item);
     return (
@@ -56,7 +43,7 @@ export const ChooseAddress: React.FC<ChooseAddressProps> = (props) => {
             <EditAddressIcon />
           </TouchableOpacity>
         </View>
-        <Text style={styles.address}>{getformattedAddress(item)}</Text>
+        <Text style={styles.address}>{formatSelectedAddress(item)}</Text>
       </TouchableOpacity>
     );
   };

@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { WhiteArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export interface TatCardProps {
   deliveryTime: string;
@@ -11,13 +12,23 @@ export interface TatCardProps {
 
 export const TatCard: React.FC<TatCardProps> = (props) => {
   const { deliveryTime, deliveryAddress, onPressChangeAddress } = props;
+  const { cartItems } = useShoppingCart();
+  const unServiceable = cartItems.find((item) => item.unserviceable);
 
   return (
     <View style={{ backgroundColor: '#02475B', paddingHorizontal: 20 }}>
-      <View style={styles.subCont1}>
-        <Text style={styles.delivery}>
-          Deliver by : <Text style={styles.dateTime}>{new Date(deliveryTime).toDateString()}</Text>
-        </Text>
+      <View
+        style={{
+          ...styles.subCont1,
+          justifyContent: !unServiceable ? 'space-between' : 'flex-end',
+        }}
+      >
+        {!unServiceable && (
+          <Text style={styles.delivery}>
+            Deliver by :{' '}
+            <Text style={styles.dateTime}>{new Date(deliveryTime).toDateString()}</Text>
+          </Text>
+        )}
         <TouchableOpacity
           style={{ flexDirection: 'row', alignItems: 'center' }}
           onPress={() => onPressChangeAddress()}
@@ -38,9 +49,9 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
 const styles = StyleSheet.create({
   subCont1: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 17,
+    flex: 1,
   },
   delivery: {
     color: '#F7F8F5',

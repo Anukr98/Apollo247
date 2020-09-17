@@ -9,6 +9,7 @@ import {
   MedicineRxIcon,
   DropdownGreen,
   DeleteIcon,
+  DeleteBoldIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -50,7 +51,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderImage = () => {
     const imageUrl = getImageUrl(item);
     return (
-      <View style={{ width: 50, justifyContent: 'center' }}>
+      <View style={{ width: 50, justifyContent: 'center', opacity: !item.unserviceable ? 1 : 0.3 }}>
         {imageUrl ? (
           <Image
             PlaceholderContent={item.prescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
@@ -73,22 +74,32 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', marginBottom: 5 }}>
           <View style={{ flex: 0.85 }}>
-            <Text style={styles.itemName}>{item.name}</Text>
-            {item.mou && <Text style={styles.info}>{`(Pack of ${item.mou})`}</Text>}
+            <Text style={{ ...styles.itemName, opacity: !item.unserviceable ? 1 : 0.3 }}>
+              {item.name}
+            </Text>
+            {item.mou && (
+              <Text
+                style={{ ...styles.info, opacity: !item.unserviceable ? 1 : 0.3 }}
+              >{`(Pack of ${item.mou})`}</Text>
+            )}
           </View>
           <TouchableOpacity onPress={onPressDelete} style={styles.delete}>
-            <DeleteIcon />
+            {!item.unserviceable ? <DeleteIcon /> : <DeleteBoldIcon />}
           </TouchableOpacity>
         </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View>
-            {renderQuantity()}
-            {coupon && renderCoupon()}
-          </View>
-          {discountedPrice || discountedPrice == 0
-            ? renderPrice(discountedPrice)
-            : renderPrice(mrp)}
+        {renderLowerCont()}
+      </View>
+    );
+  };
+
+  const renderLowerCont = () => {
+    return (
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View>
+          {renderQuantity()}
+          {!item.unserviceable && coupon && renderCoupon()}
         </View>
+        {discountedPrice || discountedPrice == 0 ? renderPrice(discountedPrice) : renderPrice(mrp)}
       </View>
     );
   };
@@ -101,13 +112,13 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     });
     return (
       <View>
-        <View style={styles.quantityContainer}>
+        <View style={{ ...styles.quantityContainer, opacity: !item.unserviceable ? 1 : 0.3 }}>
           <MaterialMenu
             options={opitons}
             selectedText={item.quantity!.toString()}
             selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
             onPress={(selectedQuantity) => {
-              onUpdateQuantity(selectedQuantity.value as number);
+              !item.unserviceable && onUpdateQuantity(selectedQuantity.value as number);
             }}
           >
             <View style={{ flexDirection: 'row' }}>
@@ -156,16 +167,27 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
   };
   const renderPrice = (price: number) => {
-    return (
+    return !item.unserviceable ? (
       <View style={{ alignItems: 'flex-end' }}>
         {(discountedPrice || discountedPrice == 0) && renderDiscount()}
         <Text style={styles.finalPrice}>{`₹${(price * item.quantity).toFixed(2)}`}</Text>
         {(discountedPrice || discountedPrice == 0) && renderSavings()}
       </View>
+    ) : (
+      renderNoStock()
     );
   };
+
+  const renderNoStock = () => {
+    return (
+      <View style={styles.noStockCont}>
+        <Text style={styles.noStockTxt}>Not in stock in your area</Text>
+      </View>
+    );
+  };
+
   return (
-    <View style={styles.card}>
+    <View style={{ ...styles.card, backgroundColor: !item.unserviceable ? '#fff' : '#F0F1EC' }}>
       {renderImage()}
       {renderProduct()}
     </View>
@@ -204,7 +226,6 @@ const styles = StyleSheet.create({
     width: 75,
     borderWidth: 0.5,
     borderRadius: 3,
-    // paddingLeft: 6,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 6,
@@ -261,5 +282,17 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     marginVertical: 4,
     color: '#01475B',
+  },
+  noStockTxt: {
+    ...theme.fonts.IBMPlexSansRegular(9),
+    lineHeight: 12,
+    color: '#fff',
+    marginHorizontal: 5,
+  },
+  noStockCont: {
+    backgroundColor: '#01475B',
+    borderRadius: 2,
+    height: 18,
+    justifyContent: 'center',
   },
 });

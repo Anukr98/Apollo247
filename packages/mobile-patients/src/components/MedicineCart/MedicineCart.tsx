@@ -1,6 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
-import { View, SafeAreaView, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
+import {
+  View,
+  SafeAreaView,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ScrollView,
+  BackHandler,
+} from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -39,7 +47,9 @@ import {
   getDeliveryTAT247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-
+import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
+import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
+import { UnServiceable } from '@aph/mobile-patients/src/components/MedicineCart/Components/UnServiceable';
 export interface MedicineCartProps extends NavigationScreenProps {}
 
 export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
@@ -63,6 +73,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const [storeType, setStoreType] = useState<string | undefined>('');
   const [shopId, setShopId] = useState<string | undefined>('');
   const [deliveryTime, setdeliveryTime] = useState<string>('');
+  const [showPopUp, setshowPopUp] = useState<boolean>(false);
+  const [isfocused, setisfocused] = useState<boolean>(false);
 
   useEffect(() => {
     fetchAddress();
@@ -70,6 +82,29 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   useEffect(() => {
     availabilityTat();
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setisfocused(true);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setisfocused(false);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!deliveryAddressId && cartItems.length > 0) {
+      setCartItems!(cartItems.map((item) => ({ ...item, unserviceable: false })));
+    }
+  }, [deliveryAddressId]);
+
+  useEffect(() => {
+    if (isfocused) {
+      availabilityTat();
+      console.log('inside CArt useEffect');
+    }
   }, [deliveryAddressId, cartItems]);
 
   async function fetchAddress() {
@@ -95,16 +130,23 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }
 
   async function checkServicability(address: savePatientAddress_savePatientAddress_patientAddress) {
-    setloading(true);
     if (deliveryAddressId && deliveryAddressId == address.id) {
       return;
     }
-    const response = await pinCodeServiceabilityApi247(address.zipcode!);
-    const { data } = response;
-    if (data.response) {
-      setDeliveryAddressId && setDeliveryAddressId(address.id);
-    } else {
-      setDeliveryAddressId && setDeliveryAddressId('');
+    try {
+      setloading(true);
+      const response = await pinCodeServiceabilityApi247(address.zipcode!);
+      const { data } = response;
+      console.log(data);
+      if (data.response) {
+        setDeliveryAddressId && setDeliveryAddressId(address.id);
+      } else {
+        setDeliveryAddressId && setDeliveryAddressId('');
+        setloading(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setloading(false);
     }
   }
 
@@ -121,7 +163,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       const selectedAddress: any = addresses.find((item) => item.id == deliveryAddressId);
       try {
         const response = await availabilityApi247(selectedAddress.zipcode || '', skus.join(','));
-        console.log(response.data);
+        console.log('in cart >>', response.data);
         const items = g(response, 'data', 'response') || [];
         const unserviceableSkus = items.filter(({ exist }) => exist == false).map(({ sku }) => sku);
         const updatedCartItems = cartItems.map((item) => ({
@@ -129,7 +171,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           unserviceable: unserviceableSkus.indexOf(item.id) != -1,
         }));
         setCartItems!(updatedCartItems);
-
+        if (unserviceableSkus.length) {
+          // showUnServiceableItemsAlert(updatedCartItems);
+        }
         const serviceableItems = updatedCartItems
           .filter((item) => !item.unserviceable)
           .map((item) => {
@@ -184,7 +228,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           object.price = Number(object.mou) * cartItem[0].mrp;
         }
       }
-      console.log('obj >>', object);
       Items.push(object);
     });
     setCartItems!(Items);
@@ -289,8 +332,29 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return <Savings />;
   };
 
+  const renderuploadPrescriptionPopup = () => {
+    return (
+      <UploadPrescription
+        showPopUp={showPopUp}
+        onClickClose={() => setshowPopUp(false)}
+        navigation={props.navigation}
+      />
+    );
+  };
+
+  const renderPrescriptions = () => {
+    return <Prescriptions onPressUploadMore={() => setshowPopUp(true)} />;
+  };
+
   const renderKerbSidePickup = () => {
-    return <KerbSidePickup style={{ marginTop: 20 }} onPressProceed={() => {}} />;
+    return (
+      <KerbSidePickup
+        style={{ marginTop: 20 }}
+        onPressProceed={() => {
+          props.navigation.navigate(AppRoutes.StorePickup);
+        }}
+      />
+    );
   };
 
   const renderProceedBar = () => {
@@ -302,23 +366,32 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             deliveryTime: deliveryTime,
           })
         }
+        onPressProceedtoPay={() => {
+          console.log('proceed to pay');
+        }}
         deliveryTime={deliveryTime}
         onPressChangeAddress={showAddressPopup}
       />
     );
   };
 
+  const renderUnServiceable = () => {
+    return <UnServiceable style={{ marginTop: 24 }} />;
+  };
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         <ScrollView contentContainerStyle={{ paddingBottom: 200 }}>
           {renderHeader()}
+          {renderUnServiceable()}
           {renderCartItems()}
           {renderAvailFreeDelivery()}
           {renderAmountSection()}
           {renderSavings()}
+          {renderPrescriptions()}
           {renderKerbSidePickup()}
         </ScrollView>
+        {renderuploadPrescriptionPopup()}
         {renderProceedBar()}
         {loading && <Spinner />}
       </SafeAreaView>

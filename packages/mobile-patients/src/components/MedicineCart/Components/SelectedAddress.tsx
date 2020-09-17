@@ -4,16 +4,19 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { LocationIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { formatOrderAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface SelectedAddressProps {
   onPressChange: () => void;
+  orderType: 'Delivery' | 'StorePickUp';
 }
 
 export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
-  const { addresses, deliveryAddressId } = useShoppingCart();
-  const { onPressChange } = props;
+  const { addresses, deliveryAddressId, storeId, stores: storesFromContext } = useShoppingCart();
+  const { onPressChange, orderType } = props;
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
+  const selectedStore =
+    (storeId && storesFromContext.find((item) => item.storeid == storeId)) || undefined;
 
   const addressHeader = () => {
     return (
@@ -21,8 +24,14 @@ export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
         <View style={{ flexDirection: 'row' }}>
           <LocationIcon />
           <View style={{ marginLeft: 6 }}>
-            <Text style={styles.deliveryAddress}>Delivery Address</Text>
-            <Text style={styles.deliveryMsg}>We will deliver your order to this address</Text>
+            <Text style={styles.deliveryAddress}>
+              {orderType == 'Delivery' ? 'Delivery Address' : 'Selected Store'}
+            </Text>
+            <Text style={styles.deliveryMsg}>
+              {orderType == 'Delivery'
+                ? 'We will deliver your order to this address'
+                : 'You will pick up your order from the selected store'}
+            </Text>
           </View>
         </View>
         <TouchableOpacity onPress={onPressChange}>
@@ -33,12 +42,24 @@ export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
   };
 
   const address = () => {
-    return (
+    return orderType == 'Delivery' ? (
       <View style={{ marginHorizontal: 20 }}>
-        <Text style={styles.name}>{selectedAddress!.addressType}</Text>
-        <Text style={styles.address}>{formatOrderAddress(selectedAddress!)}</Text>
+        <Text style={styles.name}>{selectedAddress!.name || selectedAddress!.addressType}</Text>
+        <Text style={styles.address}>{formatSelectedAddress(selectedAddress!)}</Text>
         <Text style={styles.address}>
-          Mobile - <Text style={{ ...theme.fonts.IBMPlexSansMedium(12) }}>9940499788</Text>
+          Mobile -
+          <Text style={{ ...theme.fonts.IBMPlexSansMedium(12) }}>
+            {selectedAddress!.mobileNumber}
+          </Text>
+        </Text>
+      </View>
+    ) : (
+      <View style={{ marginHorizontal: 20 }}>
+        <Text style={styles.name}>{selectedStore!.storename}</Text>
+        <Text style={styles.address}>{selectedStore!.address}</Text>
+        <Text style={styles.address}>
+          Mobile -
+          <Text style={{ ...theme.fonts.IBMPlexSansMedium(12) }}>{selectedStore!.phone}</Text>
         </Text>
       </View>
     );
@@ -80,7 +101,7 @@ const styles = StyleSheet.create({
   },
   name: {
     marginTop: 10,
-    marginBottom: 8,
+    marginBottom: 5,
     ...theme.fonts.IBMPlexSansSemiBold(12),
     lineHeight: 20,
     color: '#01475B',

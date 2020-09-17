@@ -4,15 +4,17 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { formatOrderAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WhiteArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TatCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCard';
 
 export interface ProceedBarProps {
-  onPressAddDeliveryAddress: () => void;
-  onPressUploadPrescription: () => void;
+  onPressAddDeliveryAddress?: () => void;
+  onPressUploadPrescription?: () => void;
+  onPressProceedtoPay?: () => void;
   deliveryTime?: string;
-  onPressChangeAddress: () => void;
+  onPressChangeAddress?: () => void;
+  screen?: string;
 }
 
 export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
@@ -20,44 +22,64 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     grandTotal,
     deliveryAddressId,
     uploadPrescriptionRequired,
+    physicalPrescriptions,
+    ePrescriptions,
     addresses,
+    cartItems,
   } = useShoppingCart();
   const {
     onPressAddDeliveryAddress,
     onPressUploadPrescription,
+    onPressProceedtoPay,
     deliveryTime,
     onPressChangeAddress,
+    screen,
   } = props;
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
+  const unServiceable = cartItems.find((item) => item.unserviceable);
 
   function getTitle() {
     return !deliveryAddressId
       ? 'ADD DELIVERY ADDRESS'
-      : uploadPrescriptionRequired
+      : isPrescriptionRequired()
       ? 'UPLOAD PRESCRIPTION'
       : 'PROCEED TO PAY';
   }
 
+  function isPrescriptionRequired() {
+    if (uploadPrescriptionRequired) {
+      return physicalPrescriptions.length > 0 || ePrescriptions.length > 0 ? false : true;
+    } else {
+      return false;
+    }
+  }
   function onPressButton() {
     return !deliveryAddressId
-      ? onPressAddDeliveryAddress()
-      : uploadPrescriptionRequired
-      ? onPressUploadPrescription()
-      : onPressAddDeliveryAddress;
+      ? onPressAddDeliveryAddress!()
+      : isPrescriptionRequired()
+      ? onPressUploadPrescription!()
+      : onPressProceedtoPay!();
   }
   const renderTotal = () => {
     return (
       <View>
         <Text style={styles.total}>₹{grandTotal.toFixed(2)}</Text>
-        <Text style={styles.text}>Home Delivery</Text>
+        <Text style={styles.text}>{screen == 'summary' ? 'Total Amount' : 'Home Delivery'}</Text>
       </View>
     );
   };
 
+  function isdisabled() {
+    if (cartItems && cartItems.length && !unServiceable) {
+      return false;
+    } else {
+      return true;
+    }
+  }
   const renderButton = () => {
     return (
       <Button
-        disabled={false}
+        disabled={isdisabled()}
         title={getTitle()}
         onPress={() => onPressButton()}
         titleTextStyle={{ fontSize: 13, lineHeight: 24, marginVertical: 8 }}
@@ -77,12 +99,12 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   };
 
   const renderTatCard = () => {
-    if (deliveryTime) {
+    if (selectedAddress && deliveryTime) {
       return (
         <TatCard
           deliveryTime={deliveryTime}
-          deliveryAddress={formatOrderAddress(selectedAddress!)}
-          onPressChangeAddress={onPressChangeAddress}
+          deliveryAddress={formatSelectedAddress(selectedAddress!)}
+          onPressChangeAddress={onPressChangeAddress!}
         />
       );
     } else {
@@ -93,7 +115,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   return (
     <View style={styles.container}>
       {renderTatCard()}
-      {deliveryAddressId != '' && uploadPrescriptionRequired && renderPrescriptionMessage()}
+      {deliveryAddressId != '' && isPrescriptionRequired() && renderPrescriptionMessage()}
       <View style={styles.subContainer}>
         {renderTotal()}
         {renderButton()}

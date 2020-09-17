@@ -366,20 +366,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
       .toFixed(2)
   );
 
-  // const deliveryCharges =
-  //   !deliveryType || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-  //     ? 0
-  //     : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
-  //       cartTotal > 0 &&
-  //       cartTotal - productDiscount - couponDiscount <
-  //         AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
-  //     ? AppConfig.Configuration.DELIVERY_CHARGES
-  //     : 0;
-
   const deliveryCharges =
-    cartTotal > 0 &&
-    cartTotal - productDiscount - couponDiscount <
-      AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
+    !deliveryType || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+      ? 0
+      : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
+        cartTotal > 0 &&
+        cartTotal - productDiscount - couponDiscount <
+          AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
       ? AppConfig.Configuration.DELIVERY_CHARGES
       : 0;
 
