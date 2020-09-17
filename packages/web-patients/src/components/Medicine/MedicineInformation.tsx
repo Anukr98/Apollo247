@@ -363,6 +363,16 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    addedtoCart: {
+      fontSize: 14,
+      color: '#fcb716',
+      fontWeight: 500,
+      position: 'relative',
+      width: '40%',
+      marginLeft: '7%',
+      textAlign: 'center',
+      top: -10,
+    },
   });
 });
 
@@ -987,6 +997,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                       'Buy Now'
                     )}
                   </AphButton>
+                </div>
+                <div className={classes.addedtoCart}>
                   {showAddMessage && <span>Added to cart</span>}
                 </div>
               </>
