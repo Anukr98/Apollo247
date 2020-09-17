@@ -24,6 +24,8 @@ declare global {
     _cb(a: any, b: any, c: any, d: any, e: any, f: any, h: any): void;
 
     _ob(a: any, b: any, c: any, d: any, e: any, f: any, h: any): void;
+
+    dataLayer: any;
   }
 }
 
