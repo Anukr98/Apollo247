@@ -82,6 +82,38 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       padding: 20,
     },
+    dialogTitle: {
+      zIndex: 1,
+      '& h2': {
+        fontSize: 16,
+        fontWeight: 500
+      }
+    },
+    dialogBox: {
+      '& >div': {
+        '& >div': {
+          maxWidth: 400,
+          margin: '30px auto 0',
+          [theme.breakpoints.down('xs')]: {
+            borderRadius: 0,
+            margin: 0,
+            height: '100vh',
+            maxHeight: 'inherit',
+            background: '#F7F8F5'
+          },
+        }
+      }
+    },
+    goBack: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        zIndex: 5
+      }
+    }
   };
 });
 
@@ -146,9 +178,10 @@ export const ManageAddressBook: React.FC<AddressBookProps> = (props) => {
           Add New Address
         </AphButton>
       </div>
-      <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
+      <AphDialog open={isAddAddressDialogOpen} className={classes.dialogBox}>
+        <a href="javascript:vois(0);" onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} className={classes.goBack}><img src={require('images/ic_back.svg')} alt="" /></a>
         <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} />
-        <AphDialogTitle>Add New Address</AphDialogTitle>
+        <AphDialogTitle className={classes.dialogTitle}>Add New Address</AphDialogTitle>
         <AddNewAddress
           setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}
           forceRefresh={(forceRefresh: boolean) => setForceRefresh(forceRefresh)}

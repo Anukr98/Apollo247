@@ -106,6 +106,7 @@ const useStyles = makeStyles((theme: Theme) => {
     bottomActions: {
       display: 'flex',
       alignItems: 'center',
+
       '& button': {
         boxShadow: 'none',
         padding: 0,
@@ -133,6 +134,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 10,
       boxShadow: '0 -5px 20px 0 #ffffff',
       position: 'relative',
+
       '& button': {
         borderRadius: 10,
       },
@@ -214,6 +216,38 @@ const useStyles = makeStyles((theme: Theme) => {
     weAreSorry: {
       color: '#890000',
     },
+    dialogTitle: {
+      zIndex: 1,
+      '& h2': {
+        fontSize: 16,
+        fontWeight: 500
+      }
+    },
+    dialogBox: {
+      '& >div': {
+        '& >div': {
+          maxWidth: 400,
+          margin: '30px auto 0',
+          [theme.breakpoints.down('xs')]: {
+            borderRadius: 0,
+            margin: 0,
+            height: '100vh',
+            maxHeight: 'inherit',
+            background: '#F7F8F5'
+          },
+        }
+      }
+    },
+    goBack: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        zIndex: 5
+      }
+    }
   };
 });
 
@@ -611,53 +645,53 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               <CircularProgress />
             </div>
           ) : (
-            <ul>
-              {deliveryAddresses.map(
-                (address, idx) =>
-                  idx === selectedAddressDataIndex && (
-                    <li key={idx}>
-                      <FormControlLabel
-                        checked={address.id === deliveryAddressId}
-                        className={classes.radioLabel}
-                        value={address.id}
-                        control={<AphRadio color="primary" />}
-                        label={formatAddress(address)}
-                        onChange={() => {
-                          checkServiceAvailabilityCheck(address.zipcode)
-                            .then((res: any) => {
-                              if (res && res.data && res.data.response) {
-                                /**Gtm code start  */
-                                gtmTracking({
-                                  category: 'Pharmacy',
-                                  action: 'Order',
-                                  label: 'Address Selected',
-                                });
-                                /**Gtm code End  */
-                                checkLatLongStateCodeAvailability(address);
-                              } else {
-                                setShowPlaceNotFoundPopup(true);
-                              }
-                            })
-                            .catch((e: any) => {
-                              console.log(e);
-                            });
-                        }}
-                      />
-                    </li>
-                  )
-              )}
-            </ul>
-          )}
+              <ul>
+                {deliveryAddresses.map(
+                  (address, idx) =>
+                    idx === selectedAddressDataIndex && (
+                      <li key={idx}>
+                        <FormControlLabel
+                          checked={address.id === deliveryAddressId}
+                          className={classes.radioLabel}
+                          value={address.id}
+                          control={<AphRadio color="primary" />}
+                          label={formatAddress(address)}
+                          onChange={() => {
+                            checkServiceAvailabilityCheck(address.zipcode)
+                              .then((res: any) => {
+                                if (res && res.data && res.data.response) {
+                                  /**Gtm code start  */
+                                  gtmTracking({
+                                    category: 'Pharmacy',
+                                    action: 'Order',
+                                    label: 'Address Selected',
+                                  });
+                                  /**Gtm code End  */
+                                  checkLatLongStateCodeAvailability(address);
+                                } else {
+                                  setShowPlaceNotFoundPopup(true);
+                                }
+                              })
+                              .catch((e: any) => {
+                                console.log(e);
+                              });
+                          }}
+                        />
+                      </li>
+                    )
+                )}
+              </ul>
+            )}
         </>
       ) : (
-        <>
-          {isLoading && (
-            <div className={classes.alignCenter}>
-              <CircularProgress />
-            </div>
-          )}
-        </>
-      )}
+          <>
+            {isLoading && (
+              <div className={classes.alignCenter}>
+                <CircularProgress />
+              </div>
+            )}
+          </>
+        )}
 
       <div className={classes.bottomActions}>
         {!isSigningIn ? (
@@ -686,9 +720,10 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         </div>
       )}
 
-      <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
+      <AphDialog open={isAddAddressDialogOpen} className={classes.dialogBox}>
         <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} />
-        <AphDialogTitle>Add New Address</AphDialogTitle>
+        <a href="javascript:vois(0);" onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} className={classes.goBack}><img src={require('images/ic_back.svg')} alt="" /></a>
+        <AphDialogTitle className={classes.dialogTitle}>Add New Address</AphDialogTitle>
         <AddNewAddress
           setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}
           checkServiceAvailability={checkServiceAvailabilityCheck}
