@@ -213,6 +213,7 @@ export enum DiscountType {
   PRICEOFF = 'PRICEOFF',
 }
 
+/* to be deprecated soon - Free text string is used as unit input from user >= release 5.0.0 */
 export enum MedicalTestUnit {
   GM = 'GM',
   _PERCENT_ = '_PERCENT_',
@@ -1278,7 +1279,7 @@ export class Patient extends BaseEntity {
         JSON.stringify(this),
         ApiConstants.CACHE_EXPIRATION_3600
       );
-    } catch (ex) {}
+    } catch (ex) { }
   }
 }
 //patient Ends
@@ -1707,7 +1708,7 @@ export class MedicalRecordParameters extends BaseEntity {
   result: number;
 
   @Column()
-  unit: MedicalTestUnit;
+  unit: string;
 
   @Column({ type: 'timestamp', nullable: true })
   updatedDate: Date;
