@@ -102,8 +102,8 @@ import {
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
 import { migrationDir } from 'ApiConstants';
 import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity';
-import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity'
-import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity'
+import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
+import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
 
 export const connect = async () => {
   return await createConnections([
@@ -239,7 +239,7 @@ export const connect = async () => {
         PharmacologistConsult,
         MedicineOrderAddress,
         HealthCheckRecords,
-        HospitalizationRecords
+        HospitalizationRecords,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

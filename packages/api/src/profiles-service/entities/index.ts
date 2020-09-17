@@ -26,6 +26,8 @@ import { log } from 'customWinstonLogger';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
+import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
+import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
 
 export interface PaginateParams {
   take?: number;
@@ -1260,7 +1262,7 @@ export class Patient extends BaseEntity {
         JSON.stringify(this),
         ApiConstants.CACHE_EXPIRATION_3600
       );
-    } catch (ex) { }
+    } catch (ex) {}
   }
 }
 //patient Ends
