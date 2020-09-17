@@ -1,10 +1,9 @@
+import { ChatRoomStyles } from '@aph/mobile-doctors/src/components/ConsultRoom/ChatRoom.styles';
 import {
   AttachmentIcon,
   ChatCallIcon,
   ChatSend,
-  DoctorPlaceholderImage,
   FileBig,
-  Mascot,
   MissedCallIcon,
   RoundChatIcon,
   UserPlaceHolder,
@@ -24,10 +23,8 @@ import {
   Dimensions,
   FlatList,
   Keyboard,
-  KeyboardAvoidingView,
   Linking,
   Platform,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -36,39 +33,11 @@ import {
 import { Image, Image as ImageNative } from 'react-native-elements';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
-import AsyncStorage from '@react-native-community/async-storage';
 
 const { height, width } = Dimensions.get('window');
 
-const styles = StyleSheet.create({
-  imageStyle: {
-    width: 32,
-    height: 32,
-    position: 'absolute',
-    borderRadius: 16,
-    bottom: 0,
-    left: 0,
-    top: 0,
-  },
-  automatedLeftText: {
-    ...theme.viewStyles.text('M', 15, theme.colors.WHITE),
-    paddingTop: 8,
-    paddingBottom: 4,
-    paddingHorizontal: 16,
-    textAlign: 'left',
-  },
-  automatedRightText: {
-    ...theme.viewStyles.text('M', 10, theme.colors.WHITE),
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    textAlign: 'right',
-  },
-  automatedTextView: {
-    backgroundColor: '#0087ba',
-    marginLeft: 38,
-    borderRadius: 10,
-  },
-});
+const styles = ChatRoomStyles;
+
 export interface ChatRoomProps extends NavigationScreenProps {
   setChatReceived: Dispatch<SetStateAction<boolean>>;
   messages: never[];
@@ -87,6 +56,8 @@ export interface ChatRoomProps extends NavigationScreenProps {
 }
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   // const [isDropdownVisible, setDropdownVisible] = useState(false);
+  let leftComponent = 0;
+  let rightComponent = 0;
   const client = useApolloClient();
   const { setLoading } = useUIElements();
   const { patientDetails } = props;
@@ -108,15 +79,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 200);
   };
+
   const keyboardDidHide = async () => {
     setKeyBoardHeight(0);
   };
+
   useEffect(() => {
     // callAbandonmentCall();
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 1000);
-
     const keyboardDidShowListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
       keyboardDidShow
@@ -125,12 +97,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
       keyboardDidHide
     );
-
     return () => {
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
     };
   }, []);
+
   useEffect(() => {
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
@@ -199,10 +171,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     }
   };
+
   const convertChatTime = (timeStamp: any) => {
     let utcString;
     if (timeStamp.messageDate) {
-      utcString = moment(timeStamp.messageDate).calendar('', {
+      utcString = moment(Number(timeStamp.timetoken) / 10000).calendar('', {
         sameDay: 'hh:mm A',
         nextDay: '[Tomorrow], hh:mm A',
         nextWeek: 'DD MMM YYYY, hh:mm A',
@@ -216,78 +189,31 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const renderCommonImageView = (rowData: any, isMatched: boolean, onPress: () => void) => {
     return (
-      <View>
+      <View style={styles.automatedMainContianer}>
         <TouchableOpacity onPress={onPress} activeOpacity={1}>
-          <View
-            style={{
-              backgroundColor: 'transparent',
-              width: 180,
-              height: 180,
-              borderRadius: 10,
-              marginVertical: 2,
-              flex: 1,
-              marginBottom: isMatched ? 4 : 0,
-              top: isMatched ? 5 : 0,
-            }}
-          >
+          <View style={styles.imageMainContainer}>
             {isMatched ? (
               <ImageNative
-                placeholderStyle={{
-                  height: 180,
-                  width: '100%',
-                  alignItems: 'center',
-                  backgroundColor: 'transparent',
-                }}
+                placeholderStyle={styles.imagePlaceHolderStyle}
                 PlaceholderContent={
                   <Spinner
-                    style={{
-                      backgroundColor: 'transparent',
-                    }}
+                    style={{ backgroundColor: 'transparent' }}
+                    message={strings.common.imageLoading}
                   />
                 }
                 source={{
                   uri: rowData.url,
                 }}
-                style={{
-                  resizeMode: 'center',
-                  width: 180,
-                  height: 180,
-                  borderTopLeftRadius: 10,
-                  borderTopRightRadius: 10,
-                  backgroundColor: theme.colors.WHITE,
-                }}
+                style={styles.documentImageStyle}
               />
             ) : (
-              <FileBig
-                style={{
-                  resizeMode: 'contain',
-                  width: 180,
-                  height: 180,
-                  borderRadius: 10,
-                }}
-              />
+              <FileBig style={styles.documentImageStyle} />
             )}
-            <View
-              style={{
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-                backgroundColor: 'white',
-              }}
-            >
-              <Text
-                style={{
-                  color: 'rgba(2,71,91,0.6)',
-                  paddingHorizontal: 10,
-                  paddingVertical: 4,
-                  textAlign: 'right',
-                  ...theme.fonts.IBMPlexSansMedium(10),
-                }}
-              >
-                {convertChatTime(rowData)}
-              </Text>
-            </View>
           </View>
         </TouchableOpacity>
+        <View style={styles.chatTimeTextContainer}>
+          <Text style={styles.chatTimeText2}>{convertChatTime(rowData)}</Text>
+        </View>
       </View>
     );
   };
@@ -296,163 +222,83 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const isMatched =
       rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ||
       (rowData.fileType && rowData.fileType === 'image');
-    const onPress = () => {
+    return renderCommonImageView(rowData, isMatched, () => {
       if (isMatched) {
         openPopUp(rowData);
         props.setPatientImageshow(true);
       } else {
         openPopUp(rowData);
-        // setShowWeb(true);
       }
-    };
-
-    return renderCommonImageView(rowData, isMatched, onPress);
+    });
   };
 
-  const renderAutomatedText = (rowData: any, style = {}) => (
-    <View style={[styles.automatedTextView, style]}>
-      {rowData.automatedText ? (
-        <>
-          <Text style={styles.automatedLeftText}>{rowData.automatedText}</Text>
-          <Text style={styles.automatedRightText}>{convertChatTime(rowData)}</Text>
-          <View
-            style={{
-              backgroundColor: 'transparent',
-              height: 4,
-              width: 20,
-            }}
-          />
-        </>
-      ) : null}
-    </View>
-  );
-
-  const patientAutomatedMessage = (rowData: any, index: number) => {
-    return (
-      <View
-        style={{
-          backgroundColor: 'transparent',
-          borderRadius: 10,
-          marginVertical: 2,
-          alignSelf: 'flex-start',
-        }}
-      >
-        {leftComponent === 1 && (
-          <View style={styles.imageStyle}>
-            <Mascot style={styles.imageStyle} />
+  const renderAutomatedText = (rowData: any) => {
+    if (rowData.automatedText) {
+      return (
+        <View style={styles.automatedMainContianer}>
+          <View style={styles.automatedTextView}>
+            <Text style={styles.automatedLeftText}>{rowData.automatedText}</Text>
+            <Text style={styles.automatedRightText}>{convertChatTime(rowData)}</Text>
           </View>
-        )}
-        {renderAutomatedText(rowData, { marginBottom: 4 })}
-      </View>
-    );
-  };
-
-  const doctorAutomatedMessage = (rowData: any, index: number) => {
-    return (
-      <View
-        style={{
-          backgroundColor: 'transparent',
-          borderRadius: 10,
-          marginVertical: 2,
-          alignSelf: 'flex-start',
-        }}
-      >
-        {leftComponent === 1 && (
-          <View style={styles.imageStyle}>
-            <Mascot style={styles.imageStyle} />
-          </View>
-        )}
-        {renderAutomatedText(rowData, { marginBottom: 4, width: 244 })}
-      </View>
-    );
+        </View>
+      );
+    }
   };
 
   const messageView = (rowData: any, index: number) => {
-    const isMatched =
-      (rowData.url && rowData.url.match(/\.(jpeg|jpg|gif|png)$/)) ||
-      (rowData.fileType && rowData.fileType === 'image');
-    // const isMatched = rowData.url.match(/\.(jpeg|jpg|gif|png)$/);
-    const onPress = () => {
-      if (isMatched) {
-        openPopUp(rowData);
-      }
-    };
     return (
-      <View
-        style={{
-          backgroundColor: 'transparent',
-          maxWidth: rowData.message !== null ? '85%' : 0,
-          borderRadius: 10,
-          marginVertical: -2,
-          // alignSelf: 'flex-start',
-        }}
-      >
-        {leftComponent === 1 && (
-          <View style={styles.imageStyle}>
-            <DoctorPlaceholderImage style={styles.imageStyle} />
+      <View style={styles.automatedMainContianer}>
+        <View style={styles.messageTextContainer}>
+          <Text style={styles.messageTextStyle}>
+            {rowData.message === messageCodes.exotelCall
+              ? `A Telephonic Voice call is initiated from ${rowData.exotelNumber ||
+                  strings.exoTel.exotelNumber}. Request you to answer the call.`
+              : rowData.message}
+          </Text>
+          <View style={styles.chatTimeTextContainer}>
+            <Text style={styles.chatTimeText2}>{convertChatTime(rowData)}</Text>
           </View>
-        )}
-        <View>
-          {rowData.message === messageCodes.imageconsult ? (
-            renderCommonImageView(rowData, isMatched, onPress)
-          ) : rowData.message === '^^#startconsultJr' ? (
-            renderAutomatedText(rowData)
-          ) : rowData.message === '^^#startconsult' ? (
-            renderAutomatedText(rowData)
-          ) : rowData.message === messageCodes.stopConsultJr ? (
-            renderAutomatedText(rowData)
-          ) : (
-            <>
-              <View
-                style={{
-                  backgroundColor: 'white',
-                  marginLeft: 38,
-                  borderRadius: 10,
-                }}
-              >
-                <Text
-                  style={{
-                    color: '#0087ba',
-                    paddingHorizontal: 16,
-                    paddingTop: 8,
-                    paddingBottom: 3,
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    textAlign: 'left',
-                  }}
-                >
-                  {rowData.message === messageCodes.exotelCall
-                    ? `A Telephonic Voice call is initiated from ${rowData.exotelNumber ||
-                        strings.exoTel.exotelNumber}. Request you to answer the call.`
-                    : rowData.message}
-                </Text>
-                <Text
-                  style={{
-                    color: 'rgba(2,71,91,0.6)',
-                    paddingHorizontal: 16,
-                    paddingVertical: 4,
-                    textAlign: 'right',
-                    ...theme.fonts.IBMPlexSansMedium(10),
-                  }}
-                >
-                  {convertChatTime(rowData)}
-                </Text>
-              </View>
-              <View
-                style={{
-                  backgroundColor: 'transparent',
-                  height: 4,
-                  width: 20,
-                }}
-              />
-            </>
-          )}
         </View>
       </View>
     );
   };
 
-  let leftComponent = 0;
-  let rightComponent = 0;
+  const renderCallView = (rowData: any, isPatient: boolean) => {
+    return (
+      <View>
+        {rowData.duration === '00 : 00' ? (
+          <View style={styles.missedCallMainContainer}>
+            <View style={styles.missedCallContiner}>
+              <View style={styles.missedCallIconContiner}>
+                <MissedCallIcon style={styles.missedCallIcon} />
+                <Text style={styles.missedCallText}>
+                  {rowData.message === 'Audio call ended'
+                    ? isPatient
+                      ? strings.consult_room.you_missed_voice_call
+                      : strings.consult_room.patient_missed_voice_call
+                    : isPatient
+                    ? strings.consult_room.you_missed_video_call
+                    : strings.consult_room.patient_missed_video_call}
+                </Text>
+              </View>
+              <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.callContainer}>
+            <ChatCallIcon />
+            <View style={styles.callTextContainer}>
+              <Text style={styles.callHeadingText}>{rowData.message}</Text>
+              <Text style={styles.callSubHeadingText}>
+                {strings.consult_room.duration} - {rowData.duration}
+              </Text>
+              <Text style={styles.chatTimeText}>{convertChatTime(rowData)}</Text>
+            </View>
+          </View>
+        )}
+      </View>
+    );
+  };
 
   const renderChatRow = (
     rowData: {
@@ -464,322 +310,70 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     index: number
   ) => {
     if (
-      [
-        messageCodes.typingMsg,
-        messageCodes.endCallMsg,
-        messageCodes.audioCallMsg,
-        messageCodes.videoCallMsg,
-        messageCodes.acceptedCallMsg,
-        messageCodes.rescheduleconsult,
-        messageCodes.followupconsult,
-        messageCodes.appointmentComplete,
-        messageCodes.firstMessage,
-        messageCodes.secondMessage,
-        messageCodes.covertVideoMsg,
-        messageCodes.covertAudioMsg,
-        messageCodes.callAbandonment,
-        messageCodes.stopConsultMsg,
-        messageCodes.jdThankyou,
-        messageCodes.cancelConsultInitiated,
-        messageCodes.autoResponse,
-        messageCodes.leaveChatRoom,
-        messageCodes.patientJoined,
-        messageCodes.patientRejected,
-      ].includes(rowData.message) ||
-      JSON.stringify(messageCodes.patientRejected) === JSON.stringify(rowData)
+      !rowData.message ||
+      ((rowData.message &&
+        [
+          messageCodes.typingMsg,
+          messageCodes.endCallMsg,
+          messageCodes.audioCallMsg,
+          messageCodes.videoCallMsg,
+          messageCodes.acceptedCallMsg,
+          messageCodes.rescheduleconsult,
+          messageCodes.followupconsult,
+          messageCodes.appointmentComplete,
+          messageCodes.firstMessage,
+          messageCodes.secondMessage,
+          messageCodes.covertVideoMsg,
+          messageCodes.covertAudioMsg,
+          messageCodes.callAbandonment,
+          messageCodes.stopConsultMsg,
+          messageCodes.jdThankyou,
+          messageCodes.cancelConsultInitiated,
+          messageCodes.autoResponse,
+          messageCodes.leaveChatRoom,
+          messageCodes.patientJoined,
+          messageCodes.patientRejected,
+        ].includes(rowData.message)) ||
+        JSON.stringify(messageCodes.patientRejected) === JSON.stringify(rowData))
     ) {
       return null;
     }
-    if (rowData.id === patientId) {
-      leftComponent++;
-      rightComponent = 0;
-      return (
-        <View>
-          {leftComponent === 1 ? (
-            <View
-              style={{
-                backgroundColor: 'transparent',
-                width: width,
-                marginVertical: 8,
-              }}
-            />
-          ) : null}
-          {rowData.message === 'Audio call ended' || rowData.message === 'Video call ended' ? (
-            <>
-              {rowData.duration === '00 : 00' ? (
-                <View
-                  style={{
-                    backgroundColor: 'transparent',
-                    width: 282,
-                    borderRadius: 10,
-                    marginVertical: 2,
-                    alignSelf: 'flex-end',
-                    paddingVertical: 17,
-                  }}
-                >
-                  {leftComponent === 1 ? (
-                    patientDetails && patientDetails.photoUrl ? (
-                      patientImage
-                    ) : (
-                      <UserPlaceHolder style={styles.imageStyle} />
-                    )
-                  ) : null}
-                  <View
-                    style={{
-                      marginLeft: 40,
-                      borderRadius: 10,
-                      height: 29,
-                      width: 244,
-                    }}
-                  >
-                    <View
-                      style={{
-                        backgroundColor: '#e50000',
-                        opacity: 0.04,
-                        width: 244,
-                        borderRadius: 10,
-                        height: 29,
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                      }}
-                    />
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        backgroundColor: 'transparent',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <MissedCallIcon
-                        style={{
-                          width: 16,
-                          height: 16,
-                          marginLeft: 16,
-                          marginTop: 3,
-                        }}
-                      />
-                      <Text
-                        style={{
-                          color: '#890000',
-                          marginLeft: 27,
-                          textAlign: 'left',
-                          ...theme.fonts.IBMPlexSansMedium(12),
-                          lineHeight: 24,
-                          letterSpacing: 0.04,
-                          marginTop: 2,
-                        }}
-                      >
-                        {rowData.message === 'Audio call ended'
-                          ? strings.consult_room.you_missed_voice_call
-                          : strings.consult_room.you_missed_video_call}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              ) : (
-                <View
-                  style={{
-                    backgroundColor: 'transparent',
-                    borderRadius: 10,
-                    marginVertical: 2,
-                  }}
-                >
-                  {leftComponent === 1 ? (
-                    patientDetails && patientDetails.photoUrl ? (
-                      patientImage
-                    ) : (
-                      <UserPlaceHolder style={styles.imageStyle} />
-                    )
-                  ) : null}
-                  <View
-                    style={{
-                      borderRadius: 10,
-                      marginVertical: 2,
-                      alignSelf: 'flex-start',
-                      flexDirection: 'row',
-                      marginLeft: 40,
-                    }}
-                  >
-                    <ChatCallIcon />
-                    <View
-                      style={{
-                        marginLeft: 12,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: '#01475b',
-                          marginLeft: 0,
-                          textAlign: 'left',
-                          ...theme.fonts.IBMPlexSansMedium(14),
-                        }}
-                      >
-                        {rowData.message}
-                      </Text>
-                      <Text
-                        style={{
-                          color: '#01475b',
-                          marginTop: 2,
-                          marginLeft: 0,
-                          textAlign: 'left',
-                          ...theme.fonts.IBMPlexSansMedium(10),
-                        }}
-                      >
-                        {strings.consult_room.duration} - {rowData.duration}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              )}
-            </>
+    const isPatientMessage = rowData.id === patientId;
+    leftComponent = isPatientMessage ? leftComponent + 1 : 0;
+    rightComponent = isPatientMessage ? 0 : rightComponent + 1;
+    return (
+      <View
+        style={
+          isPatientMessage
+            ? { alignItems: 'flex-start', marginVertical: 2 }
+            : { alignItems: 'flex-end', marginVertical: 2 }
+        }
+      >
+        {leftComponent === 1 || rightComponent === 1 ? (
+          <View style={styles.messagePadding} />
+        ) : null}
+        {leftComponent === 1 ? (
+          patientDetails && patientDetails.photoUrl ? (
+            patientImage
           ) : (
-            <View
-              style={{
-                backgroundColor: 'transparent',
-                width: 282,
-                borderRadius: 10,
-                marginVertical: 2,
-                alignSelf: 'flex-start',
-              }}
-            >
-              {leftComponent === 1 ? (
-                patientDetails && patientDetails.photoUrl ? (
-                  patientImage
-                ) : (
-                  <UserPlaceHolder style={styles.imageStyle} />
-                )
-              ) : null}
-              <View
-                style={{
-                  backgroundColor: rowData.message === messageCodes.imageconsult ? '' : 'white',
-                  marginLeft: 38,
-                  borderRadius: 10,
-                  // width: 244,
-                }}
-              >
-                {rowData.message === messageCodes.imageconsult ? (
-                  renderImageView(rowData)
-                ) : (
-                  <Text
-                    style={{
-                      color: '#0087ba',
-                      paddingHorizontal: 16,
-                      paddingVertical: 4,
-                      ...theme.fonts.IBMPlexSansMedium(16),
-                      textAlign: 'left',
-                    }}
-                  >
-                    {rowData.message === messageCodes.languageQue ||
-                    rowData.message === messageCodes.startConsultjr ||
-                    rowData.message === messageCodes.stopConsultJr
-                      ? rowData.automatedText
-                      : // : rowData.message === messageCodes.imageconsult
-                        // ? renderImageView(rowData)
-                        rowData.message}
-                  </Text>
-                )}
-
-                <Text
-                  style={{
-                    color: 'rgba(2,71,91,0.6)',
-                    paddingHorizontal: 16,
-                    paddingVertical: 4,
-                    textAlign: 'right',
-                    ...theme.fonts.IBMPlexSansMedium(10),
-                  }}
-                >
-                  {rowData.message === messageCodes.imageconsult ? '' : convertChatTime(rowData)}
-                </Text>
-              </View>
-            </View>
-          )}
-        </View>
-      );
-    } else {
-      leftComponent = 0;
-      rightComponent++;
-      return (
-        <View>
-          {rightComponent == 1 ? (
-            <View
-              style={{
-                backgroundColor: 'transparent',
-                width: width,
-                marginVertical: 8,
-              }}
-            />
-          ) : null}
-          {rowData.message === 'Audio call ended' || rowData.message === 'Video call ended' ? (
-            <View
-              style={{
-                borderRadius: 10,
-                marginVertical: 2,
-                alignSelf: 'flex-end',
-                flexDirection: 'row',
-              }}
-            >
-              <ChatCallIcon />
-              <View>
-                <Text
-                  style={{
-                    color: '#01475b',
-                    marginLeft: 12,
-                    textAlign: 'right',
-                    ...theme.fonts.IBMPlexSansMedium(14),
-                  }}
-                >
-                  {rowData.message}
-                </Text>
-                <Text
-                  style={{
-                    color: '#01475b',
-                    marginTop: 2,
-                    textAlign: 'right',
-                    ...theme.fonts.IBMPlexSansMedium(10),
-                  }}
-                >
-                  {strings.consult_room.duration} - {rowData.duration}
-                </Text>
-                <Text
-                  style={{
-                    color: '#01475b',
-                    textAlign: 'right',
-                    ...theme.fonts.IBMPlexSansMedium(10),
-                  }}
-                >
-                  {convertChatTime(rowData)}
-                </Text>
-              </View>
-            </View>
-          ) : (
-            <View
-              style={{
-                borderRadius: 10,
-                marginVertical: 2,
-                alignSelf: 'flex-end',
-                flexDirection: 'row',
-              }}
-            >
-              {rowData.message === messageCodes.consultPatientStartedMsg
-                ? patientAutomatedMessage(rowData, index)
-                : rowData.message === messageCodes.firstMessage ||
-                  rowData.message === messageCodes.secondMessage ||
-                  rowData.message === messageCodes.languageQue ||
-                  rowData.message === messageCodes.startConsultjr ||
-                  rowData.message === messageCodes.stopConsultJr ||
-                  rowData.message === messageCodes.startConsultMsg
-                ? doctorAutomatedMessage(rowData, index)
-                : rowData.message === messageCodes.imageconsult
-                ? renderImageView(rowData)
-                : messageView(rowData, index)}
-            </View>
-          )}
-        </View>
-      );
-    }
+            <UserPlaceHolder style={styles.imageStyle} />
+          )
+        ) : null}
+        {rowData.message === 'Audio call ended' || rowData.message === 'Video call ended'
+          ? renderCallView(rowData, isPatientMessage)
+          : rowData.message === messageCodes.consultPatientStartedMsg ||
+            rowData.message === messageCodes.firstMessage ||
+            rowData.message === messageCodes.secondMessage ||
+            rowData.message === messageCodes.languageQue ||
+            rowData.message === messageCodes.startConsultjr ||
+            rowData.message === messageCodes.stopConsultJr ||
+            rowData.message === messageCodes.startConsultMsg
+          ? renderAutomatedText(rowData)
+          : rowData.message === messageCodes.imageconsult
+          ? renderImageView(rowData)
+          : messageView(rowData, index)}
+      </View>
+    );
   };
 
   const renderChatView = () => {
@@ -797,10 +391,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         {messages.length != 0 ? (
           <FlatList
             ref={(ref) => (flatListRef.current = ref)}
-            contentContainerStyle={{
-              marginHorizontal: 20,
-              marginTop: 0,
-            }}
+            contentContainerStyle={styles.flatListContainerStyle}
             removeClippedSubviews={false}
             bounces={false}
             data={messages}
@@ -815,28 +406,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
           />
         ) : (
-          <View
-            style={{
-              flexDirection: 'row',
-              margin: 20,
-            }}
-          >
-            <View
-              style={{
-                marginTop: 3,
-              }}
-            >
+          <View style={styles.noChatContainer}>
+            <View style={styles.noChatIconContainer}>
               <RoundChatIcon />
             </View>
-            <Text
-              style={{
-                marginLeft: 14,
-                color: '#0087ba',
-                ...theme.fonts.IBMPlexSansMedium(12),
-                marginRight: 20,
-                lineHeight: 16,
-              }}
-            >
+            <Text style={styles.noChatTextStyle}>
               {`${strings.consult_room.your_appnt_with} ${patientDetails &&
                 patientDetails.firstName} ${strings.consult_room.is_scheduled_to_start} ${moment(
                 Appintmentdatetime
@@ -860,57 +434,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
   const renderChatInput = () => {
     return (
-      <View
-        style={{
-          height: 66,
-          backgroundColor: 'white',
-        }}
-      >
-        <View
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-          }}
-        >
+      <View style={styles.chatInputMainContainer}>
+        <View style={styles.chatInputSubContainer}>
           <TouchableOpacity
             activeOpacity={1}
             onPress={async () => {
               props.setDropdownVisible(!props.isDropdownVisible);
             }}
           >
-            <View
-              style={{
-                flexDirection: 'row',
-                marginLeft: 20,
-                height: 40,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
+            <View style={styles.chatAttachIconContainer}>
               {hideSend ? (
                 <Text style={theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE)}>Attach</Text>
               ) : null}
-              <AttachmentIcon
-                style={{
-                  width: 24,
-                  height: 24,
-                }}
-              />
+              <AttachmentIcon size="sm" />
             </View>
           </TouchableOpacity>
-          <View
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              alignItems: 'center',
-              height: 40,
-              borderBottomWidth: 2,
-              borderColor: theme.colors.APP_GREEN,
-              marginRight: 20,
-              marginLeft: 16,
-            }}
-          >
+          <View style={styles.chatInputContainer}>
             <View style={{ flex: 1 }}>
               <TextInput
                 autoCorrect={false}
@@ -940,7 +479,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 selectionColor={theme.colors.APP_GREEN}
               />
             </View>
-
             {!hideSend ? (
               <View style={{ height: 40 }}>
                 <TouchableOpacity
@@ -961,12 +499,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: '#fff',
-      }}
-    >
+    <View style={styles.mainContainer}>
       {renderChatView()}
       {renderChatInput()}
     </View>

@@ -1583,7 +1583,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           console.log(statusEvent.operation);
         }
       },
-      message: ({ message }) => {
+      message: ({ message: messageInfo, timetoken }) => {
+        const message = { ...messageInfo, timetoken };
         console.log('addListener', message);
         const messageText = message.message;
         if (message.isTyping) {
@@ -1821,7 +1822,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           const end: any = res.endTimeToken ? res.endTimeToken : 1;
           res &&
             res.messages.forEach((element, index) => {
-              const item = element.entry;
+              const item = { ...element.entry, timetoken: element.timetoken };
               if (item.prismId) {
                 getPrismUrls(client, patientId, item.prismId)
                   .then((data) => {
