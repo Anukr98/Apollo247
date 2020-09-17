@@ -23,14 +23,16 @@ const commonConfigs = {
   CHAT_ENCRYPTION_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
   APOLLO_BASE_URL: 'https://magento.apollo247.com',
   APOLLO_AUTH_TOKEN: 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d',
+  ENABLE_WEBENGAGE: true,
 };
 
 //Development;
 const ConfigurationDev = {
   ...commonConfigs,
   LOG_ENVIRONMENT: 'debug',
-  iOS_Version: '1.0416',
-  Android_Version: '1.0416',
+  iOS_Version: '1.0501',
+  Android_Version: '1.0501',
+  ENABLE_WEBENGAGE: true,
 };
 
 //QA

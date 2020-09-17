@@ -288,7 +288,9 @@ export interface WebEngageEvents {
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    webengage.track(eventName, attributes);
+    if (AppConfig.Configuration.ENABLE_WEBENGAGE) {
+      webengage.track(eventName, attributes);
+    }
   } catch (e) {}
 };
 
@@ -299,19 +301,23 @@ export const setWebEngageData = (
   email: string
 ) => {
   try {
-    webengage.user.setPhone(mobileNumber);
-    webengage.user.setFirstName(firstName);
-    webengage.user.setLastName(lastName);
-    webengage.user.setEmail(email);
+    if (AppConfig.Configuration.ENABLE_WEBENGAGE) {
+      webengage.user.setPhone(mobileNumber);
+      webengage.user.setFirstName(firstName);
+      webengage.user.setLastName(lastName);
+      webengage.user.setEmail(email);
+    }
   } catch (e) {}
 };
 
 export const webEngageLogin = (id?: string) => {
   try {
-    if (id) {
-      webengage.user.login(id);
-    } else {
-      webengage.user.logout();
+    if (AppConfig.Configuration.ENABLE_WEBENGAGE) {
+      if (id) {
+        webengage.user.login(id);
+      } else {
+        webengage.user.logout();
+      }
     }
   } catch (e) {}
 };
