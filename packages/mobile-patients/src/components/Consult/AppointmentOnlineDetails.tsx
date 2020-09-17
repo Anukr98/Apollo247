@@ -290,7 +290,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
 
-  const isSubmitDisableForOther = selectedReason == OTHER_REASON && comment == '' ? true : false;
+  const isSubmitDisableForOther = selectedReason == OTHER_REASON && comment == '';
 
   useEffect(() => {
     if (!currentPatient) {
@@ -603,7 +603,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     );
 
     const heading = (
-      <View style={[styles.cancelReasonHeadingView, { flexDirection: 'row' }]}>
+      <View style={styles.cancelReasonHeadingView}>
         <BackArrow />
         <Text style={styles.cancelReasonHeadingText}>{string.cancelConsultationHeading}</Text>
       </View>
