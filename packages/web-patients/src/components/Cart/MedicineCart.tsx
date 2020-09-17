@@ -785,18 +785,6 @@ export const MedicineCart: React.FC = (props) => {
     }
   }, [showOrderPopup]);
 
-<<<<<<< HEAD
-  const checkForPriceUpdate = (
-    sId: string,
-    pincode: string,
-    lat: string,
-    lng: string,
-    tatType: string
-  ) => {
-    setShopId(sId);
-    setTatType(tatType);
-    checkForCartChanges(pincode, lat, lng);
-=======
   const checkForPriceUpdate = (tatRes: any) => {
     setShopId(tatRes.storeCode);
     setTatType(tatRes.storeType);
@@ -850,7 +838,6 @@ export const MedicineCart: React.FC = (props) => {
         setPriceDifferencePopover(true);
       }
     });
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
   };
 
   const getSpecialPriceFromRelativePrices = (
@@ -913,19 +900,6 @@ export const MedicineCart: React.FC = (props) => {
     });
     return sum;
   };
-<<<<<<< HEAD
-  const getCouponDiscountTotal = () => {
-    let sum = 0;
-    cartItems.forEach((item) => {
-      if (item.special_price === 0) {
-        sum += Number(item.price) * item.quantity;
-      }
-    });
-    return sum;
-  };
-  const mrpTotal = getMRPTotal();
-  const couponDiscountTotal = getCouponDiscountTotal();
-=======
   // const getCouponDiscountTotal = () => {
   //   let sum = 0;
   //   cartItems.forEach((item) => {
@@ -937,7 +911,6 @@ export const MedicineCart: React.FC = (props) => {
   // };
   const mrpTotal = getMRPTotal();
   // const couponDiscountTotal = getCouponDiscountTotal();
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
   let productDiscount = mrpTotal - cartTotal;
   console.log('cartTotal', cartTotal);
   // below variable is for calculating delivery charges after applying coupon discount

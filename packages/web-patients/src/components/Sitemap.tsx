@@ -1,19 +1,3 @@
-<<<<<<< HEAD
-import React, { useState, useEffect } from 'react';
-import { makeStyles, mergeClasses } from '@material-ui/styles';
-import { Theme, Typography, Grid } from '@material-ui/core';
-import { Header } from 'components/Header';
-import { useApolloClient } from 'react-apollo-hooks';
-import { GET_SITEMAP } from 'graphql/profiles';
-import { useAuth } from 'hooks/authHooks';
-import { clientRoutes } from 'helpers/clientRoutes';
-import Pagination from '@material-ui/lab/Pagination';
-import { generateSitemap_generateSitemap } from 'graphql/types/generateSitemap';
-import { useParams } from 'react-router';
-import fetchUtil from 'helpers/fetch';
-import { BottomLinks } from 'components/BottomLinks';
-import { NavigationBottom } from 'components/NavigationBottom';
-=======
 // import React, { useState, useEffect } from 'react';
 // import { makeStyles, mergeClasses } from '@material-ui/styles';
 // import { Theme, Typography, Grid } from '@material-ui/core';
@@ -28,7 +12,6 @@ import { NavigationBottom } from 'components/NavigationBottom';
 // import fetchUtil from 'helpers/fetch';
 // import { BottomLinks } from 'components/BottomLinks';
 // import { NavigationBottom } from 'components/NavigationBottom';
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 
 // const useStyles = makeStyles((theme: Theme) => {
 //   return {
@@ -335,20 +318,6 @@ import { NavigationBottom } from 'components/NavigationBottom';
 //   };
 // });
 
-<<<<<<< HEAD
-export const Sitemap: React.FC = (props) => {
-  const classes = useStyles({});
-  const params = useParams<{ sitemap: string; pageNo: string }>();
-  const [sitemapData, setSitemapData] = useState<generateSitemap_generateSitemap | null>(null);
-  const [doctorSitemapData, setDoctorSitemapData] = useState([]);
-  const [medicineSitemapData, setMedicineSitemapData] = useState([]);
-  const [selected, setSelected] = useState<string>(params.sitemap);
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
-  const [pageNo, setPageNo] = useState<number>(parseInt(params.pageNo));
-  const [articleUrls, setArticleUrls] = useState([]);
-  const apolloClient = useApolloClient();
-  const { setIsLoading } = useAuth();
-=======
 // export const Sitemap: React.FC = (props) => {
 //   const classes = useStyles({});
 //   const params = useParams<{ sitemap: string; pageNo: string }>();
@@ -361,7 +330,6 @@ export const Sitemap: React.FC = (props) => {
 //   const [articleUrls, setArticleUrls] = useState([]);
 //   const apolloClient = useApolloClient();
 //   const { setIsLoading } = useAuth();
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 
 //   useEffect(() => {
 //     setIsLoading(true);
@@ -380,45 +348,6 @@ export const Sitemap: React.FC = (props) => {
 //       .finally(() => setIsLoading(false));
 //   }, []);
 
-<<<<<<< HEAD
-  useEffect(() => {
-    fetchUtil(`${process.env.CMS_ARTICLES_SLUG_LIST_URL}`, 'GET', {}, '', true)
-      .then((res: any) => {
-        res && res.data && setArticleUrls(res.data.filter((key: any) => key.type !== 'VIDEO'));
-      })
-      .catch((err) => console.log(err));
-  }, []);
-
-  useEffect(() => {
-    const next = pageNo * 1000 - 1;
-    const prev = next - 999;
-    if (selected === 'doctors-sitemap') {
-      setDoctorSitemapData(
-        sitemapData &&
-          sitemapData.doctorUrls &&
-          sitemapData.doctorUrls.length > 0 &&
-          sitemapData.doctorUrls.slice(prev, next)
-      );
-      history.replaceState(
-        null,
-        '',
-        clientRoutes.childSitemap('doctors-sitemap', pageNo.toString())
-      );
-    } else if (selected === 'medicines-sitemap') {
-      setMedicineSitemapData(
-        sitemapData &&
-          sitemapData.medicinesUrls &&
-          sitemapData.medicinesUrls.length > 0 &&
-          sitemapData.medicinesUrls.slice(prev, next)
-      );
-      history.replaceState(
-        null,
-        '',
-        clientRoutes.childSitemap('medicines-sitemap', pageNo.toString())
-      );
-    }
-  }, [pageNo, selected, sitemapData]);
-=======
 //   useEffect(() => {
 //     fetchUtil(`${process.env.CMS_ARTICLES_SLUG_LIST_URL}`, 'GET', {}, '', true)
 //       .then((res: any) => {
@@ -426,7 +355,6 @@ export const Sitemap: React.FC = (props) => {
 //       })
 //       .catch((err) => console.log(err));
 //   }, []);
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 
 //   useEffect(() => {
 //     const next = pageNo * 1000 - 1;
@@ -458,305 +386,6 @@ export const Sitemap: React.FC = (props) => {
 //     }
 //   }, [pageNo, selected, sitemapData]);
 
-<<<<<<< HEAD
-  const doctorSitemapPages = Math.ceil(
-    sitemapData && sitemapData.doctorUrls && sitemapData.doctorUrls.length / 1000
-  );
-  const doctorSitemapArray = Array.from(Array(Number(doctorSitemapPages)), (_, x) => x + 1);
-
-  const medicineSitemapPages = Math.ceil(
-    sitemapData && sitemapData.medicinesUrls && sitemapData.medicinesUrls.length / 1000
-  );
-  const medicineSitemapArray = Array.from(Array(Number(medicineSitemapPages)), (_, x) => x + 1);
-
-  return (
-    <div className={classes.sitemapContainer}>
-      <Header />
-      <div className={classes.container}>
-        <div className={classes.sitemapContent}>
-          <div className={classes.sitemapHeader}>
-            <div className={classes.sectionTitle}>
-              <Typography component="h2">
-                <span className={classes.font48}>A</span>POLLO 24|7 SITE MAP
-              </Typography>
-            </div>
-            <ol className={classes.breadcrumbs}>
-              <li>
-                <a href={clientRoutes.welcome()}>HOME</a>
-              </li>
-              <li className={selected === 'sitemap' ? 'active' : ''}>
-                <a href={clientRoutes.sitemap('sitemap')}>SITEMAP</a>
-              </li>
-              {selected !== 'sitemap' && (
-                <li className={selected !== 'sitemap' ? 'active' : ''}>
-                  <a
-                    href={
-                      selected === 'doctors-sitemap'
-                        ? clientRoutes.childSitemap('doctors-sitemap', pageNo.toString())
-                        : clientRoutes.childSitemap('medicines-sitemap', pageNo.toString())
-                    }
-                  >
-                    {selected === 'doctors-sitemap' ? 'doctors sitemap' : 'medicines sitemap'}
-                  </a>
-                </li>
-              )}
-            </ol>
-          </div>
-          <div className={classes.slWrapper}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={4}>
-                <div className={classes.sitemapLeft}>
-                  <div className={classes.slMobile}>
-                    {!isMenuOpen ? (
-                      <img
-                        src={require('images/ham-menu.svg')}
-                        alt="Ham Menu"
-                        onClick={() => setIsMenuOpen(true)}
-                      />
-                    ) : (
-                      <img
-                        src={require('images/ham-close.svg')}
-                        onClick={() => setIsMenuOpen(false)}
-                        alt="Ham Close"
-                      />
-                    )}
-                    <Typography>
-                      {selected === 'sitemap'
-                        ? 'Apollo 24|7 Sitemap Index'
-                        : selected === 'doctors-sitemap'
-                        ? 'Doctors Sitemap'
-                        : 'Medicines Sitemap'}
-                    </Typography>
-                  </div>
-                  <div
-                    className={`${classes.sitemapListContainer} ${
-                      isMenuOpen ? '' : classes.slContainer
-                    }`}
-                  >
-                    <div className={classes.sitemapListContent}>
-                      <ul className={`${classes.sitemapList}`}>
-                        <li
-                          className={selected === 'sitemap' ? 'active' : ''}
-                          onClick={() => {
-                            setSelected('sitemap');
-                            setIsMenuOpen(false);
-                            history.replaceState(null, '', clientRoutes.sitemap('sitemap'));
-                          }}
-                        >
-                          <a>Apollo 24|7 Sitemap Index</a>
-                        </li>
-                        <li
-                          className={selected === 'doctors-sitemap' ? 'active' : ''}
-                          onClick={() => {
-                            setSelected('doctors-sitemap');
-                            setPageNo(1);
-                            setIsMenuOpen(false);
-                            history.replaceState(
-                              null,
-                              '',
-                              clientRoutes.childSitemap('doctors-sitemap', '1')
-                            );
-                          }}
-                        >
-                          <a>Doctors Sitemap</a>
-                        </li>
-                        <li
-                          className={selected === 'medicines-sitemap' ? 'active' : ''}
-                          onClick={() => {
-                            setSelected('medicines-sitemap');
-                            setPageNo(1);
-                            setIsMenuOpen(false);
-                            history.replaceState(
-                              null,
-                              '',
-                              clientRoutes.childSitemap('medicines-sitemap', '1')
-                            );
-                          }}
-                        >
-                          <a>Medicines Sitemap</a>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </Grid>
-              <Grid item xs={12} sm={8} className={classes.gridClass}>
-                <div className={classes.sitemapListContainer}>
-                  {selected !== 'sitemap' && (
-                    <div className={classes.paginationContainer}>
-                      <Pagination
-                        count={Math.ceil(currentServiceLength / 1000)}
-                        classes={{ ul: classes.paginationUl }}
-                        page={pageNo}
-                        onChange={(e, value) => setPageNo(value)}
-                        siblingCount={0}
-                      />
-                    </div>
-                  )}
-                  <div className={classes.sitemapLinkContainer}>
-                    {selected === 'sitemap' ? (
-                      <>
-                        <div className={classes.sLinkContent}>
-                          <Typography component="h3" className={classes.categoryTitle}>
-                            About Apollo24|7
-                          </Typography>
-                          {sitemapData &&
-                            sitemapData.staticPageUrls &&
-                            sitemapData.staticPageUrls.length > 0 &&
-                            sitemapData.staticPageUrls.map((key) => (
-                              <ul className={classes.smLinkList}>
-                                <li>
-                                  <a href={key.url}>{key.urlName}</a>
-                                </li>
-                              </ul>
-                            ))}
-                        </div>
-                        <div className={classes.sLinkContent}>
-                          <Typography component="h3" className={classes.categoryTitle}>
-                            Shop By Category
-                          </Typography>
-                          {sitemapData &&
-                            sitemapData.shopByCategoryUrls &&
-                            sitemapData.shopByCategoryUrls.length > 0 &&
-                            sitemapData.shopByCategoryUrls.map((key) => (
-                              <ul className={classes.smLinkList}>
-                                <li>
-                                  <a href={key.url}>{key.urlName}</a>
-                                </li>
-                              </ul>
-                            ))}
-                        </div>
-                        <div className={classes.sLinkContent}>
-                          <Typography component="h3" className={classes.categoryTitle}>
-                            Shop By Health Areas
-                          </Typography>
-                          {sitemapData &&
-                            sitemapData.healthAreasUrls &&
-                            sitemapData.healthAreasUrls.length > 0 &&
-                            sitemapData.healthAreasUrls.map((key) => (
-                              <ul className={classes.smLinkList}>
-                                <li>
-                                  <a href={key.url}>{key.urlName}</a>
-                                </li>
-                              </ul>
-                            ))}
-                        </div>
-                        <div className={classes.sLinkContent}>
-                          <Typography component="h3" className={classes.categoryTitle}>
-                            Specialties
-                          </Typography>
-                          {sitemapData &&
-                            sitemapData.specialityUrls &&
-                            sitemapData.specialityUrls.length > 0 &&
-                            sitemapData.specialityUrls.map((key) => (
-                              <ul className={classes.smLinkList}>
-                                <li>
-                                  <a href={key.url}>{key.urlName}</a>
-                                </li>
-                              </ul>
-                            ))}
-                        </div>
-                        <div className={classes.sLinkContent}>
-                          <Typography component="h3" className={classes.categoryTitle}>
-                            Article URLs
-                          </Typography>
-                          {articleUrls &&
-                            articleUrls.length > 0 &&
-                            articleUrls.map((key) => (
-                              <ul className={classes.smLinkList}>
-                                <li>
-                                  <a
-                                    href={`${process.env.SITEMAP_BASE_URL}covid19/${key.type}${key.slug}`}
-                                  >
-                                    {key.title}
-                                  </a>
-                                </li>
-                              </ul>
-                            ))}
-                        </div>
-                        <div className={classes.sLinkContent}>
-                          <Typography component="h3" className={classes.categoryTitle}>
-                            Doctors Sitemap
-                          </Typography>
-                          {doctorSitemapArray &&
-                            doctorSitemapArray.length > 0 &&
-                            doctorSitemapArray.map((key) => (
-                              <ul className={classes.smLinkList}>
-                                <li>
-                                  <a
-                                    href={clientRoutes.childSitemap(
-                                      'doctors-sitemap',
-                                      key.toString()
-                                    )}
-                                  >
-                                    {`Doctors Sitemap ${key}`}
-                                  </a>
-                                </li>
-                              </ul>
-                            ))}
-                        </div>
-                        <div className={classes.sLinkContent}>
-                          <Typography component="h3" className={classes.categoryTitle}>
-                            Medicines Sitemap
-                          </Typography>
-                          {medicineSitemapArray &&
-                            medicineSitemapArray.length > 0 &&
-                            medicineSitemapArray.map((key) => (
-                              <ul className={classes.smLinkList}>
-                                <li>
-                                  <a
-                                    href={clientRoutes.childSitemap(
-                                      'medicines-sitemap',
-                                      key.toString()
-                                    )}
-                                  >
-                                    {`Medicines Sitemap ${key}`}
-                                  </a>
-                                </li>
-                              </ul>
-                            ))}
-                        </div>
-                      </>
-                    ) : selected === 'medicines-sitemap' ? (
-                      <div className={classes.sLinkContent}>
-                        {medicineSitemapData &&
-                          medicineSitemapData.length > 0 &&
-                          medicineSitemapData.map((key) => (
-                            <ul className={classes.smLinkList}>
-                              <li>
-                                <a href={key.url}>{key.urlName}</a>
-                              </li>
-                            </ul>
-                          ))}
-                      </div>
-                    ) : (
-                      selected === 'doctors-sitemap' && (
-                        <div className={classes.sLinkContent}>
-                          {doctorSitemapData &&
-                            doctorSitemapData.length > 0 &&
-                            doctorSitemapData.map((key) => (
-                              <ul className={classes.smLinkList}>
-                                <li>
-                                  <a href={key.url}>{key.urlName}</a>
-                                </li>
-                              </ul>
-                            ))}
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              </Grid>
-            </Grid>
-          </div>
-        </div>
-      </div>
-      <BottomLinks />
-      <NavigationBottom />
-    </div>
-  );
-};
-=======
 //   const currentServiceLength =
 //     selected === 'doctors-sitemap'
 //       ? sitemapData && sitemapData.doctorUrls && sitemapData.doctorUrls.length
@@ -1059,4 +688,3 @@ export const Sitemap: React.FC = (props) => {
 //     </div>
 //   );
 // };
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d

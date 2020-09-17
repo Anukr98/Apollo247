@@ -683,14 +683,8 @@ const MedicineDetails: React.FC = (props) => {
               const desc = Overview.filter((desc: any) => desc.Caption === 'USES');
               description = desc.length ? desc[0].CaptionDesc : '';
             }
-<<<<<<< HEAD
-            const similarProducts = (
-              similar_products && similar_products.map((key: MedicineProductDetails) => key.name)
-            ).join(', ');
-=======
             const similarProducts =
               similar_products && similar_products.map((key: MedicineProductDetails) => key.name);
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
             setProductSchemaJSON({
               '@context': 'https://schema.org/',
               '@type': 'Product',
@@ -743,11 +737,7 @@ const MedicineDetails: React.FC = (props) => {
                 image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
               },
               gtin8: id,
-<<<<<<< HEAD
-              isSimilarTo: similarProducts,
-=======
               isSimilarTo: similarProducts ? similarProducts.join(', ') : '',
->>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
             });
             if (type_id && type_id.toLowerCase() === 'pharma') {
               const { generic, Doseform, Strengh, Unit, Overview } =
