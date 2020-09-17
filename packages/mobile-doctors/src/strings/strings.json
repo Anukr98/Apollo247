@@ -96,7 +96,8 @@
     "missing_referral_description": "It seems referral description field is empty. Please fill the referral section's description field under the Case Sheet tab.",
     "casesheet_already_send": "Case sheet cannot be modified now as the consult is already completed",
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image.",
-    "disable_Casesheet_view": "Case sheet view not allowed during the Audio/video call."
+    "disable_Casesheet_view": "Case sheet view not allowed during the Audio/video call.",
+    "reschedule_alert": "Reschedule request has been send to patient"
   },
   "popUP": {
     "awaiting_reschedule": "This appointment has been rescheduled. We’re waiting for the patient to confirm the slot."
