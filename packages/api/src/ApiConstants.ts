@@ -471,6 +471,8 @@ export enum ApiConstants {
 
   PRESCRIPTION_DEEPLINK_PLACEHOLDER = '<appointmentId>',
   PRESCRIPTION_CLICK_HERE = 'You can now access it from here:',
+
+  DOCTOR_APP_APPTS_LINK = 'apollodoctors://appointments',
 }
 
 export enum PATIENT_REPO_RELATIONS {
