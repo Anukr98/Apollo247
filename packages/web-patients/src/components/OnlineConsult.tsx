@@ -76,6 +76,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         marginTop: 0,
       },
+      [theme.breakpoints.down('xs')]: {
+        padding: '16px 10px',
+      },
     },
     consultNowInfo: {
       backgroundColor: '#fff',
@@ -133,6 +136,10 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 20,
       paddingLeft: 20,
       paddingRight: 20,
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 10,
+        paddingRight: 10,
+      },
     },
     timeSlots: {
       paddingTop: 0,
