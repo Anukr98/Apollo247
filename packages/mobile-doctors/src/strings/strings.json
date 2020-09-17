@@ -79,7 +79,8 @@
     "not_doctor_message": "Seems like the mobile no. you entered is either not registered with us or your account has been disabled. If you are a doctor and wish to enroll with us, please contact admin@apollo247.com. If you are a patient, please click here to download application for patients.",
     "contact": "Contact",
     "download_patients": "Download Patients App",
-    "download_URL": "https://pmt.apollo247.com/deeplink?url=apollopatients"
+    "download_patients_android": "https://play.google.com/store/apps/details?id=com.apollo.patientapp",
+    "download_patients_ios": "https://apps.apple.com/in/app/apollo247/id1496740273"
   },
   "alerts": {
     "successfully_updated_delegate_num": "Successfully Updated Delegate Number",
