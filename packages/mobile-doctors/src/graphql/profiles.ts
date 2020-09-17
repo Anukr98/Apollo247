@@ -357,6 +357,8 @@ export const MODIFY_CASESHEET = gql`
           temperature
           weight
           medicationHistory
+          diagnosticTestResult
+          clinicalObservationNotes
         }
         photoUrl
         uhid
@@ -505,8 +507,6 @@ export const MODIFY_CASESHEET = gql`
       referralSpecialtyName
       referralDescription
       version
-      diagonasticTestResult
-      clinicalObservationNotes
     }
   }
 `;
@@ -750,6 +750,8 @@ export const GET_CASESHEET = gql`
             temperature
             weight
             medicationHistory
+            diagnosticTestResult
+            clinicalObservationNotes
           }
           photoUrl
           uhid
@@ -989,8 +991,6 @@ export const GET_CASESHEET = gql`
         updatedDate
       }
       allowedDosages
-      diagonasticTestResult
-      clinicalObservationNotes
     }
   }
 `;

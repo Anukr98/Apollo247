@@ -54,6 +54,8 @@ export interface modifyCaseSheet_modifyCaseSheet_patientDetails_patientMedicalHi
   temperature: string | null;
   weight: string | null;
   medicationHistory: string | null;
+  diagnosticTestResult: string | null;
+  clinicalObservationNotes: string | null;
 }
 
 export interface modifyCaseSheet_modifyCaseSheet_patientDetails {
@@ -258,8 +260,6 @@ export interface modifyCaseSheet_modifyCaseSheet {
   referralSpecialtyName: string | null;
   referralDescription: string | null;
   version: number | null;
-  diagonasticTestResult: string | null;
-  clinicalObservationNotes: string | null;
 }
 
 export interface modifyCaseSheet {

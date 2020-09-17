@@ -448,7 +448,7 @@ export interface ModifyCaseSheetInput {
   occupationHistory?: string | null;
   referralSpecialtyName?: string | null;
   referralDescription?: string | null;
-  diagonasticTestResult?: string | null;
+  diagnosticTestResult?: string | null;
   clinicalObservationNotes?: string | null;
 }
 
