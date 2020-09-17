@@ -20,6 +20,7 @@ import {
   UPDATE_WHATSAPP_STATUS,
   GET_APPOINTMENT_RESCHEDULE_DETAILS,
   SAVE_SEARCH,
+  GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { linkUhidsVariables } from '@aph/mobile-patients/src/graphql/types/linkUhids';
@@ -76,6 +77,10 @@ import {
   getAppointmentRescheduleDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentRescheduleDetails';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
+import {
+  getSecretaryDetailsByDoctorId,
+  getSecretaryDetailsByDoctorIdVariables,
+} from '../graphql/types/getSecretaryDetailsByDoctorId';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -582,5 +587,24 @@ export const saveSearchSpeciality = (
       saveSearchInput: searchInput,
     },
     fetchPolicy: 'no-cache',
+  });
+};
+
+export const getSecretaryDetailsByDoctor = (client: ApolloClient<object>, doctorId: string) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getSecretaryDetailsByDoctorId, getSecretaryDetailsByDoctorIdVariables>({
+        query: GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
+        variables: {
+          doctorId: doctorId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        rej({ error: e });
+      });
   });
 };
