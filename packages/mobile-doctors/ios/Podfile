@@ -81,4 +81,6 @@ target 'ApolloDoctor' do
   pod 'ReactNativeIncallManager', :path => '../node_modules/react-native-incall-manager'
 
   pod 'react-native-webengage', :path => '../node_modules/react-native-webengage'
+  pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
+
 end

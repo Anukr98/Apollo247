@@ -376,6 +376,8 @@ PODS:
     - React-Core
   - RNCAsyncStorage (1.7.1):
     - React
+  - RNDeviceInfo (6.0.2):
+    - React
   - RNExitApp (1.1.0):
     - React
   - RNFirebase (5.5.7):
@@ -470,6 +472,7 @@ DEPENDENCIES:
   - ReactNativeIncallManager (from `../node_modules/react-native-incall-manager`)
   - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-community/async-storage`)"
+  - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNExitApp (from `../node_modules/react-native-exit-app`)
   - RNFirebase (from `../node_modules/react-native-firebase/ios`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
@@ -607,6 +610,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/rn-fetch-blob"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-community/async-storage"
+  RNDeviceInfo:
+    :path: "../node_modules/react-native-device-info"
   RNExitApp:
     :path: "../node_modules/react-native-exit-app"
   RNFirebase:
@@ -701,6 +706,7 @@ SPEC CHECKSUMS:
   ReactNativeIncallManager: 35e387f58d3fc6e8cc042f47a2256b5f50134a67
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNCAsyncStorage: 8539fc80a0075fcc9c8e2dff84cd22dc5bf1dacf
+  RNDeviceInfo: 273208fc409c58acecd7f5bd726eb5c7edd8265d
   RNExitApp: 7d81855142a4d11eb75f4f06fdebf5a950d7aef2
   RNFirebase: 3c0d26909841ad3c72ca46d85aba333ef49903bc
   RNGestureHandler: 8f09cd560f8d533eb36da5a6c5a843af9f056b38
@@ -713,6 +719,6 @@ SPEC CHECKSUMS:
   WebEngage: b8f322ebfdd08c9cd56aec038f9d3c29c018335d
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
 
-PODFILE CHECKSUM: 3f60a91b8c8226a65556950fa73861a0d0e47b24
+PODFILE CHECKSUM: 3b988a59e0aabd456221e736a4c18fcd250d43d0
 
 COCOAPODS: 1.9.3
