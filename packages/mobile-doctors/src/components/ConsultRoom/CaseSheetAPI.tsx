@@ -29,13 +29,19 @@ export const CaseSheetAPI = () => {
   });
 
   return {
-    favList: g(favList, 'getDoctorFavouriteAdviceList', 'adviceList'),
+    favList: (g(favList, 'getDoctorFavouriteAdviceList', 'adviceList') || [])
+      .filter((item) => item && item.instruction)
+      .sort((a, b) => (a && b ? a.instruction.localeCompare(b.instruction) : -1)),
     favlistLoading,
     favListError,
-    favMed: g(favMed, 'getDoctorFavouriteMedicineList', 'medicineList'),
+    favMed: (g(favMed, 'getDoctorFavouriteMedicineList', 'medicineList') || [])
+      .filter((item) => item && item.medicineName)
+      .sort((a, b) => (a && b ? (a.medicineName || '').localeCompare(b.medicineName || '') : -1)),
     favMedLoading,
     favMedError,
-    favTest: g(favTest, 'getDoctorFavouriteTestList', 'testList'),
+    favTest: (g(favTest, 'getDoctorFavouriteTestList', 'testList') || [])
+      .filter((item) => item && item.itemname)
+      .sort((a, b) => (a && b ? a.itemname.localeCompare(b.itemname) : -1)),
     favTestLoading,
     favTestError,
   };
