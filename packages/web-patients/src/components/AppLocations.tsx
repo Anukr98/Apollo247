@@ -7,6 +7,7 @@ import PlacesAutocomplete from 'react-places-autocomplete';
 import { Helmet } from 'react-helmet';
 import { AllowLocation } from 'components/AllowLocation';
 import { Alerts } from 'components/Alerts/Alerts';
+import { LazyIntersection } from './lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -342,7 +343,7 @@ export const AppLocations: React.FC = (props) => {
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
+              <LazyIntersection src={require('images/ic-mascot.png')} alt="" />
             </div>
             <AllowLocation
               setIsLocationPopoverOpen={setIsLocationPopoverOpen}

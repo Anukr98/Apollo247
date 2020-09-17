@@ -124,7 +124,7 @@ export interface products {
 
 type Params = { id: string };
 
-export const SearchByBrand: React.FC = (props) => {
+const SearchByBrand: React.FC = (props) => {
   const classes = useStyles({});
   const apiDetails = {
     url: process.env.PHARMACY_MED_CATEGORY_LIST,
@@ -249,3 +249,5 @@ export const SearchByBrand: React.FC = (props) => {
     </div>
   );
 };
+
+export default SearchByBrand;

@@ -23,7 +23,7 @@ import {
   makeAppointmentPaymentVariables,
 } from 'graphql/types/makeAppointmentPayment';
 import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,

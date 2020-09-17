@@ -930,3 +930,4 @@ export const GET_LAB_RESULT_PDF = gql`
     }
   }
 `;
+

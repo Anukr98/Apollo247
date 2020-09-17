@@ -503,7 +503,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type Params = { appointmentId: string; doctorId: string };
 
-export const ChatRoom: React.FC = () => {
+const ChatRoom: React.FC = () => {
   const classes = useStyles({});
   const params = useParams<Params>();
   const appointmentId = params.appointmentId;
@@ -1188,3 +1188,5 @@ export const ChatRoom: React.FC = () => {
         setIsAlertOpen={setIsAlertOpen}
       /> */
 }
+
+export default ChatRoom;

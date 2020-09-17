@@ -19,7 +19,6 @@ import {
   checkTatAvailability,
 } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
-import axios, { AxiosResponse, AxiosError, Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
@@ -44,6 +43,7 @@ import _lowerCase from 'lodash/lowerCase';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import fetchUtil from 'helpers/fetch';
 import _get from 'lodash/get';
+import axios, { AxiosError } from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
