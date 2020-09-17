@@ -1138,8 +1138,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics[0].facility.city}`
           : '',
-      'Secretary Name': secretaryData.name,
-      'Secretary Mobile Number': secretaryData.mobileNumber,
+      'Secretary Name': g(secretaryData, 'name'),
+      'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
       'Doctor Mobile Number': g(doctorDetails, 'mobileNumber')!,
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);

@@ -541,8 +541,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       ),
       'Patient Gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
-      'Secretary Name': secretaryData.name,
-      'Secretary Mobile Number': secretaryData.mobileNumber,
+      'Secretary Name': g(secretaryData, 'name'),
+      'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
       'Doctor Mobile Number': g(data, 'doctorInfo', 'mobileNumber')!,
     };
     postWebEngageEvent(type, eventAttributes);
