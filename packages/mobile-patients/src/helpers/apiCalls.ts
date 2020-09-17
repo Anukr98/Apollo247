@@ -61,11 +61,39 @@ export interface MedicineOrderBilledItem {
 }
 
 export interface MedicineProductsResponse {
-  product_count: number;
-  count: number;
   products: MedicineProduct[];
-  search_heading?: string;
+  product_count: number;
+  search_heading: string;
+  // all the below field only for category API
+  count: number;
+  filters: Filter[];
+  sort_by: SortBy;
 }
+
+interface Value {
+  label: string;
+  value: string;
+}
+interface Filter {
+  name: string;
+  attribute: 'category' | 'brand';
+  select_type: 'single' | 'multi';
+  values: Value[];
+}
+interface SortBy {
+  label: string;
+  key: string;
+  values: Value[];
+}
+
+/*
+export interface ProductsByCategoryResponse {
+  products: MedicineProduct[];
+  count: number;
+  filters: Filter[];
+  sort_by: SortBy;
+}
+*/
 
 export interface Brand {
   category_id: string;

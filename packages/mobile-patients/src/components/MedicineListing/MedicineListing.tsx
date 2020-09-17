@@ -47,12 +47,15 @@ import {
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 
+type SortByOption = MedicineProductsResponse['sort_by']['values'][0];
 export interface Props
   extends NavigationScreenProps<{
     searchText?: string;
     category_id?: string;
     title?: string;
     products?: MedicineProduct[];
+    sortBy?: SortByOption; // support for deep link
+    filterBy?: any; // TODO: support for deep link
     movedFrom?: 'registration' | 'deeplink' | 'home' | '';
   }> {}
 
@@ -62,6 +65,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const categoryId = navigation.getParam('category_id') || '';
   const movedFrom = navigation.getParam('movedFrom') || '';
   const productsNavProp = navigation.getParam('products') || [];
+  const sortByNavProp = navigation.getParam('sortBy') || null;
   const titleNavProp = navigation.getParam('title') || '';
 
   // states
@@ -74,7 +78,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const [productsTotal, setProductsTotal] = useState<number>(0);
   const [pageId, setPageId] = useState(1);
   const [pageTitle, setPageTitle] = useState(titleNavProp);
-  const [sortBy, setSortBy] = useState(sortByOptions[0]);
+  const [sortBy, setSortBy] = useState<SortByOption | null>(sortByNavProp);
+  const [sortByOptions, setSortByOptions] = useState<SortByOption[]>([]);
   const [sortByVisible, setSortByVisible] = useState<boolean>(false);
 
   // global contexts
@@ -101,10 +106,10 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   }, [searchText]);
 
   useEffect(() => {
-    if (categoryId) {
-      searchProductsByCategory(categoryId, 1);
+    if (categoryId && !searchText) {
+      searchProductsByCategory(categoryId, 1, sortBy?.value || null);
     }
-  }, []);
+  }, [sortBy]);
 
   const searchProducts = async (searchText: string, pageId: number) => {
     try {
@@ -134,14 +139,19 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const searchProductsByCategory = async (categoryId: string, pageId: number) => {
+  const searchProductsByCategory = async (
+    categoryId: string,
+    pageId: number,
+    sortBy: string | null
+  ) => {
     try {
       updateLoading(pageId, true);
-      const { data } = await getProductsByCategoryApi(categoryId, pageId);
+      const { data } = await getProductsByCategoryApi(categoryId, pageId, sortBy);
       updateProducts(pageId, products, data);
       setProductsTotal(data.count);
       updateLoading(pageId, false);
       setPageId(pageId + 1);
+      setSortByOptions(data.sort_by.values || []);
     } catch (error) {
       updateLoading(pageId, false);
       renderAlert();
@@ -285,7 +295,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         if (searchText) {
           searchProducts(searchText, pageId);
         } else {
-          searchProductsByCategory(categoryId, pageId);
+          searchProductsByCategory(categoryId, pageId, sortBy?.value || null);
         }
       }
     };
@@ -328,12 +338,12 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         <OptionSelectionOverlay
           isVisible={true}
           title={'SORT BY'}
-          options={sortByOptions.map((option) => ({
-            title: option,
-            isSelected: sortBy === option,
+          options={sortByOptions.map(({ value, label }) => ({
+            title: label,
+            isSelected: sortBy?.value === value,
             onPress: () => {
               setSortByVisible(false);
-              setSortBy(option);
+              setSortBy({ value, label });
             },
           }))}
           onRequestClose={() => setSortByVisible(false)}
@@ -372,7 +382,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
           {
             icon: <CartIcon />, // TODO: Replace icon
             title: 'Sort By',
-            subtitle: sortBy,
+            subtitle: sortBy?.label,
             onPress: () => setSortByVisible(true),
           },
           {
@@ -423,13 +433,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
-const sortByOptions = [
-  'Recommended',
-  'Price : Low to High',
-  'Price : High to Low',
-  'Discount : High to Low',
-];
 
 const { text, card, container } = theme.viewStyles;
 const styles = StyleSheet.create({
