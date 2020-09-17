@@ -314,6 +314,13 @@ const saveMedicineOrderOMS: Resolver<
       }
     }
   }
+  let storeDetails = {
+    clusterId: '',
+    allocationProfileName: '',
+  };
+  if (medicineCartOMSInput.shopId) {
+    storeDetails = await getStoreDetails(medicineCartOMSInput.shopId);
+  }
 
   const medicineOrderattrs: Partial<MedicineOrders> = {
     patient: patientDetails,
@@ -340,6 +347,8 @@ const saveMedicineOrderOMS: Resolver<
     shopAddress: JSON.stringify(medicineCartOMSInput.shopAddress),
     customerComment: medicineCartOMSInput.customerComment,
     isOmsOrder: true,
+    clusterId: storeDetails.clusterId,
+    allocationProfileName: storeDetails.allocationProfileName,
   };
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
@@ -544,6 +553,56 @@ const getStoreItems = async (items: MedicineCartOMSItem[], shopId: string) => {
     ''
   );
   return storeItemsDetails.response || [];
+};
+
+const getStoreDetails = async (shopId: string) => {
+  const inventoryBaseUrl = process.env.INVENTORY_SYNC_URL || '';
+  const authToken = process.env.INVENTORY_SYNC_TOKEN || '';
+  const apiUrl = `${inventoryBaseUrl}/getstore?storeCode=${shopId}`;
+
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
+    'FETCH_STORE_DETAILS_API_CALL_STARTING',
+    '',
+    ''
+  );
+
+  const pharmaResp = await fetch(apiUrl, {
+    headers: { 'Content-Type': 'application/json', Authorization: authToken },
+  });
+
+  if (pharmaResp.status != 200) {
+    log(
+      'profileServiceLogger',
+      `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
+      'FETCH_STORE_DETAILS_API_CALL_FAILED',
+      JSON.stringify(pharmaResp),
+      ''
+    );
+    return {};
+  }
+
+  const storeDetails = await pharmaResp.json();
+
+  if (storeDetails.errorMsg) {
+    log(
+      'profileServiceLogger',
+      `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
+      'FETCH_STORE_DETAILS_API_CALL_FAILED',
+      JSON.stringify(storeDetails),
+      ''
+    );
+    return {};
+  }
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
+    'FETCH_STORE_DETAILS_API_CALL_SUCCESS',
+    JSON.stringify(storeDetails),
+    ''
+  );
+  return storeDetails.response || {};
 };
 
 const isDiffLessThan25Percent = (num1: number, num2: number) => {
