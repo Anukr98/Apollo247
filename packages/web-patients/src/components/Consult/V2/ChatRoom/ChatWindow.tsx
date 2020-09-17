@@ -62,6 +62,7 @@ import {
   messageSentPostConsultTracking,
 } from 'webEngageTracking';
 import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
+import { DoctorJoinedMessageCard } from '../ChatRoom/DoctorJoinedMessageCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
