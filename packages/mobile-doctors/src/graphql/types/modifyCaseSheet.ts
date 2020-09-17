@@ -54,6 +54,8 @@ export interface modifyCaseSheet_modifyCaseSheet_patientDetails_patientMedicalHi
   temperature: string | null;
   weight: string | null;
   medicationHistory: string | null;
+  diagnosticTestResult: string | null;
+  clinicalObservationNotes: string | null;
 }
 
 export interface modifyCaseSheet_modifyCaseSheet_patientDetails {
@@ -167,6 +169,7 @@ export interface modifyCaseSheet_modifyCaseSheet_diagnosis {
 export interface modifyCaseSheet_modifyCaseSheet_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
   itemname: string | null;
+  testInstruction: string | null;
 }
 
 export interface modifyCaseSheet_modifyCaseSheet_medicinePrescription {
@@ -186,6 +189,9 @@ export interface modifyCaseSheet_modifyCaseSheet_medicinePrescription {
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface modifyCaseSheet_modifyCaseSheet_removedMedicinePrescription {
@@ -205,6 +211,9 @@ export interface modifyCaseSheet_modifyCaseSheet_removedMedicinePrescription {
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface modifyCaseSheet_modifyCaseSheet_otherInstructions {

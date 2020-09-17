@@ -8,7 +8,7 @@ import {
   GetCaseSheet_getCaseSheet_patientDetails,
   GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
-import { DoctorType } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import { DoctorType, Gender } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useState } from 'react';
@@ -142,8 +142,8 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
 
   const renderLabelDesc = (label?: string, description?: string) => (
     <View>
-      {label && <Text style={styles.lablestyle}>{label}</Text>}
-      {description && <Text style={styles.descrText}>{description}</Text>}
+      {label ? <Text style={styles.lablestyle}>{label}</Text> : null}
+      {description ? <Text style={styles.descrText}>{description}</Text> : null}
     </View>
   );
 
@@ -179,10 +179,12 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
             ? patientDetails.lifeStyle.map((i) => i.occupationHistory).join('\n') || '-'
             : '-',
       },
-      {
-        label: 'Menstrual History',
-        desc: patientMedicalHistory ? patientMedicalHistory.menstrualHistory || '-' : '-',
-      },
+      [Gender.FEMALE, Gender.OTHER].includes(patientDetails.gender)
+        ? {
+            label: strings.case_sheet.menstrual_history,
+            desc: patientMedicalHistory ? patientMedicalHistory.menstrualHistory || '-' : '-',
+          }
+        : null,
       {
         label: 'Family Medical History',
         desc: patientDetails.familyHistory && getFamilyHistory(patientDetails.familyHistory),
@@ -196,7 +198,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
         containerStyle={{ marginVertical: 10 }}
       >
         <View style={{ marginHorizontal: 16 }}>
-          {data.map(({ label, desc }) => renderLabelDesc(label, desc))}
+          {data.map((item) => (item ? renderLabelDesc(item.label, item.desc) : null))}
         </View>
       </CollapseCard>
     );
@@ -214,7 +216,7 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
             : i.description || '-' + '\n';
         }
       });
-      return familyHistory.slice(0, -1);
+      return familyHistory.slice(0, -1) || '-';
     } else {
       return '-';
     }
@@ -277,6 +279,9 @@ export const CaseSheetDetails: React.FC<CaseSheetDetailsProps> = (props) => {
                 item && (
                   <View>
                     <Text style={styles.medicineName}>{item.medicineName}</Text>
+                    {item.includeGenericNameInPrescription && item.genericName ? (
+                      <Text style={styles.medDescription}>{item.genericName}</Text>
+                    ) : null}
                     <Text style={styles.medDescription}>{medicineDescription(item)}</Text>
                   </View>
                 )

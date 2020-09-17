@@ -87,8 +87,9 @@ export function textInRow(doc: PDFKit.PDFDocument, text: string, heigth: number,
   doc.text(text, {
     paragraphGap: 5,
     indent: 5,
-    align: 'justify',
+    align: 'left',
     columns: 1,
+    width: 135,
   });
   return doc;
 }
@@ -104,7 +105,7 @@ export function writeRow(doc: PDFKit.PDFDocument, heigth: number) {
 export function writeBigRow(doc: PDFKit.PDFDocument, heigth: number) {
   doc
     .lineJoin('miter')
-    .rect(27, heigth, 935, 30)
+    .rect(27, heigth, 1050, 38)
     .stroke();
   return doc;
 }
