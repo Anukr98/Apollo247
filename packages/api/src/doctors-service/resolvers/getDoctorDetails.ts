@@ -330,7 +330,9 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
 ) => {
   try {
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-    return await doctorRepository.getDoctorProfileData(args.id);
+    const doctor = await doctorRepository.getDoctorProfileData(args.id);
+    doctor['mobileNumber'] = '';
+    return doctor;
   } catch (error) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { error });
   }

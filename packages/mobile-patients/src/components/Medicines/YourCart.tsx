@@ -492,7 +492,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             items: availableItems,
             pincode: selectedAddress.zipcode || '',
             lat: selectedAddress?.latitude!,
+<<<<<<< HEAD
             lng: selectedAddress?.longitude!,
+=======
+            lng: selectedAddress?.longitude!
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
           };
           const tatRes = await getDeliveryTAT247(tatApiInput247);
 
@@ -510,6 +514,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               });
               if (serviceableSkus.length && !unserviceableSkus.length) {
                 const inventoryDataRes = g(tatRes, 'data', 'response', 'items') || [];
+<<<<<<< HEAD
                 const availableInventory = inventoryDataRes.map((item) => {
                   const availableItem = availableItems.filter(({ sku }) => sku === item.sku)[0];
                   return {
@@ -521,6 +526,20 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 if (availableInventory && availableInventory.length) {
                   setStoreType(tatRes?.data?.response?.storeType);
                   setShopId(tatRes?.data?.response?.storeCode);
+=======
+                const availableInventory = inventoryDataRes
+                  .map((item) => {
+                    const availableItem = availableItems.filter(({sku}) => sku === item.sku)[0]
+                    return {
+                      itemId: item.sku,
+                      qty: availableItem ? availableItem.qty : item.qty,
+                      mrp: item.mrp,
+                    };
+                  });
+                if (availableInventory && availableInventory.length) {
+                  setStoreType(tatRes?.data?.response?.storeType);
+                  setShopId(tatRes?.data?.response?.storeCode)
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                   fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, availableInventory);
                   updateserviceableItemsTat(deliveryDate, lookUp);
                 } else {
@@ -1812,13 +1831,21 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         deliveryTime,
         isChennaiOrder: true,
         tatType: storeType,
+<<<<<<< HEAD
         shopId: shopId,
+=======
+        shopId: shopId
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
       });
     } else {
       props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
         deliveryTime,
         tatType: storeType,
+<<<<<<< HEAD
         shopId: shopId,
+=======
+        shopId: shopId
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
       });
     }
   };

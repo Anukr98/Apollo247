@@ -11,7 +11,8 @@ import _isEmpty from 'lodash/isEmpty';
 import { UpdatePatient, UpdatePatientVariables } from 'graphql/types/UpdatePatient';
 import { UPDATE_PATIENT } from 'graphql/profiles';
 import { ProfileSuccess } from 'components/ProfileSuccess';
-import { parse, format } from 'date-fns';
+import parse from 'date-fns/parse';
+import format from 'date-fns/format';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import { Formik, FormikProps, Field, FieldProps, Form } from 'formik';
 import { useMutation } from 'react-apollo-hooks';
@@ -19,7 +20,11 @@ import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
 import { Alerts } from 'components/Alerts/Alerts';
 import { webengageUserLoginTracking, webengageUserDetailTracking } from '../webEngageTracking';
+<<<<<<< HEAD
 import { useAuth, useLoginPopupState } from 'hooks/authHooks';
+=======
+import { LazyIntersection } from './lib/LazyIntersection';
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 
 const isoDatePattern = 'yyyy-MM-dd';
 const clientDatePattern = 'dd/MM/yyyy';
@@ -304,7 +309,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
           return (
             <Form>
               <div className={classes.mascotIcon}>
-                <img src={require('images/ic-mascot.png')} alt="" />
+                <LazyIntersection src={require('images/ic-mascot.png')} alt="" />
               </div>
               <div
                 className={classes.backArrow}

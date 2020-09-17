@@ -140,7 +140,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             },
             { match: { isSearchable: true } },
             {
+<<<<<<< HEAD
               multi_match: {
+=======
+              query_string: {
+                fuzziness: 0,
+                query: `*${searchTextLowerCase}*`,
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                 fields: [
                   `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
                   `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
@@ -148,8 +154,11 @@ const SearchDoctorAndSpecialtyByName: Resolver<
                   `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                 ],
+<<<<<<< HEAD
                 type: 'phrase_prefix',
                 query: `*${searchTextLowerCase}*`,
+=======
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
               },
             },
           ],
@@ -177,6 +186,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   for (const doc of responsePerfectMatchDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
+    doctor['mobileNumber'] = '';
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
     }
@@ -294,6 +304,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   for (const doc of responseDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
+    doctor['mobileNumber'] = '';
     if (doctor['languages'] instanceof Array) {
       doctor['languages'] = doctor['languages'].join(', ');
     }
@@ -477,6 +488,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     for (const doc of responsePossibleDoctors.body.hits.hits) {
       const doctor = doc._source;
       doctor['id'] = doctor.doctorId;
+      doctor['mobileNumber'] = '';
       doctor['doctorHospital'] = [];
       doctor['activeSlotCount'] = 0;
       if (doctor['languages'] instanceof Array) {
@@ -561,6 +573,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
   }
 
+<<<<<<< HEAD
   function fieldCompare(field: string, order: string = 'asc') {
     return function sort(objectA: any, objectB: any) {
       if (!objectA.hasOwnProperty(field) || !objectB.hasOwnProperty(field)) {
@@ -595,6 +608,19 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
   matchedDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
   possibleDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
+=======
+  finalMatchedDoctors = perfectMatchedDoctors
+    .concat(earlyAvailableApolloMatchedDoctors)
+    .concat(earlyAvailableNonApolloMatchedDoctors)
+    .concat(matchedDoctors);
+
+  finalPossibleDoctors = earlyAvailableApolloPossibleDoctors
+    .concat(earlyAvailableNonApolloPossibleDoctors)
+    .concat(possibleDoctors);
+
+  // matchedDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
+  // possibleDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
 
   searchLogger(`API_CALL___END`);
   return {

@@ -83,6 +83,9 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     isPrescriptionNeeded: Int
     mou: Int
     isMedicine: String
+    itemValue: Float
+    itemDiscount: Float
+    specialPrice: Float
   }
 
   type MedicineOrderOMSShipment {

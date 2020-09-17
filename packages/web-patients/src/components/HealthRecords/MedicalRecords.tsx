@@ -620,6 +620,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           }
         >
           <div className={classes.consultationsList}>
+<<<<<<< HEAD
             {localLabResultsData &&
               localLabResultsData.length > 0 &&
               localLabResultsData.map(
@@ -670,6 +671,54 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     </>
                   )
               )}
+=======
+            {allCombinedData &&
+              allCombinedData.length > 0 &&
+              allCombinedData.map((combinedData: LabResultsType) => (
+                <div
+                  className={classes.consultGroup}
+                  onClick={() => {
+                    setActiveData(combinedData);
+                    if (isSmallScreen) {
+                      setShowMobileDetails(true);
+                    }
+                  }}
+                >
+                  <div className={classes.consultGroupHeader}>
+                    <div className={classes.circle}></div>
+                    <span>
+                      {filterApplied === FILTER_TYPE.DATE
+                        ? getFormattedDate(combinedData, 'title')
+                        : filterApplied === FILTER_TYPE.TEST
+                        ? combinedData.labTestName
+                        : combinedData.packageName &&
+                          combinedData.packageName.length > 0 &&
+                          combinedData.packageName !== '-'
+                        ? combinedData.packageName
+                        : combinedData.labTestName}
+                    </span>
+                  </div>
+                  <MedicalCard
+                    deleteReport={deleteReport}
+                    name={
+                      filterApplied === FILTER_TYPE.DATE
+                        ? combinedData.labTestName
+                        : getStringDate(combinedData)
+                    }
+                    source={
+                      combinedData && combinedData.siteDisplayName
+                        ? combinedData.siteDisplayName
+                        : !!combinedData.labTestSource
+                        ? combinedData.labTestSource
+                        : '-'
+                    }
+                    type={'LabResults'}
+                    id={`LabResults-${combinedData.id}`}
+                    isActiveCard={activeData && activeData === combinedData}
+                  />
+                </div>
+              ))}
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
           </div>
           {isSmallScreen && allCombinedData && allCombinedData.length === 0 && (
             <div className={classes.noRecordFoundWrapper}>

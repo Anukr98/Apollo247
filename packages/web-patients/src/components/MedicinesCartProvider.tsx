@@ -6,7 +6,6 @@ import _uniq from 'lodash/uniq';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import axios from 'axios';
 import { checkSkuAvailability } from 'helpers/MedicineApiCalls';
 
 export interface MedicineCartItem {
@@ -471,7 +470,11 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const cartTotal: MedicineCartContextProps['cartTotal'] = parseFloat(
     cartItems
       .reduce((currTotal, currItem) => {
+<<<<<<< HEAD
         if (currItem.special_price == 0) {
+=======
+        if (currItem.special_price == 0 && currItem.couponFree) {
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
           return currTotal + currItem.quantity * currItem.special_price;
         } else {
           return currTotal + currItem.quantity * (Number(currItem.special_price) || currItem.price);

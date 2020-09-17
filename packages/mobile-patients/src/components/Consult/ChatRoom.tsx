@@ -2323,6 +2323,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+<<<<<<< HEAD
+=======
+  const successSteps = [
+    'Let’s get you feeling better by following simple steps :)\n',
+    '1. Answer some quick questions\n',
+    '2. Please be present in this consult room at the time of consult\n',
+    '3. Connect with your doctor via In-App Audio/Video call\n',
+    '4. Get a prescription and meds, if necessary\n',
+    '5. Follow up via text (valid for 7 days)\n\n',
+    `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
+  ];
+
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
   const automatedTextFromPatient = () => {
     let step5;
     if (followUpAfterInDays > 0) {

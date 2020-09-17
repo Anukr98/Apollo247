@@ -157,7 +157,13 @@ const useStyles = makeStyles((theme: Theme) => {
           paddingBottom: 10,
           '& span': {
             '&:first-child': {
-              paddingRight: 12,
+              width: 30,
+              display: 'inline-block',
+              textAlign: 'center',
+            },
+            '&:last-child': {
+              display: 'inline-block',
+              width: 'calc(100% - 30px)',
             },
           },
           '& img': {
@@ -263,6 +269,10 @@ const useStyles = makeStyles((theme: Theme) => {
     disabled: {
       opacity: 0.5,
       cursor: 'not-allowed',
+    },
+    mobileIcon: {
+      position: 'relative',
+      top: 3,
     },
   });
 });
@@ -425,6 +435,10 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                       ? 'images/ic-mobile.svg'
                       : 'images/ic_hospital.svg')}
                     alt=""
+<<<<<<< HEAD
+=======
+                    className={classes.mobileIcon}
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
                   />
                 </span>
                 <span>Be present in the consult room on apollo247.com at the time of consult</span>

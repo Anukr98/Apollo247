@@ -1595,11 +1595,19 @@ export const JDConsultRoom: React.FC = () => {
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
+<<<<<<< HEAD
             <RateCall
               visible={giveRating}
               setGiveRating={setGiveRating}
               submitRatingCallback={(data) => submitRatingHandler(data)}
             />
+=======
+            {/* <RateCall
+              visible={giveRating}
+              setGiveRating={setGiveRating}
+              submitRatingCallback={(data) => submitRatingHandler(data)}
+            /> */}
+>>>>>>> aeb923a9561cf1b1292bf0c2fd1c76fa1d32c56d
             <div className={classes.container}>
               <div className={classes.pageContainer}>
                 {/* patient and doctors details start */}

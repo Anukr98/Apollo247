@@ -257,6 +257,7 @@ export const BottomLinks: React.FC = (props) => {
                               key={currentLink.title}
                               href={currentLink.url}
                               target="_blank"
+                              rel="noopener noreferrer"
                             >
                               {currentLink.title}
                             </a>
