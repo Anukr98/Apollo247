@@ -224,10 +224,10 @@ const useStyles = makeStyles((theme: Theme) => {
       }
     },
     dialogBox: {
-
       '& >div': {
         '& >div': {
           maxWidth: 400,
+          margin: '30px auto 0',
           [theme.breakpoints.down('xs')]: {
             borderRadius: 0,
             margin: 0,

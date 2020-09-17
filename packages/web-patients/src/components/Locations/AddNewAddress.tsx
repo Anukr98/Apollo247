@@ -24,6 +24,20 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     addAddressContent: {
       padding: 20,
+      height: 500,
+      overflow: 'auto',
+      '&::-webkit-scrollbar': {
+        width: 4
+      },
+      '&::-webkit-scrollbar-track': {
+        background: '#f1f1f1'
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: ' #888'
+      },
+      [theme.breakpoints.down('xs')]: {
+        height: 'auto'
+      }
     },
     buttonDisable: {
       backgroundColor: '#fed984',
@@ -285,7 +299,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     mapcontent: {
       width: '100%',
-      height: 420,
+      height: 360,
       background: '#fff',
       [theme.breakpoints.down('xs')]: {
         height: '100%'
@@ -295,6 +309,7 @@ const useStyles = makeStyles((theme: Theme) => {
       background: '#fff',
       padding: 25,
       position: 'relative',
+      borderRadius: '0 0 10px 10px',
       '& h2': {
         fontSize: 16,
         fontWeight: 700,
@@ -712,7 +727,6 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       );
                     })}
                   </Grid>
-
                 </div>
                 {/* <div className={classes.formGroup}>
                   <AphTextField placeholder="Enter Address Type" />
