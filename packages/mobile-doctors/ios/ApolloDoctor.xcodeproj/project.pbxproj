@@ -34,6 +34,8 @@
 		B6452DE02412783500D14AFC /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B6452DCB2412783500D14AFC /* main.m */; };
 		B6618F48241278B200173C4C /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B6618F47241278B200173C4C /* GoogleService-Info.plist */; };
 		B6618F4F24127B1700173C4C /* OTInstall.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6618F4E24127B1700173C4C /* OTInstall.swift */; };
+		B6CED23E24DC46BD00E1A013 /* left_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B6CED23C24DC46BD00E1A013 /* left_sound.mp3 */; };
+		B6CED23F24DC46BD00E1A013 /* join_sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B6CED23D24DC46BD00E1A013 /* join_sound.mp3 */; };
 		ED297163215061F000B7C4FE /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED297162215061F000B7C4FE /* JavaScriptCore.framework */; };
 /* End PBXBuildFile section */
 
@@ -83,6 +85,9 @@
 		B6618F47241278B200173C4C /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = SOURCE_ROOT; };
 		B6618F4E24127B1700173C4C /* OTInstall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTInstall.swift; sourceTree = "<group>"; };
 		B6618F5024127B9E00173C4C /* ApolloDoctor-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ApolloDoctor-Bridging-Header.h"; sourceTree = "<group>"; };
+		B6CED23C24DC46BD00E1A013 /* left_sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = left_sound.mp3; sourceTree = "<group>"; };
+		B6CED23D24DC46BD00E1A013 /* join_sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = join_sound.mp3; sourceTree = "<group>"; };
+		B6E7088324FD357100248343 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 		BE883F4FD21349AF8E74A3F1 /* FontAwesome5_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"; sourceTree = "<group>"; };
 		C5E26C657DEA440AB1CCBDF7 /* Feather.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Feather.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Feather.ttf"; sourceTree = "<group>"; };
 		C654B1BB47EB92AF414FCDCC /* Pods-ApolloDoctor.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloDoctor.release.xcconfig"; path = "Target Support Files/Pods-ApolloDoctor/Pods-ApolloDoctor.release.xcconfig"; sourceTree = "<group>"; };
@@ -115,6 +120,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B6E7088324FD357100248343 /* AdSupport.framework */,
 				675FCB6E2420A74B00DB786B /* CloudKit.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
@@ -191,6 +197,8 @@
 		B6452DB22412783500D14AFC /* ApolloDoctor */ = {
 			isa = PBXGroup;
 			children = (
+				B6CED23D24DC46BD00E1A013 /* join_sound.mp3 */,
+				B6CED23C24DC46BD00E1A013 /* left_sound.mp3 */,
 				B62CB2E6249A4713003B74AD /* phone_ringing.mp3 */,
 				B6618F47241278B200173C4C /* GoogleService-Info.plist */,
 				B6452DB32412783500D14AFC /* ApolloDoctor.entitlements */,
@@ -255,6 +263,7 @@
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				24E29770917A6AEFCCF9DDDE /* [CP] Copy Pods Resources */,
 				675FCB702420A99500DB786B /* ShellScript */,
+				83AE197E7A294B71C7CFC4A6 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -317,10 +326,12 @@
 				B6452DDB2412783500D14AFC /* IBMPlexSans-ThinItalic.ttf in Resources */,
 				B6452DCF2412783500D14AFC /* IBMPlexSans-BoldItalic.ttf in Resources */,
 				B6452DDA2412783500D14AFC /* IBMPlexSans-Thin.ttf in Resources */,
+				B6CED23E24DC46BD00E1A013 /* left_sound.mp3 in Resources */,
 				B6452DD02412783500D14AFC /* IBMPlexSans-ExtraLight.ttf in Resources */,
 				B6452DCE2412783500D14AFC /* IBMPlexSans-Bold.ttf in Resources */,
 				B6452DD22412783500D14AFC /* IBMPlexSans-Italic.ttf in Resources */,
 				B6452DD52412783500D14AFC /* IBMPlexSans-Medium.ttf in Resources */,
+				B6CED23F24DC46BD00E1A013 /* join_sound.mp3 in Resources */,
 				B6452DCD2412783500D14AFC /* LaunchScreen.xib in Resources */,
 				B6452DDD2412783500D14AFC /* Images.xcassets in Resources */,
 				B6452DD62412783500D14AFC /* IBMPlexSans-MediumItalic.ttf in Resources */,
@@ -442,6 +453,26 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PROJECT_DIR}/Fabric.framework/run\"\n";
 		};
+		83AE197E7A294B71C7CFC4A6 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-ApolloDoctor/Pods-ApolloDoctor-frameworks.sh",
+				"${PODS_ROOT}/WebEngage/xc11/WebEngage.framework",
+				"${PODS_ROOT}/WebEngage/xc11/WebEngage.framework.dSYM",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/WebEngage.framework",
+				"${DWARF_DSYM_FOLDER_PATH}/WebEngage.framework.dSYM",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ApolloDoctor/Pods-ApolloDoctor-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -478,7 +509,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloDoctor/ApolloDoctor.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -495,7 +526,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/ApolloDoctor/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 1.03;
+				MARKETING_VERSION = 1.05;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",
@@ -520,7 +551,7 @@
 				CODE_SIGN_ENTITLEMENTS = ApolloDoctor/ApolloDoctor.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 4A6H5Y5CK5;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -536,7 +567,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/ApolloDoctor/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 1.03;
+				MARKETING_VERSION = 1.05;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lc++",

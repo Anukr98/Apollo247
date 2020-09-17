@@ -418,7 +418,7 @@ const RecordType: RecordTypeType[] = [
   },
 ];
 
-export const AddHealthRecords: React.FC = (props) => {
+const AddHealthRecords: React.FC = (props) => {
   const classes = useStyles({});
   let refFileInput: any = useRef();
   const params = useParams<{
@@ -1307,3 +1307,5 @@ export const AddHealthRecords: React.FC = (props) => {
     </div>
   );
 };
+
+export default AddHealthRecords;
