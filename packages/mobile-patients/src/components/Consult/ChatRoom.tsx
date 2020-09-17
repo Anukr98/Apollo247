@@ -2314,17 +2314,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
-  const successSteps = [
-    'Let’s get you feeling better by following simple steps :)\n',
-    '1. Answer some quick questions\n',
-    '2. Please be present in this consult room at the time of consult\n',
-    '3. Connect with your doctor via In-App Audio/Video call\n',
-    '4. Get a prescription and meds, if necessary\n',
-    '5. Follow up via text (valid for 7 days)\n\n',
-    `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
-  ];
-
   const automatedTextFromPatient = () => {
+    let step5;
+    if (followUpAfterInDays > 0) {
+      step5 = `Follow up via text (valid for ${followUpAfterInDays} ${
+        followUpAfterInDays === 1 ? 'day' : 'days'
+      })`;
+    } else {
+      step5 = `No follow Up via text is provided`;
+    }
+    const successSteps = [
+      'Let’s get you feeling better by following simple steps :)\n',
+      '1. Answer some quick questions\n',
+      '2. Please be present in this consult room at the time of consult\n',
+      '3. Connect with your doctor via In-App Audio/Video call\n',
+      '4. Get a prescription and meds, if necessary\n',
+      `5. ${step5}\n\n`,
+      `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
+    ];
+
     pubnub.publish(
       {
         channel: channel,
