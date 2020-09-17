@@ -100,3 +100,11 @@ export function writeRow(doc: PDFKit.PDFDocument, heigth: number) {
     .stroke();
   return doc;
 }
+
+export function writeBigRow(doc: PDFKit.PDFDocument, heigth: number) {
+  doc
+    .lineJoin('miter')
+    .rect(27, heigth, 935, 30)
+    .stroke();
+  return doc;
+}
