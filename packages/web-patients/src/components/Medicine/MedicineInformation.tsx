@@ -410,6 +410,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const [clickAddCart, setClickAddCart] = React.useState<boolean>(false);
   const [isUpdateQuantity, setIsUpdateQuantity] = React.useState<boolean>(false);
+  const [showAddMessage, setShowAddMessage] = useState<boolean>(false);
 
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
@@ -666,6 +667,14 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     );
   };
 
+  useEffect(() => {
+    if (showAddMessage) {
+      setTimeout(() => {
+        setShowAddMessage(false);
+      }, 3000);
+    }
+  }, [showAddMessage]);
+
   const cartItem: MedicineCartItem = {
     MaxOrderQty,
     url_key,
@@ -881,103 +890,107 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             )}
 
             {sell_online ? (
-              <div className={classes.bottomActions}>
-                <AphButton
-                  disabled={addMutationLoading || updateMutationLoading}
-                  className={
-                    addMutationLoading || updateMutationLoading ? classes.disableButton : ''
-                  }
-                  onClick={() => {
-                    setIsUpdateQuantity(false);
-                    setClickAddCart(true);
-                    setAddMutationLoading(true);
-                    addToCartTracking({
-                      productName: name,
-                      source: 'Pharmacy PDP',
-                      productId: sku,
-                      brand: '',
-                      brandId: '',
-                      categoryName: params.searchText || '',
-                      categoryId: category_id,
-                      discountedPrice: special_price || price,
-                      price: price,
-                      quantity: 1,
-                    });
-                    /**Gtm code start  */
-                    gtmTracking({
-                      category: 'Pharmacy',
-                      action: 'Add to Cart',
-                      label: name,
-                      value: special_price || price,
-                      ecommObj: {
-                        event: 'add_to_cart',
-                        ecommerce: {
-                          items: [
-                            {
-                              item_name: name,
-                              item_id: sku,
-                              price: special_price || price,
-                              item_category: 'Pharmacy',
-                              item_category_2: type_id
-                                ? type_id.toLowerCase() === 'pharma'
-                                  ? 'Drugs'
-                                  : 'FMCG'
-                                : null,
-                              // 'item_category_4': '', // future reference
-                              item_variant: 'Default',
-                              index: 1,
-                              quantity: medicineQty,
-                            },
-                          ],
+              <>
+                <div className={classes.bottomActions}>
+                  <AphButton
+                    disabled={addMutationLoading || updateMutationLoading}
+                    className={
+                      addMutationLoading || updateMutationLoading ? classes.disableButton : ''
+                    }
+                    onClick={() => {
+                      setIsUpdateQuantity(false);
+                      setClickAddCart(true);
+                      setAddMutationLoading(true);
+                      addToCartTracking({
+                        productName: name,
+                        source: 'Pharmacy PDP',
+                        productId: sku,
+                        brand: '',
+                        brandId: '',
+                        categoryName: params.searchText || '',
+                        categoryId: category_id,
+                        discountedPrice: special_price || price,
+                        price: price,
+                        quantity: 1,
+                      });
+                      /**Gtm code start  */
+                      gtmTracking({
+                        category: 'Pharmacy',
+                        action: 'Add to Cart',
+                        label: name,
+                        value: special_price || price,
+                        ecommObj: {
+                          event: 'add_to_cart',
+                          ecommerce: {
+                            items: [
+                              {
+                                item_name: name,
+                                item_id: sku,
+                                price: special_price || price,
+                                item_category: 'Pharmacy',
+                                item_category_2: type_id
+                                  ? type_id.toLowerCase() === 'pharma'
+                                    ? 'Drugs'
+                                    : 'FMCG'
+                                  : null,
+                                // 'item_category_4': '', // future reference
+                                item_variant: 'Default',
+                                index: 1,
+                                quantity: medicineQty,
+                              },
+                            ],
+                          },
                         },
-                      },
-                    });
-                    /**Gtm code End  */
-                    applyCartOperations(cartItem);
-                    setAddMutationLoading(false);
-                  }}
-                >
-                  {' '}
-                  {addMutationLoading ? (
-                    <CircularProgress size={22} color="secondary" />
-                  ) : (
-                    'Add To Cart'
-                  )}
-                </AphButton>
-
-                <AphButton
-                  color="primary"
-                  className={
-                    addMutationLoading || updateMutationLoading ? classes.disableButton : ''
-                  }
-                  disabled={addMutationLoading || updateMutationLoading}
-                  onClick={() => {
-                    setUpdateMutationLoading(true);
-                    applyCartOperations(cartItem);
-                    setTimeout(() => {
-                      window.location.href = clientRoutes.medicinesCart();
-                    }, 3000);
-                    buyNowTracking({
-                      productName: name,
-                      serviceArea: pinCode,
-                      productId: sku,
-                      brand: '',
-                      brandId: '',
-                      categoryName: params.searchText || '',
-                      categoryId: category_id,
-                      discountedPrice: special_price,
-                      price: price,
-                      quantity: medicineQty,
-                    });
-                  }}
-                >
-                  {updateMutationLoading ? (
-                    <CircularProgress size={22} color="secondary" />
-                  ) : (
-                    'Buy Now'
-                  )}
-                </AphButton>
-              </div>
+                      });
+                      /**Gtm code End  */
+                      applyCartOperations(cartItem);
+                      setAddMutationLoading(false);
+                      setShowAddMessage(true);
+                    }}
+                  >
+                    {' '}
+                    {addMutationLoading ? (
+                      <CircularProgress size={22} color="secondary" />
+                    ) : showAddMessage ? (
+                      'Added To Cart'
+                    ) : (
+                      'Add To Cart'
+                    )}
+                  </AphButton>
+                  <AphButton
+                    color="primary"
+                    className={
+                      addMutationLoading || updateMutationLoading ? classes.disableButton : ''
+                    }
+                    disabled={addMutationLoading || updateMutationLoading}
+                    onClick={() => {
+                      setUpdateMutationLoading(true);
+                      applyCartOperations(cartItem);
+                      setTimeout(() => {
+                        window.location.href = clientRoutes.medicinesCart();
+                      }, 3000);
+                      buyNowTracking({
+                        productName: name,
+                        serviceArea: pinCode,
+                        productId: sku,
+                        brand: '',
+                        brandId: '',
+                        categoryName: params.searchText || '',
+                        categoryId: category_id,
+                        discountedPrice: special_price,
+                        price: price,
+                        quantity: medicineQty,
+                      });
+                    }}
+                  >
+                    {updateMutationLoading ? (
+                      <CircularProgress size={22} color="secondary" />
+                    ) : (
+                      'Buy Now'
+                    )}
+                  </AphButton>
+                </div>
+              </>
             ) : null}
           </>
         ) : (
