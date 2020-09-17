@@ -56,8 +56,12 @@ import { BookAppointmentCard } from 'components/Consult/V2/ChatRoom/BookAppointm
 import { isPastAppointment, consultWebengageEventsInfo } from 'helpers/commonHelpers';
 import { useParams } from 'hooks/routerHooks';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
-import { medicalDetailsFillTracking, callReceiveClickTracking } from 'webEngageTracking';
-import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
+import {
+  medicalDetailsFillTracking,
+  callReceiveClickTracking,
+  messageSentPostConsultTracking,
+} from 'webEngageTracking';
+import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -833,6 +837,7 @@ interface ChatWindowProps {
   setSrDoctorJoined: (srDoctorJoined: boolean) => void;
   setIsConsultCompleted: (isConsultCompleted: boolean) => void;
   appointmentDetails: AppointmentHistory;
+  secretaryData: getSecretaryDetailsByDoctorId;
 }
 
 interface MessagesObjectProps {
@@ -884,7 +889,7 @@ type Params = { appointmentId: string; doctorId: string };
 export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const classes = useStyles({});
   const params = useParams<Params>();
-  const { appointmentDetails } = props;
+  const { appointmentDetails, secretaryData } = props;
   const { appointmentId, doctorId } = params;
   const [height, setHeight] = useState<string>('');
   const [weight, setWeight] = useState<string>('');
@@ -1106,6 +1111,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     }
   }, [appointmentDetails]);
 
+  const { mobileNumber: secretaryNumber, name: secretaryName } = (secretaryData &&
+    secretaryData.getSecretaryDetailsByDoctorId) || { mobileNumber: '', name: '' };
+
   // publish a message to pubnub channel
   const publishMessage = (channelName: string, message: any) => {
     pubnubClient.publish(
@@ -1119,6 +1127,25 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           console.log('message not published', status.error);
         } else {
           console.log('message published', response);
+          if (appointmentDetails && appointmentDetails.status.toLowerCase() === 'completed') {
+            messageSentPostConsultTracking({
+              doctorName:
+                (appointmentDetails &&
+                  appointmentDetails.doctorInfo &&
+                  appointmentDetails.doctorInfo.fullName) ||
+                '',
+              patientName:
+                (currentPatient && `${currentPatient.firstName} ${currentPatient.lastName}`) || '',
+              secretaryName: secretaryName || '',
+              doctorNumber:
+                (appointmentDetails &&
+                  appointmentDetails.doctorInfo &&
+                  appointmentDetails.doctorInfo.mobileNumber) ||
+                '',
+              patientNumber: (currentPatient && currentPatient.mobileNumber) || '',
+              secretaryNumber: secretaryNumber || '',
+            });
+          }
         }
       }
     );
