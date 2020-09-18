@@ -98,8 +98,6 @@ const useStyles = makeStyles((theme: Theme) => {
 const App: React.FC = () => {
   const classes = useStyles({});
   const { signInError, isSignedIn } = useAuth();
-  const currentPath = window.location.pathname;
-  const pageName = window.location.pathname;
 
   useEffect(() => {
     if (signInError) console.log('Error signing in :(');
