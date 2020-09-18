@@ -1123,10 +1123,10 @@ export const ConsultTabs: React.FC = () => {
               _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.mobileNumber
                 ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.mobileNumber
                 : '',
-            appointmentDateTime: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!
-              .appointmentDateTime,
-            appointmentDisplayId: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!
-              .displayId,
+            appointmentDateTime: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.appointmentDateTime,
+            appointmentDisplayId: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.displayId,
             appointmentId: appointmentId,
           };
           setWebengageConsultTrackingObject(webEngageData);
@@ -2149,11 +2149,11 @@ export const ConsultTabs: React.FC = () => {
             style={{ height: 'calc(100vh - 65px)' }}
 
           > */}
-          <RateCall
+          {/* <RateCall
             visible={giveRating}
             setGiveRating={setGiveRating}
             submitRatingCallback={(data) => submitRatingHandler(data)}
-          />
+          /> */}
           <div className={classes.container}>
             <CallPopover
               setGiveRating={setGiveRating}

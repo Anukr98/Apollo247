@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicineCartLanding: React.FC = (props) => {
+const MedicineCartLanding: React.FC = (props) => {
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
   return (
@@ -59,3 +59,5 @@ export const MedicineCartLanding: React.FC = (props) => {
     </div>
   );
 };
+
+export default MedicineCartLanding;

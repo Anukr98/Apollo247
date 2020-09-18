@@ -23,7 +23,7 @@ import {
   makeAppointmentPaymentVariables,
 } from 'graphql/types/makeAppointmentPayment';
 import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,
@@ -75,6 +75,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       '& p': {
         marginTop: 0,
+      },
+      [theme.breakpoints.down('xs')]: {
+        padding: '16px 10px',
       },
     },
     consultNowInfo: {
@@ -133,6 +136,10 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 20,
       paddingLeft: 20,
       paddingRight: 20,
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 10,
+        paddingRight: 10,
+      },
     },
     timeSlots: {
       paddingTop: 0,

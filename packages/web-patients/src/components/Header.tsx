@@ -651,3 +651,5 @@ export const Header: React.FC<HeaderProps> = (props) => {
     </div>
   );
 };
+
+export default Header;

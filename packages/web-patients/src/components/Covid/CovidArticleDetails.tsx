@@ -377,7 +377,7 @@ const CovidArticleDetails: React.FC = (props: any) => {
                   />
                   {sourceUrl && sourceUrl.length && (
                     <>
-                      <a href={sourceUrl} target="_blank">
+                      <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
                         <div>SOURCE</div>
                         <div className={classes.sourceUrl}>{sourceUrl}</div>
                       </a>

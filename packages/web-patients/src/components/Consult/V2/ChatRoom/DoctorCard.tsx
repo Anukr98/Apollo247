@@ -240,7 +240,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             }}
           >
             {props.messageDetails.fileType === 'pdf' ? (
-              <a href={props.messageDetails.url} target="_blank">
+              <a href={props.messageDetails.url} target="_blank" rel="noopener noreferrer">
                 <img src={require('images/pdf_thumbnail.png')} />
               </a>
             ) : (

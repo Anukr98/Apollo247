@@ -11,6 +11,13 @@ import { verifyLoginOtpVariables, verifyLoginOtp } from '../graphql/types/verify
 import { LOGIN_TYPE } from '../graphql/types/globalTypes';
 import { VERIFY_LOGIN_OTP, LOGIN, RESEND_OTP } from '../graphql/profiles';
 import { resendOtp, resendOtpVariables } from '../graphql/types/resendOtp';
+import {
+  webEngageLogin,
+  postWebEngageEvent,
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
   const errorLink = onError((error) => {
@@ -74,15 +81,20 @@ export const loginAPI = (mobileNumber: string, appSign?: string) => {
       .then((data) => {
         console.log('logindata', data);
         res(data.data.login);
+        postWebEngageEvent(WebEngageEventName.MOBILE_NUMBER_ENTERED, {
+          'Doctor mobile Number': mobileNumber,
+        } as WebEngageEvents[WebEngageEventName.MOBILE_NUMBER_ENTERED]);
       })
       .catch((e) => {
         rej(e);
+        webEngageLogin();
       });
   });
 };
 
 export const verifyOTP = (mobileNumber: string, otp: string) => {
   return new Promise((res, rej) => {
+    postWebEngageEvent(WebEngageEventName.OTP_ENTERED, {});
     const inputData = {
       id: mobileNumber,
       loginType: LOGIN_TYPE.DOCTOR,
@@ -98,15 +110,24 @@ export const verifyOTP = (mobileNumber: string, otp: string) => {
       .then((data) => {
         console.log('verifyOTPdata', data);
         res(data.data.verifyLoginOtp);
+        postWebEngageEvent(WebEngageEventName.OTP_VERIFIED, {
+          Successful: g(data, 'data', 'verifyLoginOtp', 'status') ? 'YES' : 'NO',
+        } as WebEngageEvents[WebEngageEventName.OTP_VERIFIED]);
       })
       .catch((e) => {
         rej(e);
+        postWebEngageEvent(WebEngageEventName.OTP_VERIFIED, {
+          Successful: 'NO',
+        } as WebEngageEvents[WebEngageEventName.OTP_VERIFIED]);
       });
   });
 };
 
 export const resendOTP = (mobileNumber: string, id: string) => {
   return new Promise((res, rej) => {
+    postWebEngageEvent(WebEngageEventName.OTP_RESEND, {
+      'Doctor mobile Number': mobileNumber,
+    } as WebEngageEvents[WebEngageEventName.OTP_RESEND]);
     const inputData = {
       mobileNumber: mobileNumber,
       loginType: LOGIN_TYPE.DOCTOR,

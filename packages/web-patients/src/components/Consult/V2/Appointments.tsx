@@ -14,7 +14,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { APPOINTMENT_TYPE, APPOINTMENT_STATE, STATUS } from 'graphql/types/globalTypes';
 import { GetOrderInvoice } from 'graphql/types/GetOrderInvoice';
-import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
+import { GET_PATIENT_ALL_APPOINTMENTS, GET_SECRETARY_DETAILS_BY_DOCTOR_ID } from 'graphql/doctors';
 import {
   GetPatientAllAppointments,
   GetPatientAllAppointmentsVariables,
@@ -47,6 +47,10 @@ import { PaymentTransactionStatus_paymentTransactionStatus_appointment as paymen
 import _uniq from 'lodash/uniq';
 import FormControl from '@material-ui/core/FormControl';
 import CloseIcon from '@material-ui/icons/Close';
+import {
+  getSecretaryDetailsByDoctorId,
+  getSecretaryDetailsByDoctorId_getSecretaryDetailsByDoctorId as SecretaryData,
+} from 'graphql/types/getSecretaryDetailsByDoctorId';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -550,7 +554,7 @@ interface statusMap {
   [name: string]: statusActionInterface;
 }
 
-export const Appointments: React.FC<AppointmentProps> = (props) => {
+const Appointments: React.FC<AppointmentProps> = (props) => {
   const classes = useStyles({});
   const initialAppointmentFilterObject: AppointmentFilterObject = {
     appointmentStatus: [],
@@ -592,6 +596,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [paymentData, setPaymentData] = React.useState<paymentTransactionAppointmentType | null>(
     null
   );
+  const [secretaryData, setSecretaryData] = React.useState<SecretaryData | null>(null);
   const [filterDoctorsList, setFilterDoctorsList] = React.useState<string[]>([]);
   const [filterSpecialtyList, setFilterSpecialtyList] = React.useState<string[]>([]);
   const doctorName = doctorDetail && doctorDetail.fullName;
@@ -667,10 +672,32 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     }
   };
 
+  const getSecretaryData = (successApptId: string) => {
+    if (!secretaryData) {
+      apolloClient
+        .query<getSecretaryDetailsByDoctorId>({
+          query: GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
+          variables: {
+            doctorId: successApptId || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }: any) => {
+          if (data && data.getSecretaryDetailsByDoctorId) {
+            setSecretaryData(data.getSecretaryDetailsByDoctorId);
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
+  };
+
   useEffect(() => {
     if (successApptId && successApptId.length) {
       getAppointmentHistory(successApptId);
       getPaymentData(successApptId);
+      getSecretaryData(successApptId);
     }
   }, [successApptId, appointmentHistory, paymentData]);
 
@@ -705,9 +732,13 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     if (!successApptId) {
       setIsLoading(false);
     }
-    if (!_isEmpty(appointmentHistory) && !_isEmpty(paymentData)) {
+    if (!_isEmpty(appointmentHistory) && !_isEmpty(paymentData) && !_isEmpty(currentPatient)) {
       const { appointmentDateTime, appointmentType, doctorInfo, doctorId, id } = appointmentHistory;
       const { displayId } = paymentData;
+      const { mobileNumber: secretaryNumber, name: secretaryName } = secretaryData || {
+        mobileNumber: '',
+        name: '',
+      };
       setDoctorDetail(doctorInfo);
       setDoctorId(doctorId);
       setIsLoading(false);
@@ -726,10 +757,16 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
         patientGender: currentPatient && currentPatient.gender,
         specialisation: doctorInfo && doctorInfo.specialty ? doctorInfo.specialty.name : '',
         relation: currentPatient && currentPatient.relation,
+        patientName:
+          (currentPatient && `${currentPatient.firstName} ${currentPatient.lastName}`) || '',
+        secretaryName: secretaryName || '',
+        doctorNumber: doctorInfo ? doctorInfo.mobileNumber : '',
+        patientNumber: (currentPatient && currentPatient.mobileNumber) || '',
+        secretaryNumber: secretaryNumber || '',
       };
       consultationBookTracking(eventData);
     }
-  }, [paymentData, appointmentHistory]);
+  }, [paymentData, appointmentHistory, secretaryData, currentPatient]);
 
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
@@ -1529,3 +1566,5 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     </div>
   );
 };
+
+export default Appointments;
