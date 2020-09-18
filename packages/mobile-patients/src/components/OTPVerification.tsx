@@ -4,8 +4,6 @@ import { CountDownTimer } from '@aph/mobile-patients/src/components/ui/CountDown
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   BackArrow,
-  OkText,
-  OkTextDisabled,
   Loader,
   ArrowDisabled,
   ArrowYellow,

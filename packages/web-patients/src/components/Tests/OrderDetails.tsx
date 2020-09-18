@@ -471,3 +471,5 @@ export const OrderDetails: React.FC = () => {
     </div>
   );
 };
+
+export default OrderDetails;

@@ -11,7 +11,7 @@ export interface getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo {
   endTime: string | null;
   status: string | null;
   startTime: string | null;
-  slot: number | null;
+  slot: string | null;
 }
 
 export interface getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot {

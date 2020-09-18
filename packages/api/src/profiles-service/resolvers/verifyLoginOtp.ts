@@ -3,13 +3,8 @@ import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { LOGIN_TYPE, LoginOtp, OTP_STATUS } from 'profiles-service/entities';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
-import * as firebaseAdmin from 'firebase-admin';
+import { admin } from 'firebase';
 import { debugLog } from 'customWinstonLogger';
-
-const firebase = firebaseAdmin.initializeApp({
-  credential: firebaseAdmin.credential.applicationDefault(),
-  databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-});
 
 export const verifyLoginOtpTypeDefs = gql`
   type OtpVerificationResult {
@@ -128,7 +123,7 @@ const verifyLoginOtp: Resolver<
   //CREATE_TOKEN_START
   reqStartTime = new Date();
   //generate customToken
-  const customToken = await firebase.auth().createCustomToken(matchedOtpRes.mobileNumber);
+  const customToken = await admin.auth().createCustomToken(matchedOtpRes.mobileNumber);
   verifyLogger(reqStartTime, matchedOtpRes.mobileNumber, 'CREATE_TOKEN_END');
 
   verifyLogger(callStartTime, matchedOtpRes.mobileNumber, 'API_CALL___END');

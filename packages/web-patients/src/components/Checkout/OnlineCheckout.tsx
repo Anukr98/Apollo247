@@ -355,7 +355,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const OnlineCheckout: React.FC = () => {
+const OnlineCheckout: React.FC = () => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const { isSignedIn } = useAuth();
@@ -696,3 +696,5 @@ export const OnlineCheckout: React.FC = () => {
     return <LinearProgress className={classes.loader} />;
   }
 };
+
+export default OnlineCheckout;

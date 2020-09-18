@@ -18,7 +18,7 @@ import {
 } from 'helpers/prismCall';
 import { GetCurrentPatientsResult } from 'profiles-service/resolvers/getCurrentPatients';
 import { PrismGetAuthTokenResponse } from 'types/prism';
-import { sendPatientRegistrationNotification } from 'notifications-service/resolvers/notifications';
+import { sendPatientRegistrationNotification } from 'notifications-service/handlers';
 
 export const registerPatientsTypeDefs = gql`
   extend type Mutation {
@@ -41,7 +41,6 @@ const registerPatients: Resolver<
     const prismAuthToken: PrismGetAuthTokenResponse = await prismAuthenticationAsync(mobileNumber);
 
     if (prismAuthToken.response === 'AbortError') {
-      console.log('error', prismAuthToken);
       //add this to Patient prism Queue
       const patientDetails = await findOrCreatePatient(
         { uhid: '', mobileNumber, isActive: true },
@@ -55,13 +54,11 @@ const registerPatients: Resolver<
           iosVersion: args.appVersion,
         }
       );
-      console.log('AbortError...', patientDetails);
       addToPatientPrismQueue(patientDetails);
     } else {
       //call user data from PRISM
       if (prismAuthToken.response) {
         const uhids = await prismGetUsersAsync(mobileNumber, prismAuthToken.response);
-        console.log('uhids>>>>>>>>>>>', uhids);
         let patientPromises: Object[] = [];
         if (uhids.response!.recoveryMessage === 'AbortError') {
           //add this to Patient prism Queue
@@ -137,7 +134,6 @@ const registerPatientsFromPrism: Resolver<
   //call user data from PRISM
   if (prismAuthToken.response) {
     const uhids = await prismGetUsers(mobileNumber, prismAuthToken.response);
-    console.log('uhids>>>>>>>>>>>', uhids);
     let patientPromises: Object[] = [];
     if (uhids && uhids.response) {
       patientPromises = uhids.response!.signUpUserData.map((data) => {

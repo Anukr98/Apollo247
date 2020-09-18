@@ -7,7 +7,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { UPDATE_PATIENT_ADDRESS } from 'graphql/address';
 import { useMutation } from 'react-apollo-hooks';
 import { GetPatientAddressList_getPatientAddressList_addressList as Address } from 'graphql/types/GetPatientAddressList';
-import axios, { AxiosPromise, AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
 import { gtmTracking } from '../../gtmTracking';
 import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
@@ -142,7 +142,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface ViewAllAddressProps {
   setIsViewAllAddressDialogOpen: (isViewAllAddressDialogOpen: boolean) => void;
   formatAddress: (address: Address) => string;
-  checkServiceAvailability?: (zipCode: string | null) => AxiosPromise;
+  checkServiceAvailability?: (zipCode: string | null) => any;
   setDeliveryTime?: (deliveryTime: string) => void;
 }
 
@@ -308,8 +308,8 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
               setMutationLoading(true);
               props
                 .checkServiceAvailability(localZipCode)
-                .then((res: AxiosResponse) => {
-                  if (res && res.data && res.data.Availability) {
+                .then((res: any) => {
+                  if (res && res.data && res.data.response) {
                     /**Gtm code start  */
                     gtmTracking({
                       category: 'Pharmacy',

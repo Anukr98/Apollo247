@@ -3,12 +3,16 @@ import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { LoginOtp, LOGIN_TYPE, OTP_STATUS } from 'profiles-service/entities';
 import { LoginOtpRepository } from 'profiles-service/repositories/loginOtpRepository';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { ApiConstants } from 'ApiConstants';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 import { debugLog } from 'customWinstonLogger';
-import { sendDoctorNotificationWhatsapp } from 'notifications-service/resolvers/notifications';
+import {
+  sendDoctorNotificationWhatsapp,
+  isNotificationAllowed,
+} from 'notifications-service/handlers';
 
 export const loginTypeDefs = gql`
   enum LOGIN_TYPE {
@@ -49,7 +53,7 @@ const login: Resolver<
   { mobileNumber: string; loginType: LOGIN_TYPE; hashCode: string },
   ProfilesServiceContext,
   LoginResult
-> = async (parent, args, { profilesDb }) => {
+> = async (parent, args, { profilesDb, doctorsDb }) => {
   const callStartTime = new Date();
   const apiCallId = Math.floor(Math.random() * 1000000);
   //create first order curried method with first 4 static parameters being passed.
@@ -79,21 +83,23 @@ const login: Resolver<
     otp,
     status: OTP_STATUS.NOT_VERIFIED,
   };
-  const otpSaveResponse = await otpRepo.insertOtp(optAttrs);
+
+  const { id } = await otpRepo.insertOtp(optAttrs);
   loginLogger('OTP_INSERT_END');
 
   // bypass otp env specific
-  const bypassRes = OTPBypass({ otpSaveResponse, logger: loginLogger });
+  const bypassRes = OTPBypass({ id, logger: loginLogger });
   if (bypassRes) return bypassRes;
 
   //call sms gateway service to send the OTP here
   return sendMessage({
+    doctorsDb,
     loginType,
     mobileNumber,
     otp,
     hashCode,
     logger: loginLogger,
-    otpSaveResponse,
+    id,
   });
 };
 
@@ -102,7 +108,7 @@ const resendOtp: Resolver<
   { mobileNumber: string; id: string; loginType: LOGIN_TYPE; hashCode: string },
   ProfilesServiceContext,
   LoginResult
-> = async (parent, args, { profilesDb }) => {
+> = async (parent, args, { profilesDb, doctorsDb }) => {
   const apiCallId = Math.floor(Math.random() * 1000000);
   const callStartTime = new Date();
   //create first order curried method with first 4 static parameters being passed.
@@ -168,12 +174,13 @@ const resendOtp: Resolver<
 
   //call sms gateway service to send the OTP here
   return sendMessage({
+    doctorsDb,
     loginType,
     mobileNumber,
     otp,
     hashCode,
     logger: resendLogger,
-    otpSaveResponse,
+    id: otpSaveResponse.id,
   });
 };
 type testSMSResult = {
@@ -191,8 +198,6 @@ const testSendSMS: Resolver<
 
   //call sms gateway service to send the OTP here
   const smsResult = await testSMS(mobileNumber, otp);
-
-  console.log(smsResult.status, smsResult);
   if (smsResult.status != 'OK') {
     return {
       send: false,
@@ -228,6 +233,10 @@ const sendSMS = async (mobileNumber: string, otp: string, hashCode: string, mess
   //logging api call data here
   log('smsOtpAPILogger', `OPT_API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
 
+  const isWhitelisted = await isNotificationAllowed(mobileNumber);
+  if (!isWhitelisted) {
+    return;
+  }
   const smsResponse = await fetch(apiUrl)
     .then((res) => res.json())
     .catch((error) => {
@@ -247,6 +256,13 @@ const sendSMS = async (mobileNumber: string, otp: string, hashCode: string, mess
   return smsResponse;
 };
 const testSMS = async (mobileNumber: string, otp: string) => {
+  const isWhitelisted = await isNotificationAllowed(mobileNumber);
+  if (!isWhitelisted) {
+    return {
+      status: null,
+    };
+  }
+
   const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
   const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_OTP_API_KEY}`;
 
@@ -272,26 +288,7 @@ const testSMS = async (mobileNumber: string, otp: string) => {
 
   return smsResponse;
 };
-export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
-  const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
-  const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_OTP_API_KEY}`;
 
-  const queryParams = `&method=${ApiConstants.KALEYRA_OTP_SMS_METHOD}&message=${message}&to=${mobileNumber}&sender=${ApiConstants.KALEYRA_OTP_SENDER}`;
-
-  const apiUrl = `${apiUrlWithKey}${queryParams}`;
-
-  //logging api call data here
-  log('smsOtpAPILogger', `OPT_API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
-
-  const smsResponse = await fetch(apiUrl)
-    .then((res) => res.json())
-    .catch((error) => {
-      //logging error here
-      log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(error));
-      throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
-    });
-  return smsResponse;
-};
 export const loginResolvers = {
   Query: {
     login,
@@ -302,12 +299,28 @@ export const loginResolvers = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sendMessage = async (args: any) => {
-  const { loginType, mobileNumber, otp, hashCode, logger, otpSaveResponse } = args;
+  const { loginType, mobileNumber, otp, hashCode, logger, id, doctorsDb } = args;
+
+  const isWhitelisted = await isNotificationAllowed(mobileNumber);
+  if (!isWhitelisted) {
+    return {
+      status: true,
+      loginId: id,
+      message: ApiConstants.OTP_NON_WHITELISTED_NUMBER.toString(),
+    };
+  }
+
   logger('SEND_SMS___START');
   let textMessage;
+
   //let smsResult;
   if (loginType == LOGIN_TYPE.DOCTOR) {
     //const whatsAppMessage = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctor = await doctorRepo.searchDoctorByMobileNumber(mobileNumber, true);
+    if (doctor == null) {
+      throw new AphError(AphErrorMessages.NOT_A_DOCTOR);
+    }
     const templateData: string[] = [otp];
     const promiseSendNotification = sendDoctorNotificationWhatsapp(
       ApiConstants.WHATSAPP_SD_OTP,
@@ -347,14 +360,14 @@ const sendMessage = async (args: any) => {
   logger('API_CALL___END');
   return {
     status: true,
-    loginId: otpSaveResponse.id,
+    loginId: id,
     message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
   };
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const OTPBypass = (args: any) => {
-  const { mobileNumber, otpSaveResponse, logger } = args;
+  const { mobileNumber, id, logger } = args;
   //if production environment, and specific mobileNumber, return the response without sending SMS
   if (
     process.env.NODE_ENV === 'production' &&
@@ -365,7 +378,7 @@ const OTPBypass = (args: any) => {
     logger('STATIC_OTP_API_CALL___END');
     return {
       status: true,
-      loginId: otpSaveResponse.id,
+      loginId: id,
       message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
     };
   }
@@ -374,7 +387,7 @@ const OTPBypass = (args: any) => {
     logger('STATIC_OTP_API_CALL___END');
     return {
       status: true,
-      loginId: otpSaveResponse.id,
+      loginId: id,
       message: ApiConstants.OTP_SUCCESS_MESSAGE.toString(),
     };
   }

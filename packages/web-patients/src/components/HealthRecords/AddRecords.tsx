@@ -35,7 +35,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { addRecordClickTracking } from '../../webEngageTracking';
 import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
-import { INVALID_FILE_SIZE_ERROR, toBase64 } from 'helpers/commonHelpers';
+import { INVALID_FILE_SIZE_ERROR, toBase64, MAX_FILE_SIZE_FOR_UPLOAD } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -381,7 +381,7 @@ const RecordType: RecordTypeType[] = [
   },
 ];
 
-export const AddRecords: React.FC = (props) => {
+const AddRecords: React.FC = (props) => {
   const classes = useStyles({});
   let refFileInput: any = useRef();
   const [typeOfRecord, setTypeOfRecord] = React.useState<string>('');
@@ -663,7 +663,7 @@ export const AddRecords: React.FC = (props) => {
                                 const file = fileNames[0] || null;
                                 const fileExtension = file.name.split('.').pop();
                                 const fileSize = file.size;
-                                if (fileSize > 2000000) {
+                                if (fileSize > MAX_FILE_SIZE_FOR_UPLOAD) {
                                   setIsAlertOpen(true);
                                   setAlertMessage(INVALID_FILE_SIZE_ERROR);
                                 } else if (
@@ -1180,3 +1180,5 @@ export const AddRecords: React.FC = (props) => {
 //       }
 //   );
 // };
+
+export default AddRecords;

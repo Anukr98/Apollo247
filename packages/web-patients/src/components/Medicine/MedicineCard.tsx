@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Popover, Grid, CircularProgress } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
@@ -16,6 +16,7 @@ import { NotifyMeNotification } from './NotifyMeNotification';
 import { useParams } from 'hooks/routerHooks';
 import _replace from 'lodash/replace';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { LazyIntersection } from '../lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -114,10 +115,15 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     productName: {
-      minHeight: 45,
+      minHeight: 65,
+      overflow: 'hidden',
+      display: '-webkit-box',
+      '-webkit-line-clamp': '3',
+      '-webkit-box-orient': 'vertical',
       [theme.breakpoints.down(500)]: {
         textAlign: 'left',
         fontSize: 12,
+        minHeight: 54,
       },
     },
     addQty: {
@@ -242,6 +248,10 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
     return findItem ? findItem.quantity : 0;
   };
 
+  useEffect(() => {
+    sessionStorage.removeItem('categoryClicked');
+  }, []);
+
   return (
     <Grid container spacing={2}>
       {props.medicineList && props.medicineList.length > 0
@@ -250,18 +260,19 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
               <div className={classes.root}>
                 <Link
                   to={clientRoutes.medicineDetails(product.url_key)}
-                  onClick={() =>
+                  onClick={() => {
+                    sessionStorage.setItem('categoryClicked', 'true');
                     pharmacyProductClickedTracking({
                       productName: product.name,
                       source: 'Category',
                       productId: product.sku,
                       sectionName: params.searchMedicineType,
-                    })
-                  }
+                    });
+                  }}
                 >
                   <div className={classes.pdHeader}>
                     <div className={classes.bigAvatar}>
-                      <img src={`${apiDetails.imageUrl}${product.image}`} alt="" />
+                      <LazyIntersection src={`${apiDetails.imageUrl}${product.thumbnail}`} alt="" />
                     </div>
                     <div className={classes.productName}>{product.name}</div>
                   </div>

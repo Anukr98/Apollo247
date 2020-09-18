@@ -8,22 +8,19 @@ import {
   MedicineOrdersStatus,
   MEDICINE_DELIVERY_TYPE,
   MedicineOrderShipments,
-  MedicineOrderRefunds,
-  MedicineOrders,
-  MedicineOrderPayments,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
-import {
-  NotificationType,
-  sendMedicineOrderStatusNotification,
-} from 'notifications-service/resolvers/notifications';
+import { NotificationType } from 'notifications-service/constants';
+import { sendMedicineOrderStatusNotification } from 'notifications-service/handlers';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
+import { syncInventory } from 'helpers/inventorySync';
+import { SYNC_TYPE } from 'types/inventorySync';
 
 export const saveOrderShipmentInvoiceTypeDefs = gql`
   input SaveOrderShipmentInvoiceInput {
@@ -243,11 +240,14 @@ const saveOrderShipmentInvoice: Resolver<
 
   if (!unBilledShipments) {
     const invoices = await medicineOrdersRepo.getInvoiceDetailsByOrderId(orderDetails.orderAutoId);
-
+    let deliveryCharges = 0;
     const totalOrderBilling = invoices.reduce(
       (acc: number, curValue: Partial<MedicineOrderInvoice>) => {
         if (curValue.billDetails) {
-          const invoiceValue: number = JSON.parse(curValue.billDetails).invoiceValue;
+          const billDetails = JSON.parse(curValue.billDetails);
+          const invoiceValue = billDetails.invoiceValue;
+
+          deliveryCharges = +new Decimal(deliveryCharges).plus(billDetails.deliveryCharges);
           return +new Decimal(acc).plus(invoiceValue);
         }
         return acc;
@@ -278,7 +278,14 @@ const saveOrderShipmentInvoice: Resolver<
         profilesDb
       );
     }
-    calculateRefund(orderDetails, totalOrderBilling, profilesDb, medicineOrdersRepo);
+    calculateRefund(
+      orderDetails,
+      totalOrderBilling,
+      profilesDb,
+      medicineOrdersRepo,
+      '',
+      deliveryCharges
+    );
   }
 
   //post order billed and packed event event to webEngage
@@ -295,6 +302,16 @@ const saveOrderShipmentInvoice: Resolver<
     },
   };
   postEvent(postBody);
+
+  orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
+    orderDetails.id
+  );
+  orderDetails.medicineOrderLineItems = orderDetails.medicineOrderLineItems.filter((lineItem) => {
+    return saveOrderShipmentInvoiceInput.itemDetails.find((inputItem) => {
+      return inputItem.articleCode == lineItem.medicineSKU;
+    });
+  });
+  syncInventory(orderDetails, SYNC_TYPE.RELEASE);
 
   return {
     status: MEDICINE_ORDER_STATUS.ORDER_BILLED,

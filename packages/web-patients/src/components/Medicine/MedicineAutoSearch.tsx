@@ -246,7 +246,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
   const { currentPatient } = useAllCurrentPatients();
-  const { cartItems, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
+  const { cartItems, addCartItem, updateCartItem, removeCartItemSku } = useShoppingCart();
 
   const [searchMedicines, setSearchMedicines] = useState<MedicineProduct[]>([]);
   const [searchText, setSearchText] = useState('');
@@ -378,7 +378,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                         {medicine.is_prescription_required ? (
                           <img src={require('images/ic_tablets_rx.svg')} alt="" />
                         ) : (
-                          <img src={`${apiDetails.imageUrl}${medicine.image}`} alt="" />
+                          <img src={`${apiDetails.imageUrl}${medicine.thumbnail}`} alt="" />
                         )}
                       </div>
                       <div className={classes.medicineInfo}>
@@ -507,7 +507,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                   value: medicine.special_price || medicine.price,
                                 });
                                 /* Gtm code end  */
-                                removeCartItem && removeCartItem(medicine.id);
+                                removeCartItemSku && removeCartItemSku(medicine.sku);
                               } else {
                                 const cartItem: MedicineCartItem = {
                                   MaxOrderQty: medicine.MaxOrderQty,

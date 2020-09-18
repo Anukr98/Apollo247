@@ -69,7 +69,7 @@ export const ConsultPayments: React.FC = (props) => {
   ) {
     const appointmentData = data.consultOrders.appointments;
     const sortByPaymentDateTime = _sortBy(appointmentData, function(item) {
-      return item.appointmentPayments[0].paymentDateTime;
+      return item.status !== 'PAYMENT_PENDING' && item.appointmentPayments[0].paymentDateTime;
     });
     const dataReversed = [...sortByPaymentDateTime].reverse();
     return (

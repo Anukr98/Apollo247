@@ -92,7 +92,7 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   __typename: "brandType";
   name: string | null;
   image: string | null;
-  brandName:string|null;
+  brandName: string | null;
 }
 
 export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters_language {
@@ -139,6 +139,8 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   doctorsNextAvailability: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[] | null;
   sort: string | null;
   filters: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_filters | null;
+  apolloDoctorCount: number | null;
+  partnerDoctorCount: number | null;
 }
 
 export interface getDoctorsBySpecialtyAndFilters {
