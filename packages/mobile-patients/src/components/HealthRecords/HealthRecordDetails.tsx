@@ -82,9 +82,7 @@ const styles = StyleSheet.create({
   greenTickIconStyle: {
     width: 14,
     height: 14,
-    alignSelf: 'center',
-    marginLeft: 6,
-    marginTop: 2.5,
+    resizeMode: 'center',
   },
   cardViewStyle: {
     ...theme.viewStyles.cardViewStyle,
@@ -396,15 +394,14 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : hospitalization
       ? 'Discharge Date'
       : 'CheckUp Date';
+    const labSourceSelf = data?.labTestSource === '247self' || data?.labTestSource === 'self';
     return (
       <View style={styles.cardViewStyle}>
         {data?.labTestName ? (
-          <View style={{ flexDirection: 'row' }}>
-            <Text style={{ ...viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
-              {data?.labTestName || data?.healthCheckType || data?.healthCheckName}
-            </Text>
+          <Text style={{ ...viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
+            {data?.labTestName || data?.healthCheckType || data?.healthCheckName}{' '}
             <RoundGreenTickIcon style={styles.greenTickIconStyle} />
-          </View>
+          </Text>
         ) : null}
         {data?.labTestRefferedBy ? (
           <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
@@ -416,9 +413,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             {'Dr. ' + data?.doctorName || 'Dr. -'}
           </Text>
         ) : null}
-        {data?.siteDisplayName || data?.hospitalName ? (
+        {labSourceSelf || data?.siteDisplayName ? (
           <Text style={{ ...viewStyles.text('M', 14, '#67909C', 1, 18), marginTop: 3 }}>
-            {data?.siteDisplayName || data?.hospitalName}
+            {labSourceSelf ? 'Self upload' : data?.siteDisplayName}
           </Text>
         ) : null}
         {data?.healthCheckType || data?.healthCheckName ? (

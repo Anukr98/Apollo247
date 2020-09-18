@@ -180,7 +180,6 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
             bottomPadding={{ paddingBottom: 20 }}
             onPress={(selectedFilter) => {
               if (selectedFilter.key !== FILTER_TYPE.VIEW_BY) {
-                console.log('selectedFilter', selectedFilter);
                 setFilterApplied(selectedFilter.key);
               }
             }}
