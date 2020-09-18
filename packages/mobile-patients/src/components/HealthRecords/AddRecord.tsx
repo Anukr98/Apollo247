@@ -15,12 +15,15 @@ import {
   ADD_MEDICAL_RECORD,
   ADD_PATIENT_HEALTH_CHECK_RECORD,
   ADD_PATIENT_HOSPITALIZATION_RECORD,
+  ADD_PATIENT_LAB_TEST_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addPatientMedicalRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalRecord';
+import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/addPatientLabTestRecord';
 import { addPatientHealthCheckRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHealthCheckRecord';
 import { addPatientHospitalizationRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHospitalizationRecord';
 import {
   AddMedicalRecordParametersInput,
+  LabTestParameters,
   MedicalTestUnit,
   mediaPrescriptionSource,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -157,6 +160,14 @@ const MedicalRecordInitialValues: AddMedicalRecordParametersInput = {
   maximum: 0,
 };
 
+const TestRecordInitialValues: LabTestParameters = {
+  parameterName: '',
+  unit: '',
+  result: 0,
+  minimum: 0,
+  maximum: 0,
+};
+
 export interface AddRecordProps extends NavigationScreenProps {}
 
 export const AddRecord: React.FC<AddRecordProps> = (props) => {
@@ -178,6 +189,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [medicalRecordParameters, setmedicalRecordParameters] = useState<
     AddMedicalRecordParametersInput[]
   >([MedicalRecordInitialValues]);
+  const [testRecordParameters, setTestRecordParameters] = useState<LabTestParameters[]>([
+    TestRecordInitialValues,
+  ]);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
 
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
@@ -222,6 +236,28 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     }
   };
 
+  const isTestRecordParameterFilled = () => {
+    const testRecordsVaild = testRecordParameters
+      .map((item) => {
+        return item !== TestRecordInitialValues
+          ? {
+              ...item,
+              result: parseFloat(((item && item.result) || 0).toString()),
+              maximum: parseFloat(((item && item.maximum) || 0).toString()),
+              minimum: parseFloat(((item && item.minimum) || 0).toString()),
+            }
+          : undefined;
+      })
+      .filter((item) => item !== undefined) as LabTestParameters[];
+
+    if (testRecordsVaild.length > 0) {
+      setTestRecordParameters(testRecordsVaild);
+      return testRecordsVaild;
+    } else {
+      return [];
+    }
+  };
+
   const isValid = () => {
     const validRecordDetails1 = typeofRecord && testName && dateOfTest ? true : false;
     const validRecordDetails2 = typeofRecord && locationName && dateOfTest ? true : false;
@@ -232,17 +268,30 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const validRecordDetails4 =
       typeofRecord && testName && dateOfTest && locationName ? true : false;
 
-    const valid = isRecordParameterFilled().map((item) => {
-      return {
-        maxmin: (item.maximum || item.minimum) && item.maximum! > item.minimum!,
-        changed: true,
-        notinitial:
-          item.parameterName === '' &&
-          item.result === 0 &&
-          item.maximum === 0 &&
-          item.minimum === 0,
-      };
-    });
+    const valid =
+      typeofRecord === MedicRecordType.PRESCRIPTION
+        ? isRecordParameterFilled().map((item) => {
+            return {
+              maxmin: (item.maximum || item.minimum) && item.maximum! > item.minimum!,
+              changed: true,
+              notinitial:
+                item.parameterName === '' &&
+                item.result === 0 &&
+                item.maximum === 0 &&
+                item.minimum === 0,
+            };
+          })
+        : isTestRecordParameterFilled().map((item) => {
+            return {
+              maxmin: (item.maximum || item.minimum) && item.maximum! > item.minimum!,
+              changed: true,
+              notinitial:
+                item.parameterName === '' &&
+                item.result === 0 &&
+                item.maximum === 0 &&
+                item.minimum === 0,
+            };
+          });
 
     let message = typeofRecord
       ? testName || docName || locationName
@@ -303,6 +352,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       [key]: isNumber ? formatNumber(value) : value,
     };
     setmedicalRecordParameters(dataCopy);
+  };
+
+  const setTestParametersData = (key: string, value: string, i: number, isNumber?: boolean) => {
+    const dataCopy = [...testRecordParameters];
+    dataCopy[i] = {
+      ...dataCopy[i],
+      [key]: isNumber ? formatNumber(value) : value,
+    };
+    setTestRecordParameters(dataCopy);
   };
 
   const formatNumber = (value: string) => {
@@ -371,6 +429,60 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       })
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_MEDICAL_RECORD', e);
+        setshowSpinner(false);
+        console.log(JSON.stringify(e), 'eeeee');
+        Alert.alert('Alert', 'Please fill all the details', [
+          { text: 'OK', onPress: () => console.log('OK Pressed') },
+        ]);
+      });
+  };
+
+  const addPatientLabTestRecords = () => {
+    const inputData =
+      Images.length > 0
+        ? {
+            patientId: currentPatient ? currentPatient.id : '',
+            labTestName: testName,
+            labTestDate:
+              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+            recordType: typeofRecord,
+            referringDoctor: referringDoctor,
+            observations: observations,
+            additionalNotes: additionalNotes,
+            labTestResults: showReportDetails ? isTestRecordParameterFilled() : [],
+            testResultFiles: {
+              fileName: Images[0].title + '.' + Images[0].fileType,
+              mimeType: mimeType(Images[0].title + '.' + Images[0].fileType),
+              content: Images[0].base64,
+            },
+          }
+        : {
+            patientId: currentPatient ? currentPatient.id : '',
+            labTestName: testName,
+            labTestDate:
+              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+            recordType: typeofRecord,
+            referringDoctor: referringDoctor,
+            observations: observations,
+            additionalNotes: additionalNotes,
+            labTestResults: showReportDetails ? isTestRecordParameterFilled() : [],
+          };
+    client
+      .mutate<addPatientLabTestRecord>({
+        mutation: ADD_PATIENT_LAB_TEST_RECORD,
+        variables: {
+          AddLabTestRecordInput: inputData,
+        },
+      })
+      .then(({ data }) => {
+        setshowSpinner(false);
+        const status = g(data, 'addPatientLabTestRecord', 'status');
+        if (status) {
+          props.navigation.goBack();
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('AddRecord_ADD_PATIENT_LAB_TEST_RECORD', e);
         setshowSpinner(false);
         console.log(JSON.stringify(e), 'eeeee');
         Alert.alert('Alert', 'Please fill all the details', [
@@ -477,11 +589,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const valid = isValid();
     if (valid.isvalid && !valid.isValidParameter) {
       setshowSpinner(true);
-      if (
-        typeofRecord === MedicRecordType.TEST_REPORT ||
-        typeofRecord === MedicRecordType.PRESCRIPTION
-      ) {
+      if (typeofRecord === MedicRecordType.PRESCRIPTION) {
         addMedicalRecord();
+      } else if (typeofRecord === MedicRecordType.TEST_REPORT) {
+        addPatientLabTestRecords();
       } else if (typeofRecord === MedicRecordType.HEALTHCHECK) {
         addPatientHealthCheckRecords();
       } else {
@@ -829,6 +940,159 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const renderTestReportDetails = () => {
+    return (
+      <View>
+        <CollapseCard
+          heading="REPORT DETAILS (Optional)"
+          collapse={showReportDetails}
+          onPress={() => setshowReportDetails(!showReportDetails)}
+        >
+          <View
+            style={[
+              {
+                ...theme.viewStyles.cardContainer,
+                marginTop: 15,
+                paddingHorizontal: 20,
+                paddingTop: 16,
+                paddingBottom: 20,
+              },
+            ]}
+          >
+            <View>
+              <View style={styles.labelViewStyle}>
+                <Text style={styles.labelStyle}>Parameters</Text>
+              </View>
+              {testRecordParameters.map((item, i) => (
+                <View
+                  key={i}
+                  style={{
+                    marginTop: 16,
+                    ...theme.viewStyles.cardViewStyle,
+                    shadowRadius: 4,
+                    paddingHorizontal: 16,
+                    paddingTop: 6,
+                    paddingBottom: 5,
+                  }}
+                >
+                  <TextInputComponent
+                    label={'Name of Parameter'}
+                    placeholder={'Enter name'}
+                    value={item.parameterName || ''}
+                    onChangeText={(value) => {
+                      if (isValidText(value)) {
+                        setTestParametersData('parameterName', value, i);
+                      }
+                    }}
+                  />
+                  <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <TextInputComponent
+                        label={'Result'}
+                        placeholder={'Enter value'}
+                        value={(item.result || '').toString()}
+                        onChangeText={(value) => setTestParametersData('result', value, i, true)}
+                        keyboardType={'numbers-and-punctuation'}
+                      />
+                    </View>
+                    <View style={{ flex: 1, marginLeft: 8 }}>
+                      <TextInputComponent
+                        label={'Unit'}
+                        placeholder={'Enter unit'}
+                        value={(item.unit || '').toString()}
+                        onChangeText={(value) => {
+                          if (/^([a-zA-Z0-9 %]+[ ]{0,1}[a-zA-Z0-9\-.\\/%?,&]*)*$/.test(value)) {
+                            setTestParametersData('unit', value, i);
+                          }
+                        }}
+                      />
+                    </View>
+                  </View>
+                  <View style={{ flexDirection: 'row' }}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <TextInputComponent
+                        label={'Min'}
+                        placeholder={'Enter value'}
+                        value={(item.minimum || '').toString()}
+                        onChangeText={(value) => setTestParametersData('minimum', value, i, true)}
+                        keyboardType={'numbers-and-punctuation'}
+                      />
+                    </View>
+                    <View style={{ flex: 1, marginLeft: 8 }}>
+                      <TextInputComponent
+                        label={'Max'}
+                        placeholder={'Enter value'}
+                        value={(item.maximum || '').toString()}
+                        onChangeText={(value) => setTestParametersData('maximum', value, i, true)}
+                        keyboardType={'numbers-and-punctuation'}
+                      />
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+            <Text
+              style={{ ...theme.viewStyles.yellowTextStyle, textAlign: 'right', paddingTop: 16 }}
+              onPress={() => {
+                const dataCopy = [...testRecordParameters];
+                dataCopy.push(TestRecordInitialValues);
+                setTestRecordParameters(dataCopy);
+              }}
+            >
+              ADD PARAMETER
+            </Text>
+            <View>
+              <View style={styles.labelViewStyle}>
+                <Text style={[styles.labelStyle, { paddingTop: 20 }]}>Observation Details</Text>
+              </View>
+              <View
+                style={{
+                  marginTop: 16,
+                  ...theme.viewStyles.cardViewStyle,
+                  shadowRadius: 4,
+                  paddingHorizontal: 16,
+                  paddingTop: 6,
+                  paddingBottom: 5,
+                }}
+              >
+                <TextInputComponent
+                  label={'Referring Doctor'}
+                  placeholder={'Enter name'}
+                  value={referringDoctor}
+                  onChangeText={(referringDoctor) => {
+                    if (isValidText(referringDoctor)) {
+                      setreferringDoctor(referringDoctor);
+                    }
+                  }}
+                />
+                <TextInputComponent
+                  label={'Observations / Impressions'}
+                  placeholder={'Enter observations'}
+                  value={observations}
+                  onChangeText={(observations) => {
+                    if (isValidText(observations)) {
+                      setobservations(observations);
+                    }
+                  }}
+                />
+                <TextInputComponent
+                  label={'Additional Notes'}
+                  placeholder={'Enter notes'}
+                  value={additionalNotes}
+                  onChangeText={(additionalNotes) => {
+                    if (isValidText(additionalNotes)) {
+                      setadditionalNotes(additionalNotes);
+                    }
+                  }}
+                />
+              </View>
+            </View>
+          </View>
+        </CollapseCard>
+      </View>
+    );
+  };
+
   const renderReportDetails = () => {
     return (
       <View>
@@ -1016,10 +1280,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       >
         {renderUploadedImages()}
         {renderRecordDetails()}
-        {typeofRecord === MedicRecordType.TEST_REPORT ||
-        typeofRecord === MedicRecordType.PRESCRIPTION
-          ? renderReportDetails()
-          : null}
+        {typeofRecord === MedicRecordType.TEST_REPORT ? renderTestReportDetails() : null}
+        {typeofRecord === MedicRecordType.PRESCRIPTION ? renderReportDetails() : null}
       </View>
     );
   };
