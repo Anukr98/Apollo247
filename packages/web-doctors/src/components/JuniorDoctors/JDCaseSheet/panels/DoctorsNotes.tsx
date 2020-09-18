@@ -1,4 +1,4 @@
-+import React, { useContext } from 'react';
+import React, { useContext } from 'react';
 import { Typography, makeStyles } from '@material-ui/core';
 import { AphTextField } from '@aph/web-ui-components';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
