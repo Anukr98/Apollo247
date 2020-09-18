@@ -39,8 +39,7 @@ const { height, width } = Dimensions.get('window');
 const styles = ChatRoomStyles;
 
 export interface ChatRoomProps extends NavigationScreenProps {
-  setChatReceived: Dispatch<SetStateAction<boolean>>;
-  messages: never[];
+  messages: any[];
   send: (messageText: any) => void;
   flatListRef: React.MutableRefObject<FlatList<never> | null | undefined>;
   setShowPDF: Dispatch<SetStateAction<boolean>>;

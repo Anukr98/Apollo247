@@ -211,7 +211,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   ];
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [overlayDisplay, setOverlayDisplay] = useState<React.ReactNode>(null);
-  const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
   const {
     showAphAlert,
@@ -243,7 +242,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   );
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const [messageText, setMessageText] = useState<string>('');
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [displayReSchedulePopUp, setDisplayReSchedulePopUp] = useState<boolean>(false);
 
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
@@ -254,9 +253,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     props.navigation.getParam('caseSheetEnableEdit') || false
   );
   const [showEditPreviewButtons, setShowEditPreviewButtons] = useState<boolean>(false);
-  const [chatFiles, setChatFiles] = useState<
-    { prismId: string | null; url: string; fileType: 'image' | 'pdf' }[]
-  >([]);
+  const [chatFiles, setChatFiles] = useState<any[]>([]);
   const [symptonsData, setSymptonsData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null
   >([]);
@@ -1555,6 +1552,72 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     if (nextAppState === 'inactive' || nextAppState === 'background') {
     }
   };
+
+  const checkFiles = (checkUrl?: string, callBack?: (newUrl?: string) => void) => {
+    let tempFiles = chatFiles.filter((item) => item);
+    const tempMessage: any[] = messages.filter((item) => item);
+    const expiredFiles = tempFiles.filter(
+      (item) =>
+        item.prismId && moment(new Date()).diff(moment(item.urlTimeToken / 10000), 'minutes') > 10
+    );
+    const foundUrlIndex = tempFiles.findIndex((item) => item.url === checkUrl);
+    // let newUrl = checkUrl;
+    let newUrl =
+      'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/ff059fc9-dc9c-471c-af19-8d829412d937_1598597825686.pdf';
+    if (expiredFiles.length > 0) {
+      getPrismUrls(
+        client,
+        patientId,
+        expiredFiles.map((item) => item.prismId).filter((item) => item)
+      )
+        .then(({ urls }) => {
+          if (urls) {
+            tempFiles = tempFiles.map((item, index) => {
+              const urlExistsIndex = urls.findIndex(
+                (fileLink) => fileLink.indexOf('recordId=' + item.prismId) > -1
+              );
+              if (urlExistsIndex > -1 && item.prismId) {
+                const messageIndex = tempMessage.findIndex(
+                  (messageData) => g(messageData, 'prismId') === item.prismId
+                );
+                if (messageIndex > -1) {
+                  tempMessage[messageIndex] = {
+                    ...tempMessage[messageIndex],
+                    url: urls[urlExistsIndex] || item.url,
+                  };
+                }
+                if (foundUrlIndex === index) {
+                  // newUrl = urls[urlExistsIndex] || item.url;
+                }
+                return {
+                  ...item,
+                  url: urls[urlExistsIndex] || item.url,
+                  urlTimeToken: moment(new Date()).valueOf() * 10000,
+                };
+              } else {
+                return item;
+              }
+            });
+          }
+          callBack && callBack(newUrl);
+          setMessages(tempMessage);
+          setChatFiles(tempFiles);
+          AsyncStorage.setItem('chatFileData', JSON.stringify(tempFiles));
+        })
+        .catch((error) => {
+          callBack && callBack(newUrl);
+        });
+    } else {
+      callBack && callBack(newUrl);
+    }
+  };
+
+  useEffect(() => {
+    if (chatFiles.length > 0) {
+      checkFiles();
+    }
+  }, [chatFiles]);
+
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
@@ -1619,9 +1682,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               callOptions.setIsAudio(true);
               break;
             case 'Audio call ended':
-              audioVideoMethod();
-              setGiveRating(true);
-              break;
             case 'Video call ended':
               audioVideoMethod();
               setGiveRating(true);
@@ -1643,9 +1703,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               callOptions.setCallAccepted(false);
               errorPopup('Patient has rejected the call.', theme.colors.APP_YELLOW, 10);
               break;
+            case messageCodes.imageconsult:
             case messageCodes.exotelCall:
-              addMessages(message);
-              break;
             case messageCodes.startConsultMsg:
               addMessages(message);
               break;
@@ -1690,16 +1749,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           }, 500);
         }
         try {
-          if (message.fileType && message.id === patientId) {
+          if (messageText === messageCodes.imageconsult) {
             const asyncDisplay = async () => {
               const chatFileData = await AsyncStorage.getItem('chatFileData');
               const chatFilesRetrived = JSON.parse(chatFileData || '[]');
-
-              chatFilesRetrived.push({
-                prismId: message.prismId,
-                url: message.url,
-                fileType: message.fileType,
-              });
+              chatFilesRetrived.push({ ...message, urlTimeToken: message.timetoken });
               AsyncStorage.setItem('chatFileData', JSON.stringify(chatFilesRetrived));
               setChatFiles(chatFilesRetrived);
             };
@@ -1777,9 +1831,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     const addMessages = (message: Pubnub.MessageEvent) => {
       insertText[insertText.length] = message;
       setMessages(() => [...(insertText as [])]);
-      if (!callOptions.isVideo || !callOptions.isAudio) {
-        setChatReceived(true);
-      }
       setTimeout(() => {
         flatListRef.current && flatListRef.current.scrollToEnd();
       }, 200);
@@ -1809,19 +1860,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           const end: any = res.endTimeToken ? res.endTimeToken : 1;
           res &&
             res.messages.forEach((element, index) => {
-              const item = { ...element.entry, timetoken: element.timetoken };
-              if (item.prismId) {
-                getPrismUrls(client, patientId, item.prismId)
-                  .then((data) => {
-                    if (data && data.urls) {
-                      item.url = data.urls[0] || item.url;
-                    }
-                  })
-                  .catch((e) => {
-                    CommonBugFender('ChatRoom_getPrismUrls', e);
-                  });
-              }
-              newmessage[newmessage.length] = item;
+              newmessage[newmessage.length] = { ...element.entry, timetoken: element.timetoken };
             });
           if (messages.length !== newmessage.length) {
             if (res.messages.length == 100) {
@@ -1830,23 +1869,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             }
             insertText = newmessage;
             setMessages(newmessage as []);
-            const files: { prismId: string | null; url: string; fileType: 'image' | 'pdf' }[] = [];
-
-            newmessage.forEach((element, index) => {
-              if (element.id === patientId && element.message === messageCodes.imageconsult) {
-                files.push({
-                  prismId: element.prismId,
-                  url: element.url,
-                  fileType: element.fileType,
-                });
+            const files: any[] = [];
+            newmessage.forEach((messageItem, index) => {
+              if (messageItem.message === messageCodes.imageconsult) {
+                files.push({ ...messageItem, urlTimeToken: messageItem.timetoken });
               }
             });
+            console.log(JSON.stringify(newmessage), 'sdnjkdsjkn', JSON.stringify(files));
+
             setChatFiles(files);
             AsyncStorage.setItem('chatFileData', JSON.stringify(files));
-            if (!callOptions.isVideo || !callOptions.isAudio) {
-              console.log('chat icon', chatReceived);
-              setChatReceived(true);
-            }
           }
         } catch (error) {
           console.log('chat error', error);
@@ -2325,7 +2357,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   messageText={messageText}
                   setMessageText={setMessageText}
                   patientId={patientId}
-                  setChatReceived={setChatReceived}
                   navigation={props.navigation}
                   messages={messages}
                   send={send}
@@ -3144,6 +3175,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                       fileType: 'image',
                       url: g(data, 'data', 'uploadChatDocument', 'filePath') || '',
                       messageDate: new Date(),
+                      sentBy: REQUEST_ROLES.DOCTOR,
                     };
                     pubnub.publish(
                       {
@@ -3179,9 +3211,27 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   useEffect(() => {
     if (patientImageshow) {
-      setOverlayDisplay(<ImageZoom source={{ uri: url }} zoom pan onClose={() => closeviews()} />);
+      setShowLoading(true);
+      if (url) {
+        checkFiles(url, (newUrl) => {
+          setShowLoading(false);
+          setOverlayDisplay(
+            <ImageZoom source={{ uri: newUrl }} zoom pan onClose={() => closeviews()} />
+          );
+        });
+      }
     }
   }, [patientImageshow, url]);
+
+  useEffect(() => {
+    if (showPDF) {
+      if (url) {
+        checkFiles(url, (newUrl) => {
+          setUrl(newUrl || '');
+        });
+      }
+    }
+  }, [showPDF]);
 
   const showRateCallModal = () => {
     return (

@@ -264,11 +264,7 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setDisplayId: React.Dispatch<React.SetStateAction<string>>;
   prescriptionPdf: string;
   setPrescriptionPdf: React.Dispatch<React.SetStateAction<string>>;
-  chatFiles?: {
-    prismId: string | null;
-    url: string;
-    fileType: 'image' | 'pdf';
-  }[];
+  chatFiles?: any[];
   setShowPDF: Dispatch<SetStateAction<boolean>>;
   setPatientImageshow: Dispatch<SetStateAction<boolean>>;
   setUrl: Dispatch<SetStateAction<string>>;
@@ -2018,7 +2014,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           )}
                         >
                           {moment(i.sdConsultationDate || i.appointmentDateTime).format(
-                            'D MMM YYYY, HH:MM A'
+                            'D MMM YYYY, hh:MM A'
                           )}
                         </Text>
                         <View style={{ flexDirection: 'row' }}>
@@ -2076,62 +2072,31 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const [records, setRecords] = useState<(string | null)[]>([]);
 
   useEffect(() => {
+    console.log(JSON.stringify(chatFiles), 'thissichatfile');
+
     const images =
       (healthWalletArrayData && healthWalletArrayData.map((i) => i && i.imageUrls)) || [];
     const record =
       (healthWalletArrayData && healthWalletArrayData.map((i) => i && i.reportUrls)) || [];
-
     if (chatFiles) {
-      const prismImageIds: string[] = chatFiles
-        .map((i) => (i.fileType === 'image' ? i.prismId || '' : ''))
-        .filter((i) => i !== '');
-      const prismPdfIds: string[] = chatFiles
-        .map((i) => (i.fileType === 'pdf' ? i.prismId || '' : ''))
-        .filter((i) => i !== '');
       const onlyImageUrl: string[] = chatFiles
-        .filter((i) => (i.fileType === 'image' && i.prismId === null) || i.prismId === '')
+        .filter(
+          (i) =>
+            i.fileType === 'image' &&
+            i.id === (g(patientDetails, 'id') || g(caseSheet, 'patientDetails', 'id'))
+        )
         .map((i) => i.url);
       const onlyPdfUrl: string[] = chatFiles
-        .filter((i) => (i.fileType === 'pdf' && i.prismId === null) || i.prismId === '')
+        .filter(
+          (i) =>
+            i.fileType === 'pdf' &&
+            i.id === (g(patientDetails, 'id') || g(caseSheet, 'patientDetails', 'id'))
+        )
         .map((i) => i.url);
       images.push(...onlyImageUrl);
       record.push(...onlyPdfUrl);
-      if (prismImageIds.length > 0) {
-        getPrismUrls(
-          client,
-          (patientDetails && patientDetails.id) || (doctorDetails && doctorDetails.id) || '',
-          prismImageIds
-        )
-          .then((data) => {
-            if (data && data.urls) {
-              images.push(...data.urls);
-            }
-            setPatientImages(images);
-          })
-          .catch((e) => {
-            setPatientImages(images);
-          });
-      } else {
-        setPatientImages(images);
-      }
-      if (prismPdfIds.length > 0) {
-        getPrismUrls(
-          client,
-          (patientDetails && patientDetails.id) || (doctorDetails && doctorDetails.id) || '',
-          prismPdfIds
-        )
-          .then((data) => {
-            if (data && data.urls) {
-              record.push(...data.urls);
-            }
-            setRecords(record);
-          })
-          .catch((e) => {
-            setRecords(record);
-          });
-      } else {
-        setRecords(record);
-      }
+      setPatientImages(images);
+      setRecords(record);
     } else {
       setPatientImages(images);
       setRecords(record);
