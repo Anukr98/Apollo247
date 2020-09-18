@@ -430,28 +430,6 @@ export const CaseSheet: React.FC = () => {
           </ExpansionPanelDetails>
         </ExpansionPanel>
       ))}
-
-      {/* <Divider className={classes.divider} />
-      <div className={classes.notesBox}>
-        <Typography component="h4" variant="h4" className={classes.notesHeader}>
-          Notes (This is for Senior Doctor view only)
-        </Typography>
-        <AphTextField
-          fullWidth
-          placeholder="What you enter here won't be shown to the patient.."
-          defaultValue={getNotesDefaultValue()}
-          disabled={!caseSheetEdit}
-          onBlur={(e) => {
-            const storageItem = getLocalStorageItem(params.appointmentId);
-            if (storageItem) {
-              storageItem.notes = e.target.value;
-              updateLocalStorageItem(params.appointmentId, storageItem);
-            }
-            setCasesheetNotes(e.target.value);
-          }}
-          multiline
-        />
-      </div> */}
     </div>
   );
 };
