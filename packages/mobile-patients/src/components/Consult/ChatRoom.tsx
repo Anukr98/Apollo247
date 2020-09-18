@@ -437,7 +437,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
-  const { setDoctorJoinedChat, doctorJoinedChat } = useAppCommonData(); //setting in context since we are updating this in NotificationListener
+  const { setDoctorJoinedChat, doctorJoinedChat, locationDetails } = useAppCommonData(); //setting in context since we are updating this in NotificationListener
   const [name, setname] = useState<string>('');
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
@@ -634,6 +634,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       (eventAttributes as WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION])[
         'Download Screen'
       ] = 'Chat';
+    }
+
+    if (type == WebEngageEventName.PRESCRIPTION_RECEIVED) {
+      const location = locationDetails?.city || '';
+
+      (eventAttributes as WebEngageEvents[WebEngageEventName.PRESCRIPTION_RECEIVED])[
+        'City'
+      ] = location;
     }
     postWebEngageEvent(type, eventAttributes);
   };
