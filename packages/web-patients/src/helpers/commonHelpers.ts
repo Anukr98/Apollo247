@@ -8,8 +8,7 @@ import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
 import fetchUtil from 'helpers/fetch';
-import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentDetails } from 'graphql/types/GetPatientAllAppointments';
-
+import { getAppStoreLink } from 'helpers/dateHelpers';
 declare global {
   interface Window {
     opera: any;
@@ -476,7 +475,18 @@ const HEALTH_RECORDS_NOTE =
   'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
 const stripHtml = (originalString: any) => originalString.replace(/(<([^>]+)>)/gi, '');
 
+const deepLinkUtil = (deepLinkPattern: string) => {
+  if (getDeviceType() !== DEVICETYPE.DESKTOP && !sessionStorage.getItem('deepLinkAccessed')) {
+    window.location.href = `apollopatients://${deepLinkPattern}`;
+    setTimeout(() => {
+      window.location.href = getAppStoreLink();
+    }, 1000);
+    sessionStorage.setItem('deepLinkAccessed', '1');
+  }
+};
+
 export {
+  deepLinkUtil,
   HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,
   getCouponByUserMobileNumber,

@@ -7,7 +7,7 @@ import {
   GetAllSpecialties_getAllSpecialties as SpecialtyType,
 } from 'graphql/types/GetAllSpecialties';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { getSymptoms, readableParam } from 'helpers/commonHelpers';
+import { getSymptoms, readableParam, deepLinkUtil } from 'helpers/commonHelpers';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import _lowerCase from 'lodash/lowerCase';
 import { useQuery } from 'react-apollo-hooks';
@@ -133,6 +133,10 @@ export const Specialties: React.FC<SpecialtiesProps> = (props) => {
       itemListElement,
     });
   };
+
+  useEffect(() => {
+    deepLinkUtil(`DoctorSearch`);
+  }, []);
 
   useEffect(() => {
     localStorage.removeItem('symptomTracker');
