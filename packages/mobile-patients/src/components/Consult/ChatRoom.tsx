@@ -2209,10 +2209,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const stopCallingNoticationApi =
       (await AsyncStorage.getItem(notify_async_key + appointmentData.id)) || '';
     if (stopCallingNoticationApi != appointmentData.id + appointmentData.appointmentDateTime) {
-      console.log('if notify_async_key + appointmentData.id', stopCallingNoticationApi);
       notificationIntervalId = BackgroundTimer.setInterval(() => {
         const diffMin = moment(appointmentData.appointmentDateTime).diff(moment(), 'minutes', true);
-        console.log('useEffect diffMin', diffMin);
         if (!doctorJoined && diffMin <= 0) {
           BackgroundTimer.clearInterval(notificationIntervalId);
           notificationTimerId = BackgroundTimer.setTimeout(() => {
@@ -2226,7 +2224,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 },
               })
               .then((data) => {
-                console.log('sendPatientWaitNotification data', data);
                 setLoading(false);
                 const notifi_status = g(data.data!, 'sendPatientWaitNotification', 'status');
                 if (notifi_status) {
@@ -2235,7 +2232,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     appointmentData.id + appointmentData.appointmentDateTime
                   );
                   BackgroundTimer.clearTimeout(notificationTimerId);
-                  // setCallPatientWaitNotificationApi(false);
                 }
               })
               .catch((e) => {
@@ -2249,8 +2245,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }, 180000);
         }
       }, 1000);
-    } else {
-      console.log('else notify_async_key + appointmentData.id', stopCallingNoticationApi);
     }
   };
 
