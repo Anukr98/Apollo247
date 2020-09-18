@@ -9,7 +9,7 @@ import { PATIENT_ADDRESS_TYPE } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
-import axios, { AxiosError, AxiosPromise, AxiosResponse } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';

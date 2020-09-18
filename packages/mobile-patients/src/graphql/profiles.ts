@@ -1,8 +1,18 @@
 import gql from 'graphql-tag';
 
 export const GET_CURRENT_PATIENTS = gql`
-  query GetCurrentPatients($appVersion: String, $deviceType: DEVICE_TYPE) {
-    getCurrentPatients(appVersion: $appVersion, deviceType: $deviceType) {
+  query GetCurrentPatients(
+    $appVersion: String
+    $deviceType: DEVICE_TYPE
+    $deviceToken: String
+    $deviceOS: String
+  ) {
+    getCurrentPatients(
+      appVersion: $appVersion
+      deviceType: $deviceType
+      deviceToken: $deviceToken
+      deviceOS: $deviceOS
+    ) {
       patients {
         id
         uhid
@@ -731,6 +741,14 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       registrationNumber
       onlineConsultationFees
       physicalConsultationFees
+      doctorSecretary {
+        secretary {
+          id
+          name
+          mobileNumber
+          isActive
+        }
+      }
       doctorHospital {
         facility {
           id
@@ -1303,16 +1321,29 @@ export const GET_LATEST_MEDICINE_ORDER = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_IT_DOSE_SLOTS = gql`
-  query GetDiagnosticItDoseSlots($patientId: String, $selectedDate: Date, $zipCode: Int) {
-    getDiagnosticItDoseSlots(
+export const GET_DIAGNOSTIC_SLOTS = gql`
+  query getDiagnosticSlots(
+    $patientId: String
+    $hubCode: String
+    $selectedDate: Date
+    $zipCode: Int
+  ) {
+    getDiagnosticSlots(
       patientId: $patientId
+      hubCode: $hubCode
       selectedDate: $selectedDate
       zipCode: $zipCode
     ) {
-      slotInfo {
-        TimeslotID
-        Timeslot
+      diagnosticBranchCode
+      diagnosticSlot {
+        employeeCode
+        employeeName
+        slotInfo {
+          endTime
+          status
+          startTime
+          slot
+        }
       }
     }
   }
@@ -2563,17 +2594,6 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
   }
 `;
 
-export const SAVE_ITDOSE_HOME_COLLECTION_DIAGNOSTIC_ORDER = gql`
-  mutation SaveItdoseHomeCollectionDiagnosticOrder($diagnosticOrderInput: DiagnosticOrderInput) {
-    SaveItdoseHomeCollectionDiagnosticOrder(diagnosticOrderInput: $diagnosticOrderInput) {
-      errorCode
-      errorMessage
-      orderId
-      displayId
-    }
-  }
-`;
-
 export const UPLOAD_DOCUMENT = gql`
   mutation uploadDocument($UploadDocumentInput: UploadDocumentInput) {
     uploadDocument(uploadDocumentInput: $UploadDocumentInput) {
@@ -2996,6 +3016,17 @@ export const SAVE_VOIP_DEVICE_TOKEN = gql`
       response
       patientId
       voipToken
+    }
+  }
+`;
+
+export const GET_SECRETARY_DETAILS_BY_DOCTOR_ID = gql`
+  query getSecretaryDetailsByDoctorId($doctorId: String!) {
+    getSecretaryDetailsByDoctorId(doctorId: $doctorId) {
+      id
+      name
+      mobileNumber
+      isActive
     }
   }
 `;

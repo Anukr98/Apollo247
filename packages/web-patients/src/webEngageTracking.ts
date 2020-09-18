@@ -421,6 +421,11 @@ export const consultationBookTracking = (data: any) => {
       patientGender,
       specialisation,
       relation,
+      patientName,
+      secretaryName,
+      doctorNumber,
+      patientNumber,
+      secretaryNumber,
     } = data;
     try {
       window.webengage.track('Consultation booked - web', {
@@ -436,6 +441,11 @@ export const consultationBookTracking = (data: any) => {
         'Patient Gender': patientGender,
         specialisation: specialisation,
         Relation: relation,
+        'Patient Name': patientName,
+        'Secretary Name': secretaryName,
+        'Doctor Mobile number': doctorNumber,
+        'Patient mobile number': patientNumber,
+        'Secretary Mobile Number': secretaryNumber,
       });
     } catch (err) {
       console.log('WebEngage Err: ', err);
@@ -907,6 +917,81 @@ export const prescriptionReceivedTracking = (data: any) => {
         'Prescription patient received successfully (web)',
         consultWebengageEventsCommonInfo(data)
       );
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const messageSentPostConsultTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const {
+      doctorName,
+      patientName,
+      secretaryName,
+      doctorNumber,
+      patientNumber,
+      secretaryNumber,
+    } = data;
+    try {
+      window.webengage.track('Patient sent chat message post consult (web)', {
+        'Doctor Name': doctorName,
+        'Patient Name': patientName,
+        'Secretary Name': secretaryName,
+        'Doctor Mobile number': doctorNumber,
+        'Patient mobile number': patientNumber,
+        'Secretary Mobile Number': secretaryNumber,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const cancellationPatientTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const {
+      doctorName,
+      patientName,
+      secretaryName,
+      doctorNumber,
+      patientNumber,
+      secretaryNumber,
+    } = data;
+    try {
+      window.webengage.track('Cancellation by patient (web)', {
+        'Doctor Name': doctorName,
+        'Patient Name': patientName,
+        'Secretary Name': secretaryName,
+        'Doctor Mobile number': doctorNumber,
+        'Patient mobile number': patientNumber,
+        'Secretary Mobile Number': secretaryNumber,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const reschedulePatientTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const {
+      doctorName,
+      patientName,
+      secretaryName,
+      doctorNumber,
+      patientNumber,
+      secretaryNumber,
+    } = data;
+    try {
+      window.webengage.track('Reschedule by the patient (web)', {
+        'Doctor Name': doctorName,
+        'Patient Name': patientName,
+        'Secretary Name': secretaryName,
+        'Doctor Mobile number': doctorNumber,
+        'Patient mobile number': patientNumber,
+        'Secretary Mobile Number': secretaryNumber,
+      });
     } catch (err) {
       console.log('WebEngage Err: ', err);
     }

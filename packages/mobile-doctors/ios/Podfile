@@ -6,7 +6,7 @@ target 'ApolloDoctor' do
 # use_frameworks!
 
 # Pods for ApolloPatient
-
+ pod 'WebEngage'
  pod 'FirebaseCore'
  pod 'FirebaseMessaging'
  pod 'GoogleIDFASupport', '~> 3.14.0'
@@ -79,5 +79,8 @@ target 'ApolloDoctor' do
   pod 'RCTSystemSetting', :path => '../node_modules/react-native-system-setting'
 
   pod 'ReactNativeIncallManager', :path => '../node_modules/react-native-incall-manager'
+
+  pod 'react-native-webengage', :path => '../node_modules/react-native-webengage'
+  pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
 
 end

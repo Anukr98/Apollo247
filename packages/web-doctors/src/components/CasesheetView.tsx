@@ -1027,12 +1027,12 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
             </div>
           </div>
         </div>
+        {isPageContentFull() &&
+        ((followUp.length > 0 && followUp[0]) ||
+          (otherInstructions && otherInstructions.length > 0)) ? (
+          <CaseSheetLastView getFollowUpData={getFollowUpData} />
+        ) : null}
       </div>
-      {isPageContentFull() &&
-      ((followUp.length > 0 && followUp[0]) ||
-        (otherInstructions && otherInstructions.length > 0)) ? (
-        <CaseSheetLastView getFollowUpData={getFollowUpData} />
-      ) : null}
     </div>
   );
 };

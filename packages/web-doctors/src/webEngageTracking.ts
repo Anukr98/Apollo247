@@ -48,6 +48,7 @@ export const webengageUserLogoutTracking = () => {
 export const webEngageEventTracking = (informationTrackData: any, webengageEventName: string) => {
   if (typeof window !== 'undefined') {
     try {
+      console.log(informationTrackData && informationTrackData !== null ? informationTrackData : 'nodata', webengageEventName);
       informationTrackData && informationTrackData !== null ? window.webengage.track(webengageEventName, informationTrackData) : window.webengage.track(webengageEventName);
     } catch (err) {
       console.log('WebEngage Err: ', err);

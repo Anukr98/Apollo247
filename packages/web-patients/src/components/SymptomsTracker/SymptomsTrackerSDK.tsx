@@ -377,7 +377,7 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
   );
 };
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
-export const SymptomsTrackerSDK: React.FC = () => {
+const SymptomsTrackerSDK: React.FC = () => {
   const classes = useStyles({});
   const { isSignedIn, isSigningIn } = useAuth();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
@@ -687,7 +687,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
           </Popover>
         </div>
       }
-      {!isSignedIn && !isSigningIn  && (
+      {!isSignedIn && !isSigningIn && (
         <Popover
           open={loggedOutUserDetailPopover}
           anchorEl={anchorEl}
@@ -727,3 +727,5 @@ export const SymptomsTrackerSDK: React.FC = () => {
     </div>
   );
 };
+
+export default SymptomsTrackerSDK;

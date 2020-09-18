@@ -26,25 +26,8 @@ import { log } from 'customWinstonLogger';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
-
 import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
 import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
-
-export type ONE_APOLLO_USER_REG = {
-  FirstName: string;
-  LastName: string;
-  MobileNumber: string;
-  Gender: Gender;
-  BusinessUnit: string;
-  StoreCode: string;
-  CustomerId: string;
-};
-
-export enum ONE_APOLLO_PRODUCT_CATEGORY {
-  PRIVATE_LABEL = 'A247',
-  NON_PHARMA = 'F247',
-  PHARMA = 'P247',
-}
 
 export interface PaginateParams {
   take?: number;
@@ -213,6 +196,7 @@ export enum DiscountType {
   PRICEOFF = 'PRICEOFF',
 }
 
+/* to be deprecated soon - Free text string is used as unit input from user >= release 5.0.0 */
 export enum MedicalTestUnit {
   GM = 'GM',
   _PERCENT_ = '_PERCENT_',
@@ -1707,7 +1691,7 @@ export class MedicalRecordParameters extends BaseEntity {
   result: number;
 
   @Column()
-  unit: MedicalTestUnit;
+  unit: string;
 
   @Column({ type: 'timestamp', nullable: true })
   updatedDate: Date;

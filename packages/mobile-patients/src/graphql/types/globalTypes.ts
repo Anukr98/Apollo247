@@ -279,6 +279,8 @@ export enum MEDICINE_UNIT {
 export enum MedicalRecordType {
   CONSULTATION = "CONSULTATION",
   EHR = "EHR",
+  HEALTHCHECK = "HEALTHCHECK",
+  HOSPITALIZATION = "HOSPITALIZATION",
   OPERATIVE_REPORT = "OPERATIVE_REPORT",
   PATHOLOGY_REPORT = "PATHOLOGY_REPORT",
   PHYSICAL_EXAMINATION = "PHYSICAL_EXAMINATION",
@@ -762,6 +764,7 @@ export interface MediaPrescriptionUploadRequest {
 export interface MedicineCartOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
+  tatType?: string | null;
   estimatedAmount?: number | null;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
@@ -780,12 +783,12 @@ export interface MedicineCartOMSInput {
   showPrescriptionAtStore?: boolean | null;
   shopAddress?: ShopAddress | null;
   customerComment?: string | null;
-  tatType?: string | null;
 }
 
 export interface MedicineCartOMSItem {
   medicineSKU?: string | null;
   medicineName?: string | null;
+  couponFree?: boolean | null;
   price?: number | null;
   quantity?: number | null;
   mrp?: number | null;
@@ -840,6 +843,7 @@ export interface OrderLineItems {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
+  couponFree?: boolean | null;
 }
 
 export interface OtpVerificationInput {

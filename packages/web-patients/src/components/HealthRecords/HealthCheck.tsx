@@ -443,7 +443,7 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
                     deleteReport={deleteReport}
                     name={combinedData.healthCheckName || combinedData.healthCheckType || '-'}
                     source={combinedData.source || '-'}
-                    type={MedicalRecordType.HEALTHCHECK}
+                    recordType={MedicalRecordType.HEALTHCHECK}
                     id={`HealthCheck-${combinedData.id}`}
                     isActiveCard={activeData && activeData.id === combinedData.id}
                   />

@@ -1,6 +1,7 @@
 import { LocalStorage } from '@aph/mobile-doctors/src/helpers/commonTypes';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import AsyncStorage from '@react-native-community/async-storage';
+import { webEngageLogin } from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 export const getLocalData = async () => {
   const data = await Promise.all([
@@ -38,5 +39,7 @@ export const clearUserData = async () => {
     // AsyncStorage.removeItem('isProfileFlowDone'),
     //AsyncStorage.removeItem('doctorDetails'),
     AsyncStorage.removeItem('isLoggedIn'),
+    AsyncStorage.removeItem('phoneNumber'),
+    webEngageLogin(),
   ]);
 };

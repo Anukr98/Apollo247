@@ -344,19 +344,19 @@ export async function sendChatMessageNotification(
   doctorsDb: Connection,
   chatMessage: string
 ) {
-  const devLink = await getPatientDeeplink(
-    ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString()
-  );
-  const templateData: string[] = [
-    doctorDetails.salutation + ' ' + doctorDetails.firstName,
-    patientDetails.firstName + ' ' + patientDetails.lastName,
-    devLink,
-  ];
-  sendDoctorNotificationWhatsapp(
-    ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION_ID,
-    doctorDetails.mobileNumber,
-    templateData
-  );
+  if (process.env.CHAT_DOCTOR_DEEP_LINK) {
+    const devLink = process.env.CHAT_DOCTOR_DEEP_LINK + appointment.id.toString();
+    const templateData: string[] = [
+      doctorDetails.salutation + ' ' + doctorDetails.firstName,
+      patientDetails.firstName + ' ' + patientDetails.lastName,
+      devLink,
+    ];
+    sendDoctorNotificationWhatsapp(
+      ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION_ID,
+      doctorDetails.mobileNumber,
+      templateData
+    );
+  }
   const messageBody = ApiConstants.CHAT_MESSGAE_TEXT.replace(
     '{0}',
     doctorDetails.firstName

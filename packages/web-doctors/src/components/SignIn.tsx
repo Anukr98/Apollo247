@@ -390,21 +390,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           </div>
         </FormHelperText>
       )}
-      {showTimer ? (
-        <Button
-          variant="text"
-          className={classes.resendBtn}
-          onClick={() => {
-            webEngageEventTracking(null,
-              'Front_end - Doctor Clicked on the help'
-            );
-            setDisplayGetHelp(true);
-            setMobileNumber('');
-          }}
-        >
-          GET HELP
-        </Button>
-      ) : (
+      {!showTimer && (
         <Button
           variant="text"
           className={classes.resendBtn}
@@ -509,20 +495,6 @@ export const SignIn: React.FC<PopupProps> = (props) => {
         {sendOtpError ? '' : phoneMessage}
         </FormHelperText>
       </FormControl>
-      <Button
-        variant="text"
-        className={classes.resendBtn}
-        disabled={!showErrorMessage}
-        onClick={() => {
-          webEngageEventTracking(null,
-            'Front_end - Doctor Clicked on the help'
-          );
-          setDisplayGetHelp(true);
-          setStickyPopupValue();
-        }}
-      >
-        GET HELP
-      </Button>
       <div className={classes.action}>
         <Fab
           color="primary"
