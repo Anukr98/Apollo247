@@ -1201,6 +1201,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    City: string;
   };
   [WebEngageEventName.SD_CONSULTATION_STARTED]: {
     'Doctor Name': string;

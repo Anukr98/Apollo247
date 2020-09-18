@@ -796,6 +796,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             <TextInputComponent
               label={'Doctor who issued prescription'}
               value={docName}
+              showDrPrefix={true}
+              inputStyle={{ flex: 1 }}
               placeholder={'Enter doctor name'}
               onChangeText={(docName) => {
                 if (isValidText(docName)) {
@@ -821,6 +823,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             <TextInputComponent
               label={'Name of Doctor'}
               value={docName}
+              showDrPrefix={true}
+              inputStyle={{ flex: 1 }}
               placeholder={'Enter doctor name'}
               onChangeText={(docName) => {
                 if (isValidText(docName)) {
@@ -1059,6 +1063,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   label={'Referring Doctor'}
                   placeholder={'Enter name'}
                   value={referringDoctor}
+                  showDrPrefix={true}
+                  inputStyle={{ flex: 1 }}
                   onChangeText={(referringDoctor) => {
                     if (isValidText(referringDoctor)) {
                       setreferringDoctor(referringDoctor);
@@ -1237,6 +1243,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   label={'Referring Doctor'}
                   placeholder={'Enter name'}
                   value={referringDoctor}
+                  showDrPrefix={true}
+                  inputStyle={{ flex: 1 }}
                   onChangeText={(referringDoctor) => {
                     if (isValidText(referringDoctor)) {
                       setreferringDoctor(referringDoctor);

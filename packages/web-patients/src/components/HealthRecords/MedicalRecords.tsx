@@ -591,6 +591,18 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
     }
   };
 
+  const getSourceName = (labTestSource: string, siteDisplayName: string) => {
+    if (
+      labTestSource === 'self' ||
+      labTestSource === '247self' ||
+      siteDisplayName === 'self' ||
+      siteDisplayName === '247self'
+    ) {
+      return 'Self upload';
+    }
+    return siteDisplayName || labTestSource;
+  };
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -654,11 +666,14 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                                     : getStringDate(combinedData)
                                 }
                                 source={
-                                  combinedData && combinedData.siteDisplayName
-                                    ? combinedData.siteDisplayName
-                                    : !!combinedData.labTestSource
+                                  combinedData &&
+                                  combinedData.labTestSource &&
+                                  (_lowerCase(combinedData.labTestSource) === 'self' ||
+                                    combinedData.labTestSource === '247Self')
                                     ? combinedData.labTestSource
-                                    : '-'
+                                    : combinedData.siteDisplayName
+                                    ? combinedData.siteDisplayName
+                                    : combinedData.labTestSource || '-'
                                 }
                                 recordType={MedicalRecordType.TEST_REPORT}
                                 id={`LabResults-${combinedData.id}`}
@@ -738,7 +753,13 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     )}
                     {activeData.siteDisplayName && (
                       <div className={classes.reportsDetails}>
-                        <div className={classes.sitedisplayName}>{activeData.siteDisplayName}</div>
+                        <div className={classes.sitedisplayName}>
+                          {activeData &&
+                            getSourceName(
+                              activeData.labTestSource || '-',
+                              activeData.siteDisplayName || '-'
+                            )}
+                        </div>
                       </div>
                     )}
                     <hr />
