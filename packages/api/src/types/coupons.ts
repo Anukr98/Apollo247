@@ -33,7 +33,7 @@ export interface CouponProduct {
   quantity: number;
   totalCost: number;
   categoryId: string;
-  couponFree: boolean;
+  couponFree: number;
 }
 
 export interface ValidateCouponResponse {
@@ -57,6 +57,7 @@ export interface ValidateCouponResponse {
       quantity: number;
       onMrp: boolean;
       discountAmt: number;
+      couponFree: number;
     }[];
     diagnostics: [];
     discount: number;
