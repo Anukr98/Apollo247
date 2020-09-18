@@ -1,3 +1,5 @@
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   ArrowRight,
   CheckedIcon,
@@ -9,25 +11,28 @@ import { MedicineProductsResponse } from '@aph/mobile-patients/src/helpers/apiCa
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { CheckBox, ListItem } from 'react-native-elements';
-import {} from 'react-native-gesture-handler';
-import { NavigationScreenProps } from 'react-navigation';
-import { Button } from '../ui/Button';
-import { Header } from '../ui/Header';
+import { CheckBox, ListItem, Overlay, OverlayProps } from 'react-native-elements';
 
 type Filter = MedicineProductsResponse['filters'][0];
 type SelectedFilters = { [key: string]: string[] };
 
-export interface Props extends NavigationScreenProps {
+export interface Props extends Omit<OverlayProps, 'children'> {
   filters: Filter[];
+  selectedFilters: SelectedFilters;
   onApplyFilters: (appliedFilters: SelectedFilters) => void;
+  onClose: () => void;
 }
 
-export const MedicineListingFilter: React.FC<Props> = ({ filters, onApplyFilters }) => {
+export const MedicineListingFilter: React.FC<Props> = ({
+  filters,
+  selectedFilters: _selectedFilters,
+  onApplyFilters,
+  onClose,
+  ...overlayProps
+}) => {
   const [selectedOption, setSelectedOption] = useState<Filter | null>(filters[0]);
-  const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>({});
-  const isFiltersApplied = Object.keys(selectedFilters).length;
-  console.log(selectedFilters);
+  const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(_selectedFilters || {});
+  const isFiltersApplied = Object.keys(selectedFilters).find((k) => selectedFilters[k]?.length);
 
   const renderFilterOption = (filter: Filter) => {
     const isSelected = filter.attribute === selectedOption?.attribute;
@@ -43,7 +48,7 @@ export const MedicineListingFilter: React.FC<Props> = ({ filters, onApplyFilters
         key={filter.name}
         leftElement={highlightView}
         title={filter.name}
-        rightIcon={isSelected ? <ArrowRight /> : <ArrowRight />}
+        rightIcon={isSelected ? <ArrowRight /> : <ArrowRight />} // TODO: change icon to arrow green for isSelected
         onPress={onPress}
         bottomDivider
         containerStyle={styles.optionsContainer}
@@ -88,24 +93,24 @@ export const MedicineListingFilter: React.FC<Props> = ({ filters, onApplyFilters
 
   const renderInScrollView = (children: React.ReactNode) => {
     return (
-      <ScrollView
-        removeClippedSubviews={true}
-        bounces={false}
-        contentContainerStyle={styles.scrollView}
-      >
+      <ScrollView removeClippedSubviews={true} bounces={false}>
         {children}
       </ScrollView>
     );
   };
 
   const renderButton = () => {
+    const onPress = () => {
+      console.log(selectedFilters);
+      onApplyFilters(selectedFilters);
+    };
+
     return (
       <Button
         title={'APPLY'}
         style={styles.button}
         titleTextStyle={styles.buttonTitle}
-        onPress={() => onApplyFilters(selectedFilters)}
-        disabled={isFiltersApplied ? false : true}
+        onPress={onPress}
       />
     );
   };
@@ -120,23 +125,26 @@ export const MedicineListingFilter: React.FC<Props> = ({ filters, onApplyFilters
           style: styles.headerRightText,
         }}
         leftIcon="close"
+        onPressLeftIcon={onClose}
         container={styles.header}
       />
     );
   };
 
   return (
-    <SafeAreaView style={container}>
-      {renderHeader()}
-      <View style={styles.horizontalDivider} />
-      <View style={styles.container}>
-        {renderInScrollView(filters.map(renderFilterOption))}
-        <View style={styles.verticalDivider} />
-        {renderInScrollView(selectedOption && renderFilterSubOptions(selectedOption))}
-      </View>
-      <View style={styles.horizontalDivider} />
-      {renderButton()}
-    </SafeAreaView>
+    <Overlay fullScreen overlayStyle={styles.overlayStyle} {...overlayProps}>
+      <SafeAreaView style={container}>
+        {renderHeader()}
+        <View style={styles.horizontalDivider} />
+        <View style={styles.container}>
+          {renderInScrollView(filters.map(renderFilterOption))}
+          <View style={styles.verticalDivider} />
+          {renderInScrollView(selectedOption && renderFilterSubOptions(selectedOption))}
+        </View>
+        <View style={styles.horizontalDivider} />
+        {renderButton()}
+      </SafeAreaView>
+    </Overlay>
   );
 };
 
@@ -144,8 +152,10 @@ const { container } = theme.viewStyles;
 const { text } = theme.viewStyles;
 
 const styles = StyleSheet.create({
+  overlayStyle: {
+    padding: 0,
+  },
   container: { flex: 1, flexDirection: 'row' },
-  scrollView: {},
   verticalDivider: { backgroundColor: '#000', opacity: 0.05, width: 5, height: '100%' },
   horizontalDivider: { backgroundColor: '#000', opacity: 0.05, height: 5 },
   checkBoxContainer: {
@@ -181,7 +191,7 @@ const styles = StyleSheet.create({
     height: '220%',
     width: 5,
   },
-  button: { borderRadius: 0, height: 45 },
+  button: { borderRadius: 0, height: 45, shadowOpacity: 0 },
   buttonTitle: {
     ...text('B', 17, '#fff'),
   },

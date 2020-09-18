@@ -619,13 +619,17 @@ export const getMedicineSearchSuggestionsApi = (
 
 export const getProductsByCategoryApi = (
   categoryId: string,
-  pageId: number = 1
+  pageId: number = 1,
+  sortBy: string | null,
+  filters: { [key: string]: string[] } | null
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   return Axios.post(
-    `${config.PRODUCTS_BY_CATEGORY[0]}?category_id=${categoryId}&page_id=${pageId}&type=category`,
+    config.PRODUCTS_BY_CATEGORY[0],
     {
       category_id: categoryId,
       page_id: pageId,
+      sort_by: sortBy,
+      filters: filters,
     },
     {
       headers: {

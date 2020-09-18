@@ -3,6 +3,10 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { MedicineListingEvents } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingEvents';
 import {
+  MedicineListingFilter,
+  Props as MedicineListingFilterProps,
+} from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingFilter';
+import {
   MedListingProductProps,
   MedListingProducts,
 } from '@aph/mobile-patients/src/components/MedicineListing/MedListingProducts';
@@ -48,6 +52,9 @@ import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 
 type SortByOption = MedicineProductsResponse['sort_by']['values'][0];
+type Filter = MedicineProductsResponse['filters'][0];
+type SelectedFilters = { [key: string]: string[] };
+
 export interface Props
   extends NavigationScreenProps<{
     searchText?: string;
@@ -81,6 +88,9 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const [sortBy, setSortBy] = useState<SortByOption | null>(sortByNavProp);
   const [sortByOptions, setSortByOptions] = useState<SortByOption[]>([]);
   const [sortByVisible, setSortByVisible] = useState<boolean>(false);
+  const [filterBy, setFilterBy] = useState<SelectedFilters>({});
+  const [filterOptions, setFilterOptions] = useState<Filter[]>([]);
+  const [filterVisible, setFilterVisible] = useState<boolean>(false);
 
   // global contexts
   const { currentPatient } = useAllCurrentPatients();
@@ -98,18 +108,19 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   // custom variables
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
+  const isFiltersApplied = Object.keys(filterBy).find((k) => filterBy[k]?.length);
 
   useEffect(() => {
     if (searchText.length >= 3) {
       searchProducts(searchText, 1);
     }
-  }, [searchText]);
+  }, [searchText, sortBy, filterBy]);
 
   useEffect(() => {
     if (categoryId && !searchText) {
-      searchProductsByCategory(categoryId, 1, sortBy?.value || null);
+      searchProductsByCategory(categoryId, 1, sortBy?.value || null, filterBy);
     }
-  }, [sortBy]);
+  }, [sortBy, filterBy]);
 
   const searchProducts = async (searchText: string, pageId: number) => {
     try {
@@ -142,16 +153,18 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const searchProductsByCategory = async (
     categoryId: string,
     pageId: number,
-    sortBy: string | null
+    sortBy: string | null,
+    filters: SelectedFilters
   ) => {
     try {
       updateLoading(pageId, true);
-      const { data } = await getProductsByCategoryApi(categoryId, pageId, sortBy);
+      const { data } = await getProductsByCategoryApi(categoryId, pageId, sortBy, filters);
       updateProducts(pageId, products, data);
       setProductsTotal(data.count);
       updateLoading(pageId, false);
       setPageId(pageId + 1);
       setSortByOptions(data.sort_by.values || []);
+      setFilterOptions(data.filters);
     } catch (error) {
       updateLoading(pageId, false);
       renderAlert();
@@ -295,7 +308,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         if (searchText) {
           searchProducts(searchText, pageId);
         } else {
-          searchProductsByCategory(categoryId, pageId, sortBy?.value || null);
+          searchProductsByCategory(categoryId, pageId, sortBy?.value || null, filterBy);
         }
       }
     };
@@ -353,6 +366,26 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     );
   };
 
+  const renderFilterByOverlay = () => {
+    const onClose = () => setFilterVisible(false);
+    const onApplyFilters: MedicineListingFilterProps['onApplyFilters'] = (appliedFilters) => {
+      onClose();
+      setFilterBy(appliedFilters);
+    };
+    return (
+      filterVisible && (
+        <MedicineListingFilter
+          isVisible={true}
+          filters={filterOptions}
+          selectedFilters={filterBy}
+          onRequestClose={onClose}
+          onClose={onClose}
+          onApplyFilters={onApplyFilters}
+        />
+      )
+    );
+  };
+
   const renderLoading = () => {
     return isLoading ? <ActivityIndicator color="green" size="large" /> : null;
   };
@@ -389,7 +422,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
             icon: <Filter />, // TODO: Replace icon
             title: 'Filter By',
             subtitle: 'Apply filters',
-            onPress: () => navigation.navigate(AppRoutes.Medicine),
+            onPress: () => setFilterVisible(true),
           },
           {
             icon: (
@@ -429,6 +462,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       {renderProducts()}
       {renderLoadingMore()}
       {renderSortByOverlay()}
+      {renderFilterByOverlay()}
       {renderSearchOverlay()}
     </SafeAreaView>
   );
