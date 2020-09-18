@@ -22,4 +22,11 @@ export class DoctorSecretaryRepository extends Repository<DoctorSecretary> {
   removeFromDoctorSecretary(id: string) {
     return this.delete(id);
   }
+
+  getSecretaryDetailsByDoctorId(doctorId: string) {
+    return this.findOne({
+      where: [{ doctor: doctorId }],
+      relations: ['secretary'],
+    });
+  }
 }

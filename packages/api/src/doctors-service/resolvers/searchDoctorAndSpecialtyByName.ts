@@ -140,7 +140,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
             },
             { match: { isSearchable: true } },
             {
-              phrase_prefix: {
+              query_string: {
                 fuzziness: 0,
                 query: `*${searchTextLowerCase}*`,
                 fields: [
@@ -177,6 +177,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   for (const doc of responsePerfectMatchDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
+    doctor['mobileNumber'] = '';
     if (doctor.specialty) {
       doctor.specialty.id = doctor.specialty.specialtyId;
     }
@@ -256,7 +257,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   const docSearchParams: RequestParams.Search = {
     index: process.env.ELASTIC_INDEX_DOCTORS,
     body: {
-      size: 100,
+      size: 50,
       query: {
         bool: {
           must: [
@@ -294,6 +295,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   for (const doc of responseDoctors.body.hits.hits) {
     const doctor = doc._source;
     doctor['id'] = doctor.doctorId;
+    doctor['mobileNumber'] = '';
     if (doctor['languages'] instanceof Array) {
       doctor['languages'] = doctor['languages'].join(', ');
     }
@@ -457,7 +459,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     const PossibleDoctorParams: RequestParams.Search = {
       index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
-        size: 200,
+        size: 100,
         query: {
           bool: {
             must: [
@@ -477,6 +479,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     for (const doc of responsePossibleDoctors.body.hits.hits) {
       const doctor = doc._source;
       doctor['id'] = doctor.doctorId;
+      doctor['mobileNumber'] = '';
       doctor['doctorHospital'] = [];
       doctor['activeSlotCount'] = 0;
       if (doctor['languages'] instanceof Array) {
@@ -561,40 +564,17 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     }
   }
 
-  function fieldCompare(field: string, order: string = 'asc') {
-    return function sort(objectA: any, objectB: any) {
-      if (!objectA.hasOwnProperty(field) || !objectB.hasOwnProperty(field)) {
-        return 0;
-      }
-      const fieldA = parseFloat(objectA[field]);
-      const fieldB = parseFloat(objectB[field]);
-      let comparison = 0;
-      if (fieldA > fieldB) {
-        comparison = 1;
-      } else if (fieldA < fieldB) {
-        comparison = -1;
-      }
-      return order === 'desc' ? comparison * -1 : comparison;
-    };
-  }
-
   finalMatchedDoctors = perfectMatchedDoctors
-    .sort(fieldCompare('earliestSlotavailableInMinutes'))
-    .concat(earlyAvailableApolloMatchedDoctors.sort(fieldCompare('earliestSlotavailableInMinutes')))
-    .concat(
-      earlyAvailableNonApolloMatchedDoctors.sort(fieldCompare('earliestSlotavailableInMinutes'))
-    )
-    .concat(matchedDoctors.sort(fieldCompare('earliestSlotavailableInMinutes')));
+    .concat(earlyAvailableApolloMatchedDoctors)
+    .concat(earlyAvailableNonApolloMatchedDoctors)
+    .concat(matchedDoctors);
 
   finalPossibleDoctors = earlyAvailableApolloPossibleDoctors
-    .sort(fieldCompare('earliestSlotavailableInMinutes'))
-    .concat(
-      earlyAvailableNonApolloPossibleDoctors.sort(fieldCompare('earliestSlotavailableInMinutes'))
-    )
-    .concat(possibleDoctors.sort(fieldCompare('earliestSlotavailableInMinutes')));
+    .concat(earlyAvailableNonApolloPossibleDoctors)
+    .concat(possibleDoctors);
 
-  matchedDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
-  possibleDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
+  // matchedDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
+  // possibleDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
 
   searchLogger(`API_CALL___END`);
   return {

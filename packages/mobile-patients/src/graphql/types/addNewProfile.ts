@@ -17,6 +17,7 @@ export interface addNewProfile_addNewProfile_patient {
   lastName: string | null;
   emailAddress: string | null;
   gender: Gender | null;
+  dateOfBirth: any | null;
 }
 
 export interface addNewProfile_addNewProfile {

@@ -1,31 +1,38 @@
+import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-// import SmsListener from 'react-native-android-sms-listener';
 import { timeOutDataType } from '@aph/mobile-patients/src/components/OTPVerification';
-import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
-import { LandingDataView } from '@aph/mobile-patients/src/components/ui/LandingDataView';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ArrowDisabled, ArrowYellow } from '@aph/mobile-patients/src/components/ui/Icons';
+import { LandingDataView } from '@aph/mobile-patients/src/components/ui/LandingDataView';
+import { LoginCard } from '@aph/mobile-patients/src/components/ui/LoginCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { ApolloLogo } from './ApolloLogo';
-
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   CommonBugFender,
   CommonLogEvent,
   CommonSetUserBugsnag,
-  setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppSignature } from '@aph/mobile-patients/src/helpers/AppSignature';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   getNetStatus,
-  handleGraphQlError,
-  postWebEngageEvent,
   postFirebaseEvent,
+  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { loginAPI } from '@aph/mobile-patients/src/helpers/loginCalls';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import AsyncStorage from '@react-native-community/async-storage';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
+  Dimensions,
   EmitterSubscription,
   Keyboard,
   Platform,
@@ -34,27 +41,13 @@ import {
   Text,
   TextInput,
   View,
-  Dimensions,
 } from 'react-native';
-//import { WebView } from 'react-native-webview';
 import firebase from 'react-native-firebase';
-import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
-import { useUIElements } from './UIElementsProvider';
-import moment from 'moment';
-import { fonts } from '@aph/mobile-patients/src/theme/fonts';
+import { ScrollView } from 'react-native-gesture-handler';
 import HyperLink from 'react-native-hyperlink';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { loginAPI } from '../helpers/loginCalls';
-import { WebView } from 'react-native-webview';
-import {
-  WebEngageEvents,
-  WebEngageEventName,
-} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import WebEngage from 'react-native-webengage';
-import AsyncStorage from '@react-native-community/async-storage';
-import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
-import { TouchableOpacity, ScrollView } from 'react-native-gesture-handler';
-import { AppSignature } from '../helpers/AppSignature';
+import { WebView } from 'react-native-webview';
+import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 
 const { height, width } = Dimensions.get('window');
 
@@ -197,43 +190,17 @@ export const Login: React.FC<LoginProps> = (props) => {
     }
   };
 
-  // const requestReadSmsPermission = async () => {
-  //   try {
-  //     const resuts = await PermissionsAndroid.requestMultiple([
-  //       PermissionsAndroid.PERMISSIONS.READ_SMS,
-  //       PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
-  //     ]);
-  //     if (resuts[PermissionsAndroid.PERMISSIONS.READ_SMS] !== PermissionsAndroid.RESULTS.GRANTED) {
-  //       console.log(resuts, 'READ_SMS');
-  //     }
-  //     if (
-  //       resuts[PermissionsAndroid.PERMISSIONS.RECEIVE_SMS] !== PermissionsAndroid.RESULTS.GRANTED
-  //     ) {
-  //       console.log(resuts, 'RECEIVE_SMS');
-  //     }
-  //     if (resuts) {
-  //       console.log(resuts, 'RECEIVE_SMS');
-  //     }
-  //   } catch (error) {
-  //     console.log('error', error);
-  //   }
-  // };
-
   useEffect(() => {
-    console.log('didmout');
-    // Platform.OS === 'android' && requestReadSmsPermission();
+    getStoredMobileNumber();
   }, []);
 
-  // useEffect(() => {
-  //   const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
-  //     const newOtp = message.body.match(/-*[0-9]+/);
-  //     otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
-  //   });
-  //   setSubscriptionId(subscriptionId);
-  //   didBlurSubscription = props.navigation.addListener('didBlur', () => {
-  //     setPhoneNumber('');
-  //   });
-  // }, [props.navigation, subscriptionId]);
+  const getStoredMobileNumber = async () => {
+    const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
+    if (storedPhoneNumber) {
+      setPhoneNumber(storedPhoneNumber);
+      validateAndSetPhoneNumber(storedPhoneNumber);
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -332,11 +299,9 @@ export const Login: React.FC<LoginProps> = (props) => {
                 .catch((error: Error) => {
                   console.log(error, 'error');
                   setShowSpinner(false);
-                  // setBugFenderLog('OTP_SEND_FAIL', error);
 
                   CommonLogEvent('OTP_SEND_FAIL', error.message);
                   CommonBugFender('OTP_SEND_FAIL', error);
-                  // handleGraphQlError(error);
                 });
             }
           }

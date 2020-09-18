@@ -38,6 +38,7 @@ export const GET_APPOINTMENT_DATA = gql`
         isConsultStarted
         symptoms
         doctorInfo {
+          mobileNumber
           id
           salutation
           firstName
@@ -49,6 +50,7 @@ export const GET_APPOINTMENT_DATA = gql`
           physicalConsultationFees
           specialty {
             name
+            id
           }
           qualification
           city

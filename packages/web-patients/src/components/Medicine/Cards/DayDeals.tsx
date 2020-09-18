@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
 import { DealsOfTheDaySection } from '../../../helpers/MedicineApiCalls';
+import { LazyIntersection } from '../../lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -42,6 +43,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     cardIcon: {
       width: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     offerDetails: {
       position: 'absolute',
@@ -79,7 +83,7 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
     infinite: true,
     speed: 500,
     slidesToShow: 3,
-    slidesToScroll: 1,
+    slidesToScroll: 2,
     nextArrow: <img src={require('images/ic_arrow_right.svg')} alt="" />,
     prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
     responsive: [
@@ -108,7 +112,6 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          // centerMode: true,
           nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
           prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },
@@ -134,7 +137,14 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
               >
                 <div className={classes.cardWrap}>
                   <div className={classes.cardIcon}>
-                    <img src={`${apiDetails.url}${deal.image_url}`} width="100%" alt="" />
+                    <LazyIntersection
+                      src={`${apiDetails.url}${deal.image_url}`}
+                      alt={''}
+                      fallbackImage={require('images/ic_placeholder_rectangle.png')}
+                      style={{ maxWidth: '273px' }}
+                    />
+                    {/* <img
+                      src={`${apiDetails.url}${deal.image_url}`} width="100%" alt="" /> */}
                   </div>
                 </div>
                 {/* <div className={classes.offerDetails}>Upto 30% Off</div> */}

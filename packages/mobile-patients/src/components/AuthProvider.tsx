@@ -130,6 +130,22 @@ export const AuthProvider: React.FC = (props) => {
       } catch (e) {}
     }
   };
+
+  const validateAndUpdate = (authToken: any) => {
+    if (authToken) {
+      const jwtDecode = require('jwt-decode');
+      const millDate = jwtDecode(authToken).exp;
+      const currentTime = new Date().valueOf() / 1000;
+      // console.log('millDate', millDate, currentTime, millDate > currentTime);
+      if (millDate < currentTime) {
+        getFirebaseToken();
+      } else {
+        setAuthToken(authToken);
+      }
+    } else {
+      getFirebaseToken();
+    }
+  };
   const buildApolloClient = (authToken: string, handleUnauthenticated: any) => {
     if (authToken) {
       const jwtDecode = require('jwt-decode');
@@ -244,10 +260,11 @@ export const AuthProvider: React.FC = (props) => {
     async function fetchData() {
       let jwtToken: any = await AsyncStorage.getItem('jwt');
       jwtToken = JSON.parse(jwtToken);
-      console.log('jwtToken', jwtToken);
+      // console.log('jwtToken', jwtToken);
 
-      setAuthToken(jwtToken);
-      getFirebaseToken();
+      // setAuthToken(jwtToken);
+      // getFirebaseToken();
+      validateAndUpdate(jwtToken);
     }
     fetchData();
   }, [auth]);
@@ -351,12 +368,16 @@ export const AuthProvider: React.FC = (props) => {
   const getPatientByPrism = async () => {
     try {
       return new Promise(async (resolve, reject) => {
+        const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+        const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
         const versionInput = {
           appVersion:
             Platform.OS === 'ios'
               ? AppConfig.Configuration.iOS_Version
               : AppConfig.Configuration.Android_Version,
           deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+          deviceToken: deviceToken2,
+          deviceOS: '',
         };
         console.log('getPatientByPrism', versionInput);
 

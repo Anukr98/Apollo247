@@ -8,7 +8,7 @@ import { ConsultDoctorProfile } from 'components/Consult/V2/ChatRoom/ConsultDoct
 import { OnlineConsult } from 'components/OnlineConsult';
 import { useParams } from 'hooks/routerHooks';
 import { useAuth } from 'hooks/authHooks';
-import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
+import { GET_DOCTOR_DETAILS_BY_ID, GET_SECRETARY_DETAILS_BY_DOCTOR_ID } from 'graphql/doctors';
 import {
   GetDoctorDetailsById,
   GetDoctorDetailsByIdVariables,
@@ -41,6 +41,11 @@ import { GET_APPOINTMENT_DATA } from 'graphql/consult';
 import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
 import { removeGraphQLKeyword } from 'helpers/commonHelpers';
+import {
+  getSecretaryDetailsByDoctorId,
+  getSecretaryDetailsByDoctorIdVariables,
+} from 'graphql/types/getSecretaryDetailsByDoctorId';
+import { reschedulePatientTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -215,6 +220,10 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
       position: 'relative',
       outline: 'none',
+      width: 700,
+      [theme.breakpoints.down('xs')]: {
+        width: 328,
+      },
     },
     popupHeading: {
       padding: '20px 10px',
@@ -352,6 +361,8 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
       lineHeight: 1.85,
       backgroundColor: '#fff',
+      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      minWidth: 135,
       '&:hover': {
         backgroundColor: '#fff',
       },
@@ -496,7 +507,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type Params = { appointmentId: string; doctorId: string };
 
-export const ChatRoom: React.FC = () => {
+const ChatRoom: React.FC = () => {
   const classes = useStyles({});
   const params = useParams<Params>();
   const appointmentId = params.appointmentId;
@@ -541,7 +552,25 @@ export const ChatRoom: React.FC = () => {
     fetchPolicy: 'no-cache',
   });
 
+  const {
+    data: secretaryData,
+    loading: secretaryDataLoading,
+    error: secretaryDataError,
+  } = useQueryWithSkip<getSecretaryDetailsByDoctorId, getSecretaryDetailsByDoctorIdVariables>(
+    GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
+    {
+      variables: { doctorId },
+    }
+  );
+
   const bookAppointment = useMutation(BOOK_APPOINTMENT_RESCHEDULE);
+
+  const { fullName, mobileNumber } =
+    data && data.getDoctorDetailsById
+      ? data.getDoctorDetailsById
+      : { fullName: '', mobileNumber: '' };
+  const { mobileNumber: secretaryNumber, name: secretaryName } = (secretaryData &&
+    secretaryData.getSecretaryDetailsByDoctorId) || { name: '', mobileNumber: '' };
 
   const rescheduleAPI = (bookRescheduleInput: BookRescheduleAppointmentInput) => {
     bookAppointment({
@@ -557,6 +586,15 @@ export const ChatRoom: React.FC = () => {
         setReschedulesRemaining(3 - rescheduleCount - 1);
         setIsRescheduleSuccess(true);
         setRescheduledSlot(bookRescheduleInput.newDateTimeslot);
+        reschedulePatientTracking({
+          doctorName: fullName,
+          patientName:
+            (currentPatient && `${currentPatient.firstName} ${currentPatient.lastName}`) || '',
+          secretaryName: secretaryName || '',
+          doctorNumber: mobileNumber,
+          patientNumber: (currentPatient && currentPatient.mobileNumber) || '',
+          secretaryNumber: secretaryNumber || '',
+        });
       })
 
       .catch((e) => {
@@ -582,7 +620,10 @@ export const ChatRoom: React.FC = () => {
 
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
     setIsNextSlotLoading(true);
-    const todayDate = moment.utc(date).local().format('YYYY-MM-DD');
+    const todayDate = moment
+      .utc(date)
+      .local()
+      .format('YYYY-MM-DD');
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
         try {
@@ -647,7 +688,7 @@ export const ChatRoom: React.FC = () => {
     <div className={classes.root}>
       <Header />
       <div className={classes.container}>
-        {!isSignedIn || appointmentLoading || loading ? (
+        {!isSignedIn || appointmentLoading || loading || secretaryDataLoading ? (
           <LinearProgress />
         ) : appointmentDetails && data ? (
           <div className={classes.doctorListingPage}>
@@ -670,6 +711,7 @@ export const ChatRoom: React.FC = () => {
                     appointmentDetails={appointmentDetails}
                     srDoctorJoined={srDoctorJoined}
                     isConsultCompleted={isConsultCompleted}
+                    secretaryData={secretaryData}
                   />
                 )}
               </div>
@@ -710,6 +752,7 @@ export const ChatRoom: React.FC = () => {
                     rescheduleAPI={rescheduleAPI}
                     appointmentDetails={appointmentDetails}
                     setIsConsultCompleted={setIsConsultCompleted}
+                    secretaryData={secretaryData}
                   />
                 )}
               </div>
@@ -729,7 +772,7 @@ export const ChatRoom: React.FC = () => {
           disableBackdropClick
           disableEscapeKeyDown
         >
-          <Paper className={classes.modalBox} style={{ width: isChangeSlot ? 700 : 328 }}>
+          <Paper className={classes.modalBox}>
             <div
               className={classes.modalBoxClose}
               onClick={() => {
@@ -760,9 +803,9 @@ export const ChatRoom: React.FC = () => {
                     ) : (
                       <h6>
                         {'Since you have already rescheduled 3 times with Dr. '}
-                        {`${
-                          data && data.getDoctorDetailsById && data.getDoctorDetailsById.fullName
-                        }`}{' '}
+                        {`${data &&
+                          data.getDoctorDetailsById &&
+                          data.getDoctorDetailsById.fullName}`}{' '}
                         {`, We will consider this a new paid appointment.`}
                       </h6>
                     )}
@@ -1149,3 +1192,5 @@ export const ChatRoom: React.FC = () => {
         setIsAlertOpen={setIsAlertOpen}
       /> */
 }
+
+export default ChatRoom;

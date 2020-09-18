@@ -11,7 +11,8 @@ import _isEmpty from 'lodash/isEmpty';
 import { UpdatePatient, UpdatePatientVariables } from 'graphql/types/UpdatePatient';
 import { UPDATE_PATIENT } from 'graphql/profiles';
 import { ProfileSuccess } from 'components/ProfileSuccess';
-import { parse, format } from 'date-fns';
+import parse from 'date-fns/parse';
+import format from 'date-fns/format';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import { Formik, FormikProps, Field, FieldProps, Form } from 'formik';
 import { useMutation } from 'react-apollo-hooks';
@@ -19,6 +20,8 @@ import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
 import { Alerts } from 'components/Alerts/Alerts';
 import { webengageUserLoginTracking, webengageUserDetailTracking } from '../webEngageTracking';
+import { useAuth, useLoginPopupState } from 'hooks/authHooks';
+import { LazyIntersection } from './lib/LazyIntersection';
 
 const isoDatePattern = 'yyyy-MM-dd';
 const clientDatePattern = 'dd/MM/yyyy';
@@ -188,6 +191,10 @@ const useStyles = makeStyles((theme: Theme) => {
     required: {
       color: 'red',
     },
+    backArrow: {
+      cursor: 'pointer',
+      paddingLeft: 20,
+    },
   });
 });
 
@@ -219,6 +226,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const orderedGenders = [Gender.MALE, Gender.FEMALE];
+  const { signOut } = useAuth();
+  const { setIsLoginPopupVisible: setLoginPopupVisible } = useLoginPopupState();
 
   if (showProfileSuccess) {
     return <ProfileSuccess onSubmitClick={() => props.onClose()} />;
@@ -297,7 +306,16 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
           return (
             <Form>
               <div className={classes.mascotIcon}>
-                <img src={require('images/ic-mascot.png')} alt="" />
+                <LazyIntersection src={require('images/ic-mascot.png')} alt="" />
+              </div>
+              <div
+                className={classes.backArrow}
+                onClick={() => {
+                  signOut();
+                  setLoginPopupVisible(true);
+                }}
+              >
+                <img src={require('images/ic_loginback.svg')} />
               </div>
               <div className={classes.customScrollBar}>
                 <div className={classes.signinGroup}>

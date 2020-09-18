@@ -10,8 +10,8 @@ import {
 } from 'graphql/types/getAppointmentHistory';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import _uniqueId from 'lodash/uniqueId';
-import { getTime } from 'date-fns/esm';
-import { format } from 'date-fns';
+import getTime from 'date-fns/esm/getTime';
+import format from 'date-fns/format';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import Slider from 'react-slick';
 

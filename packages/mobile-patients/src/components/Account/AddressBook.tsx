@@ -120,14 +120,18 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
       >
         <View style={styles.cardStyle} key={index}>
           <View>
-            <View style={[styles.headingTextView, { marginTop: 4 }]}>
-              <Text style={styles.headingTextStyle}>Name:{'     '}</Text>
-              <Text style={[styles.textStyle]}>{address.name}</Text>
-            </View>
-            <View style={styles.headingTextView}>
-              <Text style={styles.headingTextStyle}>Number: </Text>
-              <Text style={[styles.textStyle, { margin: 2 }]}>{address.mobileNumber}</Text>
-            </View>
+            {address.name! && (
+              <View style={[styles.headingTextView, { marginTop: 4 }]}>
+                <Text style={styles.headingTextStyle}>Name:{'     '}</Text>
+                <Text style={[styles.textStyle]}>{address.name}</Text>
+              </View>
+            )}
+            {address.mobileNumber! && (
+              <View style={styles.headingTextView}>
+                <Text style={styles.headingTextStyle}>Number: </Text>
+                <Text style={[styles.textStyle, { margin: 2 }]}>{address.mobileNumber}</Text>
+              </View>
+            )}
             <View style={styles.headingTextView}>
               <Text style={styles.headingTextStyle}>Address: </Text>
               <Text style={styles.textStyle}>{formatAddressWithLandmark(address)}</Text>

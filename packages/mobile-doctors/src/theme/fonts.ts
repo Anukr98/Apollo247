@@ -75,13 +75,13 @@ export const getTextStyle = (
   font: AphFont,
   size: number,
   color: AphTextColors,
-  opacity?: AphOpacity,
+  opacity?: number,
   lineHeight?: number,
   letterSpacing?: number
 ): TextStyle => ({
   ...getFont(font, size),
   color,
-  opacity,
+  opacity: opacity && (opacity < 0 || opacity > 1) ? 1 : opacity,
   lineHeight,
   letterSpacing,
 });

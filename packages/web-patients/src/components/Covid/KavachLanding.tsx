@@ -691,6 +691,7 @@ const KavachLanding: React.FC = (props) => {
             <a
               href="https://cms.apollo247.com/sites/default/files/ApolloHomeKavachBrochure.pdf"
               target="_blank"
+              rel="noopener noreferrer"
             >
               Download Apollo Kavach Brochure Here
             </a>

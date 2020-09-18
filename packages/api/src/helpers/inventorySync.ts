@@ -53,7 +53,7 @@ export async function syncInventory(orderDatails: MedicineOrders, syncType: SYNC
     method: 'POST',
     body: JSON.stringify(reqBody),
     headers: {
-      Authentication: process.env.INVENTORY_SYNC_TOKEN,
+      Authorization: process.env.INVENTORY_SYNC_TOKEN,
       'Content-Type': 'application/json;charset=utf-8',
     },
     signal: controller.signal,

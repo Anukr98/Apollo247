@@ -113,6 +113,14 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
     );
   };
 
+  const _navigateToEditAddress = (dataname: string, address: any, comingFrom: string) => {
+    props.navigation.push(AppRoutes.AddAddress, {
+      KeyName: dataname,
+      DataAddress: address,
+      ComingFrom: comingFrom,
+    });
+  };
+
   const renderRadioButtonList = () => {
     return addressList.map((address, i) => (
       <RadioSelectionItem
@@ -131,6 +139,10 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
           paddingTop: 15,
         }}
         hideSeparator={i + 1 === addressList.length}
+        showEditIcon={true}
+        onPressEdit={() =>
+          _navigateToEditAddress('Update', address, AppRoutes.SelectDeliveryAddress)
+        }
       />
     ));
   };
