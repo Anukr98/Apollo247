@@ -591,6 +591,18 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
     }
   };
 
+  const getSourceName = (labTestSource: string, siteDisplayName: string) => {
+    if (
+      labTestSource === 'self' ||
+      labTestSource === '247self' ||
+      siteDisplayName === 'self' ||
+      siteDisplayName === '247self'
+    ) {
+      return 'Self upload';
+    }
+    return siteDisplayName || labTestSource;
+  };
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -743,11 +755,10 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                       <div className={classes.reportsDetails}>
                         <div className={classes.sitedisplayName}>
                           {activeData &&
-                          activeData.labTestSource &&
-                          (_lowerCase(activeData.labTestSource) === 'self' ||
-                            activeData.labTestSource === '247Self')
-                            ? activeData.labTestSource
-                            : activeData.siteDisplayName}
+                            getSourceName(
+                              activeData.labTestSource || '-',
+                              activeData.siteDisplayName || '-'
+                            )}
                         </div>
                       </div>
                     )}
