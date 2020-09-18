@@ -449,6 +449,18 @@ export interface AddHospitalizationRecordInput {
   hospitalizationFiles?: (HospitalizationFileProperties | null)[] | null;
 }
 
+export interface AddLabTestRecordInput {
+  patientId: string;
+  recordType: MedicalRecordType;
+  labTestName: string;
+  labTestDate: any;
+  referringDoctor?: string | null;
+  observations?: string | null;
+  additionalNotes?: string | null;
+  labTestResults?: (LabTestParameters | null)[] | null;
+  testResultFiles?: (LabTestFileProperties | null)[] | null;
+}
+
 export interface AddMedicalRecordInput {
   additionalNotes?: string | null;
   documentURLs?: string | null;
@@ -667,6 +679,20 @@ export interface LabResultFileProperties {
   fileName: string;
   mimeType: string;
   content: string;
+}
+
+export interface LabTestFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
+export interface LabTestParameters {
+  maximum?: number | null;
+  minimum?: number | null;
+  parameterName?: string | null;
+  result?: number | null;
+  unit?: string | null;
 }
 
 export interface MediaPrescriptionFileProperties {
