@@ -337,7 +337,11 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
               <div>Hope your consultation went well… Here is your prescription.</div>
               <div>
                 {messageDetails.transferInfo && messageDetails.transferInfo.pdfUrl && (
-                  <a href={messageDetails.transferInfo.pdfUrl} target="_blank">
+                  <a
+                    href={messageDetails.transferInfo.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <button className={classes.downloadBtn}>Download</button>
                   </a>
                 )}

@@ -82,7 +82,12 @@ export const PrescriptionCard: React.FC<PrescriptionCardProps> = (props) => {
           <img src={props.imageUrl} alt="" />
         </div>
         <div className={classes.fileInfo}>
-          <a href={props.imageUrl} target="_blank" title="Download Document">
+          <a
+            href={props.imageUrl}
+            target="_blank"
+            title="Download Document"
+            rel="noopener noreferrer"
+          >
             {props.fileName}
           </a>
           <AphLinearProgress

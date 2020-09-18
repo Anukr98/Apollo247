@@ -442,13 +442,13 @@ const getCouponByUserMobileNumber = () => {
   );
 };
 
-const isPastAppointment = (appointmentDateTime: string) =>
+const isPastAppointment = (appointmentDateTime: string, followUpInDays: number = 7) =>
   moment(appointmentDateTime)
-    .add(7, 'days')
+    .add(followUpInDays, 'days')
     .isBefore(moment());
 
-const getAvailableFreeChatDays = (appointmentTime: string) => {
-  const followUpDayMoment = moment(appointmentTime).add(7, 'days');
+const getAvailableFreeChatDays = (appointmentTime: string, followUpInDays: number = 7) => {
+  const followUpDayMoment = moment(appointmentTime).add(followUpInDays, 'days');
   const diffInDays = followUpDayMoment.diff(moment(), 'days');
   if (diffInDays === 0) {
     const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
@@ -474,6 +474,7 @@ const HEALTH_RECORDS_NO_DATA_FOUND =
 
 const HEALTH_RECORDS_NOTE =
   'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
+const stripHtml = (originalString: any) => originalString.replace(/(<([^>]+)>)/gi, '');
 
 export {
   HEALTH_RECORDS_NO_DATA_FOUND,
@@ -529,4 +530,5 @@ export {
   PINCODE_MAXLENGTH,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
   HEALTH_RECORDS_NOTE,
+  stripHtml,
 };

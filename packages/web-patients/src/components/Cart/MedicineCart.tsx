@@ -19,7 +19,6 @@ import {
 } from '@aph/web-ui-components';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
-import axios from 'axios';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import {
   useShoppingCart,
@@ -81,6 +80,7 @@ import { getTypeOfProduct } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
 import fetchUtil from 'helpers/fetch';
 import { checkTatAvailability } from 'helpers/MedicineApiCalls';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -1947,8 +1947,7 @@ export const MedicineCart: React.FC = (props) => {
                         : !deliveryAddressId ||
                           (deliveryAddressId && deliveryAddressId.length === 0)) ||
                       !isPaymentButtonEnable ||
-                      disableSubmit ||
-                      totalWithCouponDiscount == 0
+                      disableSubmit
                     }
                     className={
                       (!nonCartFlow

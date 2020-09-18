@@ -274,7 +274,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                     <div className={classes.productIcon}>
                       <img
                         src={`${apiDetails.url}${getImageUrl(productList.productImage || '')}`}
-                        alt=""
+                        alt={`Buy ${productList.productName} Online`}
                       />
                     </div>
                     <div className={classes.productTitle}>{productList.productName}</div>

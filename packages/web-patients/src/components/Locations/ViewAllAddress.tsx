@@ -7,7 +7,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { UPDATE_PATIENT_ADDRESS } from 'graphql/address';
 import { useMutation } from 'react-apollo-hooks';
 import { GetPatientAddressList_getPatientAddressList_addressList as Address } from 'graphql/types/GetPatientAddressList';
-import axios, { AxiosPromise, AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
 import { gtmTracking } from '../../gtmTracking';
 import { pharmaStateCodeMapping } from 'helpers/commonHelpers';

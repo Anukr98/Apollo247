@@ -16,7 +16,7 @@ import { createMuiTheme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import _ from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 import format from 'date-fns/format';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -378,7 +378,7 @@ export const AppointmentsFilter: React.FC<AppointmentsFilterProps> = (props) => 
     selectedDate,
     setSelectedDate,
   } = props;
-  const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(_.cloneDeep(filter));
+  const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(cloneDeep(filter));
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
