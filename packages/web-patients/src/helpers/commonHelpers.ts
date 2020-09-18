@@ -442,24 +442,36 @@ const getCouponByUserMobileNumber = () => {
   );
 };
 
-const isPastAppointment = (appointmentDateTime: string, followUpInDays: number = 7) =>
-  moment(appointmentDateTime)
-    .add(followUpInDays, 'days')
-    .isBefore(moment());
+const isPastAppointment = (appointmentDateTime: string, followUpInDays: number = 7) => {
+  const appointmentDate = moment(appointmentDateTime).set({ hour: 0, minute: 0 }); // this been added because followupDays includes appointmentMent Completion date aswell and appointmentDateTime should be replace with completion date
+  const followUpDayMoment = appointmentDate.add(followUpInDays, 'days');
+  return followUpDayMoment.isBefore(moment());
+};
 
 const getAvailableFreeChatDays = (appointmentTime: string, followUpInDays: number = 7) => {
-  const followUpDayMoment = moment(appointmentTime).add(followUpInDays, 'days');
-  const diffInDays = followUpDayMoment.diff(moment(), 'days');
+  const appointmentDate = moment(appointmentTime).set({ hour: 0, minute: 0 }); // this been added because followupDays includes appointmentMent Completion date aswell and appointmentDateTime should be replace with completion date
+  const followUpDayMoment = appointmentDate.add(followUpInDays, 'days');
+  let diffInDays = followUpDayMoment.diff(moment(), 'days');
+  // below condition is added because diff of days will give xdays yhrs as xdays
+  if (moment() > moment(appointmentTime) && moment() < followUpDayMoment) {
+    diffInDays += 1;
+  }
   if (diffInDays === 0) {
-    const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
-    const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
+    const diffInHours = followUpDayMoment.diff(moment(), 'hours');
+    const diffInMinutes = followUpDayMoment.diff(moment(), 'minutes');
     return diffInHours > 0
-      ? `You can follow up with the doctor via text (${diffInHours} hours left)`
+      ? `You can follow up with the doctor via text (${diffInHours} ${
+          diffInHours === 1 ? 'hour' : 'hours'
+        } left)`
       : diffInMinutes > 0
-      ? `You can follow up with the doctor via text (${diffInMinutes} minutes left)`
+      ? `You can follow up with the doctor via text (${diffInMinutes} ${
+          diffInMinutes === 1 ? 'minute' : 'minutes'
+        } left)`
       : '';
   } else if (diffInDays > 0) {
-    return `You can follow up with the doctor via text (${diffInDays} days left)`;
+    return `You can follow up with the doctor via text (${diffInDays} ${
+      diffInDays === 1 ? 'day' : 'days'
+    } left)`;
   } else {
     return '';
   }
