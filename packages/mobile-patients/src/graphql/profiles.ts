@@ -2522,6 +2522,14 @@ export const CHECK_IF_FOLLOWUP_BOOKED = gql`
   }
 `;
 
+export const SEND_PATIENT_WAIT_NOTIFICATION = gql`
+  query sendPatientWaitNotification($appointmentId: String!) {
+    sendPatientWaitNotification(appointmentId: $appointmentId) {
+      status
+    }
+  }
+`;
+
 export const UPLOAD_CHAT_FILE = gql`
   mutation uploadChatDocument($fileType: String, $base64FileInput: String, $appointmentId: String) {
     uploadChatDocument(
