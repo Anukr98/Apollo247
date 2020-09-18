@@ -20,6 +20,7 @@ import moment from 'moment';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -340,6 +341,7 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
       window.location.reload();
     }
   }, [props.stopRedirect, isRedirect]);
+
   return (
     <Route
       render={({ history }) => {
@@ -362,6 +364,11 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
                   if (specialities.length > 0) {
                     const specialitiesEncoded = encodeURI(specialities.join(','));
                     localStorage.setItem('symptomTracker', specialitiesEncoded);
+                    /**Gtm code start start */
+                    dataLayerTracking({
+                      event: 'Show Doctors Clicked',
+                    });
+                    /**Gtm code start end */
                     setIsRedirect(true);
                     props.setDoctorPopOver(true);
                   }
@@ -393,6 +400,18 @@ const SymptomsTrackerSDK: React.FC = () => {
   const [stopRedirect, setStopRedirect] = useState('continue');
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isRedirect, setIsRedirect] = useState<boolean>(false);
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Track Symptoms Page',
+      pageLOB: 'Consultation',
+      pageType: 'Track Symptom',
+    });
+    /**Gtm code start end */
+  }, []);
 
   const getAge = (dob: string) =>
     moment()

@@ -37,7 +37,7 @@ import {
   ValidateConsultCouponVariables,
 } from 'graphql/types/ValidateConsultCoupon';
 import { Alerts } from 'components/Alerts/Alerts';
-import { gtmTracking, _cbTracking } from '../gtmTracking';
+import { gtmTracking, _cbTracking, dataLayerTracking } from '../gtmTracking';
 import { useApolloClient } from 'react-apollo-hooks';
 import { ShowSlots } from './ShowSlots';
 
@@ -790,6 +790,15 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     speciality: getSpeciality(),
                   })
                 );
+                /**Gtm code start start */
+                dataLayerTracking({
+                  event: 'Pay Now Clicked',
+                  Price: revisedAmount,
+                  product: doctorId,
+                  Time: appointmentDateTime,
+                  Type: AppointmentType.ONLINE,
+                });
+                /**Gtm code start end */
               }}
               className={
                 disableSubmit ||
