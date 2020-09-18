@@ -42,6 +42,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       color: 'rgba(2,71,91,0.6)',
       fontWeight: 500,
+      '& img': {
+        margin: '5px 10px 0 0',
+        position: 'relative',
+        top: 2,
+      },
     },
     doctorService: {
       paddingTop: 8,
@@ -131,9 +136,9 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
       </div>
       {source && source !== '-' && (
         <div className={classes.consultType}>
-          {/* {source === '247self' ? <img /> : <img />} // first image should have person image and second one should be hospital  */}
+          {source === '247self' ? <img src={require('images/ic_selfupload.svg')} alt="" /> : <img src={require('images/ic_hospitalgray.svg')} alt="" />}
           {recordType !== MedicalRecordType.HOSPITALIZATION &&
-          (source === '247self' || _lowerCase(source) === 'self')
+            (source === '247self' || _lowerCase(source) === 'self')
             ? 'Self upload'
             : source}
         </div>
