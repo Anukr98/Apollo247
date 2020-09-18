@@ -2,6 +2,7 @@ import { MedicineIcon, MedicineRxIcon } from '@aph/mobile-patients/src/component
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Image } from 'react-native-elements';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
@@ -40,6 +41,9 @@ const styles = StyleSheet.create({
   specialpriceTextStyle: {
     ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0),
     marginLeft: 2,
+  },
+  offTextStyle: {
+    ...theme.viewStyles.text('M', 11, '#00B38E', 1, 20, 0),
   },
   priceAndAddToCartViewStyle: {
     marginLeft: 3,
@@ -120,7 +124,7 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
     return (
       <View style={styles.rowSpaceBetweenView}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.medicineTitle} numberOfLines={3}>
+          <Text style={styles.medicineTitle} numberOfLines={specialPrice ? 2 : 3}>
             {medicineName}
           </Text>
         </View>
@@ -191,12 +195,18 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
   };
 
   const renderSpecialPrice = () => {
+    const off_text = getDiscountPercentage(price, specialPrice)
+      ? ' ' + getDiscountPercentage(price, specialPrice) + '%off'
+      : '';
     return isInStock && specialPrice ? (
-      <Text style={styles.specialpriceTextStyle}>
-        {'('}
-        <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
-        {')'}
-      </Text>
+      <View style={{ flexDirection: 'row' }}>
+        <Text style={styles.specialpriceTextStyle}>
+          {'('}
+          <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
+          {')'}
+        </Text>
+        <Text style={styles.offTextStyle}>{off_text}</Text>
+      </View>
     ) : null;
   };
 
