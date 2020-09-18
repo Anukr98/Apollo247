@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Typography, makeStyles, Box } from '@material-ui/core';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { getLocalStorageItem, updateLocalStorageItem } from './LocalStorageUtils';
-import { AphTextField, AphButton } from '@aph/web-ui-components';
+import { AphTextField } from '@aph/web-ui-components';
 import { useParams } from 'hooks/routerHooks';
 
 const useStyles = makeStyles(() => ({
@@ -83,7 +83,6 @@ export const DoctorsNotes: React.FC = (props) => {
           <AphTextField
             fullWidth
             className={classes.textFieldColor}
-            //placeholder="What you enter here won't be shown to the patient.."
             defaultValue={getDefaultValue('diagnosticTestResult')}
             onBlur={(e) => {
               const storageItem = getLocalStorageItem(params.id);
@@ -106,7 +105,6 @@ export const DoctorsNotes: React.FC = (props) => {
           <AphTextField
             fullWidth
             className={classes.textFieldColor}
-            //placeholder="What you enter here won't be shown to the patient.."
             defaultValue={getDefaultValue('clinicalObservationNotes')}
             onBlur={(e) => {
               const storageItem = getLocalStorageItem(params.id);
@@ -128,7 +126,6 @@ export const DoctorsNotes: React.FC = (props) => {
         <Typography component="div">
           <AphTextField
             fullWidth
-            // className={classes.textFieldColor}
             placeholder="What you enter here won't be shown to the patient.."
             defaultValue={getDefaultValue('note')}
             onBlur={(e) => {

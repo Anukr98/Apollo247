@@ -5,12 +5,9 @@ import {
   Typography,
   ExpansionPanel,
   ExpansionPanelSummary,
-  ExpansionPanelDetails,
-  Divider,
-  Box,
+  ExpansionPanelDetails
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { AphTextField, AphButton } from '@aph/web-ui-components';
 import {
   Symptoms,
   LifeStyle,
@@ -158,7 +155,6 @@ const useStyles = makeStyles((theme: Theme) => {
 interface CashSheetProps {
   startAppointment: boolean;
 }
-let autoSaveIntervalId: any;
 type Params = { id: string; patientId: string; tabValue: string };
 export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   const classes = useStyles({});
@@ -218,7 +214,6 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     setDiagnosticTestResult,
     clinicalObservationNotes,
     setClinicalObservationNotes,
-    patientDetails,
   } = useContext(CaseSheetContext);
   const params = useParams<Params>();
 
@@ -445,13 +440,6 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     }
   };
 
-  const getNotesDefaultValue = () => {
-    const storageItem = getLocalStorageItem(params.id);
-    return storageItem ? storageItem.notes : notes;
-  };
-
-  const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
-
   return (
     <div className={classes.casesheetContainer}>
       <div className={classes.caseSheet}>
@@ -474,29 +462,6 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
           ))}
         </section>
       </div>
-      {/* <Divider className={classes.divider} />
-      <Box boxShadow={5} borderRadius={10} className={classes.notesContainer}>
-        <Typography component="h4" variant="h4" className={classes.notesHeader}>
-          Personal Notes (What you enter here won't be shown to the patient..)
-        </Typography>
-        <Typography component="div" className={classes.textFieldWrapper}>
-          <AphTextField
-            fullWidth
-            className={classes.textFieldColor}
-            placeholder="What you enter here won't be shown to the patient.."
-            defaultValue={getNotesDefaultValue()}
-            onBlur={(e) => {
-              const storageItem = getLocalStorageItem(params.id);
-              if (storageItem) {
-                storageItem.notes = e.target.value;
-                updateLocalStorageItem(params.id, storageItem);
-              }
-              setSRDNotes(e.target.value);
-            }}
-            disabled={!props.startAppointment}
-          />
-        </Typography>
-      </Box> */}
     </div>
   );
 };

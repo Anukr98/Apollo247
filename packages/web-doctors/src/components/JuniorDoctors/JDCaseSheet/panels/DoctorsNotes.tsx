@@ -1,6 +1,6 @@
 +import React, { useContext } from 'react';
-import { Typography, makeStyles, Box } from '@material-ui/core';
-import { AphTextField, AphButton } from '@aph/web-ui-components';
+import { Typography, makeStyles } from '@material-ui/core';
+import { AphTextField } from '@aph/web-ui-components';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { useParams } from 'hooks/routerHooks';
 import { Params } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
