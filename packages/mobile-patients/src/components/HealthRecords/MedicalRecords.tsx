@@ -97,7 +97,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
     return array.sort(({ data: data1 }, { data: data2 }) => {
       let date1 = new Date(data1.date);
       let date2 = new Date(data2.date);
-      return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+      return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
     });
   };
 
