@@ -447,16 +447,20 @@ const isPastAppointment = (appointmentDateTime: string) =>
   moment(appointmentDateTime).add(7, 'days').isBefore(moment());
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
-  const appointmentDate = moment(appointmentTime);
+  const appointmentDate = moment(appointmentTime).add('days', 1).set({
+    hour: 0,
+    minute: 0,
+  });
   const followUpDayMoment = appointmentDate.add(7, 'days');
-  let diffInDays = followUpDayMoment.diff(moment(), 'days'); // it will applicable if appointmentDate > followupDayMoment and diff shouldn't cross 7
+  console.log(appointmentTime, appointmentDate, followUpDayMoment);
+  let diffInDays = followUpDayMoment.diff(moment(), 'days');
   if (appointmentDate < followUpDayMoment) {
-    // diff(moment(), 'days') gives 6 days x hours as 6days, to show it as 7 days adding +1
+    console.log(appointmentDate, followUpDayMoment);
     diffInDays += 1;
   }
   if (diffInDays === 0) {
-    const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
-    const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
+    const diffInHours = followUpDayMoment.diff(moment(), 'hours');
+    const diffInMinutes = followUpDayMoment.diff(moment(), 'minutes');
     return diffInHours > 0
       ? `Valid for ${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'}`
       : diffInMinutes > 0

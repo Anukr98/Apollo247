@@ -613,6 +613,14 @@ export const ADD_MEDICAL_RECORD = gql`
   }
 `;
 
+export const ADD_LAB_RESULT_RECORD = gql`
+  mutation addPatientLabTestRecord($AddLabTestRecordInput: AddLabTestRecordInput) {
+    addPatientLabTestRecord(addLabTestRecordInput: $AddLabTestRecordInput) {
+      status
+    }
+  }
+`;
+
 export const ADD_HEALTHCHECK_RECORD = gql`
   mutation addPatientHealthCheckRecord($AddHealthCheckRecordInput: AddHealthCheckRecordInput) {
     addPatientHealthCheckRecord(addHealthCheckRecordInput: $AddHealthCheckRecordInput) {
