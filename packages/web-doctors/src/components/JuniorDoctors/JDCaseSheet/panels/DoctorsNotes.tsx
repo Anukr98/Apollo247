@@ -12,18 +12,17 @@ import {
 const useStyles = makeStyles(() => ({
   container: {
     borderRadius: '5px',
-    border: 'solid 1px rgba(2, 71, 91, 0.15)',
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
     color: '#01475b !important',
-    padding: '10px 10px 10px 20px',
+    padding: '10px 10px 10px 0px',
     fontSize: 14,
     lineHeight: 1.43,
     fontWeight: 'normal',
     width: '100%',
+    marginBottom: 15,
   },
   notesHeader: {
-    color: '#0087ba',
-    fontSize: 17,
+    color: 'rgba(2,71,91,0.6)',
+    fontSize: 14,
     fontWeight: 500,
     marginBottom: 10,
   },

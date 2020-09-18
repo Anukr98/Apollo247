@@ -8,18 +8,16 @@ import { useParams } from 'hooks/routerHooks';
 const useStyles = makeStyles(() => ({
   container: {
     borderRadius: '5px',
-    border: 'solid 1px rgba(2, 71, 91, 0.15)',
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
     color: '#01475b !important',
-    padding: '10px 10px 10px 20px',
+    padding: '10px 10px 10px 0px',
     fontSize: 14,
     lineHeight: 1.43,
     fontWeight: 'normal',
     width: '100%',
   },
   notesHeader: {
-    color: '#0087ba',
-    fontSize: 17,
+    color: 'rgba(2,71,91,0.6)',
+    fontSize: 14,
     fontWeight: 500,
     marginBottom: 10,
   },
@@ -64,12 +62,18 @@ export const DoctorsNotes: React.FC = (props) => {
   return (
     <div>
       <div className={classes.container}>
-      <Typography component="h4" variant="h4" className={classes.notesHeader}>
-        Junior Doctor Notes
-      </Typography>
-      <Typography component="div" className={classes.container}>
-        {juniorDoctorNotes && juniorDoctorNotes.length > 0 ? juniorDoctorNotes : 'No notes'}
-      </Typography>
+        <Typography component="h4" variant="h4" className={classes.notesHeader}>
+          Junior Doctor Notes
+        </Typography>
+        <Typography component="div">
+          <AphTextField
+          fullWidth
+          className={classes.textFieldColor}
+          defaultValue={juniorDoctorNotes && juniorDoctorNotes.length > 0 ? juniorDoctorNotes : 'No notes'}
+          multiline
+          disabled
+          />
+        </Typography>
       </div>
       <div className={classes.container}>
         <Typography component="h4" variant="h4" className={classes.notesHeader}>

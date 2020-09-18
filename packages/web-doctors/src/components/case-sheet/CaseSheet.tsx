@@ -149,6 +149,9 @@ const useStyles = makeStyles((theme: Theme) => {
     none: {
       display: 'none',
     },
+    displayBlock: {
+      display: 'block',
+    },
   };
 });
 
@@ -466,7 +469,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
               <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="h3">{item.value}</Typography>
               </ExpansionPanelSummary>
-              <ExpansionPanelDetails>{item.component}</ExpansionPanelDetails>
+              <ExpansionPanelDetails className={classes.displayBlock}>{item.component}</ExpansionPanelDetails>
             </ExpansionPanel>
           ))}
         </section>
