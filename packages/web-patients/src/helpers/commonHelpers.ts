@@ -443,19 +443,17 @@ const getCouponByUserMobileNumber = () => {
   );
 };
 
-const isPastAppointment = (appointmentDateTime: string) =>
-  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
+const isPastAppointment = (appointmentDateTime: string) => {
+  const appointmentDate = moment(appointmentDateTime).set({ hour: 0, minute: 0 });
+  const followUpDayMoment = appointmentDate.add(7, 'days');
+  return followUpDayMoment.isBefore(moment());
+};
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
-  const appointmentDate = moment(appointmentTime).add('days', 1).set({
-    hour: 0,
-    minute: 0,
-  });
+  const appointmentDate = moment(appointmentTime).set({ hour: 0, minute: 0 });
   const followUpDayMoment = appointmentDate.add(7, 'days');
-  console.log(appointmentTime, appointmentDate, followUpDayMoment);
   let diffInDays = followUpDayMoment.diff(moment(), 'days');
-  if (appointmentDate < followUpDayMoment) {
-    console.log(appointmentDate, followUpDayMoment);
+  if (moment() > moment(appointmentTime) && moment() < followUpDayMoment) {
     diffInDays += 1;
   }
   if (diffInDays === 0) {
