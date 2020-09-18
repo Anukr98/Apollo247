@@ -173,7 +173,7 @@ export const validatePharmaCoupon: Resolver<
     reasonForInvalidStatus = couponData.response.reason || '';
     couponData.response.products.map((item) => {
       const orderLineItemData = orderLineItems.filter((item1) => item1.itemId == item.sku);
-      const paidQuantity = item.quantity - item.couponFree;
+      const paidQuantity = item.quantity - (item.couponFree || 0);
       mrpPriceTotal = mrpPriceTotal + item.mrp * paidQuantity;
       specialPriceTotal = specialPriceTotal + item.specialPrice * paidQuantity;
       if (item.mrp != item.specialPrice && item.onMrp) {
