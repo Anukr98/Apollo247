@@ -1,42 +1,41 @@
-import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  Props as SearchMedicineCardProps,
+  SearchMedicineCard,
+} from '@aph/mobile-patients/src/components/ui/SearchMedicineCard';
+import { SearchMedicineGridCard } from '@aph/mobile-patients/src/components/ui/SearchMedicineGridCard';
 import React from 'react';
-import { FlatList, FlatListProps, ListRenderItemInfo, StyleSheet, View, Text } from 'react-native';
-// import { SearchMedicineCard } from '@aph/mobile-patients/src/components/ui/SearchMedicineCard';
+import { FlatList, FlatListProps, ListRenderItemInfo, StyleSheet, View } from 'react-native';
 
-export interface MedListingProductProps extends MedicineProduct {
-  onPress: () => void;
-  onPressAddToCart: () => void;
-  onPressNotify: () => void;
-  onPressAdd: () => void;
-  onPressSubstract: () => void;
-  quantity: number;
-}
+export interface MedListingProductProps extends SearchMedicineCardProps {}
 type ListProps = FlatListProps<MedListingProductProps>;
 
 export interface Props extends Omit<ListProps, 'renderItem'> {
-  // export interface Props extends ListProps {
   view: 'list' | 'grid';
 }
 
 export const MedListingProducts: React.FC<Props> = ({
   data,
   view,
-  style,
   contentContainerStyle,
   ...restOfProps
 }) => {
-  const renderItem = ({ item, index }: ListRenderItemInfo<MedicineProduct>) => {
-    // return <SearchMedicineCard style={styles.medicineCard} {...item} />;
-    // console.log('MedListingProducts => ', item);
-    return (
-      <View style={{ height: 100, width: '100%', backgroundColor: 'blue' }}>
-        <Text style={{ color: 'white', fontSize: 30 }}>{index}</Text>
-        <Text style={{ color: 'white', fontSize: 14 }}>
-          {item.sku}, {item.name}
-        </Text>
-      </View>
-    );
+  const isGridView = view == 'grid';
+
+  const renderItem = ({ item, index }: ListRenderItemInfo<SearchMedicineCardProps>) => {
+    const props: SearchMedicineCardProps = {
+      ...item,
+      containerStyle: !isGridView
+        ? styles.itemListContainer
+        : index == data!.length - 1 && index % 2 == 0
+        ? styles.itemGridLastContainer
+        : index % 2 == 0
+        ? styles.itemGridEvenContainer
+        : styles.itemGridOddContainer,
+    };
+    return isGridView ? <SearchMedicineGridCard {...props} /> : <SearchMedicineCard {...props} />;
   };
+
+  const renderItemSeparator = () => <View style={styles.itemSeparator} />;
 
   return (
     <FlatList
@@ -46,19 +45,34 @@ export const MedListingProducts: React.FC<Props> = ({
       keyboardShouldPersistTaps="always"
       bounces={false}
       showsVerticalScrollIndicator={false}
-      numColumns={view == 'grid' ? 2 : 1}
+      numColumns={isGridView ? 2 : 1}
       key={view}
       removeClippedSubviews={true}
-      style={[styles.flatList, style]}
-      ItemSeparatorComponent={() => <View style={{ margin: 4 }} />}
+      ItemSeparatorComponent={renderItemSeparator}
       contentContainerStyle={[styles.flatListContainer, contentContainerStyle]}
       {...restOfProps}
     />
   );
 };
 
+const itemSpacing = 16;
 const styles = StyleSheet.create({
-  flatList: {},
-  flatListContainer: {},
-  item: {},
+  flatListContainer: {
+    paddingBottom: 20,
+  },
+  itemSeparator: { margin: 4 },
+  itemListContainer: {
+    marginHorizontal: itemSpacing,
+  },
+  itemGridEvenContainer: {
+    marginLeft: itemSpacing,
+  },
+  itemGridOddContainer: {
+    marginLeft: itemSpacing,
+    marginRight: itemSpacing,
+  },
+  itemGridLastContainer: {
+    marginLeft: itemSpacing,
+    marginRight: itemSpacing * 3,
+  },
 });
