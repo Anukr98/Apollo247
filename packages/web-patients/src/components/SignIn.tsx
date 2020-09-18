@@ -232,7 +232,6 @@ const OtpInput: React.FC<{
           error={verifyOtpError || otpExeedError}
         >
           <div>
-            {console.log(timer, '0000000000000')}
             {!(isSigningIn || isVerifyingOtp) &&
               showTimer &&
               `Try again after  ${Math.floor(timer / 60)}:${
