@@ -2017,35 +2017,6 @@ export const ADD_PATIENT_LAB_TEST_RECORD = gql`
   }
 `;
 
-export const GET_MEDICAL_RECORD = gql`
-  query getPatientMedicalRecords($patientId: ID!) {
-    getPatientMedicalRecords(patientId: $patientId) {
-      medicalRecords {
-        id
-        testName
-        testDate
-        recordType
-        referringDoctor
-        observations
-        additionalNotes
-        sourceName
-        documentURLs
-        prismFileIds
-        issuingDoctor
-        location
-        medicalRecordParameters {
-          id
-          parameterName
-          unit
-          result
-          minimum
-          maximum
-        }
-      }
-    }
-  }
-`;
-
 export const GET_MEDICAL_PRISM_RECORD = gql`
   query getPatientPrismMedicalRecords($patientId: ID!) {
     getPatientPrismMedicalRecords(patientId: $patientId) {
@@ -2406,14 +2377,6 @@ export const BOOK_APPOINTMENT_RESCHEDULE = gql`
         patientId
         rescheduleCount
       }
-    }
-  }
-`;
-
-export const DELETE_PATIENT_MEDICAL_RECORD = gql`
-  mutation deletePatientMedicalRecord($recordId: ID!) {
-    deletePatientMedicalRecord(recordId: $recordId) {
-      status
     }
   }
 `;
