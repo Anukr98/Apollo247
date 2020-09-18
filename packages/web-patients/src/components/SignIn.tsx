@@ -111,11 +111,12 @@ const OtpInput: React.FC<{
   const blockedMessage = 'You entered an incorrect OTP 3 times. Please try again after some time';
   const [otpStatusText, setOtpStatusText] = useState<string>(initialOTPMessage);
   const [otpInputRefs, setOtpInputRefs] = useState<RefObject<HTMLInputElement>[]>([]);
+  const incorrectOtpTimerValue = 120;
   const [otp, setOtp] = useState<string>('');
-  const countDown = useRef(900);
+  const countDown = useRef(incorrectOtpTimerValue);
   const [otpSubmitCount, setOtpSubmitCount] = useState(0);
   const [showTimer, setShowTimer] = useState<boolean>(false);
-  const [timer, setTimer] = useState<number>(900);
+  const [timer, setTimer] = useState<number>(incorrectOtpTimerValue);
   const [disableResendOtpButton, setDisableResendOtpButton] = useState<boolean>(false);
   const [disableResendOtpButtonCounter, setDisableResendOtpButtonCounter] = useState<number>(0);
   const maxAllowedAttempts = 3;
@@ -177,7 +178,7 @@ const OtpInput: React.FC<{
             clearInterval(interval);
             setOtpSubmitCount(0);
             setShowTimer(false);
-            countDown.current = 900;
+            countDown.current = incorrectOtpTimerValue;
           }
         }, 1000);
       }
@@ -189,11 +190,11 @@ const OtpInput: React.FC<{
           if (item.mobileNumber == mobileNumber) {
             const leftSeconds: number =
               (new Date().getTime() - Number(item.timerMiliSeconds)) / 1000;
-            if (leftSeconds < 900) {
+            if (leftSeconds < incorrectOtpTimerValue) {
               setOtpStatusText(blockedMessage);
               setOtpExeedError(true);
               setOtp('');
-              countDown.current = Math.floor(900 - leftSeconds);
+              countDown.current = Math.floor(incorrectOtpTimerValue - leftSeconds);
               const interval = setInterval(() => {
                 setShowTimer(true);
                 countDown.current--;
@@ -202,7 +203,7 @@ const OtpInput: React.FC<{
                   clearInterval(interval);
                   setOtpSubmitCount(0);
                   setShowTimer(false);
-                  countDown.current = 900;
+                  countDown.current = incorrectOtpTimerValue;
                 }
               }, 1000);
             } else {
@@ -231,6 +232,7 @@ const OtpInput: React.FC<{
           error={verifyOtpError || otpExeedError}
         >
           <div>
+            {console.log(timer, '0000000000000')}
             {!(isSigningIn || isVerifyingOtp) &&
               showTimer &&
               `Try again after  ${Math.floor(timer / 60)}:${
