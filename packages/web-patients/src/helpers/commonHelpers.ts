@@ -486,7 +486,6 @@ const HEALTH_RECORDS_NO_DATA_FOUND =
 
 const HEALTH_RECORDS_NOTE =
   'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
-const stripHtml = (originalString: any) => originalString.replace(/(<([^>]+)>)/gi, '');
 
 export {
   HEALTH_RECORDS_NO_DATA_FOUND,
@@ -542,5 +541,4 @@ export {
   PINCODE_MAXLENGTH,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
   HEALTH_RECORDS_NOTE,
-  stripHtml,
 };
