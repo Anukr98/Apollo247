@@ -741,7 +741,14 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     )}
                     {activeData.siteDisplayName && (
                       <div className={classes.reportsDetails}>
-                        <div className={classes.sitedisplayName}>{activeData.siteDisplayName}</div>
+                        <div className={classes.sitedisplayName}>
+                          {activeData &&
+                          activeData.labTestSource &&
+                          (_lowerCase(activeData.labTestSource) === 'self' ||
+                            activeData.labTestSource === '247Self')
+                            ? activeData.labTestSource
+                            : activeData.siteDisplayName}
+                        </div>
                       </div>
                     )}
                     <hr />
