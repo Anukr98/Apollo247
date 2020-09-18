@@ -942,7 +942,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                   appointmentDetails &&
                                   appointmentDetails.doctorInfo &&
                                   appointmentDetails.doctorInfo.displayName && (
-                                    <h6>With Dr. {appointmentDetails.doctorInfo.displayName}</h6>
+                                    <h6>
+                                      With{' '}
+                                      {appointmentDetails.doctorInfo.salutation
+                                        ? `${appointmentDetails.doctorInfo.salutation}.`
+                                        : ''}{' '}
+                                      {appointmentDetails.doctorInfo.displayName}
+                                    </h6>
                                   )}
                               </div>
                             )}
