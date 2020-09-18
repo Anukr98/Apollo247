@@ -21,6 +21,7 @@ import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useCurrentPatient } from 'hooks/authHooks';
+import stripHtml from 'string-strip-html';
 import {
   uploadPrescriptionTracking,
   pharmacyPdpOverviewTracking,
@@ -34,7 +35,7 @@ import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
-import { getPackOfMedicine, stripHtml } from 'helpers/commonHelpers';
+import { getPackOfMedicine } from 'helpers/commonHelpers';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -903,7 +904,7 @@ const MedicineDetails: React.FC = (props) => {
         if (v.Caption === 'USES') {
           modifiedData.forEach((x) => {
             if (x.key === 'Overview') {
-              x.value = x.value.concat(stripHtml(v.CaptionDesc));
+              x.value = x.value.concat(stripHtml(v.CaptionDesc).result);
             }
           });
         } else if (v.Caption === 'SIDE EFFECTS') {
@@ -926,9 +927,9 @@ const MedicineDetails: React.FC = (props) => {
           modifiedData.forEach((x) => {
             if (x.key === 'Usage') {
               if (v.Caption === 'HOW TO USE') {
-                x.value = `${stripHtml(v.CaptionDesc)}${x.value}`;
+                x.value = `${stripHtml(v.CaptionDesc).result}${x.value}`;
               } else {
-                x.value = `${x.value}${stripHtml(v.CaptionDesc)} `;
+                x.value = `${x.value}${stripHtml(v.CaptionDesc).result} `;
               }
             }
           });
@@ -975,7 +976,7 @@ const MedicineDetails: React.FC = (props) => {
         } else if (v.Caption === 'STORAGE') {
           modifiedData.forEach((x) => {
             if (x.key === 'Storage') {
-              x.value = x.value.concat(stripHtml(v.CaptionDesc));
+              x.value = x.value.concat(stripHtml(v.CaptionDesc).result);
             }
           });
         }

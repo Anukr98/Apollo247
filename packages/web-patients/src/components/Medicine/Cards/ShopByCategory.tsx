@@ -120,7 +120,10 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
                 <Link to={clientRoutes.searchByMedicine(searchText, category.url_key)}>
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>
-                      <LazyIntersection src={`${apiDetails.url}${category.image_url}`} alt={''} />
+                      <LazyIntersection
+                        src={`${apiDetails.url}${category.image_url}`}
+                        alt={`Buy ${category.title} Products Online`}
+                      />
                     </div>
                     <div className={classes.cardTitle}>{category.title}</div>
                   </div>

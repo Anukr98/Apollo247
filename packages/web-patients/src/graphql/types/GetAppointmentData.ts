@@ -9,6 +9,12 @@ import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, DoctorType } from "./globa
 // GraphQL query operation: GetAppointmentData
 // ====================================================
 
+export interface GetAppointmentData_getAppointmentData_appointmentsHistory_caseSheet {
+  __typename: "CaseSheet";
+  followUpAfterInDays: string | null;
+  doctorType: DoctorType | null;
+}
+
 export interface GetAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo_specialty {
   __typename: "DoctorSpecialties";
   name: string;
@@ -66,6 +72,7 @@ export interface GetAppointmentData_getAppointmentData_appointmentsHistory {
   isSeniorConsultStarted: boolean | null;
   isConsultStarted: boolean | null;
   symptoms: string | null;
+  caseSheet: (GetAppointmentData_getAppointmentData_appointmentsHistory_caseSheet | null)[] | null;
   doctorInfo: GetAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo | null;
 }
 
