@@ -218,7 +218,10 @@ import {
   patientDeviceVoipTokenTypeDefs,
   patientDeviceVoipTokenResolvers,
 } from 'profiles-service/resolvers/savepatientDeviceVoipToken';
-
+import {
+  validateHDFCCustomerTypeDefs,
+  validateHDFCCustomer,
+} from 'profiles-service/resolvers/hdfcCustomerValidation';
 (async () => {
   await connect();
   const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
@@ -483,6 +486,10 @@ import {
       {
         typeDefs: patientDeviceVoipTokenTypeDefs,
         resolvers: patientDeviceVoipTokenResolvers,
+      },
+      {
+        typeDefs: validateHDFCCustomerTypeDefs,
+        resolvers: validateHDFCCustomer,
       },
     ]),
     plugins: [
