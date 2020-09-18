@@ -654,11 +654,14 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                                     : getStringDate(combinedData)
                                 }
                                 source={
-                                  combinedData && combinedData.siteDisplayName
-                                    ? combinedData.siteDisplayName
-                                    : !!combinedData.labTestSource
+                                  combinedData &&
+                                  combinedData.labTestSource &&
+                                  (_lowerCase(combinedData.labTestSource) === 'self' ||
+                                    combinedData.labTestSource === '247Self')
                                     ? combinedData.labTestSource
-                                    : '-'
+                                    : combinedData.siteDisplayName
+                                    ? combinedData.siteDisplayName
+                                    : combinedData.labTestSource || '-'
                                 }
                                 recordType={MedicalRecordType.TEST_REPORT}
                                 id={`LabResults-${combinedData.id}`}
