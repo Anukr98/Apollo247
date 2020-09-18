@@ -53,7 +53,10 @@ import {
   ValidateConsultCoupon,
   ValidateConsultCouponVariables,
 } from '@aph/mobile-patients/src/graphql/types/ValidateConsultCoupon';
-import { validateConsultCoupon } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  validateConsultCoupon,
+  userSpecificCoupon,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   getNextAvailableSlots,
   saveSearchDoctor,
@@ -178,6 +181,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   }, [props.consultModeSelected]);
 
   useEffect(() => {
+    fetchUserSpecificCoupon();
     const todayDate = new Date().toISOString().slice(0, 10);
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
       .then(({ data }: any) => {
@@ -197,6 +201,34 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         console.log('error', e);
       });
   }, []);
+
+  const fetchUserSpecificCoupon = () => {
+    userSpecificCoupon(g(currentPatient, 'mobileNumber'))
+      .then((resp: any) => {
+        console.log(resp.data);
+        if (resp.data.errorCode == 0) {
+          let couponList = resp.data.response;
+          if (typeof couponList != null && couponList.length) {
+            const coupon = couponList[0].coupon;
+            validateUserSpecificCoupon(coupon);
+          }
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('fetchingUserSpecificCoupon', error);
+      });
+  };
+
+  async function validateUserSpecificCoupon(coupon: string) {
+    try {
+      await validateCoupon(coupon, true);
+    } catch (error) {
+      setCoupon('');
+      setDoctorDiscountedFees(0);
+      setshowSpinner(false);
+      return;
+    }
+  }
 
   const handleOrderSuccess = (doctorName: string) => {
     props.navigation.dispatch(
