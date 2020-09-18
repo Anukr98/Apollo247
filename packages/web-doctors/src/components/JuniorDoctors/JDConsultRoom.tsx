@@ -420,6 +420,8 @@ export const JDConsultRoom: React.FC = () => {
   const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);
   const [isNewMessage, setIsNewMessage] = React.useState(false);
   const [notesJrd, setNotesJrd] = React.useState('');
+  const [diagnosticTestResult, setDiagnosticTestResult] = useState<string | null>(null);
+  const [clinicalObservationNotes, setClinicalObservationNotes] = useState<string | null>(null);
   const [assignedDoctor, setAssignedDoctor] = useState<assignedDoctorType>({
     assignedDoctorSalutation: '',
     assignedDoctorFirstName: '',
@@ -985,6 +987,18 @@ export const JDConsultRoom: React.FC = () => {
                 ? storageItem.weight
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.weight
             );
+
+            setDiagnosticTestResult(
+              storageItem && storageItem.diagnosticTestResult
+               ? storageItem.diagnosticTestResult 
+               : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.diagnosticTestResult || ''
+            );
+
+            setClinicalObservationNotes(
+              storageItem && storageItem.clinicalObservationNotes
+               ? storageItem.clinicalObservationNotes 
+               : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.clinicalObservationNotes || ''
+            );
           }
           // -------------------------------------------------------------- //
           navigator.mediaDevices
@@ -1179,6 +1193,8 @@ export const JDConsultRoom: React.FC = () => {
       occupationHistory: occupationHistory || '',
       referralSpecialtyName: referralSpecialtyName || '',
       referralDescription: referralDescription || '',
+      diagnosticTestResult: diagnosticTestResult || '',
+      clinicalObservationNotes: clinicalObservationNotes || ''
     };
 
     setSaving(true);
@@ -1529,6 +1545,10 @@ export const JDConsultRoom: React.FC = () => {
             setSymptoms,
             notes,
             setNotes,
+            diagnosticTestResult,
+            setDiagnosticTestResult,
+            clinicalObservationNotes,
+            setClinicalObservationNotes,
             juniorDoctorNotes,
             diagnosis,
             setDiagnosis,

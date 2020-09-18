@@ -604,6 +604,8 @@ export const GET_CASESHEET_JRD = gql`
           temperature
           weight
           medicationHistory
+          diagnosticTestResult
+          clinicalObservationNotes
         }
         photoUrl
         uhid
@@ -768,6 +770,8 @@ export const GET_CASESHEET = gql`
           temperature
           weight
           medicationHistory
+          diagnosticTestResult
+          clinicalObservationNotes
         }
         familyHistory {
           description
