@@ -493,7 +493,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       doctor.languages = doctor.languages.join(', ');
     }
     for (const slot of doc.inner_hits['doctorSlots.slots'].hits.hits) {
-      console.log(slot._source.slot);
       const nextAvailable = differenceInMinutes(new Date(slot._source.slot), callStartTime);
       doctor['earliestSlotavailableInMinutes'] = nextAvailable;
       finalDoctorNextAvailSlots.push({
@@ -618,7 +617,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   };
 
   const aggnData = await client.search(searchFilters);
-
+  client.close();
   function ifKeyExist(arr: any[], key: string, value: string) {
     if (arr.length) {
       arr = arr.filter((elem: any) => {
@@ -849,6 +848,7 @@ const getDoctorList: Resolver<
   const searchParams: RequestParams.Search = elasticDoctorSearch(offset,pageSize,elasticSort,elasticMatch);
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const getDetails = await client.search(searchParams);
+  client.close();
 
   const doctorTypeCount = getDetails.body.aggregations.doctorTypeCount.buckets;
   for (const doctorCount of doctorTypeCount) {

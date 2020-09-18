@@ -598,7 +598,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 
   matchedDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
   possibleDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
-
+  client.close();
   searchLogger(`API_CALL___END`);
   return {
     doctors: finalMatchedDoctors,
