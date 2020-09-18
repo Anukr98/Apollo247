@@ -2089,9 +2089,14 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           id
           labTestName
           labTestSource
+          packageId
+          packageName
           # labTestDate
           date
           labTestRefferedBy
+          siteDisplayName
+          tag
+          consultId
           additionalNotes
           observation
           labTestResults {
@@ -2138,6 +2143,71 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         errorMsg
         errorType
       }
+      healthChecksNew {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          healthCheckName
+          healthCheckDate
+          healthCheckSummary
+          healthCheckFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+          source
+          healthCheckType
+          followupDate
+        }
+      }
+      hospitalizationsNew {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          hospitalizationDate
+          dateOfHospitalization
+          hospitalName
+          doctorName
+          reasonForAdmission
+          diagnosisNotes
+          dateOfDischarge
+          dischargeSummary
+          doctorInstruction
+          dateOfNextVisit
+          hospitalizationFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+          source
+        }
+      }
+    }
+  }
+`;
+
+export const GET_LAB_RESULT_PDF = gql`
+  query getLabResultpdf($patientId: ID!, $recordId: String!) {
+    getLabResultpdf(patientId: $patientId, recordId: $recordId) {
+      url
     }
   }
 `;
