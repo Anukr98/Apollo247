@@ -743,6 +743,7 @@ export interface OrderLineItems {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
+  couponFree?: boolean | null;
 }
 
 export interface OtpVerificationInput {

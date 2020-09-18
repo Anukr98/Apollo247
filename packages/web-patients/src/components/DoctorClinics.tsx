@@ -10,7 +10,7 @@ import {
 import _uniqueId from 'lodash/uniqueId';
 import _forEach from 'lodash/forEach';
 import _map from 'lodash/map';
-import { getTime, format } from 'date-fns';
+import getTime from 'date-fns/getTime';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

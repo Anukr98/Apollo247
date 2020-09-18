@@ -16,6 +16,7 @@ import { NotifyMeNotification } from './NotifyMeNotification';
 import { useParams } from 'hooks/routerHooks';
 import _replace from 'lodash/replace';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { LazyIntersection } from '../lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -271,7 +272,10 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                 >
                   <div className={classes.pdHeader}>
                     <div className={classes.bigAvatar}>
-                      <img src={`${apiDetails.imageUrl}${product.thumbnail}`} alt="" />
+                      <LazyIntersection
+                        src={`${apiDetails.imageUrl}${product.thumbnail}`}
+                        alt={`Buy ${product.name} Online`}
+                      />
                     </div>
                     <div className={classes.productName}>{product.name}</div>
                   </div>
