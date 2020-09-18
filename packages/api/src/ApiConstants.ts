@@ -48,7 +48,7 @@ export enum ApiConstants {
 
   //appointment reschedule by patient
   DOCTOR_APPOINTMENT_RESCHEDULE_TITLE = 'Appointment has been rescheduled',
-  DOCTOR_APPOINTMENT_RESCHEDULE_BODY = 'Hi Dr. {0}!  Your appointment {1} with {2} has been rescheduled  to {3}. ',
+  DOCTOR_APPOINTMENT_RESCHEDULE_BODY = 'Namaste Dr. {0}!  Your appointment {1} with {2} has been rescheduled  to {3}. ',
   //initiate junior doctor session
   JUNIOR_APPT_SESSION_TITLE = 'Junior doctor initiated the session',
   JUNIOR_APPT_SESSION_BODY = "Hi {0}! :) Dr. {2}'s team doctor is waiting to start your consultation prep. Please proceed to the Consult Room",
@@ -448,12 +448,12 @@ export enum ApiConstants {
   MEDICINE_ORDER_REFUND_PROCESSED_EVENT_NAME = 'Refund Processed',
   MEDICINE_ORDER_REFUND_SUCCESSFUL_EVENT_NAME = 'Refund Successful',
 
-  WHATSAPP_SD_CONSULT_REMINDER_15 = 'inf_sd_consult_reminder_15_min',
-  WHATSAPP_SD_CHAT_NOTIFICATION_ID = 'inf_sd_chat_notification',
-  WHATSAPP_SD_OTP = 'inf_sd_otp_message',
-  WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation',
+  WHATSAPP_SD_CONSULT_REMINDER_15 = 'inf_sd_consult_reminder_15_min_namaste',
+  WHATSAPP_SD_CHAT_NOTIFICATION_ID = 'inf_sd_chat_notification_namaste1',
+  WHATSAPP_SD_OTP = 'inf_sd_otp_message_namaste',
+  WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation_namaste1',
   WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
-  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_button_2',
+  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_namaste3',
 
   ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE = 'R000247',
 

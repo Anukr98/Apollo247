@@ -1,7 +1,4 @@
-import {
-  useAppCommonData,
-  AppCommonDataContextProps,
-} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -18,11 +15,7 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  SAVE_DIAGNOSTIC_ORDER,
-  SAVE_ITDOSE_HOME_COLLECTION_DIAGNOSTIC_ORDER,
-  GET_DIAGNOSTICS_CITES,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { SAVE_DIAGNOSTIC_ORDER } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   DiagnosticLineItem,
   DiagnosticOrderInput,
@@ -35,10 +28,6 @@ import {
   SaveDiagnosticOrderVariables,
 } from '@aph/mobile-patients/src/graphql/types/SaveDiagnosticOrder';
 import {
-  SaveItdoseHomeCollectionDiagnosticOrder,
-  SaveItdoseHomeCollectionDiagnosticOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/SaveItdoseHomeCollectionDiagnosticOrder';
-import {
   g,
   postWebEngageEvent,
   formatAddress,
@@ -47,7 +36,7 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   SafeAreaView,
@@ -67,11 +56,6 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import {
-  getDiagnosticsCites,
-  getDiagnosticsCitesVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -219,15 +203,15 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     couponDiscount,
     coupon,
   } = useDiagnosticsCart();
-  const { locationForDiagnostics, locationDetails } = useAppCommonData();
+  const { locationForDiagnostics } = useAppCommonData();
   const client = useApolloClient();
   const MAX_SLIDER_VALUE = grandTotal;
 
   const getHomeVisitTime = () => {
     return '';
-    if (g(diagnosticSlot, 'date') && g(diagnosticSlot, 'Timeslot')) {
+    if (g(diagnosticSlot, 'date') && g(diagnosticSlot, 'slotStartTime')) {
       const _date = moment(g(diagnosticSlot, 'date')).format('D MMM YYYY');
-      const _time = moment(g(diagnosticSlot, 'Timeslot')!.trim(), 'hh:mm').format('hh:mm A');
+      const _time = moment(g(diagnosticSlot, 'slotStartTime')!.trim(), 'hh:mm').format('hh:mm A');
       return `${_date}, ${_time}`;
     } else {
       return '';
@@ -236,16 +220,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const homeVisitTime = getHomeVisitTime();
 
-  const saveHomeVisitOrder = (orderInfo: DiagnosticOrderInput) =>
-    client.mutate<
-      SaveItdoseHomeCollectionDiagnosticOrder,
-      SaveItdoseHomeCollectionDiagnosticOrderVariables
-    >({
-      mutation: SAVE_ITDOSE_HOME_COLLECTION_DIAGNOSTIC_ORDER,
-      variables: { diagnosticOrderInput: orderInfo },
-    });
-
-  const saveClinicOrder = (orderInfo: DiagnosticOrderInput) =>
+  const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
       mutation: SAVE_DIAGNOSTIC_ORDER,
       variables: { diagnosticOrderInput: orderInfo },
@@ -293,75 +268,32 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     } catch (error) {}
   };
 
-  const renderAlert = (message: string) => {
-    showAphAlert!({
-      title: string.common.uhOh,
-      description: message,
-      unDismissable: true,
-    });
-  };
-
-  const renderFailedMessage = () => {
-    renderAlert(`We're sorry :(  There's been a problem with your booking. Please book again.`);
-  };
-
-  const getServiceableCityDetails = async (
-    city: string,
-    pId: string
-  ): Promise<AppCommonDataContextProps['locationForDiagnostics']> => {
-    const { data } = await client.query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
-      query: GET_DIAGNOSTICS_CITES,
-      variables: {
-        cityName: city,
-        patientId: pId,
-      },
-    });
-    const cities = data.getDiagnosticsCites.diagnosticsCities || [];
-    const matchingLocation = cities.find((c) => c!.cityname.toLowerCase() === city.toLowerCase());
-    if (matchingLocation) {
-      const { cityid, cityname, stateid, statename } = matchingLocation;
-      return {
-        cityId: `${cityid}`,
-        stateId: `${stateid}`,
-        city: cityname,
-        state: statename,
-      };
-    }
-    return null;
-  };
-
-  const handleSlotBookedError = () => {
-    props.navigation.goBack();
-    showAphAlert!({
-      title: string.common.uhOh,
-      description: `We're sorry :(  The slot you're trying to book is already booked. Please pick another slot.`,
-    });
-  };
-
   const initiateOrder = async () => {
     setShowSpinner(true);
-    let location: AppCommonDataContextProps['locationForDiagnostics'] = null;
-    try {
-      if (!g(locationForDiagnostics, 'city') && g(locationDetails, 'city')) {
-        location = await getServiceableCityDetails(locationDetails!.city, g(currentPatient, 'id'));
-      }
-    } catch (error) {
-      CommonBugFender('TestsCheckoutScene_initiateOrder_location_try', error);
-    }
-
     const { CentreCode, CentreName, City, State, Locality } = diagnosticClinic || {};
-    const { date, Timeslot, TimeslotID } = diagnosticSlot || {};
-    const selectedLocation = (location ||
-      locationForDiagnostics ||
-      {}) as AppCommonDataContextProps['locationForDiagnostics'];
+    const {
+      slotStartTime,
+      slotEndTime,
+      employeeSlotId,
+      date,
+      diagnosticEmployeeCode,
+      // city, // ignore city for now from this and take from "locationForDiagnostics" context
+      diagnosticBranchCode,
+    } = diagnosticSlot || {};
+
+    const slotTimings = (slotStartTime && slotEndTime
+      ? `${slotStartTime}-${slotEndTime}`
+      : ''
+    ).replace(' ', '');
+    console.log(physicalPrescriptions, 'physical prescriptions');
+
     const orderInfo: DiagnosticOrderInput = {
       // <- for home collection order
-      diagnosticBranchCode: '',
-      diagnosticEmployeeCode: '',
-      employeeSlotId: 0,
-      slotTimings: Timeslot || '',
-      patientAddressId: deliveryAddressId,
-      slotId: TimeslotID || '',
+      diagnosticBranchCode: CentreCode ? '' : diagnosticBranchCode!,
+      diagnosticEmployeeCode: diagnosticEmployeeCode || '',
+      employeeSlotId: employeeSlotId! || 0,
+      slotTimings: slotTimings,
+      patientAddressId: deliveryAddressId!,
       // for home collection order ->
       // <- for clinic order
       centerName: CentreName || '',
@@ -370,10 +302,10 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       centerState: State || '',
       centerLocality: Locality || '',
       // for clinic order ->
-      city: selectedLocation!.city!,
-      state: selectedLocation!.state!,
-      stateId: `${selectedLocation!.stateId!}`,
-      cityId: `${selectedLocation!.cityId!}`,
+      city: (locationForDiagnostics || {}).city!,
+      state: (locationForDiagnostics || {}).state!,
+      stateId: `${(locationForDiagnostics || {}).stateId!}`,
+      cityId: `${(locationForDiagnostics || {}).cityId!}`,
       diagnosticDate: moment(date).format('YYYY-MM-DD'),
       prescriptionUrl: [
         ...physicalPrescriptions.map((item) => item.uploadedUrl),
@@ -391,8 +323,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       items: cartItems.map(
         (item) =>
           ({
-            itemId: Number(item.id),
-            price: item.specialPrice || item.price,
+            itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
+            price: (item.specialPrice as number) || item.price,
             quantity: 1,
           } as DiagnosticLineItem)
       ),
@@ -407,36 +339,46 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
 
-    try {
-      const isHomeCollection = !!deliveryAddressId;
-      const response = isHomeCollection
-        ? (await saveHomeVisitOrder(orderInfo)).data!.SaveItdoseHomeCollectionDiagnosticOrder
-        : (await saveClinicOrder(orderInfo)).data!.SaveDiagnosticOrder;
-      const { orderId, displayId, errorCode, errorMessage } = response || {};
-
-      if (errorCode || errorMessage) {
-        if (errorMessage === 'Slot Already Booked ') {
-          handleSlotBookedError();
+    console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
+    console.log('orderInfo\n', { diagnosticOrderInput: orderInfo });
+    saveOrder(orderInfo)
+      .then(({ data }) => {
+        console.log('SaveDiagnosticOrder API\n', { data });
+        const { orderId, displayId, errorCode, errorMessage } =
+          g(data, 'SaveDiagnosticOrder')! || {};
+        if (errorCode || errorMessage) {
+          // Order-failed
+          showAphAlert!({
+            unDismissable: true,
+            title: `Uh oh.. :(`,
+            description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
+            // description: `Order failed, ${errorMessage}.`,
+          });
         } else {
-          renderFailedMessage();
+          // Order-Success
+          if (!isCashOnDelivery) {
+            // PG order, redirect to web page
+            redirectToPaymentGateway(orderId!, displayId!);
+            return;
+          }
+          // COD order, show popup here & clear cart info
+          postwebEngageCheckoutCompletedEvent(`${displayId}`); // Make sure to add this event in test payment as well when enabled
+          clearCartInfo!();
+          handleOrderSuccess(orderId!, displayId!);
         }
+      })
+      .catch((error) => {
+        CommonBugFender('TestsCheckoutScene_saveOrder', error);
+        console.log('SaveDiagnosticOrder API Error\n', { error });
+        showAphAlert!({
+          unDismissable: true,
+          title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+          description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
+        });
+      })
+      .finally(() => {
         setShowSpinner(false);
-        return;
-      }
-
-      if (isCashOnDelivery) {
-        postwebEngageCheckoutCompletedEvent(`${displayId}`); // Make sure to add this event in test payment as well when enabled
-        clearCartInfo!();
-        handleOrderSuccess(orderId!, displayId!);
-      } else {
-        redirectToPaymentGateway(orderId!, displayId!);
-      }
-      setShowSpinner(false);
-    } catch (error) {
-      CommonBugFender('TestsCheckoutScene_initiateOrder_try', error);
-      renderFailedMessage();
-      setShowSpinner(false);
-    }
+      });
   };
 
   const renderHeader = () => {

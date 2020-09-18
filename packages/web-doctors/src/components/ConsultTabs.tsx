@@ -2026,11 +2026,11 @@ export const ConsultTabs: React.FC = () => {
             style={{ height: 'calc(100vh - 65px)' }}
 
           > */}
-          <RateCall
+          {/* <RateCall
             visible={giveRating}
             setGiveRating={setGiveRating}
             submitRatingCallback={(data) => submitRatingHandler(data)}
-          />
+          /> */}
           <div className={classes.container}>
             <CallPopover
               setGiveRating={setGiveRating}

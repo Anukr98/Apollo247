@@ -276,6 +276,14 @@ function getCookieValue() {
   }
   return '';
 }
+
+const loadOpentok = () => {
+  const script = document.createElement('script');
+  script.src = 'https://static.opentok.com/v2/js/opentok.min.js';
+  script.async = true;
+  document.body.appendChild(script);
+};
+
 export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const classes = useStyles({});
   const [isCall, setIscall] = React.useState(true);
@@ -290,6 +298,10 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const patientProfile = currentPatient && currentPatient.photoUrl;
   const isRetry = true;
   const { doctorDetails, videoCall } = props;
+
+  useEffect(() => {
+    loadOpentok();
+  }, []);
 
   const checkReconnecting = () => {
     if (reconnecting)
@@ -418,9 +430,7 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
   return (
     <div className={classes.root}>
       <div
-        className={`videoChatWindow ${
-          props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''
-          }`}
+        className={`videoChatWindow ${props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''}`}
       >
         {!props.showVideoChat && (
           <div className={classes.timerCls}>
@@ -465,12 +475,12 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
               console.log('Session Error', error);
               props.setSessionError(error);
             }}
-          // eventHandlers={{
-          //   connectionDestroyed: (event: any) => {
-          //     props.stopConsultCall();
-          //     setIscall(false);
-          //   },
-          // }}
+            // eventHandlers={{
+            //   connectionDestroyed: (event: any) => {
+            //     props.stopConsultCall();
+            //     setIscall(false);
+            //   },
+            // }}
           >
             <div
               className={`${classes.minimizeImg}
@@ -520,8 +530,8 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                       className={classes.maximizeImg}
                       src={
                         doctorDetails &&
-                          doctorDetails.getDoctorDetailsById &&
-                          doctorDetails.getDoctorDetailsById.photoUrl !== null
+                        doctorDetails.getDoctorDetailsById &&
+                        doctorDetails.getDoctorDetailsById.photoUrl !== null
                           ? doctorDetails.getDoctorDetailsById.photoUrl
                           : require('images/DefaultPatient_Video.svg')
                       }
@@ -532,8 +542,8 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                     className={classes.maximizeImg}
                     src={
                       doctorDetails &&
-                        doctorDetails.getDoctorDetailsById &&
-                        doctorDetails.getDoctorDetailsById.photoUrl !== null
+                      doctorDetails.getDoctorDetailsById &&
+                      doctorDetails.getDoctorDetailsById.photoUrl !== null
                         ? doctorDetails.getDoctorDetailsById.photoUrl
                         : require('images/DefaultPatient_Video.svg')
                     }
@@ -562,8 +572,8 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                         <img
                           src={
                             doctorDetails &&
-                              doctorDetails.getDoctorDetailsById &&
-                              doctorDetails.getDoctorDetailsById.photoUrl !== null
+                            doctorDetails.getDoctorDetailsById &&
+                            doctorDetails.getDoctorDetailsById.photoUrl !== null
                               ? doctorDetails.getDoctorDetailsById.photoUrl
                               : require('images/DefaultPatient_Video.svg')
                           }

@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -39,11 +40,18 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ContactUs: React.FC = (props) => {
+const ContactUs: React.FC = (props) => {
   const classes = useStyles({});
-
+  const [metaTagProps, setMetaTagProps] = useState(null);
+  setMetaTagProps({
+    title: 'Apollo 247 - Contact Us - Apollo Hospitals',
+    description:
+      'Apollo 247- Have a query about our products, services, online doctor consultation and more - write to us',
+    canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+  });
   return (
     <div className={classes.root}>
+      {metaTagProps && <MetaTagsComp {...metaTagProps} />}
       <Header />
       <div className={classes.container}>
         <div className={classes.pageContainer}>
@@ -68,3 +76,5 @@ export const ContactUs: React.FC = (props) => {
     </div>
   );
 };
+
+export default ContactUs;
