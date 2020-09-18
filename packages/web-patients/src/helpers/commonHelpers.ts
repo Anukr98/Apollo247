@@ -459,9 +459,6 @@ const getAvailableFreeChatDays = (appointmentTime: string, followUpInDays: numbe
   if (diffInDays === 0) {
     const diffInHours = followUpDayMoment.diff(moment(), 'hours');
     const diffInMinutes = followUpDayMoment.diff(moment(), 'minutes');
-    if (diffInMinutes <= 0 && diffInHours <= 0) {
-      console.log(followUpDayMoment.format('DD/MM/YYYY HH:mm'));
-    }
     return diffInHours > 0
       ? `You can follow up with the doctor via text (${diffInHours} ${
           diffInHours === 1 ? 'hour' : 'hours'
