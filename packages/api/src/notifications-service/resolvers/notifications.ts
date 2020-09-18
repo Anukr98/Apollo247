@@ -385,7 +385,7 @@ const sendAppointmentSummaryOps: Resolver<
           rowHeadx = 45;
           rowx = 35;
           pdfDoc.fontSize(12);
-          writeRow(pdfDoc, rowHeadx);
+          writeBigRow(pdfDoc, rowHeadx);
           textInRow(pdfDoc, 'Doctor Name', 50, 25);
           textInRow(pdfDoc, 'Patient Name', 50, 195);
           textInRow(pdfDoc, 'Appointment Date Time', 50, 318);
@@ -430,7 +430,7 @@ const sendAppointmentSummaryOps: Resolver<
                 }
                 rowHeadx += 14;
                 rowx += 37;
-                writeRow(pdfDoc, rowHeadx);
+                writeBigRow(pdfDoc, rowHeadx);
                 textInRow(pdfDoc, doctorDetails[0].displayName, rowx, 28);
                 textInRow(pdfDoc, docAppointment.patientName, rowx, 200);
                 textInRow(
