@@ -121,7 +121,7 @@ export type Resolver<Parent, Args, Context, Result> = (
     'https://consult-qa.apollo247.com',
     'https://qathreepatients.apollo247.com',
     'https://qathreedoctors.apollo247.com',
-    'https://qathreepmt.apollo247.com'
+    'https://qathreepmt.apollo247.com',
   ];
 
   const logger = winstonLogger.loggers.get('apiGatewayLogger');
@@ -129,7 +129,7 @@ export type Resolver<Parent, Args, Context, Result> = (
   const server = new ApolloServer({
     cors: { origin: corsOrigins },
     schema,
-    introspection: false,
+    introspection: true,
     validationRules: [],
     executor,
     engine: {
