@@ -443,15 +443,16 @@ const getCouponByUserMobileNumber = () => {
 };
 
 const isPastAppointment = (appointmentDateTime: string, followUpInDays: number = 7) => {
-  const appointmentDate = moment(appointmentDateTime).set({ hour: 0, minute: 0 });
+  const appointmentDate = moment(appointmentDateTime).set({ hour: 0, minute: 0 }); // this been added because followupDays includes appointmentMent Completion date aswell and appointmentDateTime should be replace with completion date
   const followUpDayMoment = appointmentDate.add(followUpInDays, 'days');
   return followUpDayMoment.isBefore(moment());
 };
 
 const getAvailableFreeChatDays = (appointmentTime: string, followUpInDays: number = 7) => {
-  const appointmentDate = moment(appointmentTime).set({ hour: 0, minute: 0 });
+  const appointmentDate = moment(appointmentTime).set({ hour: 0, minute: 0 }); // this been added because followupDays includes appointmentMent Completion date aswell and appointmentDateTime should be replace with completion date
   const followUpDayMoment = appointmentDate.add(followUpInDays, 'days');
   let diffInDays = followUpDayMoment.diff(moment(), 'days');
+  // below condition is added because diff of days will give xdays yhrs as xdays
   if (moment() > moment(appointmentTime) && moment() < followUpDayMoment) {
     diffInDays += 1;
   }
