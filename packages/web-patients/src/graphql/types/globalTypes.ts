@@ -635,6 +635,7 @@ export interface FilterDoctorInput {
   sort?: string | null;
   pageNo?: number | null;
   pageSize?: number | null;
+  searchText?: string | null;
 }
 
 export interface Geolocation {
