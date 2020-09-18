@@ -249,7 +249,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
                 if (item.type === 'lab') {
                   data = {
                     datalab: item.data,
-                    prevItemData: combination && combination[index - 1]?.data,
+                    prevItemData: filterApplied && combination && combination[index - 1]?.data,
                     disableDelete: true,
                     filterApplied: filterApplied,
                   };
