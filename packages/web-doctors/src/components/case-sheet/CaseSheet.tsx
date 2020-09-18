@@ -211,6 +211,10 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     setMedicationHistory,
     occupationHistory,
     setOccupationHistory,
+    diagnosticTestResult,
+    setDiagnosticTestResult,
+    clinicalObservationNotes,
+    setClinicalObservationNotes,
     patientDetails,
   } = useContext(CaseSheetContext);
   const params = useParams<Params>();
@@ -264,7 +268,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     },
     {
       key: 'note',
-      value: "Junior Doctor's Notes",
+      value: "Notes",
       state: noteState,
       component: <DoctorsNotes />,
     },
@@ -359,6 +363,8 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
           referralDescription: referralDescription,
           medicationHistory: medicationHistory,
           occupationHistory: occupationHistory,
+          diagnosticTestResult: diagnosticTestResult,
+          clinicalObservationNotes: clinicalObservationNotes
         };
         updateLocalStorageItem(params.id, caseSheetObject);
         setFirstTimeLanding(false);
@@ -369,6 +375,8 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         setTemperature(storageItem.temperature);
         setBp(storageItem.bp);
         setSRDNotes(storageItem.notes);
+        setDiagnosticTestResult(storageItem.diagnosticTestResult);
+        setClinicalObservationNotes(storageItem.clinicalObservationNotes);
         setPastMedicalHistory(storageItem.pastMedicalHistory);
         setPastSurgicalHistory(storageItem.pastSurgicalHistory);
         setDrugAllergies(storageItem.drugAllergies);
@@ -463,7 +471,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
           ))}
         </section>
       </div>
-      <Divider className={classes.divider} />
+      {/* <Divider className={classes.divider} />
       <Box boxShadow={5} borderRadius={10} className={classes.notesContainer}>
         <Typography component="h4" variant="h4" className={classes.notesHeader}>
           Personal Notes (What you enter here won't be shown to the patient..)
@@ -485,7 +493,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
             disabled={!props.startAppointment}
           />
         </Typography>
-      </Box>
+      </Box> */}
     </div>
   );
 };

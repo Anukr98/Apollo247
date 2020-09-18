@@ -16,6 +16,7 @@ import {
   DiagnosticPrescription,
   OtherInstructions,
   RefferalCode,
+  DoctorsNotes
 } from 'components/JuniorDoctors/JDCaseSheet/panels';
 import { Vitals } from 'components/JuniorDoctors/JDCaseSheet/panels/Vitals';
 import { HistoryAndLifeStyle } from 'components/JuniorDoctors/JDCaseSheet/panels/HistoryAndLifeStyle';
@@ -221,6 +222,7 @@ export const CaseSheet: React.FC = () => {
 
   const [symptomsState, setSymptomsState] = useState<boolean>(true);
   const [healthVaultState, setHealthVaultState] = useState<boolean>(true);
+  const [notesState, setNotesState] = useState<boolean>(true);
   const [diagnosisState, setDiagnosisState] = useState<boolean>(true);
   const [medicinePrescriptionState, setMedicinePrescriptionState] = useState<boolean>(true);
   const [diagnosticPrescriptionState, setDiagnosticPrescriptionState] = useState<boolean>(true);
@@ -234,6 +236,7 @@ export const CaseSheet: React.FC = () => {
     if (caseSheetEdit) {
       setSymptomsState(true);
       setHealthVaultState(true);
+      setNotesState(true);
       setDiagnosisState(true);
       setMedicinePrescriptionState(true);
       setDiagnosticPrescriptionState(true);
@@ -327,6 +330,12 @@ export const CaseSheet: React.FC = () => {
       component: <HealthVault />,
     },
     {
+      key: 'notes',
+      value: 'Notes',
+      state: notesState,
+      component: <DoctorsNotes />,
+    },
+    {
       key: 'diagnosis',
       value: 'Diagnosis',
       state: diagnosisState,
@@ -368,6 +377,9 @@ export const CaseSheet: React.FC = () => {
         break;
       case 'healthVault':
         setHealthVaultState(isExpanded);
+        break;
+      case 'note':
+        setNotesState(isExpanded);
         break;
       case 'diagnosis':
         setDiagnosisState(isExpanded);
@@ -419,7 +431,7 @@ export const CaseSheet: React.FC = () => {
         </ExpansionPanel>
       ))}
 
-      <Divider className={classes.divider} />
+      {/* <Divider className={classes.divider} />
       <div className={classes.notesBox}>
         <Typography component="h4" variant="h4" className={classes.notesHeader}>
           Notes (This is for Senior Doctor view only)
@@ -439,7 +451,7 @@ export const CaseSheet: React.FC = () => {
           }}
           multiline
         />
-      </div>
+      </div> */}
     </div>
   );
 };
