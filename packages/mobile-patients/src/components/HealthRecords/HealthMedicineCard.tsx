@@ -128,6 +128,12 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
     healthCheckName ||
     hospitalizationDoctorName;
 
+  const reportSourceSelf =
+    datahospitalization?.source === '247self' ||
+    datahospitalization?.source === 'self' ||
+    reportSource === '247self' ||
+    reportSource === 'self';
+
   const getDateFormatted = () => {
     const date_text = (date_t: any) => {
       return moment(date_t).format('DD MMM YYYY');
@@ -199,15 +205,14 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
               </View>
               {reportSource ? (
                 <View style={{ flexDirection: 'row', paddingLeft: 2 }}>
-                  {datahospitalization?.source === '247self' ||
-                  datahospitalization?.source === 'self' ||
-                  reportSource === '247self' ||
-                  reportSource === 'self' ? (
+                  {reportSourceSelf ? (
                     <PHRSelfUploadIcon style={{ width: 16, height: 10.14, alignSelf: 'center' }} />
                   ) : (
                     <PHRHospitalIcon style={{ width: 14, height: 14, alignSelf: 'center' }} />
                   )}
-                  <Text style={styles.descriptionTextStyles}>{reportSource}</Text>
+                  <Text style={styles.descriptionTextStyles}>
+                    {reportSourceSelf ? 'Self upload' : datalab?.siteDisplayName}
+                  </Text>
                 </View>
               ) : null}
             </View>
