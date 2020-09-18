@@ -59,7 +59,6 @@ const saveAppointmentCallFeedback: Resolver<
   ConsultServiceContext,
   AppointmentCallFeedback
 > = async (parent, { saveAppointmentCallFeedbackInput }, { consultsDb }) => {
-  console.log("resolver called", saveAppointmentCallFeedbackInput);
   const appointmentFeedbackRepository = consultsDb.getCustomRepository(AppointmentCallFeedbackRepository);
   let result = await appointmentFeedbackRepository.saveAppointmentCallFeedback(saveAppointmentCallFeedbackInput)
 

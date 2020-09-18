@@ -23,7 +23,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { AppointmentRefundsRepository } from 'consults-service/repositories/appointmentRefundsRepository';
-
+import { getPatientDeeplink } from 'helpers/appsflyer';
 import { ApiConstants } from 'ApiConstants';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -61,7 +61,7 @@ export async function sendCallsNotification(
   appointmentCallId: string,
   isDev: boolean,
   numberOfParticipants: number,
-  patientId: string,
+  patientId: string
 ) {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
@@ -80,24 +80,21 @@ export async function sendCallsNotification(
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
 
   patientId = patientId || patientDetails.id;
-  let voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
-    patientId,
-    DEVICE_TYPE.IOS
-  );
+  let voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(patientId, DEVICE_TYPE.IOS);
 
-  if (patientId != patientDetails.id && (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])) {
+  if (
+    patientId != patientDetails.id &&
+    (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])
+  ) {
     patientId = patientDetails.id;
-    voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
-      patientId,
-      DEVICE_TYPE.IOS
-    );
+    voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(patientId, DEVICE_TYPE.IOS);
   }
 
   if (
     voipPushtoken.length &&
     voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
-    callType != APPT_CALL_TYPE.CHAT
-    && (!numberOfParticipants || (numberOfParticipants && numberOfParticipants < 2))
+    callType != APPT_CALL_TYPE.CHAT &&
+    (!numberOfParticipants || (numberOfParticipants && numberOfParticipants < 2))
   ) {
     hitCallKitCurl(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
@@ -153,7 +150,6 @@ export async function sendCallsNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
-      sound: 'incallmanager_ringtone.mp3',
       android_channel_id: 'fcm_FirebaseNotifiction_call_channel',
     },
     data: {
@@ -288,6 +284,7 @@ export async function sendCallsNotification(
     dataOnlyPayloadResponse: dataOnlyPayloadResponse,
   };
 }
+
 export async function sendReminderNotification(
   pushNotificationInput: PushNotificationInput,
   patientsDb: Connection,
@@ -654,7 +651,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -997,10 +994,12 @@ export async function sendNotification(
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
     notificationBody = notificationBody.replace('{3}', apptDate);
-
-    const finalString = ` Click here ${process.env.SMS_LINK_BOOK_APOINTMENT} ${ApiConstants.PATIENT_CANCEL_APPT_BODY_END}`;
-    let cancelApptSMS = process.env.SMS_LINK_BOOK_APOINTMENT ? finalString : '';
-    cancelApptSMS = notificationBody + cancelApptSMS;
+    const appLink = await getPatientDeeplink(ApiConstants.PATIENT_APPT_DEEPLINK);
+    //const finalString = ` Click here ${process.env.SMS_LINK_BOOK_APOINTMENT} ${ApiConstants.PATIENT_CANCEL_APPT_BODY_END}`;
+    const finalString = ` Click here ${appLink} ${ApiConstants.PATIENT_CANCEL_APPT_BODY_END}`;
+    const cancelApptSMS = notificationBody + finalString;
+    // process.env.SMS_LINK_BOOK_APOINTMENT ? finalString : '';
+    // cancelApptSMS = notificationBody + cancelApptSMS;
 
     console.log('cancelApptSMS======================', cancelApptSMS);
     sendNotificationSMS(patientDetails.mobileNumber, cancelApptSMS ? cancelApptSMS : '');
@@ -1009,10 +1008,30 @@ export async function sendNotification(
     doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
     doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
-
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-
     sendBrowserNotitication(doctorDetails.id, doctorSMS);
+    let facilityDetsString = 'N/A';
+    if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+      const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+      const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+      if (facilityDets) {
+        facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
+      }
+    }
+    const secretaryTemplateData: string[] = [
+      patientDetails.firstName + ' ' + patientDetails.lastName,
+      patientDetails.uhid,
+      doctorDetails.salutation + ' ' + doctorDetails.firstName,
+      facilityDetsString,
+      format(istDateTime, 'dd/MM/yyyy'),
+      format(istDateTime, 'hh:mm a'),
+      appointment.appointmentType,
+    ];
+    sendDoctorNotificationWhatsapp(
+      ApiConstants.WHATSAPP_DOC_SECRETARY_CANCEL,
+      doctorDetails.doctorSecretary.secretary.mobileNumber,
+      secretaryTemplateData
+    );
   }
 
   //doctor cancel appointment
@@ -1023,9 +1042,11 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
-      ? ' Click here ' + process.env.SMS_LINK_BOOK_APOINTMENT
-      : '';
+    const appLink = await getPatientDeeplink(ApiConstants.PATIENT_APPT_DEEPLINK);
+    // let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
+    //   ? ' Click here ' + process.env.SMS_LINK_BOOK_APOINTMENT
+    //   : '';
+    let smsLink = ' Click here ' + appLink;
     smsLink = notificationBody + smsLink;
 
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
@@ -1042,9 +1063,9 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
-      ? ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
-      : '';
+
+    const appLink = await getPatientDeeplink(ApiConstants.PATIENT_APPT_DEEPLINK);
+    let smsLink = ' Reschedule Now ' + appLink;
     smsLink = notificationBody + smsLink;
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
   }
@@ -1062,9 +1083,9 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
-      ? ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
-      : '';
+
+    const appLink = await getPatientDeeplink(ApiConstants.PATIENT_APPT_DEEPLINK);
+    let smsLink = ' Reschedule Now ' + appLink;
     smsLink = notificationBody + smsLink;
 
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
@@ -1081,9 +1102,8 @@ export async function sendNotification(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
-      ? ' Click here ' + process.env.SMS_LINK_BOOK_APOINTMENT
-      : '';
+    const appLink = await getPatientDeeplink(ApiConstants.PATIENT_APPT_DEEPLINK);
+    let smsLink = ' Click here ' + appLink;
     smsLink = notificationBody + smsLink;
     sendNotificationSMS(patientDetails.mobileNumber, smsLink ? smsLink : '');
   }
@@ -1158,6 +1178,14 @@ export async function sendNotification(
       '{0}',
       patientDetails.firstName
     );
+    let facilityDetsString = 'N/A';
+    if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+      const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+      const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+      if (facilityDets) {
+        facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
+      }
+    }
     if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
       content = ApiConstants.PHYSICAL_BOOK_APPOINTMENT_BODY.replace(
         '{0}',
@@ -1167,16 +1195,8 @@ export async function sendNotification(
         '{0}',
         patientDetails.firstName
       );
-
-      if (appointment.hospitalId != '' && appointment.hospitalId != null) {
-        const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
-        const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
-        if (facilityDets) {
-          const facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
-          content = content.replace('{4}', facilityDetsString);
-          smsLink = smsLink.replace('{4}', facilityDetsString);
-        }
-      }
+      content = content.replace('{4}', facilityDetsString);
+      smsLink = smsLink.replace('{4}', facilityDetsString);
     }
     content = content.replace('{1}', appointment.displayId.toString());
     content = content.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
@@ -1189,15 +1209,10 @@ export async function sendNotification(
     //Create chatroom link and send for new booked appointment
     switch (appointment.bookingSource) {
       case BOOKINGSOURCE.MOBILE:
-        if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
-          const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace(
-            '{0}',
-            appointment.id.toString()
-          );
-          smsLink = smsLink.replace('{5}', chatroom_sms_link);
-        } else {
-          throw new AphError(AphErrorMessages.SMS_DEEPLINK_APPOINTMENT_CHATROOM_MISSING);
-        }
+        const appLink = await getPatientDeeplink(
+          ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString()
+        );
+        smsLink = smsLink.replace('{5}', appLink);
         break;
       case BOOKINGSOURCE.WEB:
         if (process.env.SMS_WEBLINK_APPOINTMENT_CHATROOM) {
@@ -1231,6 +1246,25 @@ export async function sendNotification(
       differenceInHours(new Date(appointment.appointmentDateTime), new Date()),
       todaysDate,
       'todays date'
+    );
+    const secretaryTemplateData: string[] = [
+      patientDetails.firstName + ' ' + patientDetails.lastName,
+      patientDetails.uhid,
+      doctorDetails.salutation + ' ' + doctorDetails.firstName,
+      facilityDetsString,
+      format(istDateTime, 'dd/MM/yyyy'),
+      format(istDateTime, 'hh:mm a'),
+      appointment.appointmentType,
+    ];
+    console.log(
+      secretaryTemplateData,
+      doctorDetails.doctorSecretary.secretary.mobileNumber,
+      'secretaryTemplateData'
+    );
+    sendDoctorNotificationWhatsapp(
+      ApiConstants.WHATSAPP_DOC_SECRETARY_BOOKING,
+      doctorDetails.doctorSecretary.secretary.mobileNumber,
+      secretaryTemplateData
     );
     if (istDateTime <= todaysDate) {
       const finalTime = format(istDateTime, 'hh:mm a');
@@ -1311,10 +1345,8 @@ export async function sendNotification(
     smsLink = smsLink.replace('{1}', appointment.displayId.toString());
     smsLink = smsLink.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
     smsLink = smsLink.replace('{3}', apptDate.toString());
-    smsLink = smsLink.replace(
-      '{5}',
-      process.env.SMS_LINK_BOOK_APOINTMENT ? process.env.SMS_LINK_BOOK_APOINTMENT : ''
-    );
+    const appLink = await getPatientDeeplink(ApiConstants.PATIENT_APPT_DEEPLINK);
+    smsLink = smsLink.replace('{5}', appLink);
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_PAYMENT_FAILURE_TITLE;
     notificationBody = content;
     //console.log('mobileNumber===============', patientDetails.mobileNumber);
@@ -1376,10 +1408,10 @@ export async function sendNotification(
     sendBrowserNotitication(doctorDetails.id, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.PRESCRIPTION_READY) {
     notificationTitle = ApiConstants.PRESCRIPTION_READY_TITLE;
-    notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace('{0}', patientDetails.firstName)
-      .replace('{1}', doctorDetails.firstName)
-      .replace('{2}', appointment.displayId.toString())
-      .replace('{3}', format(appointment.appointmentDateTime, 'yyyy-MM-dd'));
+    notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace(
+      '{0}',
+      patientDetails.firstName
+    ).replace('{1}', doctorDetails.firstName);
 
     if (!process.env.DEEPLINK_PRESCRIPTION) {
       log(
@@ -1398,8 +1430,10 @@ export async function sendNotification(
     if (!appointmentId) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND, undefined, undefined);
     }
-
-    prescriptionDeeplink = `${notificationBody} ${ApiConstants.PRESCRIPTION_CLICK_HERE} ${prescriptionDeeplink.replace(ApiConstants.PRESCRIPTION_DEEPLINK_PLACEHOLDER, appointmentId)}`;
+    const appLink = await getPatientDeeplink(
+      ApiConstants.PATIENT_PRESCRIPTION_DEEPLINK + appointmentId
+    );
+    prescriptionDeeplink = `${notificationBody} ${ApiConstants.PRESCRIPTION_CLICK_HERE} ${appLink}`;
 
     log(
       `consultServiceLogger`,
@@ -1408,7 +1442,7 @@ export async function sendNotification(
       '',
       ''
     );
-    console.log(`FinalDeeplink: ${prescriptionDeeplink}`);
+
     sendNotificationSMS(patientDetails.mobileNumber, prescriptionDeeplink);
 
     // not sending whatsapp, leaving code here for future implementation purposes

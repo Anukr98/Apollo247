@@ -6,6 +6,7 @@ import { SUBMIT_JD_CASESHEET } from 'graphql/appointments';
 import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import { withRouter } from 'react-router-dom';
 import { SubmitJdCasesheet, SubmitJdCasesheetVariables } from 'graphql/types/SubmitJdCasesheet';
+import { webEngageEventTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -118,6 +119,12 @@ export interface ModalContent {
   messageText: string;
   appointmentId: string;
   patientId: string;
+  doctorName: string;	
+  patientName: string;	
+  patientMobileNumber: string;	
+  doctorMobileNumber: string;	
+  appointmentDateTime: string;	
+  displayId: number;
 }
 
 export const modalData = {
@@ -150,6 +157,12 @@ export const defaultText = {
   messageText: '',
   appointmentId: '',
   patientId: '',
+  doctorName: '',	
+  patientName: '',	
+  patientMobileNumber: '',	
+  doctorMobileNumber: '',	
+  appointmentDateTime: '',	
+  displayId: 0
 };
 
 const StatusModal = (props: any) => {
@@ -179,7 +192,23 @@ const StatusModal = (props: any) => {
               className={
                 text.messageText !== '' ? classes.button : `${classes.button} ${classes.oKButton}`
               }
-              onClick={props.onClose}
+              onClick={() => {	
+                props.onClose	
+                if(text.messageText !== ''){	
+                  webEngageEventTracking(	
+                    {	
+                      'Doctor name': text.doctorName,	
+                      'Patient name': text.patientName,	
+                      'Patient mobile number': text.patientMobileNumber,	
+                      'Doctor Mobile number': text.doctorMobileNumber,	
+                      'Appointment Date time': text.appointmentDateTime,	
+                      'Appointment display ID': text.displayId,	
+                      'Appointment ID': text.appointmentId,	
+                    },	
+                    'Front_end - Doctor Declined to force start'	
+                  );	
+                }	
+              }}
             >
               {text.messageText !== '' ? 'no, wait' : 'Okay'}
             </Button>
@@ -187,6 +216,18 @@ const StatusModal = (props: any) => {
               <Button
                 className={`${classes.button} ${classes.yesButton}`}
                 onClick={() => {
+                  webEngageEventTracking(	
+                    {	
+                      'Doctor name': text.doctorName,	
+                      'Patient name': text.patientName,	
+                      'Patient mobile number': text.patientMobileNumber,	
+                      'Doctor Mobile number': text.doctorMobileNumber,	
+                      'Appointment Date time': text.appointmentDateTime,	
+                      'Appointment display ID': text.displayId,	
+                      'Appointment ID': text.appointmentId,	
+                    },	
+                    'Front_end - Doctor Accepted to Force Start'	
+                  );
                   const submit: any = apolloClient.mutate({
                     mutation: SUBMIT_JD_CASESHEET,
                     variables: { appointmentId: text.appointmentId },

@@ -110,17 +110,20 @@ import {
 } from 'graphql/types/saveAppointmentCallFeedback';
 import Alert from 'components/Alert';
 import moment from 'moment';
+import { webEngageEventTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     consultRoom: {
       paddingTop: 64,
+      height: '100vh',
+      overflow: 'hidden',
       [theme.breakpoints.down('xs')]: {
         paddingTop: 64,
       },
     },
     chatContainer: {
-      minHeight: 'calc(100vh - 360px)',
+      // minHeight: 'calc(100vh - 360px)',
     },
     headerSticky: {
       position: 'fixed',
@@ -134,12 +137,12 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: '#f7f7f7',
-      minHeight: 500,
+      height: '100%',
     },
     tabsRoot: {
       backgroundColor: theme.palette.common.white,
       borderRadius: 0,
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      // boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
     },
     tabRoot: {
       fontSize: 16,
@@ -177,6 +180,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     block: {
       display: 'block',
+      height: '100%',
     },
     modalBox: {
       maxWidth: 320,
@@ -291,9 +295,27 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
     },
     stickyConsultTabs: {
-      position: 'sticky',
-      top: 94,
-      zIndex: 2,
+      // position: "sticky",
+      // top: 94,
+      // zIndex: 2,
+    },
+    tabContainer: {
+      height: 'calc(100% - 68px)',
+    },
+    tabContent: {
+      height: 'calc(100% - 48px)',
+      overflow: 'auto',
+      padding: 20,
+      '&::-webkit-scrollbar': {
+        width: 6,
+      },
+      '&::-webkit-scrollbar-track': {
+        background: 'transparent',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#ccc',
+        borderRadius: 5,
+      },
     },
   };
 });
@@ -303,6 +325,15 @@ const storageClient = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
 );
+interface WebengageConsultTrackingProps {
+  doctorName: string;
+  patientName: string;
+  patientMobileNumber: string;
+  doctorMobileNumber: string;
+  appointmentDateTime: string;
+  appointmentDisplayId: string;
+  appointmentId: string;
+}
 interface MessagesObjectProps {
   id: string;
   message: string;
@@ -329,6 +360,17 @@ export const ConsultTabs: React.FC = () => {
     variables: {
       appointmentId: paramId,
     },
+  });
+  const [webengageConsultTrackingObject, setWebengageConsultTrackingObject] = useState<
+    WebengageConsultTrackingProps
+  >({
+    doctorName: '',
+    patientName: '',
+    patientMobileNumber: '',
+    doctorMobileNumber: '',
+    appointmentDateTime: '',
+    appointmentDisplayId: '',
+    appointmentId: '',
   });
   const [isClickedOnEdit, setIsClickedOnEdit] = useState(false);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
@@ -393,7 +435,9 @@ export const ConsultTabs: React.FC = () => {
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
-  const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([chatDays.toString()]);
+  const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([
+    chatDays !== null ? chatDays.toString() : '',
+  ]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
   const [followUpConsultType, setFollowUpConsultType] = useState<string[]>([]);
 
@@ -409,7 +453,10 @@ export const ConsultTabs: React.FC = () => {
   const [lifeStyle, setLifeStyle] = useState<string>('');
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
-  const [vitalError, setVitalError] = useState<VitalErrorProps>({ height: '', weight: '' });
+  const [vitalError, setVitalError] = useState<VitalErrorProps>({
+    height: '',
+    weight: '',
+  });
   const [referralSpecialtyName, setReferralSpecialtyName] = useState<string>('');
   const [referralDescription, setReferralDescription] = useState<string>('');
   const [medicationHistory, setMedicationHistory] = useState<string>('');
@@ -433,6 +480,7 @@ export const ConsultTabs: React.FC = () => {
   const [showConfirmPrescription, setShowConfirmPrescription] = React.useState<boolean>(false);
 
   const [giveRating, setGiveRating] = useState<boolean>(false);
+  const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
 
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
@@ -455,6 +503,11 @@ export const ConsultTabs: React.FC = () => {
       //setFollowUp(followUp);
     }
   }, [startAppointment]);
+
+  const handleSetIsCallAccepted = React.useCallback((value) => {
+    setIsCallAccepted(value);
+  }, []);
+
   function getCookieValue(cookieName: string) {
     const name = cookieName + '=';
     const ca = document.cookie.split(';');
@@ -525,7 +578,20 @@ export const ConsultTabs: React.FC = () => {
   }, []);
 
   const postDoctorConsultEventAction = (eventType: WebEngageEvent, displayId: string) => {
-    console.log(eventType, displayId);
+    if (eventType === WebEngageEvent.DOCTOR_SENT_MESSAGE) {
+      webEngageEventTracking(
+        {
+          'Doctor name': webengageConsultTrackingObject.doctorName,
+          'Patient name': webengageConsultTrackingObject.patientName,
+          'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
+          'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
+          'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+          'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
+          'Appointment ID': webengageConsultTrackingObject.appointmentId,
+        },
+        'Front_end - Doctor Sent a message to the patient after End consult'
+      );
+    }
     let consultTypeMode: ConsultMode = ConsultMode.BOTH;
     if (consultType.includes(ConsultMode.ONLINE)) {
       consultTypeMode = ConsultMode.ONLINE;
@@ -665,6 +731,27 @@ export const ConsultTabs: React.FC = () => {
           variables: { appointmentId: appointmentId },
         })
         .then((_data) => {
+          const webEngageData = {
+            doctorName: (currentPatient && currentPatient.fullName) || '',
+            doctorMobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
+            patientName:
+              _data!.data!.getCaseSheet!.patientDetails &&
+              _data!.data!.getCaseSheet!.patientDetails!.firstName
+                ? _data!.data!.getCaseSheet!.patientDetails!.firstName +
+                  _data!.data!.getCaseSheet!.patientDetails!.lastName
+                : '',
+            patientMobileNumber:
+              _data!.data!.getCaseSheet!.patientDetails &&
+              _data!.data!.getCaseSheet!.patientDetails!.mobileNumber
+                ? _data!.data!.getCaseSheet!.patientDetails!.mobileNumber
+                : '',
+            appointmentDateTime: _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!
+              .appointmentDateTime,
+            appointmentDisplayId: _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!
+              .displayId,
+            appointmentId: appointmentId,
+          };
+          setWebengageConsultTrackingObject(webEngageData);
           setCasesheetInfo(_data.data);
           setError('');
           if (_data!.data!.getCaseSheet!.caseSheetDetails.doctorId !== doctorId && !isSecretary) {
@@ -730,21 +817,13 @@ export const ConsultTabs: React.FC = () => {
                   _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
                 ] as unknown) as boolean[])
               : setFollowUp([]);
-            console.log(
-              'follow up old var',
-              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
-            );
-            console.log(
-              'follow up old var type',
-              typeof _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
-            );
 
             _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays &&
-            _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays !== null
-              ? setFollowUpAfterInDays(([
-                  _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
-                ] as unknown) as string[])
-              : setFollowUpAfterInDays([]);
+              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays !== null &&
+              setFollowUpAfterInDays(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
+              ] as unknown) as string[]);
+
             _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
               ? setFollowUpDate(([
                   _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
@@ -1030,6 +1109,27 @@ export const ConsultTabs: React.FC = () => {
           variables: { appointmentId: appointmentId },
         })
         .then((_data) => {
+          const webEngageData = {
+            doctorName: (currentPatient && currentPatient.fullName) || '',
+            doctorMobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
+            patientName:
+              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails &&
+              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.firstName
+                ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+                  _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.lastName
+                : '',
+            patientMobileNumber:
+              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails &&
+              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.mobileNumber
+                ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.mobileNumber
+                : '',
+            appointmentDateTime: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.appointmentDateTime,
+            appointmentDisplayId: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.displayId,
+            appointmentId: appointmentId,
+          };
+          setWebengageConsultTrackingObject(webEngageData);
           setCasesheetInfo(_data.data);
           setError('');
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails &&
@@ -1361,6 +1461,7 @@ export const ConsultTabs: React.FC = () => {
           _data.data.sendCallNotification &&
           _data.data.sendCallNotification.status
         ) {
+          setcallId(_data.data.sendCallNotification.callDetails.id);
           if (isCall) {
             const cookieStr = `doctorCallId=${_data.data.sendCallNotification.callDetails.id}`;
             document.cookie = cookieStr + ';path=/;';
@@ -1403,31 +1504,26 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
-    pubnub
-      .hereNow({
-        channels: [appointmentId],
-        includeUUIDs: true,
-      })
-      .then((response: any) => {
-        const occupants = response.channels[appointmentId].occupants;
-        let doctorCount = 0;
-        let paientsCount = 0;
-        occupants.forEach((item: any) => {
-          if (item.uuid.indexOf('PATIENT') > -1) {
-            paientsCount = 1;
-          } else if (item.uuid.indexOf('DOCTOR') > -1) {
-            doctorCount = 1;
-          }
-        });
-
-        sendCallNotificationFnWithCheck(callType, isCall, doctorCount + paientsCount);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    pubnubPresence((patient: number, doctor: number) => {
+      sendCallNotificationFnWithCheck(callType, isCall, patient + doctor);
+    });
   };
 
   const sendToPatientAction = () => {
+    if (casesheetVersion < 2) {
+      webEngageEventTracking(
+        {
+          'Doctor name': webengageConsultTrackingObject.doctorName,
+          'Patient name': webengageConsultTrackingObject.patientName,
+          'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
+          'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
+          'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+          'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
+          'Appointment ID': webengageConsultTrackingObject.appointmentId,
+        },
+        'Front_end - Doctor Send Prescription'
+      );
+    }
     client
       .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
         mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
@@ -1453,6 +1549,21 @@ export const ConsultTabs: React.FC = () => {
           );
           setPrescriptionPdf(url);
           setShowConfirmPrescription(false);
+          if (casesheetVersion > 1) {
+            webEngageEventTracking(
+              {
+                'Doctor name': webengageConsultTrackingObject.doctorName,
+                'Patient name': webengageConsultTrackingObject.patientName,
+                'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
+                'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
+                'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+                'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
+                'Appointment ID': webengageConsultTrackingObject.appointmentId,
+                'Blob URL': url,
+              },
+              'Front_end - Doctor re-issued new Prescription'
+            );
+          }
         }
         if (
           _data &&
@@ -1677,6 +1788,18 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        webEngageEventTracking(
+          {
+            'Doctor name': webengageConsultTrackingObject.doctorName,
+            'Patient name': webengageConsultTrackingObject.patientName,
+            'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
+            'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
+            'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+            'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
+            'Appointment ID': webengageConsultTrackingObject.appointmentId,
+          },
+          'Front_end - Doctor Ended the consult'
+        );
         endCallNotificationAction(false);
         setAppointmentStatus('COMPLETED');
         setIsClickedOnPriview(true);
@@ -1792,7 +1915,8 @@ export const ConsultTabs: React.FC = () => {
   const startAppointmentClick = (startAppointment: boolean) => {
     setStartAppointment(startAppointment);
   };
-  const endCallNotificationAction = (isCall: boolean) => {
+
+  const endCallNotificationActionCheckFn = (isCall: boolean, numberOfParticipants: number) => {
     client
       .query<EndCallNotification, EndCallNotificationVariables>({
         query: END_CALL_NOTIFICATION,
@@ -1800,6 +1924,7 @@ export const ConsultTabs: React.FC = () => {
         variables: {
           appointmentCallId: isCall ? callId : chatRecordId,
           patientId: params.patientId,
+          numberOfParticipants,
         },
       })
       .catch((error: ApolloError) => {
@@ -1826,7 +1951,33 @@ export const ConsultTabs: React.FC = () => {
         sessionClient.notify(JSON.stringify(logObject));
         console.log('Error in Call Notification', error.message);
       });
-    setGiveRating(true);
+  };
+
+  const endCallNotificationAction = (isCall: boolean) => {
+    pubnubPresence((patient: number, doctor: number) => {
+      endCallNotificationActionCheckFn(isCall, patient + doctor);
+    });
+  };
+
+  const pubnubPresence = (callBack: (patientCount: number, doctorCount: number) => void) => {
+    pubnub
+      .hereNow({ channels: [appointmentId], includeUUIDs: true })
+      .then((response: any) => {
+        const occupants = response.channels[appointmentId].occupants;
+        let doctorCount = 0;
+        let paientsCount = 0;
+        occupants.forEach((item: any) => {
+          if (item.uuid.indexOf('PATIENT') > -1) {
+            paientsCount = 1;
+          } else if (item.uuid.indexOf('DOCTOR') > -1) {
+            doctorCount = 1;
+          }
+        });
+        callBack(paientsCount, doctorCount);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   const submitRatingHandler = (data: {
@@ -1862,12 +2013,6 @@ export const ConsultTabs: React.FC = () => {
       .catch((e: any) => {
         alert('Error in giving feedback. Please try again!');
       });
-  };
-
-  const showRateCallModal = () => {
-    return (
-      <RateCall visible={giveRating} submitRatingCallback={(data) => submitRatingHandler(data)} />
-    );
   };
 
   const inEditMode =
@@ -1996,141 +2141,149 @@ export const ConsultTabs: React.FC = () => {
             casesheetVersion,
           }}
         >
-          <Scrollbars
+          {/* <Scrollbars
             ref={(s: any) => {
               !isClickedOnEdit && isClickedOnPriview && s !== null && s.scrollToTop();
             }}
             autoHide={true}
             style={{ height: 'calc(100vh - 65px)' }}
-          >
-            {showRateCallModal()}
-            <div className={classes.container}>
-              <CallPopover
-                setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-                createSessionAction={createSessionAction}
-                saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) =>
-                  saveCasesheetAction(flag, sendToPatientFlag)
+
+          > */}
+          {/* <RateCall
+            visible={giveRating}
+            setGiveRating={setGiveRating}
+            submitRatingCallback={(data) => submitRatingHandler(data)}
+          /> */}
+          <div className={classes.container}>
+            <CallPopover
+              setGiveRating={setGiveRating}
+              setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+              createSessionAction={createSessionAction}
+              saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) =>
+                saveCasesheetAction(flag, sendToPatientFlag)
+              }
+              endConsultAction={endConsultAction}
+              appointmentId={appointmentId}
+              appointmentDateTime={appointmentDateTime}
+              doctorId={doctorId}
+              urlToPatient={urlToPatient}
+              caseSheetId={caseSheetId}
+              prescriptionPdf={prescriptionPdf}
+              sessionId={sessionId}
+              token={token}
+              startAppointment={startAppointment}
+              casesheetInfo={casesheetInfo}
+              startAppointmentClick={startAppointmentClick}
+              saving={saving}
+              appointmentStatus={appointmentStatus}
+              sentToPatient={sentToPatient}
+              isAppointmentEnded={isAppointmentEnded}
+              setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
+              pubnub={pubnub}
+              sessionClient={sessionClient}
+              lastMsg={lastMsg}
+              //presenceEventObject={presenceEventObject}
+              endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
+              hasCameraMicPermission={hasCameraMicPermission}
+              createSDCasesheetCall={(flag: boolean) => createSDCasesheetCall(flag)}
+              isNewprescriptionEditable={isNewprescriptionEditable}
+              isNewPrescription={isNewPrescription}
+              isClickedOnEdit={isClickedOnEdit}
+              setIsClickedOnEdit={setIsClickedOnEdit}
+              isClickedOnPriview={isClickedOnPriview}
+              setIsClickedOnPriview={setIsClickedOnPriview}
+              tabValue={tabValue}
+              showConfirmPrescription={showConfirmPrescription}
+              setShowConfirmPrescription={(flag: boolean) => setShowConfirmPrescription(flag)}
+              webengageConsultTrackingObject={webengageConsultTrackingObject}
+              setIsCallAccepted={handleSetIsCallAccepted}
+              isCallAccepted={isCallAccepted}
+            />
+            <div className={classes.tabContainer}>
+              <div
+                className={
+                  (inEditMode || isClickedOnEdit) && !isClickedOnPriview
+                    ? classes.block
+                    : classes.none
                 }
-                endConsultAction={endConsultAction}
-                appointmentId={appointmentId}
-                appointmentDateTime={appointmentDateTime}
-                doctorId={doctorId}
-                urlToPatient={urlToPatient}
-                caseSheetId={caseSheetId}
-                prescriptionPdf={prescriptionPdf}
-                sessionId={sessionId}
-                token={token}
-                startAppointment={startAppointment}
-                casesheetInfo={casesheetInfo}
-                startAppointmentClick={startAppointmentClick}
-                saving={saving}
-                appointmentStatus={appointmentStatus}
-                sentToPatient={sentToPatient}
-                isAppointmentEnded={isAppointmentEnded}
-                setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
-                pubnub={pubnub}
-                sessionClient={sessionClient}
-                lastMsg={lastMsg}
-                //presenceEventObject={presenceEventObject}
-                endCallNotificationAction={(callId: boolean) => endCallNotificationAction(callId)}
-                hasCameraMicPermission={hasCameraMicPermission}
-                createSDCasesheetCall={(flag: boolean) => createSDCasesheetCall(flag)}
-                isNewprescriptionEditable={isNewprescriptionEditable}
-                isNewPrescription={isNewPrescription}
-                isClickedOnEdit={isClickedOnEdit}
-                setIsClickedOnEdit={setIsClickedOnEdit}
-                isClickedOnPriview={isClickedOnPriview}
-                setIsClickedOnPriview={setIsClickedOnPriview}
-                tabValue={tabValue}
-                showConfirmPrescription={showConfirmPrescription}
-                setShowConfirmPrescription={(flag: boolean) => setShowConfirmPrescription(flag)}
-              />
-              <div>
-                <div
-                  className={
-                    (inEditMode || isClickedOnEdit) && !isClickedOnPriview
-                      ? classes.block
-                      : classes.none
-                  }
+              >
+                <Tabs
+                  value={tabValue}
+                  variant="fullWidth"
+                  classes={{
+                    root: classes.tabsRoot,
+                    indicator: classes.tabsIndicator,
+                  }}
+                  onChange={(e, newValue) => {
+                    // if (tabValue !== newValue) {
+                    //   postDoctorConsultEventAction(
+                    //     newValue === 0
+                    //       ? WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW
+                    //       : WebEngageEvent.DOCTOR_IN_CHAT_WINDOW,
+                    //   );
+                    // }
+                    setTabValue(newValue);
+                  }}
                 >
-                  <div className={classes.stickyConsultTabs}>
-                    <Tabs
-                      value={tabValue}
-                      variant="fullWidth"
-                      classes={{
-                        root: classes.tabsRoot,
-                        indicator: classes.tabsIndicator,
-                      }}
-                      onChange={(e, newValue) => {
-                        // if (tabValue !== newValue) {
-                        //   postDoctorConsultEventAction(
-                        //     newValue === 0
-                        //       ? WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW
-                        //       : WebEngageEvent.DOCTOR_IN_CHAT_WINDOW,
-                        //   );
-                        // }
-                        setTabValue(newValue);
-                      }}
-                    >
-                      <Tab
-                        classes={{
-                          root: classes.tabRoot,
-                          selected: classes.tabSelected,
-                        }}
-                        label="Case Sheet"
-                      />
-                      <Tab
-                        classes={{
-                          root: classes.tabRoot,
-                          selected: classes.tabSelected,
-                        }}
-                        label="Chat"
-                      />
-                    </Tabs>
-                  </div>
-                  <div>
-                    <div className={tabValue !== 0 ? classes.none : classes.block}>
-                      {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
-                    </div>
+                  <Tab
+                    classes={{
+                      root: classes.tabRoot,
+                      selected: classes.tabSelected,
+                    }}
+                    label="Case Sheet"
+                  />
+                  <Tab
+                    classes={{
+                      root: classes.tabRoot,
+                      selected: classes.tabSelected,
+                    }}
+                    label="Chat"
+                  />
+                </Tabs>
+
+                <div className={classes.tabContent}>
+                  <div className={tabValue !== 0 ? classes.none : classes.block}>
+                    {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
                   </div>
 
-                  <div>
-                    <div className={tabValue !== 1 ? classes.none : classes.block}>
-                      <div className={classes.chatContainer}>
-                        <ConsultRoom
-                          startConsult={startConsult}
-                          sessionId={sessionId}
-                          token={token}
-                          appointmentId={paramId}
-                          doctorId={doctorId}
-                          patientId={patientId}
-                          pubnub={pubnub}
-                          sessionClient={sessionClient}
-                          lastMsg={lastMsg}
-                          messages={messages}
-                          appointmentStatus={appointmentStatus}
-                          postDoctorConsultEventAction={(
-                            eventType: WebEngageEvent,
-                            displayId: string
-                          ) => postDoctorConsultEventAction(eventType, displayId)}
-                        />
-                      </div>
+                  <div className={tabValue !== 1 ? classes.none : classes.block}>
+                    <div className={classes.chatContainer}>
+                      <ConsultRoom
+                        startConsult={startConsult}
+                        sessionId={sessionId}
+                        token={token}
+                        appointmentId={paramId}
+                        doctorId={doctorId}
+                        patientId={patientId}
+                        pubnub={pubnub}
+                        sessionClient={sessionClient}
+                        lastMsg={lastMsg}
+                        messages={messages}
+                        appointmentStatus={appointmentStatus}
+                        setIsCallAccepted={handleSetIsCallAccepted}
+                        isCallAccepted={isCallAccepted}
+                        postDoctorConsultEventAction={(
+                          eventType: WebEngageEvent,
+                          displayId: string
+                        ) => postDoctorConsultEventAction(eventType, displayId)}
+                      />
                     </div>
                   </div>
-                </div>
-
-                <div
-                  className={
-                    inEditMode && isClickedOnPriview && !isClickedOnEdit
-                      ? classes.block
-                      : classes.none
-                  }
-                >
-                  <CasesheetView saving={saving} />
                 </div>
               </div>
+
+              <div
+                className={
+                  inEditMode && isClickedOnPriview && !isClickedOnEdit
+                    ? classes.block
+                    : classes.none
+                }
+              >
+                <CasesheetView saving={saving} />
+              </div>
             </div>
-          </Scrollbars>
+          </div>
+          {/* </Scrollbars> */}
         </CaseSheetContext.Provider>
       )}
       <Modal

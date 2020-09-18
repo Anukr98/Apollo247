@@ -30,7 +30,7 @@ import {
   CommonBugFender,
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { TestSlot } from '@aph/mobile-patients/src/components/Tests/TestsCart';
+import { getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
 import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
@@ -83,6 +83,14 @@ interface AphConsole {
   table(...data: any[]): void;
 }
 
+export interface TestSlot {
+  employeeCode: string;
+  employeeName: string;
+  diagnosticBranchCode: string;
+  date: Date;
+  slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
+}
+
 const isDebugOn = __DEV__;
 
 export const aphConsole: AphConsole = {
@@ -116,6 +124,7 @@ export const productsThumbnailUrl = (filePath: string, baseUrl?: string) =>
 
 export const formatAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
+  const landmark = [address.landmark];
   // to handle state value getting twice
   const addrLine2 = [address.city, address.state]
     .filter((v) => v)
@@ -125,7 +134,37 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .filter((item, idx, array) => array.indexOf(item) === idx)
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-  return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+    return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+};
+
+export const formatAddressWithLandmark = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  const addrLine1 = removeConsecutiveComma([address.addressLine1, address.addressLine2].filter((v) => v).join(', '));
+  const landmark = [address.landmark];
+  // to handle state value getting twice
+  const addrLine2 = removeConsecutiveComma([address.city, address.state]
+    .filter((v) => v)
+    .join(', ')
+    .split(',')
+    .map((v) => v.trim())
+    .filter((item, idx, array) => array.indexOf(item) === idx)
+    .join(', '));
+  const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
+  if(address.landmark!=''){
+    return `${addrLine1},\nLandmark: ${landmark}\n${addrLine2}${formattedZipcode}`;
+  }
+  else{
+    return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+  }
+    
+};
+
+export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  if(address.name!){
+    return `${address.name}\n${address.mobileNumber}`;
+  }
+  else{
+    return `${address.mobileNumber}`;
+  }
 };
 
 export const followUpChatDaysCaseSheet = (
@@ -897,25 +936,58 @@ export const getRelations = (self?: string) => {
 
 export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
 
-export const isValidTestSlot = (slot: TestSlot, date: Date) => {
+export const isValidTestSlot = (
+  slot: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo,
+  date: Date
+) => {
   return (
+    slot.status != 'booked' &&
     (moment(date)
       .format('DMY')
       .toString() ===
     moment()
       .format('DMY')
       .toString()
-      ? moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrAfter(
+      ? moment(slot.startTime!.trim(), 'HH:mm').isSameOrAfter(
           moment(new Date()).add(
             AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
             'minutes'
           )
         )
       : true) &&
-    moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
+    moment(slot.endTime!.trim(), 'HH:mm').isSameOrBefore(
       moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
     )
   );
+};
+
+export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, endTime: string) => {
+  return slots.find(
+    (item) => item.slotInfo.startTime == startTime && item.slotInfo.endTime == endTime
+  )!;
+};
+
+export const getUniqueTestSlots = (slots: TestSlot[]) => {
+  return slots
+    .filter(
+      (item, idx, array) =>
+        array.findIndex(
+          (_item) =>
+            _item.slotInfo.startTime == item.slotInfo.startTime &&
+            _item.slotInfo.endTime == item.slotInfo.endTime
+        ) == idx
+    )
+    .map((val) => ({
+      startTime: val.slotInfo.startTime!,
+      endTime: val.slotInfo.endTime!,
+    }))
+    .sort((a, b) => {
+      if (moment(a.startTime.trim(), 'HH:mm').isAfter(moment(b.startTime.trim(), 'HH:mm')))
+        return 1;
+      else if (moment(b.startTime.trim(), 'HH:mm').isAfter(moment(a.startTime.trim(), 'HH:mm')))
+        return -1;
+      return 0;
+    });
 };
 
 const webengage = new WebEngage();
@@ -1340,12 +1412,12 @@ export const addPharmaItemToCart = (
   },
   onComplete?: () => void
 ) => {
-  const unServiceableMsg = 'Sorry, not serviceable in your area.';
+  const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
   const navigate = () => {
     navigation.navigate(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
-      deliveryError: unServiceableMsg,
+      deliveryError: outOfStockMsg,
     });
   };
 
@@ -1414,4 +1486,7 @@ export const dataSavedUserID = async (key: string) => {
 
 export const setWebEngageScreenNames = (screenName: string) => {
   webengage.screen(screenName);
+};
+export const removeConsecutiveComma = (value: string) =>{
+  return value.replace(/^,|,$|,(?=,)/g, '')
 };

@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ContactUs: React.FC = (props) => {
+const ContactUs: React.FC = (props) => {
   const classes = useStyles({});
 
   return (
@@ -68,3 +68,5 @@ export const ContactUs: React.FC = (props) => {
     </div>
   );
 };
+
+export default ContactUs;

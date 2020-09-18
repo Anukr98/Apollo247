@@ -130,6 +130,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         textTransform: 'uppercase',
         lineHeight: 'normal',
+        paddingRight: 20,
       },
       '& p': {
         margin: 0,
@@ -156,7 +157,13 @@ const useStyles = makeStyles((theme: Theme) => {
           paddingBottom: 10,
           '& span': {
             '&:first-child': {
-              paddingRight: 12,
+              width: 30,
+              display: 'inline-block',
+              textAlign: 'center',
+            },
+            '&:last-child': {
+              display: 'inline-block',
+              width: 'calc(100% - 30px)',
             },
           },
           '& img': {
@@ -263,6 +270,10 @@ const useStyles = makeStyles((theme: Theme) => {
       opacity: 0.5,
       cursor: 'not-allowed',
     },
+    mobileIcon: {
+      position: 'relative',
+      top: 3,
+    },
   });
 });
 interface HowCanConsultProps {
@@ -329,7 +340,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                   setPhysicalDirection(false);
                 }}
               >
-                <span>Chat/Audio/Video</span>
+                <span>Consult on Web</span>
                 <span className={classes.price}>Rs. {onlineFee}</span>
                 <span
                   className={`${classes.availability} ${
@@ -376,7 +387,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             />
           </span>
           <div className={classes.groupDetails}>
-            <h4>{physicalDirection ? 'Meet in person' : 'How to consult via chat/audio/video?'}</h4>
+            <h4>
+              {physicalDirection ? 'Meet in person' : 'How to consult ON WEB via  audio/video ?'}
+            </h4>
             {(physicalDirection || (isSmallScreen && onlineDirection)) && (
               <p
                 className={
@@ -415,12 +428,26 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               </span>
               <span>Make payment</span>
             </li>
-            <li className={classes.blueText}>
+
+            {onlineDirection && (
+              <li>
+                <span>
+                  <img
+                    src={require(onlineDirection
+                      ? 'images/ic-mobile.svg'
+                      : 'images/ic_hospital.svg')}
+                    alt=""
+                    className={classes.mobileIcon}
+                  />
+                </span>
+                <span>Be present in the consult room on apollo247.com at the time of consult</span>
+              </li>
+            )}
+
+            <li>
               <span>
                 <img
-                  src={require(onlineDirection
-                    ? 'images/ic_video-blue.svg'
-                    : 'images/ic_hospital.svg')}
+                  src={require(onlineDirection ? 'images/ic-video.svg' : 'images/ic_hospital.svg')}
                   alt=""
                 />
               </span>
@@ -430,6 +457,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                   : 'Visit the doctor at Hospital/Clinic'}
               </span>
             </li>
+
             <li>
               <span>
                 <img src={require('images/ic_prescription-sm.svg')} alt="" />
@@ -437,11 +465,11 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               <span>Receive prescriptions instantly </span>
             </li>
             {onlineDirection && (
-              <li className={classes.blueText}>
+              <li>
                 <span>
-                  <img src={require('images/ic_chat.svg')} alt="" />
+                  <img src={require('images/ic-followchat.svg')} alt="" />
                 </span>
-                <span>Chat with the doctor for 6 days after your consult</span>
+                <span>Follow Up via text - validity 7 days</span>
               </li>
             )}
           </ul>
@@ -495,10 +523,6 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             >
               {popupLoading ? <CircularProgress size={22} color="secondary" /> : 'BOOK APPOINTMENT'}
             </AphButton>
-            <p className={classes.noteInfo}>
-              Please note that after booking, you will need to download the Apollo 247 app to
-              continue with your consultation.
-            </p>
           </div>
         )}
       </ProtectedWithLoginPopup>

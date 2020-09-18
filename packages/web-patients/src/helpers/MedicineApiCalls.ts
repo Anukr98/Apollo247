@@ -1,9 +1,8 @@
-import axios, { AxiosError, AxiosResponse } from 'axios';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
 import moment from 'moment';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as LatestOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
-import fetchUtil from 'helpers/fetch';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 const apiDetails = {
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -49,11 +48,11 @@ export interface PharmaOverview {
   Strength: string;
   Strengh: string;
   Overview:
-  | {
-    Caption: string;
-    CaptionDesc: string;
-  }[]
-  | string;
+    | {
+        Caption: string;
+        CaptionDesc: string;
+      }[]
+    | string;
 }
 
 export interface MedicineProductDetails extends MedicineProduct {
@@ -126,14 +125,14 @@ interface InventoryCheckApiResponse {
     Message: string; //"Data Founds" | "Authentication Failure-Invalid Token" | "No Items to Check Inventory"
     Status: boolean;
     item:
-    | {
-      artCode: string;
-      batch: string;
-      expDate: string; //'2024-05-30 00:00:00.0'
-      mrp: number;
-      qoh: number;
-    }[]
-    | null;
+      | {
+          artCode: string;
+          batch: string;
+          expDate: string; //'2024-05-30 00:00:00.0'
+          mrp: number;
+          qoh: number;
+        }[]
+      | null;
   };
 }
 
@@ -252,18 +251,18 @@ export interface GetPackageDataResponse {
 }
 
 export const checkServiceAvailability = (zipCode: string) => {
-  return axios.get(`${process.env.TAT_BASE_URL}/serviceable?pincode=${zipCode}`, {
+  return axios.get(`${process.env.INVENTORY_SYNC_URL}/serviceable?pincode=${zipCode}`, {
     headers: {
-      Authorization: 'GWjKtviqHa4r4kiQmcVH',
+      Authorization: process.env.INVENTORY_SYNC_TOKEN,
       'Content-Type': 'application/json',
     },
   });
 };
 
 export const checkSkuAvailability = (sku: string, pincode: string) => {
-  return axios.get(`${process.env.TAT_BASE_URL}/availability?sku=${sku}&pincode=${pincode}`, {
+  return axios.get(`${process.env.INVENTORY_SYNC_URL}/availability?sku=${sku}&pincode=${pincode}`, {
     headers: {
-      Authorization: 'GWjKtviqHa4r4kiQmcVH',
+      Authorization: process.env.INVENTORY_SYNC_TOKEN,
       'Content-Type': 'application/json',
     },
   });
@@ -271,16 +270,16 @@ export const checkSkuAvailability = (sku: string, pincode: string) => {
 
 export const checkTatAvailability = (items: Items[], pincode: string, lat: string, lng: string) => {
   return axios.post(
-    `${process.env.TAT_BASE_URL}/tat`,
+    `${process.env.INVENTORY_SYNC_URL}/tat`,
     {
+      items,
       pincode,
       lat,
       lng,
-      items,
     },
     {
       headers: {
-        Authorization: 'GWjKtviqHa4r4kiQmcVH',
+        Authorization: process.env.INVENTORY_SYNC_TOKEN,
         'Content-Type': 'application/json',
       },
     }
@@ -344,16 +343,16 @@ export const reOrderItems = async (
     const lineItems = orderDetails.medicineOrderLineItems || [];
     const lineItemsSkus = billedLineItems
       ? billedLineItems
-        .filter((item: MedicineOrderBilledItem) => item.itemId)
-        .map((item) => item.itemId)
+          .filter((item: MedicineOrderBilledItem) => item.itemId)
+          .map((item) => item.itemId)
       : lineItems.filter((item) => item.medicineSKU).map((item) => item.medicineSKU!);
 
     const lineItemsDetails = (await medCartItemsDetailsApi(lineItemsSkus)).data.productdp.filter(
-      (lineItem) => lineItem.sku && lineItem.name
+      (lineItem: any) => lineItem.sku && lineItem.name
     );
-    const availableLineItemsSkus = lineItemsDetails.map((lineItem) => lineItem.sku);
+    const availableLineItemsSkus = lineItemsDetails.map((lineItem: any) => lineItem.sku);
     const cartItemsToAdd = lineItemsDetails.map(
-      (item, index) =>
+      (item: any, index: any) =>
         item.sku &&
         ({
           ...item,
@@ -371,11 +370,11 @@ export const reOrderItems = async (
     const unAvailableItems =
       availableLineItemsSkus && billedLineItems
         ? billedLineItems
-          .filter((item) => !availableLineItemsSkus.includes(item.itemId))
-          .map((item) => item.itemName)
+            .filter((item) => !availableLineItemsSkus.includes(item.itemId))
+            .map((item) => item.itemName)
         : lineItems
-          .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU))
-          .map((item) => item.medicineName);
+            .filter((item) => !availableLineItemsSkus.includes(item.medicineSKU))
+            .map((item) => item.medicineName);
 
     // Prescriptions
     const prescriptionUrls = (orderDetails.prescriptionImageUrl || '')

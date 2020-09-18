@@ -90,6 +90,17 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
   }
 `;
 
+export const GET_SECRETARY_DETAILS_BY_DOCTOR_ID = gql`
+  query getSecretaryDetailsByDoctorId($doctorId: String!) {
+    getSecretaryDetailsByDoctorId(doctorId: $doctorId) {
+      id
+      name
+      mobileNumber
+      isActive
+    }
+  }
+`;
+
 export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
   query GetDoctorsBySpecialtyAndFilters($filterInput: FilterDoctorInput) {
     getDoctorsBySpecialtyAndFilters(filterInput: $filterInput) {
@@ -151,6 +162,8 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
         doctorId
         availableModes
       }
+      apolloDoctorCount
+      partnerDoctorCount
     }
   }
 `;

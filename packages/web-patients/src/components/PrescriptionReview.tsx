@@ -519,7 +519,7 @@ const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
 );
-export const PrescriptionReview: React.FC = (props: any) => {
+const PrescriptionReview: React.FC = (props: any) => {
   const defPresObject = {
     name: '',
     imageUrl: '',
@@ -746,6 +746,7 @@ export const PrescriptionReview: React.FC = (props: any) => {
                           href={`mailto:${pharmacologistEmail}`}
                           target="_blank"
                           className={classes.bold}
+                          rel="noopener noreferrer"
                         >
                           {pharmacologistEmail}
                         </a>
@@ -960,3 +961,5 @@ export const PrescriptionReview: React.FC = (props: any) => {
     </div>
   );
 };
+
+export default PrescriptionReview;

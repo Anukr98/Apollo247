@@ -2,8 +2,6 @@ import { webPatientsBaseUrl } from '@aph/universal/dist/aphRoutes';
 
 export const clientRoutes = {
   patients: () => '/patients',
-  cartPoc: () => '/cart-poc',
-  storagePoc: () => '/storage-poc',
 
   welcome: () => '/',
   doctorDetails: (doctorName: string, doctorId: string) => `/doctors/${doctorName}-${doctorId}`,
@@ -30,7 +28,7 @@ export const clientRoutes = {
   chatRoom: (appointmentId: string, doctorId: string) => `/chat-room/${appointmentId}/${doctorId}`,
   myAccount: () => '/my-account',
   notificationSettings: () => '/settings',
-  addRecords: () => '/add-records',
+  addHealthRecords: (type: string) => `/add-record/${type}`,
   yourOrders: () => '/orders',
   medicineAllBrands: () => '/medicine/brands',
   medicineSearchByBrand: (id: string) => `/search-by-brand/${id}`,
@@ -68,6 +66,8 @@ export const clientRoutes = {
   medicinePrescription: () => '/medicine-prescription',
   covidProtocol: () => '/medical-condition',
   prescription: (appointmentId: string) => `/prescription/${appointmentId}`,
+  // sitemap: (sitemap: string) => `/${sitemap}`,
+  // childSitemap: (sitemap: string, pageNo: string) => `/${sitemap}/${pageNo}`,
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

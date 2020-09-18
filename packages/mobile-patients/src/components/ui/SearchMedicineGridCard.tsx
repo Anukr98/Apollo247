@@ -1,24 +1,11 @@
-import {
-  DropdownGreen,
-  MedicineIcon,
-  MedicineRxIcon,
-  TestsIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import { Doseform } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { MedicineIcon, MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Platform,
-  ViewStyle,
-} from 'react-native';
+import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Image } from 'react-native-elements';
-import { AddToCartButtons } from '../Medicines/AddToCartButtons';
+import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
+import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -32,28 +19,12 @@ const styles = StyleSheet.create({
   rowSpaceBetweenView: {
     flex: 1,
   },
-  flexStyle: {
-    flex: 1,
-  },
   medicineTitle: {
     flex: 1,
     marginRight: 0,
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(12),
     lineHeight: 15,
-  },
-  personNameTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    lineHeight: 20,
-    letterSpacing: 0.04,
-    color: theme.colors.LIGHT_BLUE,
-    marginRight: 4,
-  },
-  personSelectionView: {
-    alignSelf: 'flex-end',
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
   },
   outOfStockStyle: {
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -73,24 +44,6 @@ const styles = StyleSheet.create({
   },
   offTextStyle: {
     ...theme.viewStyles.text('M', 11, '#00B38E', 1, 20, 0),
-  },
-  minusQtyViewStyle: {
-    marginBottom: 0,
-    marginTop: 0,
-    marginRight: 10,
-    height: 12,
-    width: 12,
-  },
-  plusQtyViewStyle: {
-    marginRight: 0,
-    marginBottom: 0,
-    marginTop: 0,
-    marginLeft: 11,
-    height: 12,
-    width: 12,
-  },
-  minusPlusTextStyle: {
-    marginTop: Platform.OS === 'ios' ? -7.5 : -4,
   },
   priceAndAddToCartViewStyle: {
     marginLeft: 3,
@@ -129,33 +82,19 @@ const styles = StyleSheet.create({
 });
 
 export interface SearchMedicineGridCardProps {
-  isTest?: boolean;
+  isSellOnline: boolean;
   medicineName: string;
-  personName?: string;
   specialPrice?: number;
   price: number;
   imageUrl?: string;
-  type?: Doseform;
-  subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
-  packOfCount?: number;
-  unit?: number;
   quantity: number;
   isInStock: boolean;
-  unserviceable?: boolean; // If yes, card shows "Not serviceable in your area.", using for TAT API in cart.
-  showRemoveWhenOutOfStock?: boolean;
   isPrescriptionRequired: boolean;
-  isMedicineAddedToCart: boolean;
-  isCardExpanded: boolean;
   onPress: () => void;
-  onChangeUnit: (unit: number) => void;
-  onChangeSubscription: (status: SearchMedicineGridCardProps['subscriptionStatus']) => void;
-  onPressRemove: () => void;
   onPressAdd: () => void;
   onNotifyMeClicked: () => void;
   onPressAddQuantity: () => void;
   onPressSubtractQuantity: () => void;
-  onEditPress: () => void;
-  onAddSubscriptionPress: () => void;
   containerStyle?: StyleProp<ViewStyle>;
   maxOrderQty: number;
   removeCartItem: () => void;
@@ -163,17 +102,15 @@ export interface SearchMedicineGridCardProps {
 
 export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (props) => {
   const {
-    isTest,
+    isSellOnline,
     medicineName,
     specialPrice,
     price,
     imageUrl,
     isInStock,
     quantity,
-    unserviceable,
     containerStyle,
     isPrescriptionRequired,
-    isMedicineAddedToCart,
     onNotifyMeClicked,
     onPressAddQuantity,
     onPressSubtractQuantity,
@@ -194,6 +131,8 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
       </View>
     );
   };
+
+  const renderNotForSaleTag = () => <NotForSaleBadge containerStyle={{ alignSelf: 'center' }} />;
 
   const renderAddToCartView = () => {
     return (
@@ -240,22 +179,12 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
       <View style={styles.medicineIconViewStyle}>
         {imageUrl ? (
           <Image
-            PlaceholderContent={
-              isTest ? (
-                <TestsIcon />
-              ) : isPrescriptionRequired ? (
-                <MedicineRxIcon />
-              ) : (
-                <MedicineIcon />
-              )
-            }
+            PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
             placeholderStyle={{ backgroundColor: 'transparent' }}
             source={{ uri: imageUrl }}
             style={{ height: 40, width: 36 }}
             resizeMode="contain"
           />
-        ) : isTest ? (
-          <TestsIcon />
         ) : isPrescriptionRequired ? (
           <MedicineRxIcon />
         ) : (
@@ -269,7 +198,7 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
     const off_text = getDiscountPercentage(price, specialPrice)
       ? ' ' + getDiscountPercentage(price, specialPrice) + '%off'
       : '';
-    return specialPrice ? (
+    return isInStock && specialPrice ? (
       <View style={{ flexDirection: 'row' }}>
         <Text style={styles.specialpriceTextStyle}>
           {'('}
@@ -282,9 +211,9 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
   };
 
   const renderOutOfStock = () => {
-    return unserviceable || !isInStock ? (
+    return !isInStock && isSellOnline ? (
       <Text style={styles.outOfStockStyle} numberOfLines={2}>
-        {unserviceable ? 'Not serviceable in your area.' : 'Out Of Stock'}
+        {'Out Of Stock'}
       </Text>
     ) : (
       <Text style={styles.priceTextCollapseStyle}>Rs. {specialPrice || price}</Text>
@@ -304,7 +233,11 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
       {renderSpecialPrice()}
       <View style={styles.priceAndAddToCartViewStyle}>
         {renderOutOfStock()}
-        {!isMedicineAddedToCart ? renderAddToCartView() : renderQuantityView()}
+        {!isSellOnline
+          ? renderNotForSaleTag()
+          : !quantity
+          ? renderAddToCartView()
+          : renderQuantityView()}
       </View>
     </TouchableOpacity>
   );

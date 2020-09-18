@@ -2,6 +2,7 @@ const path = require('path');
 const process = require('process');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
@@ -39,64 +40,72 @@ const plugins = [
     filename: 'index.html',
     chunks: ['index']['vendors'],
     template: './index.html',
+    chunksSortMode: 'none',
+
     templateParameters: {
       env: process.env.NODE_ENV,
       licenseCode: process.env.WEBENGAGE_ID,
     },
     inject: true,
     favicon: './favicon.svg',
+    scriptLoading: 'defer',
+  }),
+  new ScriptExtHtmlWebpackPlugin({
+    async: 'npm',
+    defaultAttribute: 'defer',
   }),
   new MomentLocalesPlugin(),
   // new BundleAnalyzerPlugin(),
+  new webpack.HashedModuleIdsPlugin(),
 
-  new WebpackPwaManifest({
-    name: 'Apollo 247',
-    short_name: 'Apollo 247',
-    description:
-      'Apollo 24|7 helps you get treated from Apollo certified doctors at any time of the day, wherever you are. The mobile app has features like e-consultation in 15 minutes, online pharmacy to doorstep delivery of medicines, home diagnostic test and digital vault where you can upload all your medical history.',
-    background_color: '#ffffff',
-    theme_color: '#fdb714',
-    ios: true,
-    icons: [
-      {
-        src: PWA_IMG_URL,
-        sizes: [96, 128, 192, 256, 384, 512], // multiple sizes
-      },
-      {
-        src:
-          isStaging || isProduction
-            ? `${imageCdnBaseUrl}/apollo_logo.jpg`
-            : `${srcDir}/images/apollo_logo.jpg`,
-        size: '1024x1024',
-        purpose: 'maskable',
-      },
-      {
-        src: PWA_IMG_URL,
-        sizes: [120, 152, 167, 180, 1024],
-        destination: path.join('icons', 'ios'),
-        ios: true,
-      },
-      {
-        src: PWA_IMG_URL,
-        size: 1024,
-        destination: path.join('icons', 'ios'),
-        ios: 'startup',
-      },
-      {
-        src: PWA_IMG_URL,
-        sizes: [36, 48, 72, 96, 144, 192, 512],
-        destination: path.join('icons', 'android'),
-      },
-    ],
-  }),
-  new WorkboxPlugin.GenerateSW({
-    // these options encourage the ServiceWorkers to get in there fast
-    // and not allow any straggling "old" SWs to hang around
-    cleanupOutdatedCaches: true,
-    clientsClaim: true,
-    skipWaiting: true,
-    maximumFileSizeToCacheInBytes: 50000000,
-  }),
+  // new WebpackPwaManifest({
+  //   name: 'Apollo 247',
+  //   short_name: 'Apollo 247',
+  //   description:
+  //     'Apollo 24|7 helps you get treated from Apollo certified doctors at any time of the day, wherever you are. The mobile app has features like e-consultation in 15 minutes, online pharmacy to doorstep delivery of medicines, home diagnostic test and digital vault where you can upload all your medical history.',
+  //   background_color: '#ffffff',
+  //   theme_color: '#fdb714',
+  //   ios: true,
+  //   icons: [
+  //     {
+  //       src: PWA_IMG_URL,
+  //       sizes: [96, 128, 192, 256, 384, 512], // multiple sizes
+  //     },
+  //     {
+  //       src:
+  //         isStaging || isProduction
+  //           ? `${imageCdnBaseUrl}/apollo_logo.jpg`
+  //           : `${srcDir}/images/apollo_logo.jpg`,
+  //       size: '1024x1024',
+  //       purpose: 'maskable',
+  //     },
+  //     {
+  //       src: PWA_IMG_URL,
+  //       sizes: [120, 152, 167, 180, 1024],
+  //       destination: path.join('icons', 'ios'),
+  //       ios: true,
+  //     },
+  //     {
+  //       src: PWA_IMG_URL,
+  //       size: 1024,
+  //       destination: path.join('icons', 'ios'),
+  //       ios: 'startup',
+  //     },
+  //     {
+  //       src: PWA_IMG_URL,
+  //       sizes: [36, 48, 72, 96, 144, 192, 512],
+  //       destination: path.join('icons', 'android'),
+  //     },
+  //   ],
+  // }),
+  // new WorkboxPlugin.GenerateSW({
+  //   // these options encourage the ServiceWorkers to get in there fast
+  //   // and not allow any straggling "old" SWs to hang around
+  //   cleanupOutdatedCaches: true,
+  //   clientsClaim: true,
+  //   skipWaiting: true,
+  //   maximumFileSizeToCacheInBytes: 50000000,
+  // }),
 ];
 if (isLocal) {
   plugins.push(
@@ -167,13 +176,13 @@ module.exports = {
           publicPath: (url, resourcePath, context) => {
             const imageName = resourcePath.split('/').pop();
             if (isProduction || isStaging) {
-              console.log('resourcePath', resourcePath.split('/').pop());
+              // console.log('resourcePath', resourcePath.split('/').pop());
               return `${imageCdnBaseUrl}/${imageName}`;
             }
             return `/images/${imageName}`;
           },
-          name: isProduction || isStaging ? '' : '[path][name].[ext]',
-          outputPath: isProduction || isStaging ? 'images' : '',
+          name: '[path][name].[ext]',
+          // outputPath: isProduction || isStaging ? 'images' : '',
         },
       },
     ],
@@ -195,6 +204,7 @@ module.exports = {
   //   sideEffects: true,
   //   usedExports: true,
   // },
+  plugins,
 
   optimization: isLocal
     ? {
@@ -205,27 +215,24 @@ module.exports = {
     : {
         // Enable these for tree-shaking capabilities.
         // Also set `"sideEffects": false` in `package.json`
+        runtimeChunk: 'single',
         sideEffects: true,
         usedExports: true,
         minimize: true,
         splitChunks: {
           chunks: 'all',
-          minSize: 20000,
-          maxSize: 0,
-          minChunks: 1,
+          minSize: 0,
           maxAsyncRequests: 30,
-          maxInitialRequests: 30,
+          maxInitialRequests: Infinity,
           automaticNameDelimiter: '~',
-          //enforceSizeThreshold: 50000,
+          // enforceSizeThreshold: 50000,
           cacheGroups: {
             defaultVendors: {
-              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-              priority: -10,
-            },
-            default: {
-              minChunks: 2,
-              priority: -20,
-              reuseExistingChunk: true,
+              test: /[\\/]node_modules[\\/]/,
+              name(module) {
+                const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
+                return `npm.${packageName.replace('@', '')}`;
+              },
             },
           },
         },
@@ -252,6 +259,4 @@ module.exports = {
         },
       }
     : undefined,
-
-  plugins,
 };

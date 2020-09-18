@@ -20,7 +20,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 
 import { searchDiagnostics_searchDiagnostics_diagnostics } from 'graphql/types/searchDiagnostics';
 import { useDiagnosticsCart, DiagnosticsCartItem } from 'components/Tests/DiagnosticsCartProvider';
-import stripHtml from 'string-strip-html';
+import { stripHtml } from 'helpers/commonHelpers';
 import { GET_DIAGNOSTIC_DATA } from 'graphql/profiles';
 import {
   getDiagnosticsData,
@@ -410,7 +410,7 @@ const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
 
-export const TestDetails: React.FC = (props) => {
+const TestDetails: React.FC = (props) => {
   const classes = useStyles({});
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [tabValue, setTabValue] = useState<number>(0);
@@ -702,3 +702,5 @@ export const TestDetails: React.FC = (props) => {
     </div>
   );
 };
+
+export default TestDetails;

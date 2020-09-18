@@ -23,28 +23,49 @@
     </script>
 
     <link
-      href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,400,500,600,700&display=swap"
       rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,400,500,600,700&display=swap"
     />
+    <noscript
+      ><link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,400,500,600,700&display=swap"
+    /></noscript>
+
     <link
       rel="stylesheet"
-      type="text/css"
-      charset="UTF-8"
       href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.min.css"
     />
+    <noscript
+      ><link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.min.css"
+    /></noscript>
+
     <link
       rel="stylesheet"
-      type="text/css"
       href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick-theme.min.css"
     />
+    <noscript
+      ><link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick-theme.min.css"
+    /></noscript>
+
     <link
       rel="stylesheet"
-      type="text/css"
       href="https://cdn.jsdelivr.net/npm/react-image-gallery@0.9.1/styles/css/image-gallery.css"
     />
+    <noscript
+      ><link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/react-image-gallery@0.9.1/styles/css/image-gallery.css"
+    /></noscript>
+
     <link rel="shortcut icon" href="favicon.svg" type="image/svg/ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
+
+    <style type="text/css">
       a {
         text-decoration: none;
         color: inherit;
@@ -54,13 +75,57 @@
         padding-right: 0 !important;
       }
 
-      /* .OT_publisher .OT_edge-bar-item,
+      .OT_subscriber {
+        width: 100% !important;
+        min-height: calc(100vh - 186px) !important;
+        top: 0;
+      }
+
+      .chatVideo .OT_subscriber {
+        position: absolute;
+        width: 100% !important;
+        min-height: auto !important;
+        bottom: 0;
+        height: auto !important;
+      }
+
+      .chatVideo .OT_publisher {
+        display: none !important;
+      }
+
+      .OT_publisher {
+        position: absolute;
+        min-width: 48px;
+        min-height: 48px;
+        width: 80%;
+        height: 80%;
+        top: 20px;
+        right: 20px;
+        z-index: 9;
+        border-radius: 10px;
+      }
+
+      .sdCall .OT_publisher {
+        top: 68px;
+      }
+
+      .OT_publisher .OT_edge-bar-item,
       .OT_subscriber .OT_edge-bar-item {
         display: none !important;
-      } */
+      }
+
+      .hideVideoContainer .OT_subscriber {
+        min-height: auto !important;
+        height: auto !important;
+      }
     </style>
-    <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
-    <script id="_webengage_script_tag" type="text/javascript">
+  </head>
+
+  <body>
+    <noscript>Your browser does not support JavaScript!</noscript>
+    <div id="root"></div>
+
+    <script id="_webengage_script_tag" type="text/javascript" async defer>
       var webengage;
       const licenseCode = '<%= licenseCode %>';
       !(function(w, e, b, n, g) {
@@ -101,50 +166,5 @@
       })(window, document, 'webengage');
       webengage.init(licenseCode);
     </script>
-  </head>
-
-  <body>
-    <noscript>Your browser does not support JavaScript!</noscript>
-    <div id="root"></div>
-
-    <style>
-      .OT_subscriber {
-        width: 100% !important;
-        min-height: calc(100vh - 186px) !important;
-        top: 0;
-      }
-
-      .chatVideo .OT_subscriber {
-        position: absolute;
-        width: 100% !important;
-        /* min-height: auto !important; */
-        bottom: 0;
-      }
-
-      .chatVideo .OT_publisher {
-        display: none !important;
-      }
-
-      .OT_publisher {
-        position: absolute;
-        min-width: 48px;
-        min-height: 48px;
-        width: 80%;
-        height: 80%;
-        top: 20px;
-        right: 20px;
-        z-index: 9;
-        border-radius: 10px;
-      }
-
-      .sdCall .OT_publisher {
-        top: 68px;
-      }
-
-      .OT_publisher .OT_edge-bar-item,
-      .OT_subscriber .OT_edge-bar-item {
-        display: none !important;
-      }
-    </style>
   </body>
 </html>

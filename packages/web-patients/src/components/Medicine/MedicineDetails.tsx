@@ -8,7 +8,6 @@ import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
-import stripHtml from 'string-strip-html';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -35,7 +34,7 @@ import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
-import { getPackOfMedicine } from 'helpers/commonHelpers';
+import { getPackOfMedicine, stripHtml } from 'helpers/commonHelpers';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -50,6 +49,10 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
+    },
+    visibilityHidden: {
+      visibility: 'hidden',
+      position: 'absolute',
     },
     medicineDetailsPage: {
       backgroundColor: '#f7f8f5',
@@ -523,6 +526,59 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    ppWrapper: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 999,
+      background: 'rgba(0,0,0,0.5)',
+      display: 'none',
+      alignItems: 'center',
+      justifyContent: 'center',
+      [theme.breakpoints.down('sm')]: {
+        display: 'flex',
+      },
+    },
+    productPopup: {
+      position: 'relative',
+      width: 600,
+      height: 400,
+      background: '#fff',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        height: '100%',
+      },
+      '& h1': {
+        padding: '0 0 5px 10px',
+        fontSize: 16,
+        fontWeight: 700,
+        margin: 0,
+        width: 240,
+        whiteSpace: 'nowrap',
+        textOverflow: 'ellipsis',
+        overflow: 'hidden',
+      },
+    },
+    closePopup: {
+      // position: 'absolute',
+      // top: 20,
+      // borderBottomLeftRadius: 20,
+    },
+    ppContent: {
+      height: 'auto',
+      padding: 30,
+      '& >div': {
+        position: 'static',
+        width: 'auto',
+      },
+    },
+    ppHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      padding: 20,
+    },
   };
 });
 
@@ -533,7 +589,7 @@ type MedicineOverViewDetails = {
 
 type MedicineOverView = MedicineOverViewDetails[] | string;
 
-export const MedicineDetails: React.FC = (props) => {
+const MedicineDetails: React.FC = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = React.useState<number>(0);
   const params = useParams<{ sku: string; searchText: string }>();
@@ -545,6 +601,7 @@ export const MedicineDetails: React.FC = (props) => {
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [metaTagProps, setMetaTagProps] = React.useState(null);
+  const [imageClick, setImageClick] = React.useState<boolean>(false);
   const { cartItems } = useShoppingCart();
   const { diagnosticsCartItems } = useDiagnosticsCart();
 
@@ -573,7 +630,7 @@ export const MedicineDetails: React.FC = (props) => {
           },
         }
       )
-      .then(async ({ data }) => {
+      .then(async ({ data }: any) => {
         await axios
           .post(
             apiDetails.url || '',
@@ -603,6 +660,7 @@ export const MedicineDetails: React.FC = (props) => {
               is_in_stock,
               MaxOrderQty,
               is_prescription_required,
+              similar_products,
             } = data && data.productdp && data.productdp.length && data.productdp[0];
             let { description } = data.productdp[0];
             pharmacyProductViewTracking({
@@ -625,6 +683,8 @@ export const MedicineDetails: React.FC = (props) => {
               const desc = Overview.filter((desc: any) => desc.Caption === 'USES');
               description = desc.length ? desc[0].CaptionDesc : '';
             }
+            const similarProducts =
+              similar_products && similar_products.map((key: MedicineProductDetails) => key.name);
             setProductSchemaJSON({
               '@context': 'https://schema.org/',
               '@type': 'Product',
@@ -677,6 +737,7 @@ export const MedicineDetails: React.FC = (props) => {
                 image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
               },
               gtin8: id,
+              isSimilarTo: similarProducts ? similarProducts.join(', ') : '',
             });
             if (type_id && type_id.toLowerCase() === 'pharma') {
               const { generic, Doseform, Strengh, Unit, Overview } =
@@ -785,10 +846,8 @@ export const MedicineDetails: React.FC = (props) => {
   const history = useHistory();
 
   useEffect(() => {
-    if (!medicineDetails) {
-      getMedicineDetails(params.sku);
-    }
-  }, [medicineDetails]);
+    getMedicineDetails(params.sku);
+  }, [params.sku]);
 
   useEffect(() => {
     if (params && params.searchText) {
@@ -804,7 +863,9 @@ export const MedicineDetails: React.FC = (props) => {
 
   const renderComposition = () => {
     const generics = medicinePharmacyDetails[0].generic.split('+ ');
-    const strength = medicinePharmacyDetails[0].Strength.split('+ ');
+    const strength = medicinePharmacyDetails[0].Strength
+      ? medicinePharmacyDetails[0].Strength.split('+ ')
+      : '';
     const units = medicinePharmacyDetails[0].Unit.split('+ ');
     const compositionArray = generics.map((key, ind) => `${key}-${strength[ind]}${units[ind]}`);
     return compositionArray.join(' + ');
@@ -934,9 +995,12 @@ export const MedicineDetails: React.FC = (props) => {
     if (typeof overView !== 'string') {
       return data.map((item, index) => (
         <div
-          style={{ display: tabValue === index ? 'block' : 'none' }}
           key={index}
-          className={classes.tabContainer}
+          className={
+            tabValue === index
+              ? `${classes.tabContainer}`
+              : `${classes.tabContainer} ${classes.visibilityHidden}`
+          }
         >
           {item.value.split(';').map((description, idx) => {
             if (item.key === 'Usage') {
@@ -1067,7 +1131,7 @@ export const MedicineDetails: React.FC = (props) => {
                       onClick={() =>
                         (window.location.href = clientRoutes.searchByMedicine(
                           'deals-of-the-day',
-                          '1195' // this is hardcoded as per the request.
+                          'exclusive-offers' // this is hardcoded as per the request.
                         ))
                       }
                     >
@@ -1094,7 +1158,10 @@ export const MedicineDetails: React.FC = (props) => {
                         >
                           <div className={classes.productInformation}>
                             {medicineDetails.image && medicineDetails.image.length > 0 ? (
-                              <MedicineImageGallery data={medicineDetails} />
+                              <MedicineImageGallery
+                                data={medicineDetails}
+                                setImageClick={setImageClick}
+                              />
                             ) : (
                               <div className={classes.noImageWrapper}>
                                 <img
@@ -1106,6 +1173,42 @@ export const MedicineDetails: React.FC = (props) => {
                                     medicineDetails
                                   )}`}
                                 />
+                              </div>
+                            )}
+                            {imageClick && (
+                              <div className={classes.ppWrapper}>
+                                <div className={classes.productPopup}>
+                                  <div className={classes.ppHeader}>
+                                    <a
+                                      href="javascript:void(0);"
+                                      className={classes.closePopup}
+                                      onClick={() => setImageClick(false)}
+                                    >
+                                      <img src={require('images/ic_cross.svg')} alt="close" />
+                                    </a>
+                                    <h1>{medicineDetails.name}</h1>
+                                  </div>
+                                  <div className={classes.ppContent}>
+                                    {medicineDetails.image && medicineDetails.image.length > 0 ? (
+                                      <MedicineImageGallery
+                                        data={medicineDetails}
+                                        setImageClick={setImageClick}
+                                      />
+                                    ) : (
+                                      <div className={classes.noImageWrapper}>
+                                        <img
+                                          src={require('images/medicine.svg')}
+                                          alt={`${
+                                            medicineDetails.name
+                                          }, Pack of ${getPackOfMedicine(medicineDetails)}`}
+                                          title={`${
+                                            medicineDetails.name
+                                          }, Pack of ${getPackOfMedicine(medicineDetails)}`}
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
                             )}
                             <div className={classes.productDetails}>
@@ -1227,3 +1330,5 @@ export const MedicineDetails: React.FC = (props) => {
     </div>
   );
 };
+
+export default MedicineDetails;

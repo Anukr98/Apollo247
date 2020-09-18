@@ -373,6 +373,8 @@ interface ConsultRoomProps {
   messages: MessagesObjectProps[];
   postDoctorConsultEventAction: (eventType: WebEngageEvent, displayId: string) => void;
   appointmentStatus: string;
+  setIsCallAccepted: (flag: boolean) => void;
+  isCallAccepted: boolean;
 }
 
 let timerIntervalId: any;
@@ -388,12 +390,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>(props.messages);
   const [messageText, setMessageText] = useState<string>('');
   const [msg, setMsg] = useState<string>('');
-  const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
+
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [modalOpen, setModalOpen] = React.useState(false);
+
   const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
   const { currentPatient, isSignedIn } = useAuth();
   const { documentArray, setDocumentArray, patientDetails, appointmentInfo } = useContext(
@@ -463,10 +466,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    if (isCallAccepted) {
+    if (props.isCallAccepted) {
       startIntervalTimer(0);
     }
-  }, [isCallAccepted]);
+  }, [props.isCallAccepted]);
 
   useEffect(() => {
     if (params.tabValue === '1') {
@@ -476,6 +479,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     const lastMsg = props.lastMsg;
+    console.log({ lastMsg });
     if (lastMsg && lastMsg !== null) {
       if (
         !showVideoChat &&
@@ -505,7 +509,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setIsNewMsg(false);
       }
       if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
-        setIsCallAccepted(true);
+        props.setIsCallAccepted(true);
       }
       srollToBottomAction();
       resetMessagesAction();
@@ -524,7 +528,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessageText('');
         srollToBottomAction();
         if (props.appointmentStatus === 'COMPLETED') {
-          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE, (appointmentInfo && appointmentInfo.displayId) || '');
+          props.postDoctorConsultEventAction(
+            WebEngageEvent.DOCTOR_SENT_MESSAGE,
+            (appointmentInfo && appointmentInfo.displayId) || ''
+          );
         }
       }
     );
@@ -620,7 +627,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (status: any, response: any) => {
         resetMessagesAction();
         if (props.appointmentStatus === 'COMPLETED') {
-          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE, (appointmentInfo && appointmentInfo.displayId) || '');
+          props.postDoctorConsultEventAction(
+            WebEngageEvent.DOCTOR_SENT_MESSAGE,
+            (appointmentInfo && appointmentInfo.displayId) || ''
+          );
         }
       }
     );
@@ -634,9 +644,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message === jdThankyou
     ) {
       return rowData.automatedText;
-    }else if(rowData.id === doctorId && rowData.message === exotelCall){	
-      return 'A Telephonic Voice call is initiated from '+ rowData.exotelNumber+'. Request you to answer the call.';	
-    }  else {
+    } else if (rowData.id === doctorId && rowData.message === exotelCall) {
+      return (
+        'A Telephonic Voice call is initiated from ' +
+        rowData.exotelNumber +
+        '. Request you to answer the call.'
+      );
+    } else {
       return rowData.message;
     }
   };

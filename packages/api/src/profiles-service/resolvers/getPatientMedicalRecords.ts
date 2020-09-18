@@ -16,7 +16,8 @@ import {
   PrescriptionDownloadResponse,
   GetAuthTokenResponse,
   HealthChecksResponse,
-  DischargeSummaryResponse
+  DischargeSummaryResponse,
+  GetLabResultpdfResponse
 } from 'types/phrv1';
 import { format } from 'date-fns';
 import { prescriptionSource } from 'profiles-service/resolvers/prescriptionUpload';
@@ -257,10 +258,15 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     response: [DischargeSummaryBaseResponse]
   }
 
+  type GetLabResultpdfResponse {
+    url: String!
+  }
+
   extend type Query {
     getPatientMedicalRecords(patientId: ID!, offset: Int, limit: Int): MedicalRecordsResult
     getPatientPrismMedicalRecords(patientId: ID!): PrismMedicalRecordsResult
     getPrismAuthToken(uhid: String!): PrismAuthTokenResponse
+    getLabResultpdf(patientId: ID!, recordId: String!): GetLabResultpdfResponse
   }
 `;
 
@@ -590,10 +596,39 @@ const getPrismAuthToken: Resolver<
   return await getAuthToken(args.uhid);
 };
 
+const getLabResultpdf: Resolver<
+  null,
+  { patientId: string, recordId: string },
+  ProfilesServiceContext,
+  GetLabResultpdfResponse
+> = async (parent, args, { profilesDb }) => {
+
+  const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientsRepo.getPatientDetails(args.patientId);
+
+  if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+
+  if (!patientDetails.uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
+
+  if (!process.env.PHR_V1_GET_LABRESULT_PDF || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+  const getToken = await getAuthToken(patientDetails.uhid);
+
+  let labResultPdfDocumentUrl = process.env.PHR_V1_GET_LABRESULT_PDF.toString();
+
+  labResultPdfDocumentUrl = labResultPdfDocumentUrl.replace('{AUTH_KEY}', getToken.response);
+  labResultPdfDocumentUrl = labResultPdfDocumentUrl.replace('{RECORDID}', args.recordId);
+
+  return { url: labResultPdfDocumentUrl }
+};
+
+
+
 export const getPatientMedicalRecordsResolvers = {
   Query: {
     getPatientMedicalRecords,
     getPatientPrismMedicalRecords,
     getPrismAuthToken,
+    getLabResultpdf
   },
 };

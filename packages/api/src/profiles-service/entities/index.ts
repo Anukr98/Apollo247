@@ -19,63 +19,19 @@ import {
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 import { ConsultMode } from 'doctors-service/entities';
-import { BlockUserPointsResponse } from 'types/oneApolloTypes';
+import { BlockUserPointsResponse, OneApollTransaction } from 'types/oneApolloTypes';
 import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
 import { log } from 'customWinstonLogger';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
-
-export type ONE_APOLLO_USER_REG = {
-  FirstName: string;
-  LastName: string;
-  MobileNumber: string;
-  Gender: Gender;
-  BusinessUnit: string;
-  StoreCode: string;
-  CustomerId: string;
-};
-
-export enum ONE_APOLLO_PRODUCT_CATEGORY {
-  PRIVATE_LABEL = 'A247',
-  NON_PHARMA = 'F247',
-  PHARMA = 'P247',
-}
-
-export type OneApollTransaction = {
-  BillNo: string;
-  BU: string;
-  StoreCode: string;
-  NetAmount: number;
-  GrossAmount: number;
-  TransactionDate: Date;
-  MobileNumber: string;
-  SendCommunication: boolean;
-  CalculateHealthCredits: boolean;
-  Gender: Gender;
-  Discount: number;
-  CreditsRedeemed?: number;
-  RedemptionRequestNo?: string;
-  TransactionLineItems: TransactionLineItems[];
-};
-
-export interface TransactionLineItemsPartial {
-  ProductCode: string;
-  NetAmount: number;
-  GrossAmount: number;
-  DiscountAmount: number;
-}
+import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
+import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
 
 export interface PaginateParams {
   take?: number;
   skip?: number;
-}
-
-export interface TransactionLineItems extends TransactionLineItemsPartial {
-  ProductName: string;
-  ProductCategory: ONE_APOLLO_PRODUCT_CATEGORY;
-  PointsRedeemed?: number;
 }
 
 export enum CouponApplicability {
@@ -240,6 +196,7 @@ export enum DiscountType {
   PRICEOFF = 'PRICEOFF',
 }
 
+/* to be deprecated soon - Free text string is used as unit input from user >= release 5.0.0 */
 export enum MedicalTestUnit {
   GM = 'GM',
   _PERCENT_ = '_PERCENT_',
@@ -255,6 +212,8 @@ export enum MedicalRecordType {
   TEST_REPORT = 'TEST_REPORT',
   CONSULTATION = 'CONSULTATION ',
   PRESCRIPTION = 'PRESCRIPTION',
+  HEALTHCHECK = 'HEALTHCHECK',
+  HOSPITALIZATION = 'HOSPITALIZATION',
 }
 
 export enum DIAGNOSTIC_ORDER_STATUS {
@@ -425,6 +384,9 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({ nullable: true })
   siteId: string;
+
+  @Column({ nullable: true })
+  tatType: string;
 
   @Column({ nullable: true })
   shopId: string;
@@ -1092,6 +1054,18 @@ export class Patient extends BaseEntity {
   medicalRecords: MedicalRecords[];
 
   @OneToMany(
+    (type) => HealthCheckRecords,
+    (healthCheckRecord) => healthCheckRecord.patient
+  )
+  healthCheckRecords: HealthCheckRecords[];
+
+  @OneToMany(
+    (type) => HospitalizationRecords,
+    (hospitalizationRecords) => hospitalizationRecords.patient
+  )
+  hospitalizationRecords: HospitalizationRecords[];
+
+  @OneToMany(
     (type) => PatientFeedback,
     (patientfeedback) => patientfeedback.patient
   )
@@ -1282,15 +1256,13 @@ export class Patient extends BaseEntity {
   @AfterUpdate()
   async setPatientCache() {
     try {
-      console.log(`Setting cache`);
+      log('profileServiceLogger', 'setting Cache', 'profilesService->setPatientCache()', '', '');
       await setCache(
         `patient:${this.id}`,
         JSON.stringify(this),
         ApiConstants.CACHE_EXPIRATION_3600
       );
-    } catch (ex) {
-      console.log(`Exception #`, ex);
-    }
+    } catch (ex) {}
   }
 }
 //patient Ends
@@ -1719,7 +1691,7 @@ export class MedicalRecordParameters extends BaseEntity {
   result: number;
 
   @Column()
-  unit: MedicalTestUnit;
+  unit: string;
 
   @Column({ type: 'timestamp', nullable: true })
   updatedDate: Date;
@@ -1983,6 +1955,12 @@ export class PatientMedicalHistory extends BaseEntity {
 
   @Column({ nullable: true })
   weight: string;
+
+  @Column({ nullable: true, type: 'text' })
+  clinicalObservationNotes: string;
+
+  @Column({ nullable: true, type: 'text' })
+  diagnosticTestResult: string;
 
   @BeforeInsert()
   updateDateCreation() {

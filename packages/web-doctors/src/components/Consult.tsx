@@ -180,6 +180,7 @@ interface ConsultProps {
   setSessionError: (error: any) => void;
   setPublisherError: (error: any) => void;
   setSubscriberError: (error: any) => void;
+  setGiveRating?: (flag: boolean) => void;
 }
 function getCookieValue() {
   const name = 'action=';
@@ -217,10 +218,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       props.stopAudioVideoCallpatient();
       props.setIscall(false);
       if (event.reason === 'networkDisconnected') {
+        props.setGiveRating(true);
         props.setSessionError({
           message: 'Call was disconnected due to Network problems on the patient end.',
         });
       } else {
+        props.setGiveRating(true);
         props.setSessionError({ message: 'Patient left the call.' });
       }
     },
@@ -383,6 +386,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   properties={{
                     publishAudio: isPublishAudio,
                     publishVideo: subscribeToVideo,
+                    resolution: '640x480',
+                    audioBitrate: 30000,
+                    frameRate: 15,
                   }}
                   eventHandlers={publisherHandler}
                   onError={(error: any) => {

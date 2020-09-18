@@ -3,7 +3,6 @@ import { FilterHealthRecordScene } from '@aph/mobile-patients/src/components/Fil
 import { HealthConsultView } from '@aph/mobile-patients/src/components/HealthRecords/HealthConsultView';
 import { MedicalRecords } from '@aph/mobile-patients/src/components/HealthRecords/MedicalRecords';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
-// import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
@@ -17,6 +16,7 @@ import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsCompon
 import {
   CommonBugFender,
   CommonLogEvent,
+  isIphone5s,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   CHECK_IF_FOLLOWUP_BOOKED,
@@ -28,15 +28,7 @@ import {
   UPLOAD_DOCUMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
-import {
-  deletePatientMedicalRecord,
-  deletePatientMedicalRecordVariables,
-} from '@aph/mobile-patients/src/graphql/types/deletePatientMedicalRecord';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import {
-  getPatientMedicalRecords,
-  getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
-} from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
 import {
   getPatientPastConsultsAndPrescriptions,
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults as ConsultsType,
@@ -59,7 +51,6 @@ import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  Dimensions,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
@@ -69,31 +60,31 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  ScrollView,
+  FlatList,
 } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
-import WebEngage from 'react-native-webengage';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import {
   getPatientPrismMedicalRecords,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
-} from '../../graphql/types/getPatientPrismMedicalRecords';
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import {
   BOOKING_SOURCE,
   DEVICE_TYPE,
   MEDICINE_DELIVERY_TYPE,
   PRISM_DOCUMENT_CATEGORY,
   UPLOAD_FILE_TYPES,
-} from '../../graphql/types/globalTypes';
-import { uploadDocument, uploadDocumentVariables } from '../../graphql/types/uploadDocument';
-import { useShoppingCart } from '../ShoppingCartProvider';
-import { TabHeader } from '../ui/TabHeader';
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  uploadDocument,
+  uploadDocumentVariables,
+} from '@aph/mobile-patients/src/graphql/types/uploadDocument';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-
-const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -121,7 +112,6 @@ const styles = StyleSheet.create({
   seperatorStyle: {
     height: 2,
     backgroundColor: '#00b38e',
-    //marginTop: 5,
     marginHorizontal: 5,
     marginBottom: 6,
     marginRight: -5,
@@ -164,21 +154,13 @@ export interface HealthRecordsHomeProps extends NavigationScreenProps {}
 export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const tabs = strings.health_records_home.tabs;
 
-  const [medicalRecords, setmedicalRecords] = useState<
-    (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[] | null | undefined
-  >([]);
-  const [labTests, setlabTests] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests | null)[]
+  const [healthChecksNew, setHealthChecksNew] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response | null)[]
     | null
     | undefined
   >([]);
-  const [healthChecks, sethealthChecks] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks | null)[]
-    | null
-    | undefined
-  >([]);
-  const [hospitalizations, sethospitalizations] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations | null)[]
+  const [hospitalizationsNew, setHospitalizationsNew] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response | null)[]
     | null
     | undefined
   >([]);
@@ -200,10 +182,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [consultsData, setConsultsData] = useState<(ConsultsType | null)[] | null>(null);
   const [medicineOrders, setMedicineOrders] = useState<(medicineOrders | null)[] | null>(null);
   const [combination, setCombination] = useState<{ type: string; data: any }[]>();
-  // const [loading, setLoading && setLoading] = useState<boolean>(true);
   const { loading, setLoading } = useUIElements();
   const [prismdataLoader, setPrismdataLoader] = useState<boolean>(false);
-  const [medicalRecordsLoader, setMedicalRecordsLoader] = useState<boolean>(false);
   const [pastDataLoader, setPastDataLoader] = useState<boolean>(false);
   const [arrayValues, setarrayValues] = useState<any>();
   const client = useApolloClient();
@@ -212,7 +192,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const { showAphAlert } = useUIElements();
   const { deliveryAddressId, storeId } = useShoppingCart();
-  const webengage = new WebEngage();
 
   useEffect(() => {
     currentPatient && setProfile(currentPatient!);
@@ -221,12 +200,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     }
   }, [currentPatient]);
   useEffect(() => {
-    if (prismdataLoader || medicalRecordsLoader || pastDataLoader) {
+    if (prismdataLoader || pastDataLoader) {
       !loading && setLoading!(true);
     } else {
       loading && setLoading!(false);
     }
-  }, [prismdataLoader, medicalRecordsLoader, pastDataLoader]);
+  }, [prismdataLoader, pastDataLoader]);
 
   const fetchPastData = (filters: filterDataType[] = []) => {
     const filterArray = [];
@@ -236,7 +215,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     if (selectedOptions.includes('Clinic Visits')) filterArray.push('PHYSICAL');
     if (selectedOptions.includes('Prescriptions')) filterArray.push('PRESCRIPTION');
 
-    // setPastDataLoader(true);
     client
       .query<getPatientPastConsultsAndPrescriptions>({
         query: GET_PAST_CONSULTS_PRESCRIPTIONS,
@@ -249,12 +227,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         },
       })
       .then((_data) => {
-        console.log('data', _data);
-        // const formatDate = (date: string) =>
-        //   moment(date)
-        //     .clone()
-        //     .format('YYYY-MM-DD');
-
         const consults = _data.data.getPatientPastConsultsAndPrescriptions!.consults || [];
         const medOrders = _data.data.getPatientPastConsultsAndPrescriptions!.medicineOrders || [];
         const consultsAndMedOrders: { [key: string]: any } = {};
@@ -266,7 +238,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             ...c,
           };
         });
-        //setselectedTab(`${tabs[0].title}`);
 
         medOrders.forEach((c) => {
           consultsAndMedOrders[c!.quoteDateTime] = {
@@ -289,15 +260,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             (i) =>
               (!i.patientId && (i.prescriptionImageUrl || i.prismPrescriptionFileId)) || i.patientId
           );
-        console.log('sort', array);
         setarrayValues(array);
-        //setarrayValues(Object.keys(consultsAndMedOrders).map((i) => consultsAndMedOrders[i]));
       })
       .catch((e) => {
         CommonBugFender('HealthRecordsHome_fetchPastData', e);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching Heath records', error);
-        //Alert.alert('Error', error);
       })
       .finally(() => setPastDataLoader(false));
   };
@@ -310,31 +278,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     });
   };
 
-  const fetchData = useCallback(() => {
-    // setMedicalRecordsLoader(true);
-    client
-      .query<getPatientMedicalRecords>({
-        query: GET_MEDICAL_RECORD,
-        variables: {
-          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        console.log('data', data);
-        const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
-        setmedicalRecords(records);
-      })
-      .catch((error) => {
-        CommonBugFender('HealthRecordsHome_fetchData', error);
-        console.log('Error occured', { error });
-        //Alert.alert('Error', error.message);
-      })
-      .finally(() => setMedicalRecordsLoader(false));
-  }, [currentPatient]);
-
   const fetchTestData = useCallback(() => {
-    // setPrismdataLoader(true);
     client
       .query<getPatientPrismMedicalRecords>({
         query: GET_MEDICAL_PRISM_RECORD,
@@ -344,10 +288,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log('data', data);
-        // const labTestsData = g(data, 'getPatientPrismMedicalRecords', 'labTests');
-        // const healthChecksData = g(data, 'getPatientPrismMedicalRecords', 'healthChecks');
-        // const hospitalizationsData = g(data, 'getPatientPrismMedicalRecords', 'hospitalizations');
         const labResultsData = g(data, 'getPatientPrismMedicalRecords', 'labResults', 'response');
         const prescriptionsData = g(
           data,
@@ -355,19 +295,22 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           'prescriptions',
           'response'
         );
-        // console.log(
-        //   'labResultsData',
-        //   labResultsData,
-        //   'prescriptionsData',
-        //   prescriptionsData,
-        //   'hospitalizationsData',
-        //   hospitalizationsData
-        // );
-        // setlabTests(labTestsData);
-        // sethealthChecks(healthChecksData);
-        // sethospitalizations(hospitalizationsData);
+        const healthChecksNewData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'healthChecksNew',
+          'response'
+        );
+        const hospitalizationsNewData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'hospitalizationsNew',
+          'response'
+        );
         setLabResults(labResultsData);
         setPrescriptions(prescriptionsData);
+        setHealthChecksNew(healthChecksNewData);
+        setHospitalizationsNew(hospitalizationsNewData);
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchTestData', error);
@@ -379,17 +322,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   useEffect(() => {
     setPastDataLoader(true);
-    // setMedicalRecordsLoader(true);
     setPrismdataLoader(true);
     fetchPastData();
-    // fetchData();
     fetchTestData();
   }, [currentPatient]);
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       fetchPastData();
-      // fetchData();
       fetchTestData();
       setDisplayFilter(false);
     });
@@ -408,38 +348,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         mergeArray.push({ type: 'prescriptions', data: c });
       });
       setCombination(sortByDate(mergeArray));
-      // console.log(
-      //   'sortedcombination',
-      //   // sortedData,
-      //   'combination',
-      //   combination,
-      //   'arrayValues',
-      //   arrayValues
-      // );
     }
   }, [arrayValues, prescriptions]);
-
-  const renderDeleteMedicalOrder = (MedicaId: string) => {
-    client
-      .mutate<deletePatientMedicalRecord, deletePatientMedicalRecordVariables>({
-        mutation: DELETE_PATIENT_MEDICAL_RECORD,
-        variables: { recordId: MedicaId },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        const newRecords = medicalRecords!.filter((record: any) => record.id != MedicaId);
-        setmedicalRecords(newRecords);
-      })
-      .catch((e) => {
-        console.log('Error occured while render Delete MedicalOrder', { e });
-        currentPatient && handleGraphQlError(e);
-      });
-  };
 
   const [scrollOffset, setScrollOffset] = useState<number>(0);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
     const offset = event.nativeEvent.contentOffset.y;
     if (!(offset > 1 && scrollOffset > 1)) {
       setScrollOffset(event.nativeEvent.contentOffset.y);
@@ -527,9 +441,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         style={{
           ...theme.viewStyles.cardViewStyle,
           borderRadius: 0,
-          //marginTop: Platform.OS === 'ios' ? 205 : 216, //226,
           backgroundColor: theme.colors.CARD_BG,
           shadowRadius: 2,
+        }}
+        titleStyle={{
+          fontSize: isIphone5s() ? 10 : 12,
+        }}
+        selectedTitleStyle={{
+          fontSize: isIphone5s() ? 10 : 12,
         }}
         height={44}
         data={tabs}
@@ -707,7 +626,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log('CHECK_IF_FOLLOWUP_BOOKED', data);
         props.navigation.push(AppRoutes.ConsultDetails, {
           CaseSheet: item.id,
           DoctorInfo: item.doctorInfo,
@@ -750,7 +668,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         variables,
       })
       .then(({ data }) => {
-        console.log({ data });
         setLoading!(false);
         setdisplayOrderPopup(false);
         const { errorCode } = g(data, 'SavePrescriptionMedicineOrder')! || {};
@@ -772,7 +689,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   };
 
   const UploadPrescriptionData = (uploadata: any) => {
-    console.log(uploadata, 'jbhj');
     uploadata.map((item: any) => {
       const variables = {
         UploadDocumentInput: {
@@ -789,7 +705,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           patientId: g(currentPatient, 'id')!,
         },
       };
-      console.log(JSON.stringify(variables));
       setLoading!(true);
       client
         .mutate<uploadDocument, uploadDocumentVariables>({
@@ -798,7 +713,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           variables,
         })
         .then((data) => {
-          console.log(data, 'uploadata');
           setLoading!(false);
           setdisplayOrderPopup(false);
           const fieldId = data && data.data!.uploadDocument.fileId;
@@ -819,8 +733,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 deviceType: Platform.OS == 'android' ? DEVICE_TYPE.ANDROID : DEVICE_TYPE.IOS,
               },
             };
-            console.log({ prescriptionMedicineInput });
-            console.log(JSON.stringify(prescriptionMedicineInput));
             submitPrescriptionMedicineOrder(prescriptionMedicineInput);
           }
         })
@@ -843,18 +755,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         >
           {renderProfileChangeView()}
           {renderTabSwitch()}
-          {selectedTab === tabs[0].title ? (
-            renderConsults()
-          ) : (
+          {selectedTab === tabs[0].title && renderConsults()}
+          {selectedTab === tabs[1].title && (
+            <MedicalRecords navigation={props.navigation} labResultsData={labResults} />
+          )}
+          {selectedTab === tabs[2].title && (
+            <MedicalRecords navigation={props.navigation} healthChecksNewData={healthChecksNew} />
+          )}
+          {selectedTab === tabs[3].title && (
             <MedicalRecords
               navigation={props.navigation}
-              MedicalRecordData={medicalRecords}
-              renderDeleteMedicalOrder={renderDeleteMedicalOrder}
-              labTestsData={labTests}
-              healthChecksData={healthChecks}
-              hospitalizationsData={hospitalizations}
-              labResultsData={labResults}
-              prescriptionsData={prescriptions}
+              hospitalizationsNewData={hospitalizationsNew}
             />
           )}
         </ScrollView>
@@ -899,20 +810,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             if (selectedType == 'CAMERA_AND_GALLERY') {
               if (response.length == 0) return;
               UploadPrescriptionData(response);
-              // props.navigation.navigate(AppRoutes.UploadPrescription, {
-              //   phyPrescriptionsProp: response,
-              // });
             }
           }}
         />
-        // <AddFilePopup
-        //   onClickClose={() => {
-        //     setdisplayOrderPopup(false);
-        //   }}
-        //   getData={(data: (PickerImage | PickerImage[])[]) => {
-        //     UploadPrescriptionData(data);
-        //   }}
-        // />
       )}
     </View>
   );

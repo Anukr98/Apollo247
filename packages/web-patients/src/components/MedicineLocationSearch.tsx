@@ -5,9 +5,9 @@ import { AphTextField, AphButton, AphDialog, AphDialogClose } from '@aph/web-ui-
 import { MedicineAllowLocation } from 'components/MedicineAllowLocation';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useShoppingCart } from './MedicinesCartProvider';
-import axios, { AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
 import { checkServiceAvailability } from 'helpers/MedicineApiCalls';
+import axios, { AxiosError } from 'axios';
 import { findAddrComponents, isActualUser } from 'helpers/commonHelpers';
 import { pincodeAutoSelectTracking, pincodeManualSelectTracking } from 'webEngageTracking';
 import fetchUtil from 'helpers/fetch';
@@ -415,15 +415,15 @@ export const MedicineLocationSearch: React.FC = (props) => {
         }}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'right',
+          horizontal: 'left',
         }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: 'left',
+          horizontal: 'right',
         }}
       >
         <ul>
-          <li
+          {/* <li
             onClick={() => {
               setHeaderPincodeError(null);
               locateCurrentLocation();
@@ -431,7 +431,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
             }}
           >
             Auto Select Location
-          </li>
+          </li> */}
           <li
             onClick={() => {
               setIsLocationPopover(false);

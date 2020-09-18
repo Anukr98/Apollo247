@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import { format } from 'date-fns';
 import { keyCache, hgetAllCache } from 'doctors-service/database/connectRedis';
+import { log } from 'customWinstonLogger';
 
 export const sitemapTypeDefs = gql`
   type SitemapUrls {
@@ -90,7 +91,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
       const url = process.env.SITEMAP_BASE_URL + 'specialties/' + specialtyName;
       const urlInfo: SitemapUrls = {
         url,
-        urlName: specialtyName,
+        urlName: specialty.specialistPluralTerm,
       };
       specialityUrls.push(urlInfo);
       const specialtyStr =
@@ -129,7 +130,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
   );
   const textRes = await listResp.text();
   const cmsUrlsList = JSON.parse(textRes);
-
+  console.log(cmsUrlsList, 'cmsUrlsList');
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cmsUrlsList.data.forEach((link: any) => {
@@ -173,10 +174,13 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
   const healthAreaTextRes = await healthAreaListResp.text();
   const healthAreasUrlsList = JSON.parse(healthAreaTextRes);
   let healthAreaUrls = '\n<!--Health Area links-->\n';
-  if (healthAreasUrlsList.healthareas && healthAreasUrlsList.healthareas.length > 0) {
+  if (
+    healthAreasUrlsList.shop_by_healthareas &&
+    healthAreasUrlsList.shop_by_healthareas.length > 0
+  ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    healthAreasUrlsList.healthareas.forEach((link: any) => {
-      const url = process.env.SITEMAP_BASE_URL + 'medicine/healthareas/' + link.url_key;
+    healthAreasUrlsList.shop_by_healthareas.forEach((link: any) => {
+      const url = process.env.SITEMAP_BASE_URL + 'medicine/shop-by-healthareas/' + link.url_key;
       const urlInfo: SitemapUrls = {
         url,
         urlName: link.title,
@@ -205,7 +209,11 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
   let medicineUrls = '\n<!--Medicines list-->\n';
   if (redisMedKeys && redisMedKeys.length > 0) {
     let medCount = redisMedKeys.length;
-    if (process.env.NODE_ENV == 'local' || process.env.NODE_ENV == 'dev') {
+    if (
+      process.env.NODE_ENV == 'local' ||
+      process.env.NODE_ENV == 'dev' ||
+      process.env.NODE_ENV == 'staging'
+    ) {
       medCount = 100;
     }
     for (let k = 0; k < medCount; k++) {
@@ -220,7 +228,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
         const url = process.env.SITEMAP_BASE_URL + 'medicine/' + skuDets.url_key.toString();
         const urlInfo: SitemapUrls = {
           url,
-          urlName: skuDets.name,
+          urlName: decodeURIComponent(skuDets.name),
         };
         medicinesUrls.push(urlInfo);
         medicineUrls += `<url>\n<loc>${url}</loc>\n<lastmod>${modifiedDate}</lastmod>\n</url>\n`;
@@ -230,15 +238,13 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
 
   //read static page urls from redis cache
   const staticPages = await keyCache('apollo247:staticpages:*');
-  console.log(staticPages, 'staticPages');
   if (staticPages && staticPages.length > 0) {
     for (let k = 0; k < staticPages.length; k++) {
       const pageDets = await hgetAllCache(staticPages[k]);
-      console.log(pageDets, 'page dets');
       if (pageDets) {
         const urlInfo: SitemapUrls = {
           url: pageDets.pageUrl,
-          urlName: pageDets.pageName,
+          urlName: decodeURIComponent(pageDets.pageName),
         };
         staticPageUrls.push(urlInfo);
       }
@@ -256,7 +262,13 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
   const fileName = 'sitemap.xml';
   const uploadPath = assetsDir + '/' + fileName;
   fs.writeFile(uploadPath, sitemapStr, {}, (err) => {
-    console.log(err, 'err');
+    log(
+      'doctorServiceLogger',
+      'sitemamap generateSitemap error',
+      'sitemamap()->generateSitemap()',
+      '',
+      JSON.stringify(err)
+    );
   });
   //return 'Sitemap generated :) ' + uploadPath;
   return {

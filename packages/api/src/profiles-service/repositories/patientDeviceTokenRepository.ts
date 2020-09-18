@@ -53,4 +53,11 @@ export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens
     return this.update(id, updateAttrs);
   }
 
+  async saveMultiplePatientDeviceToken(deviceTokenAttrs: Partial<PatientDeviceTokens>[]) {
+    return this.save(deviceTokenAttrs).catch((patientDeviceTokenError) => {
+      throw new AphError(AphErrorMessages.SAVE_PATIENT_DEVICE_TOKEN_ERROR, undefined, {
+        patientDeviceTokenError,
+      });
+    });
+  }
 }
