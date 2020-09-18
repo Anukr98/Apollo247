@@ -216,8 +216,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               for (let i = value.length; i < digits; i++) {
                 modvalue += '0';
               }
-            } else if (value.length > digits) {
-              modvalue = value.substr(0, digits);
             }
             return parseFloat(modvalue);
           };
