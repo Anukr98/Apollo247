@@ -287,6 +287,7 @@ export class DoctorRepository extends Repository<Doctor> {
       },
     };
     const getDetails = await client.search(searchParams);
+    client.close();
     let doctorData, facilities;
 
     if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
