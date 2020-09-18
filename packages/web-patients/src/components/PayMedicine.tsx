@@ -736,8 +736,10 @@ const PayMedicine: React.FC = (props) => {
               sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
             }`;
             window.location.href = pgUrl;
+            localStorage.removeItem('updatedFreeCoupon');
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
+            localStorage.removeItem('updatedFreeCoupon');
           } else if (errorMessage.length > 0) {
             setMutationLoading(false);
             setIsAlertOpen(true);
