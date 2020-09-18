@@ -34,7 +34,7 @@ import { GET_APPOINTMENT_DATA, GET_CONSULT_INVOICE } from 'graphql/consult';
 import { PAYMENT_TRANSACTION_STATUS } from 'graphql/payments';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
-import { gtmTracking } from '../../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../../gtmTracking';
 import { OrderStatusContent } from 'components/OrderStatusContent';
 import { readableParam, AppointmentFilterObject, isPastAppointment } from 'helpers/commonHelpers';
 import { consultationBookTracking } from 'webEngageTracking';
@@ -1071,6 +1071,29 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
         pastAppointments.push(appointmentDetails);
       }
     });
+
+  useEffect(() => {
+    if (paymentData && appointmentHistory) {
+      /**Gtm code start start */
+      dataLayerTracking({
+        event: 'pageviewEvent',
+        pagePath: window.location.href,
+        pageName: 'Consultation Order Completion Page',
+        pageLOB: 'Consultation',
+        pageType: 'Order Page',
+        Status: paymentData.paymentStatus,
+        OrderID: paymentData.displayId,
+        Price: paymentData.amountPaid,
+        //CouponCode: 'CARE247', //if not used send it as null
+        //CouponValue: 123.4, //if no coupon code, send it as 0
+        'Payment Type': paymentData.responseMessage,
+        productlist: JSON.stringify({ ...paymentData, ...appointmentHistory }),
+        Time: appointmentHistory.appointmentDateTime,
+        Type: appointmentHistory.appointmentType,
+      });
+      /**Gtm code start end */
+    }
+  }, []);
 
   useEffect(() => {
     /**Gtm code start start */
