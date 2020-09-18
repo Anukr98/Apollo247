@@ -524,7 +524,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
       setLabResults(filteredData);
       setActiveData(filteredData[0]);
     }
-  }, [filterApplied]);
+  }, [filterApplied, allCombinedData]);
 
   const getFormattedDate = (combinedData: LabResultsType, dateFor: string) => {
     const formattedDate = moment(combinedData.date).format('DD MMM YYYY');
