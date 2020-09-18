@@ -1,8 +1,18 @@
 import gql from 'graphql-tag';
 
 export const GET_CURRENT_PATIENTS = gql`
-  query GetCurrentPatients($appVersion: String, $deviceType: DEVICE_TYPE) {
-    getCurrentPatients(appVersion: $appVersion, deviceType: $deviceType) {
+  query GetCurrentPatients(
+    $appVersion: String
+    $deviceType: DEVICE_TYPE
+    $deviceToken: String
+    $deviceOS: String
+  ) {
+    getCurrentPatients(
+      appVersion: $appVersion
+      deviceType: $deviceType
+      deviceToken: $deviceToken
+      deviceOS: $deviceOS
+    ) {
       patients {
         id
         uhid
@@ -108,6 +118,7 @@ export const ADD_NEW_PROFILE = gql`
         lastName
         emailAddress
         gender
+        dateOfBirth
       }
     }
   }
@@ -730,6 +741,14 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       registrationNumber
       onlineConsultationFees
       physicalConsultationFees
+      doctorSecretary {
+        secretary {
+          id
+          name
+          mobileNumber
+          isActive
+        }
+      }
       doctorHospital {
         facility {
           id
@@ -879,6 +898,8 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
           name
         }
       }
+      apolloDoctorCount
+      partnerDoctorCount
     }
   }
 `;
@@ -1300,16 +1321,29 @@ export const GET_LATEST_MEDICINE_ORDER = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_IT_DOSE_SLOTS = gql`
-  query GetDiagnosticItDoseSlots($patientId: String, $selectedDate: Date, $zipCode: Int) {
-    getDiagnosticItDoseSlots(
+export const GET_DIAGNOSTIC_SLOTS = gql`
+  query getDiagnosticSlots(
+    $patientId: String
+    $hubCode: String
+    $selectedDate: Date
+    $zipCode: Int
+  ) {
+    getDiagnosticSlots(
       patientId: $patientId
+      hubCode: $hubCode
       selectedDate: $selectedDate
       zipCode: $zipCode
     ) {
-      slotInfo {
-        TimeslotID
-        Timeslot
+      diagnosticBranchCode
+      diagnosticSlot {
+        employeeCode
+        employeeName
+        slotInfo {
+          endTime
+          status
+          startTime
+          slot
+        }
       }
     }
   }
@@ -1957,23 +1991,20 @@ export const ADD_MEDICAL_RECORD = gql`
   }
 `;
 
-export const UPLOAD_LAB_RESULTS = gql`
-  mutation uploadLabResults($LabResultsUploadRequest: LabResultsUploadRequest, $uhid: String) {
-    uploadLabResults(labResultsInput: $LabResultsUploadRequest, uhid: $uhid) {
-      recordId
-      fileUrl
+export const ADD_PATIENT_HEALTH_CHECK_RECORD = gql`
+  mutation addPatientHealthCheckRecord($AddHealthCheckRecordInput: AddHealthCheckRecordInput) {
+    addPatientHealthCheckRecord(addHealthCheckRecordInput: $AddHealthCheckRecordInput) {
+      status
     }
   }
 `;
 
-export const UPLOAD_HEALTH_RECORD_PRESCRIPTION = gql`
-  mutation uploadPrescriptions(
-    $PrescriptionUploadRequest: PrescriptionUploadRequest
-    $uhid: String
+export const ADD_PATIENT_HOSPITALIZATION_RECORD = gql`
+  mutation addPatientHospitalizationRecord(
+    $AddHospitalizationRecordInput: AddHospitalizationRecordInput
   ) {
-    uploadPrescriptions(prescriptionInput: $PrescriptionUploadRequest, uhid: $uhid) {
-      recordId
-      fileUrl
+    addPatientHospitalizationRecord(addHospitalizationRecordInput: $AddHospitalizationRecordInput) {
+      status
     }
   }
 `;
@@ -2058,9 +2089,14 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           id
           labTestName
           labTestSource
+          packageId
+          packageName
           # labTestDate
           date
           labTestRefferedBy
+          siteDisplayName
+          tag
+          consultId
           additionalNotes
           observation
           labTestResults {
@@ -2107,6 +2143,71 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         errorMsg
         errorType
       }
+      healthChecksNew {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          healthCheckName
+          healthCheckDate
+          healthCheckSummary
+          healthCheckFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+          source
+          healthCheckType
+          followupDate
+        }
+      }
+      hospitalizationsNew {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          hospitalizationDate
+          dateOfHospitalization
+          hospitalName
+          doctorName
+          reasonForAdmission
+          diagnosisNotes
+          dateOfDischarge
+          dischargeSummary
+          doctorInstruction
+          dateOfNextVisit
+          hospitalizationFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+          source
+        }
+      }
+    }
+  }
+`;
+
+export const GET_LAB_RESULT_PDF = gql`
+  query getLabResultpdf($patientId: ID!, $recordId: String!) {
+    getLabResultpdf(patientId: $patientId, recordId: $recordId) {
+      url
     }
   }
 `;
@@ -2563,17 +2664,6 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
   }
 `;
 
-export const SAVE_ITDOSE_HOME_COLLECTION_DIAGNOSTIC_ORDER = gql`
-  mutation SaveItdoseHomeCollectionDiagnosticOrder($diagnosticOrderInput: DiagnosticOrderInput) {
-    SaveItdoseHomeCollectionDiagnosticOrder(diagnosticOrderInput: $diagnosticOrderInput) {
-      errorCode
-      errorMessage
-      orderId
-      displayId
-    }
-  }
-`;
-
 export const UPLOAD_DOCUMENT = gql`
   mutation uploadDocument($UploadDocumentInput: UploadDocumentInput) {
     uploadDocument(uploadDocumentInput: $UploadDocumentInput) {
@@ -2996,6 +3086,17 @@ export const SAVE_VOIP_DEVICE_TOKEN = gql`
       response
       patientId
       voipToken
+    }
+  }
+`;
+
+export const GET_SECRETARY_DETAILS_BY_DOCTOR_ID = gql`
+  query getSecretaryDetailsByDoctorId($doctorId: String!) {
+    getSecretaryDetailsByDoctorId(doctorId: $doctorId) {
+      id
+      name
+      mobileNumber
+      isActive
     }
   }
 `;

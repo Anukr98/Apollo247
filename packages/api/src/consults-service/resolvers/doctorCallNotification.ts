@@ -151,7 +151,7 @@ const endCallNotification: Resolver<
     args.isDev = false;
   }
 
-  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
+  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']  &&
   (!args.numberOfParticipants || (args.numberOfParticipants && args.numberOfParticipants < 2))) {
     hitCallKitCurl(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],

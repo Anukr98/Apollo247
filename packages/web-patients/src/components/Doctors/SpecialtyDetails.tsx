@@ -44,14 +44,13 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import _lowerCase from 'lodash/lowerCase';
-import axios from 'axios';
 import { gtmTracking } from 'gtmTracking';
 import { SpecialtySearch } from 'components/SpecialtySearch';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
-import Pagination from '@material-ui/lab/Pagination';
-
+// import Pagination from '@material-ui/lab/Pagination';
+import axios from 'axios';
 let currentPage = 1;
 let apolloDoctorCount = 0;
 let partnerDoctorCount = 0;
@@ -307,19 +306,19 @@ const useStyles = makeStyles((theme: Theme) => {
       justifyContent: 'center',
       padding: 20,
     },
-    pagination: {},
-    paginationUl: {
-      '& li': {
-        '& button': {
-          fontsize: 14,
-          fontWeight: 700,
-          color: '#02475b',
-          '&:hover': {
-            background: '#00B38E',
-          },
-        },
-      },
-    },
+    // pagination: {},
+    // paginationUl: {
+    //   '& li': {
+    //     '& button': {
+    //       fontsize: 14,
+    //       fontWeight: 700,
+    //       color: '#02475b',
+    //       '&:hover': {
+    //         background: '#00B38E',
+    //       },
+    //     },
+    //   },
+    // },
   };
 });
 
@@ -388,7 +387,7 @@ interface SpecialityProps {
   history: any;
 }
 
-export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
+const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const searchObject: SearchObject = {
     searchKeyword: '',
     cityName: [],
@@ -492,7 +491,6 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             response.data.getDoctorsBySpecialtyAndFilters.doctors
           ) {
             const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
-            const finalList = getFilteredDoctorList(doctors || []);
             doctors.map((doctorDetails: docDetails) => {
               doctorDetails &&
                 doctorDetails.fullName &&
@@ -511,9 +509,10 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                       )}`,
                 });
             });
+            const filteredObj = getDoctorObject(doctorData.concat(doctors));
             setDoctorData(doctorData.concat(doctors) || []);
             setOnlyFilteredCount(onlyFilteredCount + doctors.length || 0);
-            setFilteredDoctorData(filteredDoctorData.concat(finalList));
+            setFilteredDoctorData(filteredObj);
           }
           currentPage = currentPage + 1;
           const newData: any = {
@@ -541,6 +540,19 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
         });
     }
   }, [pageNo]);
+
+  const getDoctorObject = (data: any) => {
+    const apolloDoctors = data.filter(
+      (doctor: DoctorDetails) => doctor.doctorType.toLowerCase() !== 'doctor_connect'
+    );
+    const otherDoctors = data.filter(
+      (doctor: DoctorDetails) => doctor.doctorType.toLowerCase() === 'doctor_connect'
+    );
+    return {
+      APOLLO: apolloDoctors,
+      PARTNER: otherDoctors,
+    };
+  };
 
   const incrementPageNo = () => setPageNo(currentPage);
 
@@ -754,7 +766,6 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             apolloDoctorCount = response.data.getDoctorsBySpecialtyAndFilters.apolloDoctorCount;
             partnerDoctorCount = response.data.getDoctorsBySpecialtyAndFilters.partnerDoctorCount;
             const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
-            const finalList = getFilteredDoctorList(doctors || []);
             doctors.map((doctorDetails: docDetails) => {
               doctorDetails &&
                 doctorDetails.fullName &&
@@ -775,7 +786,8 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             });
             setDoctorData(doctors || []);
             setOnlyFilteredCount(doctors.length || 0);
-            setFilteredDoctorData(finalList);
+            const filteredObj = getDoctorObject(doctors);
+            setFilteredDoctorData(filteredObj);
           }
           setData(response.data);
         })
@@ -827,10 +839,12 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       if (doctorType) {
         filterDoctorsData = getFilteredDoctorList(filterDoctorsData);
       }
-      setFilteredDoctorData(filterDoctorsData);
+      const filteredObj = getDoctorObject(filterDoctorsData);
+
+      setFilteredDoctorData(filteredObj);
       setLoading(false);
     }
-  }, [isOnlineSelected, isPhysicalSelected, doctorType, doctorData, searchKeyword, searchDoctors]);
+  }, [isOnlineSelected, isPhysicalSelected, doctorData, searchKeyword, searchDoctors]);
 
   const getDoctorsCount = (data: DoctorDetails[], type: DOCTOR_CATEGORY) => {
     return _filter(data, (doctor: DoctorDetails) => {
@@ -906,7 +920,9 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 setSelectedCity={setSelectedCity}
               />
               <div className={classes.tabsFilter}>
-                <h2>{filteredDoctorData ? filteredDoctorData.length : 0} Doctors found</h2>
+                <h2>
+                  {filteredDoctorData ? filteredDoctorData[doctorType].length : 0} Doctors found
+                </h2>
                 <div className={classes.filterButtons}>
                   <AphButton
                     onClick={() => {
@@ -945,10 +961,10 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   <div className={classes.circlularProgress}>
                     <CircularProgress />
                   </div>
-                ) : filteredDoctorData && filteredDoctorData.length ? (
+                ) : filteredDoctorData && Object.keys(filteredDoctorData).length > 0 ? (
                   <>
                     <Grid container spacing={2}>
-                      {filteredDoctorData.map((doctor: DoctorDetails) => {
+                      {filteredDoctorData[doctorType].map((doctor: DoctorDetails) => {
                         if (doctor && doctor.id) {
                           const nextAvailability = doctorsNextAvailability.find(
                             (nextAvailabilitySlot) => nextAvailabilitySlot.doctorId === doctor.id
@@ -992,7 +1008,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   'no results found'
                 )}
               </div>
-              {pageNo < Math.ceil((apolloDoctorCount + partnerDoctorCount) / PAGE_SIZE) && (
+              {/* {pageNo < Math.ceil((apolloDoctorCount + partnerDoctorCount) / PAGE_SIZE) && (
                 <div className={classes.paginationContainer}>
                   <Pagination
                     count={Math.ceil((apolloDoctorCount + partnerDoctorCount) / PAGE_SIZE)}
@@ -1002,7 +1018,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                     classes={{ root: classes.pagination, ul: classes.paginationUl }}
                   />
                 </div>
-              )}
+              )} */}
 
               {faqData && faqData.length > 0 && (
                 <>
@@ -1026,3 +1042,5 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     </div>
   );
 };
+
+export default SpecialtyDetails;

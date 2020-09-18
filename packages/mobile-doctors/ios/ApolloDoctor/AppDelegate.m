@@ -15,6 +15,7 @@
 //#import <Crashlytics/Crashlytics.h>
 #import "RNSplashScreen.h"
 #import "ReactNativeExceptionHandler.h"
+#import <WebEngage/WebEngage.h>
 
 @implementation AppDelegate
 
@@ -80,7 +81,7 @@
     // or  you can call
     // [ReactNativeExceptionHandler releaseExceptionHold]; when you are done to release the UI lock.
   }];
-
+  [[WebEngage sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
   return YES;
 }
 

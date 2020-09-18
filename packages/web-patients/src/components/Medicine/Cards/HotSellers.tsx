@@ -5,7 +5,7 @@ import { AphButton } from '@aph/web-ui-components';
 import Slider from 'react-slick';
 import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Link, Route } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
 import { gtmTracking } from '../../../gtmTracking';
 import {
@@ -14,6 +14,7 @@ import {
   removeFromCartTracking,
   pharmacyProductClickedTracking,
 } from 'webEngageTracking';
+import { LazyIntersection } from '../../lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -139,7 +140,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
     infinite: true,
     speed: 500,
     slidesToShow: 6,
-    slidesToScroll: 1,
+    slidesToScroll: 3,
     nextArrow: <img src={require('images/ic_arrow_right.svg')} alt="" />,
     prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
     responsive: [
@@ -214,9 +215,9 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                   <Route
                     render={({ history }) => (
                       <a
-                        href=""
+                        href={clientRoutes.medicineDetails(hotSeller.url_key)}
                         onClick={() => {
-                          history.push(clientRoutes.medicineDetails(hotSeller.url_key));
+                          // history.push(clientRoutes.medicineDetails(hotSeller.url_key));
                           pharmacyConfigSectionTracking({
                             sectionName: props.section,
                             productId: hotSeller.sku,
@@ -231,7 +232,11 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         }}
                       >
                         <div className={classes.productIcon}>
-                          <img src={`${apiDetails.url}${hotSeller.thumbnail}`} alt="" />
+                          {/* <img src={`${apiDetails.url}${hotSeller.thumbnail}`} alt="" /> */}
+                          <LazyIntersection
+                            src={`${apiDetails.url}${hotSeller.thumbnail}`}
+                            alt={hotSeller.name}
+                          />
                         </div>
                         <div className={classes.productTitle}>{hotSeller.name}</div>
                       </a>

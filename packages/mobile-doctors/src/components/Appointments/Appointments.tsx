@@ -11,6 +11,7 @@ import {
   Up,
   ReloadBackground,
   ReloadGreen,
+  RefreshIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
@@ -103,9 +104,11 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       moment(new Date()).format('YYYY-MM-DD')
     );
   };
-
   useEffect(() => {
     getAppointmentsApi();
+  }, [date]);
+
+  useEffect(() => {
     if (!isPastDate(date) && !isAlertVisible) {
       console.log('future dates', date, new Date());
       timerId = setInterval(() => {
@@ -340,13 +343,9 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
         leftComponent={renderMonthSelection()}
         rightIcons={[
           {
-            icon: <CalendarTodayIcon />,
+            icon: <RefreshIcon />,
             onPress: () => {
-              const today = new Date();
-              setDate(today);
-              setCalendarDate(today);
-              setCurrentMonth(monthsName[today.getMonth()]);
-              // getAppointmentsApi(today);
+              getAppointmentsApi();
             },
           },
           // {

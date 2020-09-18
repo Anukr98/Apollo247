@@ -67,7 +67,6 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 10,
       position: 'relative',
       top: -4,
-      display: 'inline',
       fontWeight: 500,
     },
     missedCall: {
@@ -130,7 +129,7 @@ export const PatientCard: React.FC<PatientCardProps> = (props) => {
                   }}
                 >
                   {props.messageDetails.fileType === 'pdf' ? (
-                    <a href={props.messageDetails.url} target="_blank">
+                    <a href={props.messageDetails.url} target="_blank" rel="noopener noreferrer">
                       <img src={require('images/pdf_thumbnail.png')} />
                     </a>
                   ) : (

@@ -6,6 +6,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
 import { MedicinePageSection } from '../../../helpers/MedicineApiCalls';
 import _replace from 'lodash/replace';
+import { LazyIntersection } from '../../lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -63,7 +64,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
     infinite: true,
     speed: 500,
     slidesToShow: 6,
-    slidesToScroll: 1,
+    slidesToScroll: 3,
     nextArrow: <img src={require('images/ic_arrow_right.svg')} alt="" />,
     prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
     responsive: [
@@ -118,11 +119,11 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
                 <Link to={clientRoutes.searchByMedicine(searchText, brand.url_key)}>
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>
-                      <img
+                      <LazyIntersection
                         src={`${apiDetails.url && apiDetails.url.replace('/catalog/product', '')}${
                           brand.image_url.startsWith('/') ? brand.image_url : `/${brand.image_url}`
                         }`}
-                        alt=""
+                        alt={''}
                       />
                     </div>
                   </div>

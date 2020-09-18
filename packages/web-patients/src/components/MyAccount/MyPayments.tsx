@@ -98,7 +98,7 @@ const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
 
-export const MyPayments: React.FC = (props) => {
+const MyPayments: React.FC = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = useState<number>(0);
   const patient = useCurrentPatient();
@@ -161,3 +161,5 @@ export const MyPayments: React.FC = (props) => {
     </div>
   );
 };
+
+export default MyPayments;

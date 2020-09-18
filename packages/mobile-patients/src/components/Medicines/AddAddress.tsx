@@ -36,6 +36,7 @@ import {
 import {
   savePatientAddress,
   savePatientAddressVariables,
+  savePatientAddress_savePatientAddress_patientAddress,
 } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   updatePatientAddress,
@@ -142,8 +143,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     paddingBottom: 0,
     color: theme.colors.SHERPA_BLUE,
-    opacity: Platform.OS == 'ios' ? 0.5 : 0.4,
-    ...theme.fonts.IBMPlexSansMedium(14),
+    opacity: Platform.OS == 'ios' ? 0.6 : 0.5,
+    ...theme.fonts.IBMPlexSansMedium(14.75),
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
   },
   nameText: {
@@ -162,6 +163,7 @@ export interface AddAddressProps
     DataAddress?: getPatientAddressList_getPatientAddressList_addressList;
     addOnly?: boolean;
     source: AddressSource;
+    ComingFrom?: string;
   }> {}
 
 type addressOptions = {
@@ -203,13 +205,22 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [optionalAddress, setOptionalAddress] = useState<string>('');
   const [editProfile, setEditProfile] = useState<boolean>(false);
   const [isFocus, setIsFocus] = useState<boolean>(false);
+  const [isStateEdit, setStateEditable] = useState<boolean>(false);
+  const [isCityEdit, setCityEditable] = useState<boolean>(false);
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
-  const { addAddress, setDeliveryAddressId, setNewAddressAdded } = useShoppingCart();
+  const {
+    addAddress,
+    setDeliveryAddressId,
+    setNewAddressAdded,
+    addresses,
+    setAddresses,
+  } = useShoppingCart();
   const {
     addAddress: addDiagnosticAddress,
     setDeliveryAddressId: setDiagnosticAddressId,
+    setAddresses: setTestAddresses,
   } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { locationDetails, pharmacyLocation } = useAppCommonData();
@@ -299,6 +310,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     pincode.length === 6 &&
     city &&
     city.length > 1 &&
+    state &&
+    state.length > 1 &&
     addressType !== undefined &&
     (addressType !== PATIENT_ADDRESS_TYPE.OTHER ||
       (addressType === PATIENT_ADDRESS_TYPE.OTHER && optionalAddress));
@@ -312,9 +325,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const onSavePress = async () => {
     CommonLogEvent(AppRoutes.AddAddress, 'On Save Press clicked');
     if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
-      //from update and all fields are filled (check for lat-long)
       setEditProfile(false);
-      //update any value ~ change the lat-long
       if (!isChanged) {
         const finalStateCode =
           AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
@@ -322,12 +333,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           ] || stateCode;
         const updateaddressInput: UpdatePatientAddressInput = {
           id: addressData.id,
-          addressLine1: addressLine1,
-          addressLine2: areaDetails,
+          addressLine1: addressLine1.trim(),
+          addressLine2: areaDetails.trim(),
           city: city || '',
           state: state || '',
           zipcode: pincode,
-          landmark: landMark,
+          landmark: landMark.trim() || '',
           mobileNumber: phoneNumber,
           addressType: addressType,
           otherAddressType: optionalAddress,
@@ -342,6 +353,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           isChanged: !isChanged,
           addOnly: addOnly,
           source: props.navigation.getParam('source'),
+          ComingFrom: props.navigation.getParam('ComingFrom'),
         });
       } else if (!areFieldsSame) {
         saveEditDetails();
@@ -356,13 +368,13 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         ] || stateCode;
       const addressInput: Object = {
         id: userId,
-        addressLine1: addressLine1,
-        addressLine2: areaDetails,
+        addressLine1: addressLine1.trim(),
+        addressLine2: areaDetails.trim(),
         city: city || '',
         state: state || '',
         /** look for the area details, attribute & name and phone number  ~ mobileNumber*/
         zipcode: pincode,
-        landmark: landMark || '',
+        landmark: landMark.trim() || '',
         mobileNumber: phoneNumber, //with respect to address
         addressType: addressType,
         otherAddressType: optionalAddress,
@@ -437,6 +449,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       setStateCode('');
       setLatitude(0);
       setLongitude(0);
+      setStateEditable(true);
+      setCityEditable(true);
       CommonBugFender('AddAddress_updateCityStateByPincode', e);
     };
     const pincodeAndAddress = [pincode, addressLine1].filter((v) => (v || '').trim()).join(',');
@@ -459,6 +473,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           setStateCode(finalStateCode);
           setLatitude(response.latitude!);
           setLongitude(response.longitude!);
+          city === '' ? setCityEditable(true) : setCityEditable(false);
+          state === '' ? setStateEditable(true) : setStateEditable(false);
         } catch (e) {
           resetValues(e);
         }
@@ -530,12 +546,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           ] || stateCode;
         const updateaddressInputForEdit: UpdatePatientAddressInput = {
           id: addressData.id,
-          addressLine1: addressLine1,
-          addressLine2: areaDetails,
+          addressLine1: addressLine1.trim(),
+          addressLine2: areaDetails.trim(),
           city: city || '',
           state: state || '',
           zipcode: pincode,
-          landmark: landMark,
+          landmark: landMark.trim() || '',
           mobileNumber: phoneNumber,
           addressType: addressType,
           otherAddressType: optionalAddress,
@@ -555,8 +571,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             try {
               setshowSpinner(false);
               console.log('updateapicalled', _data);
-              props.navigation.pop(2, { immediate: true });
-              props.navigation.push(AppRoutes.AddressBook);
+              _navigateToScreen(_data.data.updatePatientAddress.patientAddress, 'fromUpdate');
             } catch (error) {
               CommonBugFender('AddAddress_onSavePress_try', error);
             }
@@ -570,6 +585,38 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       } else {
         props.navigation.goBack();
       }
+    }
+  };
+
+  const setUpdatedAddressList = async (
+    updatedAddress: savePatientAddress_savePatientAddress_patientAddress,
+    keyName: string
+  ) => {
+    let newAddrList = [];
+    if (keyName == 'fromDelete') {
+      newAddrList = addresses.filter((item) => item.id != updatedAddress.id);
+    } else {
+      newAddrList = [
+        { ...updatedAddress },
+        ...addresses.filter((item) => item.id != updatedAddress.id),
+      ];
+    }
+
+    setAddresses!(newAddrList);
+    setTestAddresses!(newAddrList);
+  };
+
+  const _navigateToScreen = (
+    addressList: savePatientAddress_savePatientAddress_patientAddress,
+    keyName: string
+  ) => {
+    const screenName = props.navigation.getParam('ComingFrom')!;
+    if (screenName != '') {
+      setUpdatedAddressList(addressList, keyName);
+      props.navigation.pop(1, { immediate: true });
+    } else {
+      props.navigation.pop(2, { immediate: true });
+      props.navigation.push(AppRoutes.AddressBook);
     }
   };
 
@@ -658,8 +705,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   borderBottomWidth: editProfile ? 1 : 2,
                   paddingBottom: editProfile ? 0 : 3,
                   color: theme.colors.SHERPA_BLUE,
-                  opacity: editProfile ? (Platform.OS == 'ios' ? 0.5 : 0.4) : 1,
-                  ...theme.fonts.IBMPlexSansMedium(14),
+                  opacity: editProfile ? (Platform.OS == 'ios' ? 0.6 : 0.5) : 1,
+                  ...theme.fonts.IBMPlexSansMedium(14.75),
                   borderColor: editProfile ? theme.colors.INPUT_BORDER_SUCCESS : 'transparent',
                 }}
               />
@@ -792,6 +839,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           Address
         </Text> */}
         {/** 1. House # */}
+        <Text style={styles.addressLabel}>*House Number & Apartment/Society</Text>
         <TextInputComponent
           value={addressLine1}
           onChangeText={(addressLine1) => {
@@ -815,9 +863,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               setaddressLine1(addressLine1);
             }
           }}
-          placeholder={'*House no | Apartment name'}
+          placeholder={'Enter House & Society Details'}
           inputStyle={styles.addressFieldsText}
         />
+        <Text style={styles.addressLabel}>*Area Details</Text>
         <TextInputComponent
           value={areaDetails}
           onChangeText={(areaDetails) => {
@@ -840,15 +889,15 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               setareaDetails(areaDetails);
             }
           }}
-          placeholder={'*Area Details'}
+          placeholder={'Enter Area Details'}
           inputStyle={styles.addressHeadingText}
         />
-
+        <Text style={[styles.addressLabel, { marginTop: '3%' }]}>LandMark</Text>
         <TextInputComponent
           value={landMark}
           onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
-          placeholder={'Landmark (Optional)'}
-          inputStyle={[styles.addressHeadingText, { marginTop: '3%' }]}
+          placeholder={'Enter LandMark'}
+          inputStyle={styles.addressHeadingText}
         />
         <View style={[styles.viewRowStyle, { marginTop: 12 }]}>
           <View style={styles.pincodeView}>
@@ -873,10 +922,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             />
           </View>
           <View style={{ flex: 0.55 }}>
-            <Text style={styles.addressLabel}>City</Text>
+            <Text style={styles.addressLabel}>*City</Text>
             <TextInputComponent
               value={city}
-              textInputprops={{ editable: false }}
+              textInputprops={{ editable: isCityEdit }}
               onChangeText={(city) =>
                 city.startsWith(' ') || city.startsWith('.') || city.startsWith(',')
                   ? null
@@ -889,10 +938,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           </View>
         </View>
         {/* state*/}
-        <Text style={[styles.addressLabel, { marginTop: 12 }]}>State</Text>
+        <Text style={[styles.addressLabel, { marginTop: 12 }]}>*State</Text>
         <TextInputComponent
           value={(state || '').startsWith(',') ? state.replace(', ', '') : state}
-          textInputprops={{ editable: false }}
+          textInputprops={{ editable: isStateEdit }}
           onChangeText={(state) =>
             state.startsWith(' ') || state.startsWith('.')
               ? null
@@ -985,8 +1034,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                     setDeliveryAddressId!('');
                     setNewAddressAdded!('');
                     setDiagnosticAddressId!('');
-                    props.navigation.pop(2, { immediate: true });
-                    props.navigation.push(AppRoutes.AddressBook);
+                    _navigateToScreen(addressData!, 'fromDelete');
                   })
                   .catch((e) => {
                     CommonBugFender('AddAddress_DELETE_PATIENT_ADDRESS', e);

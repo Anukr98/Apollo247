@@ -35,6 +35,7 @@ import {
   phrMedicalRecordsTabClickTracking,
 } from '../../webEngageTracking';
 import { BottomLinks } from 'components/BottomLinks';
+import { MedicalRecordType } from '../../graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -133,7 +134,7 @@ type LandingProps = {
   };
 };
 
-export const PHRLanding: React.FC<LandingProps> = (props) => {
+const PHRLanding: React.FC<LandingProps> = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = useState<number>(0);
   const { currentPatient } = useAllCurrentPatients();
@@ -170,6 +171,18 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
       window.location.href.includes('active=medical')
     ) {
       setTabValue(1);
+      window.history.pushState('', '', '');
+    } else if (
+      (props && props.location && props.location.state === 'healthCheck') ||
+      window.location.href.includes('active=healthCheck')
+    ) {
+      setTabValue(2);
+      window.history.pushState('', '', '');
+    } else if (
+      (props && props.location && props.location.state === 'hospitalization') ||
+      window.location.href.includes('active=hospitalization')
+    ) {
+      setTabValue(3);
       window.history.pushState('', '', '');
     }
   }, [props]);
@@ -216,8 +229,8 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         data1: HealthCheckType | HospitalizationType | LabResultsType,
         data2: HealthCheckType | HospitalizationType | LabResultsType
       ) => {
-        let date1 = moment(data1.date).toDate().getTime();
-        let date2 = moment(data2.date).toDate().getTime();
+        const date1 = moment(data1.date).toDate().getTime();
+        const date2 = moment(data2.date).toDate().getTime();
         return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
       }
     );
@@ -281,10 +294,10 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
 
   const sortByDate = (array: any[]) => {
     return array.sort((a: any, b: any) => {
-      let date1 = moment(a.bookingDate || a.date || a.quoteDateTime)
+      const date1 = moment(a.bookingDate || a.date || a.quoteDateTime)
         .toDate()
         .getTime();
-      let date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
+      const date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
         .toDate()
         .getTime();
       return date1 > date2 ? -1 : date1 < date2 ? 1 : a.id - b.id;
@@ -317,17 +330,17 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
 
   const deleteReportMutation = useMutation(DELETE_PATIENT_MEDICAL_RECORD);
 
-  const deleteReport = (id: string, type: string) => {
+  const deleteReport = (id: string, type: MedicalRecordType) => {
     setMedicalLoading(true);
     deleteReportMutation({
       variables: { recordId: id },
       fetchPolicy: 'no-cache',
     })
       .then((_data) => {
-        if (type === 'lab') {
+        if (type === MedicalRecordType.TEST_REPORT) {
           const newRecords = labResults && labResults.filter((record: any) => record.id !== id);
           setLabResults(newRecords);
-        } else if (type === 'prescription') {
+        } else if (type === MedicalRecordType.PRESCRIPTION) {
           const newRecords =
             prescriptions && prescriptions.filter((record: any) => record.id !== id);
           setPrescriptions(newRecords);
@@ -447,3 +460,4 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
     </div>
   );
 };
+export default PHRLanding;

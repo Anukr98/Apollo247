@@ -394,6 +394,8 @@ export enum ApiConstants {
   PATIENT_APPT_DEEPLINK = 'apollopatients://Consult',
   PATIENT_CHATROOM_DEEPLINK = 'apollopatients://ChatRoom?',
   PATIENT_PRESCRIPTION_DEEPLINK = 'apollopatients://ConsultDetails?',
+  DOCTOR_DEEPLINK_WEB_URL = 'https://www.apollo247.com/doctors/<DoctorID>',
+
   // whatsapp constants
   WEB_ENGAGE_AUTHORIZATION = 'fe30a7fd-5dd7-48a8-9ce0-be85b5eb4de7',
 
@@ -406,6 +408,8 @@ export enum ApiConstants {
   //PHRV1 constants start
   LABTEST_SOURCE_SELF_UPLOADED = '247self',
   PRESCRIPTION_SOURCE_PREFIX = '247',
+  HEALTHCHECK_SELF_UPLOAD = '247self',
+  HOSPITALIZATION_SELF_UPLOAD = '247self',
   //PHRV1 constants end
 
   //REDIS KEYS
@@ -448,12 +452,18 @@ export enum ApiConstants {
   MEDICINE_ORDER_REFUND_PROCESSED_EVENT_NAME = 'Refund Processed',
   MEDICINE_ORDER_REFUND_SUCCESSFUL_EVENT_NAME = 'Refund Successful',
 
-  WHATSAPP_SD_CONSULT_REMINDER_15 = 'inf_sd_consult_reminder_15_min',
-  WHATSAPP_SD_CHAT_NOTIFICATION_ID = 'inf_sd_chat_notification',
-  WHATSAPP_SD_OTP = 'inf_sd_otp_message',
-  WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation',
+  WHATSAPP_SD_CONSULT_REMINDER_15 = 'inf_sd_consult_reminder_15_min_namaste',
+  WHATSAPP_SD_CHAT_NOTIFICATION_ID = 'inf_sd_chat_notification_namaste1',
+  WHATSAPP_SD_OTP = 'inf_sd_otp_message_namaste',
+  WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation_namaste1',
   WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
-  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_button_2',
+  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_namaste3',
+
+  WHATSAPP_DOC_SECRETARY_RESCHDULE = 'inf_secratory_consult_rescheduled',
+  WHATSAPP_DOC_SECRETARY_CANCEL = 'inf_secratory_consult_cancelled',
+  WHATSAPP_DOC_SECRETARY_BOOKING = 'inf_secratory_consult_booked',
+
+  WHATSAPP_DOC_SUMMARY_NEW = 'inf_doc_8am_summary_namaste3',
 
   ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE = 'R000247',
 
@@ -461,6 +471,8 @@ export enum ApiConstants {
 
   PRESCRIPTION_DEEPLINK_PLACEHOLDER = '<appointmentId>',
   PRESCRIPTION_CLICK_HERE = 'You can now access it from here:',
+
+  DOCTOR_APP_APPTS_LINK = 'apollodoctors://appointments',
 }
 
 export enum PATIENT_REPO_RELATIONS {

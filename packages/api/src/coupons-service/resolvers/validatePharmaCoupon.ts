@@ -48,6 +48,7 @@ export const validatePharmaCouponTypeDefs = gql`
     productType: CouponCategoryApplicable!
     quantity: Int!
     specialPrice: Float!
+    couponFree: Boolean
   }
 
   input PharmaCouponInput {
@@ -69,6 +70,7 @@ export type OrderLineItems = {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
+  couponFree: boolean;
 };
 
 type PharmaCouponInput = {
@@ -136,6 +138,7 @@ export const validatePharmaCoupon: Resolver<
       quantity: item.quantity,
       totalCost: amountToBeConsidered * item.quantity,
       categoryId: item.productType.toString(),
+      couponFree: item.couponFree || false,
     };
     couponProduct.push(product);
   });
@@ -155,9 +158,18 @@ export const validatePharmaCoupon: Resolver<
   let validityStatus = false;
   let reasonForInvalidStatus = '';
   const lineItemsWithDiscount: PharmaLineItems[] = [];
-
   if (couponData && couponData.response) {
     validityStatus = couponData.response.valid;
+    const requestProductsCount = couponProduct.reduce((acc, item) => {
+      return acc + item.quantity;
+    }, 0);
+    const responseProductsCount = couponData.response.products.reduce((acc, item) => {
+      return acc + item.quantity;
+    }, 0);
+    // if user try to edit cart to by pass frontend validation
+    if (requestProductsCount != responseProductsCount) {
+      validityStatus = false;
+    }
     reasonForInvalidStatus = couponData.response.reason || '';
     couponData.response.products.map((item) => {
       const orderLineItemData = orderLineItems.filter((item1) => item1.itemId == item.sku);

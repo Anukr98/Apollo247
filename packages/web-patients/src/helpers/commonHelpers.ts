@@ -8,7 +8,8 @@ import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
 import fetchUtil from 'helpers/fetch';
-import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentDetails } from 'graphql/types/GetPatientAllAppointments';
+import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import { GetPatientByMobileNumber_getPatientByMobileNumber_patients as CurrentPatient } from 'graphql/types/GetPatientByMobileNumber';
 
 declare global {
   interface Window {
@@ -443,23 +444,28 @@ const getCouponByUserMobileNumber = () => {
 };
 
 const isPastAppointment = (appointmentDateTime: string) =>
-  moment(appointmentDateTime)
-    .add(7, 'days')
-    .isBefore(moment());
+  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
-  const followUpDayMoment = moment(appointmentTime).add(7, 'days');
-  const diffInDays = followUpDayMoment.diff(moment(), 'days');
-  if (diffInDays <= 0) {
+  const appointmentDate = moment(appointmentTime);
+  const followUpDayMoment = appointmentDate.add(7, 'days');
+  let diffInDays = followUpDayMoment.diff(moment(), 'days'); // it will applicable if appointmentDate > followupDayMoment and diff shouldn't cross 7
+  if (appointmentDate < followUpDayMoment) {
+    // diff(moment(), 'days') gives 6 days x hours as 6days, to show it as 7 days adding +1
+    diffInDays += 1;
+  }
+  if (diffInDays === 0) {
     const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
     const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
     return diffInHours > 0
-      ? `${diffInHours} hours free chat remaining`
+      ? `Valid for ${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'}`
       : diffInMinutes > 0
-      ? `${diffInMinutes} minutes free chat remaining`
+      ? `Valid for ${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'}`
       : '';
+  } else if (diffInDays > 0) {
+    return `Valid for ${diffInDays} ${diffInDays === 1 ? 'day' : 'days'}`;
   } else {
-    return `${diffInDays} days free chat remaining`;
+    return '';
   }
 };
 
@@ -472,6 +478,60 @@ const HEALTH_RECORDS_NO_DATA_FOUND =
 
 const HEALTH_RECORDS_NOTE =
   'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
+const stripHtml = (originalString: any) => originalString.replace(/(<([^>]+)>)/gi, '');
+
+export const consultWebengageEventsInfo = (
+  doctorDetail: DoctorDetails,
+  currentPatient: CurrentPatient
+) => {
+  const patientAge =
+    new Date().getFullYear() - new Date(currentPatient && currentPatient.dateOfBirth).getFullYear();
+  const doctorAddressDetail =
+    (doctorDetail &&
+      doctorDetail.doctorHospital &&
+      doctorDetail.doctorHospital[0] &&
+      doctorDetail.doctorHospital[0].facility) ||
+    '';
+  return {
+    patientName: (currentPatient && `${currentPatient.firstName} ${currentPatient.lastName}`) || '',
+    PatientUhid: (currentPatient && currentPatient.uhid) || '',
+    doctorName: (doctorDetail && doctorDetail.fullName) || '',
+    specialtyName: (doctorDetail && doctorDetail.specialty.name) || '',
+    doctorId: (doctorDetail && doctorDetail.id) || '',
+    specialtyId: (doctorDetail && doctorDetail.specialty.id) || '',
+    patientGender: (currentPatient && currentPatient.gender) || '',
+    patientAge: (currentPatient && patientAge) || '',
+    hospitalName: (doctorAddressDetail && doctorAddressDetail.name) || '',
+    hospitalCity: (doctorAddressDetail && doctorAddressDetail.city) || '',
+  };
+};
+
+export const consultWebengageEventsCommonInfo = (data: any) => {
+  const {
+    patientName,
+    PatientUhid,
+    doctorName,
+    specialtyName,
+    doctorId,
+    specialtyId,
+    patientGender,
+    patientAge,
+    hospitalName,
+    hospitalCity,
+  } = data;
+  return {
+    'Patient name': patientName,
+    'Patient UHID': PatientUhid,
+    'Doctor Name': doctorName,
+    'Speciality name ': specialtyName,
+    'Doctor ID': doctorId,
+    'Speciality ID': specialtyId,
+    'Patient Gender': patientGender,
+    'Patient Age': patientAge,
+    'Hospital Name': hospitalName,
+    'Hospital City': hospitalCity,
+  };
+};
 
 export {
   HEALTH_RECORDS_NO_DATA_FOUND,
@@ -527,4 +587,5 @@ export {
   PINCODE_MAXLENGTH,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
   HEALTH_RECORDS_NOTE,
+  stripHtml,
 };

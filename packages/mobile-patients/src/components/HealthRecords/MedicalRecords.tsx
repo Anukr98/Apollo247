@@ -1,23 +1,25 @@
 import { HealthMedicineCard } from '@aph/mobile-patients/src/components/HealthRecords/HealthMedicineCard';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { AddFileIcon, NoData } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AddFileIcon, NoData, Filter } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, FlatList } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from '../../graphql/types/getPatientMedicalRecords';
 import {
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
-} from '../../graphql/types/getPatientPrismMedicalRecords';
-import { postWebEngageEvent } from '../../helpers/helperFunctions';
-import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -31,73 +33,65 @@ const styles = StyleSheet.create({
   },
 });
 
+export enum FILTER_TYPE {
+  VIEW_BY = 'View By',
+  DATE = 'Date',
+  TEST = 'Test',
+  PACKAGE = 'Package',
+}
+
+type FilterArray = {
+  key: FILTER_TYPE;
+  title: string;
+};
+
+const TestFilterArray: FilterArray[] = [
+  { key: FILTER_TYPE.VIEW_BY, title: FILTER_TYPE.VIEW_BY },
+  { key: FILTER_TYPE.DATE, title: FILTER_TYPE.DATE },
+  { key: FILTER_TYPE.TEST, title: FILTER_TYPE.TEST },
+  { key: FILTER_TYPE.PACKAGE, title: FILTER_TYPE.PACKAGE },
+];
+
 export interface MedicalRecordsProps extends NavigationScreenProps {
-  //onTabCount: (count: number) => void;
-  MedicalRecordData:
-    | (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[]
+  healthChecksNewData?:
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response | null)[]
     | null
     | undefined;
-  labTestsData?:
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests | null)[]
+  hospitalizationsNewData?:
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response | null)[]
     | null
     | undefined;
-  healthChecksData?:
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks | null)[]
-    | null
-    | undefined;
-  hospitalizationsData?:
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations | null)[]
-    | null
-    | undefined;
-  labResultsData:
+  labResultsData?:
     | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response | null)[]
     | null
     | undefined;
-  prescriptionsData:
+  prescriptionsData?:
     | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response | null)[]
     | null
     | undefined;
-  renderDeleteMedicalOrder: (id: string) => void;
 }
 
 export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
-  const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const {
-    MedicalRecordData,
-    labTestsData,
-    healthChecksData,
-    hospitalizationsData,
-    labResultsData,
-    prescriptionsData,
-  } = props;
+  const { healthChecksNewData, hospitalizationsNewData, labResultsData, prescriptionsData } = props;
   const [combination, setCombination] = useState<{ type: string; data: any }[]>();
+  const [filterApplied, setFilterApplied] = useState<FILTER_TYPE | string>('');
+  const [listRefersh, setListRefersh] = useState<boolean>(false);
 
   useEffect(() => {
     const mergeArray: { type: string; data: any }[] = [];
-    console.log('combination before', mergeArray);
-    // MedicalRecordData!.forEach((item) => {
-    //   mergeArray.push({ type: 'medical', data: item });
-    // });
-    // labTestsData!.forEach((item) => {
-    //   mergeArray.push({ type: 'lab', data: item });
-    // });
-    // healthChecksData!.forEach((item) => {
-    //   mergeArray.push({ type: 'health', data: item });
-    // });
-    // hospitalizationsData!.forEach((item) => {
-    //   mergeArray.push({ type: 'hospital', data: item });
-    // });
-    labResultsData!.forEach((item) => {
+    labResultsData?.forEach((item) => {
       mergeArray.push({ type: 'lab', data: item });
     });
-    // prescriptionsData!.forEach((item) => {
-    //   mergeArray.push({ type: 'prescription', data: item });
-    // });
-    console.log('combination after', mergeArray);
+    healthChecksNewData?.forEach((item) => {
+      mergeArray.push({ type: 'healthCheck', data: item });
+    });
+    hospitalizationsNewData?.forEach((item) => {
+      mergeArray.push({ type: 'hospitalization', data: item });
+    });
     setCombination(sortByDate(mergeArray));
-  }, [labResultsData]);
+  }, [labResultsData, healthChecksNewData, hospitalizationsNewData]);
 
   const sortByDate = (array: { type: string; data: any }[]) => {
     return array.sort(({ data: data1 }, { data: data2 }) => {
@@ -107,6 +101,34 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
     });
   };
 
+  const sortByTypeRecords = (type: FILTER_TYPE | string) => {
+    return (
+      combination &&
+      combination.sort(({ data: data1 }, { data: data2 }) => {
+        const filteredData1 =
+          type === FILTER_TYPE.DATE
+            ? moment(data1.date)
+                .toDate()
+                .getTime()
+            : type === FILTER_TYPE.TEST
+            ? data1.labTestName
+            : data1.packageName;
+        const filteredData2 =
+          type === FILTER_TYPE.DATE
+            ? moment(data2.date)
+                .toDate()
+                .getTime()
+            : type === FILTER_TYPE.TEST
+            ? data2.labTestName
+            : data2.packageName;
+        if (type === FILTER_TYPE.DATE) {
+          return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
+        }
+        return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
+      })
+    );
+  };
+
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
@@ -114,10 +136,17 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    //props.onTabCount(props.MedicalRecordData.length);
-  }, [currentPatient, client]);
+    const filteredData = sortByTypeRecords(filterApplied);
+    if (filteredData) {
+      setCombination(filteredData);
+      setListRefersh(!listRefersh);
+    }
+  }, [filterApplied]);
 
   const renderFilter = () => {
+    const testFilterData = TestFilterArray.map((i) => {
+      return { key: i.key, value: i.title };
+    });
     return (
       <View style={styles.filterViewStyle}>
         <TouchableOpacity
@@ -130,6 +159,35 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
         >
           <AddFileIcon />
         </TouchableOpacity>
+        {labResultsData && labResultsData.length > 0 ? (
+          <MaterialMenu
+            options={testFilterData}
+            selectedText={filterApplied}
+            menuContainerStyle={{
+              alignItems: 'flex-end',
+              marginTop: 25,
+            }}
+            itemContainer={{ height: 44.8, marginHorizontal: 12, width: 260 / 2 }}
+            itemTextStyle={{
+              ...theme.viewStyles.text('M', 16, '#01475b'),
+              paddingHorizontal: 0,
+            }}
+            firstOptionText={true}
+            selectedTextStyle={{
+              ...theme.viewStyles.text('M', 16, '#00b38e'),
+              alignSelf: 'flex-start',
+            }}
+            bottomPadding={{ paddingBottom: 20 }}
+            onPress={(selectedFilter) => {
+              if (selectedFilter.key !== FILTER_TYPE.VIEW_BY) {
+                console.log('selectedFilter', selectedFilter);
+                setFilterApplied(selectedFilter.key);
+              }
+            }}
+          >
+            <Filter />
+          </MaterialMenu>
+        ) : null}
       </View>
     );
   };
@@ -137,10 +195,9 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const renderCards = () => {
     return (
       <View>
-        {labResultsData &&
-        labResultsData.length == 0 &&
-        prescriptionsData &&
-        prescriptionsData.length == 0 ? (
+        {(labResultsData && labResultsData.length == 0) ||
+        (healthChecksNewData && healthChecksNewData.length == 0) ||
+        (hospitalizationsNewData && hospitalizationsNewData.length == 0) ? (
           <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
             <View
               style={{
@@ -186,19 +243,32 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
               bounces={false}
               data={combination || []}
               removeClippedSubviews={false}
+              extraData={listRefersh}
               renderItem={({ item, index }) => {
                 let data;
                 if (item.type === 'lab') {
-                  data = { datalab: item.data, disableDelete: true };
+                  data = {
+                    datalab: item.data,
+                    prevItemData: combination && combination[index - 1]?.data,
+                    disableDelete: true,
+                    filterApplied: filterApplied,
+                  };
                 } else if (item.type === 'prescription') {
                   data = { dataprescription: item.data, disableDelete: true };
+                } else if (item.type === 'healthCheck') {
+                  data = { datahealthcheck: item.data, disableDelete: true };
+                } else if (item.type === 'hospitalization') {
+                  data = { datahospitalization: item.data, disableDelete: true };
                 }
                 return (
                   <HealthMedicineCard
                     {...data}
                     onClickCard={() => {
-                      props.navigation.navigate(AppRoutes.RecordDetails, {
+                      props.navigation.navigate(AppRoutes.HealthRecordDetails, {
                         data: item.data,
+                        healthCheck: item.type === 'healthCheck' ? true : false,
+                        hospitalization: item.type === 'hospitalization' ? true : false,
+                        labResults: item.type === 'lab' ? true : false,
                       });
                     }}
                     disableDelete={true}
@@ -213,8 +283,10 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   };
   return (
     <View>
-      {((labResultsData && labResultsData.length > 0) ||
-        (prescriptionsData && prescriptionsData.length > 0)) &&
+      {((labResultsData && labResultsData?.length > 0) ||
+        (prescriptionsData && prescriptionsData.length > 0) ||
+        (healthChecksNewData && healthChecksNewData.length > 0) ||
+        (hospitalizationsNewData && hospitalizationsNewData.length > 0)) &&
         renderFilter()}
       {renderCards()}
     </View>

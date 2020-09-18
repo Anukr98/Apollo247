@@ -811,6 +811,14 @@ export const CheckBox: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/checkbox.png')} />
 );
 
+export const LabTestIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/lab_test_icon.png')} />
+);
+
+export const RoundGreenTickIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/green_tick.png')} />
+);
+
 export const CheckBoxFilled: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/checkboxfilled.png')} />
 );
@@ -1001,4 +1009,12 @@ export const PlusIconWhite: React.FC<IconProps> = (props) => (
 
 export const MinusIconWhite: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/minus-icon-white.png')} />
+);
+
+export const BotIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/bot.png')} />
+);
+
+export const InfoIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/info.png')} />
 );

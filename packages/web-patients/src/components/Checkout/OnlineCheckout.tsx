@@ -355,7 +355,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const OnlineCheckout: React.FC = () => {
+const OnlineCheckout: React.FC = () => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const { isSignedIn } = useAuth();
@@ -477,12 +477,12 @@ export const OnlineCheckout: React.FC = () => {
         <div className={classes.container}>
           <div className={classes.pageContainer}>
             <div className={classes.pageHeader}>
-              <Link to={clientRoutes.specialityListing()}>
+              <a onClick={() => window.history.back()}>
                 <div className={classes.backArrow}>
                   <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
-              </Link>
+              </a>
               Checkout
             </div>
             <div className={classes.pageContent}>
@@ -696,3 +696,5 @@ export const OnlineCheckout: React.FC = () => {
     return <LinearProgress className={classes.loader} />;
   }
 };
+
+export default OnlineCheckout;

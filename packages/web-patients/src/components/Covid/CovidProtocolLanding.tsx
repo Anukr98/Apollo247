@@ -200,7 +200,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const covidProtocolLanding: React.FC = (props: any) => {
+const covidProtocolLanding: React.FC = (props: any) => {
   const classes = useStyles({});
   const [seemore, setSeemore] = React.useState<string>('');
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
@@ -354,3 +354,5 @@ export const covidProtocolLanding: React.FC = (props: any) => {
     </div>
   );
 };
+
+export default covidProtocolLanding;

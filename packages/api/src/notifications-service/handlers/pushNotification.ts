@@ -1008,10 +1008,30 @@ export async function sendNotification(
     doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
     doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
-
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-
     sendBrowserNotitication(doctorDetails.id, doctorSMS);
+    let facilityDetsString = 'N/A';
+    if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+      const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+      const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+      if (facilityDets) {
+        facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
+      }
+    }
+    const secretaryTemplateData: string[] = [
+      patientDetails.firstName + ' ' + patientDetails.lastName,
+      patientDetails.uhid,
+      doctorDetails.salutation + ' ' + doctorDetails.firstName,
+      facilityDetsString,
+      format(istDateTime, 'dd/MM/yyyy'),
+      format(istDateTime, 'hh:mm a'),
+      appointment.appointmentType,
+    ];
+    sendDoctorNotificationWhatsapp(
+      ApiConstants.WHATSAPP_DOC_SECRETARY_CANCEL,
+      doctorDetails.doctorSecretary.secretary.mobileNumber,
+      secretaryTemplateData
+    );
   }
 
   //doctor cancel appointment
@@ -1158,6 +1178,14 @@ export async function sendNotification(
       '{0}',
       patientDetails.firstName
     );
+    let facilityDetsString = 'N/A';
+    if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+      const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+      const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+      if (facilityDets) {
+        facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
+      }
+    }
     if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
       content = ApiConstants.PHYSICAL_BOOK_APPOINTMENT_BODY.replace(
         '{0}',
@@ -1167,16 +1195,8 @@ export async function sendNotification(
         '{0}',
         patientDetails.firstName
       );
-
-      if (appointment.hospitalId != '' && appointment.hospitalId != null) {
-        const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
-        const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
-        if (facilityDets) {
-          const facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
-          content = content.replace('{4}', facilityDetsString);
-          smsLink = smsLink.replace('{4}', facilityDetsString);
-        }
-      }
+      content = content.replace('{4}', facilityDetsString);
+      smsLink = smsLink.replace('{4}', facilityDetsString);
     }
     content = content.replace('{1}', appointment.displayId.toString());
     content = content.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
@@ -1226,6 +1246,25 @@ export async function sendNotification(
       differenceInHours(new Date(appointment.appointmentDateTime), new Date()),
       todaysDate,
       'todays date'
+    );
+    const secretaryTemplateData: string[] = [
+      patientDetails.firstName + ' ' + patientDetails.lastName,
+      patientDetails.uhid,
+      doctorDetails.salutation + ' ' + doctorDetails.firstName,
+      facilityDetsString,
+      format(istDateTime, 'dd/MM/yyyy'),
+      format(istDateTime, 'hh:mm a'),
+      appointment.appointmentType,
+    ];
+    console.log(
+      secretaryTemplateData,
+      doctorDetails.doctorSecretary.secretary.mobileNumber,
+      'secretaryTemplateData'
+    );
+    sendDoctorNotificationWhatsapp(
+      ApiConstants.WHATSAPP_DOC_SECRETARY_BOOKING,
+      doctorDetails.doctorSecretary.secretary.mobileNumber,
+      secretaryTemplateData
     );
     if (istDateTime <= todaysDate) {
       const finalTime = format(istDateTime, 'hh:mm a');

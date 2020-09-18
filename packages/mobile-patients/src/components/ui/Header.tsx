@@ -71,6 +71,7 @@ export interface HeaderProps {
   onPressLeftIcon?: TouchableOpacityProps['onPress'];
   titleTextProps?: TextProps;
   titleTextViewStyle?: ViewStyle;
+  leftComponent?: React.ReactNode;
 }
 
 export const Header: React.FC<HeaderProps> = (props) => {
@@ -112,6 +113,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
           </TouchableOpacity>
         )}
       </View>
+      {props.leftComponent ? props.leftComponent : null}
       <View style={[{ flexGrow: 1 }, titleTextViewStyle]}>
         {titleComponent ? titleComponent : null}
         {title && (
