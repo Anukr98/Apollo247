@@ -938,6 +938,12 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                     </h3>
                                   )}
                                 />
+                                {props.pastOrCurrent !== 'past' &&
+                                  appointmentDetails &&
+                                  appointmentDetails.doctorInfo &&
+                                  appointmentDetails.doctorInfo.displayName && (
+                                    <h6>With Dr. {appointmentDetails.doctorInfo.displayName}</h6>
+                                  )}
                               </div>
                             )}
                           <Route
