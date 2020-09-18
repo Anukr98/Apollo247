@@ -46,6 +46,7 @@ import {
   UPLOAD_CHAT_FILE_PRISM,
   ADD_CHAT_DOCUMENTS,
   UPLOAD_MEDIA_DOCUMENT_PRISM,
+  SEND_PATIENT_WAIT_NOTIFICATION,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -196,6 +197,9 @@ const { height, width } = Dimensions.get('window');
 
 const timer: number = 900;
 let timerId: any;
+let notificationTimerId: any;
+let notificationIntervalId: any;
+let notify_async_key = 'notify_async';
 let joinTimerId: any;
 let diffInHours: number;
 // let callAbandonmentTimer: any;
@@ -433,7 +437,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
-  const { setDoctorJoinedChat, doctorJoinedChat } = useAppCommonData(); //setting in context since we are updating this in NotificationListener
+  const { setDoctorJoinedChat, doctorJoinedChat, locationDetails } = useAppCommonData(); //setting in context since we are updating this in NotificationListener
   const [name, setname] = useState<string>('');
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
@@ -630,6 +634,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       (eventAttributes as WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION])[
         'Download Screen'
       ] = 'Chat';
+    }
+
+    if (type == WebEngageEventName.PRESCRIPTION_RECEIVED) {
+      const location = locationDetails?.city || '';
+
+      (eventAttributes as WebEngageEvents[WebEngageEventName.PRESCRIPTION_RECEIVED])[
+        'City'
+      ] = location;
     }
     postWebEngageEvent(type, eventAttributes);
   };
@@ -2518,6 +2530,57 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       minuteTimer && clearTimeout(minuteTimer);
     }
   };
+
+  const checkWhatsappNotificationAPI = async () => {
+    const stopCallingNoticationApi =
+      (await AsyncStorage.getItem(notify_async_key + appointmentData.id)) || '';
+    if (stopCallingNoticationApi != appointmentData.id + appointmentData.appointmentDateTime) {
+      notificationIntervalId = BackgroundTimer.setInterval(() => {
+        const diffMin = moment(appointmentData.appointmentDateTime).diff(moment(), 'minutes', true);
+        if (!doctorJoined && diffMin <= 0) {
+          BackgroundTimer.clearInterval(notificationIntervalId);
+          notificationTimerId = BackgroundTimer.setTimeout(() => {
+            setLoading(true);
+            client
+              .mutate({
+                mutation: SEND_PATIENT_WAIT_NOTIFICATION,
+                fetchPolicy: 'no-cache',
+                variables: {
+                  appointmentId: appointmentData.id,
+                },
+              })
+              .then((data) => {
+                setLoading(false);
+                const notifi_status = g(data.data!, 'sendPatientWaitNotification', 'status');
+                if (notifi_status) {
+                  AsyncStorage.setItem(
+                    notify_async_key + appointmentData.id,
+                    appointmentData.id + appointmentData.appointmentDateTime
+                  );
+                  BackgroundTimer.clearTimeout(notificationTimerId);
+                }
+              })
+              .catch((e) => {
+                BackgroundTimer.clearTimeout(notificationTimerId);
+                CommonBugFender('ChatRoom_getPrismUrls_uploadDocument', e);
+                console.log('Error occured', e);
+              })
+              .finally(() => {
+                setLoading(false);
+              });
+          }, 180000);
+        }
+      }, 1000);
+    }
+  };
+
+  useEffect(() => {
+    checkWhatsappNotificationAPI();
+    return function cleanup() {
+      notificationTimerId && BackgroundTimer.clearTimeout(notificationTimerId);
+      notificationIntervalId && BackgroundTimer.clearInterval(notificationIntervalId);
+    };
+  }, []);
 
   const checkingAppointmentDates = () => {
     try {

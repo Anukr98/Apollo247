@@ -426,6 +426,14 @@ export const UploadHealthRecords: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/upload_records.png')} />
 );
 
+export const PHRHospitalIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_hospital_grey.png')} />
+);
+
+export const PHRSelfUploadIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/self_upload_phr.png')} />
+);
+
 export const FreeArrowIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_free_arrow.png')} />
 );

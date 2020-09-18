@@ -413,7 +413,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         ) : null}
         {data?.doctorName ? (
           <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
-            {data?.doctorName || 'Dr. -'}
+            {'Dr. ' + data?.doctorName || 'Dr. -'}
           </Text>
         ) : null}
         {data?.siteDisplayName || data?.hospitalName ? (
