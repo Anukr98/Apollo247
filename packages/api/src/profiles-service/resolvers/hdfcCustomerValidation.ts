@@ -13,6 +13,7 @@ export const validateHDFCCustomerTypeDefs = gql`
   }
   type validHdfcCustomerResponse {
     status: Boolean
+    defaultPlan: String
   }
   extend type Query {
     identifyHdfcCustomer(mobileNumber: String!, DOB: String!): identifyHdfcCustomerResponse
@@ -31,6 +32,7 @@ type identifyHdfcCustomerResponse = {
 
 type validHdfcCustomerResponse = {
   status: boolean;
+  defaultPlan: string;
 };
 const identifyHdfcCustomer: Resolver<
   null,
@@ -58,9 +60,7 @@ const validateHdfcOTP: Resolver<
   const { otp, token } = args;
 
   const otpAttrs = { otp, token };
-
-  const isValid = validateOTP(otpAttrs);
-  return isValid == true ? { status: true } : { status: false };
+  return { status: validateOTP(otpAttrs), defaultPlan: 'HDFCGold' };
 };
 
 export const validateHDFCCustomer = {
