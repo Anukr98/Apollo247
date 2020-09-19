@@ -204,7 +204,7 @@ const refreshDoctorDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> 
         element.updatedDate = new Date();
         await linkRepository.upsertDeepLink(element);
       });
-    }, 1000); //in milliseconds
+    }, 60000); //in milliseconds
   });
 
   return 'Deeplink Refresh Completed :)';
