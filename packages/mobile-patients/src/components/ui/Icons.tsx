@@ -1097,6 +1097,10 @@ export const HdfcPlatinumMedal: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/medal_platinum.png')} />
 );
 
+export const HdfcSilverMedal: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/medal_silver.png')} />
+);
+
 export const LockIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/lock.png')} />
 );
@@ -1139,6 +1143,10 @@ export const GroupCallIcon: React.FC<IconProps> = (props) => (
 
 export const HdfcBankLogo: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/HDFC_logo.png')} />
+);
+
+export const HdfcBankLogoSmall: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/hdfc_logo_small.png')} />
 );
 
 export const DeleteIconOrange: React.FC<IconProps> = (props) => (

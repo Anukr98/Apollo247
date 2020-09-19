@@ -6,7 +6,6 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { getDoctorsBySpecialtyAndFilters } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../graphql/types/getPatientPersonalizedAppointments';
 import { MedicinePageAPiResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { getSubscriptionsOfUserByStatus_getSubscriptionsOfUserByStatus_response_group_plan } from '../graphql/types/getSubscriptionsOfUserByStatus';
 
 export interface LocationData {
   displayName: string;
@@ -22,11 +21,37 @@ export interface LocationData {
 }
 
 export interface SubscriptionData {
-  subscriptionName: string | null; 
-  plan_id: string | null; 
-  status: string | null; 
-  is_active: boolean; 
-  name: string | null;
+  _id: string | '';
+  name: string | ''; 
+  planId: string | ''; 
+  benefitsWorth: string | '';
+  activationModes: string[];
+  price: number | null;
+  minTransactionValue: number;
+  status: string | ''; 
+  subscriptionStatus: string | '';
+  canUpgradeTo?: SubscriptionData | {};
+  group: GroupPlan;
+  benefits: PlanBenefits[];
+  isActive: boolean; 
+}
+
+export interface GroupPlan {
+  _id: string;
+  name: string;
+  isActive: boolean;
+}
+
+export interface PlanBenefits {
+  _id: string;
+  attribute: string;
+  headerContent: string;
+  description: string;
+  ctaLabel: string;
+  ctaAction: string;
+  attributeType: string;
+  availableCount: number;
+  refreshFrequency: number;
 }
 
 export interface AppCommonDataContextProps {

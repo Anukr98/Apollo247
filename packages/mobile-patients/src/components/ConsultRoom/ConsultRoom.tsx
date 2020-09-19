@@ -2,6 +2,9 @@ import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import {
   LocationData,
   useAppCommonData,
+  SubscriptionData,
+  GroupPlan,
+  PlanBenefits,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -48,15 +51,14 @@ import {
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
-  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-  SAVE_VOIP_DEVICE_TOKEN
+  SAVE_VOIP_DEVICE_TOKEN,
+  GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { UserIdentification } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
-  getSubscriptionsOfUserByStatus,
-  getSubscriptionsOfUserByStatusVariables,
-} from '@aph/mobile-patients/src/graphql/types/getSubscriptionsOfUserByStatus';
+  GetAllUserSubscriptionsWithPlanBenefits,
+  GetAllUserSubscriptionsWithPlanBenefitsVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefits';
 import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveDeviceToken,
@@ -646,32 +648,68 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, []);
 
   const getUserSubscriptions = () => {
-    const userVariables: UserIdentification = {
-      mobile_number: '+919666828389',
-    };
     client
-      .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
-        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-        variables: { user: userVariables, status: []},
+      .query<GetAllUserSubscriptionsWithPlanBenefits, GetAllUserSubscriptionsWithPlanBenefitsVariables>({
+        query: GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
+        variables: { mobile_number: '918860311199'},
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        const groupPlans = g(data, 'data', 'getSubscriptionsOfUserByStatus', 'response')
+        const groupPlans = g(data, 'data', 'GetAllUserSubscriptionsWithPlanBenefits', 'response');
         if (groupPlans && groupPlans.length) {
-          const plan = g(groupPlans[0], 'group_plan');
-          const subscription = {
-            subscriptionName: plan!.name || '',
-            plan_id: plan!.plan_id || '',
-            status: plan!.status || '',
-            is_active: g(plan, 'group', 'is_active') || false,
-            name: g(plan, 'group', 'name') || '',
-          };
+          const plan = groupPlans[0];
+          const subscription = setSubscriptionData(plan);
+          console.log('subscriptionsubscriptionsubscription: ', subscription);
           setHdfcUserSubscriptions && setHdfcUserSubscriptions(subscription);
         }
       })
       .catch((e) => {
         CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
       })
+  };
+
+  const setSubscriptionData = (plan) => {
+    const group = plan.group;
+    const groupData: GroupPlan = {
+      _id: group!._id || '',
+      name: group!.name || '',
+      isActive: group!.is_active,
+    };
+    const benefits = plan.benefits;
+    const planBenefits = [];
+    if (benefits && benefits.length) {
+      benefits.forEach((item) =>{
+        const benefit: PlanBenefits = {
+          _id: item!._id,
+          attribute: item!.attribute,
+          headerContent: item!.header_content,
+          description: item!.description,
+          ctaLabel: item!.cta_label,
+          ctaAction: g(item, 'cta_action', 'cta_action'),
+          attributeType: item!.attribute_type,
+          availableCount: item!.available_count,
+          refreshFrequency: item!.refresh_frequency,
+        };
+        planBenefits.push(benefit);
+      })
+    }
+    const upgradeToPlan = g(plan, 'can_upgrade_to');
+    const subscription: SubscriptionData = {
+      _id: plan!._id || '',
+      name: plan!.name || '',
+      planId: plan!.plan_id || '',
+      benefitsWorth: plan!.benefits_worth || '',
+      activationModes: plan!.activation_modes,
+      price: plan!.price,
+      minTransactionValue: plan!.min_transaction_value,
+      status: plan!.status || '',
+      subscriptionStatus: plan!.subscriptionStatus || '',
+      isActive: plan!.subscriptionStatus === 'active',
+      group: groupData,
+      benefits: planBenefits,
+      canUpgradeTo: upgradeToPlan._id ? setSubscriptionData(upgradeToPlan) : {},
+    }
+    return subscription;
   };
 
   const storePatientDetailsTOBugsnag = async () => {

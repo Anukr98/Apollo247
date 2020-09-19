@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { OneApolloGold, HdfcGoldMedal, OneApolloPlatinum, HdfcPlatinumMedal } from '../ui/Icons';
+import { OneApolloGold, HdfcGoldMedal, OneApolloPlatinum, HdfcPlatinumMedal, OneApolloSilver, HdfcSilverMedal } from '../ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 const styles = StyleSheet.create({
@@ -24,31 +24,28 @@ const styles = StyleSheet.create({
 
 export interface SubscriptionBannerProps {
   membershipType: string;
+  benefitsWorth: string;
 }
 
 export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = (props) => {
-  const isGoldMembership = props.membershipType === 'gold';
+  const isSilverMembership = props.membershipType === 'SILVER+ PLAN';
+  const isGoldMembership = props.membershipType === 'GOLD+ PLAN';
+  const isPlatinumMembership = props.membershipType === 'PLATINUM+ PLAN';
   return (
     <View style={{paddingHorizontal: 20, marginVertical: 10,}}>
       <View>
-        {
-          isGoldMembership ? (
-            <OneApolloGold style={styles.membershipBanner}/>
-          ) : (
-            <OneApolloPlatinum style={styles.membershipBanner}/>
-          )
-        }
+        {isSilverMembership && <OneApolloSilver style={styles.membershipBanner}/>}
+        {isGoldMembership && <OneApolloGold style={styles.membershipBanner}/>}
+        {isPlatinumMembership && <OneApolloPlatinum style={styles.membershipBanner}/>}
         <View style={styles.bannerContent}>
-          {
-            isGoldMembership ? 
-            <HdfcGoldMedal style={styles.medalStyle} /> :
-            <HdfcPlatinumMedal style={styles.medalStyle} />
-          }
+          {isSilverMembership && <HdfcSilverMedal style={styles.medalStyle} />}
+          {isGoldMembership && <HdfcGoldMedal style={styles.medalStyle} />}
+          {isPlatinumMembership && <HdfcPlatinumMedal style={styles.medalStyle} />}
           <Text style={{
             ...theme.viewStyles.text('B', 20, '#02475B', 1, 20, 0.35),
             marginBottom: 7,
           }}>
-            {isGoldMembership ? 'GOLD+ PLAN' : 'PLATINUM+ PLAN'}
+            {props.membershipType}
           </Text>
           <Text style={{
             ...theme.viewStyles.text('R', 15, '#02475B', 1, 20, 0.90),
@@ -60,14 +57,10 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = (props) => 
             ...theme.viewStyles.text('M', 22, '#02475B', 1, 22, 0.35),
             marginBottom: 20,
           }}>
-            Rs. 38K+
+            {props.benefitsWorth}
           </Text>
           <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 20, 0.90)}>
-            {
-              isGoldMembership ? 
-              'A host of benefits await you with our Gold+ Plan curated for HDFC customers' :
-              'A host of benefits await you with our Platinum+ Plan curated for HDFC customers'
-            }
+            {`A host of benefits await you with our ${props.membershipType} curated for HDFC customers`}
           </Text>
         </View>
       </View>
