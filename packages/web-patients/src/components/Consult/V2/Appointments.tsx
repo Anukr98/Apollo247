@@ -1210,11 +1210,12 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
                         <AphButton
                           color="primary"
                           classes={{ root: classes.addMemberBtn }}
+                          style={{ paddingLeft: 0 }}
                           onClick={() => {
                             setIsAddNewProfileDialogOpen(true);
                           }}
                         >
-                          Add Member
+                          +Add Member
                         </AphButton>
                       </MenuItem>
                     </AphSelect>

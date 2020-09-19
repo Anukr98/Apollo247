@@ -43,6 +43,19 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'flex-end',
   },
+  drPrefixViewStyle: {
+    borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+    borderBottomWidth: 2,
+    alignItems: 'flex-end',
+    paddingRight: 3,
+  },
+  drPrefixTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    borderBottomWidth: 2,
+    paddingLeft: Platform.OS === 'ios' ? 0 : -3,
+    paddingTop: 0,
+    color: theme.colors.SHERPA_BLUE,
+  },
 });
 
 export interface TextInputComponentProps {
@@ -63,6 +76,7 @@ export interface TextInputComponentProps {
   underlineColorAndroid?: string;
   autoCorrect?: boolean;
   editable?: boolean;
+  showDrPrefix?: boolean;
   onPressNonEditableTextInput?: () => void;
   width?: number;
   textInputprops?: TextInputProps;
@@ -101,6 +115,17 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
     );
   };
 
+  const renderDrPrefixTextInput = (textInput: React.ReactElement) => {
+    return (
+      <View style={{ flexDirection: 'row' }}>
+        <View style={styles.drPrefixViewStyle}>
+          <Text style={styles.drPrefixTextStyle}>{'Dr.'}</Text>
+        </View>
+        {textInput}
+      </View>
+    );
+  };
+
   return (
     <View style={[styles.mainveiw, props.conatinerstyles]}>
       {props.label && (
@@ -110,8 +135,10 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
       )}
       {props.noInput ? null : !!!props.editable ? (
         <TouchableOpacity activeOpacity={1} onPress={props.onPressNonEditableTextInput}>
-          {renderTextInput()}
+          {props.showDrPrefix ? renderDrPrefixTextInput(renderTextInput()) : renderTextInput()}
         </TouchableOpacity>
+      ) : props.showDrPrefix ? (
+        renderDrPrefixTextInput(renderTextInput())
       ) : (
         renderTextInput()
       )}
