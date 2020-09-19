@@ -16,7 +16,7 @@ import {
   elasticDoctorDistanceSort,
   elasticDoctorAvailabilitySort,
   elasticDoctorDoctorTypeSort,
-  elasticDoctorSearch
+  elasticDoctorSearch,
 } from 'doctors-service/entities/doctorElastic';
 import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
@@ -119,7 +119,6 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     getDoctorList(filterInput: FilterDoctorInput): DoctorListResult
   }
 `;
-
 
 type DefaultfilterType = {
   name: string;
@@ -338,7 +337,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   }
 
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
-    elasticMatch.push({ match: { 'specialty.name': args.filterInput.specialtyName.join(',') } });
+    elasticMatch.push({ terms: { 'specialty.name.keyword': args.filterInput.specialtyName } });
   }
   if (args.filterInput.specialty) {
     elasticMatch.push({ match_phrase: { 'specialty.specialtyId': args.filterInput.specialty } });
@@ -778,14 +777,15 @@ const getDoctorList: Resolver<
 
   elasticMatch.push(elasticDoctorLatestSlotFilter());
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
-    elasticMatch.push({ match: { 'specialty.name': args.filterInput.specialtyName.join(',') } });
+    elasticMatch.push({ terms: { 'specialty.name.keyword': args.filterInput.specialtyName } });
   }
   if (args.filterInput.specialty) {
     elasticMatch.push({ match_phrase: { 'specialty.specialtyId': args.filterInput.specialty } });
   }
   if (
     (!args.filterInput.specialtyName || args.filterInput.specialtyName.length === 0) &&
-    !args.filterInput.specialty && !args.filterInput.searchText
+    !args.filterInput.specialty &&
+    !args.filterInput.searchText
   ) {
     elasticMatch.push({ match: { 'specialty.name': ApiConstants.GENERAL_PHYSICIAN.toString() } });
   }
@@ -845,7 +845,12 @@ const getDoctorList: Resolver<
     throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
   }
 
-  const searchParams: RequestParams.Search = elasticDoctorSearch(offset,pageSize,elasticSort,elasticMatch);
+  const searchParams: RequestParams.Search = elasticDoctorSearch(
+    offset,
+    pageSize,
+    elasticSort,
+    elasticMatch
+  );
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
   const getDetails = await client.search(searchParams);
   client.close();
@@ -890,9 +895,12 @@ const getDoctorList: Resolver<
       doctorObj['consultMode'] = ['BOTH'];
     }
     doctorObj['consultMode'] = doctorObj['consultMode'].toString();
-    for(const slot of doc.inner_hits['doctorSlots.slots'].hits.hits){
+    for (const slot of doc.inner_hits['doctorSlots.slots'].hits.hits) {
       doctorObj['slot'] = slot._source.slot;
-      doctorObj['earliestSlotInMinutes'] = differenceInMinutes(new Date(slot._source.slot), callStartTime);;
+      doctorObj['earliestSlotInMinutes'] = differenceInMinutes(
+        new Date(slot._source.slot),
+        callStartTime
+      );
     }
     doctors.push(doctorObj);
   }
