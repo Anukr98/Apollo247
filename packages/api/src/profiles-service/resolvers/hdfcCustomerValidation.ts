@@ -13,7 +13,7 @@ export const validateHDFCCustomerTypeDefs = gql`
   }
   type validHdfcCustomerResponse {
     status: Boolean
-    defaultPlan: string
+    defaultPlan: String
   }
   extend type Query {
     identifyHdfcCustomer(mobileNumber: String!, DOB: String!): identifyHdfcCustomerResponse
@@ -32,6 +32,7 @@ type identifyHdfcCustomerResponse = {
 
 type validHdfcCustomerResponse = {
   status: boolean;
+  defaultPlan: string;
 };
 const identifyHdfcCustomer: Resolver<
   null,
