@@ -19,7 +19,7 @@ import { UploadPrescription } from 'components/Prescriptions/UploadPrescription'
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { GET_RECOMMENDED_PRODUCTS_LIST } from 'graphql/profiles';
 import { getRecommendedProductsList_getRecommendedProductsList_recommendedProducts as recommendedProductsType } from 'graphql/types/getRecommendedProductsList';
-import { gtmTracking } from 'gtmTracking';
+import { gtmTracking, dataLayerTracking } from 'gtmTracking';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getImageUrl } from 'helpers/commonHelpers';
 import { useCurrentPatient } from 'hooks/authHooks';
@@ -657,6 +657,19 @@ const SearchByMedicine: React.FC = (props) => {
     description: getMetaDescription,
     canonicalLink: window && window.location && window.location && window.location.href,
   };
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: `${paramSearchText} Listing Page`,
+      pageLOB: 'Pharmacy',
+      pageType: 'Index',
+      productlist: JSON.stringify(medicineListFiltered),
+    });
+    /**Gtm code start end */
+  }, []);
 
   return (
     <div className={classes.root}>

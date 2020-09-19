@@ -24,7 +24,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import {
   NO_SERVICEABLE_MESSAGE,
   getDiffInDays,
@@ -411,6 +411,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [clickAddCart, setClickAddCart] = React.useState<boolean>(false);
   const [isUpdateQuantity, setIsUpdateQuantity] = React.useState<boolean>(false);
   const [showAddMessage, setShowAddMessage] = useState<boolean>(false);
+  const [pincodeCity, setPincodeCity] = useState<string | null>(null);
 
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
@@ -496,6 +497,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               _get(data.results[0], 'geometry.location.lat', ''),
               _get(data.results[0], 'geometry.location.lng', '')
             );
+            setPincodeCity(data.results[0].formatted_address);
           }
         } catch {
           (e: AxiosError) => {
@@ -508,6 +510,17 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         setAlertMessage('Something went wrong :(');
         console.log(e);
       });
+  };
+
+  const dataLayerTrackingFn = (city: any, pin: any, status: any) => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'Product Stock Checked',
+      PINCode: pin,
+      City: city,
+      Status: status,
+    });
+    /**Gtm code start end */
   };
 
   const fetchDeliveryTime = async (pinCode: string) => {
@@ -537,15 +550,19 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
             } else if (typeof res.data.errorMSG === 'string') {
               setDefaultDeliveryTime(pinCode);
             }
+
+            dataLayerTrackingFn(pincodeCity, pinCode, `In Stock ${deliveryTime}`);
           }
         } catch (error) {
           console.log(error);
           setDefaultDeliveryTime(pinCode);
+          dataLayerTrackingFn(pincodeCity, pinCode, `In Stock ${deliveryTime}`);
         }
       })
       .catch((error: any) => {
         console.log(error);
         setDefaultDeliveryTime(pinCode);
+        dataLayerTrackingFn(pincodeCity, pinCode, `In Stock ${deliveryTime}`);
       });
   };
 
@@ -582,11 +599,13 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
         } else {
           setDeliveryTime('');
           setErrorMessage(OUT_OF_STOCK_MESSAGE);
+          dataLayerTrackingFn(pincodeCity, pinCode, OUT_OF_STOCK_MESSAGE);
         }
       })
       .catch((e) => {
         setErrorMessage(OUT_OF_STOCK_MESSAGE);
         setDeliveryTime('');
+        dataLayerTrackingFn(pincodeCity, pinCode, OUT_OF_STOCK_MESSAGE);
       });
   };
 
@@ -860,6 +879,35 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                                 },
                               });
                             /* Gtm code end  */
+
+                            /**Gtm code start start */
+                            itemIndexInCart(data) !== -1 &&
+                              clickAddCart &&
+                              dataLayerTracking({
+                                event: 'Product Added to Cart',
+                                productlist: JSON.stringify([
+                                  {
+                                    item_name: name,
+                                    item_id: sku,
+                                    price: special_price || price,
+                                    item_category: 'Pharmacy',
+                                    item_category_2: type_id
+                                      ? type_id.toLowerCase() === 'pharma'
+                                        ? 'Drugs'
+                                        : 'FMCG'
+                                      : null,
+                                    // 'item_category_4': '', // future reference
+                                    item_variant: 'Default',
+                                    index: 1,
+                                    quantity:
+                                      quantity > medicineQty
+                                        ? quantity - medicineQty
+                                        : medicineQty - quantity,
+                                  },
+                                ]),
+                              });
+                            /**Gtm code start end */
+
                             setMedicineQty(quantity);
                           }}
                         >
@@ -943,6 +991,30 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         },
                       });
                       /**Gtm code End  */
+
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Product Added to Cart',
+                        productlist: JSON.stringify([
+                          {
+                            item_name: name,
+                            item_id: sku,
+                            price: special_price || price,
+                            item_category: 'Pharmacy',
+                            item_category_2: type_id
+                              ? type_id.toLowerCase() === 'pharma'
+                                ? 'Drugs'
+                                : 'FMCG'
+                              : null,
+                            // 'item_category_4': '', // future reference
+                            item_variant: 'Default',
+                            index: 1,
+                            quantity: medicineQty,
+                          },
+                        ]),
+                      });
+                      /**Gtm code start end */
+
                       applyCartOperations(cartItem);
                       setAddMutationLoading(false);
                       setShowAddMessage(true);
@@ -981,6 +1053,29 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         price: price,
                         quantity: medicineQty,
                       });
+
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Product Added to Cart',
+                        productlist: JSON.stringify([
+                          {
+                            item_name: name,
+                            item_id: sku,
+                            price: special_price || price,
+                            item_category: 'Pharmacy',
+                            item_category_2: type_id
+                              ? type_id.toLowerCase() === 'pharma'
+                                ? 'Drugs'
+                                : 'FMCG'
+                              : null,
+                            // 'item_category_4': '', // future reference
+                            item_variant: 'Default',
+                            index: 1,
+                            quantity: medicineQty,
+                          },
+                        ]),
+                      });
+                      /**Gtm code start end */
                     }}
                   >
                     {updateMutationLoading ? (
