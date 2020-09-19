@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-
+import { PartnerId } from 'ApiConstants';
 export const validateHDFCCustomerTypeDefs = gql`
   enum HDFC_CUSTOMER {
     NOT_HDFC_CUSTOMER
@@ -36,12 +36,12 @@ type validHdfcCustomerResponse = {
 };
 const identifyHdfcCustomer: Resolver<
   null,
-  { mobileNumber: string; DOB: string },
+  { mobileNumber: string; DOB: Date },
   ProfilesServiceContext,
   identifyHdfcCustomerResponse
 > = async (parent, args, { profilesDb }) => {
-  const { mobileNumber } = args;
-  const isHDFC = checkFromHDFC(mobileNumber);
+  const { mobileNumber, DOB } = args;
+  const isHDFC = checkForRegisteredPartner(mobileNumber, DOB, PartnerId.HDFCBANK);
   if (!isHDFC) {
     return { status: HDFC_CUSTOMER.NOT_HDFC_CUSTOMER };
   }
@@ -70,8 +70,13 @@ export const validateHDFCCustomer = {
   },
 };
 
-const checkFromHDFC = function(mobileNumber: string) {
-  if (parseInt(mobileNumber, 10) % 2 == 0) {
+export const checkForRegisteredPartner = function(
+  mobileNumber: string,
+  dob: Date,
+  partnerId: string
+) {
+  // for hdfc
+  if (partnerId == PartnerId.HDFCBANK && parseInt(mobileNumber, 10) % 2 == 0) {
     return true;
   }
   return false;

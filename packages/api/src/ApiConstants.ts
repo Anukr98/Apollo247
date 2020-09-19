@@ -496,3 +496,7 @@ export const PharmaProductTypes = {
   PHARMA: 'Pharma',
   PL: 'PL',
 };
+
+export const PartnerId = {
+  HDFCBANK: 'HDFCBANK',
+};
