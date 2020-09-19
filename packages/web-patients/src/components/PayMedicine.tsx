@@ -382,6 +382,12 @@ const PayMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const [checked, setChecked] = React.useState(false);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'Payment Option Selected',
+      Option: 'Cash On Delivery',
+    });
+    /**Gtm code start end */
     setChecked(event.target.checked);
   };
   const [isLoading, setIsLoading] = React.useState<boolean>(false);

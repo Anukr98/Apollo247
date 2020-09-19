@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { makeStyles } from '@material-ui/core';
 import { Theme } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -89,6 +90,18 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const TermsAndConditions: React.FC = () => {
   const classes = useStyles({});
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Terms Page',
+      pageLOB: 'Others',
+      pageType: 'Terms Page',
+    });
+    /**Gtm code start end */
+  }, []);
 
   return (
     <div className={classes.root}>

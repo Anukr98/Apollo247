@@ -28,7 +28,7 @@ import isNull from 'lodash/isNull';
 import moment from 'moment';
 import React, { useEffect, useRef } from 'react';
 import { useApolloClient, useMutation } from 'react-apollo-hooks';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import axios, { AxiosError } from 'axios';
 
 export const formatAddress = (address: Address) => {
@@ -604,6 +604,15 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                                   label: 'Address Selected',
                                 });
                                 /**Gtm code End  */
+
+                                /**Gtm code start start */
+                                dataLayerTracking({
+                                  event: 'Address Selected',
+                                  PINCode: address.zipcode,
+                                  City: address.city,
+                                });
+                                /**Gtm code start end */
+
                                 checkLatLongStateCodeAvailability(address);
                               } else {
                                 setShowPlaceNotFoundPopup(true);

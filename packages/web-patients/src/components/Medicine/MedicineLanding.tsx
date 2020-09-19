@@ -481,6 +481,22 @@ const MedicineLanding: React.FC = (props: any) => {
     sessionStorage.removeItem('utm_source');
   }
 
+  useEffect(() => {
+    if (params.orderStatus && params.orderAutoId) {
+      /**Gtm code start start */
+      dataLayerTracking({
+        event: 'pageviewEvent',
+        pagePath: window.location.href,
+        pageName: 'Pharmacy Order Completion Page',
+        pageLOB: 'Pharmacy',
+        pageType: 'Order Page',
+        Status: params.orderStatus,
+        OrderID: params.orderAutoId,
+      });
+      /**Gtm code start end */
+    }
+  }, [params.orderStatus, params.orderAutoId]);
+
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
   const [metadata, setMetadata] = useState(null);
   const [loading, setLoading] = useState<boolean>(true);
