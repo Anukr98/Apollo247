@@ -10,7 +10,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
-import { gtmTracking } from '../../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../../gtmTracking';
 import {
   pharmacyConfigSectionTracking,
   addToCartTracking,
@@ -363,6 +363,31 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                               },
                             });
                             /**Gtm code End  */
+
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Added to Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: productList.productName,
+                                  item_id: productList.productSku,
+                                  productPrice: productList.productPrice,
+                                  item_category: 'Pharmacy',
+                                  item_category_2: productList.categoryName
+                                    ? productList.categoryName.toLowerCase() === 'pharma'
+                                      ? 'Drugs'
+                                      : 'FMCG'
+                                    : null || '',
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                              label: productList.productName,
+                              value: productList.productSpecialPrice || productList.productPrice,
+                            });
+                            /**Gtm code start end */
+
                             const index = cartItems.findIndex((item) => item.sku === cartItem.sku);
                             if (index >= 0) {
                               updateCartItem && updateCartItem(cartItem);
@@ -413,6 +438,27 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                               },
                             });
                             /**Gtm code End  */
+
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Removed from Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: productList.productName,
+                                  item_id: productList.productSku,
+                                  productPrice:
+                                    productList.productSpecialPrice || productList.productPrice,
+                                  item_category: 'Pharmacy',
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                              label: productList.productName,
+                              value: productList.productSpecialPrice || productList.productPrice,
+                            });
+                            /**Gtm code start end */
+
                             removeCartItemSku && removeCartItemSku(productList.productSku);
                           }}
                         >
