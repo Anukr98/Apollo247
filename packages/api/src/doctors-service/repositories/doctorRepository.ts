@@ -236,9 +236,9 @@ export class DoctorRepository extends Repository<Doctor> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${appt.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
             if (availableSlots.indexOf(sl) >= 0) {
               doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
             }
@@ -366,7 +366,7 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
-  getDoctorDetailswithRelations() {}
+  getDoctorDetailswithRelations() { }
 
   updateFirebaseId(id: string, firebaseToken: string) {
     return this.update(id, { firebaseToken: firebaseToken });
@@ -382,6 +382,10 @@ export class DoctorRepository extends Repository<Doctor> {
 
   updateDoctorChatDays(id: string, chatDays: number) {
     return this.update(id, { chatDays });
+  }
+
+  async updateAppointmentReminderIVR(id: string, IVRSettings: Partial<Doctor>) {
+    return this.update(id, IVRSettings);
   }
 
   findById(id: string) {
@@ -842,8 +846,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 fee.maximum === -1
                   ? qb.where('doctor.onlineConsultationFees >= ' + fee.minimum)
                   : qb
-                      .where('doctor.onlineConsultationFees >= ' + fee.minimum)
-                      .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
+                    .where('doctor.onlineConsultationFees >= ' + fee.minimum)
+                    .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
               })
             );
           });
@@ -860,8 +864,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 exp.maximum === -1
                   ? qb.where('doctor.experience >= ' + exp.minimum)
                   : qb
-                      .where('doctor.experience >= ' + exp.minimum)
-                      .andWhere('doctor.experience <= ' + exp.maximum);
+                    .where('doctor.experience >= ' + exp.minimum)
+                    .andWhere('doctor.experience <= ' + exp.maximum);
               })
             );
           });

@@ -515,6 +515,19 @@ export class Doctor extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+
+  @Column({ default: false })
+  isIvrSet: Boolean;
+
+  @Column({ nullable: true })
+  ivrConsultType: ConsultMode;
+
+  @Column({ type: 'smallint', nullable: true })
+  ivrCallTimeOnline: number;
+
+  @Column({ type: 'smallint', nullable: true })
+  ivrCallTimePhysical: number;
+
 }
 //doctor ends
 
