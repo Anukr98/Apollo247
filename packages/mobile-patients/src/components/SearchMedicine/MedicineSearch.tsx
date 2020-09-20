@@ -33,24 +33,13 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
-import { Overlay, OverlayProps } from 'react-native-elements';
-import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 
 type RecentSearch = getPatientPastMedicineSearches_getPatientPastMedicineSearches;
 
-export interface Props extends Omit<OverlayProps, 'children'> {
-  onBackPress: () => void;
-  /** Callback that is called when search query length is greater than or equal to 3 (user hits enter or search button) */
-  onSearch: (value: string) => void;
-  navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
-}
+export interface Props extends NavigationScreenProps<{}> {}
 
-export const SearchMedicineOverlay: React.FC<Props> = ({
-  onSearch,
-  onBackPress,
-  navigation,
-  ...overlayProps
-}) => {
+export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const [searchText, setSearchText] = useState<string>('');
   const [searchResults, setSearchResults] = useState<MedicineProduct[]>([]);
   const [isSearchFocused, setSearchFocused] = useState(false);
@@ -80,6 +69,11 @@ export const SearchMedicineOverlay: React.FC<Props> = ({
 
   useEffect(() => {
     if (searchText.length >= 3) {
+      // TODO:
+      // const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
+      //   keyword: searchText,
+      //   Source: 'Pharmacy Search',
+      // };
       fetchSearchSuggestions(searchText);
     } else {
       setSearchResults([]);
@@ -100,16 +94,12 @@ export const SearchMedicineOverlay: React.FC<Props> = ({
     }
   };
 
-  const navigate = (appRoute: AppRoutes, params: { [key: string]: any }) => {
-    onBackPress(); // This will fire callback to close overlay
-    navigation.navigate(appRoute, params);
-  };
-
   const renderHeader = () => {
+    const onPressLeftIcon = () => navigation.goBack();
     return (
       <Header
         leftIcon="backArrow"
-        onPressLeftIcon={onBackPress}
+        onPressLeftIcon={onPressLeftIcon}
         titleComponent={renderSearchBar()}
         titleTextViewStyle={styles.headerSearchBarContainer}
         container={styles.headerContainer}
@@ -119,7 +109,7 @@ export const SearchMedicineOverlay: React.FC<Props> = ({
 
   const renderSearchBar = () => {
     const onSearchSend = () => {
-      onSearch(searchText);
+      navigation.navigate(AppRoutes.MedicineListing, { searchText: searchText });
     };
     const isEnabled = false; // TODO: Fix errorMessage appearing while loading
     const errorMessage =
@@ -166,7 +156,7 @@ export const SearchMedicineOverlay: React.FC<Props> = ({
 
   const renderProducts = (array: RecentSearch[]) => {
     const onPress = (sku: string, name: string) => {
-      navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'recent-search' });
+      navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'recent-search' });
       savePastSearch(client, {
         typeId: sku,
         typeName: name,
@@ -238,7 +228,7 @@ export const SearchMedicineOverlay: React.FC<Props> = ({
     if (!searchResults.length) return null;
 
     const onPress = (sku: string, name: string) => {
-      navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'search' });
+      navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'search' });
       savePastSearch(client, {
         typeId: sku,
         typeName: name,
@@ -297,24 +287,19 @@ export const SearchMedicineOverlay: React.FC<Props> = ({
   };
 
   return (
-    <Overlay fullScreen overlayStyle={styles.overlayStyle} {...overlayProps}>
-      <SafeAreaView style={container}>
-        {renderHeader()}
-        {renderSearchResults()}
-        <View style={container}>
-          {renderSections()}
-          {renderOverlay()}
-        </View>
-      </SafeAreaView>
-    </Overlay>
+    <SafeAreaView style={container}>
+      {renderHeader()}
+      {renderSearchResults()}
+      <View style={container}>
+        {renderSections()}
+        {renderOverlay()}
+      </View>
+    </SafeAreaView>
   );
 };
 
 const { card, container, overlayStyle } = theme.viewStyles;
 const styles = StyleSheet.create({
-  overlayStyle: {
-    padding: 0,
-  },
   headerSearchBarContainer: {
     flexGrow: 100,
   },

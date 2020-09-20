@@ -13,10 +13,6 @@ import {
 import { OptionsDisplayView } from '@aph/mobile-patients/src/components/MedicineListing/OptionsDisplayView';
 import { OptionSelectionOverlay } from '@aph/mobile-patients/src/components/Medicines/OptionSelectionOverlay';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import {
-  Props as SearchMedicineOverlayProps,
-  SearchMedicineOverlay,
-} from '@aph/mobile-patients/src/components/SearchMedicine/SearchMedicineOverlay';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -68,7 +64,7 @@ export interface Props
 
 export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   // navigation props
-  const searchTextNavProp = navigation.getParam('searchText') || '';
+  const searchText = navigation.getParam('searchText') || '';
   const categoryId = navigation.getParam('category_id') || '';
   const movedFrom = navigation.getParam('movedFrom') || '';
   const productsNavProp = navigation.getParam('products') || [];
@@ -78,8 +74,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   // states
   const [isLoading, setLoading] = useState(false);
   const [isLoadingMore, setLoadingMore] = useState(false);
-  const [searchText, setSearchText] = useState<string>(searchTextNavProp);
-  const [searchVisible, setSearchVisible] = useState<boolean>(false);
   const [showListView, setShowListView] = useState<boolean>(true);
   const [products, setProducts] = useState<MedicineProduct[]>(productsNavProp);
   const [productsTotal, setProductsTotal] = useState<number>(0);
@@ -114,7 +108,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     if (searchText.length >= 3) {
       searchProducts(searchText, 1);
     }
-  }, [searchText, sortBy, filterBy]);
+  }, [sortBy, filterBy]);
 
   useEffect(() => {
     if (categoryId && !searchText) {
@@ -227,7 +221,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       );
     };
     const onPressSearchIcon = () => {
-      setSearchVisible(true);
+      navigation.navigate(AppRoutes.MedicineSearch);
     };
 
     const icons = [
@@ -322,26 +316,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         ListHeaderComponent={renderSections()}
         ListFooterComponent={renderLoading()}
       />
-    );
-  };
-
-  const renderSearchOverlay = () => {
-    const onBackPress: SearchMedicineOverlayProps['onBackPress'] = () => setSearchVisible(false);
-    const onSearch: SearchMedicineOverlayProps['onSearch'] = (value) => {
-      setSearchText(value);
-      onBackPress();
-    };
-    return (
-      searchVisible && (
-        <SearchMedicineOverlay
-          animationType={'fade'}
-          isVisible={true}
-          navigation={navigation}
-          onBackPress={onBackPress}
-          onRequestClose={onBackPress}
-          onSearch={onSearch}
-        />
-      )
     );
   };
 
@@ -463,7 +437,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       {renderLoadingMore()}
       {renderSortByOverlay()}
       {renderFilterByOverlay()}
-      {renderSearchOverlay()}
     </SafeAreaView>
   );
 };
