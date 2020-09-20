@@ -221,6 +221,7 @@ const savePatientAddress: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
+  // this is to handle wrong data coming from frontend
   if (
     PatientAddressInput.latitude &&
     PatientAddressInput.longitude &&
