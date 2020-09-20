@@ -45,6 +45,19 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 12, '#02475b', 0.5, 20, 0.04),
     marginTop: 4,
   },
+  addToCartViewStyle: {
+    alignSelf: 'center',
+    borderColor: '#fc9916',
+    borderWidth: 0.5,
+    borderRadius: 1,
+    paddingHorizontal: 8,
+    shadowColor: 'rgba(0, 0, 0, 0.2)',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    backgroundColor: '#fff',
+    elevation: 5,
+  },
 });
 
 export interface Props extends MedicineProduct {
@@ -90,12 +103,11 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
   const renderAddToCartView = () => {
     return (
       <TouchableOpacity
-        style={{ alignSelf: 'center' }}
-        activeOpacity={1}
+        style={[styles.addToCartViewStyle, !!is_in_stock && { paddingHorizontal: 23 }]}
         onPress={!is_in_stock ? onPressNotify : onPressAddToCart}
       >
-        <Text style={{ ...theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0) }}>
-          {!is_in_stock ? 'NOTIFY ME' : 'ADD TO CART'}
+        <Text style={theme.viewStyles.text('SB', 10, '#fc9916', 1, 24, 0)}>
+          {!is_in_stock ? 'NOTIFY ME' : 'ADD'}
         </Text>
       </TouchableOpacity>
     );
