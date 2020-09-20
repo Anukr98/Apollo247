@@ -356,16 +356,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         const productDetails = g(data, 'productdp', '0' as any);
         if (productDetails) {
           setmedicineDetails(productDetails || {});
-          if (typeof movedFrom !== 'undefined' && typeof isOutOfStock !== 'undefined') {
-            // webengage event when page is opened from different sources
-            const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
-              source: movedFrom,
-              ProductId: sku,
-              ProductName: medicineName,
-              'Stock availability': productDetails!.is_in_stock ? 'Yes' : 'No',
-            };
-            postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
-          }
           trackTagalysViewEvent(productDetails);
           if (_deliveryError) {
             setTimeout(() => {
@@ -617,6 +607,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const showOutOfStockView = medicineDetails?.sell_online
       ? (!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock
       : false;
+
+    if (typeof movedFrom !== 'undefined' && typeof isOutOfStock !== 'undefined') {
+      // webengage event when page is opened from different sources
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
+        source: movedFrom,
+        ProductId: sku,
+        ProductName: medicineName,
+        'Stock availability': showOutOfStockView ? 'No' : 'Yes',
+      };
+      postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
+    }
 
     return (
       notServiceable ? null :
