@@ -8,7 +8,6 @@ import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
-import stripHtml from 'string-strip-html';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -35,7 +34,7 @@ import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
-import { getPackOfMedicine } from 'helpers/commonHelpers';
+import { getPackOfMedicine, stripHtml } from 'helpers/commonHelpers';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -50,6 +49,10 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
+    },
+    visibilityHidden: {
+      visibility: 'hidden',
+      position: 'absolute',
     },
     medicineDetailsPage: {
       backgroundColor: '#f7f8f5',
@@ -586,7 +589,7 @@ type MedicineOverViewDetails = {
 
 type MedicineOverView = MedicineOverViewDetails[] | string;
 
-export const MedicineDetails: React.FC = (props) => {
+const MedicineDetails: React.FC = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = React.useState<number>(0);
   const params = useParams<{ sku: string; searchText: string }>();
@@ -627,7 +630,7 @@ export const MedicineDetails: React.FC = (props) => {
           },
         }
       )
-      .then(async ({ data }) => {
+      .then(async ({ data }: any) => {
         await axios
           .post(
             apiDetails.url || '',
@@ -680,9 +683,8 @@ export const MedicineDetails: React.FC = (props) => {
               const desc = Overview.filter((desc: any) => desc.Caption === 'USES');
               description = desc.length ? desc[0].CaptionDesc : '';
             }
-            const similarProducts = (
-              similar_products && similar_products.map((key: MedicineProductDetails) => key.name)
-            ).join(', ');
+            const similarProducts =
+              similar_products && similar_products.map((key: MedicineProductDetails) => key.name);
             setProductSchemaJSON({
               '@context': 'https://schema.org/',
               '@type': 'Product',
@@ -735,7 +737,7 @@ export const MedicineDetails: React.FC = (props) => {
                 image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
               },
               gtin8: id,
-              isSimilarTo: similarProducts,
+              isSimilarTo: similarProducts ? similarProducts.join(', ') : '',
             });
             if (type_id && type_id.toLowerCase() === 'pharma') {
               const { generic, Doseform, Strengh, Unit, Overview } =
@@ -993,9 +995,12 @@ export const MedicineDetails: React.FC = (props) => {
     if (typeof overView !== 'string') {
       return data.map((item, index) => (
         <div
-          style={{ display: tabValue === index ? 'block' : 'none' }}
           key={index}
-          className={classes.tabContainer}
+          className={
+            tabValue === index
+              ? `${classes.tabContainer}`
+              : `${classes.tabContainer} ${classes.visibilityHidden}`
+          }
         >
           {item.value.split(';').map((description, idx) => {
             if (item.key === 'Usage') {
@@ -1126,7 +1131,7 @@ export const MedicineDetails: React.FC = (props) => {
                       onClick={() =>
                         (window.location.href = clientRoutes.searchByMedicine(
                           'deals-of-the-day',
-                          '1195' // this is hardcoded as per the request.
+                          'exclusive-offers' // this is hardcoded as per the request.
                         ))
                       }
                     >
@@ -1325,3 +1330,5 @@ export const MedicineDetails: React.FC = (props) => {
     </div>
   );
 };
+
+export default MedicineDetails;

@@ -151,6 +151,8 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetail
   temperature: string | null;
   weight: string | null;
   medicationHistory: string | null;
+  diagnosticTestResult: string | null;
+  clinicalObservationNotes: string | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails {

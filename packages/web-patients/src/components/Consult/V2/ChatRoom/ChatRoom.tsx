@@ -220,6 +220,10 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
       position: 'relative',
       outline: 'none',
+      width: 700,
+      [theme.breakpoints.down('xs')]: {
+        width: 328,
+      },
     },
     popupHeading: {
       padding: '20px 10px',
@@ -503,7 +507,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type Params = { appointmentId: string; doctorId: string };
 
-export const ChatRoom: React.FC = () => {
+const ChatRoom: React.FC = () => {
   const classes = useStyles({});
   const params = useParams<Params>();
   const appointmentId = params.appointmentId;
@@ -768,7 +772,7 @@ export const ChatRoom: React.FC = () => {
           disableBackdropClick
           disableEscapeKeyDown
         >
-          <Paper className={classes.modalBox} style={{ width: isChangeSlot ? 700 : 328 }}>
+          <Paper className={classes.modalBox}>
             <div
               className={classes.modalBoxClose}
               onClick={() => {
@@ -1188,3 +1192,5 @@ export const ChatRoom: React.FC = () => {
         setIsAlertOpen={setIsAlertOpen}
       /> */
 }
+
+export default ChatRoom;

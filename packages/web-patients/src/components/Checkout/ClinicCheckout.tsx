@@ -340,7 +340,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ClinicCheckout: React.FC = () => {
+const ClinicCheckout: React.FC = () => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const [data, setData] = useState<any>();
@@ -662,3 +662,5 @@ export const ClinicCheckout: React.FC = () => {
     return <LinearProgress className={classes.loader} />;
   }
 };
+
+export default ClinicCheckout;

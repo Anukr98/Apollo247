@@ -432,6 +432,8 @@ export const ConsultTabs: React.FC = () => {
 
   const [notes, setSRDNotes] = useState<string | null>(null);
   const [juniorDoctorNotes, setJuniorDoctorNotes] = useState<string | null>(null);
+  const [diagnosticTestResult, setDiagnosticTestResult] = useState<string | null>(null);
+  const [clinicalObservationNotes, setClinicalObservationNotes] = useState<string | null>(null);
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
@@ -976,6 +978,8 @@ export const ConsultTabs: React.FC = () => {
                 _data.data.getCaseSheet.patientDetails.patientMedicalHistory.temperature || ''
               );
               setWeight(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.weight || '');
+              setDiagnosticTestResult(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.diagnosticTestResult || '');
+              setClinicalObservationNotes(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.clinicalObservationNotes || '');
             }
 
             const patientFamilyHistory =
@@ -1123,10 +1127,10 @@ export const ConsultTabs: React.FC = () => {
               _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.mobileNumber
                 ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.mobileNumber
                 : '',
-            appointmentDateTime: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!
-              .appointmentDateTime,
-            appointmentDisplayId: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.appointment!
-              .displayId,
+            appointmentDateTime: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.appointmentDateTime,
+            appointmentDisplayId: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.displayId,
             appointmentId: appointmentId,
           };
           setWebengageConsultTrackingObject(webEngageData);
@@ -1326,7 +1330,8 @@ export const ConsultTabs: React.FC = () => {
             setWeight(
               _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.weight || ''
             );
-
+            setDiagnosticTestResult(_data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.diagnosticTestResult || '');
+            setClinicalObservationNotes(_data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.clinicalObservationNotes || '');
             // Refferal
             if (
               _data &&
@@ -1699,6 +1704,8 @@ export const ConsultTabs: React.FC = () => {
         occupationHistory: occupationHistory || '',
         referralSpecialtyName: referralSpecialtyName || '',
         referralDescription: referralDescription || '',
+        diagnosticTestResult: diagnosticTestResult || '',
+        clinicalObservationNotes: clinicalObservationNotes || '',
       };
       client
         .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
@@ -2065,6 +2072,10 @@ export const ConsultTabs: React.FC = () => {
             notes,
             sdConsultationDate,
             setSRDNotes,
+            diagnosticTestResult,
+            setDiagnosticTestResult,
+            clinicalObservationNotes,
+            setClinicalObservationNotes,
             juniorDoctorNotes,
             diagnosis,
             setDiagnosis,
@@ -2149,11 +2160,11 @@ export const ConsultTabs: React.FC = () => {
             style={{ height: 'calc(100vh - 65px)' }}
 
           > */}
-          <RateCall
+          {/* <RateCall
             visible={giveRating}
             setGiveRating={setGiveRating}
             submitRatingCallback={(data) => submitRatingHandler(data)}
-          />
+          /> */}
           <div className={classes.container}>
             <CallPopover
               setGiveRating={setGiveRating}

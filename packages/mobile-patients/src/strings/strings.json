@@ -319,7 +319,15 @@
         "count": "0"
       },
       {
-        "title": "Medical Records",
+        "title": "Tests",
+        "count": "0"
+      },
+      {
+        "title": "Health Check",
+        "count": "0"
+      },
+      {
+        "title": "Hospitalization",
         "count": "0"
       }
     ]
@@ -329,7 +337,9 @@
     "failure": "PAYMENT_FAILED",
     "pending": "PAYMENT_PENDING_PG",
     "refund": "PAYMENT_REFUND",
-    "aborted": "PAYMENT_ABORTED"
+    "aborted": "PAYMENT_ABORTED",
+    "askPermission1": "To make sure that you do not miss the call from Dr.",
+    "askPermission2": " for your consultation, Apollo 247 needs to have \"full screen overlay\" permission to display call notifications."
   },
   "PharmaPayment": {
     "success": "TXN_SUCCESS",

@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentDetails } from 'graphql/types/GetPatientAllAppointments';
 import { DoctorType, APPOINTMENT_STATE, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import _isNull from 'lodash/isNull';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import { clientRoutes } from 'helpers/clientRoutes';
 import isTomorrow from 'date-fns/isTomorrow';
 import isToday from 'date-fns/isToday';
@@ -802,7 +802,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 specialty = doctorInfo.specialty;
                 doctorHospital = doctorInfo.doctorHospital;
               }
-
               const doctorImage = photoUrl || require('images/no_photo.png');
               const specialization =
                 specialty && !_isNull(specialty.name) ? specialty.specialistSingularTerm : '';
@@ -943,7 +942,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                   appointmentDetails &&
                                   appointmentDetails.doctorInfo &&
                                   appointmentDetails.doctorInfo.displayName && (
-                                    <h6>With Dr. {appointmentDetails.doctorInfo.displayName}</h6>
+                                    <h6>
+                                      With{' '}
+                                      {appointmentDetails.doctorInfo.salutation
+                                        ? `${appointmentDetails.doctorInfo.salutation}.`
+                                        : ''}{' '}
+                                      {appointmentDetails.doctorInfo.displayName}
+                                    </h6>
                                   )}
                               </div>
                             )}

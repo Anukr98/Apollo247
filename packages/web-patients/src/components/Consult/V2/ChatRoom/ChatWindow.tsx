@@ -62,6 +62,7 @@ import {
   messageSentPostConsultTracking,
 } from 'webEngageTracking';
 import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
+import { DoctorJoinedMessageCard } from '../ChatRoom/DoctorJoinedMessageCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -644,6 +645,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         height: 180,
+        padding: 15,
       },
     },
     slider: {
@@ -651,11 +653,13 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'static !important',
         [theme.breakpoints.down('xs')]: {
           position: 'absolute !important',
-          bottom: 50,
+          bottom: -20,
         },
         pointerEvents: 'none',
         '& li': {
-          margin: 0,
+          margin: '0 5px 0 0',
+          width: 8,
+          height: 8,
           '& button': {
             '&:before': {
               content: '.',
@@ -685,7 +689,10 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: '21px',
       textTransform: 'capitalize',
       [theme.breakpoints.down('xs')]: {
-        margin: '20px 10px 10px 2px',
+        margin: '20px 5px 10px 2px',
+        fontSize: 13,
+        minWidth: 50,
+        padding: 6,
       },
       '&:hover': {
         background: '#FFFFFF',
@@ -702,6 +709,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:disabled': {
         opacity: 0.5,
         pointerEvents: 'none',
+      },
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 40,
+        float: 'right',
       },
     },
     btnActive: {
@@ -1088,9 +1099,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         { channel: appointmentId, count: 100, stringifiedTimeToken: true },
         (status: PubnubStatus, response: HistoryResponse) => {
           if (response.messages.length === 0) sendWelcomeMessage();
-
-          console.log(response.messages, 'pubnub messages history.....');
-
           const newmessage: MessagesObjectProps[] = messages;
           response.messages.forEach((element: any, index: number) => {
             const item = element.entry;
@@ -1894,7 +1902,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     return (
       <div>
         <Grid spacing={2} container>
-          <Grid item xs={10} sm={9} md={9} lg={9}>
+          <Grid item xs={11} sm={9} md={9} lg={9}>
             <label>What is your body temperature right now (in °F) ?</label>
             <AphButton
               className={`${classes.quesButton}  ${
@@ -1929,7 +1937,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               No Idea
             </AphButton>
           </Grid>
-          <Grid item xs={2} sm={3} md={3} lg={3}>
+          <Grid item xs={1} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
               disabled={temperature.length === 0}
@@ -2060,7 +2068,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     );
   };
 
-  console.log(autoQuestionsCompleted);
+  // console.log(autoQuestionsCompleted);
 
   const showNextSlide = () => {
     sliderRef.current.slickNext();
@@ -2195,7 +2203,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     props.setIsConsultCompleted(
                       messageDetails.message === autoMessageStrings.appointmentComplete
                     );
-                    return null;
+                    return messageDetails.message === '^^#startconsult' ? (
+                      <DoctorJoinedMessageCard
+                        doctorName={doctorDisplayName}
+                        messageDate={messageDetails.messageDate}
+                      />
+                    ) : null;
                   }
                   const duration = messageDetails.duration;
                   if (cardType === 'welcome') {

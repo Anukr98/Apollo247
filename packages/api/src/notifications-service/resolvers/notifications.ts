@@ -371,7 +371,7 @@ const sendAppointmentSummaryOps: Resolver<
           fileName = format(new Date(), 'dd-MM-yyyy-hh-mm-ss') + '_' + adminId + '.pdf';
           uploadPath = assetsDir + '/' + fileName;
           pdfDoc = new PDFDocument({
-            size: [970, 900],
+            size: [1100, 900],
             margins: {
               top: 10,
               bottom: 50,
@@ -384,15 +384,16 @@ const sendAppointmentSummaryOps: Resolver<
           pdfDoc.pipe(fileStream);
           rowHeadx = 45;
           rowx = 35;
+          pdfDoc.fontSize(12);
           writeBigRow(pdfDoc, rowHeadx);
           textInRow(pdfDoc, 'Doctor Name', 50, 25);
-          textInRow(pdfDoc, 'Patient Name', 50, 140);
-          textInRow(pdfDoc, 'Appointment Date Time', 50, 250);
-          textInRow(pdfDoc, 'Appt. Display ID', 50, 392);
-          textInRow(pdfDoc, 'Appt. Status', 50, 495);
-          textInRow(pdfDoc, 'Doctor Type', 50, 710);
-          textInRow(pdfDoc, 'Doctor Specialization', 50, 580);
-          textInRow(pdfDoc, 'Doctor Hospital Name', 50, 830);
+          textInRow(pdfDoc, 'Patient Name', 50, 195);
+          textInRow(pdfDoc, 'Appointment Date Time', 50, 318);
+          textInRow(pdfDoc, 'Appt. Display ID', 50, 450);
+          textInRow(pdfDoc, 'Appt. Status', 50, 544);
+          textInRow(pdfDoc, 'Doctor Type', 50, 785);
+          textInRow(pdfDoc, 'Doctor Specialization', 50, 637);
+          textInRow(pdfDoc, 'Doctor Hospital Name', 50, 920);
           //get all the doctors associated with the admin id
           const doctorDetails: Doctor[] = [];
           allAdminDetails.filter((item) => {
@@ -420,18 +421,18 @@ const sendAppointmentSummaryOps: Resolver<
               totalAppointments = totalAppointments + docApptDetails.length;
               docApptDetails.forEach((docAppointment, index) => {
                 if (rowHeadx == 45) {
-                  rowx += 16;
+                  rowx += 23;
                 }
                 if (index % 3 == 0) {
-                  rowHeadx += 20;
+                  rowHeadx += 24;
                 } else {
-                  rowHeadx += 20;
+                  rowHeadx += 24;
                 }
-                rowHeadx += 10;
-                rowx += 30;
+                rowHeadx += 14;
+                rowx += 37;
                 writeBigRow(pdfDoc, rowHeadx);
-                textInRow(pdfDoc, doctorDetails[0].displayName, rowx, 25);
-                textInRow(pdfDoc, docAppointment.patientName, rowx, 140);
+                textInRow(pdfDoc, doctorDetails[0].displayName, rowx, 28);
+                textInRow(pdfDoc, docAppointment.patientName, rowx, 200);
                 textInRow(
                   pdfDoc,
                   format(
@@ -439,37 +440,35 @@ const sendAppointmentSummaryOps: Resolver<
                     'hh:mm a, dd MMM yyyy'
                   ),
                   rowx,
-                  250
+                  318
                 );
-
-                //textInRow(pdfDoc, docAppointment.appointmentType, rowx, 280);
                 if (doctorDetails[0].doctorHospital.length > 0) {
                   facilityDetsString = doctorDetails[0].doctorHospital[0].facility.name;
                 }
-                textInRow(pdfDoc, docAppointment.displayId.toString(), rowx, 392);
-                textInRow(pdfDoc, docAppointment.status, rowx, 495);
-                textInRow(pdfDoc, doctorDetails[0].doctorType, rowx, 710);
-                textInRow(pdfDoc, doctorDetails[0].specialty.name, rowx, 580);
-                textInRow(pdfDoc, facilityDetsString, rowx, 830);
+                textInRow(pdfDoc, docAppointment.displayId.toString(), rowx, 450);
+                textInRow(pdfDoc, docAppointment.status, rowx, 544);
+                textInRow(pdfDoc, doctorDetails[0].doctorType, rowx, 785);
+                textInRow(pdfDoc, doctorDetails[0].specialty.name, rowx, 644);
+                textInRow(pdfDoc, facilityDetsString, rowx, 920);
                 currentAdminMobNumber = `${adminDoctor.admindoctormapper[0].adminuser.mobileNumber}$${adminDoctor.admindoctormapper[0].adminuser.userName}`;
               });
             });
             pdfDoc
               .lineCap('butt')
-              .moveTo(138, 45)
-              .lineTo(138, rowHeadx + 30)
-              .moveTo(248, 45)
-              .lineTo(248, rowHeadx + 30)
-              .moveTo(390, 45)
-              .lineTo(390, rowHeadx + 30)
-              .moveTo(493, 45)
-              .lineTo(493, rowHeadx + 30)
-              .moveTo(578, 45)
-              .lineTo(578, rowHeadx + 30)
-              .moveTo(708, 45)
-              .lineTo(708, rowHeadx + 30)
-              .moveTo(829, 45)
-              .lineTo(829, rowHeadx + 30)
+              .moveTo(190, 45)
+              .lineTo(190, rowHeadx + 37)
+              .moveTo(320, 45)
+              .lineTo(320, rowHeadx + 37)
+              .moveTo(451, 45)
+              .lineTo(451, rowHeadx + 37)
+              .moveTo(544, 45)
+              .lineTo(544, rowHeadx + 37)
+              .moveTo(640, 45)
+              .lineTo(640, rowHeadx + 37)
+              .moveTo(784, 45)
+              .lineTo(784, rowHeadx + 37)
+              .moveTo(920, 45)
+              .lineTo(920, rowHeadx + 37)
               .stroke();
             pdfDoc.end();
             const fp = `${uploadPath}$${fileName}$${totalAppointments}$${currentAdminMobNumber}`;

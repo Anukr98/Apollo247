@@ -118,6 +118,7 @@ export async function addDoctorElastic(allDocsInfo: Doctor) {
         languages: pushLanguagesInArray(allDocsInfo.languages),
         gender: allDocsInfo.gender,
 
+        chatDays: allDocsInfo.chatDays,
         isActive: allDocsInfo.isActive,
         middleName: allDocsInfo.middleName,
         photoUrl: allDocsInfo.photoUrl,

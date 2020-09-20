@@ -443,20 +443,22 @@ const getCouponByUserMobileNumber = () => {
   );
 };
 
-const isPastAppointment = (appointmentDateTime: string) =>
-  moment(appointmentDateTime).add(7, 'days').isBefore(moment());
+const isPastAppointment = (appointmentDateTime: string) => {
+  const appointmentDate = moment(appointmentDateTime).set({ hour: 0, minute: 0 });
+  const followUpDayMoment = appointmentDate.add(7, 'days');
+  return followUpDayMoment.isBefore(moment());
+};
 
 const getAvailableFreeChatDays = (appointmentTime: string) => {
-  const appointmentDate = moment(appointmentTime);
+  const appointmentDate = moment(appointmentTime).set({ hour: 0, minute: 0 });
   const followUpDayMoment = appointmentDate.add(7, 'days');
-  let diffInDays = followUpDayMoment.diff(moment(), 'days'); // it will applicable if appointmentDate > followupDayMoment and diff shouldn't cross 7
-  if (appointmentDate < followUpDayMoment) {
-    // diff(moment(), 'days') gives 6 days x hours as 6days, to show it as 7 days adding +1
+  let diffInDays = followUpDayMoment.diff(moment(), 'days');
+  if (moment() > moment(appointmentTime) && moment() < followUpDayMoment) {
     diffInDays += 1;
   }
   if (diffInDays === 0) {
-    const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
-    const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
+    const diffInHours = followUpDayMoment.diff(moment(), 'hours');
+    const diffInMinutes = followUpDayMoment.diff(moment(), 'minutes');
     return diffInHours > 0
       ? `Valid for ${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'}`
       : diffInMinutes > 0
@@ -478,6 +480,7 @@ const HEALTH_RECORDS_NO_DATA_FOUND =
 
 const HEALTH_RECORDS_NOTE =
   'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
+const stripHtml = (originalString: any) => originalString.replace(/(<([^>]+)>)/gi, '');
 
 export const consultWebengageEventsInfo = (
   doctorDetail: DoctorDetails,
@@ -586,4 +589,5 @@ export {
   PINCODE_MAXLENGTH,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
   HEALTH_RECORDS_NOTE,
+  stripHtml,
 };

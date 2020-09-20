@@ -558,7 +558,7 @@ interface statusMap {
   [name: string]: statusActionInterface;
 }
 
-export const Appointments: React.FC<AppointmentProps> = (props) => {
+const Appointments: React.FC<AppointmentProps> = (props) => {
   const classes = useStyles({});
   const initialAppointmentFilterObject: AppointmentFilterObject = {
     appointmentStatus: [],
@@ -1194,7 +1194,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                               setIsAddNewProfileDialogOpen(true);
                             }}
                           >
-                            Add Member
+                            + Add Member
                         </AphButton>
                         </MenuItem>
                       </AphSelect>
@@ -1569,3 +1569,5 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     </div>
   );
 };
+
+export default Appointments;
