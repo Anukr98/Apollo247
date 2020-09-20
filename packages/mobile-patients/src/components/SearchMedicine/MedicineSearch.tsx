@@ -1,6 +1,7 @@
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { MedicineSearchSuggestionItemProps } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/SearchMedicine/MedicineSearchEvents';
 import { MedSearchBar } from '@aph/mobile-patients/src/components/SearchMedicine/MedSearchBar';
 import { MedSearchSection } from '@aph/mobile-patients/src/components/SearchMedicine/MedSearchSection';
 import {
@@ -30,7 +31,8 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import _ from 'lodash';
+import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
@@ -68,18 +70,30 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
   useEffect(() => {
+    debounce.current(searchText);
+  }, [searchText]);
+
+  const onSearch = (searchText: string) => {
     if (searchText.length >= 3) {
-      // TODO:
-      // const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS] = {
-      //   keyword: searchText,
-      //   Source: 'Pharmacy Search',
-      // };
       fetchSearchSuggestions(searchText);
     } else {
       setSearchResults([]);
       setLoading(false);
     }
-  }, [searchText]);
+  };
+  const debounce = useRef(_.debounce(onSearch, 300));
+
+  const fireSearchEvent = (keyword: string, results: number) => {
+    MedicineSearchEvents.pharmacySearchResults({
+      Source: 'Pharmacy Search',
+      keyword: keyword,
+    });
+    MedicineSearchEvents.search({
+      Source: 'Pharmacy List',
+      keyword: keyword,
+      resultsdisplayed: results,
+    });
+  };
 
   const fetchSearchSuggestions = async (searchText: string) => {
     try {
@@ -87,6 +101,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       const {
         data: { products },
       } = await getMedicineSearchSuggestionsApi(searchText);
+      fireSearchEvent(searchText, products.length);
       setSearchResults(products || []);
       setLoading(false);
     } catch (error) {
@@ -111,16 +126,21 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     const onSearchSend = () => {
       navigation.navigate(AppRoutes.MedicineListing, { searchText: searchText });
     };
-    const isEnabled = false; // TODO: Fix errorMessage appearing while loading
     const errorMessage =
-      isEnabled && !isLoading && searchText.length >= 3 && searchResults.length === 0
+      !isLoading && searchText.length >= 3 && searchResults.length === 0
         ? `Hit enter to search for '${searchText}'`
         : undefined;
+    const onChangeText = (text: string) => {
+      if (text.length >= 3) {
+        setLoading(true);
+      } // this block is to fix no results errorMessage appearing while loading response
+      setSearchText(text);
+    };
 
     return (
       <MedSearchBar
         value={searchText}
-        onChangeText={setSearchText} // TODO: Implement Debounce
+        onChangeText={onChangeText}
         onFocus={() => setSearchFocused(true)}
         onBlur={() => setSearchFocused(false)}
         isFocused={isSearchFocused}
