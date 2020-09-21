@@ -415,7 +415,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         unit: 'km',
       },
     });
-  } else {
+  } 
     elasticSort.push({
       'doctorSlots.slots.slot': {
         order: 'asc',
@@ -434,7 +434,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         },
       },
     });
-  }
+  
 
   if (!process.env.ELASTIC_INDEX_DOCTORS) {
     throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
@@ -849,9 +849,8 @@ const getDoctorList: Resolver<
   if (!args.filterInput.searchText) {
     if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
       elasticSort.push(elasticDoctorDistanceSort(args.filterInput));
-    } else {
-      elasticSort.push(elasticDoctorAvailabilitySort());
-    }
+    } 
+    elasticSort.push(elasticDoctorAvailabilitySort());
     elasticSort.push(elasticDoctorDoctorTypeSort());
   }
 
