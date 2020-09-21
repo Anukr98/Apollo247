@@ -294,7 +294,10 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const physcalFee = doctorDetails && doctorDetails.physicalConsultationFees;
   const onlineFee = doctorDetails && doctorDetails.onlineConsultationFees;
   const doctorId = doctorDetails && doctorDetails.id;
+  const chatDays = doctorDetails && doctorDetails.chatDays;
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+
+  // console.log('doctor details...............', doctorDetails);
 
   const consultMode =
     doctorAvailableOnlineSlot.length > 0 && doctorAvailablePhysicalSlots.length > 0
@@ -469,7 +472,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span>
                   <img src={require('images/ic-followchat.svg')} alt="" />
                 </span>
-                <span>Follow Up via text - validity 7 days</span>
+                <span>Follow Up via text - validity {chatDays} days</span>
               </li>
             )}
           </ul>
