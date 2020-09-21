@@ -1,16 +1,8 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem, Popover, CircularProgress } from '@material-ui/core';
+import { Theme, MenuItem } from '@material-ui/core';
 import React from 'react';
 import { AphSelect, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
-
-import { useMutation, useQuery } from 'react-apollo-hooks';
-import { CANCEL_MEDICINE_ORDER, MEDICINE_ORDER_CANCEL_REASONS } from 'graphql/medicines';
-import { GetMedicineOrderCancelReasons } from 'graphql/types/GetMedicineOrderCancelReasons';
-import {
-  CancelMedicineOrderOMS,
-  CancelMedicineOrderOMSVariables,
-} from 'graphql/types/CancelMedicineOrderOMS';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -92,40 +84,23 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface CancelOrderProps {
-  // orderAutoId: number;
-  setIsCancelOrderDialogOpen: (isCancelOrderDialogOpen: boolean) => void;
-  setIsPopoverOpen: (isPopoverOpen: boolean) => void;
-  setCancelOrderReasonText?: (cancelOrderReason: string) => void;
+  setIsCancelConsultationDialogOpen: (isCancelConsultationDialogOpen: boolean) => void;
+  cancelAppointmentApi: () => void;
+  setCancelReasonText: (cancelReasonText: string) => void;
 }
 
 export const CancelConsult: React.FC<CancelOrderProps> = (props) => {
   const classes = useStyles({});
 
   const [selectedReasonCode, setSelectedReasonCode] = React.useState<string>('placeholder');
-  const [showLoader, setShowLoader] = React.useState<boolean>(false);
-  const [cancelOtherReasonText, setCancelOtherReasonText] = React.useState<string>('');
 
-  const cancelOrderMutation = useMutation<CancelMedicineOrderOMS, CancelMedicineOrderOMSVariables>(
-    CANCEL_MEDICINE_ORDER
-  );
-  const { data: cancelOrderReasons, loading, error } = useQuery<GetMedicineOrderCancelReasons>(
-    MEDICINE_ORDER_CANCEL_REASONS
-  );
-
-  if (loading)
-    return (
-      <div className={classes.circlularProgress}>
-        <CircularProgress size={20} color="secondary" />
-      </div>
-    );
-
-  if (error) return <div className={classes.circlularProgress}>No data is available</div>;
-
-  const cancelReasonList = cancelOrderReasons.getMedicineOrderCancelReasons.cancellationReasons.filter(
-    (reasonDetails) => {
-      return reasonDetails.isUserReason;
-    }
-  );
+  const cancelReasonList = [
+    'Doctor did not join the consult',
+    'Booked with wrong user details',
+    'Doctor denied your prefarable mode of consult',
+    'Audio Video Issues',
+    'Others (Please specify)',
+  ];
 
   return (
     <div className={classes.shadowHide}>
@@ -140,11 +115,8 @@ export const CancelConsult: React.FC<CancelOrderProps> = (props) => {
                     value={selectedReasonCode}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const reasonCode = e.target.value as string;
-                      const reasonCodeDetails = cancelReasonList.find(
-                        (reasonDetails) => reasonDetails.reasonCode === reasonCode
-                      );
                       setSelectedReasonCode(reasonCode);
-                      props.setCancelOrderReasonText(reasonCodeDetails.displayMessage);
+                      props.setCancelReasonText(reasonCode);
                     }}
                     MenuProps={{
                       classes: { paper: classes.menuPopover },
@@ -165,20 +137,23 @@ export const CancelConsult: React.FC<CancelOrderProps> = (props) => {
                     >
                       Select reason for cancelling
                     </MenuItem>
-                    {cancelReasonList.map((reasonDetails) => (
+                    {cancelReasonList.map((reason) => (
                       <MenuItem
-                        value={reasonDetails.reasonCode}
+                        value={reason}
                         classes={{ selected: classes.menuSelected }}
-                        key={reasonDetails.reasonCode}
+                        key={reason}
                       >
-                        {reasonDetails.description}
+                        {reason}
                       </MenuItem>
                     ))}
                   </AphSelect>
                 </div>
                 <div className={classes.formGroup}>
                   <label>Add Comments (Optional)</label>
-                  <AphTextField placeholder="Enter your comments here…" />
+                  <AphTextField
+                    onChange={(e) => props.setCancelReasonText(e.target.value)}
+                    placeholder="Enter your comments here…"
+                  />
                 </div>
               </div>
             </div>
@@ -187,45 +162,19 @@ export const CancelConsult: React.FC<CancelOrderProps> = (props) => {
       </div>
       <div className={classes.dialogActions}>
         <AphButton
-          disabled={
-            selectedReasonCode.length === 0 ||
-            (selectedReasonCode === 'R000188' && cancelOtherReasonText.trim().length === 0) ||
-            selectedReasonCode === 'placeholder' ||
-            showLoader
+          disabled={selectedReasonCode.length === 0 || selectedReasonCode === 'placeholder'}
+          className={
+            selectedReasonCode.length === 0 || selectedReasonCode === 'placeholder'
+              ? classes.buttonDisable
+              : ''
           }
-          className={selectedReasonCode.length === 0 ? classes.buttonDisable : ''}
           onClick={() => {
-            setShowLoader(true);
-            cancelOrderMutation({
-              variables: {
-                medicineOrderCancelOMSInput: {
-                  // orderNo: props.orderAutoId,
-                  cancelReasonCode: selectedReasonCode,
-                  cancelReasonText: cancelOtherReasonText,
-                },
-              },
-            })
-              .then((response) => {
-                if (
-                  response &&
-                  response.data &&
-                  response.data.cancelMedicineOrderOMS &&
-                  response.data.cancelMedicineOrderOMS.orderStatus
-                ) {
-                  setShowLoader(false);
-                  const cancellationResponse = response.data.cancelMedicineOrderOMS.orderStatus;
-                  if (cancellationResponse === 'CANCEL_REQUEST') {
-                    props.setIsCancelOrderDialogOpen(false);
-                    setShowLoader(false);
-                    props.setIsPopoverOpen(true);
-                  }
-                }
-              })
-              .catch((e) => console.log(e));
+            props.cancelAppointmentApi();
+            props.setIsCancelConsultationDialogOpen(false);
           }}
           color="primary"
         >
-          {showLoader ? <CircularProgress size={20} color="secondary" /> : 'Submit Request'}
+          {'Submit Request'}
         </AphButton>
       </div>
     </div>

@@ -422,8 +422,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const [isCancelConsultationDialogOpen, setIsCancelConsultationDialogOpen] = useState<boolean>(
     false
   );
-  const [isCancelOrderDialogOpen, setIsCancelOrderDialogOpen] = useState<boolean>(false);
-  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [cancelReasontext, setCancelReasonText] = useState<string>('');
+
   const {
     doctorDetails,
     setRescheduleCount,
@@ -537,7 +537,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         variables: {
           cancelAppointmentInput: {
             appointmentId: appointmentId,
-            cancelReason: '',
+            cancelReason: cancelReasontext,
             cancelledBy: REQUEST_ROLES.PATIENT,
             cancelledById: patientId,
           },
@@ -823,14 +823,13 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           />
           <AphDialogTitle>Cancel Consultation</AphDialogTitle>
           <CancelConsult
-            setIsCancelOrderDialogOpen={(isDialogOpened: boolean) =>
-              setIsCancelOrderDialogOpen(isDialogOpened)
+            setIsCancelConsultationDialogOpen={(isCancelConsultationDialogOpen: boolean) =>
+              setIsCancelConsultationDialogOpen(isCancelConsultationDialogOpen)
             }
-            // orderAutoId={props.orderAutoId}
-            setIsPopoverOpen={(isPopoverOpened: boolean) => setIsPopoverOpen(isPopoverOpened)}
-            setCancelOrderReasonText={(reasonText: string) => {
-              // setCancelOrderReasonText(reasonText);
-            }}
+            cancelAppointmentApi={cancelAppointmentApi}
+            setCancelReasonText={(cancelReasontext: string) =>
+              setCancelReasonText(cancelReasontext)
+            }
           />
         </AphDialog>
       </div>
