@@ -22,6 +22,8 @@ import { PatientDeviceTokenRepository } from 'profiles-service/repositories/pati
 import { DEVICE_TYPE } from 'profiles-service/entities';
 import path from 'path';
 import fs from 'fs';
+import { CALL_STATUS } from 'consults-service/resolvers/ChatRoomLiveStatus';
+import { getCache, setCache } from 'consults-service/database/connectRedis';
 
 export const doctorCallNotificationTypeDefs = gql`
   type AppointmentCallDetails {
@@ -130,6 +132,15 @@ const endCallNotification: Resolver<
       throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {});
     }
     doctorName = doctor.displayName;
+  }
+
+  const REDIS_NUMBEROFPARTICIPANTS_KEY_PREFIX = `numberOfParticipants:key:`;
+  const redisKey = `${REDIS_NUMBEROFPARTICIPANTS_KEY_PREFIX}${callDetails.appointment.id}`;
+  const keyAppointment = await getCache(redisKey);
+  if (keyAppointment && typeof keyAppointment == 'string') {
+    const key_appointment = JSON.parse(keyAppointment);
+    key_appointment['CALL_STATUS'] = CALL_STATUS.COMPLETED;
+    await setCache(redisKey, JSON.stringify(key_appointment), ApiConstants.CACHE_EXPIRATION_14400);
   }
 
   args.patientId = args.patientId || callDetails.appointment.patientId;
@@ -259,6 +270,16 @@ const sendCallNotification: Resolver<
       args.patientId,
     );
   }
+
+  const REDIS_NUMBEROFPARTICIPANTS_KEY_PREFIX = `numberOfParticipants:key:`;
+  const redisKey = `${REDIS_NUMBEROFPARTICIPANTS_KEY_PREFIX}${args.appointmentId}`;
+  const keyAppointment = await getCache(redisKey);
+  if (keyAppointment && typeof keyAppointment == 'string') {
+    const key_appointment = JSON.parse(keyAppointment);
+    key_appointment['CALL_STATUS'] = CALL_STATUS.IN_PROGRESS;
+    await setCache(redisKey, JSON.stringify(key_appointment), ApiConstants.CACHE_EXPIRATION_14400);
+  }
+
   return { status: true, callDetails: appointmentCallDetails };
 };
 

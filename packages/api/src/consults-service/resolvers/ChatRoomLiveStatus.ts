@@ -15,6 +15,11 @@ export const liveStatusTypeDefs = gql`
         LEAVING
         ENTERING
     }
+    enum CALL_STATUS {
+        NOT_STARTED
+        IN_PROGRESS
+        COMPLETED
+    }
     type setAndGetNumberOfParticipantsInput {
         appointmentId: String,
         userType: USER_TYPE,
@@ -26,6 +31,7 @@ export const liveStatusTypeDefs = gql`
         DOCTOR: [setAndGetNumberOfParticipantsInput],
         PATIENT: [setAndGetNumberOfParticipantsInput],
         NUMBER_OF_PARTIPANTS: Int
+        CALL_STATUS: CALL_STATUS
     }
     extend type Query {
         setAndGetNumberOfParticipants(
@@ -33,7 +39,8 @@ export const liveStatusTypeDefs = gql`
             userType: USER_TYPE,
             sourceType: BOOKINGSOURCE,
             deviceType: DEVICETYPE,
-            userStatus: USER_STATUS)
+            userStatus: USER_STATUS,
+            callStatus: CALL_STATUS)
         : setAndGetNumberOfParticipantsResult,
     }
 `;
@@ -48,18 +55,26 @@ enum USER_STATUS {
     ENTERING = 'ENTERING',
 }
 
+export enum CALL_STATUS {
+    NOT_STARTED = 'NOT_STARTED',
+    IN_PROGRESS = 'IN_PROGRESS',
+    COMPLETED = 'COMPLETED',
+}
+
 type setAndGetNumberOfParticipantsInput = {
     appointmentId: string,
     userType: USER_TYPE,
     sourceType: BOOKINGSOURCE,
     deviceType: DEVICETYPE,
-    userStatus: USER_STATUS
+    userStatus: USER_STATUS,
+    callStatus: CALL_STATUS
 }
 
 type setAndGetNumberOfParticipantsResult = {
     [USER_TYPE.DOCTOR]: any[],
     [USER_TYPE.PATIENT]: any[],
     ['NUMBER_OF_PARTIPANTS']: number
+    ['CALL_STATUS']: CALL_STATUS
 }
 
 const REDIS_NUMBEROFPARTICIPANTS_KEY_PREFIX = `numberOfParticipants:key:`;
@@ -89,11 +104,17 @@ const setAndGetNumberOfParticipants: Resolver<
                 key_appointment[args.userType].push(args);
             }
         }
+
+        if (args.callStatus) {
+            key_appointment['CALL_STATUS'] = args.callStatus;
+        }
+
         await setCache(redisKey, JSON.stringify(key_appointment), ApiConstants.CACHE_EXPIRATION_14400);
     } else {
         key_appointment = {
             [USER_TYPE.PATIENT]: [],
             [USER_TYPE.DOCTOR]: [],
+            ['CALL_STATUS']: 'NOT_STARTED'
         }
         if (args.userStatus === USER_STATUS.ENTERING) {
             key_appointment[args.userType].push(args);
