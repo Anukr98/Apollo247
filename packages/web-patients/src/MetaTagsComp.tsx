@@ -17,6 +17,7 @@ export const MetaTagsComp: React.FC<MetaTagProps> = (props) => {
       <title>{title}</title>
       <meta name="description" content={description} />
       {keywords && <meta name="keywords" content={keywords} />}
+      {robotsMeta && <meta name="robots" content={robotsMeta} />}
       <link rel="canonical" href={canonicalLink} />
       {deepLink && <link rel="alternate" href={`android-app://com.apollopatient/${deepLink}`} />}
       {src && <script src={src} type="text/javascript" />}

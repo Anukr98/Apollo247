@@ -8,7 +8,6 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { BottomLinks } from 'components/BottomLinks';
 import { Header } from 'components/Header';
 import { ManageProfile } from 'components/ManageProfile';
-import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
 import { MedicineInformation } from 'components/Medicine/MedicineInformation';
@@ -16,11 +15,16 @@ import { MedicinesCartContext, useShoppingCart } from 'components/MedicinesCartP
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
-import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { getPackOfMedicine, stripHtml, deepLinkUtil } from 'helpers/commonHelpers';
+import { getPackOfMedicine, deepLinkUtil } from 'helpers/commonHelpers';
 import { useCurrentPatient } from 'hooks/authHooks';
 import { useParams } from 'hooks/routerHooks';
+import stripHtml from 'string-strip-html';
+import {
+  uploadPrescriptionTracking,
+  pharmacyPdpOverviewTracking,
+  pharmacyProductViewTracking,
+} from 'webEngageTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
 import React, { useEffect } from 'react';
@@ -28,15 +32,12 @@ import Scrollbars from 'react-custom-scrollbars';
 import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import { SchemaMarkup } from 'SchemaMarkup';
-import {
-  pharmacyPdpOverviewTracking,
-  pharmacyProductViewTracking,
-  uploadPrescriptionTracking,
-} from 'webEngageTracking';
+
 import { gtmTracking } from '../../gtmTracking';
 import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
-import { getAppStoreLink } from 'helpers/dateHelpers';
+import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
+import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -908,7 +909,7 @@ const MedicineDetails: React.FC = (props) => {
         if (v.Caption === 'USES') {
           modifiedData.forEach((x) => {
             if (x.key === 'Overview') {
-              x.value = x.value.concat(stripHtml(v.CaptionDesc));
+              x.value = x.value.concat(stripHtml(v.CaptionDesc).result);
             }
           });
         } else if (v.Caption === 'SIDE EFFECTS') {
@@ -931,9 +932,9 @@ const MedicineDetails: React.FC = (props) => {
           modifiedData.forEach((x) => {
             if (x.key === 'Usage') {
               if (v.Caption === 'HOW TO USE') {
-                x.value = `${stripHtml(v.CaptionDesc)}${x.value}`;
+                x.value = `${stripHtml(v.CaptionDesc).result}${x.value}`;
               } else {
-                x.value = `${x.value}${stripHtml(v.CaptionDesc)} `;
+                x.value = `${x.value}${stripHtml(v.CaptionDesc).result} `;
               }
             }
           });
@@ -980,7 +981,7 @@ const MedicineDetails: React.FC = (props) => {
         } else if (v.Caption === 'STORAGE') {
           modifiedData.forEach((x) => {
             if (x.key === 'Storage') {
-              x.value = x.value.concat(stripHtml(v.CaptionDesc));
+              x.value = x.value.concat(stripHtml(v.CaptionDesc).result);
             }
           });
         }
