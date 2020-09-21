@@ -40,6 +40,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { Route } from 'react-router-dom';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
+import { isAlternateVersion } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -748,9 +749,11 @@ const MedicineLanding: React.FC = (props: any) => {
                     <div className={classes.preServiceType}>
                       <div className={classes.prescriptionGroup}>
                         <div>
-                          <h3 className={classes.groupTitle}>
-                            Now place your order via prescription
-                          </h3>
+                          {!isAlternateVersion() && (
+                            <h3 className={classes.groupTitle}>
+                              Now place your order via prescription
+                            </h3>
+                          )}
                           <AphButton
                             onClick={() => handleUploadPrescription()}
                             title={'Upload Prescription'}

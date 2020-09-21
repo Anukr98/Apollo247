@@ -487,7 +487,18 @@ const HEALTH_RECORDS_NO_DATA_FOUND =
 const HEALTH_RECORDS_NOTE =
   'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
 
+const isAlternateVersion = () => {
+  // the below lines are written to init app in another mode variant=2 -> marketing requirements
+  const urlString = window.location.href;
+  const url = new URL(urlString);
+  const alternateVariant = url.searchParams.get('variant');
+  if (alternateVariant && alternateVariant === '2') {
+    return true;
+  }
+  return false;
+};
 export {
+  isAlternateVersion,
   HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,
   getCouponByUserMobileNumber,
