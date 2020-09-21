@@ -400,20 +400,6 @@
       "Benefits and offers available through the program may change or be withdrawn without prior intimation. Apollo 24/7 will not be responsible for any liability arising from such situations or use of such offers.",
       "Any disputes arising out of the offer shall be subject to arbitration by a sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the arbitration shall be conducted as per the provisions of Arbitration and Conciliation Act, 1996. The place of  arbitration  shall  be  at  Chennai  and  language  of  arbitration  shall  be  English.  The existence of a dispute, if at all, shall not constitute a claim against Apollo 24/7.",
     ],
-    "Coupons": [
-      {
-        "couponName": "HDFCGold1",
-        "couponDescription": "Discount of Rs 249 on Virtual Consultations for HDFC customers"
-      },
-      {
-        "couponName": "HDFCGold1",
-        "couponDescription": "Discount of Rs 249 on Virtual Consultations for HDFC customers"
-      },
-      {
-        "couponName": "HDFCGold1",
-        "couponDescription": "Discount of Rs 249 on Virtual Consultations for HDFC customers"
-      }
-    ],
     "WhatWillYouGetPoints": [
       "One Apollo Membership",
       "Preferential access to COVID-19 home testing",
@@ -426,10 +412,7 @@
       "Health assesment consultation by apollo Doctor",
       "Base Diabetes management program"
     ],
-    "GoldPoints": [
-      "24*7 Doctor on Call",
-      "Seamless Medicine Delivery",
-      "Patients Health Record",
-    ]
+    "Referral_Code": "hdfc",
+    "Otp_Generated_Status": "OTP_GENERATED"
   }
 }

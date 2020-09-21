@@ -33,6 +33,7 @@ export interface SubscriptionData {
   canUpgradeTo?: SubscriptionData | {};
   group: GroupPlan;
   benefits: PlanBenefits[];
+  coupons: PlanCoupons[];
   isActive: boolean; 
 }
 
@@ -52,6 +53,12 @@ export interface PlanBenefits {
   attributeType: string;
   availableCount: number;
   refreshFrequency: number;
+}
+
+export interface PlanCoupons {
+  coupon: string;
+  message: string;
+  applicable: string;
 }
 
 export interface AppCommonDataContextProps {

@@ -1101,6 +1101,10 @@ export const HdfcSilverMedal: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/medal_silver.png')} />
 );
 
+export const HdfcCongratulations: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/hdfc_congratulations.png')} />
+);
+
 export const LockIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/lock.png')} />
 );

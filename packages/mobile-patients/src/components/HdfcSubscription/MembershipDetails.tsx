@@ -127,14 +127,12 @@ export interface MembershipDetailsProps extends NavigationScreenProps {
 
 export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const membershipType = props.navigation.getParam('membershipType');
-  console.log(membershipType);
 
   const { hdfcUserSubscriptions } = useAppCommonData();
   const membershipDetails = membershipType === g(hdfcUserSubscriptions, 'name') ? hdfcUserSubscriptions : g(hdfcUserSubscriptions, 'canUpgradeTo');
   const isActivePlan = !!membershipDetails!.isActive;
   const benefits = membershipDetails!.benefits;
-  console.log(benefits);
-  console.log('membershipDetailsmembershipDetails: ', isActivePlan);
+  const coupons = membershipDetails!.coupons;
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [selectedTab, setSelectedTab] = useState<string>('Benefits Available');
   const [isActiveCouponVisible, setIsActiveCouponVisible] = useState<boolean>(true);
@@ -142,60 +140,43 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [isHowToAvailVisible, setIsHowToAvailVisible] = useState<boolean>(true);
   const [isTnCVisible, setIsTnCVisible] = useState<boolean>(false);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
-  const { TnC, Coupons, WhatWillYouGetPoints } = Hdfc_values;
+  const { TnC, WhatWillYouGetPoints } = Hdfc_values;
 
-  const redeemCardsContent = [
+  const benefitsActionsMapping = [
     {
-      title: 'Access to Apollo doctors through 24|7 App',
-      description: ['Choose a Doctor and Book an Online Consultation instantly on our App'],
-      redeemCall: () => {
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-      }
-    },
-    {
-      title: '24/7 Access to a General Physician on Call',
-      description: ['Round-the-clock doctor availability at a click of a button'],
-      redeemCall: () => {
+      attribute: 'Call Exotel API',
+      action: () => {
         setShowHdfcConnectPopup(true);
       }
     },
     {
-      title: 'Access to Diagnostic Services',
-      description: ['Access to Diagnostic Services'],
-      redeemCall: () => {
-        props.navigation.navigate('TESTS');
+      attribute: 'Redirect to Specialty Listing',
+      action: () => {
+        props.navigation.navigate(AppRoutes.DoctorSearch);
       }
     },
     {
-      title: 'Digital Vault for health records',
-      description: ['Store all your medical documents in your personal digital vault'],
-      redeemCall: () => {
+      attribute: 'Redirect to Pharmacy Landing',
+      action: () => {
+        props.navigation.navigate('MEDICINES');
+      }
+    },
+    {
+      attribute: 'Redirect to PHR',
+      action: () => {
         props.navigation.navigate('APPOINTMENTS');
       }
     },
     {
-      title: 'Covid-19 Care',
-      description: [
-        'Preferential Access to Pre & Post COVID Assessments',
-        'Preferential Access to COVID Home Testing',
-        'Preferential Access to Home & Hotel Care',
-      ],
-      redeemCall: () => {
+      attribute: 'Redirect to doc listing with payroll docs selected',
+      action: () => {
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+      }
+    },
+    {
+      attribute: 'Call Whatsapp API & open chat with ****',
+      action: () => {
         Linking.openURL(`whatsapp://send?text=&phone=+914048218743`);
-      }
-    },
-    {
-      title: 'OneApollo Membership Benefits',
-      description: ['OneApollo Membership Benefits'],
-      redeemCall: () => {
-        console.log('OneApollo Membership Benefits');
-      }
-    },
-    {
-      title: 'Free Medicine Delivery',
-      description: ['No delivery charges for orders greater than Rs 300'],
-      redeemCall: () => {
-        props.navigation.navigate('MEDICINES');
       }
     },
   ];
@@ -250,9 +231,10 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
                 You are eligible for the following coupons on Apollo 24|7
               </Text>
               {
-                Coupons.map(value => {
+                coupons &&
+                coupons.map(value => {
                   return (
-                    renderCouponInfo(value.couponName, value.couponDescription)
+                    renderCouponInfo(value.coupon, value.message)
                   );
                 })
               }
@@ -261,10 +243,10 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         </View>
         {
           benefits.map(value => {
-            const {headerContent, description, ctaLabel} = value;
+            const {headerContent, description, ctaLabel, ctaAction} = value;
             const ctaLabelName = ctaLabel.toUpperCase();
             return (
-              ctaLabelName !== 'NULL' && renderRedeemableCards(headerContent, description, ctaLabelName)
+              ctaLabelName !== 'NULL' && renderRedeemableCards(headerContent, description, ctaLabel, ctaAction)
             )
           })
         }
@@ -276,13 +258,13 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return (
       <View style={styles.cardStyle}>
         {
-          redeemCardsContent.map((value, index) => {
-            const {title, description} = value;
+          benefits.map((value, index) => {
+            const {headerContent, description} = value;
             return (
               <>
-                {renderRedeemableCardsContent(title, description)}
+                {renderRedeemableCardsContent(headerContent, description)}
                 {
-                  (index + 1 !== redeemCardsContent.length) &&
+                  (index + 1 !== benefits.length) &&
                   <View style={styles.horizontalLine} />
                 }
               </>
@@ -343,11 +325,15 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
   };
 
-  const renderRedeemableCards = (heading: string, bodyText: string, ctaLabel: string) => {
+  const renderRedeemableCards = (heading: string, bodyText: string, ctaLabel: string, ctaAction: string) => {
+    const action = benefitsActionsMapping.filter((value) => {
+      return value.attribute === ctaAction
+    });
+    const onCtaClick = action[0].action;
     return (
       <View style={[styles.cardStyle, { marginVertical: 10 }]}>
         {renderRedeemableCardsContent(heading, bodyText)}
-        <TouchableOpacity onPress={() => {console.log('redeem!!')}}>
+        <TouchableOpacity onPress={() => {onCtaClick()}}>
           <Text style={styles.redeemButtonText}>
             {ctaLabel}
           </Text>
@@ -474,20 +460,12 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
                     </View>
                     <View style={benefitStyle.halfWidth}>
                       <Text style={benefitStyle.benefitHeading}>
-                        REDEEMED
+                        STATUS
                       </Text>
                       <Text style={benefitStyle.benefitDescription}>
-                        {value.attributeType!.used}
+                      {`${value.attributeType!.remaining} REMAINING`}
                       </Text>
                     </View>
-                  </View>
-                  <View style={[benefitStyle.halfWidth, {marginTop: 30}]}>
-                    <Text style={benefitStyle.benefitHeading}>
-                      STATUS
-                    </Text>
-                    <Text style={benefitStyle.benefitDescription}>
-                      {`${value.attributeType!.remaining} REMAINING`}
-                    </Text>
                   </View>
                 </View>
               )
@@ -645,7 +623,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return (
       <ScrollView bounces={false}>
         <Text style={styles.inactivePlanText}>
-          Your Plan is Currently INACTIVE. To activate your plan, make a transaction greater than Rs 499 on Apollo 24/7
+          {`Your Plan is Currently INACTIVE. To activate your plan, make a transaction greater than Rs ${membershipDetails!.minTransactionValue} on Apollo 24/7`}
         </Text>
         <Text style={styles.benefitsAvailableHeading}>Benefits Available</Text>
         {renderBenefitsAvailable()}
