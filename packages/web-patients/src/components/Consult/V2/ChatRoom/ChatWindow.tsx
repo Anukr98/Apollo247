@@ -56,18 +56,14 @@ import { BookAppointmentCard } from 'components/Consult/V2/ChatRoom/BookAppointm
 import { isPastAppointment, consultWebengageEventsInfo } from 'helpers/commonHelpers';
 import { useParams } from 'hooks/routerHooks';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
-<<<<<<< HEAD
 import {
   medicalDetailsFillTracking,
   callReceiveClickTracking,
   messageSentPostConsultTracking,
 } from 'webEngageTracking';
 import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
-import { DoctorJoinedMessageCard } from '../ChatRoom/DoctorJoinedMessageCard';
-=======
 import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
 import { DoctorType } from 'graphql/types/globalTypes';
->>>>>>> c2b19c1d327da6b2af3233bd319ee5e4c5a4cc13
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

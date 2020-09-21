@@ -937,45 +937,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           <img src={require('images/ic_arrow_right_white.svg')} alt="" />
                         </AphButton> */}
                           {(appointmentDetails.status === STATUS.COMPLETED ||
-<<<<<<< HEAD
-                            props.pastOrCurrent === 'past') &&
-                            appointmentDetails.isFollowUp === 'false' && (
-                              <div className={classes.bookFollowup}>
-                                <Route
-                                  render={({ history }) => (
-                                    <h3
-                                      style={{ cursor: 'pointer' }}
-                                      onClick={() => {
-                                        if (props.pastOrCurrent === 'past') {
-                                          history.push(
-                                            clientRoutes.chatRoom(appointmentId, doctorId)
-                                          );
-                                        } else {
-                                          callSlotScreen(appointmentDetails);
-                                        }
-                                      }}
-                                    >
-                                      {props.pastOrCurrent !== 'past'
-                                        ? 'BOOK FOLLOW UP'
-                                        : 'VIEW CHAT'}
-                                    </h3>
-                                  )}
-                                />
-                                {props.pastOrCurrent !== 'past' &&
-                                  appointmentDetails &&
-                                  appointmentDetails.doctorInfo &&
-                                  appointmentDetails.doctorInfo.displayName && (
-                                    <h6>
-                                      With{' '}
-                                      {appointmentDetails.doctorInfo.salutation
-                                        ? `${appointmentDetails.doctorInfo.salutation}.`
-                                        : ''}{' '}
-                                      {appointmentDetails.doctorInfo.displayName}
-                                    </h6>
-                                  )}
-                              </div>
-                            )}
-=======
                             props.pastOrCurrent === 'past') && (
                             <div className={classes.bookFollowup}>
                               <Route
@@ -987,16 +948,31 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                         history.push(
                                           clientRoutes.chatRoom(appointmentId, doctorId)
                                         );
+                                      } else {
+                                        callSlotScreen(appointmentDetails);
                                       }
                                     }}
                                   >
-                                    {props.pastOrCurrent !== 'past' ? '' : 'VIEW CHAT'}
+                                    {props.pastOrCurrent !== 'past'
+                                      ? 'BOOK FOLLOW UP'
+                                      : 'VIEW CHAT'}
                                   </h3>
                                 )}
                               />
+                              {props.pastOrCurrent !== 'past' &&
+                                appointmentDetails &&
+                                appointmentDetails.doctorInfo &&
+                                appointmentDetails.doctorInfo.displayName && (
+                                  <h6>
+                                    With{' '}
+                                    {appointmentDetails.doctorInfo.salutation
+                                      ? `${appointmentDetails.doctorInfo.salutation}.`
+                                      : ''}{' '}
+                                    {appointmentDetails.doctorInfo.displayName}
+                                  </h6>
+                                )}
                             </div>
                           )}
->>>>>>> c2b19c1d327da6b2af3233bd319ee5e4c5a4cc13
                           <Route
                             render={({ history }) => (
                               <div
@@ -1053,11 +1029,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                 <h3>
                                   {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
                                     ? props.pastOrCurrent === 'past'
-<<<<<<< HEAD
                                       ? 'BOOK FOLLOW UP'
-=======
-                                      ? ''
->>>>>>> c2b19c1d327da6b2af3233bd319ee5e4c5a4cc13
                                       : showAppointmentAction(
                                           appointmentState,
                                           status,
@@ -1068,23 +1040,16 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                               </div>
                             )}
                           />
-<<<<<<< HEAD
                           {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE &&
                             props.pastOrCurrent !== 'past' &&
                             appointmentDetails.appointmentState !==
                               APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
-                              <h6>{getConsultationUpdateText(appointmentDetails)}</h6>
-=======
-                          {appointmentDetails.appointmentState !==
-                            APPOINTMENT_STATE.AWAITING_RESCHEDULE &&
-                            props.pastOrCurrent !== 'past' && (
                               <h6>
                                 {getConsultationUpdateText(
                                   appointmentDetails,
                                   Number(followUpInDays)
                                 )}
                               </h6>
->>>>>>> c2b19c1d327da6b2af3233bd319ee5e4c5a4cc13
                             )}
                         </div>
                       </div>

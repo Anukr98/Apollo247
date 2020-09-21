@@ -28,12 +28,9 @@ import { useApolloClient } from 'react-apollo-hooks';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { useParams } from 'hooks/routerHooks';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
-<<<<<<< HEAD
 import { cancellationPatientTracking } from 'webEngageTracking';
 import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
-=======
 import { DoctorType } from 'graphql/types/globalTypes';
->>>>>>> c2b19c1d327da6b2af3233bd319ee5e4c5a4cc13
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -488,15 +485,12 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       onlineConsultationFees,
       physicalConsultationFees,
       doctorHospital,
-<<<<<<< HEAD
       mobileNumber,
+      chatDays,
     } = doctorDetails && doctorDetails.getDoctorDetailsById;
 
     const { mobileNumber: secretaryNumber, name: secretaryName } = (secretaryData &&
       secretaryData.getSecretaryDetailsByDoctorId) || { mobileNumber: '', name: '' };
-=======
-      chatDays,
-    } = doctorDetails && doctorDetails.getDoctorDetailsById;
 
     const caseSheets =
       appointmentDetails && appointmentDetails.caseSheet ? appointmentDetails.caseSheet : [];
@@ -514,7 +508,6 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       srdCaseSheet && srdCaseSheet.followUpAfterInDays ? srdCaseSheet.followUpAfterInDays : 7;
 
     // console.log(chatDays, '---------------------------', appointmentDetails);
->>>>>>> c2b19c1d327da6b2af3233bd319ee5e4c5a4cc13
 
     const shouldRefreshComponent = (differenceInMinutes: number) => {
       const id = setInterval(() => {
