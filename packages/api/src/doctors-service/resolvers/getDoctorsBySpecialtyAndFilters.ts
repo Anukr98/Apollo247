@@ -72,10 +72,16 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
 
   type DoctorListResult {
     doctors: [Object]
+    specialties: [Specialty]
     apolloDoctorCount: Int
     partnerDoctorCount: Int
   }
 
+  type Specialty  {
+    id: String
+    name: String
+    specialtydisplayName: String
+  }
   type DoctorSlotAvailability {
     doctorId: String
     onlineSlot: String
@@ -120,6 +126,11 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   }
 `;
 
+type Specialty = {
+  id: string;
+  name: string;
+  specialtydisplayName: string;
+};
 
 type DefaultfilterType = {
   name: string;
@@ -160,6 +171,7 @@ type FilterDoctorsResult = {
 
 type DoctorsListResult = {
   doctors: Doctor[];
+  specialties: Specialty[];
   apolloDoctorCount: number;
   partnerDoctorCount: number;
 };
@@ -757,6 +769,7 @@ const getDoctorList: Resolver<
   searchLogger(`API_CALL___START`);
 
   const doctors = [];
+  const specialties:Specialty[] = [];
   const elasticMatch = [];
   const elasticSort = [];
 
@@ -862,6 +875,8 @@ const getDoctorList: Resolver<
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
     const doctorObj: any = {};
+    const specialtyObj: any = {};
+    let fee:number = doctor.onlineConsultationFees;
     doctorObj['id'] = doctor.doctorId;
     doctorObj['displayName'] = doctor.displayName;
     doctorObj['specialtydisplayName'] = doctor.specialty.userFriendlyNomenclature;
@@ -869,10 +884,6 @@ const getDoctorList: Resolver<
     doctorObj['photoUrl'] = doctor.photoUrl;
     doctorObj['thumbnailUrl'] = doctor.thumbnailUrl;
     doctorObj['qualification'] = doctor.qualification;
-    doctorObj['fee'] =
-      doctor.onlineConsultationFees > doctor.physicalConsultationFees
-        ? doctor.physicalConsultationFees
-        : doctor.onlineConsultationFees;
     doctorObj['doctorType'] = doctor.doctorType;
     doctorObj['doctorfacility'] = doctor.facility[0].name + ' ' + doctor.facility[0].city;
     doctorObj['specialistSingularTerm'] = doctor.specialty.specialistSingularTerm;
@@ -880,6 +891,10 @@ const getDoctorList: Resolver<
     doctorObj['consultMode'] = [];
     doctorObj['slot'] = null;
     doctorObj['earliestSlotInMinutes'] = null;
+
+    specialtyObj['id'] = doctor.specialty.specialtyId;
+    specialtyObj['name'] = doctor.specialty.name;
+    specialtyObj['specialtydisplayName'] = doctor.specialty.userFriendlyNomenclature;
 
     for (const consultHour of doctor.consultHours) {
       if (!doctorObj['consultMode'].includes(consultHour.consultMode)) {
@@ -890,9 +905,28 @@ const getDoctorList: Resolver<
       doctorObj['consultMode'] = ['BOTH'];
     }
     doctorObj['consultMode'] = doctorObj['consultMode'].toString();
-    for(const slot of doc.inner_hits['doctorSlots.slots'].hits.hits){
+    if (doctorObj['consultMode'] === 'BOTH') {
+      fee =
+        doctor.onlineConsultationFees > doctor.physicalConsultationFees
+          ? doctor.physicalConsultationFees
+          : doctor.onlineConsultationFees;
+    } else if (doctorObj['consultMode'] === 'PHYSICAL') {
+      fee = doctor.physicalConsultationFees;
+    }
+    doctorObj['fee'] = fee;
+    for (const slot of doc.inner_hits['doctorSlots.slots'].hits.hits) {
       doctorObj['slot'] = slot._source.slot;
-      doctorObj['earliestSlotInMinutes'] = differenceInMinutes(new Date(slot._source.slot), callStartTime);;
+      doctorObj['earliestSlotInMinutes'] = differenceInMinutes(
+        new Date(slot._source.slot),
+        callStartTime
+      );
+    }
+
+    if (
+      specialties.findIndex((specialty) => specialty.id == specialtyObj['id']) == -1 &&
+      args.filterInput.searchText
+    ) {
+      specialties.push(specialtyObj);
     }
     doctors.push(doctorObj);
   }
@@ -900,6 +934,7 @@ const getDoctorList: Resolver<
   searchLogger(`API_CALL___END`);
   return {
     doctors: doctors,
+    specialties: specialties,
     apolloDoctorCount,
     partnerDoctorCount,
   };
