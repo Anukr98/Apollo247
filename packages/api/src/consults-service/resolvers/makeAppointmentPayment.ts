@@ -216,7 +216,7 @@ const makeAppointmentPayment: Resolver<
     const patient = patientsDb.getCustomRepository(PatientRepository);
     const patientDetails = await patient.getPatientDetails(processingAppointment.patientId);
     if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-    await transactionSuccessTrigger({
+    transactionSuccessTrigger({
       amount: `${paymentInput.amountPaid}`,
       transactionType: TransactionType.CONSULT,
       transactionDate: paymentInput.paymentDateTime || new Date(),

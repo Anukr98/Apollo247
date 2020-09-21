@@ -138,7 +138,7 @@ const saveDiagnosticOrderPayment: Resolver<
 
   //call far-eye api's if payment is success
   if (diagnosticPaymentInput.paymentStatus == 'success') {
-    await transactionSuccessTrigger({
+    transactionSuccessTrigger({
       amount: diagnosticPaymentInput.amountPaid,
       transactionType: TransactionType.DIAGNOSTICS,
       transactionDate: diagnosticPaymentInput.paymentDateTime,

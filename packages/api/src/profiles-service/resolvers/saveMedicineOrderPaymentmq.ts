@@ -287,7 +287,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
     };
 
     if (currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS) {
-      await transactionSuccessTrigger({
+      transactionSuccessTrigger({
         amount: `${medicinePaymentMqInput.amountPaid}`,
         transactionType: TransactionType.PHARMA,
         transactionDate: medicinePaymentMqInput.paymentDateTime || new Date(),
