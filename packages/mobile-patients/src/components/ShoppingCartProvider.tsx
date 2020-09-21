@@ -247,7 +247,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
     ShoppingCartContextProps['showPrescriptionAtStore']
   >(false);
 
-  const [couponProducts, _setCouponProducts] = useState<ShoppingCartContextProps['couponProducts']>([]);
+  const [couponProducts, _setCouponProducts] = useState<ShoppingCartContextProps['couponProducts']>(
+    []
+  );
 
   const [physicalPrescriptions, _setPhysicalPrescriptions] = useState<
     ShoppingCartContextProps['physicalPrescriptions']
@@ -506,7 +508,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         g(coupon, 'discount') > deductProductDiscount(coupon.products)
       ) {
         setCouponDiscount(g(coupon, 'discount') - deductProductDiscount(coupon.products) || 0);
-        setProductDiscount(getProductDiscount(coupon.products) || 0);
+        setProductDiscount(productDiscount);
         setCartItems(
           cartItems.map((item) => ({
             ...item,
@@ -515,7 +517,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         );
       } else {
         setCouponDiscount(0);
-        setProductDiscount(getProductDiscount(coupon.products) || 0);
+        setProductDiscount(productDiscount);
         setCartItems(
           cartItems.map((item) => ({
             ...item,
@@ -534,23 +536,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
     let discount = 0;
     products &&
       products.forEach((item) => {
-        if (item.mrp != item.specialPrice && item.onMrp) {
-          discount = discount + (item.mrp - item.specialPrice) * item.quantity;
+        if (item.onMrp) {
+          discount = discount + (item.mrp - (item.specialPrice || item.mrp)) * item.quantity;
         }
       });
     return discount;
   };
 
-  const getProductDiscount = (products: CartProduct[]) => {
-    let discount = 0;
-    products &&
-      products.forEach((item) => {
-        if (item.mrp != item.specialPrice) {
-          discount = discount + (item.mrp - item.specialPrice) * item.quantity;
-        }
-      });
-    return discount;
-  };
   useEffect(() => {
     // updating prescription here on update in cart items
     if (cartTotalOfRxProducts == 0) {
