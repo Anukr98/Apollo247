@@ -616,6 +616,7 @@ export interface FilterDoctorInput {
   sort?: string | null;
   pageNo?: number | null;
   pageSize?: number | null;
+  searchText?: string | null;
 }
 
 export interface Geolocation {
@@ -680,7 +681,7 @@ export interface MedicineCartOMSInput {
 export interface MedicineCartOMSItem {
   medicineSKU?: string | null;
   medicineName?: string | null;
-  couponFree?: boolean | null;
+  couponFree?: number | null;
   price?: number | null;
   quantity?: number | null;
   mrp?: number | null;
@@ -743,7 +744,7 @@ export interface OrderLineItems {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
-  couponFree?: boolean | null;
+  couponFree?: number | null;
 }
 
 export interface OtpVerificationInput {

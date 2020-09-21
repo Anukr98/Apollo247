@@ -977,7 +977,7 @@ export const MedicineCart: React.FC = (props) => {
               ).toFixed(2)
             ),
             mrp: cartItemDetails.price,
-            couponFree: cartItemDetails.couponFree || false,
+            couponFree: cartItemDetails.couponFree || 0,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
             isMedicine:
@@ -1006,7 +1006,7 @@ export const MedicineCart: React.FC = (props) => {
             sku,
             mrp: item.price,
             quantity,
-            couponFree: couponFree || false,
+            couponFree: couponFree || 0,
             categoryId: type_id || '',
             specialPrice: special_price || price,
           };
@@ -1070,7 +1070,7 @@ export const MedicineCart: React.FC = (props) => {
           cartItem.quantity > 1 &&
           !localStorage.getItem('updatedFreeCoupon')
         ) {
-          updateCartItemQty({ ...cartItem, quantity: cartItem.quantity, couponFree: true });
+          updateCartItemQty({ ...cartItem, quantity: cartItem.quantity, couponFree: 1 });
         }
       });
       localStorage.setItem('updatedFreeCoupon', 'true');
@@ -1116,7 +1116,7 @@ export const MedicineCart: React.FC = (props) => {
                       price: e.price,
                       sku: e.sku,
                       special_price: 0,
-                      couponFree: true,
+                      couponFree: 1,
                       small_image: e.small_image,
                       status: e.status,
                       thumbnail: e.thumbnail,
