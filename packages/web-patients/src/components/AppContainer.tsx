@@ -16,6 +16,7 @@ import { hot } from 'react-hot-loader/root';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import { DiagnosticsCartProvider } from './Tests/DiagnosticsCartProvider';
 import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
+import { OneApolloMembership } from 'components/MyAccount/OneApolloMembership';
 
 const Welcome = loadable(() => import('components/Welcome'));
 
@@ -70,6 +71,7 @@ const TestsLanding = loadable(() => import('components/Tests/TestsLanding'));
 const AddressBook = loadable(() => import('components/MyAccount/AddressBook'));
 const MyAccount = loadable(() => import('components/MyAccount/MyAccount'));
 const MyPayments = loadable(() => import('components/MyAccount/MyPayments'));
+// const OneApolloMembership = loadable(() => import('components/MyAccount/OneApolloMembership'));
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -182,6 +184,7 @@ const App: React.FC = () => {
         <AuthRouted exact path={clientRoutes.addressBook()} component={AddressBook} />
         <AuthRouted exact path={clientRoutes.needHelp()} component={Help} />
         <AuthRouted exact path={clientRoutes.myPayments()} component={MyPayments} />
+        <AuthRouted exact path={clientRoutes.oneApolloMembership()} component={OneApolloMembership} />
         <AuthRouted
           exact
           path={clientRoutes.notificationSettings()}
