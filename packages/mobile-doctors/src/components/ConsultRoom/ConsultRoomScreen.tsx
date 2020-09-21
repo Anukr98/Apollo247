@@ -166,6 +166,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
+import { ImageViewer } from '@aph/mobile-doctors/src/components/ui/ImageViewer';
 
 const { width } = Dimensions.get('window');
 // let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
@@ -1553,7 +1554,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     }
   };
 
-  const checkFiles = (checkUrl?: string, callBack?: (newUrl?: string) => void) => {
+  const checkFiles = (
+    checkUrl?: string,
+    callBack?: (newUrl?: string, allFiles?: any[]) => void
+  ) => {
     let tempFiles = chatFiles.filter((item) => item);
     const tempMessage: any[] = messages.filter((item) => item);
     const expiredFiles = tempFiles.filter(
@@ -1561,9 +1565,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         item.prismId && moment(new Date()).diff(moment(item.urlTimeToken / 10000), 'minutes') > 10
     );
     const foundUrlIndex = tempFiles.findIndex((item) => item.url === checkUrl);
-    // let newUrl = checkUrl;
-    let newUrl =
-      'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/ff059fc9-dc9c-471c-af19-8d829412d937_1598597825686.pdf';
+    let newUrl = checkUrl;
     if (expiredFiles.length > 0) {
       getPrismUrls(
         client,
@@ -1587,7 +1589,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   };
                 }
                 if (foundUrlIndex === index) {
-                  // newUrl = urls[urlExistsIndex] || item.url;
+                  newUrl = urls[urlExistsIndex] || item.url;
                 }
                 return {
                   ...item,
@@ -1599,16 +1601,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               }
             });
           }
-          callBack && callBack(newUrl);
+          callBack && callBack(newUrl, tempFiles);
           setMessages(tempMessage);
           setChatFiles(tempFiles);
           AsyncStorage.setItem('chatFileData', JSON.stringify(tempFiles));
         })
         .catch((error) => {
-          callBack && callBack(newUrl);
+          callBack && callBack(newUrl, tempFiles);
         });
     } else {
-      callBack && callBack(newUrl);
+      callBack && callBack(newUrl, tempFiles);
     }
   };
 
@@ -1875,8 +1877,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 files.push({ ...messageItem, urlTimeToken: messageItem.timetoken });
               }
             });
-            console.log(JSON.stringify(newmessage), 'sdnjkdsjkn', JSON.stringify(files));
-
             setChatFiles(files);
             AsyncStorage.setItem('chatFileData', JSON.stringify(files));
           }
@@ -3213,8 +3213,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     if (patientImageshow) {
       setShowLoading(true);
       if (url) {
-        checkFiles(url, (newUrl) => {
+        checkFiles(url, (newUrl, allFiles) => {
           setShowLoading(false);
+          // setOverlayDisplay(<ImageViewer files={allFiles} onClose={() => closeviews()} />);
           setOverlayDisplay(
             <ImageZoom source={{ uri: newUrl }} zoom pan onClose={() => closeviews()} />
           );
