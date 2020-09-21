@@ -10,6 +10,7 @@ type CategoryListGridView = WebEngageEvents[WebEngageEventName.CATEGORY_LIST_GRI
 type SearchEnterClick = WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK];
 type PharmacySearchResults = WebEngageEvents[WebEngageEventName.PHARMACY_SEARCH_RESULTS];
 type Search = WebEngageEvents[WebEngageEventName.SEARCH];
+type CategoryPageViewed = WebEngageEvents[WebEngageEventName.CATEGORY_PAGE_VIEWED];
 
 export const MedicineListingEvents = {
   categoryListGridView: (attributes: CategoryListGridView) => {
@@ -26,6 +27,10 @@ export const MedicineListingEvents = {
 
   searchEnterClick: (attributes: SearchEnterClick) => {
     postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, attributes);
+  },
+
+  categoryPageViewed: (attributes: CategoryPageViewed) => {
+    postWebEngageEvent(WebEngageEventName.CATEGORY_PAGE_VIEWED, attributes);
   },
 
   tagalysSearch: (patientId: string, attributes: Tagalys.ProductList) => {

@@ -57,13 +57,14 @@ type SelectedFilters = { [key: string]: string[] };
 
 export interface Props
   extends NavigationScreenProps<{
+    // pass one of searchText, category_id or products
     searchText?: string;
     category_id?: string;
-    title?: string;
     products?: MedicineProduct[];
+    title?: string; // mandatory if category_id passed
     sortBy?: SortByOption; // support for deep link
     filterBy?: SelectedFilters; // support for deep link
-    movedFrom?: 'registration' | 'deeplink' | 'home' | '';
+    movedFrom?: 'registration' | 'deeplink' | 'home';
   }> {}
 
 export const MedicineListing: React.FC<Props> = ({ navigation }) => {
@@ -120,6 +121,16 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       searchProductsByCategory(categoryId, 1, sortBy?.value || null, filterBy);
     }
   }, [sortBy, filterBy]);
+
+  useEffect(() => {
+    if (categoryId && !searchText && movedFrom) {
+      MedicineListingEvents.categoryPageViewed({
+        source: movedFrom,
+        CategoryId: categoryId,
+        CategoryName: pageTitle.toUpperCase(),
+      });
+    }
+  }, []);
 
   const searchProducts = async (searchText: string, pageId: number) => {
     try {

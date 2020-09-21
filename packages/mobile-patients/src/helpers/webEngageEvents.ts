@@ -1338,7 +1338,7 @@ export interface WebEngageEvents {
     'Stock availability': YesOrNo;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
-    source: 'home' | 'deeplink';
+    source: 'home' | 'deeplink' | 'registration';
     CategoryId: string;
     CategoryName: string;
   };

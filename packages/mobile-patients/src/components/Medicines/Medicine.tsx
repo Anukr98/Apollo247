@@ -816,7 +816,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       if (item.category_id) {
         props.navigation.navigate(AppRoutes.SearchByBrand, {
           category_id: item.category_id,
-          title: item.name || '',
+          title: item.name || 'Products',
         });
       } else if (item.sku) {
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
@@ -1209,7 +1209,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 );
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
-                  title: `${item.title || 'Products'}`.toUpperCase(),
+                  title: item.title || 'Products',
                 });
               },
               {
@@ -1542,10 +1542,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             categoryId
               ? () =>
                   props.navigation.navigate(AppRoutes.SearchByBrand, {
-                    category_id: categoryId,
+                    category_id: categoryId == -1 ? undefined : categoryId,
                     products: categoryId == -1 ? products : null,
-                    title: `${title || 'Products'}`.toUpperCase(),
-                    movedFrom: 'home',
+                    title: title || 'Products',
+                    movedFm: 'home',
                   })
               : undefined
           }
@@ -1603,7 +1603,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 );
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
-                  title: `${item.title || 'Products'}`.toUpperCase(),
+                  title: item.title || 'Products',
                 });
               },
               {
