@@ -514,8 +514,8 @@ const PayMedicine: React.FC = (props) => {
   };
 
   const verifyCoupon = (couponCode: string) => {
-    setMutationLoading(true);
     if (couponCode.length > 0) {
+      setMutationLoading(true);
       const validateCouponBody = getValidateCouponBody(couponCode);
       fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', validateCouponBody, '', false)
         .then((data: any) => {

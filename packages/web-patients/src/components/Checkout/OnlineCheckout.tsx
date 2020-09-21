@@ -464,8 +464,8 @@ const OnlineCheckout: React.FC = () => {
   };
 
   const verifyCoupon = (couponCode: string) => {
-    setMutationLoading(true);
     if (data && data.getDoctorDetailsById && couponCode.length > 0) {
+      setMutationLoading(true);
       const validateCouponBody = getValidateCouponBody(data.getDoctorDetailsById, couponCode);
       const speciality =
         (doctorDetails &&
