@@ -582,25 +582,11 @@ exports.appointmentReminderTemplate = (req, res) => {
     console.log(`\n\n params*********`, req.params);
 
     let urlObject = url.parse(req.url, true);
-    const appointmentDateTime = format(new Date(urlObject.query.CustomField.split('_')[0]), "yyyy-MM-dd'T'HH:mm:00.000X");
+    const appointmentDateTime = format(new Date(urlObject.query.CustomField.split('_')[0]), "h m a");
     const appointmentType = urlObject.query.CustomField.split('_')[1];
 
     return res.contentType('text/plain').status(200).send(`Hi, You have an upcoming appointment at ${appointmentDateTime} today from Apollo 247. 
          It will be ${appointmentType} consultation.Dial 1 to repeat the same message. `);
-
-    // {
-    //   "gather_prompt": {
-    //     "text": `Hi, You have an upcoming appointment at ${appointmentDateTime} today from Apollo 247. 
-    //     It will be ${appointmentType} consultation.Dial 1 to repeat the same message. `,
-    //   },
-    //   "max_input_digits": 5,
-    //   "finish_on_key": "#",
-    //   "input_timeout": 6,
-    //   "repeat_menu": 1,
-    //   "repeat_gather_prompt": {
-    //     "text": "It seems that you have not provided any input, please try again."
-    //   }
-    // }
 
   } catch (ex) {
     console.error(ex);

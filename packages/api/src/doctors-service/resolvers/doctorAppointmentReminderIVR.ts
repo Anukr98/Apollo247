@@ -86,7 +86,7 @@ type RemindDoctorForAppointmentResult = {
 async function exotelCalling(doctor: Doctor, appointment: Appointment): Promise<RemindDoctorForAppointmentResult> {
 
   let exotel_url = `https://${process.env.EXOTEL_API_KEY}:${process.env.EXOTEL_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}${process.env.EXOTEL_URI}/connect`;
-  const IVR_url = `http://my.exotel.com/${process.env.EXOTEL_ACCOUNT_SID}/exoml/start_voice/${process.env.EXOTEL_APPOINTMENT_REMINDER_IVR_APP_ID || 320240}`;
+  const IVR_url = `http://my.exotel.com/${process.env.EXOTEL_ACCOUNT_SID}/exoml/start_voice/${process.env.EXOTEL_APPOINTMENT_REMINDER_IVR_APP_ID || 311473 || 320240}`;
 
   const reqBody = {
     From: parseInt(doctor.mobileNumber, 10),
@@ -155,8 +155,6 @@ const RemindDoctorForAppointment: Resolver<
 
   const currentDate = format(new Date(), "yyyy-MM-dd'T'HH:mm:00.000X");
 
-  console.log()
-
   const limitedHoursFutureDate = addHours(
     new Date(currentDate),
     parseInt(ApiConstants.APPOINTMENTS_HOUR_LIMIT.toString(), 10)
@@ -180,23 +178,23 @@ const RemindDoctorForAppointment: Resolver<
 
   let responseArray: RemindDoctorForAppointmentResult[] = [];
 
-  await doctorData.forEach(async (doctor) => {
-    if (doctor.isIvrSet) {
-      appointmentData.forEach(async (appointment) => {
-        if (appointment.appointmentType === 'ONLINE' && appointment.doctorId == doctor.id &&
-          currentDate === format(subMinutes(appointment.appointmentDateTime, doctor.ivrCallTimeOnline), "yyyy-MM-dd'T'HH:mm:00.000X")) {
-          const response = await exotelCalling(doctor, appointment);
+  for (let index = 0; index < doctorData.length; index++) {
+    if (doctorData[index].isIvrSet) {
+      for (let appIndex = 0; appIndex < appointmentData.length; appIndex++) {
+        if (appointmentData[appIndex].appointmentType === 'ONLINE' && appointmentData[appIndex].doctorId == doctorData[index].id &&
+          currentDate === format(subMinutes(appointmentData[appIndex].appointmentDateTime, doctorData[index].ivrCallTimeOnline), "yyyy-MM-dd'T'HH:mm:00.000X")) {
+          const response = await exotelCalling(doctorData[index], appointmentData[appIndex]);
           responseArray.push(response);
-
-        } else if (appointment.appointmentType === 'PHYSICAL' && appointment.doctorId == doctor.id &&
-          currentDate === format(subMinutes(appointment.appointmentDateTime, doctor.ivrCallTimePhysical), "yyyy-MM-dd'T'HH:mm:00.000X")) {
-          const response = await exotelCalling(doctor, appointment);
+          break;
+        } else if (appointmentData[appIndex].appointmentType === 'PHYSICAL' && appointmentData[appIndex].doctorId == doctorData[index].id &&
+          currentDate === format(subMinutes(appointmentData[appIndex].appointmentDateTime, doctorData[index].ivrCallTimePhysical), "yyyy-MM-dd'T'HH:mm:00.000X")) {
+          const response = await exotelCalling(doctorData[index], appointmentData[appIndex]);
           responseArray.push(response);
-
+          break;
         }
-      });
+      }
     }
-  });
+  }
 
   return responseArray;
 };
