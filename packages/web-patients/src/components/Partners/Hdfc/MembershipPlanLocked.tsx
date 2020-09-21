@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -10,6 +10,13 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 // import Gold from './images/hdfc/gold.svg';
 // import Platinum from './images/hdfc/platinum.svg';
+import { useApolloClient } from 'react-apollo-hooks';
+import { clientRoutes } from 'helpers/clientRoutes';
+import {
+  GetAllUserSubscriptionsWithPlanBenefits,
+  GetAllUserSubscriptionsWithPlanBenefitsVariables,
+} from 'graphql/types/GetAllUserSubscriptionsWithPlanBenefits';
+import { GET_ALL_USER_SUBSCRIPTIONS_WITH_BENEFITS } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -36,6 +43,83 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('sm')]: {
         width: '100%',
         padding: '22px 16px',
+      },
+    },
+    couponCard: {
+      background: '#fafafa',
+      padding: 16,
+      borderRadius: 10,
+      transition: '0.5s ease-in-out',
+      height: 220,
+      overflow: 'hidden',
+      position: 'relative',
+      textAlign: 'center',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'column',
+      [theme.breakpoints.down('sm')]: {
+        display: 'block',
+        background: '#fff',
+        margin: '0 0 16px',
+        width: '100%',
+        textAlign: 'left',
+        height: 'auto',
+        boxShadow: '0px 0px 32px rgba(0, 0, 0, 0.1)',
+      },
+      '& h2': {
+        fontSize: 14,
+        color: '#07AE8B',
+        fontWeight: 600,
+        margin: '0 0 5px',
+      },
+      '& p': {
+        fontSize: 11,
+        lineHeight: '18px',
+        width: '80%',
+      },
+      '&:hover': {
+        boxShadow: ' 0px 1px 12px rgba(128, 128, 128, 0.2)',
+        '& a': {
+          background: '#FC9916',
+          color: '#FFF',
+          [theme.breakpoints.down('sm')]: {
+            background: '#fff',
+            color: '#FC9916',
+          },
+        },
+      },
+      '& a': {
+        background: '#fff',
+        color: '#FC9916',
+        width: '100%',
+        transition: '0.5s ease-in-out',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        borderRadius: 0,
+        [theme.breakpoints.down('sm')]: {
+          fontSize: 13,
+          background: '#fff',
+          color: '#FC9916',
+          margin: '0px 0 0 auto',
+          boxShadow: 'none',
+          borderRadius: 5,
+          display: 'block',
+          width: 'auto',
+          position: 'static',
+          '&:hover': {
+            background: '#fff',
+            color: '#FC9916',
+          },
+        },
+      },
+      '& ul': {
+        margin: '0 0 30px ',
+        [theme.breakpoints.down('sm')]: {
+          margin: 0,
+        },
       },
     },
     headerFixed: {
@@ -111,38 +195,28 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: '16px',
       },
     },
-    benefitList: {
+    couponList: {
+      padding: 0,
       listStyle: 'none',
-      margin: '10px 0',
-      padding: '0 0 0 20px',
+      display: 'flex',
+      alignItems: 'flex-start',
 
-      transition: '0.5s ease',
-      overflow: 'hidden',
-      display: 'grid',
-      gridTemplateColumns: 'auto auto',
-      gridColumnGap: 30,
+      flexWrap: 'wrap',
+      margin: '0 -10px',
       [theme.breakpoints.down('sm')]: {
         display: 'block',
         margin: 0,
       },
-      '& li': {
-        position: 'relative',
-        fontSize: 14,
-        color: 'rgb(0 124 157 / 0.8)',
-        fontWeight: 700,
-        padding: '5px 0',
-        '&:before': {
-          content: "''",
-          position: 'absolute',
-          top: 10,
-          left: -20,
-          width: 8,
-          height: 8,
-          borderRadius: '50%',
-          background: ' rgba(51, 150, 177, 0.2)',
-        },
+      '& >li': {
+        padding: 10,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '25%',
         [theme.breakpoints.down('sm')]: {
-          fontSize: 12,
+          width: '100%',
+          display: 'block',
+          padding: 0,
         },
       },
     },
@@ -157,7 +231,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '12px 16px',
         background: '#fff',
       },
-      '& button': {
+      '& a, button': {
         color: '#FC9916',
         position: 'relative',
         background: '#fff',
@@ -391,9 +465,49 @@ export const MembershipPlanLocked: React.FC = (props) => {
   const [showMore, setShowMore] = React.useState<boolean>(false);
   const [expanded, setExpanded] = React.useState<string | false>(false);
 
+  const [subscriptionInclusions, setSubscriptionInclusions] = React.useState([]);
+  const [planName, setPlanName] = React.useState<string>('');
+  const [benefitsWorth, setBenefitsWorth] = React.useState<string>('');
+  const [minimumTransactionValue, setMinimumTransactionValue] = React.useState<string>('');
+  const apolloClient = useApolloClient();
+
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
   };
+
+  useEffect(() => {
+    apolloClient
+      .query<
+        GetAllUserSubscriptionsWithPlanBenefits,
+        GetAllUserSubscriptionsWithPlanBenefitsVariables
+      >({
+        query: GET_ALL_USER_SUBSCRIPTIONS_WITH_BENEFITS,
+        variables: {
+          mobile_number: localStorage.getItem('userMobileNo'),
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setSubscriptionInclusions(
+          // response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response
+        );
+        setPlanName(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to.name
+        );
+        setBenefitsWorth(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to
+            .benefits_worth
+        );
+        setMinimumTransactionValue(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to
+            .min_transaction_value
+        );
+      })
+      .catch((error) => {
+        console.error('Failed fetching Subscription Inclusions' + error);
+      });
+  }, []);
 
   return (
     <div className={classes.mainContainer}>
@@ -438,14 +552,17 @@ export const MembershipPlanLocked: React.FC = (props) => {
             <div className={classes.planCardContent}>
               <div className={`${classes.planCard} ${classes.platinum}`}>
                 <img src={require('images/hdfc/medal.svg')} alt="Gold MemberShip" />
-                <Typography component="h1">Platinum + Plan</Typography>
+                <Typography component="h1">{planName}</Typography>
                 <Typography className={classes.benefitDesc}>Availing Benefits worth</Typography>
-                <Typography className={classes.cardWorth}>Rs. 38K+</Typography>
+                <Typography className={classes.cardWorth}>Rs. {benefitsWorth}</Typography>
                 <Typography className={classes.cardDesc}>
-                  A host of benefits await you with our Gold+ Plan curated for HDFC customers
+                  {`A host of benefits await you with our`} {planName}{' '}
+                  {`curated for HDFC customers`}
                 </Typography>
                 <div className={classes.btnContainer}>
-                  <AphButton variant="contained">Explore Now</AphButton>
+                  <AphButton variant="contained" href={clientRoutes.welcome()}>
+                    Explore Now
+                  </AphButton>
                 </div>
               </div>
             </div>
@@ -465,17 +582,19 @@ export const MembershipPlanLocked: React.FC = (props) => {
               </ExpansionPanelSummary>
               <ExpansionPanelDetails className={classes.panelDetails}>
                 <div className={classes.detailsContent}>
-                  <ul className={classes.benefitList}>
-                    <li>One Apollo Membership</li>
-                    <li>Preferential access to COVID-19 home testing</li>
-                    <li>Preffrential access to home and hotel care</li>
-                    <li>Health essentials hamper gift</li>
-                    <li>2 Vouchers for Doctor Consultation worth Rs 249 each </li>
-                    <li>3 Vouchers of Rs 100 each for Apollo Pharmacy</li>
-                    <li>15% Off on Apollo Labeled Products</li>
-                    <li>Digital Vault for health records </li>
-                    <li>Health assesment consultation by apollo Doctor </li>
-                    <li>Base Diabetes management program </li>
+                  <ul className={classes.couponList}>
+                    {subscriptionInclusions &&
+                      subscriptionInclusions[0] &&
+                      subscriptionInclusions[0].benefits.map((item: any) => {
+                        return (
+                          <li>
+                            <div className={classes.couponCard}>
+                              <Typography component="h2">{item.header_content}</Typography>
+                              <Typography>{item.description}</Typography>
+                            </div>
+                          </li>
+                        );
+                      })}
                   </ul>
                 </div>
               </ExpansionPanelDetails>
@@ -499,7 +618,9 @@ export const MembershipPlanLocked: React.FC = (props) => {
                 <div className={classes.detailsContent}>
                   <Typography>Please follow these steps</Typography>
                   <ul className={classes.availList}>
-                    <li>Complete transactions worth Rs 25000+ on Apollo 24/7</li>
+                    <li>
+                      Complete transactions worth Rs {minimumTransactionValue}+ on Apollo 24/7
+                    </li>
                     <li>
                       Duration of membership is 1 year. It will be auto renewed if you spend more
                       than Rs 25000 within 1 year on Apollo 24/7

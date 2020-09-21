@@ -33,6 +33,15 @@ export enum AppointmentType {
   PHYSICAL = "PHYSICAL",
 }
 
+/**
+ * Indicates what type of attribute
+ */
+export enum AttributeType {
+  LIMITED = "LIMITED",
+  RECURRING = "RECURRING",
+  UNLIMTED = "UNLIMTED",
+}
+
 export enum BOOKINGSOURCE {
   MOBILE = "MOBILE",
   WEB = "WEB",
@@ -140,6 +149,20 @@ export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
   OTHER = "OTHER",
+}
+
+/**
+ * Indicates the current status of the plan
+ */
+export enum GroupPlanStatus {
+  ACTIVE = "ACTIVE",
+  DISCONTINUED = "DISCONTINUED",
+  INACTIVE = "INACTIVE",
+}
+
+export enum HDFC_CUSTOMER {
+  NOT_HDFC_CUSTOMER = "NOT_HDFC_CUSTOMER",
+  OTP_GENERATED = "OTP_GENERATED",
 }
 
 export enum LOGIN_TYPE {
@@ -392,17 +415,11 @@ export enum SpecialtySearchType {
   NAME = "NAME",
 }
 
-export enum Status {
-  active = "active",
-  discontinued = "discontinued",
-  inactive = "inactive",
-}
-
 export enum SubscriptionStatus {
-  active = "active",
-  cancelled = "cancelled",
-  deferred = "deferred",
-  disabled = "disabled",
+  ACTIVE = "ACTIVE",
+  CANCELLED = "CANCELLED",
+  DEFERRED_INACTIVE = "DEFERRED_INACTIVE",
+  DISABLED = "DISABLED",
 }
 
 export enum TEST_COLLECTION_TYPE {
@@ -530,9 +547,6 @@ export interface CancelAppointmentInput {
   cancelledById: string;
 }
 
-export interface CreateUserSubscriptionInput {
-  mobile_number?: string | null;
-}
 export interface ConsultQueueInput {
   appointmentId: string;
   height?: string | null;
@@ -545,6 +559,26 @@ export interface ConsultQueueInput {
   drugAllergies?: string | null;
   age?: number | null;
   gender?: Gender | null;
+}
+
+export interface CreateUserSubscriptionInput {
+  plan_id: string;
+  payment_reference_id?: string | null;
+  coupon_availed?: string | null;
+  mobile_number: string;
+  order_id?: string | null;
+  transaction_date_time?: any | null;
+  status?: SubscriptionStatus | null;
+  start_date?: any | null;
+  end_date?: any | null;
+  deactivation_date?: any | null;
+  CustomerId?: string | null;
+  FirstName?: string | null;
+  LastName?: string | null;
+  Email?: string | null;
+  Gender?: string | null;
+  DOB?: any | null;
+  storeCode: string;
 }
 
 export interface DiagnosticLineItem {
@@ -632,6 +666,7 @@ export interface FilterDoctorInput {
   sort?: string | null;
   pageNo?: number | null;
   pageSize?: number | null;
+  searchText?: string | null;
 }
 
 export interface Geolocation {
@@ -927,11 +962,6 @@ export interface UploadDocumentInput {
   base64FileInput: string;
   patientId: string;
   category: PRISM_DOCUMENT_CATEGORY;
-}
-
-export interface UserIdentification {
-  mobile_number?: string | null;
-  patiend_id?: string | null;
 }
 
 //==============================================================

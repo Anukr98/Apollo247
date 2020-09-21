@@ -243,6 +243,23 @@ export const MyProfile: React.FC = (props) => {
             <div className={classes.sectionGroup}>
               <Link
                 className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.myMembership() ? classes.menuActive : ''
+                }`}
+                to={clientRoutes.myMembership()}
+                title={'My Memberships'}
+              >
+                <span className={classes.serviceImg}>
+                  <img src={require('images/my_membership.svg')} alt="" />
+                </span>
+                <span className={classes.linkText}>My Memberships</span>
+                <span className={classes.rightArrow}>
+                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                </span>
+              </Link>
+            </div>
+            <div className={classes.sectionGroup}>
+              <Link
+                className={`${classes.serviceType} ${classes.textVCenter} ${
                   currentPath === clientRoutes.addressBook() ? classes.menuActive : ''
                 }`}
                 to={clientRoutes.addressBook()}
@@ -395,6 +412,23 @@ export const MyProfile: React.FC = (props) => {
                     <span className={classes.linkText} title={'Address Book'}>
                       Address Book
                     </span>
+                    <span className={classes.rightArrow}>
+                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                    </span>
+                  </Link>
+                </div>
+                <div className={classes.sectionGroup}>
+                  <Link
+                    className={`${classes.serviceType} ${classes.textVCenter} ${
+                      currentPath === clientRoutes.myMembership() ? classes.menuActive : ''
+                    }`}
+                    to={clientRoutes.myMembership()}
+                    title={'My Memberships'}
+                  >
+                    <span className={classes.serviceImg}>
+                      <img src={require('images/my_membership.svg')} alt="" />
+                    </span>
+                    <span className={classes.linkText}>My Memberships</span>
                     <span className={classes.rightArrow}>
                       <img src={require('images/ic_arrow_right.svg')} alt="" />
                     </span>
