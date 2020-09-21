@@ -398,7 +398,6 @@ const PayMedicine: React.FC = (props) => {
   const [revisedAmount, setRevisedAmount] = React.useState<number>(0);
   const [consult, setConsult] = useState<boolean>(false);
   const [isPharmaFailure, setIsPharmaFailure] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<boolean>(false);
 
   const [validityStatus, setValidityStatus] = useState<boolean>(false);
   const { cartTotal, prescriptions, ePrescriptionData, cartItems } = useShoppingCart();
@@ -491,86 +490,6 @@ const PayMedicine: React.FC = (props) => {
       }
     }
   });
-
-  const getValidateCouponBody = (coupon: string) => {
-    const validateCouponBody = {
-      mobile: currentPatient && currentPatient.mobileNumber,
-      billAmount: Number(revisedAmount),
-      coupon,
-      pinCode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
-      consultations: [
-        {
-          hospitalId,
-          doctorId,
-          specialityId,
-          consultationTime: new Date(appointmentDateTime).getTime(),
-          consultationType: appointmentType === 'PHYSICAL' ? 0 : 1,
-          cost: Number(onlineConsultationFees),
-          rescheduling: false,
-        },
-      ],
-    };
-    return validateCouponBody;
-  };
-
-  const verifyCoupon = (couponCode: string) => {
-    if (couponCode.length > 0) {
-      setMutationLoading(true);
-      const validateCouponBody = getValidateCouponBody(couponCode);
-      fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', validateCouponBody, '', false)
-        .then((data: any) => {
-          if (data && data.response) {
-            const couponValidateResult = data.response;
-            setValidityStatus(couponValidateResult.valid);
-            if (couponValidateResult.valid) {
-              setValidateConsultCouponResult(couponValidateResult);
-              /*GTM TRACKING START */
-              gtmTracking({
-                category: 'Consultations',
-                action: speciality,
-                label: `Coupon Applied - ${couponCode}`,
-                value:
-                  couponValidateResult && couponValidateResult.valid
-                    ? Number(parseFloat(couponValidateResult.discount).toFixed(2))
-                    : null,
-              });
-              /*GTM TRACKING END */
-            } else {
-              setErrorMessage(couponValidateResult.reason);
-            }
-          } else if (data && data.errorMsg && data.errorMsg.length > 0) {
-            setErrorMessage(data.errorMsg);
-          }
-        })
-        .catch((e) => {
-          console.log(e);
-        })
-        .finally(() => setMutationLoading(false));
-    }
-  };
-
-  const getCouponByMobileNumber = () => {
-    getCouponByUserMobileNumber()
-      .then((resp: any) => {
-        if (resp.errorCode == 0 && resp.response && resp.response.length > 0) {
-          const couponCode = resp.response[0].coupon;
-          setConsultCouponCode(couponCode || '');
-          verifyCoupon(couponCode);
-        } else {
-          setConsultCouponCode('');
-        }
-      })
-      .catch((e: any) => {
-        console.log(e);
-        setConsultCouponCode('');
-      });
-  };
-
-  useEffect(() => {
-    if (params.payType === 'consults' && !consultCouponCode) {
-      getCouponByMobileNumber();
-    }
-  }, []);
 
   useEffect(() => {
     if (validateConsultCouponResult && validateConsultCouponResult.valid) {
@@ -1242,3 +1161,86 @@ const PayMedicine: React.FC = (props) => {
 };
 
 export default PayMedicine;
+// const [errorMessage, setErrorMessage] = useState<string>('');
+
+// const getValidateCouponBody = (coupon: string) => {
+//   const amountPayble: number = Number(amount) - Number(consultCouponValue);
+//   const validateCouponBody = {
+//     mobile: currentPatient && currentPatient.mobileNumber,
+//     billAmount: Number(amountPayble),
+//     coupon,
+//     pinCode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
+//     consultations: [
+//       {
+//         hospitalId,
+//         doctorId,
+//         specialityId,
+//         consultationTime: new Date(appointmentDateTime).getTime(),
+//         consultationType: appointmentType === 'PHYSICAL' ? 0 : 1,
+//         cost: Number(onlineConsultationFees),
+//         rescheduling: false,
+//       },
+//     ],
+//   };
+//   return validateCouponBody;
+// };
+
+// const verifyCoupon = (couponCode: string) => {
+//   if (couponCode.length > 0) {
+//     setMutationLoading(true);
+//     const validateCouponBody = getValidateCouponBody(couponCode);
+//     fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', validateCouponBody, '', false)
+//       .then((data: any) => {
+//         if (data && data.response) {
+//           const couponValidateResult = data.response;
+//           setValidityStatus(couponValidateResult.valid);
+//           setValidateConsultCouponResult(couponValidateResult);
+//           if (couponValidateResult.valid) {
+//             /*GTM TRACKING START */
+//             gtmTracking({
+//               category: 'Consultations',
+//               action: speciality,
+//               label: `Coupon Applied - ${couponCode}`,
+//               value:
+//                 couponValidateResult && couponValidateResult.valid
+//                   ? Number(parseFloat(couponValidateResult.discount).toFixed(2))
+//                   : null,
+//             });
+//             /*GTM TRACKING END */
+//             setErrorMessage('');
+//           } else {
+//             setErrorMessage(couponValidateResult.reason);
+//           }
+//         } else if (data && data.errorMsg && data.errorMsg.length > 0) {
+//           setErrorMessage(data.errorMsg);
+//         }
+//       })
+//       .catch((e) => {
+//         console.log(e);
+//       })
+//       .finally(() => setMutationLoading(false));
+//   }
+// };
+
+// const getCouponByMobileNumber = () => {
+//   getCouponByUserMobileNumber()
+//     .then((resp: any) => {
+//       if (resp.errorCode == 0 && resp.response && resp.response.length > 0) {
+//         const couponCode = resp.response[0].coupon;
+//         setConsultCouponCode(couponCode || '');
+//         verifyCoupon(couponCode);
+//       } else {
+//         setConsultCouponCode('');
+//       }
+//     })
+//     .catch((e: any) => {
+//       console.log(e);
+//       setConsultCouponCode('');
+//     });
+// };
+
+// useEffect(() => {
+//   if (currentPatient && params.payType === 'consults' && !consultCouponCode) {
+//     getCouponByMobileNumber();
+//   }
+// }, []);

@@ -374,7 +374,7 @@ const OnlineCheckout: React.FC = () => {
   const [validateCouponResult, setValidateCouponResult] = useState<any>({});
   const [validityStatus, setValidityStatus] = useState<boolean>(false);
   const [mutationLoading, setMutationLoading] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const apolloClient = useApolloClient();
 
@@ -473,8 +473,8 @@ const OnlineCheckout: React.FC = () => {
           if (data && data.response) {
             const couponValidateResult = data.response;
             setValidityStatus(couponValidateResult.valid);
+            setValidateCouponResult(couponValidateResult);
             if (couponValidateResult.valid) {
-              setValidateCouponResult(couponValidateResult);
               /*GTM TRACKING START */
               gtmTracking({
                 category: 'Consultations',
@@ -486,6 +486,7 @@ const OnlineCheckout: React.FC = () => {
                     : null,
               });
               /*GTM TRACKING END */
+              setErrorMessage('');
             } else {
               setErrorMessage(couponValidateResult.reason);
             }
@@ -711,16 +712,6 @@ const OnlineCheckout: React.FC = () => {
                         color="primary"
                         disabled={mutationLoading}
                         onClick={() => {
-                          // const updatedValues = {
-                          //   ...pageData,
-                          //   consultCouponCodeInitial: couponCode,
-                          //   consultCouponValue:
-                          //     validateCouponResult && validateCouponResult.revisedAmount
-                          //       ? parseFloat(onlineConsultationFees) -
-                          //         parseFloat(validateCouponResult.revisedAmount)
-                          //       : '0',
-                          // };
-                          // localStorage.setItem('consultBookDetails', JSON.stringify(updatedValues));
                           history.push(clientRoutes.payMedicine('consults'));
                           const eventData = {
                             actualPrice: Number(amount),
