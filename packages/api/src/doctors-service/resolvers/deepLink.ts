@@ -189,7 +189,7 @@ const refreshDoctorDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> 
   const refreshDays = ApiConstants.LINK_TTL ? parseInt(ApiConstants.LINK_TTL, 10) : 0;
   const newRefreshDate = addDays(new Date(), refreshDays);
 
-  const linksToBeRefreshed = _.chunk(getDeeplinks, 100);
+  const linksToBeRefreshed = _.chunk(getDeeplinks, 60);
 
   linksToBeRefreshed.map(async (chunk) => {
     _.delay(async () => {
