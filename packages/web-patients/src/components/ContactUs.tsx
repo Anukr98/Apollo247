@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { dataLayerTracking } from 'gtmTracking';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -55,8 +56,16 @@ const ContactUs: React.FC = (props) => {
     /**Gtm code start end */
   }, []);
 
+  const [metaTagProps, setMetaTagProps] = useState(null);
+  setMetaTagProps({
+    title: 'Apollo 247 - Contact Us - Apollo Hospitals',
+    description:
+      'Apollo 247- Have a query about our products, services, online doctor consultation and more - write to us',
+    canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+  });
   return (
     <div className={classes.root}>
+      {metaTagProps && <MetaTagsComp {...metaTagProps} />}
       <Header />
       <div className={classes.container}>
         <div className={classes.pageContainer}>

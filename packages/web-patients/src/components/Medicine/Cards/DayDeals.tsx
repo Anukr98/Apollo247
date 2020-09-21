@@ -139,7 +139,7 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
                   <div className={classes.cardIcon}>
                     <LazyIntersection
                       src={`${apiDetails.url}${deal.image_url}`}
-                      alt={''}
+                      alt={`Buy ${props.sectionName.replace(/_/g, ' ')} Products Online`}
                       fallbackImage={require('images/ic_placeholder_rectangle.png')}
                       style={{ maxWidth: '273px' }}
                     />
