@@ -13,7 +13,9 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
-import { HdfcCallDoctor } from 'components/HdfcCallDoctor';
+import { HdfcRegistration } from 'components/HdfcRegistration';
+import { HdfcSlider } from 'components/HdfcSlider';
+import { HDFC_REF_CODE } from 'helpers/constants';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -68,6 +70,8 @@ const PatientsOverview: React.FC = () => {
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
 
+  const userSubscriptionsLocalStorage = JSON.parse(localStorage.getItem('userSubscriptions'));
+
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
       futureAppointmentMutation({
@@ -121,7 +125,17 @@ const PatientsOverview: React.FC = () => {
         </Grid> */}
       {/* </Grid> */}
       {/* <Grid item xs={12} sm={6}> */}
-      <HdfcCallDoctor patientPhone={currentPatient.mobileNumber} />
+      {currentPatient &&
+        currentPatient.referralCode === HDFC_REF_CODE &&
+        (userSubscriptionsLocalStorage == null || userSubscriptionsLocalStorage.length == 0) && (
+          <HdfcRegistration patientPhone={currentPatient.mobileNumber} />
+        )}
+      {currentPatient &&
+        currentPatient.referralCode === HDFC_REF_CODE &&
+        userSubscriptionsLocalStorage &&
+        userSubscriptionsLocalStorage.length != 0 && (
+          <HdfcRegistration patientPhone={currentPatient.mobileNumber} />
+        )}
       {/* </Grid>
       </Grid> */}
       <Alerts

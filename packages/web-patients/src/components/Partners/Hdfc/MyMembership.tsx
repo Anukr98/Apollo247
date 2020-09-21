@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography } from '@material-ui/core';
+import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
@@ -45,6 +45,12 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingTop: 56,
         paddingRight: 0,
       },
+    },
+    loadingContainer: {
+      width: '100%',
+      height: '100%',
+      textAlign: 'center',
+      verticalAlign: 'middle',
     },
     footerLinks: {
       [theme.breakpoints.down(900)]: {
@@ -399,6 +405,7 @@ export const MyMembership: React.FC = (props) => {
   const [showMore, setShowMore] = React.useState<boolean>(false);
   const [isHowToAvail, setIsHowToAvail] = React.useState<boolean>(false);
   const apolloClient = useApolloClient();
+  const [loading, setLoading] = React.useState<boolean>(true);
 
   const [currentSubscription, setCurrentSubscription] = React.useState([]);
   const [upgradableSubscription, setUpgradableSubscription] = React.useState<
@@ -422,11 +429,21 @@ export const MyMembership: React.FC = (props) => {
         setUpgradableSubscription(
           response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to
         );
+        setLoading(false);
       })
       .catch((error) => {
         console.error('Failed fetching Subscription Inclusions');
       });
   }, []);
+
+  const getMedalImage = (planName: String) => {
+    if (planName == 'GOLD+ PLAN') {
+      return require('images/hdfc/medal_gold.svg');
+    }
+    if (planName == 'PLATINUM+ PLAN') {
+      return require('images/hdfc/medal_platinum.svg');
+    } else return require('images/hdfc/medal_silver.svg');
+  };
 
   return (
     <div className={classes.mainContainer}>
@@ -437,58 +454,36 @@ export const MyMembership: React.FC = (props) => {
             <MyProfile />
           </div>
           <div className={classes.rightSection}>
-            <div className={classes.msContent}>
-              <div>
-                <Typography component="h3" className={classes.sectionTitle}>
-                  Current Benefits
-                </Typography>
-                <div className={classes.membershipCard}>
-                  <img src={require('images/hdfc/medal.svg')} alt="" />
-                  <div className={classes.mcContent}>
-                    <Typography component="h4">
-                      {currentSubscription && currentSubscription[0] && currentSubscription[0].name}
-                    </Typography>
-                    <Typography>Benefits Available</Typography>
-                    <ul className={`${classes.benefitList} ${showMore ? classes.heightFull : ''}`}>
-                      {currentSubscription &&
-                        currentSubscription[0] &&
-                        currentSubscription[0].benefits.map((item: any) => {
-                          return <li>{item.header_content}</li>;
-                        })}
-                    </ul>
-                    {/* <a
-                      href="javascript: void(0);"
-                      className={classes.more}
-                      onClick={() => setShowMore(!showMore)}
-                    >
-                      {!showMore ? <span> +3 more</span> : <span>Hide</span>}
-                    </a> */}
-                  </div>
-                  <div className={classes.btnContainer}>
-                    <AphButton href={clientRoutes.membershipPlanDetail()}>View Details</AphButton>
-                    <AphButton color="primary" variant="contained" href={clientRoutes.welcome()}>
-                      Explore
-                    </AphButton>
-                  </div>
-                </div>
+            {loading ? (
+              <div className={classes.loadingContainer}>
+                <CircularProgress size={30} />
               </div>
-              {upgradableSubscription ? (
+            ) : (
+              <div className={classes.msContent}>
                 <div>
                   <Typography component="h3" className={classes.sectionTitle}>
-                    Premium Plans
+                    Current Benefits
                   </Typography>
                   <div className={classes.membershipCard}>
-                    <img src={require('images/hdfc/locked.svg')} alt="" />
+                    <img
+                      src={getMedalImage(
+                        currentSubscription && currentSubscription[0] && currentSubscription[0].name
+                      )}
+                      alt="Membeship Medal"
+                    />
                     <div className={classes.mcContent}>
                       <Typography component="h4">
-                        {upgradableSubscription && upgradableSubscription.name}
+                        {currentSubscription &&
+                          currentSubscription[0] &&
+                          currentSubscription[0].name}
                       </Typography>
-                      <Typography>Key Features you get .. </Typography>
+                      <Typography>Benefits Available</Typography>
                       <ul
-                        className={` ${classes.benefitList} ${showMore ? classes.heightFull : ''}`}
+                        className={`${classes.benefitList} ${showMore ? classes.heightFull : ''}`}
                       >
-                        {upgradableSubscription &&
-                          upgradableSubscription.benefits.map((item: any) => {
+                        {currentSubscription &&
+                          currentSubscription[0] &&
+                          currentSubscription[0].benefits.map((item: any) => {
                             return <li>{item.header_content}</li>;
                           })}
                       </ul>
@@ -497,25 +492,66 @@ export const MyMembership: React.FC = (props) => {
                       className={classes.more}
                       onClick={() => setShowMore(!showMore)}
                     >
-                      {!showMore ? <span> +12 more</span> : <span>Hide</span>}
+                      {!showMore ? <span> +3 more</span> : <span>Hide</span>}
                     </a> */}
                     </div>
                     <div className={classes.btnContainer}>
-                      <AphButton href={clientRoutes.membershipPlanLocked()}>View Details</AphButton>
-                      <AphButton
-                        color="primary"
-                        variant="contained"
-                        onClick={() => setIsHowToAvail(true)}
-                      >
-                        How To Avail
+                      <AphButton href={clientRoutes.membershipPlanDetail()}>View Details</AphButton>
+                      <AphButton color="primary" variant="contained" href={clientRoutes.welcome()}>
+                        Explore
                       </AphButton>
                     </div>
                   </div>
                 </div>
-              ) : (
-                ''
-              )}
-            </div>
+                {upgradableSubscription ? (
+                  <div>
+                    <Typography component="h3" className={classes.sectionTitle}>
+                      Premium Plans
+                    </Typography>
+                    <div className={classes.membershipCard}>
+                      <img src={require('images/hdfc/locked.svg')} alt="" />
+                      <div className={classes.mcContent}>
+                        <Typography component="h4">
+                          {upgradableSubscription && upgradableSubscription.name}
+                        </Typography>
+                        <Typography>Key Features you get .. </Typography>
+                        <ul
+                          className={` ${classes.benefitList} ${
+                            showMore ? classes.heightFull : ''
+                          }`}
+                        >
+                          {upgradableSubscription &&
+                            upgradableSubscription.benefits.map((item: any) => {
+                              return <li>{item.header_content}</li>;
+                            })}
+                        </ul>
+                        {/* <a
+                      href="javascript: void(0);"
+                      className={classes.more}
+                      onClick={() => setShowMore(!showMore)}
+                    >
+                      {!showMore ? <span> +12 more</span> : <span>Hide</span>}
+                    </a> */}
+                      </div>
+                      <div className={classes.btnContainer}>
+                        <AphButton href={clientRoutes.membershipPlanLocked()}>
+                          View Details
+                        </AphButton>
+                        <AphButton
+                          color="primary"
+                          variant="contained"
+                          onClick={() => setIsHowToAvail(true)}
+                        >
+                          How To Avail
+                        </AphButton>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  ''
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
