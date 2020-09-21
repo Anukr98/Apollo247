@@ -12,6 +12,7 @@ import {
 import { AphInput } from '@aph/web-ui-components';
 import _lowerCase from 'lodash/lowerCase';
 import { Cities } from './Cities';
+import { DoctorDetails } from 'components/Doctors/SpecialtyDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -174,7 +175,7 @@ interface SpecialtySearchProps {
   selectedCity: string;
   setSelectedCity: (selectedCity: string) => void;
   searchSpecialty: SpecialtyType[] | null;
-  searchDoctors: DoctorsType[] | null;
+  searchDoctors: DoctorDetails[] | null;
   searchLoading: boolean;
   setLocationPopup: (locationPopup: boolean) => void;
   locationPopup: boolean;
@@ -193,26 +194,21 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
     searchKeyword,
     locationPopup,
     setSelectedCity,
-    searchDoctorsNextAvailability,
   } = props;
 
-  const getDoctorAvailability = (id: string) => {
-    const requiredDoctor =
-      searchDoctorsNextAvailability &&
-      searchDoctorsNextAvailability.find((avail: NextAvailability) => avail.doctorId === id);
-    const differenceInMinutes = requiredDoctor && requiredDoctor.availableInMinutes;
-    if (differenceInMinutes > 0 && differenceInMinutes < 120) {
-      return `${differenceInMinutes} ${differenceInMinutes === 1 ? 'min' : 'mins'}`;
-    } else if (differenceInMinutes > 120 && differenceInMinutes < 1440) {
-      const differenceInHours = Math.floor(differenceInMinutes / 60);
+  const getDoctorAvailability = (slot: number) => {
+    if (slot > 0 && slot < 120) {
+      return `${slot} ${slot === 1 ? 'min' : 'mins'}`;
+    } else if (slot > 120 && slot < 1440) {
+      const differenceInHours = Math.floor(slot / 60);
       return `${differenceInHours} ${differenceInHours === 1 ? 'hour' : 'hours'}`;
-    } else if (differenceInMinutes > 1440 && differenceInMinutes < 43200) {
-      const differenceInDays = Math.floor(differenceInMinutes / 1440);
+    } else if (slot > 1440 && slot < 43200) {
+      const differenceInDays = Math.floor(slot / 1440);
       return `${differenceInDays} ${differenceInDays === 1 ? 'Day' : 'Days'}`;
     } else {
       return '1 Month';
     }
-    return (requiredDoctor && requiredDoctor.availableInMinutes) || '';
+    return slot || '';
   };
   const searchRef = useRef(null);
   const pathCondition = location.pathname === clientRoutes.specialityListing();
@@ -298,12 +294,12 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
                       <div className={classes.docContent}>
                         <Typography component="h6">Doctors</Typography>
                         <ul className={classes.doctorList}>
-                          {searchDoctors.map((doctor: DoctorsType) => (
+                          {searchDoctors.map((doctor: DoctorDetails) => (
                             <li key={doctor.id}>
                               <Link
                                 key={doctor.id}
                                 to={clientRoutes.doctorDetails(
-                                  readableParam(doctor.fullName),
+                                  readableParam(doctor.displayName),
                                   doctor.id
                                 )}
                               >
@@ -312,22 +308,13 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
                                     <img src={doctor.photoUrl} />
                                   </div>
                                   <div className={classes.doctorDetails}>
-                                    <Typography component="h2">{doctor.fullName}</Typography>
+                                    <Typography component="h2">{doctor.displayName}</Typography>
                                     <Typography>
-                                      {doctor.specialty && doctor.specialty.name
-                                        ? doctor.specialty.name
+                                      {doctor.specialistSingularTerm
+                                        ? doctor.specialistSingularTerm
                                         : ''}{' '}
-                                      | {getDoctorAvailability(doctor.id)} |{' '}
-                                      {getConsultationFees(
-                                        doctor.onlineConsultationFees,
-                                        doctor.physicalConsultationFees
-                                      )}{' '}
-                                      |{' '}
-                                      {doctor.doctorHospital &&
-                                      doctor.doctorHospital[0] &&
-                                      doctor.doctorHospital[0].facility
-                                        ? `${doctor.doctorHospital[0].facility.city || ''} `
-                                        : ''}
+                                      | {getDoctorAvailability(doctor.earliestSlotInMinutes)} |{' '}
+                                      {doctor.fee} | {doctor.doctorfacility}
                                     </Typography>
                                   </div>
                                 </div>

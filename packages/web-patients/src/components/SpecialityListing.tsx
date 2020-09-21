@@ -25,7 +25,7 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctorsNextAvailability as NextAvailability,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
-import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
+import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME, GET_DOCTOR_LIST } from 'graphql/doctors';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SpecialtySearch } from './SpecialtySearch';
 import { WhyApollo } from 'components/Doctors/WhyApollo';
@@ -35,6 +35,7 @@ import { Relation } from 'graphql/types/globalTypes';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { SchemaMarkup } from 'SchemaMarkup';
 import _debounce from 'lodash/debounce';
+import { DoctorDetails } from 'components/Doctors/SpecialtyDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -631,7 +632,7 @@ const SpecialityListing: React.FC = (props) => {
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
   const [searchSpecialty, setSearchSpecialty] = useState<SpecialtyType[] | null>(null);
-  const [searchDoctors, setSearchDoctors] = useState<DoctorsType[] | null>(null);
+  const [searchDoctors, setSearchDoctors] = useState<DoctorDetails[] | null>(null);
   const [searchDoctorsNextAvailability, setSearchDoctorsNextAvailability] = useState<
     NextAvailability[] | null
   >(null);
@@ -694,24 +695,21 @@ const SpecialityListing: React.FC = (props) => {
 
   const fetchData = (searchKeyword: any, selectedCity: any) => {
     apolloClient
-      .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
-        query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
+      .query({
+        query: GET_DOCTOR_LIST,
         variables: {
-          searchText: searchKeyword,
-          patientId: currentPatient ? currentPatient.id : '',
-          city: selectedCity,
+          filterInput: { searchText: searchKeyword },
         },
         fetchPolicy: 'no-cache',
       })
       .then((response) => {
-        const specialtiesAndDoctorsList =
-          response && response.data && response.data.SearchDoctorAndSpecialtyByName;
+        console.log('res', response);
+        const specialtiesAndDoctorsList = response && response.data && response.data.getDoctorList;
         if (specialtiesAndDoctorsList) {
           const doctorsArray = specialtiesAndDoctorsList.doctors || [];
           const specialtiesArray = specialtiesAndDoctorsList.specialties || [];
           setSearchSpecialty(specialtiesArray);
           setSearchDoctors(doctorsArray);
-          setSearchDoctorsNextAvailability(specialtiesAndDoctorsList.doctorsNextAvailability || []);
         }
       })
       .catch((e) => {
@@ -795,7 +793,6 @@ const SpecialityListing: React.FC = (props) => {
                     setLocationPopup={setLocationPopup}
                     locationPopup={locationPopup}
                     setSelectedCity={setSelectedCity}
-                    searchDoctorsNextAvailability={searchDoctorsNextAvailability}
                   />
                   {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
                     <PastSearches />
