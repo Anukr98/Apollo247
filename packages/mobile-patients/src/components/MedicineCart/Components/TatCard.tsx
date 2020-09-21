@@ -3,6 +3,9 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { WhiteArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import moment from 'moment';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { format } from 'date-fns';
 
 export interface TatCardProps {
   deliveryTime: string;
@@ -15,6 +18,27 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
   const { cartItems } = useShoppingCart();
   const unServiceable = cartItems.find((item) => item.unserviceable);
 
+  function getGenericDate() {
+    const genericServiceableDate = moment()
+      .add(2, 'days')
+      .set('hours', 20)
+      .set('minutes', 0)
+      .format(AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT);
+    return genericServiceableDate;
+  }
+
+  function getDeliveryDate() {
+    let tommorowDate = new Date();
+    tommorowDate.setDate(tommorowDate.getDate() + 1);
+
+    if (new Date(deliveryTime).toLocaleDateString() == new Date().toLocaleDateString()) {
+      return <Text style={styles.dateTime}> {`${format(deliveryTime, 'h:mm A')}, Today!`}</Text>;
+    } else if (new Date(deliveryTime).toLocaleDateString() == tommorowDate.toLocaleDateString()) {
+      return <Text style={styles.dateTime}> {`${format(deliveryTime, 'h:mm A')}, Tomorrow!`}</Text>;
+    } else {
+      return <Text style={styles.dateTime}>{`${format(deliveryTime, 'D-MMM-YYYY')}`}</Text>;
+    }
+  }
   return (
     <View style={{ backgroundColor: '#02475B', paddingHorizontal: 20 }}>
       <View
@@ -25,8 +49,7 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
       >
         {!unServiceable && (
           <Text style={styles.delivery}>
-            Deliver by :{' '}
-            <Text style={styles.dateTime}>{new Date(deliveryTime).toDateString()}</Text>
+            Deliver by : {deliveryTime ? getDeliveryDate() : getGenericDate()}
           </Text>
         )}
         <TouchableOpacity

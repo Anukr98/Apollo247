@@ -43,6 +43,7 @@ import {
   pinCodeServiceabilityApi247,
   availabilityApi247,
   GetTatResponse247,
+  getMedicineDetailsApi,
   TatApiInput247,
   getDeliveryTAT247,
   validateConsultCoupon,
@@ -84,6 +85,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     addresses,
     deliveryAddressId,
     setDeliveryAddressId,
+    addMultipleCartItems,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -138,6 +140,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       validateCoupon(coupon.coupon);
     }
   }, [cartTotal]);
+
+  useEffect(() => {
+    if (couponProducts && couponProducts.length) {
+      getMedicineDetailsOfCouponProducts();
+    }
+  }, [couponProducts]);
 
   async function fetchAddress() {
     try {
@@ -222,7 +230,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         }));
         setCartItems!(updatedCartItems);
         if (unserviceableSkus.length) {
-          // showUnServiceableItemsAlert(updatedCartItems);
+          showUnServiceableItemsAlert(updatedCartItems);
         }
         const serviceableItems = updatedCartItems
           .filter((item) => !item.unserviceable)
@@ -295,6 +303,30 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     console.log(loading);
   }
 
+  const showUnServiceableItemsAlert = (cartItems: ShoppingCartItem[]) => {
+    showAphAlert!({
+      title: string.medicine_cart.tatUnServiceableAlertTitle,
+      description: string.medicine_cart.tatUnServiceableAlertDesc,
+      titleStyle: theme.viewStyles.text('SB', 18, '#890000'),
+      CTAs: [
+        {
+          text: string.medicine_cart.tatUnServiceableAlertChangeCTA,
+          type: 'orange-link',
+          onPress: showAddressPopup,
+        },
+        {
+          text: string.medicine_cart.tatUnServiceableAlertRemoveCTA,
+          type: 'orange-link',
+          onPress: () => removeUnServiceableItems(cartItems),
+        },
+      ],
+    });
+  };
+  const removeUnServiceableItems = (cartItems: ShoppingCartItem[]) => {
+    hideAphAlert!();
+    setCartItems!(cartItems.filter((item) => !item.unserviceable));
+  };
+
   const removeCouponWithAlert = (message: string) => {
     setCoupon!(null);
     if (couponProducts.length) {
@@ -305,6 +337,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   const validateCoupon = async (coupon: string, autoApply?: boolean) => {
     CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
+    console.log('inside validate');
     setloading!(true);
     const data = {
       mobile: g(currentPatient, 'mobileNumber'),
@@ -339,6 +372,39 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     }
   };
 
+  const getMedicineDetailsOfCouponProducts = () => {
+    setloading!(true);
+    Promise.all(couponProducts.map((item) => getMedicineDetailsApi(item!.sku!)))
+      .then((result) => {
+        setloading!(false);
+        const medicinesAll = result.map(({ data: { productdp } }, index) => {
+          const medicineDetails = (productdp && productdp[0]) || {};
+          if (medicineDetails.id == 0) {
+            return null;
+          }
+          return {
+            id: medicineDetails!.sku!,
+            mou: medicineDetails.mou,
+            name: medicineDetails!.name,
+            price: medicineDetails.price,
+            specialPrice: Number(couponProducts[index]!.mrp), // special price as coupon product price
+            quantity: couponProducts[index]!.quantity,
+            prescriptionRequired: medicineDetails.is_prescription_required == '1',
+            isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
+            thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+            isInStock: !!medicineDetails.is_in_stock,
+            maxOrderQty: medicineDetails.MaxOrderQty,
+            productType: medicineDetails.type_id,
+          } as ShoppingCartItem;
+        });
+        addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
+      })
+      .catch((e) => {
+        setloading!(false);
+        console.log({ e });
+      });
+  };
+
   function showAddressPopup() {
     showAphAlert!({
       title: string.common.selectAddress,
@@ -354,7 +420,11 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             hideAphAlert!();
           }}
           onPressEditAddress={(address) => {
-            console.log(address);
+            props.navigation.push(AppRoutes.AddAddress, {
+              KeyName: 'Update',
+              DataAddress: address,
+            });
+            hideAphAlert!();
           }}
           onPressSelectAddress={(address) => {
             checkServicability(address);
@@ -385,6 +455,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         activeOpacity={0.5}
         onPress={() => {
           props.navigation.navigate('MEDICINES', { focusSearch: true });
+          setCoupon!(null);
+          if (couponProducts.length) {
+            removeFreeProductsFromCart();
+          }
         }}
       >
         <Text style={{ ...theme.fonts.IBMPlexSansSemiBold(13), color: theme.colors.APP_YELLOW }}>
@@ -403,6 +477,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
           setCoupon!(null);
+          if (couponProducts.length) {
+            removeFreeProductsFromCart();
+          }
           props.navigation.goBack();
         }}
       />
