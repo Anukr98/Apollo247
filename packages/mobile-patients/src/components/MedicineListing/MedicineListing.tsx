@@ -352,7 +352,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
           isVisible={true}
           filters={filterOptions}
           selectedFilters={filterBy}
-          onRequestClose={onClose}
           onClose={onClose}
           onApplyFilters={onApplyFilters}
         />

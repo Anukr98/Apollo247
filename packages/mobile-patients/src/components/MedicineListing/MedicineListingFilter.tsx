@@ -9,8 +9,17 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineProductsResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { isEqual } from 'lodash';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  Dimensions,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { CheckBox, ListItem, Overlay, OverlayProps } from 'react-native-elements';
 
 type Filter = MedicineProductsResponse['filters'][0];
@@ -32,15 +41,22 @@ export const MedicineListingFilter: React.FC<Props> = ({
 }) => {
   const [selectedOption, setSelectedOption] = useState<Filter | null>(filters[0]);
   const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(_selectedFilters || {});
+  const [alertVisible, setAlertVisible] = useState<boolean>(false);
   const isFiltersApplied = Object.keys(selectedFilters).find((k) => selectedFilters[k]?.length);
+
+  const onRequestClose = () => {
+    if (isEqual(_selectedFilters, selectedFilters)) {
+      onClose();
+    } else {
+      setAlertVisible(true);
+    }
+  };
 
   const renderFilterOption = (filter: Filter) => {
     const isSelected = filter.attribute === selectedOption?.attribute;
     const onPress = () => setSelectedOption(filter);
     const highlightView = (
-      <View
-        style={[styles.highlight, { backgroundColor: isSelected ? '#00B38E' : 'transparent' }]}
-      />
+      <View style={[styles.highlight, { backgroundColor: isSelected ? APP_GREEN : CLEAR }]} />
     );
 
     return (
@@ -91,9 +107,9 @@ export const MedicineListingFilter: React.FC<Props> = ({
     });
   };
 
-  const renderInScrollView = (children: React.ReactNode) => {
+  const renderInScrollView = (children: React.ReactNode, width: number) => {
     return (
-      <ScrollView removeClippedSubviews={true} bounces={false}>
+      <ScrollView removeClippedSubviews={true} bounces={false} contentContainerStyle={{ width }}>
         {children}
       </ScrollView>
     );
@@ -101,10 +117,8 @@ export const MedicineListingFilter: React.FC<Props> = ({
 
   const renderButton = () => {
     const onPress = () => {
-      console.log(selectedFilters);
       onApplyFilters(selectedFilters);
     };
-
     return (
       <Button
         title={'APPLY'}
@@ -125,24 +139,80 @@ export const MedicineListingFilter: React.FC<Props> = ({
           style: styles.headerRightText,
         }}
         leftIcon="close"
-        onPressLeftIcon={onClose}
+        onPressLeftIcon={onRequestClose}
         container={styles.header}
       />
     );
   };
 
+  const renderApplyAndDiscardButtons = () => {
+    const onDiscard = () => {
+      setAlertVisible(false);
+      onClose();
+    };
+    const onApply = () => {
+      setAlertVisible(false);
+      onApplyFilters(selectedFilters);
+    };
+    return (
+      <View style={styles.alertButtonsContainer}>
+        <Button
+          title={'APPLY CHANGES'}
+          style={[styles.alertButton, styles.alertOutlineButton]}
+          titleTextStyle={[styles.alertButtonTitle, styles.alertOutlineButtonTitle]}
+          onPress={onApply}
+        />
+        <Button
+          title={'DISCARD CHANGES'}
+          style={styles.alertButton}
+          titleTextStyle={styles.alertButtonTitle}
+          onPress={onDiscard}
+        />
+      </View>
+    );
+  };
+
+  const renderDiscardChangesAlert = () => {
+    const onPress = () => {
+      setAlertVisible(false);
+    };
+    return (
+      <Overlay
+        isVisible={!!alertVisible}
+        overlayStyle={styles.alertOverlay}
+        onBackdropPress={onPress}
+      >
+        <View style={styles.alertContainer}>
+          <View style={styles.alertInnerContainer}>
+            <Text style={styles.alertText}>{'Do you want to discard your changes ?'}</Text>
+            {renderApplyAndDiscardButtons()}
+          </View>
+        </View>
+      </Overlay>
+    );
+  };
+
   return (
-    <Overlay fullScreen overlayStyle={styles.overlayStyle} {...overlayProps}>
+    <Overlay
+      fullScreen
+      overlayStyle={styles.overlayStyle}
+      onRequestClose={onRequestClose}
+      {...overlayProps}
+    >
       <SafeAreaView style={container}>
         {renderHeader()}
         <View style={styles.horizontalDivider} />
         <View style={styles.container}>
-          {renderInScrollView(filters.map(renderFilterOption))}
+          {renderInScrollView(filters.map(renderFilterOption), width * 0.4)}
           <View style={styles.verticalDivider} />
-          {renderInScrollView(selectedOption && renderFilterSubOptions(selectedOption))}
+          {renderInScrollView(
+            selectedOption && renderFilterSubOptions(selectedOption),
+            width * 0.55
+          )}
         </View>
         <View style={styles.horizontalDivider} />
         {renderButton()}
+        {renderDiscardChangesAlert()}
       </SafeAreaView>
     </Overlay>
   );
@@ -150,16 +220,18 @@ export const MedicineListingFilter: React.FC<Props> = ({
 
 const { container } = theme.viewStyles;
 const { text } = theme.viewStyles;
+const { BUTTON_BG, LIGHT_BLUE, WHITE, APP_GREEN, CLEAR } = theme.colors;
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   overlayStyle: {
     padding: 0,
   },
   container: { flex: 1, flexDirection: 'row' },
-  verticalDivider: { backgroundColor: '#000', opacity: 0.05, width: 5, height: '100%' },
-  horizontalDivider: { backgroundColor: '#000', opacity: 0.05, height: 5 },
+  verticalDivider: { backgroundColor: '#000', opacity: 0.03, width: 5, height: '100%' },
+  horizontalDivider: { backgroundColor: '#000', opacity: 0.03, height: 5 },
   checkBoxContainer: {
-    backgroundColor: 'transparent',
+    backgroundColor: CLEAR,
     borderWidth: 0,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(1,48,91,0.2)',
@@ -167,13 +239,13 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   checkBoxText: {
-    ...text('M', 12, '#02475B', 0.9),
+    ...text('M', 12, LIGHT_BLUE, 0.9),
   },
   selectedCheckBoxText: {
-    ...text('SB', 12, '#02475B'),
+    ...text('SB', 12, LIGHT_BLUE),
   },
   optionsContainer: {
-    backgroundColor: 'transparent',
+    backgroundColor: CLEAR,
     paddingLeft: 0,
     paddingRight: 15,
     paddingVertical: 15,
@@ -182,10 +254,10 @@ const styles = StyleSheet.create({
     borderStartColor: 'red',
   },
   optionText: {
-    ...text('SB', 14, '#02475B'),
+    ...text('SB', 14, LIGHT_BLUE),
   },
   selectedOptionText: {
-    ...text('SB', 14, '#00B38E'),
+    ...text('SB', 14, APP_GREEN),
   },
   highlight: {
     height: '220%',
@@ -193,12 +265,57 @@ const styles = StyleSheet.create({
   },
   button: { borderRadius: 0, height: 45, shadowOpacity: 0 },
   buttonTitle: {
-    ...text('B', 17, '#fff'),
+    ...text('B', 17, WHITE),
   },
   headerRightText: {
-    color: '#FCB716',
+    color: BUTTON_BG,
+    paddingRight: 0,
   },
   header: {
     borderBottomWidth: 0,
+  },
+  alertOverlay: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: CLEAR,
+    padding: 0,
+  },
+  alertContainer: {
+    flex: 1,
+    backgroundColor: CLEAR,
+    justifyContent: 'flex-end',
+  },
+  alertInnerContainer: {
+    backgroundColor: WHITE,
+    padding: 16,
+    paddingTop: 19,
+  },
+  alertButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  alertText: {
+    ...theme.viewStyles.text('M', 14, LIGHT_BLUE, 1, 17),
+    marginBottom: 24,
+  },
+  alertButton: {
+    shadowOpacity: 0,
+    width: 'auto',
+    height: 'auto',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+    marginRight: 8,
+  },
+  alertOutlineButton: {
+    backgroundColor: WHITE,
+    borderColor: BUTTON_BG,
+    borderWidth: 1,
+  },
+  alertButtonTitle: {
+    ...text('SB', 14, WHITE, 1, 24),
+  },
+  alertOutlineButtonTitle: {
+    color: BUTTON_BG,
   },
 });
