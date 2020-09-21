@@ -463,16 +463,11 @@ const OnlineCheckout: React.FC = () => {
     return validateCouponBody;
   };
 
-  const verifyCoupon = (couponCode: string) => {
-    if (data && data.getDoctorDetailsById && couponCode.length > 0) {
+  const verifyCoupon = (doctorDetails: DoctorDetails, couponCode: string) => {
+    if (doctorDetails && couponCode.length > 0) {
       setMutationLoading(true);
       const validateCouponBody = getValidateCouponBody(data.getDoctorDetailsById, couponCode);
-      const speciality =
-        (doctorDetails &&
-          doctorDetails.getDoctorDetailsById &&
-          doctorDetails.getDoctorDetailsById.specialty &&
-          doctorDetails.getDoctorDetailsById.specialty.name) ||
-        null;
+      const speciality = (doctorDetails.specialty && doctorDetails.specialty.name) || null;
       fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', validateCouponBody, '', false)
         .then((data: any) => {
           if (data && data.response) {
@@ -511,7 +506,7 @@ const OnlineCheckout: React.FC = () => {
         if (resp.errorCode == 0 && resp.response && resp.response.length > 0) {
           const couponCode = resp.response[0].coupon;
           setCouponCode(couponCode || '');
-          verifyCoupon(couponCode);
+          verifyCoupon(data.getDoctorDetailsById, couponCode);
         } else {
           setCouponCode('');
         }
