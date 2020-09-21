@@ -1,11 +1,10 @@
-import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { MedicineListingEvents } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingEvents';
 import {
   MedicineListingFilter,
   Props as MedicineListingFilterProps,
 } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingFilter';
+import { MedicineListingHeader } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingHeader';
 import {
   MedListingProductProps,
   MedListingProducts,
@@ -15,12 +14,7 @@ import { OptionSelectionOverlay } from '@aph/mobile-patients/src/components/Medi
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  CartIcon,
-  FilterOutline,
-  WhiteSearchIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { CartIcon, FilterOutline } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListGridSelectionView } from '@aph/mobile-patients/src/components/ui/ListGridSelectionView';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -40,14 +34,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  ActivityIndicator,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 
@@ -71,7 +58,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   // navigation props
   const searchText = navigation.getParam('searchText') || '';
   const categoryId = navigation.getParam('category_id') || '';
-  const movedFrom = navigation.getParam('movedFrom') || '';
+  const movedFrom = navigation.getParam('movedFrom');
   const productsNavProp = navigation.getParam('products') || [];
   const sortByNavProp = navigation.getParam('sortBy') || null;
   const filterByNavProp = navigation.getParam('filterBy') || {};
@@ -97,14 +84,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const client = useApolloClient();
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
-  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
-  const {
-    cartItems,
-    getCartItemQty,
-    addCartItem,
-    updateCartItem,
-    removeCartItem,
-  } = useShoppingCart();
+  const { getCartItemQty, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
 
   // custom variables
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
@@ -206,55 +186,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderHeader = () => {
-    const onBackPress = () => {
-      if (movedFrom === 'registration') {
-        navigation.replace(AppRoutes.ConsultRoom);
-      } else {
-        navigation.goBack();
-      }
-    };
-
-    return (
-      <Header
-        leftIcon="backArrow"
-        onPressLeftIcon={onBackPress}
-        titleComponent={renderHeaderCenterView()}
-        rightComponent={renderHeaderRightView()}
-        container={styles.headerContainer}
-      />
-    );
-  };
-
-  const renderHeaderCenterView = () => {
-    return <ApolloLogo style={styles.apolloLogo} />;
-  };
-
-  const renderHeaderRightView = () => {
-    const cartItemsCount = cartItems.length + diagnosticCartItems.length;
-    const onPressCartIcon = () => {
-      navigation.navigate(
-        diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.YourCart
-      );
-    };
-    const onPressSearchIcon = () => {
-      navigation.navigate(AppRoutes.MedicineSearch);
-    };
-
-    const icons = [
-      <TouchableOpacity onPress={onPressSearchIcon}>
-        <WhiteSearchIcon />
-      </TouchableOpacity>,
-      <TouchableOpacity onPress={onPressCartIcon}>
-        <CartIcon />
-        {cartItemsCount > 0 && <Badge label={cartItemsCount} />}
-      </TouchableOpacity>,
-    ];
-
-    return (
-      <View style={styles.headerRightView}>
-        {icons.map((icon, index, array) => [icon, index + 1 !== array.length && paddingView])}
-      </View>
-    );
+    return <MedicineListingHeader navigation={navigation} movedFrom={movedFrom} />;
   };
 
   const paddingView = <View style={styles.paddingView} />;
@@ -465,18 +397,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
 const { text, card, container } = theme.viewStyles;
 const styles = StyleSheet.create({
-  headerContainer: {
-    ...card(0, 0, 0, '#fff', 6),
-    borderBottomWidth: 0,
-    zIndex: 1,
-  },
-  apolloLogo: {
-    resizeMode: 'contain',
-    height: 50,
-    width: 50,
-    marginLeft: '-75%',
-  },
-  headerRightView: { justifyContent: 'flex-end', flexDirection: 'row' },
   paddingView: { width: 20, height: 0 },
   sectionWrapper: {
     ...card(20, 0, 0, '#fff', 5),
