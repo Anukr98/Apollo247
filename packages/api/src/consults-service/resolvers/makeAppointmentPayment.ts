@@ -25,7 +25,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Connection } from 'typeorm';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
-import { ApiConstants } from 'ApiConstants';
+import { ApiConstants, TransactionType } from 'ApiConstants';
 import { addMilliseconds, format, differenceInSeconds } from 'date-fns';
 import {
   sendNotification,
@@ -40,6 +40,7 @@ import { ConsultQueueRepository } from 'consults-service/repositories/consultQue
 import { acceptCoupon } from 'helpers/couponServices';
 import { AcceptCouponRequest } from 'types/coupons';
 import { updateDoctorSlotStatusES } from 'doctors-service/entities/doctorElastic';
+import { transactionSuccessTrigger } from 'helpers/subscriptionHelper';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
@@ -210,11 +211,21 @@ const makeAppointmentPayment: Resolver<
   let appointmentStatus = STATUS.PENDING;
 
   //update appointment status to PENDING
+
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
+    const patient = patientsDb.getCustomRepository(PatientRepository);
+    const patientDetails = await patient.getPatientDetails(processingAppointment.patientId);
+    if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+    await transactionSuccessTrigger({
+      amount: `${paymentInput.amountPaid}`,
+      transactionType: TransactionType.CONSULT,
+      transactionDate: paymentInput.paymentDateTime || new Date(),
+      transactionId: paymentInput.paymentRefId,
+      sourceTransactionIdentifier: `${paymentInput.orderId}`,
+      mobileNumber: patientDetails.mobileNumber,
+    });
+
     if (processingAppointment.couponCode) {
-      const patient = patientsDb.getCustomRepository(PatientRepository);
-      const patientDetails = await patient.getPatientDetails(processingAppointment.patientId);
-      if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
       const payload: AcceptCouponRequest = {
         mobile: patientDetails.mobileNumber.replace('+91', ''),
         coupon: processingAppointment.couponCode,

@@ -496,3 +496,12 @@ export const PharmaProductTypes = {
   PHARMA: 'Pharma',
   PL: 'PL',
 };
+
+export const PartnerId = {
+  HDFCBANK: 'HDFCBANK',
+};
+export enum TransactionType {
+  PHARMA = 'PHARMA',
+  CONSULT = 'CONSULT',
+  DIAGNOSTICS = 'DIAGNOSTICS',
+}
