@@ -16,7 +16,11 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CartIcon, Filter, WhiteSearchIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CartIcon,
+  FilterOutline,
+  WhiteSearchIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListGridSelectionView } from '@aph/mobile-patients/src/components/ui/ListGridSelectionView';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -58,7 +62,7 @@ export interface Props
     title?: string;
     products?: MedicineProduct[];
     sortBy?: SortByOption; // support for deep link
-    filterBy?: any; // TODO: support for deep link
+    filterBy?: SelectedFilters; // support for deep link
     movedFrom?: 'registration' | 'deeplink' | 'home' | '';
   }> {}
 
@@ -69,6 +73,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const movedFrom = navigation.getParam('movedFrom') || '';
   const productsNavProp = navigation.getParam('products') || [];
   const sortByNavProp = navigation.getParam('sortBy') || null;
+  const filterByNavProp = navigation.getParam('filterBy') || {};
   const titleNavProp = navigation.getParam('title') || '';
 
   // states
@@ -82,7 +87,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const [sortBy, setSortBy] = useState<SortByOption | null>(sortByNavProp);
   const [sortByOptions, setSortByOptions] = useState<SortByOption[]>([]);
   const [sortByVisible, setSortByVisible] = useState<boolean>(false);
-  const [filterBy, setFilterBy] = useState<SelectedFilters>({});
+  const [filterBy, setFilterBy] = useState<SelectedFilters>(filterByNavProp);
   const [filterOptions, setFilterOptions] = useState<Filter[]>([]);
   const [filterVisible, setFilterVisible] = useState<boolean>(false);
 
@@ -393,9 +398,14 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
             containerStyle: styles.sortByContainer,
           },
           {
-            icon: <Filter />, // TODO: Replace icon
+            icon: (
+              <View>
+                <FilterOutline style={styles.filterOutline} />
+                {isFiltersApplied && <Badge containerStyle={styles.filterBadgeContainer} />}
+              </View>
+            ),
             title: 'Filter By',
-            subtitle: 'Apply filters',
+            subtitle: isFiltersApplied ? 'Filters applied' : 'Apply filters',
             onPress: () => setFilterVisible(true),
             containerStyle: styles.filterByContainer,
           },
@@ -472,4 +482,12 @@ const styles = StyleSheet.create({
   sortByContainer: { justifyContent: 'flex-start', width: '37%' },
   filterByContainer: { width: '37%' },
   listGridSelectionContainer: { justifyContent: 'flex-end', width: '25%' },
+  filterBadgeContainer: {
+    width: 6,
+    height: 6,
+    backgroundColor: '#00B38E',
+    top: -2.5,
+    right: -2.5,
+  },
+  filterOutline: { width: 16, height: 17 },
 });

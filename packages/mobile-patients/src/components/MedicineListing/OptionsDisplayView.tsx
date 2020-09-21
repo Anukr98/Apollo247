@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
   },
   titleSubtitleContainer: {
     paddingHorizontal: 5,
