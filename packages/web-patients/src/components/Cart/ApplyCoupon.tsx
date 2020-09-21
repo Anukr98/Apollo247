@@ -389,17 +389,17 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                         <img src={require('images/ic_tickmark.svg')} alt="" />
                       </div>
                     ) : (
-                        <AphButton
-                          classes={{
-                            disabled: classes.buttonDisabled,
-                          }}
-                          className={classes.searchBtn}
-                          disabled={disableCoupon}
-                          onClick={() => verifyCoupon()}
-                        >
-                          <img src={require('images/ic_send.svg')} alt="" />
-                        </AphButton>
-                      )}
+                      <AphButton
+                        classes={{
+                          disabled: classes.buttonDisabled,
+                        }}
+                        className={classes.searchBtn}
+                        disabled={disableCoupon}
+                        onClick={() => verifyCoupon()}
+                      >
+                        <img src={require('images/ic_send.svg')} alt="" />
+                      </AphButton>
+                    )}
                   </div>
                 </div>
                 {errorMessage.length > 0 && (
@@ -439,8 +439,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                   ) : isLoading ? (
                     <CircularProgress className={classes.loader} />
                   ) : (
-                        <div className={classes.noCoupons}>No available Coupons</div>
-                      )}
+                    <div className={classes.noCoupons}>No available Coupons</div>
+                  )}
                 </ul>
               </div>
             </div>
