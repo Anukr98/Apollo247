@@ -6,6 +6,8 @@ import {
   ApploLogo2,
   MedicineIcon,
   TestsIcon,
+  Whatsapp,
+  Mail,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-doctors/src/components/ui/StickyBottomComponent';
 import {
@@ -56,7 +58,6 @@ export interface PreviewPrescriptionProps
       | undefined;
     followUp?: {
       doFollowUp: boolean | null;
-      followUpType: APPOINTMENT_TYPE | undefined;
       followUpDays: string | number | undefined;
     };
     referralData?: {
@@ -101,7 +102,6 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
     props.navigation.getParam('advice') || g(caseSheet, 'caseSheetDetails', 'otherInstructions');
   const followUp = props.navigation.getParam('followUp') || {
     doFollowUp: g(caseSheet, 'caseSheetDetails', 'followUp'),
-    followUpType: g(caseSheet, 'caseSheetDetails', 'followUpConsultType'),
     followUpDays: g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays'),
   };
 
@@ -281,6 +281,9 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
                     }
                   >
                     {renderSubHeading(`${index + 1}. ${item.medicineName}`)}
+                    {item.includeGenericNameInPrescription && item.genericName
+                      ? renderDescription(`Contains ${item.genericName}`)
+                      : null}
                     {renderDescription(medicineDescription(item))}
                   </View>
                 );
@@ -327,6 +330,9 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
                 item.itemname && (
                   <View style={styles.singleItemContainer}>
                     {renderSubHeading(`${index + 1}. ${item.itemname}`)}
+                    {item.testInstruction
+                      ? renderSubHeading(item.testInstruction, styles.description3Text)
+                      : null}
                   </View>
                 )
             )}
@@ -349,7 +355,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
                   .join('\n')
               )
             : null}
-          {/* {renderFollowUp()} */}
+          {renderFollowUp()}
           {renderReferral()}
         </View>
       </View>
@@ -370,9 +376,9 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
     return followUp.doFollowUp
       ? renderSubItems(
           'Follow Up',
-          <Text
-            style={styles.subHeadingText}
-          >{`${'Free'} Follow up (${'Online'}) after ${'5'} day${'s'} with reports`}</Text>
+          <Text style={styles.subHeadingText}>{`Free Follow-up (Chat) upto ${
+            followUp.followUpDays
+          } day${Number(followUp.followUpDays) == 1 ? '' : 's'} from consultation.`}</Text>
         )
       : null;
   };
@@ -444,7 +450,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
           {doctorDetails.specialty && (
             <Text
               style={theme.viewStyles.text('S', 9, theme.colors.SHARP_BLUE, 1, 13)}
-            >{`${doctorDetails.specialty.name} | Reg. No. ${doctorDetails.registrationNumber}`}</Text>
+            >{`${doctorDetails.specialty.specialistSingularTerm} | Reg. No. ${doctorDetails.registrationNumber}`}</Text>
           )}
         </>
       )
@@ -474,6 +480,27 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
     );
   };
 
+  const renderContact = () => {
+    return (
+      <View style={styles.contactContainer}>
+        <View style={{ marginRight: 16 }}>
+          <Text style={styles.contactHeadingText}>{string.case_sheet.whatsapp}</Text>
+          <View style={styles.contactSubContainer}>
+            <Whatsapp />
+            <Text style={styles.contactSubHeadingText}>{string.case_sheet.whatsapp_number}</Text>
+          </View>
+        </View>
+        <View>
+          <Text style={styles.contactHeadingText}>{string.case_sheet.email}</Text>
+          <View style={styles.contactSubContainer}>
+            <Mail />
+            <Text style={styles.contactSubHeadingText}>{string.case_sheet.help_desk_email}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const renderApolloLogo = () => {
     return (
       <View style={styles.ApolloLogo}>
@@ -484,6 +511,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
           <View style={styles.doctorDetailsStyle}>
             {renderDoctorDetails()}
             {renderDoctorAddress()}
+            {renderContact()}
           </View>
         ) : null}
       </View>

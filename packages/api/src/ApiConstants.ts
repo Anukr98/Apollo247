@@ -408,6 +408,8 @@ export enum ApiConstants {
   //PHRV1 constants start
   LABTEST_SOURCE_SELF_UPLOADED = '247self',
   PRESCRIPTION_SOURCE_PREFIX = '247',
+  HEALTHCHECK_SELF_UPLOAD = '247self',
+  HOSPITALIZATION_SELF_UPLOAD = '247self',
   //PHRV1 constants end
 
   //REDIS KEYS
@@ -457,12 +459,20 @@ export enum ApiConstants {
   WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
   WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_namaste3',
 
+  WHATSAPP_DOC_SECRETARY_RESCHDULE = 'inf_secratory_consult_rescheduled',
+  WHATSAPP_DOC_SECRETARY_CANCEL = 'inf_secratory_consult_cancelled',
+  WHATSAPP_DOC_SECRETARY_BOOKING = 'inf_secratory_consult_booked',
+
+  WHATSAPP_DOC_SUMMARY_NEW = 'inf_doc_8am_summary_namaste3',
+
   ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE = 'R000247',
 
   PARTNER_SBI = 'SBIYONO',
 
   PRESCRIPTION_DEEPLINK_PLACEHOLDER = '<appointmentId>',
   PRESCRIPTION_CLICK_HERE = 'You can now access it from here:',
+
+  DOCTOR_APP_APPTS_LINK = 'apollodoctors://appointments',
 }
 
 export enum PATIENT_REPO_RELATIONS {

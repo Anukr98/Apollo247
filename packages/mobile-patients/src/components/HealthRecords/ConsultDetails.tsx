@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   bottomPaddingTwelve: {
-    paddingBottom: 12
+    paddingBottom: 12,
   },
   labelStyle: {
     paddingBottom: 4,
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   },
   prescDateTextStyle: {
     marginTop: 7,
-    marginBottom:10,
+    marginBottom: 10,
     color: theme.colors.LIGHT_BLUE,
     ...theme.fonts.IBMPlexSansMedium(12),
   },
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   subDataTextStyle: {
     color: theme.colors.SKY_BLUE,
     lineHeight: 24,
-    ...theme.fonts.IBMPlexSansMedium(14)
+    ...theme.fonts.IBMPlexSansMedium(14),
   },
   labelViewStyle: {
     borderBottomWidth: 0.5,
@@ -370,12 +370,18 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             </View>
           </View>
         )}
-        {!!(caseSheetDetails?.prescriptionGeneratedDate) &&
-          <Text style={styles.prescDateTextStyle}>Prescription generated on {moment(caseSheetDetails!.prescriptionGeneratedDate).format(
-            AppConfig.Configuration.CASESHEET_PRESCRIPTION_DATE_FORMAT
-          )} at {moment(caseSheetDetails!.prescriptionGeneratedDate).format(
-            AppConfig.Configuration.CASESHEET_PRESCRIPTION_TIME_FORMAT
-          )}</Text>}
+        {!!caseSheetDetails?.prescriptionGeneratedDate && (
+          <Text style={styles.prescDateTextStyle}>
+            Prescription generated on{' '}
+            {moment(caseSheetDetails!.prescriptionGeneratedDate).format(
+              AppConfig.Configuration.CASESHEET_PRESCRIPTION_DATE_FORMAT
+            )}{' '}
+            at{' '}
+            {moment(caseSheetDetails!.prescriptionGeneratedDate).format(
+              AppConfig.Configuration.CASESHEET_PRESCRIPTION_TIME_FORMAT
+            )}
+          </Text>
+        )}
         {caseSheetDetails && caseSheetDetails.followUp ? (
           <View>
             {/* <Text style={styles.descriptionStyle}>
@@ -426,15 +432,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         <View style={styles.labelViewStyle}>
                           <Text style={styles.labelStyle}>{item.symptom}</Text>
                         </View>
-                        {!!(item?.since) && <Text style={styles.dataTextStyle}>
-                          Since: {item.since}
-                        </Text>}
-                        {!!(item?.howOften) && <Text style={styles.subDataTextStyle}>
-                          How Often: {item.howOften}
-                        </Text>}
-                        {!!(item?.severity) && <Text style={styles.subDataTextStyle}>
-                          Severity: {item.severity}
-                        </Text>}
+                        {!!item?.since && (
+                          <Text style={styles.dataTextStyle}>Since: {item.since}</Text>
+                        )}
+                        {!!item?.howOften && (
+                          <Text style={styles.subDataTextStyle}>How Often: {item.howOften}</Text>
+                        )}
+                        {!!item?.severity && (
+                          <Text style={styles.subDataTextStyle}>Severity: {item.severity}</Text>
+                        )}
                       </View>
                     );
                 })}
@@ -599,106 +605,22 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const onAddToCart = () => {
-    setLoading && setLoading(true);
-
     const medPrescription = (caseSheetDetails!.medicinePrescription || []).filter(
       (item) => item!.id
     );
-
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
-    Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
-      .then((result) => {
-        console.log('Promise.all medPrescription result', { result });
-        setLoading && setLoading(false);
-        const medicinesAll = result.map(({ data: { productdp } }, index) => {
-          const medicineDetails = (productdp && productdp[0]) || {};
-          if (medicineDetails.id == 0) {
-            return null;
-          }
-          const item = medPrescription[index]!;
-          const qty = getQuantity(
-            item.medicineUnit,
-            item.medicineTimings,
-            item.medicineDosage,
-            item.medicineCustomDosage,
-            item.medicineConsumptionDurationInDays,
-            item.medicineConsumptionDurationUnit,
-            parseInt(medicineDetails.mou || '1', 10)
-          );
-
-          return {
-            id: medicineDetails!.sku!,
-            mou: medicineDetails.mou,
-            name: medicineDetails!.name,
-            price: medicineDetails!.price,
-            specialPrice: medicineDetails.special_price
-              ? typeof medicineDetails.special_price == 'string'
-                ? Number(medicineDetails.special_price)
-                : medicineDetails.special_price
-              : undefined,
-            // quantity: parseInt(medPrescription[index]!.medicineDosage!),
-            quantity: qty,
-            prescriptionRequired: medicineDetails.is_prescription_required == '1',
-            isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
-            thumbnail: medicineDetails.thumbnail || medicineDetails.image,
-            isInStock: !!medicineDetails.is_in_stock,
-            maxOrderQty: medicineDetails.MaxOrderQty,
-            productType: medicineDetails.type_id,
-          } as ShoppingCartItem;
-        });
-        const medicines = medicinesAll.filter((item) => !!item);
-        console.log({ medicinesAll });
-        console.log({ medicines });
-
-        addMultipleCartItems!(medicines as ShoppingCartItem[]);
-
-        const totalItems = (caseSheetDetails!.medicinePrescription || []).length;
-        // const customItems = medicinesAll.length - medicines.length;
-        const outOfStockItems = medicines.filter((item) => !item!.isInStock).length;
-        const outOfStockMeds = medicines
-          .filter((item) => !item!.isInStock)
-          .map((item) => `${item!.name}`)
-          .join(', ');
-
-        if (outOfStockItems > 0) {
-          const alertMsg =
-            totalItems == outOfStockItems
-              ? 'Unfortunately, we do not have any medicines available right now.'
-              : `Out of ${totalItems} medicines, you are trying to order, following medicine(s) are out of stock.\n\n${outOfStockMeds}\n`;
-          Alert.alert('Uh oh.. :(', alertMsg);
-        }
-
-        // if (medPrescription.length > medicines.filter((item) => item!.isInStock).length) {
-        //   // const outOfStockCount = medPrescription.length - medicines.length;
-        //   // props.navigation.push(AppRoutes.YourCart);
-        // }
-
-        const rxMedicinesCount =
-          medicines.length == 0 ? 0 : medicines.filter((item) => item!.prescriptionRequired).length;
-
-        const presToAdd = {
-          id: caseSheetDetails!.id,
-          date: moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MMM YYYY'),
-          doctorName: g(data, 'displayName') || '',
-          forPatient: (currentPatient && currentPatient.firstName) || '',
-          medicines: (medicines || []).map((item) => item!.name).join(', '),
-          uploadedUrl: docUrl,
-        } as EPrescription;
-
-        if (rxMedicinesCount) {
-          setEPrescriptions!([
-            ...ePrescriptions.filter((item) => !(item.id == presToAdd.id)),
-            presToAdd,
-          ]);
-        }
-        props.navigation.push(AppRoutes.YourCart);
-      })
-      .catch((e) => {
-        CommonBugFender('ConsultDetails_onAddToCart', e);
-        setLoading && setLoading(false);
-        console.log({ e });
-        handleGraphQlError(e);
-      });
+    const presToAdd = {
+      id: caseSheetDetails!.id,
+      date: moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MMM YYYY'),
+      doctorName: g(data, 'displayName') || '',
+      forPatient: (currentPatient && currentPatient.firstName) || '',
+      medicines: (medPrescription || []).map((item) => item!.medicineName).join(', '),
+      uploadedUrl: docUrl,
+    } as EPrescription;
+    props.navigation.navigate(AppRoutes.UploadPrescription, {
+      ePrescriptionsProp: [presToAdd],
+      type: 'E-Prescription',
+    });
   };
 
   const medicineDescription = (
@@ -843,8 +765,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       <View>
                         <View style={styles.labelViewStyle}>
                           <Text style={styles.labelStyle}>{item.medicineName}</Text>
-                          {!!(item?.includeGenericNameInPrescription)
-                          && <Text style={styles.subLabelStyle}>{item.genericName}</Text>}
+                          {!!item?.includeGenericNameInPrescription && (
+                            <Text style={styles.subLabelStyle}>{item.genericName}</Text>
+                          )}
                         </View>
                         <Text style={styles.dataTextStyle}>{medicineDescription(item)}</Text>
                       </View>
@@ -913,20 +836,25 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           onPress={() => setShowReferral(!showReferral)}
         >
           <View style={[styles.cardViewStyle, styles.bottomPaddingTwelve]}>
-            {!!(caseSheetDetails?.referralSpecialtyName) ? (
+            {!!caseSheetDetails?.referralSpecialtyName ? (
               <View>
-                <Text style={styles.labelStyle}>
-                  {caseSheetDetails!.referralSpecialtyName}
-                </Text>
-                {!!(caseSheetDetails?.referralDescription) &&
-                  <Text style={styles.dataTextStyle}>{caseSheetDetails!.referralDescription}</Text>}
-                <TouchableOpacity style={{ marginTop: 12 }}
+                <Text style={styles.labelStyle}>{caseSheetDetails!.referralSpecialtyName}</Text>
+                {!!caseSheetDetails?.referralDescription && (
+                  <Text style={styles.dataTextStyle}>{caseSheetDetails!.referralDescription}</Text>
+                )}
+                <TouchableOpacity
+                  style={{ marginTop: 12 }}
                   onPress={() => {
                     props.navigation.navigate(AppRoutes.DoctorSearch);
                   }}
                 >
-                  <Text style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 },]}>
-                   {strings.common.book_apointment}
+                  <Text
+                    style={[
+                      theme.viewStyles.yellowTextStyle,
+                      { textAlign: 'right', paddingBottom: 16 },
+                    ]}
+                  >
+                    {strings.common.book_apointment}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -993,11 +921,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               <View>
                 <View>
                   <View style={styles.labelViewStyle}>
-                      <Text style={styles.labelStyle}>
-                        {caseSheetDetails!.consultType === ConsultMode.PHYSICAL
-                          ? 'Clinic Visit'
-                          : 'Online Consult'} with {'\n'}{props.navigation.state.params!.DoctorInfo?.displayName}
-                      </Text>
+                    <Text style={styles.labelStyle}>
+                      {caseSheetDetails!.consultType === ConsultMode.PHYSICAL
+                        ? 'Clinic Visit'
+                        : 'Online Consult'}{' '}
+                      with {'\n'}
+                      {props.navigation.state.params!.DoctorInfo?.displayName}
+                    </Text>
                   </View>
                   {caseSheetDetails!.followUpAfterInDays! <= '7' ? (
                     <Text style={styles.dataTextStyle}>

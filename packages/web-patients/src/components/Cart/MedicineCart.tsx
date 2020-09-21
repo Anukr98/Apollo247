@@ -640,6 +640,27 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    medicinesAddmore: {
+      fontWeight: 500,
+      fontSize: 14,
+      lineHeight: '20px',
+      padding: 10,
+      background: '#F7F8F5',
+      boxShadow: '0px 5px 20px rgba(128, 128, 128, 0.3)',
+      borderRadius: 5,
+      margin: '20px 15px 10px 20px',
+      '& img': {
+        position: 'relative',
+        top: 3,
+      },
+    },
+    addmoreAmount: {
+      color: '#FC9916',
+    },
+    nudgeAddMore: {
+      color: '#0087BA',
+      paddingLeft: 5,
+    },
   };
 });
 
@@ -891,6 +912,7 @@ export const MedicineCart: React.FC = (props) => {
   const mrpTotal = getMRPTotal();
   // const couponDiscountTotal = getCouponDiscountTotal();
   let productDiscount = mrpTotal - cartTotal;
+  console.log('cartTotal', cartTotal);
   // below variable is for calculating delivery charges after applying coupon discount
   const modifiedAmountForCharges =
     validateCouponResult &&
@@ -898,6 +920,7 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult.discount >= productDiscount
       ? Number(cartTotal) - couponDiscount
       : Number(cartTotal);
+
   const deliveryCharges =
     modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
     modifiedAmountForCharges <= 0 ||
@@ -1628,6 +1651,25 @@ export const MedicineCart: React.FC = (props) => {
                 </>
               ) : null}
             </div>
+            {deliveryCharges !== 0 && (
+              <div className={`${classes.medicineListGroup} ${classes.medicinesAddmore}`}>
+                <img src={require('images/ic_priority_high.svg')} alt="info icon" />
+                Add{' '}
+                <span className={classes.addmoreAmount}>
+                  {(Number(pharmacyMinDeliveryValue) - cartTotal).toFixed(2)}
+                </span>{' '}
+                of eligible items to your order to qualify for FREE Delivery.
+                <span>
+                  <Link
+                    className={classes.nudgeAddMore}
+                    to={clientRoutes.medicines()}
+                    title={'Add Items'}
+                  >
+                    Add Items
+                  </Link>
+                </span>
+              </div>
+            )}
           </Scrollbars>
         </div>
         <div className={classes.rightSection}>

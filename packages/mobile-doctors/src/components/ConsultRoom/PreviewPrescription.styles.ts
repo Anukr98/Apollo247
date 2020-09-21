@@ -39,6 +39,10 @@ export const PreviewPrescriptionStyles = StyleSheet.create({
   description2Text: {
     ...theme.viewStyles.text('S', 11, theme.colors.blackColor(0.8)),
   },
+  description3Text: {
+    marginLeft: 14,
+    ...theme.viewStyles.text('S', 11, theme.colors.blackColor(0.6)),
+  },
   vitalsDescription: {
     ...theme.viewStyles.text('S', 11, theme.colors.blackColor(0.8)),
   },
@@ -156,5 +160,12 @@ export const PreviewPrescriptionStyles = StyleSheet.create({
     width: 106,
     height: 60,
     resizeMode: 'contain',
+  },
+  contactContainer: { flexDirection: 'row', flexWrap: 'wrap' },
+  contactSubContainer: { flexDirection: 'row', marginTop: 4, alignItems: 'center' },
+  contactHeadingText: theme.viewStyles.text('R', 9, theme.colors.BLACK, 0.4, 15),
+  contactSubHeadingText: {
+    ...theme.viewStyles.text('R', 9, theme.colors.BLACK, 0.8, 15),
+    marginLeft: 6,
   },
 });

@@ -451,7 +451,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
       <div className={classes.leftSection}>
         <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
-          <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
+          <Link className={classes.addReportMobile} to={clientRoutes.addHealthRecords('medical')}>
             <img src={require('images/ic_addfile.svg')} />
           </Link>
           <div className={classes.topFilters}>
@@ -527,7 +527,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
           )}
         </Scrollbars>
         <div className={classes.addReportActions}>
-          <Link to={clientRoutes.addRecords()} className={classes.addReport}>
+          <Link to={clientRoutes.addHealthRecords('medical')} className={classes.addReport}>
             Add a Report
           </Link>
         </div>
@@ -599,17 +599,18 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                       </div>
                       <div className={classes.reportsDetails}>
                         <label>Referring Doctor</label>
-                        <p>{!!activeConsult.prescribedBy ? activeConsult.prescribedBy : '-'}</p>
+                        <p>{activeConsult.prescribedBy ? `${activeConsult.prescribedBy}` : '-'}</p>
                       </div>
                     </div>
                     {(activeConsult.observations || activeConsult.additionalNotes) && (
                       <ToplineReport activeData={activeConsult} />
                     )}
-                    {activeConsult.fileUrl &&
+                    {activeConsult &&
+                      activeConsult.fileUrl &&
                       activeConsult.fileUrl.length > 0 &&
                       (activeConsult.fileUrl.includes('.pdf') ? (
                         <div className={classes.prescriptionImage}>
-                          <a href={activeConsult.prescriptionImageUrl}>Download File</a>
+                          <a href={activeConsult.fileUrl}>Download File</a>
                         </div>
                       ) : (
                         <div className={classes.prescriptionImage}>

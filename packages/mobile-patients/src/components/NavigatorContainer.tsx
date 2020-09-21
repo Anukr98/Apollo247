@@ -44,6 +44,7 @@ import {
 import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordsHome';
 import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/ConsultDetails';
 import { RecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/RecordDetails';
+import { HealthRecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordDetails';
 import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
@@ -94,8 +95,11 @@ import { MedicineCart } from '@aph/mobile-patients/src/components/MedicineCart/M
 import { CartSummary } from '@aph/mobile-patients/src/components/MedicineCart/CartSummary';
 import { StorePickup } from '@aph/mobile-patients/src/components/MedicineCart/StorePickup';
 import { PickUpCartSummary } from '@aph/mobile-patients/src/components/MedicineCart/PickUpCartSummary';
-import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 
+import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTracker';
+import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSelection';
+
+import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
@@ -137,6 +141,7 @@ export enum AppRoutes {
   HealthRecordsHome = 'HealthRecordsHome',
   ConsultDetails = 'ConsultDetails',
   RecordDetails = 'RecordDetails',
+  HealthRecordDetails = 'HealthRecordDetails',
   SymptomChecker = 'SymptomChecker',
   AddressBook = 'AddressBook',
   NotificationSettings = 'NotificationSettings',
@@ -180,6 +185,8 @@ export enum AppRoutes {
   CartSummary = 'CartSummary',
   StorePickup = 'StorePickup',
   PickUpCartSummary = 'PickUpCartSummary',
+  SymptomTracker = 'SymptomTracker',
+  SymptomSelection = 'SymptomSelection',
   Maps = 'Maps',
 }
 
@@ -217,6 +224,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.OTPVerification]: {
     screen: OTPVerification,
+    navigationOptions: {
+      gesturesEnabled: false,
+    },
   },
   [AppRoutes.ConsultRoom]: {
     screen: ConsultRoom,
@@ -338,6 +348,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.RecordDetails]: {
     screen: RecordDetails,
+  },
+  [AppRoutes.HealthRecordDetails]: {
+    screen: HealthRecordDetails,
   },
   [AppRoutes.SymptomChecker]: {
     screen: SymptomChecker,
@@ -468,6 +481,11 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.PickUpCartSummary]: {
     screen: PickUpCartSummary,
+  [AppRoutes.SymptomTracker]: {
+    screen: SymptomTracker,
+  },
+  [AppRoutes.SymptomSelection]: {
+    screen: SymptomSelection,
   },
   [AppRoutes.Maps]: {
     screen: Maps,

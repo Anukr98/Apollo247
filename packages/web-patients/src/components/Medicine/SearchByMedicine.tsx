@@ -1,4 +1,6 @@
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -24,7 +26,6 @@ import { useParams } from 'hooks/routerHooks';
 import _replace from 'lodash/replace';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
 import { useMutation } from 'react-apollo-hooks';
 import Scrollbars from 'react-custom-scrollbars';
 import { Link } from 'react-router-dom';
@@ -263,6 +264,7 @@ type DiscountFilter = { fromDiscount: string; toDiscount: string };
 
 const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
+  const scrollToRef = useRef<HTMLDivElement>(null);
   const patient = useCurrentPatient();
   const recommendedProductsMutation = useMutation(GET_RECOMMENDED_PRODUCTS_LIST);
   const [priceFilter, setPriceFilter] = useState<PriceFilter | null>(null);
@@ -493,6 +495,9 @@ const SearchByMedicine: React.FC = (props) => {
   };
 
   useEffect(() => {
+    scrollToRef &&
+      scrollToRef.current &&
+      scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
     if (!medicineList && paramSearchType !== 'search-medicines') {
       setIsLoading(true);
       if (paramSearchText === 'recommended-products') {
@@ -667,7 +672,7 @@ const SearchByMedicine: React.FC = (props) => {
     <div className={classes.root}>
       {paramSearchType !== 'search-medicines' && <MetaTagsComp {...metaTagProps} />}
       <Header />
-      <div className={classes.container}>
+      <div className={classes.container} ref={scrollToRef}>
         <div className={classes.searchByBrandPage}>
           <div className={classes.breadcrumbs}>
             <a onClick={() => window.history.back()}>

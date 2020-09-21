@@ -219,6 +219,21 @@ import {
   patientDeviceVoipTokenResolvers,
 } from 'profiles-service/resolvers/savepatientDeviceVoipToken';
 
+import {
+  addPatientHealthCheckRecordTypeDefs,
+  addPatientHealthCheckRecordsResolvers,
+} from 'profiles-service/resolvers/addHealthCheckRecords';
+
+import {
+  addPatientHospitalizationRecordTypeDefs,
+  addPatientHospitalizationRecordResolvers
+} from 'profiles-service/resolvers/addHospitalizationRecords';
+
+import {
+  addPatientLabTestRecordTypeDefs,
+  addPatientLabTestRecordResolvers
+} from 'profiles-service/resolvers/addLabTestRecords';
+
 (async () => {
   await connect();
   const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
@@ -484,6 +499,18 @@ import {
         typeDefs: patientDeviceVoipTokenTypeDefs,
         resolvers: patientDeviceVoipTokenResolvers,
       },
+      {
+        typeDefs: addPatientHealthCheckRecordTypeDefs,
+        resolvers: addPatientHealthCheckRecordsResolvers
+      },
+      {
+        typeDefs: addPatientHospitalizationRecordTypeDefs,
+        resolvers: addPatientHospitalizationRecordResolvers,
+      },
+      {
+        typeDefs: addPatientLabTestRecordTypeDefs,
+        resolvers: addPatientLabTestRecordResolvers
+      }
     ]),
     plugins: [
       /* This plugin is defined in-line. */

@@ -12,6 +12,8 @@ import {
   MedicalIcon,
   NotificationIcon,
   RetryButtonIcon,
+  PendingIcon,
+  WhatsAppIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
@@ -47,6 +49,7 @@ import {
   postWebEngageEvent,
   reOrderMedicines,
   formatOrderAddress,
+  formatAddressWithLandmark,
   extractUrlFromString,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -151,6 +154,28 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   retyButton: { width: 185, height: 48, marginTop: 30 },
+  cardStyle: {
+    flexDirection: 'row',
+    ...theme.viewStyles.cardViewStyle,
+    padding: 16,
+    marginBottom: 8,
+    flex: 1,
+  },
+  pendingIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
+  inconvenienceText: {
+    marginHorizontal: 10,
+    ...theme.fonts.IBMPlexSansRegular(13),
+    color: theme.colors.SHERPA_BLUE,
+  },
+  chatWithUsView: { paddingBottom: 10, paddingTop: 4 },
+  chatWithUsTouch: { flexDirection: 'row', justifyContent: 'flex-end' },
+  whatsappIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
+  chatWithUsText: {
+    textAlign: 'center',
+    paddingRight: 0,
+    marginHorizontal: 5,
+    ...theme.viewStyles.text('B', 14, '#fcb716'),
+  },
 });
 
 export interface OrderDetailsSceneProps
@@ -270,7 +295,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       const address = addresses.find((a) => a.id == order!.patientAddressId);
       let formattedAddress = '';
       if (address) {
-        formattedAddress = formatOrderAddress(address);
+        formattedAddress = formatAddressWithLandmark(address);
       } else {
         const getPatientAddressByIdResponse = await client.query<
           getPatientAddressById,
@@ -279,7 +304,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           query: GET_PATIENT_ADDRESS_BY_ID,
           variables: { id: order!.patientAddressId },
         });
-        formattedAddress = formatOrderAddress(
+        formattedAddress = formatAddressWithLandmark(
           getPatientAddressByIdResponse.data.getPatientAddressById
             .patientAddress as savePatientAddress_savePatientAddress_patientAddress
         );
@@ -947,9 +972,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       scrollToSlots();
     }
 
+    const expectedDeliveryInDays = moment.duration(moment(tatInfo!).diff(moment()));
+    const diffInDays = expectedDeliveryInDays.asDays();
+
     return (
       <View>
         <View style={{ margin: 20 }}>
+          {diffInDays! < 0 ? renderInconvenienceView() : null}
           {statusList.map((order, index, array) => {
             return (
               <OrderProgressCard
@@ -1043,6 +1072,32 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           </View>
         ) : null}
         {showNotifyStoreAlert && renderNotifyStoreAlert()}
+      </View>
+    );
+  };
+
+  const renderInconvenienceView = () => {
+    return (
+      <View>
+        <View style={styles.cardStyle}>
+          <PendingIcon style={styles.pendingIconStyle} />
+          <Text style={styles.inconvenienceText}>
+            {string.OrderSummery.tatBreach_InconvenienceText}
+          </Text>
+        </View>
+        <View style={styles.chatWithUsView}>
+          <TouchableOpacity
+            style={styles.chatWithUsTouch}
+            onPress={() => {
+              Linking.openURL(
+                AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+              ).catch((err) => CommonBugFender(`${AppRoutes.OrderModifiedScreen}_TATBreach`, err));
+            }}
+          >
+            <WhatsAppIcon style={styles.whatsappIconStyle} />
+            <Text style={styles.chatWithUsText}>{string.OrderSummery.chatWithUs}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };

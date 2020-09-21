@@ -482,7 +482,11 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
 
   const checkLatLongStateCodeAvailability = (address: Address) => {
-    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${address.zipcode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`;
+    const pincodeAndAddress = [address.zipcode, address.addressLine1]
+      .filter((v) => (v || '').trim())
+      .join(',');
+
+    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=pincode:${pincodeAndAddress}&components=country:in&key=${process.env.GOOGLE_API_KEY}`;
     if (!address.latitude || !address.longitude || !address.stateCode) {
       // get lat long
       if (address.zipcode && address.zipcode.length === 6) {

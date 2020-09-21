@@ -1,8 +1,18 @@
 import gql from 'graphql-tag';
 
 export const GET_CURRENT_PATIENTS = gql`
-  query GetCurrentPatients($appVersion: String, $deviceType: DEVICE_TYPE) {
-    getCurrentPatients(appVersion: $appVersion, deviceType: $deviceType) {
+  query GetCurrentPatients(
+    $appVersion: String
+    $deviceType: DEVICE_TYPE
+    $deviceToken: String
+    $deviceOS: String
+  ) {
+    getCurrentPatients(
+      appVersion: $appVersion
+      deviceType: $deviceType
+      deviceToken: $deviceToken
+      deviceOS: $deviceOS
+    ) {
       patients {
         id
         uhid
@@ -108,6 +118,7 @@ export const ADD_NEW_PROFILE = gql`
         lastName
         emailAddress
         gender
+        dateOfBirth
       }
     }
   }
@@ -730,6 +741,14 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       registrationNumber
       onlineConsultationFees
       physicalConsultationFees
+      doctorSecretary {
+        secretary {
+          id
+          name
+          mobileNumber
+          isActive
+        }
+      }
       doctorHospital {
         facility {
           id
@@ -1972,52 +1991,28 @@ export const ADD_MEDICAL_RECORD = gql`
   }
 `;
 
-export const UPLOAD_LAB_RESULTS = gql`
-  mutation uploadLabResults($LabResultsUploadRequest: LabResultsUploadRequest, $uhid: String) {
-    uploadLabResults(labResultsInput: $LabResultsUploadRequest, uhid: $uhid) {
-      recordId
-      fileUrl
+export const ADD_PATIENT_HEALTH_CHECK_RECORD = gql`
+  mutation addPatientHealthCheckRecord($AddHealthCheckRecordInput: AddHealthCheckRecordInput) {
+    addPatientHealthCheckRecord(addHealthCheckRecordInput: $AddHealthCheckRecordInput) {
+      status
     }
   }
 `;
 
-export const UPLOAD_HEALTH_RECORD_PRESCRIPTION = gql`
-  mutation uploadPrescriptions(
-    $PrescriptionUploadRequest: PrescriptionUploadRequest
-    $uhid: String
+export const ADD_PATIENT_HOSPITALIZATION_RECORD = gql`
+  mutation addPatientHospitalizationRecord(
+    $AddHospitalizationRecordInput: AddHospitalizationRecordInput
   ) {
-    uploadPrescriptions(prescriptionInput: $PrescriptionUploadRequest, uhid: $uhid) {
-      recordId
-      fileUrl
+    addPatientHospitalizationRecord(addHospitalizationRecordInput: $AddHospitalizationRecordInput) {
+      status
     }
   }
 `;
 
-export const GET_MEDICAL_RECORD = gql`
-  query getPatientMedicalRecords($patientId: ID!) {
-    getPatientMedicalRecords(patientId: $patientId) {
-      medicalRecords {
-        id
-        testName
-        testDate
-        recordType
-        referringDoctor
-        observations
-        additionalNotes
-        sourceName
-        documentURLs
-        prismFileIds
-        issuingDoctor
-        location
-        medicalRecordParameters {
-          id
-          parameterName
-          unit
-          result
-          minimum
-          maximum
-        }
-      }
+export const ADD_PATIENT_LAB_TEST_RECORD = gql`
+  mutation addPatientLabTestRecord($AddLabTestRecordInput: AddLabTestRecordInput) {
+    addPatientLabTestRecord(addLabTestRecordInput: $AddLabTestRecordInput) {
+      status
     }
   }
 `;
@@ -2073,9 +2068,14 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           id
           labTestName
           labTestSource
+          packageId
+          packageName
           # labTestDate
           date
           labTestRefferedBy
+          siteDisplayName
+          tag
+          consultId
           additionalNotes
           observation
           labTestResults {
@@ -2122,6 +2122,71 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         errorMsg
         errorType
       }
+      healthChecksNew {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          healthCheckName
+          healthCheckDate
+          healthCheckSummary
+          healthCheckFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+          source
+          healthCheckType
+          followupDate
+        }
+      }
+      hospitalizationsNew {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          hospitalizationDate
+          dateOfHospitalization
+          hospitalName
+          doctorName
+          reasonForAdmission
+          diagnosisNotes
+          dateOfDischarge
+          dischargeSummary
+          doctorInstruction
+          dateOfNextVisit
+          hospitalizationFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+          source
+        }
+      }
+    }
+  }
+`;
+
+export const GET_LAB_RESULT_PDF = gql`
+  query getLabResultpdf($patientId: ID!, $recordId: String!) {
+    getLabResultpdf(patientId: $patientId, recordId: $recordId) {
+      url
     }
   }
 `;
@@ -2316,14 +2381,6 @@ export const BOOK_APPOINTMENT_RESCHEDULE = gql`
   }
 `;
 
-export const DELETE_PATIENT_MEDICAL_RECORD = gql`
-  mutation deletePatientMedicalRecord($recordId: ID!) {
-    deletePatientMedicalRecord(recordId: $recordId) {
-      status
-    }
-  }
-`;
-
 export const CHECK_IF_RESCHDULE = gql`
   query checkIfReschedule($existAppointmentId: String!, $rescheduleDate: DateTime!) {
     checkIfReschedule(existAppointmentId: $existAppointmentId, rescheduleDate: $rescheduleDate) {
@@ -2425,6 +2482,14 @@ export const ADD_TO_CONSULT_QUEUE = gql`
 export const CHECK_IF_FOLLOWUP_BOOKED = gql`
   query checkIfFollowUpBooked($appointmentId: String!) {
     checkIfFollowUpBooked(appointmentId: $appointmentId)
+  }
+`;
+
+export const SEND_PATIENT_WAIT_NOTIFICATION = gql`
+  query sendPatientWaitNotification($appointmentId: String!) {
+    sendPatientWaitNotification(appointmentId: $appointmentId) {
+      status
+    }
   }
 `;
 
@@ -3000,6 +3065,17 @@ export const SAVE_VOIP_DEVICE_TOKEN = gql`
       response
       patientId
       voipToken
+    }
+  }
+`;
+
+export const GET_SECRETARY_DETAILS_BY_DOCTOR_ID = gql`
+  query getSecretaryDetailsByDoctorId($doctorId: String!) {
+    getSecretaryDetailsByDoctorId(doctorId: $doctorId) {
+      id
+      name
+      mobileNumber
+      isActive
     }
   }
 `;

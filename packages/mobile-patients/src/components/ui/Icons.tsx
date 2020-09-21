@@ -426,6 +426,14 @@ export const UploadHealthRecords: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/upload_records.png')} />
 );
 
+export const PHRHospitalIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_hospital_grey.png')} />
+);
+
+export const PHRSelfUploadIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/self_upload_phr.png')} />
+);
+
 export const FreeArrowIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_free_arrow.png')} />
 );
@@ -811,6 +819,14 @@ export const CheckBox: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/checkbox.png')} />
 );
 
+export const LabTestIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/lab_test_icon.png')} />
+);
+
+export const RoundGreenTickIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/green_tick.png')} />
+);
+
 export const CheckBoxFilled: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/checkboxfilled.png')} />
 );
@@ -1045,4 +1061,10 @@ export const AlertIcon: React.FC<IconProps> = (props) => (
 
 export const BlueDotIcon: React.FC<IconProps> = (props) => (
   <IconBase style={{ width: 5, height: 5 }} {...props} source={require('./icons/blueDot.png')} />
+export const BotIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/bot.png')} />
+);
+
+export const InfoIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/info.png')} />
 );

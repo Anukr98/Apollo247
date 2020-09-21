@@ -25,7 +25,7 @@
     "covidYouCanText": "You can also",
     "Rs": "₹",
     "KavachText": "Explore the Apollo Kavach Program",
-    "joinConsultRoomDescription": "Please click on 'Join' to start the\nconsult with",
+    "joinConsultRoomDescription": "Please click here to\n Join the Call with",
     "waitForDoctirToJoinCall": "doctor_name is not in the room yet.\nPlease wait for few seconds while doctor joins the call....",
     "exotelMessage": " is trying to call you from the number ",
     "requestMessage": ". Request you to answer the call.",
@@ -296,7 +296,9 @@
     "coupon_discount": "Coupon Discount",
     "delivery_charges": "Delivery Charges",
     "packaging_charges": "Packaging Charges",
-    "orderCancellationAfterBillingAlert": "Your order has already Billed and therefore cannot be cancelled from the App. In case you still wish to Cancel, please click on the link below to chat with out customer care executives for assistance during working hours (9:00 AM to 8:30 PM)"
+    "orderCancellationAfterBillingAlert": "Your order has already Billed and therefore cannot be cancelled from the App. In case you still wish to Cancel, please click on the link below to chat with out customer care executives for assistance during working hours (9:00 AM to 8:30 PM)",
+    "chatWithUs":"CHAT WITH US",
+    "tatBreach_InconvenienceText":"We are trying our best to expedite the process.\nSorry for the inconvenience"
   },
   "OrderSummaryText": {
     "total_order_billed": "Total Ordered Value",
@@ -319,7 +321,15 @@
         "count": "0"
       },
       {
-        "title": "Medical Records",
+        "title": "Tests",
+        "count": "0"
+      },
+      {
+        "title": "Health Check",
+        "count": "0"
+      },
+      {
+        "title": "Hospitalization",
         "count": "0"
       }
     ]
@@ -389,5 +399,33 @@
     "block_Calendar": "Block Calendar",
     "manage_calendar": "Manage Calendar"
   },
-  "ChatRoom_NotRecorded_Value": "Not Recorded"
+  "ChatRoom_NotRecorded_Value": "Not Recorded",
+  "symptomChecker": {
+    "howItWorks": "HOW IT WORKS?",
+    "patientDetails": "Patient Details",
+    "name": "Name",
+    "age": "Age",
+    "gender": "Gender",
+    "selectAnotherMember": "Select Another Member",
+    "typeSymptomOrChooseFromList": "Type symptom here or choose from the list",
+    "addSelectedSymptom": "ADD SELECTED SYMPTOMS",
+    "symptoms": "Symptoms",
+    "noOtherSymptoms": "NO OTHER SYMPTOM",
+    "thanksForGivingAnswers": "Thanks {{name}}, for helping us with your answers.\n\nBelow is a summary of your symptoms.",
+    "restart": "RESTART",
+    "consultDoctor": "Consult Doctor",
+    "restartSymptomTrackerDiscription": "This will end your symptom tracking and you’ll have to start it again. Do you want to continue tracking your symptoms or go back?",
+    "symptomTracker": "Symptom Tracker",
+    "addAnotherSymptom": "Would you like to report another symptom?"
+  },
+  "Prescription_Success":"Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).",
+  "cancelConsultationHeading":"Cancel Consultation",
+  "cancelConsultationReasonHeading": "Why are you cancelling this consultation?",
+  "ReasonFor_Cancel_Consultation":{
+    "doctorDidNotJoin" : "Doctor did not join the consult",
+    "bookedForWrongUser":"Booked with wrong user details",
+    "doctorDeniedMode":"Doctor denied your preferable mode of consult",
+    "audioVideoIssue": "Audio Video Issues",
+    "otherReasons":"Others (Please specifiy)"
+  }
 }

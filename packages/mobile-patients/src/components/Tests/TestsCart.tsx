@@ -1,6 +1,8 @@
 import {
   aphConsole,
   formatAddress,
+  formatAddressWithLandmark,
+  formatNameNumber,
   g,
   isValidTestSlot,
   TestSlot,
@@ -127,6 +129,11 @@ const styles = StyleSheet.create({
   rowSpaceBetweenStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  subtitleStyle: {
+    ...theme.fonts.IBMPlexSansMedium(13),
+    color: theme.colors.SHERPA_BLUE,
+    marginBottom: 5,
   },
 });
 
@@ -326,9 +333,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 console.log(error, 'geocode error');
               });
           },
-          (error) => {
-            console.log(error.code, error.message, 'getCurrentPosition error');
-          },
+          (error) => {},
           { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
         );
         console.log('pincode');
@@ -657,6 +662,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
+  const _navigateToEditAddress = (dataname: string, address: any, comingFrom: string) => {
+    props.navigation.push(AppRoutes.AddAddress, {
+      KeyName: dataname,
+      DataAddress: address,
+      ComingFrom: comingFrom,
+    });
+  };
+
   const renderHomeDelivery = () => {
     const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
     const addressListLength = addresses.length;
@@ -688,7 +701,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           return (
             <RadioSelectionItem
               key={item.id}
-              title={formatAddress(item)}
+              title={formatAddressWithLandmark(item)}
+              showMultiLine={true}
+              subtitle={formatNameNumber(item)}
+              subtitleStyle={styles.subtitleStyle}
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
@@ -711,6 +727,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 }
               }}
               containerStyle={{ marginTop: 16 }}
+              showEditIcon={true}
+              onPressEdit={() => _navigateToEditAddress('Update', item, AppRoutes.TestsCart)}
               hideSeparator={index + 1 === array.length}
             />
           );

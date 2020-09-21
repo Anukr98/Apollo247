@@ -28,6 +28,8 @@ import { useApolloClient } from 'react-apollo-hooks';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { useParams } from 'hooks/routerHooks';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import { cancellationPatientTracking } from 'webEngageTracking';
+import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
 import { DoctorType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -405,6 +407,7 @@ interface ConsultDoctorProfileProps {
   handleRescheduleOpen: any;
   srDoctorJoined: boolean;
   isConsultCompleted: boolean;
+  secretaryData: getSecretaryDetailsByDoctorId;
 }
 
 type Params = { appointmentId: string; doctorId: string };
@@ -416,7 +419,13 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const cancelAppointRef = useRef(null);
   const [isCancelPopoverOpen, setIsCancelPopoverOpen] = React.useState<boolean>(false);
 
-  const { doctorDetails, setRescheduleCount, handleRescheduleOpen, appointmentDetails } = props;
+  const {
+    doctorDetails,
+    setRescheduleCount,
+    handleRescheduleOpen,
+    appointmentDetails,
+    secretaryData,
+  } = props;
 
   const [showMore, setShowMore] = useState<boolean>(true);
   const [moreOrLessMessage, setMoreOrLessMessage] = useState<string>('MORE');
@@ -476,8 +485,12 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       onlineConsultationFees,
       physicalConsultationFees,
       doctorHospital,
+      mobileNumber,
       chatDays,
     } = doctorDetails && doctorDetails.getDoctorDetailsById;
+
+    const { mobileNumber: secretaryNumber, name: secretaryName } = (secretaryData &&
+      secretaryData.getSecretaryDetailsByDoctorId) || { mobileNumber: '', name: '' };
 
     const caseSheets =
       appointmentDetails && appointmentDetails.caseSheet ? appointmentDetails.caseSheet : [];
@@ -553,6 +566,15 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           setApiLoading(false);
           setShowCancelPopup(false);
           window.location.href = clientRoutes.appointments();
+          cancellationPatientTracking({
+            doctorName: fullName,
+            patientName:
+              (currentPatient && `${currentPatient.firstName} ${currentPatient.lastName}`) || '',
+            secretaryName: secretaryName || '',
+            doctorNumber: mobileNumber,
+            patientNumber: (currentPatient && currentPatient.mobileNumber) || '',
+            secretaryNumber: secretaryNumber || '',
+          });
         })
         .catch((e: string) => {
           setShowCancelPopup(false);
