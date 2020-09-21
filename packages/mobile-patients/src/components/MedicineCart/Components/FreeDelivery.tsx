@@ -36,7 +36,10 @@ export const FreeDelivery: React.FC<FreeDeliveryProps> = (props) => {
         }}
       >
         Add
-        <Text style={{ color: '#02475B', ...theme.fonts.IBMPlexSansBold(12) }}>₹{getToAdd()}</Text>
+        <Text style={{ color: '#02475B', ...theme.fonts.IBMPlexSansBold(12) }}>
+          {' '}
+          ₹{getToAdd()}{' '}
+        </Text>
         of eligible items to your order to qualify for FREE Delivery
       </Text>
     </View>

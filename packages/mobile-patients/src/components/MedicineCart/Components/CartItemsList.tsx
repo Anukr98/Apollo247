@@ -4,16 +4,19 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CartItemCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemCard';
 import { CartItemCard2 } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemCard2';
-
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { postwebEngageProductRemovedEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 export interface CartItemsListProps {
   screen: 'cart' | 'summary';
+  onPressProduct?: (item: ShoppingCartItem) => void;
 }
 
 export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
   const { cartItems, updateCartItem, removeCartItem } = useShoppingCart();
-  const { screen } = props;
+  const { screen, onPressProduct } = props;
+  const { currentPatient } = useAllCurrentPatients();
 
   const renderCartItemsHeader = () => {
     const itemsCount =
@@ -30,8 +33,9 @@ export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
     updateCartItem && updateCartItem({ id, quantity: unit });
   };
 
-  const onPressDelete = ({ id }: ShoppingCartItem) => {
-    removeCartItem && removeCartItem(id);
+  const onPressDelete = (item: ShoppingCartItem) => {
+    removeCartItem && removeCartItem(item.id);
+    postwebEngageProductRemovedEvent(item, currentPatient && currentPatient!.id);
   };
 
   const renderCartItems = () => {
@@ -46,6 +50,7 @@ export const CartItemsList: React.FC<CartItemsListProps> = (props) => {
                 item={item}
                 onUpdateQuantity={(quantity) => onUpdateQuantity(item, quantity)}
                 onPressDelete={() => onPressDelete(item)}
+                onPressProduct={() => onPressProduct!(item)}
               />
             ) : (
               <CartItemCard2 item={item} />

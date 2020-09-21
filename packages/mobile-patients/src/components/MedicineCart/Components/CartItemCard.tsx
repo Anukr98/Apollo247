@@ -20,11 +20,12 @@ export interface CartItemCardProps {
   index?: number;
   onUpdateQuantity: (quantity: number) => void;
   onPressDelete: () => void;
+  onPressProduct: () => void;
 }
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const { coupon } = useShoppingCart();
-  const { item, onUpdateQuantity, onPressDelete } = props;
+  const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);
 
@@ -71,7 +72,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
 
   const renderProduct = () => {
     return (
-      <View style={{ flex: 1 }}>
+      <TouchableOpacity style={{ flex: 1 }} onPress={onPressProduct}>
         <View style={{ flexDirection: 'row', marginBottom: 5 }}>
           <View style={{ flex: 0.85 }}>
             <Text style={{ ...styles.itemName, opacity: !item.unserviceable ? 1 : 0.3 }}>
@@ -88,7 +89,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
           </TouchableOpacity>
         </View>
         {renderLowerCont()}
-      </View>
+      </TouchableOpacity>
     );
   };
 

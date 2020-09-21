@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, StyleProp, ViewStyle } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { DriveWayIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export interface KerbSidePickupProps {
   onPressProceed: () => void;
@@ -11,7 +12,7 @@ export interface KerbSidePickupProps {
 
 export const KerbSidePickup: React.FC<KerbSidePickupProps> = (props) => {
   const { onPressProceed, style } = props;
-
+  const { cartItems } = useShoppingCart();
   const renderText = () => {
     return (
       <View style={{ flex: 0.6, marginLeft: 15 }}>
@@ -35,9 +36,18 @@ export const KerbSidePickup: React.FC<KerbSidePickupProps> = (props) => {
     );
   };
 
+  function isdisabled() {
+    if (cartItems && cartItems.length) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   const renderButton = () => {
     return (
       <Button
+        disabled={isdisabled()}
         title="PROCEED"
         onPress={onPressProceed}
         style={styles.button}

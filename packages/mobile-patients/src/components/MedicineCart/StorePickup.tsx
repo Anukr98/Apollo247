@@ -25,6 +25,10 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  postPharmacyStorePickupViewed,
+  postPharmacyStoreSelectedSuccess,
+} from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 export interface StorePickupProps extends NavigationScreenProps {}
 
 export const StorePickup: React.FC<StorePickupProps> = (props) => {
@@ -128,6 +132,10 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
     setStores!(filteredStores);
     setStoreId!('');
     setloading(false);
+    postPharmacyStorePickupViewed({
+      Pincode: zipcode,
+      'Store display success': filteredStores.length ? 'Yes' : 'No',
+    });
   }
 
   const areItemsAvailableInStore = (storeItems: GetStoreInventoryResponse['itemDetails']) => {
@@ -155,6 +163,7 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
       Items.push(object);
     });
     setCartItems!(Items);
+    postPharmacyStoreSelectedSuccess(pinCode, selectedStore!);
   };
 
   const renderHeader = () => {

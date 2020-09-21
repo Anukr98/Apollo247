@@ -1,11 +1,12 @@
 import React from 'react';
-import { StyleSheet, Text, Dimensions, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, Dimensions, View, TouchableOpacity, ScrollView } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { EditAddressIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 export interface ChooseAddressProps {
   addresses: savePatientAddress_savePatientAddress_patientAddress[];
@@ -66,16 +67,16 @@ export const ChooseAddress: React.FC<ChooseAddressProps> = (props) => {
   };
   const renderChooseAddress = () => {
     return (
-      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.container}>
         {addresses.map((item) => {
           return renderAddress(item);
         })}
         {renderAddAddress()}
-      </View>
+      </ScrollView>
     );
   };
 
-  return <View>{renderChooseAddress()}</View>;
+  return <View style={{ maxHeight: 0.5 * windowHeight }}>{renderChooseAddress()}</View>;
 };
 
 const styles = StyleSheet.create({
@@ -84,14 +85,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginTop: 5,
-    marginBottom: 40,
+    paddingBottom: 40,
   },
   addressCard: {
     ...theme.viewStyles.cardViewStyle,
     marginRight: 0.03 * windowWidth,
     width: 0.4 * windowWidth,
     paddingHorizontal: 12,
-    marginTop: 10,
+    marginVertical: 5,
   },
   header: {
     flexDirection: 'row',
