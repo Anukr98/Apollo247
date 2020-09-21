@@ -443,6 +443,7 @@ const getCouponByUserMobileNumber = () => {
   );
 };
 
+<<<<<<< HEAD
 const isPastAppointment = (appointmentDateTime: string) => {
   const appointmentDate = moment(appointmentDateTime).set({ hour: 0, minute: 0 });
   const followUpDayMoment = appointmentDate.add(7, 'days');
@@ -453,6 +454,19 @@ const getAvailableFreeChatDays = (appointmentTime: string) => {
   const appointmentDate = moment(appointmentTime).set({ hour: 0, minute: 0 });
   const followUpDayMoment = appointmentDate.add(7, 'days');
   let diffInDays = followUpDayMoment.diff(moment(), 'days');
+=======
+const isPastAppointment = (appointmentDateTime: string, followUpInDays: number = 7) => {
+  const appointmentDate = moment(appointmentDateTime).set({ hour: 0, minute: 0 }); // this been added because followupDays includes appointmentMent Completion date aswell and appointmentDateTime should be replace with completion date
+  const followUpDayMoment = appointmentDate.add(followUpInDays, 'days');
+  return followUpDayMoment.isBefore(moment());
+};
+
+const getAvailableFreeChatDays = (appointmentTime: string, followUpInDays: number = 7) => {
+  const appointmentDate = moment(appointmentTime).set({ hour: 0, minute: 0 }); // this been added because followupDays includes appointmentMent Completion date aswell and appointmentDateTime should be replace with completion date
+  const followUpDayMoment = appointmentDate.add(followUpInDays, 'days');
+  let diffInDays = followUpDayMoment.diff(moment(), 'days');
+  // below condition is added because diff of days will give xdays yhrs as xdays
+>>>>>>> c2b19c1d327da6b2af3233bd319ee5e4c5a4cc13
   if (moment() > moment(appointmentTime) && moment() < followUpDayMoment) {
     diffInDays += 1;
   }
@@ -460,12 +474,27 @@ const getAvailableFreeChatDays = (appointmentTime: string) => {
     const diffInHours = followUpDayMoment.diff(moment(), 'hours');
     const diffInMinutes = followUpDayMoment.diff(moment(), 'minutes');
     return diffInHours > 0
+<<<<<<< HEAD
       ? `Valid for ${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'}`
       : diffInMinutes > 0
       ? `Valid for ${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'}`
       : '';
   } else if (diffInDays > 0) {
     return `Valid for ${diffInDays} ${diffInDays === 1 ? 'day' : 'days'}`;
+=======
+      ? `You can follow up with the doctor via text (${diffInHours} ${
+          diffInHours === 1 ? 'hour' : 'hours'
+        } left)`
+      : diffInMinutes > 0
+      ? `You can follow up with the doctor via text (${diffInMinutes} ${
+          diffInMinutes === 1 ? 'minute' : 'minutes'
+        } left)`
+      : '';
+  } else if (diffInDays > 0) {
+    return `You can follow up with the doctor via text (${diffInDays} ${
+      diffInDays === 1 ? 'day' : 'days'
+    } left)`;
+>>>>>>> c2b19c1d327da6b2af3233bd319ee5e4c5a4cc13
   } else {
     return '';
   }
@@ -480,7 +509,6 @@ const HEALTH_RECORDS_NO_DATA_FOUND =
 
 const HEALTH_RECORDS_NOTE =
   'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
-const stripHtml = (originalString: any) => originalString.replace(/(<([^>]+)>)/gi, '');
 
 export const consultWebengageEventsInfo = (
   doctorDetail: DoctorDetails,
@@ -589,5 +617,4 @@ export {
   PINCODE_MAXLENGTH,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
   HEALTH_RECORDS_NOTE,
-  stripHtml,
 };

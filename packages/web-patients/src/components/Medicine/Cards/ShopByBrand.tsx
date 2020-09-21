@@ -123,7 +123,7 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
                         src={`${apiDetails.url && apiDetails.url.replace('/catalog/product', '')}${
                           brand.image_url.startsWith('/') ? brand.image_url : `/${brand.image_url}`
                         }`}
-                        alt={''}
+                        alt={`Buy ${brand.title} Products Online`}
                       />
                     </div>
                   </div>
