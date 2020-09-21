@@ -488,15 +488,15 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const cartTotal: MedicineCartContextProps['cartTotal'] = parseFloat(
     cartItems
       .reduce((currTotal, currItem) => {
-        if (currItem.special_price == 0 && currItem.couponFree > 0) {
-          return currTotal + currItem.quantity * currItem.special_price;
-        }
         if (currItem.couponFree > 0 && currItem.quantity > 1) {
           return (
             currTotal +
             currItem.quantity * (Number(currItem.special_price) || currItem.price) -
             currItem.price
           );
+        }
+        if (currItem.special_price === 0 && currItem.couponFree > 0 && currItem.quantity == 1) {
+          return currTotal + currItem.quantity * currItem.special_price;
         } else {
           return currTotal + currItem.quantity * (Number(currItem.special_price) || currItem.price);
         }

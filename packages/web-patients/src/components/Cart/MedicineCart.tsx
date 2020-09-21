@@ -663,7 +663,7 @@ export interface CartProduct {
   quantity: number;
   discountAmt: number;
   onMrp: boolean;
-  couponFree: boolean;
+  couponFree: number;
 }
 
 export const MedicineCart: React.FC = (props) => {
