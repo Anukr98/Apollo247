@@ -520,7 +520,22 @@ export const Header: React.FC<HeaderProps> = (props) => {
                                   </Link>
                                 </li>
                               )}
-
+                              <li>
+                                <Link to={clientRoutes.oneApolloMembership()}>
+                                  <span>
+                                    <img
+                                      src={require('images/one-apollo.svg')}
+                                      width="25"
+                                      alt="One Apollo Membership"
+                                    />
+                                    One Apollo Membership
+                                  </span>
+                                  <img
+                                    src={require('images/ic_arrow_right.svg')}
+                                    alt="Right Arrow"
+                                  />
+                                </Link>
+                              </li>
                               <li>
                                 <Link to={clientRoutes.needHelp()}>
                                   <span>

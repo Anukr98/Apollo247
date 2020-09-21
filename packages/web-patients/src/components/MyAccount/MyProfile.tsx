@@ -172,14 +172,14 @@ export const MyProfile: React.FC = (props) => {
           {currentPath === clientRoutes.myAccount()
             ? 'Manage Profiles'
             : currentPath === clientRoutes.addressBook()
-              ? 'Address Book'
-              : currentPath === clientRoutes.healthRecords()
-                ? 'Health Records'
-                : currentPath === clientRoutes.needHelp()
-                  ? 'Need Help'
-                  : currentPath === clientRoutes.myPayments()
-                    ? 'My Payments'
-                    : 'Manage Profiles'}
+            ? 'Address Book'
+            : currentPath === clientRoutes.healthRecords()
+            ? 'Health Records'
+            : currentPath === clientRoutes.needHelp()
+            ? 'Need Help'
+            : currentPath === clientRoutes.myPayments()
+            ? 'My Payments'
+            : 'Manage Profiles'}
         </div>
       </div>
       <div className={`${classes.userProfile} ${classes.desktopVisible}`}>
@@ -187,8 +187,9 @@ export const MyProfile: React.FC = (props) => {
           <div className={classes.servicesSection}>
             <div className={classes.sectionGroup}>
               <Link
-                className={`${classes.serviceType} ${classes.textVCenter} ${currentPath === clientRoutes.myAccount() ? classes.menuActive : ''
-                  }`}
+                className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.myAccount() ? classes.menuActive : ''
+                }`}
                 to={clientRoutes.myAccount()}
                 title={'Manage Profiles'}
               >
@@ -205,8 +206,9 @@ export const MyProfile: React.FC = (props) => {
             </div>
             <div className={classes.sectionGroup}>
               <Link
-                className={`${classes.serviceType} ${classes.textVCenter} ${currentPath === clientRoutes.myPayments() ? classes.menuActive : ''
-                  }`}
+                className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.myPayments() ? classes.menuActive : ''
+                }`}
                 to={clientRoutes.myPayments()}
                 title={'My Payments'}
               >
@@ -223,8 +225,9 @@ export const MyProfile: React.FC = (props) => {
             </div>
             <div className={classes.sectionGroup}>
               <Link
-                className={`${classes.serviceType} ${classes.textVCenter} ${currentPath === clientRoutes.healthRecords() ? classes.menuActive : ''
-                  }`}
+                className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.healthRecords() ? classes.menuActive : ''
+                }`}
                 to={clientRoutes.healthRecords()}
                 title={'View health records'}
               >
@@ -239,8 +242,9 @@ export const MyProfile: React.FC = (props) => {
             </div>
             <div className={classes.sectionGroup}>
               <Link
-                className={`${classes.serviceType} ${classes.textVCenter} ${currentPath === clientRoutes.addressBook() ? classes.menuActive : ''
-                  }`}
+                className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.addressBook() ? classes.menuActive : ''
+                }`}
                 to={clientRoutes.addressBook()}
                 title={'Address Book'}
               >
@@ -257,13 +261,18 @@ export const MyProfile: React.FC = (props) => {
             </div>
             <div className={classes.sectionGroup}>
               <Link
-                className={`${classes.serviceType} ${classes.textVCenter} ${currentPath === clientRoutes.oneApolloMembership() ? classes.menuActive : ''
-                  }`}
+                className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.oneApolloMembership() ? classes.menuActive : ''
+                }`}
                 to={clientRoutes.oneApolloMembership()}
                 title={'OneApollo Membership'}
               >
                 <span className={classes.serviceImg}>
-                  <img src={require('images/one-apollo.svg')} alt="OneApollo Membership" />
+                  <img
+                    src={require('images/one-apollo.svg')}
+                    alt="OneApollo Membership"
+                    width="25"
+                  />
                 </span>
                 <span className={classes.linkText} title={'OneApollo Membership'}>
                   OneApollo Membership
@@ -275,8 +284,9 @@ export const MyProfile: React.FC = (props) => {
             </div>
             <div className={classes.sectionGroup}>
               <Link
-                className={`${classes.serviceType} ${classes.textVCenter} ${currentPath === clientRoutes.needHelp() ? classes.menuActive : ''
-                  }`}
+                className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.needHelp() ? classes.menuActive : ''
+                }`}
                 to={clientRoutes.needHelp()}
                 title={'Need Help'}
               >
@@ -341,8 +351,9 @@ export const MyProfile: React.FC = (props) => {
               <div className={classes.servicesSection}>
                 <div className={classes.sectionGroup}>
                   <Link
-                    className={`${classes.serviceType} ${classes.textVCenter} ${currentPath === clientRoutes.myAccount() ? classes.menuActive : ''
-                      }`}
+                    className={`${classes.serviceType} ${classes.textVCenter} ${
+                      currentPath === clientRoutes.myAccount() ? classes.menuActive : ''
+                    }`}
                     to={clientRoutes.myAccount()}
                     title={'Manage Profiles'}
                   >
@@ -359,8 +370,9 @@ export const MyProfile: React.FC = (props) => {
                 </div>
                 <div className={classes.sectionGroup}>
                   <Link
-                    className={`${classes.serviceType} ${classes.textVCenter} ${currentPath === clientRoutes.myPayments() ? classes.menuActive : ''
-                      }`}
+                    className={`${classes.serviceType} ${classes.textVCenter} ${
+                      currentPath === clientRoutes.myPayments() ? classes.menuActive : ''
+                    }`}
                     to={clientRoutes.myPayments()}
                     title={'My Payments'}
                   >
@@ -377,8 +389,9 @@ export const MyProfile: React.FC = (props) => {
                 </div>
                 <div className={classes.sectionGroup}>
                   <Link
-                    className={`${classes.serviceType} ${classes.textVCenter} ${currentPath === clientRoutes.healthRecords() ? classes.menuActive : ''
-                      }`}
+                    className={`${classes.serviceType} ${classes.textVCenter} ${
+                      currentPath === clientRoutes.healthRecords() ? classes.menuActive : ''
+                    }`}
                     to={clientRoutes.healthRecords()}
                     title={'View health records'}
                   >
@@ -393,8 +406,9 @@ export const MyProfile: React.FC = (props) => {
                 </div>
                 <div className={classes.sectionGroup}>
                   <Link
-                    className={`${classes.serviceType} ${classes.textVCenter} ${currentPath === clientRoutes.addressBook() ? classes.menuActive : ''
-                      }`}
+                    className={`${classes.serviceType} ${classes.textVCenter} ${
+                      currentPath === clientRoutes.addressBook() ? classes.menuActive : ''
+                    }`}
                     to={clientRoutes.addressBook()}
                     title={'Address Book'}
                   >
@@ -411,8 +425,9 @@ export const MyProfile: React.FC = (props) => {
                 </div>
                 <div className={classes.sectionGroup}>
                   <Link
-                    className={`${classes.serviceType} ${classes.textVCenter} ${currentPath === clientRoutes.needHelp() ? classes.menuActive : ''
-                      }`}
+                    className={`${classes.serviceType} ${classes.textVCenter} ${
+                      currentPath === clientRoutes.needHelp() ? classes.menuActive : ''
+                    }`}
                     to={clientRoutes.needHelp()}
                     title={'Need Help'}
                   >
