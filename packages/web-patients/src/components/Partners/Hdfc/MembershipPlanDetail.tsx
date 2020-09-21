@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -11,7 +11,13 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { HDFC_SUBSCRIPTION_GOLD } from 'helpers/constants';
+import { useApolloClient } from 'react-apollo-hooks';
+
+import {
+  GetAllUserSubscriptionsWithPlanBenefits,
+  GetAllUserSubscriptionsWithPlanBenefitsVariables,
+} from 'graphql/types/GetAllUserSubscriptionsWithPlanBenefits';
+import { GET_ALL_USER_SUBSCRIPTIONS_WITH_BENEFITS } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -552,6 +558,7 @@ interface TabPanelProps {
   index: any;
   value: any;
 }
+
 const TabPanel = (props: any) => {
   const { children, value, index, ...other } = props;
   return (
@@ -566,11 +573,19 @@ const TabPanel = (props: any) => {
     </div>
   );
 };
+
 export const MembershipPlanDetail: React.FC = (props) => {
   const classes = useStyles({});
   const [showMore, setShowMore] = React.useState<boolean>(false);
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [value, setValue] = React.useState(0);
+  const [subscriptionInclusions, setSubscriptionInclusions] = React.useState([]);
+  const [coupons, setCoupons] = React.useState([]);
+  const [active, setActive] = React.useState<boolean>(false);
+  const [planName, setPlanName] = React.useState<string>('');
+  const [benefitsWorth, setBenefitsWorth] = React.useState<string>('');
+  const [minimumTransactionValue, setMinimumTransactionValue] = React.useState<string>('');
+  const apolloClient = useApolloClient();
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -579,6 +594,38 @@ export const MembershipPlanDetail: React.FC = (props) => {
   const handleTabChange = (event: any, newValue: any) => {
     setValue(newValue);
   };
+
+  useEffect(() => {
+    apolloClient
+      .query<
+        GetAllUserSubscriptionsWithPlanBenefits,
+        GetAllUserSubscriptionsWithPlanBenefitsVariables
+      >({
+        query: GET_ALL_USER_SUBSCRIPTIONS_WITH_BENEFITS,
+        variables: {
+          mobile_number: localStorage.getItem('userMobileNo'),
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setSubscriptionInclusions(response.data.GetAllUserSubscriptionsWithPlanBenefits.response);
+        setPlanName(response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].name);
+        setBenefitsWorth(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].benefits_worth
+        );
+        setMinimumTransactionValue(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].min_transaction_value
+        );
+        setActive(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].subscriptionStatus ===
+            'active'
+        );
+        setCoupons(response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].coupons);
+      })
+      .catch((error) => {
+        console.error('Failed fetching Subscription Inclusions');
+      });
+  }, []);
 
   return (
     <div className={classes.mainContainer}>
@@ -623,47 +670,43 @@ export const MembershipPlanDetail: React.FC = (props) => {
             <div className={classes.planCardContent}>
               <div className={`${classes.planCard} ${classes.gold}`}>
                 <img src={require('images/hdfc/medal.svg')} alt="Gold MemberShip" />
-                <Typography component="h1">Gold + Plan</Typography>
+                <Typography component="h1">{planName}</Typography>
                 <Typography className={classes.benefitDesc}>Availing Benefits worth</Typography>
-                <Typography className={classes.cardWorth}>Rs. 38K+</Typography>
+                <Typography className={classes.cardWorth}>Rs. {benefitsWorth}</Typography>
                 <Typography className={classes.cardDesc}>
-                  A host of benefits await you with our Gold+ Plan curated for HDFC customers
+                  {`A host of benefits await you with our`} {planName}{' '}
+                  {`curated for HDFC customers`}
                 </Typography>
                 <div className={classes.btnContainer}>
                   <AphButton variant="contained" href={clientRoutes.welcome()}>
-                    Explore Now
+                    {active ? 'Explore Now' : 'Activate Now'}
                   </AphButton>
                 </div>
               </div>
 
-              <div className={classes.couponContainer}>
-                <Typography component="h2">Active Coupons</Typography>
-                <Typography>You are eligible for the following coupons on Apollo 24|7</Typography>
-                <div className={classes.couponContent}>
-                  <div className={classes.couponDetails}>
-                    <Typography component="h3">Coupon Name 1</Typography>
-                    <Typography>Get Rs. 249/- Off on 2 Virtual Consultations Bookings</Typography>
-                  </div>
-                  <div className={classes.couponDetails}>
-                    <Typography component="h3">Coupon Name 2</Typography>
-                    <Typography>Get Rs. 249/- Off on 2 Virtual Consultations Bookings</Typography>
-                  </div>
-                  <div className={classes.couponDetails}>
-                    <Typography component="h3">Coupon Name 3</Typography>
-                    <Typography>Get Rs. 249/- Off on 2 Virtual Consultations Bookings</Typography>
-                  </div>
-                  <div className={classes.couponDetails}>
-                    <Typography component="h3">Coupon Name 4</Typography>
-                    <Typography>Get Rs. 249/- Off on 2 Virtual Consultations Bookings</Typography>
+              {active ? (
+                <div className={classes.couponContainer}>
+                  <Typography component="h2">Active Coupons</Typography>
+                  <Typography>You are eligible for the following coupons on Apollo 24|7</Typography>
+                  <div className={classes.couponContent}>
+                    {coupons.map((item) => {
+                      return (
+                        <div className={classes.couponDetails}>
+                          <Typography component="h3">{item.coupon}</Typography>
+                          <Typography>{item.message}</Typography>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              </div>
-              <div className={classes.couponInactive}>
-                <Typography>
-                  Your Plan is Currently INACTIVE. To activate your plan, make a transaction greater
-                  than Rs 499 on Apollo 24/7
-                </Typography>
-              </div>
+              ) : (
+                <div className={classes.couponInactive}>
+                  <Typography>
+                    Your Plan is Currently INACTIVE. To activate your plan, make a transaction
+                    greater than Rs {minimumTransactionValue} on Apollo 24/7
+                  </Typography>
+                </div>
+              )}
             </div>
           </div>
 
@@ -700,73 +743,23 @@ export const MembershipPlanDetail: React.FC = (props) => {
                     Benefits Available
                   </Typography>
                   <ul className={classes.couponList}>
-                    <li>
-                      <div className={classes.couponCard}>
-                        <Typography component="h2">
-                          24/7 Access to a General Physician on Call
-                        </Typography>
-                        <Typography>
-                          Round-the-clock doctor availability at a click of a button
-                        </Typography>
-                        <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
-                      </div>
-                    </li>
-                    <li>
-                      <div className={classes.couponCard}>
-                        <Typography component="h2">Concierge for 24|7 services</Typography>
-                        <Typography>
-                          Priority Chat Support on Whatsapp with our Executives
-                        </Typography>
-                        <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
-                      </div>
-                    </li>
-                    <li>
-                      <div className={classes.couponCard}>
-                        <Typography component="h2">Covid-19 Care</Typography>
-                        <ul className={classes.benefitList}>
-                          <li>Preferential Access to Pre &amp; Post COVID assessments</li>
-                          <li>Preferential Access to COVID Home Testing </li>
-                          <li>Preferential Access To Home &amp; Hotel Care </li>
-                        </ul>
-                        <AphButton href={clientRoutes.covidLanding()}>Redeem</AphButton>
-                      </div>
-                    </li>
-                    <li>
-                      <div className={classes.couponCard}>
-                        <Typography component="h2">
-                          Access to Apollo doctors through 24|7 App
-                        </Typography>
-                        <Typography>
-                          Choose a Doctor and Book an Online Consultation instantly on our App
-                        </Typography>
-                        <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
-                      </div>
-                    </li>
-                    <li>
-                      <div className={classes.couponCard}>
-                        <Typography component="h2">Free Medicine Delivery</Typography>
-                        <Typography>No delivery charges for orders greater than Rs 300</Typography>
-                        <AphButton href={clientRoutes.medicines()}>Redeem</AphButton>
-                      </div>
-                    </li>
-                    <li>
-                      <div className={classes.couponCard}>
-                        <Typography component="h2">Digital Vault for health records</Typography>
-                        <Typography>
-                          Store all your medical documents in your personal digital vault
-                        </Typography>
-                        <AphButton href={clientRoutes.healthRecords()}>Redeem</AphButton>
-                      </div>
-                    </li>
-                    <li>
-                      <div className={classes.couponCard}>
-                        <Typography component="h2">Free Health Assesment Consultation</Typography>
-                        <Typography>
-                          Get a free medical consultation from Top Apollo Doctors
-                        </Typography>
-                        <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
-                      </div>
-                    </li>
+                    {subscriptionInclusions &&
+                      subscriptionInclusions[0] &&
+                      subscriptionInclusions[0].benefits.map((item: any) => {
+                        return (
+                          <li>
+                            <div className={classes.couponCard}>
+                              <Typography component="h2">{item.header_content}</Typography>
+                              <Typography>{item.description}</Typography>
+                              {item.cta_label != 'NULL' && (
+                                <AphButton href={clientRoutes.welcome()}>
+                                  {item.cta_label}
+                                </AphButton>
+                              )}
+                            </div>
+                          </li>
+                        );
+                      })}
                   </ul>
                 </div>
               </TabPanel>

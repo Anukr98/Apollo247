@@ -1,9 +1,19 @@
 import React from 'react';
-import { Theme, Typography } from '@material-ui/core';
+import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphButton, AphDialog, AphInput } from '@aph/web-ui-components';
 import { callToExotelApi } from 'helpers/commonHelpers';
 import { HDFC_EXOTEL_CALLERID, HDFC_EXOTEL_NUMBER } from 'helpers/constants';
+import { useApolloClient } from 'react-apollo-hooks';
+import { IDENTIFY_HDFC_CUSTOMER, VALIDATE_HDFC_OTP, CREATE_SUBSCRIPTION } from 'graphql/profiles';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { clientRoutes } from 'helpers/clientRoutes';
+
+import {
+  CreateUserSubscription,
+  CreateUserSubscriptionVariables,
+} from 'graphql/types/CreateUserSubscription';
+import { HDFC_CUSTOMER, CreateUserSubscriptionInput } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -89,7 +99,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     otpValidator: {
       padding: '20px 0 0',
-      display: 'none',
+      // display: 'none',
       position: 'relative',
       [theme.breakpoints.down('sm')]: {
         padding: '10px 0 0',
@@ -121,6 +131,9 @@ const useStyles = makeStyles((theme: Theme) => {
         alignItems: 'flex-start',
       },
     },
+    otpError: {
+      color: 'red',
+    },
     otpInput: {
       display: 'flex',
       alignItems: 'center',
@@ -130,7 +143,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     otp: {
-      width: 40,
+      width: 240,
       margin: '0 30px 0 0',
       [theme.breakpoints.down('sm')]: {
         width: 20,
@@ -218,7 +231,7 @@ const useStyles = makeStyles((theme: Theme) => {
     cContainer: {
       padding: '10px 0 0',
       // display: 'flex',
-      display: 'none',
+      // display: 'none',
       alignItems: 'center',
       [theme.breakpoints.down('sm')]: {
         padding: '10px 0 30px',
@@ -232,7 +245,7 @@ const useStyles = makeStyles((theme: Theme) => {
           margin: '0 15px 0 0 ',
         },
       },
-      '& button': {
+      '& a,button': {
         position: 'absolute',
         bottom: 10,
         right: 10,
@@ -287,7 +300,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     recheckOtp: {
-      display: 'none',
+      // display: 'none',
       [theme.breakpoints.down('sm')]: {
         padding: '10px 0 20px',
       },
@@ -341,69 +354,208 @@ export interface HdfcCallDoctorProps {
 export const HdfcCallDoctor: React.FC<HdfcCallDoctorProps> = (props) => {
   const classes = useStyles({});
   const [callDoctorPopup, setCallDoctorPopup] = React.useState<boolean>(false);
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
+  const [statusOfUser, setStatusOfUser] = React.useState('');
+  const [token, setToken] = React.useState('');
+  const [otp, setOtp] = React.useState('');
+  const [otpError, setOtpError] = React.useState<boolean>(false);
+  const [userSubscriptionInput, setUserSubscriptionInput] = React.useState<
+    CreateUserSubscriptionInput
+  >();
+  const apolloClient = useApolloClient();
+
+  const [showIntro, setShowIntro] = React.useState<boolean>(true);
+  const [showOTPValidator, setShowOTPValidator] = React.useState<boolean>(false);
+  const [showCongratulations, setShowCongratulations] = React.useState<boolean>(false);
+  const [showRecheckOTP, setShowRecheckOTP] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(false);
+
+  const queryIdentifyHDFCCustomer = () => {
+    setLoading(true);
+    apolloClient
+      .query({
+        query: IDENTIFY_HDFC_CUSTOMER,
+        variables: {
+          mobile_number: localStorage.getItem('userMobileNo').replace(/.$/, '8'),
+          DOB: currentPatient.dateOfBirth,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setStatusOfUser(response.data.identifyHdfcCustomer.status);
+        console.log(response.data.identifyHdfcCustomer.status);
+        console.log(response.data.identifyHdfcCustomer.status == HDFC_CUSTOMER.OTP_GENERATED);
+        if (response.data.identifyHdfcCustomer.status == HDFC_CUSTOMER.OTP_GENERATED) {
+          setToken(response.data.identifyHdfcCustomer.token);
+          setLoading(false);
+          setShowIntro(false);
+          setShowRecheckOTP(false);
+          setShowOTPValidator(true);
+        } else {
+          setLoading(false);
+          setShowIntro(false);
+          setShowRecheckOTP(true);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed idetifying HDFC Customer' + error);
+        setLoading(false);
+      });
+  };
+
+  const validateHDFCOtp = () => {
+    setLoading(true);
+    apolloClient
+      .query({
+        query: VALIDATE_HDFC_OTP,
+        variables: {
+          otp: otp,
+          token: token,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setOtpError(!response.data.validateHdfcOTP.status);
+        if (
+          response.data.validateHdfcOTP.status === true &&
+          response.data.validateHdfcOTP.defaultPlan
+        ) {
+          subscribeToHDFCPlan(
+            response.data.validateHdfcOTP.defaultPlan,
+            currentPatient.mobileNumber
+          );
+        }
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Validating HDFC OTP Failed' + error);
+      });
+  };
+
+  const subscribeToHDFCPlan = (group_plan_id: string, mobile_number: string) => {
+    // const userSubInput: CreateUserSubscriptionInput = {
+    //   group_plan_id: group_plan_id,
+    //   mobile_number: mobile_number,
+    //   patientId: currentPatient.id,
+    //   firstName: currentPatient.firstName,
+    //   lastName: currentPatient.lastName,
+    //   gender: currentPatient.gender,
+    //   email: currentPatient.emailAddress,
+    //   DOB: currentPatient.dateOfBirth,
+    //   storeCode: 'WEBCUS',
+    // };
+    apolloClient
+      .query<CreateUserSubscription, CreateUserSubscriptionVariables>({
+        query: CREATE_SUBSCRIPTION,
+        variables: {
+          userSubscription: {
+            plan_id: group_plan_id,
+            mobile_number: currentPatient.mobileNumber,
+            FirstName: currentPatient.firstName,
+            storeCode: 'WEBCUS',
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setShowOTPValidator(false);
+        setShowCongratulations(true);
+      })
+      .catch((error) => {
+        setShowOTPValidator(false);
+        setShowIntro(true);
+        console.error('Validating HDFC OTP Failed' + error);
+      });
+  };
 
   return (
     <div className={classes.hdcContainer}>
       <div className={classes.hdcContent}>
         <img src={require('images/hdfc/hdfc-logo.svg')} alt="HDFC Call Doctor" width="100" />
-        <div className={classes.hdfcIntro}>
-          <img src={require('images/hdfc/otp.svg')} alt="Otp" />
-          <Typography className={classes.desc}>
-            As our privileged customer and a member of HDFC Bank, you are eligible to enroll in this
-            exclusive offer
-          </Typography>
-          <Typography component="h2">
-            Click here to generate your HDFC Bank OTP and complete registration
-          </Typography>
-
-          <AphButton>Generate Otp</AphButton>
-        </div>
-        {/* Otp Validator */}
-        <div className={classes.otpValidator}>
-          <img src={require('images/hdfc/otp.svg')} alt="Otp" />
-          <Typography component="h2">Please Validate OTP Sent by HDFC Bank</Typography>
-          <div className={classes.otpContainer}>
-            <div className={classes.otpInput}>
-              <AphInput className={classes.otp} />
-              <AphInput className={classes.otp} />
-              <AphInput className={classes.otp} />
-              <AphInput className={classes.otp} />
-              <AphInput className={classes.otp} />
-            </div>
-            <div className={classes.btnAction}>
-              <AphButton>Resend Otp</AphButton>
-              <AphButton color="primary" variant="contained">
-                <Typography>Submit Otp</Typography>
-                <img src={require('images/ic_arrow_forward.svg')} alt="" />
-              </AphButton>
-            </div>
-          </div>
-        </div>
-        {/* Congratulations Section */}
-        <div className={classes.cContainer}>
-          <img src={require('images/hdfc/gift.svg')} alt="Congraulations" />
-          <div className={classes.cContent}>
-            <img src={require('images/hdfc/medal.svg')} alt="Otp" />
-            <Typography component="h2">Congratulations ! </Typography>
-            <Typography> You Have Successfully Enrolled For Gold+ Plan</Typography>
-            <Typography className={classes.description}>
-              You are now eligible for wide range of benefits !
+        {/* Intro */}
+        {showIntro && (
+          <div className={classes.hdfcIntro}>
+            <img src={require('images/hdfc/otp.svg')} alt="Otp" />
+            <Typography className={classes.desc}>
+              As our privileged customer and a member of HDFC Bank, you are eligible to enroll in
+              this exclusive offer
             </Typography>
+            <Typography component="h2">
+              Click here to generate your HDFC Bank OTP and complete registration
+            </Typography>
+            <AphButton onClick={() => queryIdentifyHDFCCustomer()}>
+              {' '}
+              {loading ? <CircularProgress size={30} /> : 'Generate Otp'}{' '}
+            </AphButton>
           </div>
-          <AphButton>Go To Details Page</AphButton>
-        </div>
+        )}
+        {/* Otp Validator */}
+        {showOTPValidator && (
+          <div className={classes.otpValidator}>
+            <img src={require('images/hdfc/otp.svg')} alt="Otp" />
+            <Typography component="h2">Please Validate OTP Sent by HDFC Bank</Typography>
+            <div className={classes.otpContainer}>
+              <div className={classes.otpInput}>
+                <AphInput
+                  className={classes.otp}
+                  onChange={(e) => {
+                    setOtpError(false);
+                    setOtp(e.target.value);
+                  }}
+                />
+                {/* <AphInput className={classes.otp} />
+              <AphInput className={classes.otp} />
+              <AphInput className={classes.otp} />
+              <AphInput className={classes.otp} /> */}
+              </div>
+              {otpError && (
+                <div className={classes.otpError}>
+                  <Typography>Note : Please Enter correct OTP</Typography>
+                </div>
+              )}
+              <div className={classes.btnAction}>
+                <AphButton onClick={() => queryIdentifyHDFCCustomer()}>Resend Otp</AphButton>
+                <AphButton color="primary" variant="contained" onClick={() => validateHDFCOtp()}>
+                  {loading ? <CircularProgress size={30} /> : <Typography>Submit Otp</Typography>}
+                  <img src={require('images/ic_arrow_forward.svg')} alt="" />
+                </AphButton>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Congratulations Section */}
+        {showCongratulations && (
+          <div className={classes.cContainer}>
+            <img src={require('images/hdfc/gift.svg')} alt="Congraulations" />
+            <div className={classes.cContent}>
+              <img src={require('images/hdfc/medal.svg')} alt="Otp" />
+              <Typography component="h2">Congratulations ! </Typography>
+              <Typography> You Have Successfully Enrolled For Gold+ Plan</Typography>
+              <Typography className={classes.description}>
+                You are now eligible for wide range of benefits !
+              </Typography>
+            </div>
+            <AphButton href={clientRoutes.membershipPlanDetail()}>Go To Details Page</AphButton>
+          </div>
+        )}
         {/* Recheck OTP Section */}
-        <div className={classes.recheckOtp}>
-          <img src={require('images/hdfc/sorry.svg')} alt="Congraulations" />
-          <Typography component="h2">Sorry !</Typography>
-          <Typography>
-            Unfortunately the OTP did not match or you are not a HDFC Premium Customer
-          </Typography>
-          <Typography className={classes.description}>
-            Please Contact HDFC for further Updates
-          </Typography>
-          <AphButton>Recheck Otp</AphButton>
-        </div>
+        {showRecheckOTP && (
+          <div className={classes.recheckOtp}>
+            <img src={require('images/hdfc/sorry.svg')} alt="Congraulations" />
+            <Typography component="h2">Sorry !</Typography>
+            <Typography>
+              Unfortunately the OTP did not match or you are not a HDFC Premium Customer
+            </Typography>
+            <Typography className={classes.description}>
+              Please Contact HDFC for further Updates
+            </Typography>
+            {loading ? (
+              <CircularProgress size={30} />
+            ) : (
+              <AphButton onClick={() => queryIdentifyHDFCCustomer()}>Recheck Otp</AphButton>
+            )}
+          </div>
+        )}
       </div>
       <AphDialog open={callDoctorPopup} maxWidth="sm">
         <div className={classes.dialogContent}>
