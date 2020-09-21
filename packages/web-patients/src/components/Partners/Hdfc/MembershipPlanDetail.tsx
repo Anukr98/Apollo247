@@ -270,6 +270,10 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    silver: {
+      background: `url(${require('images/hdfc/silver.svg')}) no-repeat 0 0`,
+      backgroundSize: 'cover',
+    },
     gold: {
       background: `url(${require('images/hdfc/gold.svg')}) no-repeat 0 0`,
       backgroundSize: 'cover',
@@ -595,6 +599,17 @@ export const MembershipPlanDetail: React.FC = (props) => {
     setValue(newValue);
   };
 
+  const cardBg = (plan: String) => {
+    if (plan === 'GOLD+ PLAN') {
+      return classes.gold;
+    }
+    if (plan === 'PLATINUM+ PLAN') {
+      return classes.platinum;
+    } else {
+      return classes.silver;
+    }
+  };
+
   useEffect(() => {
     apolloClient
       .query<
@@ -668,7 +683,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
         <div className={classes.mainContent}>
           <div className={classes.pcContent}>
             <div className={classes.planCardContent}>
-              <div className={`${classes.planCard} ${classes.gold}`}>
+              <div className={classes.planCard + ' ' + cardBg(planName)}>
                 <img src={require('images/hdfc/medal.svg')} alt="Gold MemberShip" />
                 <Typography component="h1">{planName}</Typography>
                 <Typography className={classes.benefitDesc}>Availing Benefits worth</Typography>

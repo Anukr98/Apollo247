@@ -376,7 +376,7 @@ export const HdfcCallDoctor: React.FC<HdfcCallDoctorProps> = (props) => {
       .query({
         query: IDENTIFY_HDFC_CUSTOMER,
         variables: {
-          mobile_number: localStorage.getItem('userMobileNo').replace(/.$/, '8'),
+          mobile_number: localStorage.getItem('userMobileNo'),
           DOB: currentPatient.dateOfBirth,
         },
         fetchPolicy: 'no-cache',
