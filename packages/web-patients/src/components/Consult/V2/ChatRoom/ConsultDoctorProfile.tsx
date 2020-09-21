@@ -7,7 +7,7 @@ import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDe
 import _forEach from 'lodash/forEach';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import _find from 'lodash/find';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import isTomorrow from 'date-fns/isTomorrow';
 import { getIstTimestamp } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
@@ -404,6 +404,7 @@ interface ConsultDoctorProfileProps {
   setRescheduleCount: (rescheduleCount: number | null) => void;
   handleRescheduleOpen: any;
   srDoctorJoined: boolean;
+  isConsultCompleted: boolean;
 }
 
 type Params = { appointmentId: string; doctorId: string };
@@ -642,15 +643,15 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
               </div>
               <div className={classes.buttonGroup}>
                 {!isPastAppointment(appointmentDetails.appointmentDateTime) && // check for active and upcoming appointments
-                  (appointmentDetails.status === STATUS.COMPLETED ? (
+                  (appointmentDetails.status === STATUS.COMPLETED || props.isConsultCompleted ? (
                     <div className={classes.joinInSection}>
                       <span>
-                        {getAvailableFreeChatDays(appointmentDetails.appointmentDateTime)}!
+                        {getAvailableFreeChatDays(appointmentDetails.appointmentDateTime)}
                       </span>
                     </div>
                   ) : (
                     differenceInMinutes > -16 && // enables only for upcoming and active  appointments
-                    (appointmentDetails.isSeniorConsultStarted ? (
+                    (appointmentDetails.isSeniorConsultStarted || props.srDoctorJoined ? (
                       <div className={`${classes.joinInSection} ${classes.doctorjoinSection}`}>
                         <span>Doctor has joined!</span>
                       </div>
@@ -667,8 +668,9 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                   ))}
               </div>
               {appointmentDetails &&
-              !appointmentDetails.isConsultStarted &&
-              appointmentDetails.status !== STATUS.COMPLETED ? (
+              appointmentDetails.status !== STATUS.COMPLETED &&
+              !props.srDoctorJoined &&
+              !props.isConsultCompleted ? (
                 <div className={classes.appointmentDetails}>
                   <div className={classes.sectionHead}>
                     <div className={classes.appoinmentDetails}>Appointment Details</div>

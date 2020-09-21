@@ -273,7 +273,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       marginBottom: 12,
-      padding: 14,
+      padding: '14px 14px 14px 18px',
       '& hr': {
         opacity: '0.2',
       },
@@ -346,11 +346,12 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 5,
     },
     testName: {
-      fontSize: 16,
+      fontSize: 20,
       color: '#01475b',
-      fontWeight: 500,
+      fontWeight: 600,
       marginBottom: 12,
-      lineHeight: '21px',
+      lineHeight: '28px',
+      wordBreak: 'break-all',
     },
     checkDate: {
       fontSize: 14,
@@ -583,7 +584,11 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                         ? getFormattedDate(combinedData, 'title')
                         : filterApplied === FILTER_TYPE.TEST
                         ? combinedData.labTestName
-                        : combinedData.packageName}
+                        : combinedData.packageName &&
+                          combinedData.packageName.length > 0 &&
+                          combinedData.packageName !== '-'
+                        ? combinedData.packageName
+                        : combinedData.labTestName}
                     </span>
                   </div>
                   <MedicalCard

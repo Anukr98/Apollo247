@@ -4,16 +4,29 @@ import { Appointment, STATUS, ES_DOCTOR_SLOT_STATUS } from 'consults-service/ent
 import { updateDoctorSlotStatusES } from 'doctors-service/entities/doctorElastic';
 import { log } from 'customWinstonLogger';
 import { trackWebEngageEventForAppointmentComplete } from 'notifications-service/resolvers/webEngageAPI';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 @EventSubscriber()
 export class AppointmentEntitySubscriber implements EntitySubscriberInterface<Appointment> {
   //updatePatientType in BookAppoitment may call appointment update event multiple times
   afterUpdate(event: UpdateEvent<any>): Promise<any> | void {
-    const oldAppointment: Appointment = Appointment.create(event.databaseEntity as Appointment);
-    if (oldAppointment.status !== STATUS.COMPLETED)
-      trackWebEngageEventForAppointmentComplete(event.entity as Appointment);
-
-    return updateElasticSlotsViaAppointMent(event);
+    try {
+      const oldAppointment: Appointment = Appointment.create(event.databaseEntity as Appointment);
+      if (oldAppointment?.status !== STATUS.COMPLETED) {
+        trackWebEngageEventForAppointmentComplete(event.entity as Appointment);
+      }
+      return updateElasticSlotsViaAppointMent(event);
+    } catch (error) {
+      log(
+        'consultServiceLogger',
+        `AppointmentEntitySubscriber`,
+        'afterUpdate()',
+        JSON.stringify(error),
+        ''
+      );
+      throw new AphError(AphErrorMessages.AFTER_UPDATE_APPOINTMENT_ERROR, undefined, { error });
+    }
   }
 }
 

@@ -656,6 +656,7 @@ export interface MediaPrescriptionUploadRequest {
 export interface MedicineCartOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
+  tatType?: string | null;
   estimatedAmount?: number | null;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
@@ -679,6 +680,7 @@ export interface MedicineCartOMSInput {
 export interface MedicineCartOMSItem {
   medicineSKU?: string | null;
   medicineName?: string | null;
+  couponFree?: boolean | null;
   price?: number | null;
   quantity?: number | null;
   mrp?: number | null;
@@ -741,6 +743,7 @@ export interface OrderLineItems {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
+  couponFree?: boolean | null;
 }
 
 export interface OtpVerificationInput {

@@ -1,9 +1,8 @@
-import axios, { AxiosError, AxiosResponse } from 'axios';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails as OrderDetails } from 'graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { MedicineCartItem, EPrescription } from 'components/MedicinesCartProvider';
 import moment from 'moment';
 import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails as LatestOrderDetailsType } from 'graphql/types/getLatestMedicineOrder';
-import fetchUtil from 'helpers/fetch';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 const apiDetails = {
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -273,10 +272,10 @@ export const checkTatAvailability = (items: Items[], pincode: string, lat: strin
   return axios.post(
     `${process.env.INVENTORY_SYNC_URL}/tat`,
     {
+      items,
       pincode,
       lat,
       lng,
-      items,
     },
     {
       headers: {
@@ -349,11 +348,11 @@ export const reOrderItems = async (
       : lineItems.filter((item) => item.medicineSKU).map((item) => item.medicineSKU!);
 
     const lineItemsDetails = (await medCartItemsDetailsApi(lineItemsSkus)).data.productdp.filter(
-      (lineItem) => lineItem.sku && lineItem.name
+      (lineItem: any) => lineItem.sku && lineItem.name
     );
-    const availableLineItemsSkus = lineItemsDetails.map((lineItem) => lineItem.sku);
+    const availableLineItemsSkus = lineItemsDetails.map((lineItem: any) => lineItem.sku);
     const cartItemsToAdd = lineItemsDetails.map(
-      (item, index) =>
+      (item: any, index: any) =>
         item.sku &&
         ({
           ...item,

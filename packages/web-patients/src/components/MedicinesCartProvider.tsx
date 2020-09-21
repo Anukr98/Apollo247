@@ -6,7 +6,6 @@ import _uniq from 'lodash/uniq';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import axios from 'axios';
 import { checkSkuAvailability } from 'helpers/MedicineApiCalls';
 
 export interface MedicineCartItem {
@@ -30,6 +29,7 @@ export interface MedicineCartItem {
   mou: string;
   isShippable: boolean;
   MaxOrderQty: number;
+  couponFree?: boolean;
 }
 
 export interface StoreAddresses {
@@ -75,6 +75,7 @@ export interface MedicineCartContextProps {
   setCartItems: ((cartItems: MedicineCartItem[]) => void) | null;
   addCartItem: ((item: MedicineCartItem) => void) | null;
   addCartItems: ((item: Array<MedicineCartItem>) => void) | null;
+  replaceCartItems: ((item: Array<MedicineCartItem>) => void) | null;
   removeCartItemSku: ((sku: MedicineCartItem['sku']) => void) | null;
   removeCartItems: ((itemId: MedicineCartItem['arrSku']) => void) | null;
   removeFreeCartItems: (() => void) | null;
@@ -135,6 +136,7 @@ export const MedicinesCartContext = createContext<MedicineCartContextProps>({
   setCartItems: null,
   addCartItem: null,
   addCartItems: null,
+  replaceCartItems: null,
   removeCartItemSku: null,
   removeCartItems: null,
   removeFreeCartItems: null,
@@ -343,7 +345,10 @@ export const MedicinesCartProvider: React.FC = (props) => {
             res.data.response.length > 0 &&
             res.data.response[0].exist
           ) {
-            setCartItems([...cartItems, itemToAdd]);
+            const result = [...cartItems, itemToAdd];
+            const freeProducts = result.filter((e) => e.couponFree);
+            const normalProducts = result.filter((e) => !e.couponFree);
+            setCartItems(normalProducts.concat(freeProducts));
             setIsCartUpdated(true);
           } else {
             window.location.href = clientRoutes.medicineDetails(itemToAdd.url_key);
@@ -353,20 +358,39 @@ export const MedicinesCartProvider: React.FC = (props) => {
           console.log(e);
         });
     } else {
-      setCartItems([...cartItems, itemToAdd]);
+      const result = [...cartItems, itemToAdd];
+      const freeProducts = result.filter((e) => e.couponFree);
+      const normalProducts = result.filter((e) => !e.couponFree);
+      setCartItems(normalProducts.concat(freeProducts));
       setIsCartUpdated(true);
     }
   };
 
-  const addCartItems = (itemsToAdd: Array<any>) => {
+  const addCartItems = (itemsToAdd: Array<MedicineCartItem>) => {
     if (itemsToAdd && Array.isArray(itemsToAdd) && itemsToAdd.length) {
-      setCartItems([...cartItems].concat(itemsToAdd));
+      const result = [...cartItems].concat(itemsToAdd);
+      const freeProducts = result.filter((e) => e.couponFree);
+      const normalProducts = result.filter((e) => !e.couponFree);
+      setCartItems(normalProducts.concat(freeProducts));
+      setIsCartUpdated(true);
+    }
+  };
+
+  const replaceCartItems = (itemsToAdd: Array<MedicineCartItem>) => {
+    if (itemsToAdd && Array.isArray(itemsToAdd) && itemsToAdd.length) {
+      const result = itemsToAdd;
+      const freeProducts = result.filter((e) => e.couponFree);
+      const normalProducts = result.filter((e) => !e.couponFree);
+      setCartItems(normalProducts.concat(freeProducts));
       setIsCartUpdated(true);
     }
   };
 
   const removeCartItemSku: MedicineCartContextProps['removeCartItemSku'] = (sku: string) => {
-    setCartItems(cartItems.filter((item) => item.sku !== sku));
+    const result = cartItems.filter((item) => item.sku !== sku);
+    const freeProducts = result.filter((e) => e.couponFree);
+    const normalProducts = result.filter((e) => !e.couponFree);
+    setCartItems(normalProducts.concat(freeProducts));
     setIsCartUpdated(true);
   };
 
@@ -377,9 +401,10 @@ export const MedicinesCartProvider: React.FC = (props) => {
   };
 
   const removeFreeCartItems: any = () => {
-    const items = cartItems.filter((item) => item.price !== 0);
+    const items = cartItems.filter((item) => !item.couponFree);
     setCartItems(items);
     setIsCartUpdated(true);
+    localStorage.removeItem('updatedFreeCoupon');
   };
 
   const updateCartItem: MedicineCartContextProps['updateCartItem'] = (itemUpdates) => {
@@ -426,6 +451,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
     if (foundIndex !== -1) {
       if (cartItems && itemUpdates) {
         cartItems[foundIndex].quantity = itemUpdates.quantity;
+        cartItems[foundIndex].couponFree = itemUpdates.couponFree ? itemUpdates.couponFree : false;
         setCartItems([...cartItems]);
         setIsCartUpdated(true);
       }
@@ -457,11 +483,20 @@ export const MedicinesCartProvider: React.FC = (props) => {
 
   const cartTotal: MedicineCartContextProps['cartTotal'] = parseFloat(
     cartItems
-      .reduce(
-        (currTotal, currItem) =>
-          currTotal + currItem.quantity * (Number(currItem.special_price) || currItem.price),
-        0
-      )
+      .reduce((currTotal, currItem) => {
+        if (currItem.special_price == 0 && currItem.couponFree) {
+          return currTotal + currItem.quantity * currItem.special_price;
+        }
+        if (currItem.couponFree && currItem.quantity > 1) {
+          return (
+            currTotal +
+            currItem.quantity * (Number(currItem.special_price) || currItem.price) -
+            currItem.price
+          );
+        } else {
+          return currTotal + currItem.quantity * (Number(currItem.special_price) || currItem.price);
+        }
+      }, 0)
       .toFixed(2)
   );
 
@@ -508,6 +543,7 @@ export const MedicinesCartProvider: React.FC = (props) => {
         itemsStr,
         addCartItem,
         addCartItems,
+        replaceCartItems,
         removeCartItemSku,
         removeCartItems,
         removeFreeCartItems,
@@ -566,6 +602,7 @@ export const useShoppingCart = () => ({
   setCartItems: useShoppingCartContext().setCartItems,
   addCartItem: useShoppingCartContext().addCartItem,
   addCartItems: useShoppingCartContext().addCartItems,
+  replaceCartItems: useShoppingCartContext().replaceCartItems,
   removeCartItemSku: useShoppingCartContext().removeCartItemSku,
   removeCartItems: useShoppingCartContext().removeCartItems,
   removeFreeCartItems: useShoppingCartContext().removeFreeCartItems,

@@ -545,55 +545,6 @@ export const JDConsultRoom: React.FC = () => {
   let customNotes = '',
     appointmentDateIST = '';
 
-  // const {
-  //   data: assignedDoctorDetailsData,
-  //   loading: assignedDoctorDetailsLoading,
-  // } = useQueryWithSkip<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>(
-  //   GET_DOCTOR_DETAILS_BY_ID_DOCTOR,
-  //   {
-  //     variables: { id: assignedDoctorId || '' },
-  //   }
-  // );
-
-  // if (!assignedDoctorDetailsLoading) {
-  //   assignedDoctorFirstName =
-  //     (assignedDoctorDetailsData &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById.firstName) ||
-  //     '';
-  //   assignedDoctorLastName =
-  //     (assignedDoctorDetailsData &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById.lastName) ||
-  //     '';
-  //   assignedDoctorDisplayName =
-  //     (assignedDoctorDetailsData &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById.displayName) ||
-  //     '';
-  //   assignedDoctorMobile =
-  //     (assignedDoctorDetailsData &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById.mobileNumber) ||
-  //     '';
-  //   assignedDoctorSpecialty =
-  //     (assignedDoctorDetailsData &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById.specialty &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById.specialty.name) ||
-  //     '';
-  //   assignedDoctorPhoto =
-  //     (assignedDoctorDetailsData &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById.photoUrl) ||
-  //     '';
-  //   assignedDoctorSalutation =
-  //     (assignedDoctorDetailsData &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById &&
-  //       assignedDoctorDetailsData.getDoctorDetailsById.salutation) ||
-  //     '';
-  // }
-
   const setCasesheetNotes = (notes: string) => {
     customNotes = notes; // this will be used in saving case sheet.
     setNotesJrd(customNotes);
@@ -1134,6 +1085,7 @@ export const JDConsultRoom: React.FC = () => {
           _data.data.sendCallNotification &&
           _data.data.sendCallNotification.status
         ) {
+          setcallId(_data.data.sendCallNotification.callDetails.id);
           isCall
             ? setcallId(_data.data.sendCallNotification.callDetails.id)
             : setChatRecordId(_data.data.sendCallNotification.callDetails.id);
@@ -1540,20 +1492,9 @@ export const JDConsultRoom: React.FC = () => {
       });
   };
 
-  const showRateCallModal = () => {
-    return (
-      <RateCall visible={giveRating} submitRatingCallback={(data) => submitRatingHandler(data)} />
-    );
-  };
-
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 1;
-  // const assignedDoctor = {
-  //   assignedDoctorSalutation: assignedDoctorSalutation,
-  //   assignedDoctorFirstName: assignedDoctorFirstName,
-  //   assignedDoctorLastName: assignedDoctorLastName,
-  //   assignedDoctorDisplayName: assignedDoctorDisplayName,
-  // };
+
   return !loaded ? (
     <LinearProgress />
   ) : (
@@ -1654,7 +1595,11 @@ export const JDConsultRoom: React.FC = () => {
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
-            {showRateCallModal()}
+            {/* <RateCall
+              visible={giveRating}
+              setGiveRating={setGiveRating}
+              submitRatingCallback={(data) => submitRatingHandler(data)}
+            /> */}
             <div className={classes.container}>
               <div className={classes.pageContainer}>
                 {/* patient and doctors details start */}

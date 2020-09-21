@@ -378,7 +378,7 @@ export const getItemSpecialPrice = (cartItemDetails: MedicineCartItem) => {
   return cartItemDetails.special_price || cartItemDetails.price;
 };
 
-export const PayMedicine: React.FC = (props) => {
+const PayMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const [checked, setChecked] = React.useState(false);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -437,6 +437,7 @@ export const PayMedicine: React.FC = (props) => {
     validateCouponResult,
     shopId,
     deliveryAddressId,
+    tatType,
   } = cartValues;
   const deliveryCharges =
     cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
@@ -547,6 +548,7 @@ export const PayMedicine: React.FC = (props) => {
                 ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
+            couponFree: cartItemDetails.couponFree || false,
             itemValue: Number((cartItemDetails.quantity * cartItemDetails.price).toFixed(2)),
             itemDiscount: Number(
               (
@@ -565,7 +567,9 @@ export const PayMedicine: React.FC = (props) => {
                 : _lowerCase(cartItemDetails.type_id) === 'pl'
                 ? '2'
                 : '0',
-            specialPrice: Number(getItemSpecialPrice(cartItemDetails)),
+            specialPrice: cartItemDetails.couponFree
+              ? 0
+              : Number(getItemSpecialPrice(cartItemDetails)),
           };
         })
       : [];
@@ -596,6 +600,7 @@ export const PayMedicine: React.FC = (props) => {
           coupon: couponCode ? couponCode : null,
           deviceType: getDeviceType(),
           shopId: shopId,
+          tatType,
         },
       },
     }
@@ -731,8 +736,10 @@ export const PayMedicine: React.FC = (props) => {
               sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
             }`;
             window.location.href = pgUrl;
+            localStorage.removeItem('updatedFreeCoupon');
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
+            localStorage.removeItem('updatedFreeCoupon');
           } else if (errorMessage.length > 0) {
             setMutationLoading(false);
             setIsAlertOpen(true);
@@ -1172,3 +1179,5 @@ export const PayMedicine: React.FC = (props) => {
     </div>
   );
 };
+
+export default PayMedicine;

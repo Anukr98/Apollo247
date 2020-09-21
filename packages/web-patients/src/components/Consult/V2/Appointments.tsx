@@ -550,7 +550,7 @@ interface statusMap {
   [name: string]: statusActionInterface;
 }
 
-export const Appointments: React.FC<AppointmentProps> = (props) => {
+const Appointments: React.FC<AppointmentProps> = (props) => {
   const classes = useStyles({});
   const initialAppointmentFilterObject: AppointmentFilterObject = {
     appointmentStatus: [],
@@ -1349,7 +1349,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                       )}
                       {followUpAppointments && followUpAppointments.length > 0 && (
                         <div className={classes.cardContainer}>
-                          <h1>Follow - Up Chat</h1>
+                          <h1>Follow up Text Consult</h1>
                           <ConsultationsCard
                             appointments={followUpAppointments}
                             pastOrCurrent="current"
@@ -1529,3 +1529,5 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     </div>
   );
 };
+
+export default Appointments;

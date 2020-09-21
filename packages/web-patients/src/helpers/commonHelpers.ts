@@ -8,8 +8,7 @@ import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
 import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
 import fetchUtil from 'helpers/fetch';
-import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentDetails } from 'graphql/types/GetPatientAllAppointments';
-
+import { getAppStoreLink } from 'helpers/dateHelpers';
 declare global {
   interface Window {
     opera: any;
@@ -450,16 +449,18 @@ const isPastAppointment = (appointmentDateTime: string) =>
 const getAvailableFreeChatDays = (appointmentTime: string) => {
   const followUpDayMoment = moment(appointmentTime).add(7, 'days');
   const diffInDays = followUpDayMoment.diff(moment(), 'days');
-  if (diffInDays <= 0) {
+  if (diffInDays === 0) {
     const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
     const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
     return diffInHours > 0
-      ? `${diffInHours} hours free chat remaining`
+      ? `You can follow up with the doctor via text (${diffInHours} hours left)`
       : diffInMinutes > 0
-      ? `${diffInMinutes} minutes free chat remaining`
+      ? `You can follow up with the doctor via text (${diffInMinutes} minutes left)`
       : '';
+  } else if (diffInDays > 0) {
+    return `You can follow up with the doctor via text (${diffInDays} days left)`;
   } else {
-    return `${diffInDays} days free chat remaining`;
+    return '';
   }
 };
 
@@ -472,8 +473,20 @@ const HEALTH_RECORDS_NO_DATA_FOUND =
 
 const HEALTH_RECORDS_NOTE =
   'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
+const stripHtml = (originalString: any) => originalString.replace(/(<([^>]+)>)/gi, '');
+
+const deepLinkUtil = (deepLinkPattern: string) => {
+  if (getDeviceType() !== DEVICETYPE.DESKTOP && !sessionStorage.getItem('deepLinkAccessed')) {
+    window.location.href = `apollopatients://${deepLinkPattern}`;
+    setTimeout(() => {
+      window.location.href = getAppStoreLink();
+    }, 1000);
+    sessionStorage.setItem('deepLinkAccessed', '1');
+  }
+};
 
 export {
+  deepLinkUtil,
   HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,
   getCouponByUserMobileNumber,
@@ -527,4 +540,5 @@ export {
   PINCODE_MAXLENGTH,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
   HEALTH_RECORDS_NOTE,
+  stripHtml,
 };

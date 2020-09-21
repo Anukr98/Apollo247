@@ -48,6 +48,7 @@ export const validatePharmaCouponTypeDefs = gql`
     productType: CouponCategoryApplicable!
     quantity: Int!
     specialPrice: Float!
+    couponFree: Int
   }
 
   input PharmaCouponInput {
@@ -69,6 +70,7 @@ export type OrderLineItems = {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
+  couponFree: number;
 };
 
 type PharmaCouponInput = {
@@ -136,6 +138,7 @@ export const validatePharmaCoupon: Resolver<
       quantity: item.quantity,
       totalCost: amountToBeConsidered * item.quantity,
       categoryId: item.productType.toString(),
+      couponFree: item.couponFree || 0,
     };
     couponProduct.push(product);
   });
@@ -155,17 +158,27 @@ export const validatePharmaCoupon: Resolver<
   let validityStatus = false;
   let reasonForInvalidStatus = '';
   const lineItemsWithDiscount: PharmaLineItems[] = [];
-
   if (couponData && couponData.response) {
     validityStatus = couponData.response.valid;
+    const requestProductsCount = couponProduct.reduce((acc, item) => {
+      return acc + item.quantity;
+    }, 0);
+    const responseProductsCount = couponData.response.products.reduce((acc, item) => {
+      return acc + item.quantity;
+    }, 0);
+    // if user try to edit cart to by pass frontend validation
+    if (requestProductsCount != responseProductsCount) {
+      validityStatus = false;
+    }
     reasonForInvalidStatus = couponData.response.reason || '';
     couponData.response.products.map((item) => {
       const orderLineItemData = orderLineItems.filter((item1) => item1.itemId == item.sku);
-      mrpPriceTotal = mrpPriceTotal + item.mrp * item.quantity;
-      specialPriceTotal = specialPriceTotal + item.specialPrice * item.quantity;
+      const paidQuantity = item.quantity - (item.couponFree || 0);
+      mrpPriceTotal = mrpPriceTotal + item.mrp * paidQuantity;
+      specialPriceTotal = specialPriceTotal + item.specialPrice * paidQuantity;
       if (item.mrp != item.specialPrice && item.onMrp) {
         deductProductDiscount =
-          deductProductDiscount + (item.mrp - item.specialPrice) * item.quantity;
+          deductProductDiscount + (item.mrp - item.specialPrice) * paidQuantity;
       }
       const lineItems: PharmaLineItems = {
         applicablePrice: Number((item.mrp - item.discountAmt).toFixed(2)),
