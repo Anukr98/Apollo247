@@ -12,7 +12,7 @@ import fetchUtil from 'helpers/fetch';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { useParams } from 'hooks/routerHooks';
-import { gtmTracking, _obTracking, _cbTracking } from 'gtmTracking';
+import { gtmTracking, _obTracking, _cbTracking, dataLayerTracking } from 'gtmTracking';
 import {
   paymentInstrumentClickTracking,
   consultPayInitiateTracking,
@@ -382,6 +382,12 @@ const PayMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const [checked, setChecked] = React.useState(false);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'Payment Option Selected',
+      Option: 'Cash On Delivery',
+    });
+    /**Gtm code start end */
     setChecked(event.target.checked);
   };
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -463,6 +469,21 @@ const PayMedicine: React.FC = (props) => {
   const { city, currentPincode } = useLocationDetails();
   const { authToken } = useAuth();
   const onlineConsultationFees = amount;
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: `${params.payType} Payment Page`,
+      pageLOB: params.payType,
+      Time: appointmentDateTime,
+      Type: appointmentType,
+      pageType: 'Payment Page',
+    });
+    /**Gtm code start end */
+  }, []);
+
   useEffect(() => {
     fetchUtil(`${process.env.PHARMACY_PG_URL}/list-of-payment-methods`, 'GET', {}, '', true).then(
       (res: any) => {
@@ -949,14 +970,21 @@ const PayMedicine: React.FC = (props) => {
                       {sessionStorage.getItem('utm_source') === 'sbi' && (
                         <li
                           key={'sbiCashCard'}
-                          onClick={() =>
+                          onClick={() => {
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Payment Option Selected',
+                              Option: process.env.SBI_CASHCARD_PAY_TYPE,
+                            });
+                            /**Gtm code start end */
+
                             params.payType === 'pharmacy'
                               ? onClickPay(
                                   process.env.SBI_CASHCARD_PAY_TYPE,
                                   'SBI YONO CASHLESS CARD'
                                 )
-                              : onClickConsultPay(process.env.SBI_CASHCARD_PAY_TYPE)
-                          }
+                              : onClickConsultPay(process.env.SBI_CASHCARD_PAY_TYPE);
+                          }}
                           style={{ cursor: 'pointer' }}
                         >
                           <img
@@ -979,11 +1007,18 @@ const PayMedicine: React.FC = (props) => {
                           return (
                             <li
                               key={index}
-                              onClick={() =>
+                              onClick={() => {
+                                /**Gtm code start start */
+                                dataLayerTracking({
+                                  event: 'Payment Option Selected',
+                                  Option: payType.paymentMode,
+                                });
+                                /**Gtm code start end */
+
                                 params.payType === 'pharmacy'
                                   ? onClickPay(payType.paymentMode, payType.name)
-                                  : onClickConsultPay(payType.paymentMode)
-                              }
+                                  : onClickConsultPay(payType.paymentMode);
+                              }}
                               style={{ cursor: 'pointer' }}
                             >
                               <img

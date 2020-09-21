@@ -39,7 +39,7 @@ import {
   ValidateConsultCouponVariables,
 } from 'graphql/types/ValidateConsultCoupon';
 import moment from 'moment';
-import { gtmTracking, _cbTracking } from '../gtmTracking';
+import { gtmTracking, _cbTracking, dataLayerTracking } from '../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -667,6 +667,15 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                   speciality: getSpeciality(),
                 })
               );
+              /**Gtm code start start */
+              dataLayerTracking({
+                event: 'Pay Now Clicked',
+                Price: revisedAmount,
+                product: doctorId,
+                Time: appointmentDateTime,
+                Type: AppointmentType.PHYSICAL,
+              });
+              /**Gtm code start end */
             }}
             // onClick={(e) => {
             //   setMutationLoading(true);

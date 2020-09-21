@@ -34,7 +34,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { CarouselBanner } from 'components/Medicine/CarouselBanner';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { BottomLinks } from 'components/BottomLinks';
 import { Route } from 'react-router-dom';
@@ -491,6 +491,22 @@ const MedicineLanding: React.FC = (props: any) => {
     sessionStorage.removeItem('utm_source');
   }
 
+  useEffect(() => {
+    if (params.orderStatus && params.orderAutoId) {
+      /**Gtm code start start */
+      dataLayerTracking({
+        event: 'pageviewEvent',
+        pagePath: window.location.href,
+        pageName: 'Pharmacy Order Completion Page',
+        pageLOB: 'Pharmacy',
+        pageType: 'Order Page',
+        Status: params.orderStatus,
+        OrderID: params.orderAutoId,
+      });
+      /**Gtm code start end */
+    }
+  }, [params.orderStatus, params.orderAutoId]);
+
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
   const [metadata, setMetadata] = useState(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -571,6 +587,18 @@ const MedicineLanding: React.FC = (props: any) => {
     }
   }, [showOrderPopup, cartTotal]);
   /* Gtm code End */
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Pharmacy Index',
+      pageLOB: 'Pharmacy',
+      pageType: 'Index',
+    });
+    /**Gtm code start end */
+  }, []);
 
   const getMedicinePageProducts = async () => {
     await axios
@@ -654,6 +682,11 @@ const MedicineLanding: React.FC = (props: any) => {
     uploadPrescriptionTracking({ ...patient, age });
     pharmacyUploadPresClickTracking('Home');
     setIsUploadPreDialogOpen(true);
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'Prescription Uploaded',
+    });
+    /**Gtm code start end */
   };
   const metaTagProps = {
     title: 'Online Medicine Order & Delivery, Buy Medicines from Apollo Pharmacy',

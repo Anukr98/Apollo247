@@ -49,6 +49,8 @@ import { SpecialtySearch } from 'components/SpecialtySearch';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
+import { dataLayerTracking } from 'gtmTracking';
+
 // import Pagination from '@material-ui/lab/Pagination';
 import axios from 'axios';
 let currentPage = 1;
@@ -509,6 +511,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                       )}`,
                 });
             });
+
             const filteredObj = getDoctorObject(doctorData.concat(doctors));
             setDoctorData(doctorData.concat(doctors) || []);
             setOnlyFilteredCount(onlyFilteredCount + doctors.length || 0);
@@ -598,7 +601,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
           });
       });
 
-      gtmTracking({
+      /*gtmTracking({
         category: 'Consultations',
         action: 'Specialty Page',
         label: 'Specialty Details Page Viewed',
@@ -609,6 +612,14 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             items: ecommItems,
           },
         },
+      });*/
+      window.dataLayer.push({
+        event: 'pageviewEvent',
+        pagePath: window.location.href,
+        pageName: `${readableParam(specialtyName)} Listing Page`,
+        pageLOB: 'Consultation',
+        pageType: 'Index',
+        productlist: JSON.stringify(ecommItems),
       });
     }
   }, [doctorData]);

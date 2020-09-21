@@ -31,7 +31,7 @@ import {
   CUSTOM_LOGIN_RESEND_OTP,
 } from 'graphql/customlogin';
 import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
-import { gtmTracking, _urTracking } from '../gtmTracking';
+import { gtmTracking, _urTracking, dataLayerTracking } from '../gtmTracking';
 import { webengageUserLoginTracking, webengageUserLogoutTracking } from '../webEngageTracking';
 import { GetPatientByMobileNumber } from 'graphql/types/GetPatientByMobileNumber';
 import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
@@ -178,6 +178,12 @@ export const AuthProvider: React.FC = (props) => {
         gtmTracking({ category: 'Profile', action: 'Logout', label: 'Logout' });
         /**Gtm code start end */
 
+        /**Gtm code start start */
+        dataLayerTracking({
+          event: 'UserLoggedOut',
+        });
+        /**Gtm code start end */
+
         /*webengage code start */
         webengageUserLogoutTracking();
         /*webengage code end */
@@ -233,6 +239,11 @@ export const AuthProvider: React.FC = (props) => {
         if (!res) {
           setVerifyOtpError(true);
           setIsSigningIn(false);
+          /**Gtm code start start */
+          dataLayerTracking({
+            event: 'OTPValidation Failed',
+          });
+          /**Gtm code start end */
         } else {
           setVerifyOtpError(false);
           app.auth().signInWithCustomToken(res);
@@ -473,6 +484,15 @@ export const AuthProvider: React.FC = (props) => {
                   });
                   _urTracking({ userId: userId, isApolloCustomer: false, profileFetchedCount: 1 });
                   setSignInError(false);
+
+                  /**Gtm code start start */
+                  dataLayerTracking({
+                    event: 'UserLoggedIn',
+                    Type: isNewUser ? 'Register' : 'Login',
+                    'User ID': userId,
+                  });
+                  /**Gtm code start end */
+
                   window.location.reload(true);
                 });
             } else {
@@ -499,6 +519,15 @@ export const AuthProvider: React.FC = (props) => {
               /* webengage code start */
               webengageUserLoginTracking(user.uid);
               /* webengage code end */
+
+              /**Gtm code start start */
+              dataLayerTracking({
+                event: 'UserLoggedIn',
+                Type: isNewUser ? 'Register' : 'Login',
+                'User ID': userId,
+              });
+              /**Gtm code start end */
+
               setSignInError(false);
             }
           })

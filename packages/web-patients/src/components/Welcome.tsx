@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import loadable from '@loadable/component';
@@ -10,6 +10,7 @@ import { WeAreHelpYou } from 'components/WeAreHelpYou';
 import { BottomLinks } from 'components/BottomLinks';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { dataLayerTracking } from 'gtmTracking';
 
 const Header = loadable(() => import('components/Header'));
 // import { Header } from 'components/Header';
@@ -60,6 +61,18 @@ const Welcome: React.FC = (props) => {
       'Apollo 24|7 helps you get treated from Apollo certified doctors at any time of the day, wherever you are. The mobile app has features like e-consultation in 15 minutes, online pharmacy to doorstep delivery of medicines, home diagnostic test and digital vault where you can upload all your medical history.',
     canonicalLink: window && window.location && window.location.href,
   };
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pageURL: window.location.href,
+      pageName: 'Home Page',
+      pageLOB: 'Home',
+      pageType: 'Others',
+    });
+    /**Gtm code start end */
+  }, []);
 
   return (
     <div className={classes.welcome}>

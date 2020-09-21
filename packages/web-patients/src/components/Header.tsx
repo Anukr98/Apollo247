@@ -16,6 +16,7 @@ import { MedicineLocationSearch } from 'components/MedicineLocationSearch';
 import { AphButton } from '@aph/web-ui-components';
 import { useParams } from 'hooks/routerHooks';
 import moment from 'moment';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -444,7 +445,17 @@ export const Header: React.FC<HeaderProps> = (props) => {
                             )}
                             <ul className={classes.userAccountList}>
                               <li>
-                                <Link to={clientRoutes.myAccount()}>
+                                <Link
+                                  to={clientRoutes.myAccount()}
+                                  onClick={() => {
+                                    /**Gtm code start start */
+                                    dataLayerTracking({
+                                      event: 'Profile Accessed',
+                                      Type: 'Account',
+                                    });
+                                    /**Gtm code start end */
+                                  }}
+                                >
                                   <span>
                                     <img
                                       src={require('images/ic_manageprofile.svg')}
@@ -460,7 +471,17 @@ export const Header: React.FC<HeaderProps> = (props) => {
                               </li>
 
                               <li>
-                                <Link to={clientRoutes.addressBook()}>
+                                <Link
+                                  to={clientRoutes.addressBook()}
+                                  onClick={() => {
+                                    /**Gtm code start start */
+                                    dataLayerTracking({
+                                      event: 'Profile Accessed',
+                                      Type: 'Address Book',
+                                    });
+                                    /**Gtm code start end */
+                                  }}
+                                >
                                   <span>
                                     <img
                                       src={require('images/ic_location.svg')}
@@ -477,7 +498,17 @@ export const Header: React.FC<HeaderProps> = (props) => {
 
                               {currentPatient && (
                                 <li>
-                                  <Link to={clientRoutes.yourOrders()}>
+                                  <Link
+                                    to={clientRoutes.yourOrders()}
+                                    onClick={() => {
+                                      /**Gtm code start start */
+                                      dataLayerTracking({
+                                        event: 'Profile Accessed',
+                                        Type: 'Orders',
+                                      });
+                                      /**Gtm code start end */
+                                    }}
+                                  >
                                     <span>
                                       <img src={require('images/ic_invoice.svg')} alt="My Orders" />{' '}
                                       My Orders
@@ -491,7 +522,17 @@ export const Header: React.FC<HeaderProps> = (props) => {
                               )}
 
                               <li>
-                                <Link to={clientRoutes.myPayments()}>
+                                <Link
+                                  to={clientRoutes.myPayments()}
+                                  onClick={() => {
+                                    /**Gtm code start start */
+                                    dataLayerTracking({
+                                      event: 'Profile Accessed',
+                                      Type: 'Payments',
+                                    });
+                                    /**Gtm code start end */
+                                  }}
+                                >
                                   <span>
                                     <img src={require('images/ic_fees.svg')} alt="My Payments" /> My
                                     Payments
@@ -505,7 +546,17 @@ export const Header: React.FC<HeaderProps> = (props) => {
 
                               {currentPatient && (
                                 <li>
-                                  <Link to={clientRoutes.healthRecords()}>
+                                  <Link
+                                    to={clientRoutes.healthRecords()}
+                                    onClick={() => {
+                                      /**Gtm code start start */
+                                      dataLayerTracking({
+                                        event: 'Profile Accessed',
+                                        Type: 'Health Records',
+                                      });
+                                      /**Gtm code start end */
+                                    }}
+                                  >
                                     <span>
                                       <img
                                         src={require('images/ic_myhealth.svg')}
@@ -522,7 +573,17 @@ export const Header: React.FC<HeaderProps> = (props) => {
                               )}
 
                               <li>
-                                <Link to={clientRoutes.needHelp()}>
+                                <Link
+                                  to={clientRoutes.needHelp()}
+                                  onClick={() => {
+                                    /**Gtm code start start */
+                                    dataLayerTracking({
+                                      event: 'Profile Accessed',
+                                      Type: 'Help',
+                                    });
+                                    /**Gtm code start end */
+                                  }}
+                                >
                                   <span>
                                     <img
                                       src={require('images/ic_round_live_help.svg')}
