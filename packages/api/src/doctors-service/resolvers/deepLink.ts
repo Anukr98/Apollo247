@@ -12,6 +12,7 @@ import { DeeplinkRepository } from 'doctors-service/repositories/deepLinkReposit
 import { format, addDays, differenceInDays } from 'date-fns';
 import { trim } from 'lodash';
 import path from 'path';
+import _ from 'lodash';
 
 export const deepLinkTypeDefs = gql`
   type Deeplink {
@@ -187,19 +188,24 @@ const refreshDoctorDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> 
 
   const refreshDays = ApiConstants.LINK_TTL ? parseInt(ApiConstants.LINK_TTL, 10) : 0;
   const newRefreshDate = addDays(new Date(), refreshDays);
-  getDeeplinks.map((element: Deeplink) => {
-    element.linkRefreshDate = newRefreshDate;
-  });
 
-  getDeeplinks.map(async (element: Deeplink) => {
-    const doctorType =
-      element.templateId == ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO
-        ? DoctorType.DOCTOR_CONNECT
-        : DoctorType.APOLLO;
-    await refreshLink(element, doctorType);
-  });
+  const linksToBeRefreshed = _.chunk(getDeeplinks, 60);
 
-  await linkRepository.bulkUpsertDeepLinks(getDeeplinks);
+  linksToBeRefreshed.map(async (chunk) => {
+    _.delay(async () => {
+      chunk.map(async (element: Deeplink) => {
+        const doctorType =
+          element.templateId == ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO
+            ? DoctorType.DOCTOR_CONNECT
+            : DoctorType.APOLLO;
+        const newLink = await refreshLink(element, doctorType);
+        element.linkRefreshDate = newRefreshDate;
+        element.deepLink = newLink;
+        element.updatedDate = new Date();
+        await linkRepository.upsertDeepLink(element);
+      });
+    }, 60000); //in milliseconds
+  });
 
   return 'Deeplink Refresh Completed :)';
 };

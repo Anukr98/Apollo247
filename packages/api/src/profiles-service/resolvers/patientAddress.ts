@@ -172,6 +172,16 @@ const updatePatientAddress: Resolver<
   AddPatientAddressResult
 > = async (parent, { UpdatePatientAddressInput }, { profilesDb }) => {
   const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+  if (
+    UpdatePatientAddressInput.latitude &&
+    UpdatePatientAddressInput.longitude &&
+    UpdatePatientAddressInput.latitude > 50 &&
+    UpdatePatientAddressInput.longitude < 50
+  ) {
+    const latitude = UpdatePatientAddressInput.latitude;
+    UpdatePatientAddressInput.latitude = UpdatePatientAddressInput.longitude;
+    UpdatePatientAddressInput.longitude = latitude;
+  }
   const updatePatientAddressAttrs: Omit<UpdatePatientAddressInput, 'id'> = {
     ...UpdatePatientAddressInput,
   };
@@ -210,6 +220,17 @@ const savePatientAddress: Resolver<
   const patientDetails = await patientRepo.getPatientDetails(PatientAddressInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  // this is to handle wrong data coming from frontend
+  if (
+    PatientAddressInput.latitude &&
+    PatientAddressInput.longitude &&
+    PatientAddressInput.latitude > 50 &&
+    PatientAddressInput.longitude < 50
+  ) {
+    const latitude = PatientAddressInput.latitude;
+    PatientAddressInput.latitude = PatientAddressInput.longitude;
+    PatientAddressInput.longitude = latitude;
   }
 
   const savePatientaddressAttrs: Partial<PatientAddress> = {

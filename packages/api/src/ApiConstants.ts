@@ -48,7 +48,7 @@ export enum ApiConstants {
 
   //appointment reschedule by patient
   DOCTOR_APPOINTMENT_RESCHEDULE_TITLE = 'Appointment has been rescheduled',
-  DOCTOR_APPOINTMENT_RESCHEDULE_BODY = 'Hi Dr. {0}!  Your appointment {1} with {2} has been rescheduled  to {3}. ',
+  DOCTOR_APPOINTMENT_RESCHEDULE_BODY = 'Namaste Dr. {0}!  Your appointment {1} with {2} has been rescheduled  to {3}. ',
   //initiate junior doctor session
   JUNIOR_APPT_SESSION_TITLE = 'Junior doctor initiated the session',
   JUNIOR_APPT_SESSION_BODY = "Hi {0}! :) Dr. {2}'s team doctor is waiting to start your consultation prep. Please proceed to the Consult Room",
@@ -394,6 +394,8 @@ export enum ApiConstants {
   PATIENT_APPT_DEEPLINK = 'apollopatients://Consult',
   PATIENT_CHATROOM_DEEPLINK = 'apollopatients://ChatRoom?',
   PATIENT_PRESCRIPTION_DEEPLINK = 'apollopatients://ConsultDetails?',
+  DOCTOR_DEEPLINK_WEB_URL = 'https://www.apollo247.com/doctors/<DoctorID>',
+
   // whatsapp constants
   WEB_ENGAGE_AUTHORIZATION = 'fe30a7fd-5dd7-48a8-9ce0-be85b5eb4de7',
 
