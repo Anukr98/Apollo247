@@ -6,6 +6,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { useAuth } from 'hooks/authHooks';
 import { AphButton } from '@aph/web-ui-components';
 import MenuIcon from '@material-ui/icons/Menu';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -192,6 +193,14 @@ export const MyProfile: React.FC = (props) => {
                 }`}
                 to={clientRoutes.myAccount()}
                 title={'Manage Profiles'}
+                onClick={() => {
+                  /**Gtm code start start */
+                  dataLayerTracking({
+                    event: 'Profile Accessed',
+                    Type: 'Account',
+                  });
+                  /**Gtm code start end */
+                }}
               >
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_manageprofile.svg')} alt="Manage Profiles" />
@@ -211,6 +220,14 @@ export const MyProfile: React.FC = (props) => {
                 }`}
                 to={clientRoutes.myPayments()}
                 title={'My Payments'}
+                onClick={() => {
+                  /**Gtm code start start */
+                  dataLayerTracking({
+                    event: 'Profile Accessed',
+                    Type: 'Payments',
+                  });
+                  /**Gtm code start end */
+                }}
               >
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_fees.svg')} alt="My Payments" />
@@ -230,6 +247,14 @@ export const MyProfile: React.FC = (props) => {
                 }`}
                 to={clientRoutes.healthRecords()}
                 title={'View health records'}
+                onClick={() => {
+                  /**Gtm code start start */
+                  dataLayerTracking({
+                    event: 'Profile Accessed',
+                    Type: 'Health Records',
+                  });
+                  /**Gtm code start end */
+                }}
               >
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_myhealth.svg')} alt="Health Records" />
@@ -247,6 +272,14 @@ export const MyProfile: React.FC = (props) => {
                 }`}
                 to={clientRoutes.addressBook()}
                 title={'Address Book'}
+                onClick={() => {
+                  /**Gtm code start start */
+                  dataLayerTracking({
+                    event: 'Profile Accessed',
+                    Type: 'Address Book',
+                  });
+                  /**Gtm code start end */
+                }}
               >
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_location.svg')} alt="Address Book" />
@@ -289,6 +322,14 @@ export const MyProfile: React.FC = (props) => {
                 }`}
                 to={clientRoutes.needHelp()}
                 title={'Need Help'}
+                onClick={() => {
+                  /**Gtm code start start */
+                  dataLayerTracking({
+                    event: 'Profile Accessed',
+                    Type: 'Help',
+                  });
+                  /**Gtm code start end */
+                }}
               >
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_round_live_help.svg')} alt="Need Help" />
@@ -356,6 +397,14 @@ export const MyProfile: React.FC = (props) => {
                     }`}
                     to={clientRoutes.myAccount()}
                     title={'Manage Profiles'}
+                    onClick={() => {
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Profile Accessed',
+                        Type: 'Account',
+                      });
+                      /**Gtm code start end */
+                    }}
                   >
                     <span className={classes.serviceImg}>
                       <img src={require('images/ic_manageprofile.svg')} alt="Manage Profiles" />
@@ -375,6 +424,14 @@ export const MyProfile: React.FC = (props) => {
                     }`}
                     to={clientRoutes.myPayments()}
                     title={'My Payments'}
+                    onClick={() => {
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Profile Accessed',
+                        Type: 'Payments',
+                      });
+                      /**Gtm code start end */
+                    }}
                   >
                     <span className={classes.serviceImg}>
                       <img src={require('images/ic_fees.svg')} alt="My Payments" />
@@ -394,6 +451,14 @@ export const MyProfile: React.FC = (props) => {
                     }`}
                     to={clientRoutes.healthRecords()}
                     title={'View health records'}
+                    onClick={() => {
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Profile Accessed',
+                        Type: 'Health Records',
+                      });
+                      /**Gtm code start end */
+                    }}
                   >
                     <span className={classes.serviceImg}>
                       <img src={require('images/ic_myhealth.svg')} alt="Health Records" />
@@ -411,6 +476,14 @@ export const MyProfile: React.FC = (props) => {
                     }`}
                     to={clientRoutes.addressBook()}
                     title={'Address Book'}
+                    onClick={() => {
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Profile Accessed',
+                        Type: 'Address Book',
+                      });
+                      /**Gtm code start end */
+                    }}
                   >
                     <span className={classes.serviceImg}>
                       <img src={require('images/ic_location.svg')} alt="Address Book" />
@@ -430,6 +503,14 @@ export const MyProfile: React.FC = (props) => {
                     }`}
                     to={clientRoutes.needHelp()}
                     title={'Need Help'}
+                    onClick={() => {
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Profile Accessed',
+                        Type: 'Help',
+                      });
+                      /**Gtm code start end */
+                    }}
                   >
                     <span className={classes.serviceImg}>
                       <img src={require('images/ic_round_live_help.svg')} alt="Need Help" />

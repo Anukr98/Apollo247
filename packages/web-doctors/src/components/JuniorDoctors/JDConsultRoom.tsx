@@ -7,6 +7,7 @@ import { JDCallPopover } from 'components/JuniorDoctors/JDCallPopover';
 import Typography from '@material-ui/core/Typography';
 import { useApolloClient } from 'react-apollo-hooks';
 import Pubnub from 'pubnub';
+import { getAge } from 'helpers/Utils';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
@@ -849,14 +850,7 @@ export const JDConsultRoom: React.FC = () => {
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth !== null &&
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth !== ''
           ) {
-            cardStripArr.push(
-              Math.abs(
-                new Date(Date.now()).getUTCFullYear() -
-                  new Date(
-                    _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth
-                  ).getUTCFullYear()
-              ).toString()
-            );
+            cardStripArr.push(getAge(_data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth));
           }
           if (
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender &&

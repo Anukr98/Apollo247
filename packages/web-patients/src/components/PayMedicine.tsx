@@ -12,7 +12,7 @@ import fetchUtil from 'helpers/fetch';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { useParams } from 'hooks/routerHooks';
-import { gtmTracking, _obTracking, _cbTracking } from 'gtmTracking';
+import { gtmTracking, _obTracking, _cbTracking, dataLayerTracking } from 'gtmTracking';
 import {
   paymentInstrumentClickTracking,
   consultPayInitiateTracking,
@@ -384,8 +384,8 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 16,
         fontWeight: 500,
         lineHeight: '20px',
-        padding: '0 0 10px'
-      }
+        padding: '0 0 10px',
+      },
     },
     healthCreditSelection: {
       display: 'flex',
@@ -395,7 +395,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
       padding: '14px 20px',
       width: 320,
-      margin: '10px 0'
+      margin: '10px 0',
     },
     healthCreditAvailable: {
       padding: '0 0 0 20px',
@@ -409,8 +409,8 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h4': {
         fontSize: 16,
         fontWeight: 500,
-        lineHeight: '24px'
-      }
+        lineHeight: '24px',
+      },
     },
     credits: {},
     saveDetails: {
@@ -418,8 +418,8 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#00B38E',
       '& span': {
-        fontWeight: 600
-      }
+        fontWeight: 600,
+      },
     },
     formGroup: {
       display: 'flex',
@@ -429,23 +429,22 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         position: 'absolute',
         top: 0,
-        left: 40
+        left: 40,
       },
       '& label': {
         width: '100%',
         position: 'relative',
-        zIndex: 2
-      }
+        zIndex: 2,
+      },
     },
     disabled: {
       '& span': {
         '&:last-child': {
-          color: 'rgba(8,76,96,0.4)'
-        }
+          color: 'rgba(8,76,96,0.4)',
+        },
       },
     },
     codOption: {
-
       flexDirection: 'column',
       alignItems: 'flex-start',
       justifyContent: 'flex-start',
@@ -453,9 +452,9 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 14,
         color: '#02475b',
         textTransform: 'none',
-        fontWeight: 600
-      }
-    }
+        fontWeight: 600,
+      },
+    },
   };
 });
 
@@ -467,6 +466,12 @@ const PayMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const [checked, setChecked] = React.useState(false);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'Payment Option Selected',
+      Option: 'Cash On Delivery',
+    });
+    /**Gtm code start end */
     setChecked(event.target.checked);
   };
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -526,7 +531,7 @@ const PayMedicine: React.FC = (props) => {
   } = cartValues;
   const deliveryCharges =
     cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
-      totalWithCouponDiscount <= 0
+    totalWithCouponDiscount <= 0
       ? 0
       : Number(pharmacyDeliveryCharges);
 
@@ -548,6 +553,21 @@ const PayMedicine: React.FC = (props) => {
   const { city, currentPincode } = useLocationDetails();
   const { authToken } = useAuth();
   const onlineConsultationFees = amount;
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: `${params.payType} Payment Page`,
+      pageLOB: params.payType,
+      Time: appointmentDateTime,
+      Type: appointmentType,
+      pageType: 'Payment Page',
+    });
+    /**Gtm code start end */
+  }, []);
+
   useEffect(() => {
     fetchUtil(`${process.env.PHARMACY_PG_URL}/list-of-payment-methods`, 'GET', {}, '', true).then(
       (res: any) => {
@@ -625,38 +645,38 @@ const PayMedicine: React.FC = (props) => {
   const cartItemsForApi =
     cartItems.length > 0
       ? cartItems.map((cartItemDetails) => {
-        return {
-          medicineSKU: cartItemDetails.sku,
-          medicineName: cartItemDetails.name,
-          price:
-            couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-              ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
-              : Number(getItemSpecialPrice(cartItemDetails)),
-          quantity: cartItemDetails.quantity,
-          couponFree: cartItemDetails.couponFree || false,
-          itemValue: Number((cartItemDetails.quantity * cartItemDetails.price).toFixed(2)),
-          itemDiscount: Number(
-            (
-              cartItemDetails.quantity *
-              (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
-                ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.sku))
-                : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
-            ).toFixed(2)
-          ),
-          mrp: cartItemDetails.price,
-          isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
-          mou: parseInt(cartItemDetails.mou),
-          isMedicine:
-            _lowerCase(cartItemDetails.type_id) === 'pharma'
-              ? '1'
-              : _lowerCase(cartItemDetails.type_id) === 'pl'
+          return {
+            medicineSKU: cartItemDetails.sku,
+            medicineName: cartItemDetails.name,
+            price:
+              couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+                ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
+                : Number(getItemSpecialPrice(cartItemDetails)),
+            quantity: cartItemDetails.quantity,
+            couponFree: cartItemDetails.couponFree || false,
+            itemValue: Number((cartItemDetails.quantity * cartItemDetails.price).toFixed(2)),
+            itemDiscount: Number(
+              (
+                cartItemDetails.quantity *
+                (couponCode && couponCode.length > 0 && validateCouponResult // validateCouponResult check is needed because there are some cases we will have code but coupon discount=0  when coupon discount <= product discount
+                  ? cartItemDetails.price - Number(getDiscountedLineItemPrice(cartItemDetails.sku))
+                  : cartItemDetails.price - Number(getItemSpecialPrice(cartItemDetails)))
+              ).toFixed(2)
+            ),
+            mrp: cartItemDetails.price,
+            isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
+            mou: parseInt(cartItemDetails.mou),
+            isMedicine:
+              _lowerCase(cartItemDetails.type_id) === 'pharma'
+                ? '1'
+                : _lowerCase(cartItemDetails.type_id) === 'pl'
                 ? '2'
                 : '0',
-          specialPrice: cartItemDetails.couponFree
-            ? 0
-            : Number(getItemSpecialPrice(cartItemDetails)),
-        };
-      })
+            specialPrice: cartItemDetails.couponFree
+              ? 0
+              : Number(getItemSpecialPrice(cartItemDetails)),
+          };
+        })
       : [];
 
   const paymentMutation = useMutation<saveMedicineOrderOMS, saveMedicineOrderOMSVariables>(
@@ -813,11 +833,13 @@ const PayMedicine: React.FC = (props) => {
           });
           /* Webengage Code End */
           if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
-            const pgUrl = `${process.env.PHARMACY_PG_URL
-              }/paymed?amount=${totalWithCouponDiscount.toFixed(
-                2
-              )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES${sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
-              }`;
+            const pgUrl = `${
+              process.env.PHARMACY_PG_URL
+            }/paymed?amount=${totalWithCouponDiscount.toFixed(
+              2
+            )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES${
+              sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
+            }`;
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
@@ -960,10 +982,13 @@ const PayMedicine: React.FC = (props) => {
                 setAlertMessage(error);
               });
           } else {
-            const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${res.data.bookAppointment.appointment.id
-              }&patientId=${currentPatient ? currentPatient.id : ''
-              }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES${sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
-              }`;
+            const pgUrl = `${process.env.CONSULT_PG_BASE_URL}/consultpayment?appointmentId=${
+              res.data.bookAppointment.appointment.id
+            }&patientId=${
+              currentPatient ? currentPatient.id : ''
+            }&price=${revisedAmount}&source=WEB&paymentTypeID=${value}&paymentModeOnly=YES${
+              sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
+            }`;
             window.location.href = pgUrl;
           }
           // setMutationLoading(false);
@@ -991,8 +1016,8 @@ const PayMedicine: React.FC = (props) => {
                 params.payType === 'pharmacy'
                   ? clientRoutes.medicinesCart()
                   : appointmentType.toLowerCase() === 'online'
-                    ? clientRoutes.payOnlineConsult()
-                    : clientRoutes.payOnlineClinicConsult()
+                  ? clientRoutes.payOnlineConsult()
+                  : clientRoutes.payOnlineClinicConsult()
               }
             >
               <div className={classes.backArrow}>
@@ -1016,7 +1041,9 @@ const PayMedicine: React.FC = (props) => {
               <Grid item xs={12} sm={8}>
                 <Paper className={`${classes.paper} ${classes.paperHeight}`}>
                   <div className={classes.healthCredit}>
-                    <Typography component="h3">Would you like to use Apollo Health Credits for this payment?</Typography>
+                    <Typography component="h3">
+                      Would you like to use Apollo Health Credits for this payment?
+                    </Typography>
                     <div className={classes.healthCreditSelection}>
                       <FormGroup className={classes.formGroup}>
                         <FormControlLabel
@@ -1028,10 +1055,14 @@ const PayMedicine: React.FC = (props) => {
                       </FormGroup>
                       <div className={classes.healthCreditAvailable}>
                         <Typography>Available Health Credits </Typography>
-                        <Typography component="h4" className={classes.credits}>100</Typography>
+                        <Typography component="h4" className={classes.credits}>
+                          100
+                        </Typography>
                       </div>
                     </div>
-                    <Typography className={classes.saveDetails}>You will <span>save Rs. 100 </span> on your purchase.</Typography>
+                    <Typography className={classes.saveDetails}>
+                      You will <span>save Rs. 100 </span> on your purchase.
+                    </Typography>
                   </div>
                   <div className={classes.paperHeading}>
                     <Typography component="h3">Pay Via</Typography>
@@ -1043,77 +1074,125 @@ const PayMedicine: React.FC = (props) => {
                       color="secondary"
                     />
                   ) : (
-                      <ul className={classes.paymentOptions}>
-                        {sessionStorage.getItem('utm_source') === 'sbi' && (
-                          <li
-                            key={'sbiCashCard'}
-                            onClick={() =>
-                              params.payType === 'pharmacy'
-                                ? onClickPay(
+                    <ul className={classes.paymentOptions}>
+                      {sessionStorage.getItem('utm_source') === 'sbi' && (
+                        <li
+                          key={'sbiCashCard'}
+                          onClick={() => {
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Payment Option Selected',
+                              Option: process.env.SBI_CASHCARD_PAY_TYPE,
+                            });
+                            /**Gtm code start end */
+
+                            params.payType === 'pharmacy'
+                              ? onClickPay(
                                   process.env.SBI_CASHCARD_PAY_TYPE,
                                   'SBI YONO CASHLESS CARD'
                                 )
-                                : onClickConsultPay(process.env.SBI_CASHCARD_PAY_TYPE)
-                            }
-                            style={{ cursor: 'pointer' }}
-                          >
-                            <div className={classes.paymentCard}>
-                              <img
-                                src={
-                                  'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
-                                }
-                                alt=""
-                                style={{ height: 30, width: 30 }}
-                              />
-                              <div style={{ paddingLeft: 10 }}>
-                                SBI YONO CASHLESS CARD
-                            <div className={classes.offerMessage}>
-                                  You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}% cashback
-                            </div>
+                              : onClickConsultPay(process.env.SBI_CASHCARD_PAY_TYPE);
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <div className={classes.paymentCard}>
+                            <img
+                              src={
+                                'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
+                              }
+                              alt=""
+                              style={{ height: 30, width: 30 }}
+                            />
+                            <div style={{ paddingLeft: 10 }}>
+                              SBI YONO CASHLESS CARD
+                              <div className={classes.offerMessage}>
+                                You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}% cashback
                               </div>
                             </div>
-                          </li>
-                        )}
-                        {paymentOptions.length > 0 &&
-                          paymentOptions.map((payType, index) => {
-                            return (
-                              <li
-                                key={index}
-                                onClick={() =>
-                                  params.payType === 'pharmacy'
-                                    ? onClickPay(payType.paymentMode, payType.name)
-                                    : onClickConsultPay(payType.paymentMode)
-                                }
-                                style={{ cursor: 'pointer' }}
-                              >
-                                <div className={classes.paymentCard}>
-                                  <img
-                                    src={payType.imageUrl}
-                                    alt=""
-                                    style={{ height: 30, width: 30 }}
-                                  />
-                                  <span style={{ paddingLeft: 10 }}>{payType.name}</span>
-                                </div>
-                              </li>
-                            );
-                          })}
-                        {params.payType === 'pharmacy' && (
-                          <li>
-                            <div className={`${classes.paymentCard} ${classes.codOption}`}>
-                              <FormGroup>
-                                <FormControlLabel
-                                  classes={{ root: classes.checkbox, disabled: classes.disabled }}
-                                  control={<Checkbox onChange={handleChange} name="checked" disabled />}
-                                  label="Cash On Delivery"
+                          </div>
+                        </li>
+                      )}
+                      {paymentOptions.length > 0 &&
+                        paymentOptions.map((payType, index) => {
+                          return (
+                            <li
+                              key={index}
+                              onClick={() => {
+                                /**Gtm code start start */
+                                dataLayerTracking({
+                                  event: 'Payment Option Selected',
+                                  Option: payType.paymentMode,
+                                });
+                                /**Gtm code start end */
+
+                                params.payType === 'pharmacy'
+                                  ? onClickPay(payType.paymentMode, payType.name)
+                                  : onClickConsultPay(payType.paymentMode);
+                              }}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <div className={classes.paymentCard}>
+                                <img
+                                  src={
+                                    'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
+                                  }
+                                  alt=""
+                                  style={{ height: 30, width: 30 }}
                                 />
-                              </FormGroup>
-                              <Typography>!  COD option is not available along with
-    OneApollo Health Credits.</Typography>
-                            </div>
-                          </li>
-                        )}
-                      </ul>
-                    )}
+                                <div style={{ paddingLeft: 10 }}>
+                                  SBI YONO CASHLESS CARD
+                                  <div className={classes.offerMessage}>
+                                    You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}%
+                                    cashback
+                                  </div>
+                                </div>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      {paymentOptions.length > 0 &&
+                        paymentOptions.map((payType, index) => {
+                          return (
+                            <li
+                              key={index}
+                              onClick={() =>
+                                params.payType === 'pharmacy'
+                                  ? onClickPay(payType.paymentMode, payType.name)
+                                  : onClickConsultPay(payType.paymentMode)
+                              }
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <div className={classes.paymentCard}>
+                                <img
+                                  src={payType.imageUrl}
+                                  alt=""
+                                  style={{ height: 30, width: 30 }}
+                                />
+                                <span style={{ paddingLeft: 10 }}>{payType.name}</span>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      {params.payType === 'pharmacy' && (
+                        <li>
+                          <div className={`${classes.paymentCard} ${classes.codOption}`}>
+                            <FormGroup>
+                              <FormControlLabel
+                                classes={{ root: classes.checkbox, disabled: classes.disabled }}
+                                control={
+                                  <Checkbox onChange={handleChange} name="checked" disabled />
+                                }
+                                label="Cash On Delivery"
+                              />
+                            </FormGroup>
+                            <Typography>
+                              ! COD option is not available along with OneApollo Health Credits.
+                            </Typography>
+                          </div>
+                        </li>
+                      )}
+                    </ul>
+                  )}
                   {checked && (
                     <AphButton
                       className={classes.payBtn}
@@ -1124,9 +1203,9 @@ const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                          `Pay Rs.${totalWithCouponDiscount &&
+                        `Pay Rs.${totalWithCouponDiscount &&
                           totalWithCouponDiscount.toFixed(2)} on delivery`
-                        )}
+                      )}
                     </AphButton>
                   )}
                   {params.payType === 'consults' && revisedAmount === 0 && (
@@ -1162,20 +1241,20 @@ const PayMedicine: React.FC = (props) => {
                             </span>
                           </div>
                         ) : (
-                            <>
-                              <div className={classes.appliedCoupon}>
-                                <span className={classes.linkText}>
-                                  <span>{consultCouponCode}</span> applied
+                          <>
+                            <div className={classes.appliedCoupon}>
+                              <span className={classes.linkText}>
+                                <span>{consultCouponCode}</span> applied
                               </span>
-                                <span className={classes.rightArrow}>
-                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
-                                </span>
-                              </div>
-                              <div className={classes.couponText}>
-                                {validateConsultCouponResult ? 'Coupon succefully applied' : ''}
-                              </div>
-                            </>
-                          )}
+                              <span className={classes.rightArrow}>
+                                <img src={require('images/ic_arrow_right.svg')} alt="" />
+                              </span>
+                            </div>
+                            <div className={classes.couponText}>
+                              {validateConsultCouponResult ? 'Coupon succefully applied' : ''}
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                     {consultCouponCode.length > 0 && (
@@ -1218,34 +1297,34 @@ const PayMedicine: React.FC = (props) => {
                     </div>
                   </Paper>
                 ) : (
-                    <Paper className={classes.paper}>
-                      <div className={classes.charges}>
-                        {' '}
-                        <p>Subtotal</p> <p>Rs.{amount && parseFloat(amount).toFixed(2)}</p>
-                      </div>
-                      <div className={`${classes.charges} ${classes.discount}`}>
-                        <p>Coupon Applied</p>{' '}
-                        <p>
-                          - Rs.
+                  <Paper className={classes.paper}>
+                    <div className={classes.charges}>
+                      {' '}
+                      <p>Subtotal</p> <p>Rs.{amount && parseFloat(amount).toFixed(2)}</p>
+                    </div>
+                    <div className={`${classes.charges} ${classes.discount}`}>
+                      <p>Coupon Applied</p>{' '}
+                      <p>
+                        - Rs.
                         {validateConsultCouponResult && validateConsultCouponResult.valid
-                            ? validateConsultCouponResult.discount.toFixed(2)
-                            : consultCouponValue.toFixed(2)}
-                        </p>
-                      </div>
-                      <div className={`${classes.charges} ${classes.total}`}>
-                        <p>To Pay</p>{' '}
-                        <p>
-                          Rs.
+                          ? validateConsultCouponResult.discount.toFixed(2)
+                          : consultCouponValue.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className={`${classes.charges} ${classes.total}`}>
+                      <p>To Pay</p>{' '}
+                      <p>
+                        Rs.
                         {validateConsultCouponResult && validateConsultCouponResult.valid
-                            ? (
+                          ? (
                               validateConsultCouponResult.billAmount -
                               validateConsultCouponResult.discount
                             ).toFixed(2)
-                            : revisedAmount.toFixed(2)}
-                        </p>
-                      </div>
-                    </Paper>
-                  )}
+                          : revisedAmount.toFixed(2)}
+                      </p>
+                    </div>
+                  </Paper>
+                )}
               </Grid>
             </Grid>
           </div>
@@ -1280,7 +1359,7 @@ const PayMedicine: React.FC = (props) => {
         consult={consult}
         isPharmaFailure={isPharmaFailure}
       />
-    </div >
+    </div>
   );
 };
 
