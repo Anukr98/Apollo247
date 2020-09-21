@@ -481,6 +481,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.PickUpCartSummary]: {
     screen: PickUpCartSummary,
+  },
   [AppRoutes.SymptomTracker]: {
     screen: SymptomTracker,
   },

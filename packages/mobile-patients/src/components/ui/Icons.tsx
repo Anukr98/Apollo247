@@ -1061,6 +1061,8 @@ export const AlertIcon: React.FC<IconProps> = (props) => (
 
 export const BlueDotIcon: React.FC<IconProps> = (props) => (
   <IconBase style={{ width: 5, height: 5 }} {...props} source={require('./icons/blueDot.png')} />
+);
+
 export const BotIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/bot.png')} />
 );
