@@ -1,16 +1,19 @@
+import React, { useEffect } from 'react';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import { Tab, Tabs, Theme, Typography } from '@material-ui/core';
 import { Helmet } from 'react-helmet';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/styles';
+import { Header } from 'components/Header';
+import Scrollbars from 'react-custom-scrollbars';
+import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
+import { MedicineInformation } from 'components/Medicine/MedicineInformation';
+import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
 import { BottomLinks } from 'components/BottomLinks';
-import { Header } from 'components/Header';
 import { ManageProfile } from 'components/ManageProfile';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
-import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
-import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { MedicinesCartContext, useShoppingCart } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
@@ -18,7 +21,6 @@ import { UploadPrescription } from 'components/Prescriptions/UploadPrescription'
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getPackOfMedicine, deepLinkUtil } from 'helpers/commonHelpers';
 import { useCurrentPatient } from 'hooks/authHooks';
-import { useParams } from 'hooks/routerHooks';
 import stripHtml from 'string-strip-html';
 import {
   uploadPrescriptionTracking,
@@ -27,8 +29,6 @@ import {
 } from 'webEngageTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
-import React, { useEffect } from 'react';
-import Scrollbars from 'react-custom-scrollbars';
 import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import { SchemaMarkup } from 'SchemaMarkup';
@@ -604,6 +604,7 @@ const MedicineDetails: React.FC = (props) => {
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [metaTagProps, setMetaTagProps] = React.useState(null);
   const [imageClick, setImageClick] = React.useState<boolean>(false);
+  const [isSkuVersion, setIsSkuVersion] = React.useState<boolean>(false);
   const { cartItems } = useShoppingCart();
   const { diagnosticsCartItems } = useDiagnosticsCart();
   useEffect(() => {
@@ -735,7 +736,7 @@ const MedicineDetails: React.FC = (props) => {
                 validThrough: '',
                 warranty: '',
                 priceValidUntil: '2020-12-31',
-                url: `https://www.apollo247.com/medicine/${sku}`,
+                url: `https://www.apollo247.com/medicine/${url_key}`,
               },
               category: {
                 '@type': 'Thing',
@@ -755,7 +756,7 @@ const MedicineDetails: React.FC = (props) => {
                 '@context': 'https://schema.org/',
                 '@type': 'Drug',
                 name,
-                mainEntityOfPage: `https://www.apollo247.com/medicine/${sku}`,
+                mainEntityOfPage: `https://www.apollo247.com/medicine/${url_key}`,
                 image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
                 description,
                 activeIngredient: `${generic}-${Strengh}${Unit}`,
@@ -784,7 +785,7 @@ const MedicineDetails: React.FC = (props) => {
                 isProprietary: true,
                 prescriptionStatus:
                   is_prescription_required == 1 ? 'Available by prescription' : 'over-the-counter',
-                url: `https://www.apollo247.com/medicine/${sku}`,
+                url: `https://www.apollo247.com/medicine/${url_key}`,
               });
             }
             /**schema markup End */
@@ -835,8 +836,7 @@ const MedicineDetails: React.FC = (props) => {
                   typeof window !== 'undefined' &&
                   window.location &&
                   window.location.origin &&
-                  `${window.location.origin}/medicine/${params.sku}`,
-                deepLink: window.location.href,
+                  `${window.location.origin}/medicine/${url_key}`,
               });
           })
           .catch((e) => {
@@ -852,6 +852,9 @@ const MedicineDetails: React.FC = (props) => {
   const history = useHistory();
 
   useEffect(() => {
+    if (params.sku.match('[A-Z]{3}[0-9]{4}')) {
+      setIsSkuVersion(true);
+    }
     getMedicineDetails(params.sku);
   }, [params.sku]);
 
@@ -1077,8 +1080,10 @@ const MedicineDetails: React.FC = (props) => {
     <div className={classes.root}>
       <Helmet>
         <link rel="alternate" href={`apollopatients://MedicineDetail?${params.sku}`} />
+        {isSkuVersion && <meta name="robots" content="noindex, nofollow" />}
       </Helmet>
       <MetaTagsComp {...metaTagProps} />
+
       {productSchemaJSON && <SchemaMarkup structuredJSON={productSchemaJSON} />}
       {drugSchemaJSON && <SchemaMarkup structuredJSON={drugSchemaJSON} />}
       <MedicinesCartContext.Consumer>
