@@ -220,8 +220,9 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
           return (
             <div
               key={item.id}
-              className={`${classes.medicineStrip} ${item.is_in_stock ? '' : classes.medicineStripDisabled
-                }`}
+              className={`${classes.medicineStrip} ${
+                item.is_in_stock ? '' : classes.medicineStripDisabled
+              }`}
             >
               <div className={classes.medicineStripWrap}>
                 <Link to={clientRoutes.medicineDetails(item.url_key)}>
@@ -244,8 +245,8 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         ) : !item.is_in_stock ? (
                           'Out Of Stock'
                         ) : (
-                              <span className={classes.noService}>Not serviceable in your area.</span>
-                            )}
+                          <span className={classes.noService}>Not serviceable in your area.</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -332,54 +333,54 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                       </AphCustomDropdown>
                     </div>
                     {validateCouponResult &&
-                      validateCouponResult.products &&
-                      validateCouponResult.products[idx] &&
-                      validateCouponResult.products[idx].couponFree ? (
-                        <>
-                          <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
-                            {validateCouponResult.products[idx].specialPrice !==
-                              validateCouponResult.products[idx].mrp ? (
-                                <span className={classes.lineThrough}>
-                                  Rs. {validateCouponResult.products[idx].mrp}
-                                </span>
-                              ) : null}
-                            <div className={classes.mrpText}>(MRP)</div>
-                          </div>
+                    validateCouponResult.products &&
+                    validateCouponResult.products[idx] &&
+                    validateCouponResult.products[idx].couponFree ? (
+                      <>
+                        <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
+                          {validateCouponResult.products[idx].specialPrice !==
+                          validateCouponResult.products[idx].mrp ? (
+                            <span className={classes.lineThrough}>
+                              Rs. {validateCouponResult.products[idx].mrp}
+                            </span>
+                          ) : null}
+                          <div className={classes.mrpText}>(MRP)</div>
+                        </div>
 
-                          <div className={classes.medicinePrice}>
-                            Rs.{' '}
-                            {validateCouponResult.products[idx].onMrp
-                              ? Number(
+                        <div className={classes.medicinePrice}>
+                          Rs.{' '}
+                          {validateCouponResult.products[idx].onMrp
+                            ? Number(
                                 (
                                   validateCouponResult.products[idx].mrp -
                                   validateCouponResult.products[idx].discountAmt
                                 ).toFixed(2)
                               )
-                              : Number(
+                            : Number(
                                 (
                                   validateCouponResult.products[idx].specialPrice -
                                   validateCouponResult.products[idx].discountAmt
                                 ).toFixed(2)
                               )}
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
-                            {item.special_price === 0 || item.special_price ? (
-                              <span className={classes.lineThrough}>Rs. {item.price}</span>
-                            ) : null}
-                            <div className={classes.mrpText}>(MRP)</div>
-                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
+                          {item.special_price === 0 || item.special_price ? (
+                            <span className={classes.lineThrough}>Rs. {item.price}</span>
+                          ) : null}
+                          <div className={classes.mrpText}>(MRP)</div>
+                        </div>
 
-                          <div className={classes.medicinePrice}>
-                            Rs.{' '}
-                            {item.special_price === 0 || item.special_price
-                              ? item.special_price
-                              : item.price}
-                          </div>
-                        </>
-                      )}
+                        <div className={classes.medicinePrice}>
+                          Rs.{' '}
+                          {item.special_price === 0 || item.special_price
+                            ? item.special_price
+                            : item.price}
+                        </div>
+                      </>
+                    )}
                   </div>
                 ) : null}
                 <div className={classes.addToCart}>
