@@ -831,7 +831,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
           ? doctor.consultHours[0].consultMode
           : '';
       if (isOnlineSelected && isPhysicalSelected) {
-        return consultMode === ConsultMode.BOTH;
+        return true;
       } else if (isOnlineSelected) {
         return consultMode !== ConsultMode.PHYSICAL;
       } else if (isPhysicalSelected) {
@@ -844,18 +844,24 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     if (doctorData) {
       setLoading(true);
       let filterDoctorsData = searchKeyword.length > 1 ? searchDoctors : doctorData;
-      if (isOnlineSelected || isPhysicalSelected) {
-        filterDoctorsData = getConsultModeDoctorList(filterDoctorsData);
-      }
       if (doctorType) {
         filterDoctorsData = getFilteredDoctorList(filterDoctorsData);
       }
-      const filteredObj = getDoctorObject(filterDoctorsData);
+      if (isOnlineSelected || isPhysicalSelected) {
+        filterDoctorsData = getConsultModeDoctorList(filterDoctorsData);
+        if (filterDoctorsData.length > 0) {
+          const filteredObj = getDoctorObject(filterDoctorsData);
+          setFilteredDoctorData(filteredObj);
+        } else {
+          setFilteredDoctorData(null);
+        }
+      } else {
+        setFilteredDoctorData(null);
+      }
 
-      setFilteredDoctorData(filteredObj);
       setLoading(false);
     }
-  }, [isOnlineSelected, isPhysicalSelected, doctorData, searchKeyword, searchDoctors]);
+  }, [isOnlineSelected, isPhysicalSelected, doctorData, searchKeyword, searchDoctors, doctorType]);
 
   const getDoctorsCount = (data: DoctorDetails[], type: DOCTOR_CATEGORY) => {
     return _filter(data, (doctor: DoctorDetails) => {
