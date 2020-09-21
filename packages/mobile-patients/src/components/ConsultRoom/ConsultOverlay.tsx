@@ -364,12 +364,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
   const onSubmitBookAppointment = async () => {
     CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
-    setshowSpinner(true);
     // again check coupon is valid or not
     if (coupon) {
       try {
         // await validateAndApplyCoupon(coupon, isConsultOnline, true);
+        setshowSpinner(true);
         await validateCoupon(coupon, true);
+        setshowSpinner(false);
       } catch (error) {
         setCoupon('');
         setDoctorDiscountedFees(0);
@@ -428,6 +429,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     //     : props.doctor!.onlineConsultationFees;
 
     if (price == 0) {
+      setshowSpinner(true);
       client
         .mutate<bookAppointment>({
           mutation: BOOK_APPOINTMENT,
@@ -454,7 +456,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               );
             }
           } catch (error) {}
-
+          setshowSpinner(false);
           makePayment(
             g(apptmt, 'id')!,
             Number(price),
