@@ -914,6 +914,7 @@ const MedicineDetails: React.FC = (props) => {
                 .join('<')
                 .split('&gt;')
                 .join('>')
+                .replace(/&amp;bull;/g, '-')
                 .replace(/(<([^>]+)>)/gi, '')
                 .replace(/&amp;amp;/g, '&')
                 .replace(/&amp;nbsp;/g, ' ')
@@ -950,6 +951,7 @@ const MedicineDetails: React.FC = (props) => {
                 .join('>')
                 .replace(/(<([^>]+)>)/gi, '')
                 .replace(/&amp;amp;/g, '&')
+                .replace(/&amp;bull;/g, '-')
                 .replace(/&amp;nbsp;/g, ' ')
                 .replace(/&amp;/g, '&')
                 .replace(/\.t/g, '.')}; \n
@@ -967,8 +969,10 @@ const MedicineDetails: React.FC = (props) => {
                 .replace(/&amp;amp;/g, '&')
                 .replace(/&amp;nbsp;/g, ' ')
                 .replace(/&amp;/g, '&')
+                .replace(/&bull;/g, '-')
                 .replace(/&lt;/g, '')
                 .replace(/&gt/g, '')
+                .replace(/bull;/g, '-')
                 .replace(/br \//g, '')
                 .replace(/&#039;/g, '')}`;
             }
