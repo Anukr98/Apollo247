@@ -17,6 +17,7 @@ type OptionsDisplayViewItem = {
   subtitle?: string;
   titleProps?: TextProps;
   subtitleProps?: TextProps;
+  containerStyle?: TouchableOpacityProps['style'];
   itemContainerProps?: TouchableOpacityProps;
   onPress: () => void;
 };
@@ -33,13 +34,13 @@ export const OptionsDisplayView: React.FC<Props> = ({
   containerStyle,
 }) => {
   const renderItem = (item: OptionsDisplayViewItem) => {
-    const { icon, onPress, itemContainerProps } = item;
+    const { icon, onPress, itemContainerProps, containerStyle } = item;
     const width = 100 / options.length;
 
     return (
       <TouchableOpacity
         onPress={onPress}
-        style={[styles.itemContainer, { width: `${width}%` }]}
+        style={[styles.itemContainer, { width: `${width}%` }, containerStyle]}
         {...itemContainerProps}
       >
         {icon}

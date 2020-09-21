@@ -388,14 +388,16 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
           {
             icon: <CartIcon />, // TODO: Replace icon
             title: 'Sort By',
-            subtitle: sortBy?.label,
+            subtitle: sortBy?.label || 'Apply sorting',
             onPress: () => setSortByVisible(true),
+            containerStyle: styles.sortByContainer,
           },
           {
             icon: <Filter />, // TODO: Replace icon
             title: 'Filter By',
             subtitle: 'Apply filters',
             onPress: () => setFilterVisible(true),
+            containerStyle: styles.filterByContainer,
           },
           {
             icon: (
@@ -414,7 +416,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
                 'Category name': !searchText ? pageTitle : undefined,
               });
             },
-            itemContainerProps: { style: styles.optionsDisplayViewItem },
+            containerStyle: styles.listGridSelectionContainer,
           },
         ]}
       />
@@ -467,5 +469,7 @@ const styles = StyleSheet.create({
     ...text('R', 14, '#02475B'),
   },
   divider: { marginVertical: 10 },
-  optionsDisplayViewItem: { marginLeft: '10%' },
+  sortByContainer: { justifyContent: 'flex-start', width: '37%' },
+  filterByContainer: { width: '37%' },
+  listGridSelectionContainer: { justifyContent: 'flex-end', width: '25%' },
 });

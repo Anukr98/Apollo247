@@ -55,7 +55,7 @@ export const MedListingProducts: React.FC<Props> = ({
   );
 };
 
-const itemSpacing = 16;
+const itemSpacing = 12;
 const styles = StyleSheet.create({
   flatListContainer: {
     paddingBottom: 20,
