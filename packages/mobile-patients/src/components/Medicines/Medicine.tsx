@@ -36,14 +36,10 @@ import {
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  SAVE_SEARCH,
   GET_RECOMMENDED_PRODUCTS_LIST,
   GET_LATEST_MEDICINE_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  SEARCH_TYPE,
-  MEDICINE_ORDER_TYPE,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { MEDICINE_ORDER_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   Brand,
   getMedicinePageProducts,
@@ -1724,18 +1720,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const client = useApolloClient();
-  const savePastSeacrh = (sku: string, name: string) =>
-    client.mutate({
-      mutation: SAVE_SEARCH,
-      variables: {
-        saveSearchInput: {
-          type: SEARCH_TYPE.MEDICINE,
-          typeId: sku,
-          typeName: name,
-          patient: currentPatient && currentPatient.id ? currentPatient.id : '',
-        },
-      },
-    });
 
   const onAddCartItem = (item: MedicineProduct) => {
     const {
@@ -1808,7 +1792,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         onPress={() => {
           postwebEngageProductClickedEvent(item, 'HOME SEARCH', 'Search');
           CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
-          savePastSeacrh(`${item.sku}`, item.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
             movedFrom: 'search',

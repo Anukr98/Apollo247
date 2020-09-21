@@ -27,13 +27,12 @@ import {
 import {
   addPharmaItemToCart,
   formatToCartItem,
-  savePastSearch,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import _ from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 
@@ -52,7 +51,6 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { showAphAlert } = useUIElements();
   const { getCartItemQty, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
-  const client = useApolloClient();
 
   const { data } = useQuery<
     getPatientPastMedicineSearches,
@@ -177,12 +175,6 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const renderProducts = (array: RecentSearch[]) => {
     const onPress = (sku: string, name: string) => {
       navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'recent-search' });
-      savePastSearch(client, {
-        typeId: sku,
-        typeName: name,
-        type: SEARCH_TYPE.MEDICINE,
-        patient: currentPatient?.id,
-      });
     };
 
     return array.map(({ typeId, name, image }) => (
@@ -247,14 +239,8 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   const renderSearchResults = () => {
     if (!searchResults.length) return null;
 
-    const onPress = (sku: string, name: string) => {
+    const onPress = (sku: string) => {
       navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'search' });
-      savePastSearch(client, {
-        typeId: sku,
-        typeName: name,
-        type: SEARCH_TYPE.MEDICINE,
-        patient: currentPatient?.id,
-      });
     };
 
     const onPressNotify = (name: string) => {
@@ -295,7 +281,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
         data: item,
         quantity: qty,
         maxOrderQty: item.MaxOrderQty,
-        onPress: () => onPress(id, item.name),
+        onPress: () => onPress(id),
         onPressAddToCart: () => onPressAddToCart(item),
         onPressAdd: onPressAdd,
         onPressSubstract: onPressSubstract,

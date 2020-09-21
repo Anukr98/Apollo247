@@ -42,9 +42,12 @@ import {
   productsThumbnailUrl,
   getDiscountPercentage,
   addPharmaItemToCart,
+  savePastSearch,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import {
@@ -232,6 +235,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
+  const client = useApolloClient();
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
@@ -247,7 +251,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [medicineError, setMedicineError] = useState<string>('Product Details Not Available!');
   const [popupHeight, setpopupHeight] = useState<number>(60);
-  const [notServiceable, setNotServiceable] = useState<boolean>(false)
+  const [notServiceable, setNotServiceable] = useState<boolean>(false);
 
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
 
@@ -367,6 +371,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
           }
           trackTagalysViewEvent(productDetails);
+          savePastSearch(client, {
+            typeId: productDetails.sku,
+            typeName: productDetails.name,
+            type: SEARCH_TYPE.MEDICINE,
+            patient: currentPatient?.id,
+          });
+
           if (_deliveryError) {
             setTimeout(() => {
               scrollViewRef.current && scrollViewRef.current.scrollToEnd();

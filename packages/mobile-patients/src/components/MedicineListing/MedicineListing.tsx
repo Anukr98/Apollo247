@@ -17,7 +17,6 @@ import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { CartIcon, FilterOutline } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListGridSelectionView } from '@aph/mobile-patients/src/components/ui/ListGridSelectionView';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   getProductsByCategoryApi,
   MedicineProduct,
@@ -27,13 +26,11 @@ import {
 import {
   addPharmaItemToCart,
   formatToCartItem,
-  savePastSearch,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Divider } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -81,7 +78,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   // global contexts
   const { currentPatient } = useAllCurrentPatients();
-  const client = useApolloClient();
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
   const { getCartItemQty, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
@@ -194,12 +190,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const getMedListingProducts = (products: MedicineProduct[]): MedListingProductProps[] => {
     const onPress = (sku: string, name: string) => {
       navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'search' });
-      savePastSearch(client, {
-        typeId: sku,
-        typeName: name,
-        type: SEARCH_TYPE.MEDICINE,
-        patient: currentPatient?.id,
-      });
     };
 
     const onPressNotify = (name: string) => {
