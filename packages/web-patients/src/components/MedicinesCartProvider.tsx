@@ -80,11 +80,11 @@ export interface MedicineCartContextProps {
   removeCartItems: ((itemId: MedicineCartItem['arrSku']) => void) | null;
   removeFreeCartItems: (() => void) | null;
   updateCartItem:
-    | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
-    | null;
+  | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
+  | null;
   updateCartItemPrice:
-    | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
-    | null;
+  | ((itemUpdates: Partial<MedicineCartItem> & { id: MedicineCartItem['id'] }) => void)
+  | null;
   updateCartItemQty: ((item: MedicineCartItem) => void) | null;
   cartTotal: number;
   storePickupPincode: string | null;
@@ -97,8 +97,8 @@ export interface MedicineCartContextProps {
   setStoreAddressId: ((deliveryAddressId: string) => void) | null;
   deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[];
   setDeliveryAddresses:
-    | ((deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[]) => void)
-    | null;
+  | ((deliveryAddresses: GetPatientAddressList_getPatientAddressList_addressList[]) => void)
+  | null;
   clearCartInfo: (() => void) | null;
   addMultipleCartItems: ((items: MedicineCartItem[]) => void) | null;
   prescriptions: PrescriptionFormat[] | null;
@@ -451,7 +451,11 @@ export const MedicinesCartProvider: React.FC = (props) => {
     if (foundIndex !== -1) {
       if (cartItems && itemUpdates) {
         cartItems[foundIndex].quantity = itemUpdates.quantity;
-        cartItems[foundIndex].couponFree = itemUpdates.couponFree ? itemUpdates.couponFree : 0;
+        cartItems[foundIndex].couponFree = cartItems[foundIndex].couponFree
+          ? cartItems[foundIndex].couponFree
+          : itemUpdates.couponFree
+            ? itemUpdates.couponFree
+            : 0;
         setCartItems([...cartItems]);
         setIsCartUpdated(true);
       }
