@@ -880,7 +880,12 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     title: (faqData && faqData[0].specialtyMetaTitle) || '',
     description: (faqData && faqData[0].specialtyMetaDescription) || '',
     canonicalLink:
-      (faqData && faqData[0].canonicalUrl) || (window && window.location && window.location.href),
+      (faqData && faqData[0].canonicalUrl) ||
+      (window &&
+        window.location &&
+        window &&
+        window.location &&
+        `${window.location.host}${window.location.pathname}`),
   };
 
   return (
