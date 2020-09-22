@@ -225,6 +225,7 @@ export const PatientLogDetailsPage: React.FC = () => {
   const consultscount = params.consultscount;
   const [expanded, setExpanded] = useState<string | boolean>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
+  const [appointmentDatetime, setAppointmentDatetime] = useState<string>('');
   const [
     patientDetails,
     setPatientDetails,
@@ -262,6 +263,9 @@ export const PatientLogDetailsPage: React.FC = () => {
           ? setPastAppointments((_data!.data!.getCaseSheet!
               .pastAppointments as unknown) as GetCaseSheet_getCaseSheet_pastAppointments[])
           : setPastAppointments([]);
+        _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.appointmentDateTime !== null
+          ? setAppointmentDatetime(_data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.appointmentDateTime) 
+          : setAppointmentDatetime('');
       })
       .catch((error: ApolloError) => {
         const networkErrorMessage = error.networkError ? error.networkError.message : null;
@@ -330,6 +334,7 @@ export const PatientLogDetailsPage: React.FC = () => {
                             casesheetInfo.getCaseSheet &&
                             casesheetInfo.getCaseSheet.pastAppointments
                           }
+                          appointmentDatetime={appointmentDatetime}
                         />
                       )}
                   </ExpansionPanelDetails>
