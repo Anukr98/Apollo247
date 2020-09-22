@@ -328,7 +328,7 @@ export const Calendar: React.FC = () => {
     getDoctorAppointmentsApi();
     setInterval(() => {
       getDoctorAppointmentsApi();
-    }, 90000);
+    }, 300000);
   }, [selectedDate, monthSelected]);
 
   return (
