@@ -1964,6 +1964,7 @@ export const ConsultTabs: React.FC = () => {
     pubnub
       .hereNow({ channels: [appointmentId], includeUUIDs: true })
       .then((response: any) => {
+        console.log({ pubnubHereNowResponse: response });
         const occupants = response.channels[appointmentId].occupants;
         let doctorCount = 0;
         let paientsCount = 0;
