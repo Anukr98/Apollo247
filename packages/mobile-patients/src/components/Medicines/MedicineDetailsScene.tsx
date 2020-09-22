@@ -592,6 +592,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       'Brand ID': '',
       'category name': '',
       'category ID': category_id!,
+      'pincode': pincode,
     };
     postWebEngageEvent(WebEngageEventName.NOTIFY_ME, eventAttributes);
   };
