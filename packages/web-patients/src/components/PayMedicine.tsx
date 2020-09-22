@@ -28,7 +28,11 @@ import {
   saveMedicineOrderOMSVariables,
 } from 'graphql/types/saveMedicineOrderOMS';
 import { SaveMedicineOrderPaymentMqVariables } from 'graphql/types/SaveMedicineOrderPaymentMq';
-import { SAVE_MEDICINE_ORDER_OMS, SAVE_MEDICINE_ORDER_PAYMENT } from 'graphql/medicines';
+import {
+  SAVE_MEDICINE_ORDER_OMS,
+  SAVE_MEDICINE_ORDER_PAYMENT,
+  GET_ONE_APOLLO,
+} from 'graphql/medicines';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import {
   MEDICINE_DELIVERY_TYPE,
@@ -48,6 +52,8 @@ import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
 import { Alerts } from 'components/Alerts/Alerts';
 import { validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice as pharmaCouponItem } from 'graphql/types/validatePharmaCoupon';
 import { Redirect } from 'react-router-dom';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GetOneApollo, GetOneApolloVariables } from 'graphql/types/GetOneApollo';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -379,6 +385,7 @@ export const getItemSpecialPrice = (cartItemDetails: MedicineCartItem) => {
 };
 
 const PayMedicine: React.FC = (props) => {
+	const client = useApolloClient();
   const classes = useStyles({});
   const [checked, setChecked] = React.useState(false);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -390,6 +397,35 @@ const PayMedicine: React.FC = (props) => {
     /**Gtm code start end */
     setChecked(event.target.checked);
   };
+  const applyOneApolloHc = (event: React.ChangeEvent<HTMLInputElement>) => {
+    oneApolloHcApplied(event.target.checked);
+    if (event.target.checked) {
+      if (oneApolloHcs >= mrpTotal - productDiscount) {
+        setOneAplloHcs(mrpTotal - productDiscount);
+      } else {
+        setOneAplloHcs(setOneApolloHCsResponse.availableHC);
+      }
+      const totalToPay =
+        mrpTotal +
+        deliveryCharges -
+        (productDiscount +
+          (oneApolloHcs >= mrpTotal - productDiscount
+            ? mrpTotal - productDiscount
+            : setOneApolloHCsResponse.availableHC));
+      calculateTotalWithHcs(totalToPay);
+    } else {
+      calculateTotalWithHcs(0);
+    }
+  };
+  const grandTotal = () => {
+    return isOneApolloHcApplied
+      ? totalWithHCsAndDiscount.toFixed(2)
+      : totalWithCouponDiscount.toFixed(2);
+  };
+  const [oneApolloHcs, setOneAplloHcs] = React.useState(0);
+  const [isOneApolloHcApplied, oneApolloHcApplied] = React.useState<boolean>(false);
+  const [totalWithHCsAndDiscount, calculateTotalWithHcs] = React.useState<number>(0);
+  const [setOneApolloHCsResponse, oneApolloHCsResponse] = useState<any>({});
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const [paymentOptions, setPaymentOptions] = React.useState([]);
@@ -499,6 +535,28 @@ const PayMedicine: React.FC = (props) => {
       <Redirect to={clientRoutes.welcome()} />;
     }
   }, []);
+
+  useEffect(() => {
+    if (currentPatient && currentPatient.id) {
+      client
+        .query<GetOneApollo, GetOneApolloVariables>({
+          query: GET_ONE_APOLLO,
+          variables: {
+            patientId: currentPatient ? currentPatient.id : '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((res) => {
+          if (res && res.data && res.data.getOneApolloUser) {
+						oneApolloHCsResponse(res.data.getOneApolloUser);
+						setOneAplloHcs(res.data.getOneApolloUser.availableHC);
+          }
+        })
+        .catch((e) => {
+          console.log('Error occured while getting Patient OneApollo HCs', e);
+        });
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     if (params.payType === 'consults') {
@@ -633,6 +691,7 @@ const PayMedicine: React.FC = (props) => {
     orderId: string,
     orderAutoId: number,
     isChennaiCOD: boolean,
+    orderType: string,
     userEmail?: string
   ) => {
     let chennaiOrderVariables = {};
@@ -648,14 +707,21 @@ const PayMedicine: React.FC = (props) => {
         // orderId: orderId,
         orderAutoId: orderAutoId,
         amountPaid: totalWithCouponDiscount,
-        paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+        paymentType:
+          orderType == 'COD'
+            ? MEDICINE_ORDER_PAYMENT_TYPE.COD
+            : MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS,
         paymentStatus: 'success',
         responseCode: '',
         responseMessage: '',
         ...(chennaiOrderVariables && chennaiOrderVariables),
       },
     };
-
+    if (orderType == 'ONEAPOLLO') {
+      paymentInfo.medicinePaymentMqInput['amountPaid'] = 0;
+      paymentInfo.medicinePaymentMqInput['paymentStatus'] = 'TXN_SUCCESS';
+      paymentInfo.medicinePaymentMqInput['healthCredits'] = Number(oneApolloHcs.toFixed(2));
+    }
     savePayment({ variables: paymentInfo })
       .then(({ data }: any) => {
         if (data && data.SaveMedicineOrderPaymentMq) {
@@ -683,11 +749,11 @@ const PayMedicine: React.FC = (props) => {
       category: 'Pharmacy',
       action: 'Order',
       label: `Payment-${value === 'COD' ? 'COD' : 'Prepaid'}`,
-      value: totalWithCouponDiscount,
+      value: grandTotal(),
     });
     /**Gtm code End  */
     pharmacyPaymentInitiateTracking({
-      amount: totalWithCouponDiscount,
+      amount: grandTotal(),
       serviceArea: 'pharmacy',
       payMode: value,
     });
@@ -728,7 +794,7 @@ const PayMedicine: React.FC = (props) => {
           itemCount: cartItems ? cartItems.length : 0,
           couponCode: couponCode ? couponCode : null,
           couponValue: couponValue ? couponValue : null,
-          finalBookingValue: totalWithCouponDiscount,
+          finalBookingValue: grandTotal(),
           ecommObj: {
             ecommerce: {
               items: ecommItems,
@@ -748,17 +814,18 @@ const PayMedicine: React.FC = (props) => {
             type: 'Pharmacy',
           });
           /* Webengage Code End */
-          if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
+          if (orderAutoId && orderAutoId > 0 && value !== 'COD' && value !== 'ONEAPOLLO') {
             const pgUrl = `${
               process.env.PHARMACY_PG_URL
-            }/paymed?amount=${totalWithCouponDiscount.toFixed(
-              2
-            )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES${
+            }/paymed?amount=${grandTotal()}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES${
               sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
-            }`;
+            }
+              ${isOneApolloHcApplied ? '&hc=' + oneApolloHcs.toFixed(2) : ''}`;
             window.location.href = pgUrl;
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
-            placeOrder(orderId, orderAutoId, false, '');
+            placeOrder(orderId, orderAutoId, false, value, '');
+          } else if (orderAutoId && orderAutoId > 0 && value === 'ONEAPOLLO') {
+            placeOrder(orderId, orderAutoId, false, value, '');
           } else if (errorMessage.length > 0) {
             setMutationLoading(false);
             setIsAlertOpen(true);
@@ -949,13 +1016,29 @@ const PayMedicine: React.FC = (props) => {
               <p>Amount To Pay</p>
               <p>
                 {params.payType === 'pharmacy'
-                  ? `Rs.${totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)}`
+                  ? `Rs.${grandTotal()}`
                   : `Rs.${revisedAmount && revisedAmount.toFixed(2)}`}
               </p>
             </div>
             <Grid container spacing={2} className={classes.paymentContainer}>
               <Grid item xs={12} sm={8}>
                 <Paper className={`${classes.paper} ${classes.paperHeight}`}>
+                  {setOneApolloHCsResponse && setOneApolloHCsResponse.availableHC && (
+                    <div>
+                      Would you like to use Apollo Health Creadits for this payments?
+                      <div>
+                        <FormGroup>
+                          <FormControlLabel
+                            className={classes.checkbox}
+                            control={<Checkbox onChange={applyOneApolloHc} name="checked" />}
+                            label="Apollo Health Credits"
+                          />
+                        </FormGroup>
+                        <span>Availabe Health Credis {setOneApolloHCsResponse.availableHC}</span>
+                      </div>
+                    </div>
+                  )}
+
                   <div className={classes.paperHeading}>
                     <Typography component="h3">Pay Via</Typography>
                   </div>
@@ -1034,16 +1117,25 @@ const PayMedicine: React.FC = (props) => {
                         <li>
                           <FormGroup>
                             <FormControlLabel
-                              className={classes.checkbox}
-                              control={<Checkbox onChange={handleChange} name="checked" />}
+                              className={`${classes.checkbox} ${
+                                isOneApolloHcApplied ? 'active' : ''
+                              }`}
+                              control={
+                                <Checkbox
+                                  onChange={handleChange}
+                                  name="checked"
+                                  disabled={isOneApolloHcApplied}
+                                />
+                              }
                               label="Cash On Delivery"
                             />
                           </FormGroup>
+                          {isOneApolloHcApplied ? <div>COD Option is not available</div> : null}
                         </li>
                       )}
                     </ul>
                   )}
-                  {checked && (
+                  {checked && !isOneApolloHcApplied && (
                     <AphButton
                       className={classes.payBtn}
                       onClick={() => onClickPay('COD')}
@@ -1053,8 +1145,21 @@ const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${totalWithCouponDiscount &&
-                          totalWithCouponDiscount.toFixed(2)} on delivery`
+                        `Pay Rs.${grandTotal()} on delivery`
+                      )}
+                    </AphButton>
+                  )}
+                  {isOneApolloHcApplied && Number(grandTotal()) === 0 && (
+                    <AphButton
+                      className={classes.payBtn}
+                      onClick={() => onClickPay('ONEAPOLLO')}
+                      color="primary"
+                      fullWidth
+                    >
+                      {mutationLoading ? (
+                        <CircularProgress size={22} color="secondary" />
+                      ) : (
+                        `Place Order`
                       )}
                     </AphButton>
                   )}
@@ -1130,6 +1235,12 @@ const PayMedicine: React.FC = (props) => {
                     <div className={`${classes.charges} ${classes.discount}`}>
                       <p>Product Discount</p> <p>- Rs.{productDiscount.toFixed(2)}</p>
                     </div>
+                    {isOneApolloHcApplied ? (
+                      <div className={`${classes.charges} ${classes.discount}`}>
+                        <p>One Apollo HC</p> <p>- Rs.{oneApolloHcs.toFixed(2)}</p>
+                      </div>
+                    ) : null}
+
                     {couponCode != '' && couponValue ? (
                       <div className={`${classes.charges} ${classes.discount}`}>
                         <p>Coupon Discount</p> <p>- Rs.{couponValue}</p>
@@ -1142,8 +1253,7 @@ const PayMedicine: React.FC = (props) => {
                       <p>Packing Charges</p> <p>+ Rs. 0.00</p>
                     </div>
                     <div className={`${classes.charges} ${classes.total}`}>
-                      <p>To Pay</p>{' '}
-                      <p>Rs.{totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)}</p>
+                      <p>To Pay</p> <p>Rs.{grandTotal()}</p>
                     </div>
                   </Paper>
                 ) : (
