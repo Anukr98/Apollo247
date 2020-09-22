@@ -1,8 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Grid, Typography, Popover, MenuItem } from '@material-ui/core';
-import React, { useState, useEffect, useContext, useRef } from 'react';
-import { AphTextField, AphButton, AphInput, AphSelect } from '@aph/web-ui-components';
-import Scrollbars from 'react-custom-scrollbars';
+import React, { useState, useEffect, useContext, useRef, Fragment } from 'react';
+import { AphTextField, AphButton, AphInput } from '@aph/web-ui-components';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { SAVE_PATIENT_ADDRESS, UPDATE_PATIENT_ADDRESS } from 'graphql/address';
 import { PATIENT_ADDRESS_TYPE } from 'graphql/types/globalTypes';
@@ -16,7 +15,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
-// import { MapContainer } from 'components/Locations/GoogleMaps';
+import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -290,7 +289,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     mapContainer: {
-      padding: '20px 20px 0',
       background: '#F7F8F5',
       [theme.breakpoints.down('xs')]: {
         height: 'calc(100% - 180px)',
@@ -302,6 +300,13 @@ const useStyles = makeStyles((theme: Theme) => {
       // background: '#fff',
       [theme.breakpoints.down('xs')]: {
         height: '100%',
+      },
+    },
+    mapContentMain: {
+      width: '100%',
+      height: '52vh',
+      [theme.breakpoints.down('xs')]: {
+        height: '59vh',
       },
     },
     locateContent: {
@@ -407,6 +412,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const [patientName, setPatientName] = useState<string>(currentPatient.firstName);
   const [patientNumber, setPatientNumber] = useState<string>(currentPatient.mobileNumber);
   const [onSave, setOnSave] = useState<boolean>(true);
+  const [mapRef, setMapRef] = useState(null);
+  const [center, setCenter] = useState({ lat: 44.076613, lng: -98.362239833 });
   const addToCartRef = useRef(null);
 
   const disableSubmit =
@@ -474,21 +481,24 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
       setLandmark(props.currentAddress.landmark || '');
       setPatientName(props.currentAddress.name || currentPatient.firstName);
       setPatientNumber(props.currentAddress.mobileNumber || currentPatient.mobileNumber);
+      setLatitude(props.currentAddress.latitude);
+      setLongitude(props.currentAddress.longitude);
     }
   }, [props.currentAddress]);
 
   let showError = false;
+
+  const getLatLngFromAddress = (address: string) =>
+    axios.get(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
+    );
 
   // Auto-fetching the city and state using Pincode
   // ------------------------------------------------
   useEffect(() => {
     if (pincode && pincode.length === 6) {
       const pincodeAndAddress = [pincode, address1].filter((v) => (v || '').trim()).join(',');
-
-      axios
-        .get(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=pincode:${pincodeAndAddress}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
-        )
+      getLatLngFromAddress(pincodeAndAddress)
         .then(({ data }) => {
           if (data && data.results.length === 0) {
             setAddress2(' ');
@@ -527,7 +537,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                 data &&
                 data.results[0] &&
                 data.results[0].geometry &&
-                data.results[0].geometry.location
+                data.results[0].geometry.location &&
+                !props.currentAddress
               ) {
                 const { lat, lng } = data.results[0].geometry.location;
                 setLatitude(lat);
@@ -676,12 +687,37 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
           });
   };
 
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.GOOGLE_API_KEY,
+    preventGoogleFontsLoading: false,
+  });
+
+  const renderMap = () => {
+    return (
+      <Fragment>
+        <GoogleMap
+          onLoad={(map) => setMapRef(map)}
+          onClick={(e) => {
+            const latLng = e.latLng.toJSON();
+            setLatitude(latLng.lat);
+            setLongitude(latLng.lng);
+          }}
+          center={{ lat: latitude, lng: longitude }}
+          zoom={15}
+          mapContainerClassName={classes.mapContentMain}
+        >
+          <Marker position={{ lat: latitude, lng: longitude }} label="MOVE MAP TO ADJUST" />
+        </GoogleMap>
+      </Fragment>
+    );
+  };
+
   return (
     <div className={classes.addAddressContainer}>
       {addressScreen === 'map' ? (
         <div className={classes.locateContainer}>
           <div className={classes.mapContainer}>
-            <div className={classes.mapcontent}>{/* <MapContainer { ...props } /> */}</div>
+            <div className={classes.mapcontent}>{isLoaded ? renderMap() : null}</div>
           </div>
           <div className={classes.locateContent}>
             <AphButton
@@ -694,8 +730,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
               <img src={require('images//ic_location.svg')} alt="" /> Help us locate your address
             </Typography>
             <Typography>
-              Bungalow no. 65, IAS colony, Gautam palli, Cantt., Lucknow, Uttar pradesh, 226001,
-              India..
+              {`${address1}, ${address2}, ${landmark}, ${city}, ${state}, ${pincode}`}
             </Typography>
             <AphButton
               color="primary"
@@ -888,6 +923,18 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
               className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
               onClick={() => {
                 setAddressScreen('map');
+                const pincodeAndAddress = [pincode, address1, address2, landmark, city, state]
+                  .filter((v) => (v || '').trim())
+                  .join(',');
+                if (!props.currentAddress) {
+                  getLatLngFromAddress(pincodeAndAddress)
+                    .then(({ data }) => {
+                      const latLang = data.results[0].geometry.location || {};
+                      setLatitude(latLang.lat);
+                      setLongitude(latLang.lng);
+                    })
+                    .catch((e) => console.log(e));
+                }
               }}
               title={'Save and use'}
             >
