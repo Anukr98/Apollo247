@@ -775,7 +775,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     }}
                   >
                     <View>
-                      {doctorDetails.doctorType !== DoctorType.PAYROLL && (
+                      {doctorDetails.doctorType !== DoctorType.PAYROLL ? (
                         <>
                           <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
                           <Text style={styles.onlineConsultAmount}>
@@ -787,6 +787,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                             availableTime={physicalAvailableTime}
                           />
                         </>
+                      ) : (
+                        <Text style={styles.onlineConsultLabel}>
+                          {string.consultType.availableForInAppConsultsOnly.replace(
+                            '{{doctor}}',
+                            doctorDetails ? `${doctorDetails.fullName}` : ''
+                          )}
+                        </Text>
                       )}
                     </View>
                   </TouchableOpacity>
