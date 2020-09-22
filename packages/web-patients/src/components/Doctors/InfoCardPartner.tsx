@@ -5,10 +5,6 @@ import _forEach from 'lodash/forEach';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { AphButton } from '@aph/web-ui-components';
-import {
-  GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors as DoctorDetails,
-  GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital,
-} from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
 import { SEARCH_TYPE, ConsultMode } from 'graphql/types/globalTypes';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
@@ -20,7 +16,6 @@ import { BookConsult } from 'components/BookConsult';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { readableParam, getAvailability } from 'helpers/commonHelpers';
-import { GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability as NextAvailabilityType } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
 import { consultNowClickTracking } from 'webEngageTracking';
 import { dataLayerTracking } from 'gtmTracking';
 
@@ -159,9 +154,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface InfoCardProps {
   doctorInfo: any;
-  // nextAvailability: NextAvailabilityType;
   doctorType: string;
-  // consultMode: ConsultMode;
   specialityType?: string;
   specialtyId: string;
 }
@@ -194,19 +187,6 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
       availabilityMarkupString(type)
     );
   };
-
-  // const clinics: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital[] = [];
-
-  // doctorInfo &&
-  //   _forEach(doctorInfo.doctorHospital, (hospitalDetails) => {
-  //     if (
-  //       hospitalDetails &&
-  //       (hospitalDetails.facility.facilityType === 'CLINIC' ||
-  //         hospitalDetails.facility.facilityType === 'HOSPITAL')
-  //     ) {
-  //       clinics.push(hospitalDetails);
-  //     }
-  //   });
 
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
 

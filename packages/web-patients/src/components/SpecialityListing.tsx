@@ -25,7 +25,7 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctorsNextAvailability as NextAvailability,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
-import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME, GET_DOCTOR_LIST } from 'graphql/doctors';
+import { GET_DOCTOR_LIST } from 'graphql/doctors';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SpecialtySearch } from './SpecialtySearch';
 import { WhyApollo } from 'components/Doctors/WhyApollo';

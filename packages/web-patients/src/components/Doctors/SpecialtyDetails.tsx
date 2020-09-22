@@ -16,7 +16,7 @@ import { HowItWorks } from 'components/Doctors/HowItWorks';
 import { AddedFilters } from 'components/Doctors/AddedFilters';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
-import { GET_DOCTORS_BY_SPECIALITY_AND_FILTERS, GET_DOCTOR_LIST } from 'graphql/doctors';
+import { GET_DOCTOR_LIST } from 'graphql/doctors';
 import {
   readableParam,
   DOCTOR_CATEGORY,
@@ -29,10 +29,6 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
 import _upperFirst from 'lodash/upperFirst';
 import _merge from 'lodash/merge';
-// import {
-//   GetDoctorsBySpecialtyAndFilters,
-//   GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors as DoctorDetails,
-// } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
 import _find from 'lodash/find';
 import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
 import _filter from 'lodash/filter';
@@ -50,11 +46,11 @@ import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 import { dataLayerTracking } from 'gtmTracking';
-
 // import Pagination from '@material-ui/lab/Pagination';
 import axios from 'axios';
 import { GetDoctorList, GetDoctorList_getDoctorList } from 'graphql/types/GetDoctorList';
 import _debounce from 'lodash/debounce';
+
 let currentPage = 1;
 let apolloDoctorCount = 0;
 let partnerDoctorCount = 0;
@@ -432,7 +428,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   }>();
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
   const apolloClient = useApolloClient();
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<GetDoctorList | null>(null);
   const [structuredJSON, setStructuredJSON] = useState(null);
   const [breadcrumbJSON, setBreadcrumbJSON] = useState(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -453,7 +449,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   );
   const [searchSpecialty, setSearchSpecialty] = useState<SpecialtyType[] | null>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
-  const [searchDoctors, setSearchDoctors] = useState<any>(null);
+  const [searchDoctors, setSearchDoctors] = useState<DoctorDetails[] | null>(null);
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [slugName, setSlugName] = useState<string>('');
