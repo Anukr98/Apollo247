@@ -43,6 +43,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
   const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(_selectedFilters || {});
   const [alertVisible, setAlertVisible] = useState<boolean>(false);
   const isFiltersApplied = Object.keys(selectedFilters).find((k) => selectedFilters[k]?.length);
+  const isFiltersAvailable = !!filters.find((f) => f.values?.length);
 
   const onRequestClose = () => {
     if (isEqual(_selectedFilters, selectedFilters)) {
@@ -125,6 +126,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
         style={styles.button}
         titleTextStyle={styles.buttonTitle}
         onPress={onPress}
+        disabled={!isFiltersAvailable}
       />
     );
   };
@@ -192,6 +194,27 @@ export const MedicineListingFilter: React.FC<Props> = ({
     );
   };
 
+  const renderFilters = () => {
+    if (isFiltersAvailable) {
+      return (
+        <View style={styles.container}>
+          {renderInScrollView(filters.map(renderFilterOption), width * 0.4)}
+          <View style={styles.verticalDivider} />
+          {renderInScrollView(
+            selectedOption && renderFilterSubOptions(selectedOption),
+            width * 0.55
+          )}
+        </View>
+      );
+    }
+  };
+
+  const renderFiltersNotAvailable = () => {
+    if (!isFiltersAvailable) {
+      return <Text style={styles.noFiltersAvailable}>No filters available.</Text>;
+    }
+  };
+
   return (
     <Overlay
       fullScreen
@@ -202,14 +225,8 @@ export const MedicineListingFilter: React.FC<Props> = ({
       <SafeAreaView style={container}>
         {renderHeader()}
         <View style={styles.horizontalDivider} />
-        <View style={styles.container}>
-          {renderInScrollView(filters.map(renderFilterOption), width * 0.4)}
-          <View style={styles.verticalDivider} />
-          {renderInScrollView(
-            selectedOption && renderFilterSubOptions(selectedOption),
-            width * 0.55
-          )}
-        </View>
+        {renderFilters()}
+        {renderFiltersNotAvailable()}
         <View style={styles.horizontalDivider} />
         {renderButton()}
         {renderDiscardChangesAlert()}
@@ -218,8 +235,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
   );
 };
 
-const { container } = theme.viewStyles;
-const { text } = theme.viewStyles;
+const { text, container } = theme.viewStyles;
 const { BUTTON_BG, LIGHT_BLUE, WHITE, APP_GREEN, CLEAR } = theme.colors;
 const { width } = Dimensions.get('window');
 
@@ -317,5 +333,11 @@ const styles = StyleSheet.create({
   },
   alertOutlineButtonTitle: {
     color: BUTTON_BG,
+  },
+  noFiltersAvailable: {
+    flex: 1,
+    ...text('M', 14, LIGHT_BLUE),
+    padding: 16,
+    textAlign: 'center',
   },
 });
