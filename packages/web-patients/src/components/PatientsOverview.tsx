@@ -134,7 +134,7 @@ const PatientsOverview: React.FC = () => {
         currentPatient.referralCode === HDFC_REF_CODE &&
         userSubscriptionsLocalStorage &&
         userSubscriptionsLocalStorage.length != 0 && (
-          <HdfcRegistration patientPhone={currentPatient.mobileNumber} />
+          <HdfcSlider patientPhone={currentPatient.mobileNumber} />
         )}
       {/* </Grid>
       </Grid> */}

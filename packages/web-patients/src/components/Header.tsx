@@ -378,7 +378,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
           query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
           variables: {
             mobile_number: localStorage.getItem('userMobileNo'),
-            status: [],
+            status: ['active', 'deffered_inactive'],
           },
           fetchPolicy: 'no-cache',
         })

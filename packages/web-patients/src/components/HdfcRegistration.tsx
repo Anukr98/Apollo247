@@ -383,8 +383,6 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
       })
       .then((response) => {
         setStatusOfUser(response.data.identifyHdfcCustomer.status);
-        console.log(response.data.identifyHdfcCustomer.status);
-        console.log(response.data.identifyHdfcCustomer.status == HDFC_CUSTOMER.OTP_GENERATED);
         if (response.data.identifyHdfcCustomer.status == HDFC_CUSTOMER.OTP_GENERATED) {
           setToken(response.data.identifyHdfcCustomer.token);
           setLoading(false);

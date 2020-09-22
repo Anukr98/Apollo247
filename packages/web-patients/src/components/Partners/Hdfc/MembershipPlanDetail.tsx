@@ -679,7 +679,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
             />
           </Link>
           <Typography component="h1" className={classes.pageHeader}>
-            Membership Plan Detail
+            Subscription Plan Detail
           </Typography>
         </div>
         <div>
@@ -790,7 +790,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
                               <div className={classes.couponCard}>
                                 <Typography component="h2">{item.header_content}</Typography>
                                 <Typography>{item.description}</Typography>
-                                {item.cta_label != 'NULL' && (
+                                {item.cta_label != 'NULL' && active && (
                                   <AphButton href={clientRoutes.welcome()}>
                                     {item.cta_label}
                                   </AphButton>

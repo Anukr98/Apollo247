@@ -398,6 +398,7 @@ const useStyles = makeStyles((theme: Theme) => {
 interface upgradableSubscriptionType {
   name: String;
   benefits: Array<string>;
+  min_transaction_value: String;
 }
 
 export const MyMembership: React.FC = (props) => {
@@ -570,10 +571,15 @@ export const MyMembership: React.FC = (props) => {
         <div className={classes.availContainer}>
           <Typography>Please follow these steps</Typography>
           <ul className={classes.availList}>
-            <li>Complete transactions worth Rs 25000+ on Apollo 24/7</li>
+            <li>
+              Complete transactions worth Rs{' '}
+              {upgradableSubscription && upgradableSubscription.min_transaction_value}+ on Apollo
+              24/7
+            </li>
             <li>
               Duration of membership is 1 year. It will be auto renewed if you spend more than Rs
-              25000 within 1 year on Apollo 24/7
+              {upgradableSubscription && upgradableSubscription.min_transaction_value} within 1 year
+              on Apollo 24/7
             </li>
           </ul>
           <AphButton color="primary">Avail Now</AphButton>
