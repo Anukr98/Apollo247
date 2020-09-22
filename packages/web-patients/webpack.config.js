@@ -2,6 +2,7 @@ const path = require('path');
 const process = require('process');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
@@ -39,15 +40,23 @@ const plugins = [
     filename: 'index.html',
     chunks: ['index']['vendors'],
     template: './index.html',
+    chunksSortMode: 'none',
+
     templateParameters: {
       env: process.env.NODE_ENV,
       licenseCode: process.env.WEBENGAGE_ID,
     },
     inject: true,
     favicon: './favicon.svg',
+    scriptLoading: 'defer',
+  }),
+  new ScriptExtHtmlWebpackPlugin({
+    async: 'npm',
+    defaultAttribute: 'defer',
   }),
   new MomentLocalesPlugin(),
   // new BundleAnalyzerPlugin(),
+  new webpack.HashedModuleIdsPlugin(),
 
   // new WebpackPwaManifest({
   //   name: 'Apollo 247',
@@ -195,6 +204,7 @@ module.exports = {
   //   sideEffects: true,
   //   usedExports: true,
   // },
+  plugins,
 
   optimization: isLocal
     ? {
@@ -205,27 +215,24 @@ module.exports = {
     : {
         // Enable these for tree-shaking capabilities.
         // Also set `"sideEffects": false` in `package.json`
+        runtimeChunk: 'single',
         sideEffects: true,
         usedExports: true,
         minimize: true,
         splitChunks: {
           chunks: 'all',
-          minSize: 20000,
-          maxSize: 0,
-          minChunks: 1,
+          minSize: 0,
           maxAsyncRequests: 30,
-          maxInitialRequests: 30,
+          maxInitialRequests: Infinity,
           automaticNameDelimiter: '~',
           // enforceSizeThreshold: 50000,
           cacheGroups: {
             defaultVendors: {
-              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-              priority: -10,
-            },
-            default: {
-              minChunks: 2,
-              priority: -20,
-              reuseExistingChunk: true,
+              test: /[\\/]node_modules[\\/]/,
+              name(module) {
+                const packageName = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/)[1];
+                return `npm.${packageName.replace('@', '')}`;
+              },
             },
           },
         },
@@ -252,6 +259,4 @@ module.exports = {
         },
       }
     : undefined,
-
-  plugins,
 };

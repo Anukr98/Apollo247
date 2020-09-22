@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import React, { useContext, useState } from 'react';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { useCurrentPatient } from 'hooks/authHooks';
+import { getAge } from 'helpers/Utils';
 import { CaseSheetLastView } from './CasesheetLastView';
 import moment from 'moment';
 import _startCase from 'lodash/startCase';
@@ -441,13 +442,7 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
     PATCH: { value: 'patch' },
     AS_PRESCRIBED: { value: 'As prescribed' },
   };
-  const getAge = (date: string) => {
-    if (date) {
-      return Math.abs(
-        new Date(Date.now()).getUTCFullYear() - new Date(date).getUTCFullYear()
-      ).toString();
-    }
-  };
+  
   const toBeTaken = (value: any) => {
     const tobeTakenObjectList: any = [];
     value.map((slot: any) => {
@@ -1027,12 +1022,12 @@ export const CasesheetView: React.FC<savingProps> = (props) => {
             </div>
           </div>
         </div>
+        {isPageContentFull() &&
+        ((followUp.length > 0 && followUp[0]) ||
+          (otherInstructions && otherInstructions.length > 0)) ? (
+          <CaseSheetLastView getFollowUpData={getFollowUpData} />
+        ) : null}
       </div>
-      {isPageContentFull() &&
-      ((followUp.length > 0 && followUp[0]) ||
-        (otherInstructions && otherInstructions.length > 0)) ? (
-        <CaseSheetLastView getFollowUpData={getFollowUpData} />
-      ) : null}
     </div>
   );
 };

@@ -1199,8 +1199,25 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const scrollToTop = () => {
+    const filter = onlineCheckBox
+      ? physicalCheckBox
+        ? undefined
+        : ConsultMode.ONLINE
+      : physicalCheckBox
+      ? ConsultMode.PHYSICAL
+      : undefined;
+    const doctors =
+      filteredDoctorsList.length && filter
+        ? filteredDoctorsList.filter(
+            (
+              obj: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null
+            ) => {
+              return consultionType(obj!.id, filter) || consultionType(obj!.id, ConsultMode.BOTH);
+            }
+          )
+        : filteredDoctorsList;
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: false });
-    DoctorsflatListRef.scrollToOffset({ x: 0, y: 0, animated: false });
+    doctors.length > 0 && DoctorsflatListRef.scrollToOffset({ x: 0, y: 0, animated: false });
   };
 
   const renderPopup = () => {

@@ -50,6 +50,7 @@ import {
 import {
   getNextAvailableSlots,
   getRescheduleAppointmentDetails,
+  getSecretaryDetailsByDoctor,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   dataSavedUserID,
@@ -283,6 +284,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
+  const [secretaryData, setSecretaryData] = useState<any>([]);
+
   const minutes = moment.duration(moment(data.appointmentDateTime).diff(new Date())).asMinutes();
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -291,6 +294,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const isSubmitDisableForOther = selectedReason == OTHER_REASON && comment == '';
 
   useEffect(() => {
+    getSecretaryData();
     if (!currentPatient) {
       getPatientApiCall();
     }
@@ -324,6 +328,19 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       setAppointmentTime(time);
     }
   }, []);
+
+  const getSecretaryData = () => {
+    getSecretaryDetailsByDoctor(client, doctorDetails.id)
+      .then((apiResponse: any) => {
+        console.log('apiResponse', apiResponse);
+        const secretaryDetails = g(apiResponse, 'data', 'data', 'getSecretaryDetailsByDoctorId');
+        setSecretaryData(secretaryDetails);
+        console.log('apiResponse');
+      })
+      .catch((error) => {
+        console.log('error', error);
+      });
+  };
 
   const NextAvailableSlotAPI = (isAwaitingReschedule?: boolean) => {
     getNetStatus()
@@ -738,6 +755,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       ),
       'Patient Gender': g(currentPatient, 'gender'),
       'Customer ID': g(currentPatient, 'id'),
+      'Secretary Name': g(secretaryData, 'name'),
+      'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
+      'Doctor Mobile Number': g(data, 'doctorInfo', 'mobileNumber')!,
     };
     postWebEngageEvent(type, eventAttributes);
   };

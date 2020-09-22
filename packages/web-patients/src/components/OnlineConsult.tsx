@@ -23,7 +23,7 @@ import {
   makeAppointmentPaymentVariables,
 } from 'graphql/types/makeAppointmentPayment';
 import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,
@@ -37,7 +37,7 @@ import {
   ValidateConsultCouponVariables,
 } from 'graphql/types/ValidateConsultCoupon';
 import { Alerts } from 'components/Alerts/Alerts';
-import { gtmTracking, _cbTracking } from '../gtmTracking';
+import { gtmTracking, _cbTracking, dataLayerTracking } from '../gtmTracking';
 import { useApolloClient } from 'react-apollo-hooks';
 import { ShowSlots } from './ShowSlots';
 
@@ -75,6 +75,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       '& p': {
         marginTop: 0,
+      },
+      [theme.breakpoints.down('xs')]: {
+        padding: '16px 10px',
       },
     },
     consultNowInfo: {
@@ -133,6 +136,10 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 20,
       paddingLeft: 20,
       paddingRight: 20,
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 10,
+        paddingRight: 10,
+      },
     },
     timeSlots: {
       paddingTop: 0,
@@ -783,6 +790,15 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     speciality: getSpeciality(),
                   })
                 );
+                /**Gtm code start start */
+                dataLayerTracking({
+                  event: 'Pay Now Clicked',
+                  Price: revisedAmount,
+                  product: doctorId,
+                  Time: appointmentDateTime,
+                  Type: AppointmentType.ONLINE,
+                });
+                /**Gtm code start end */
               }}
               className={
                 disableSubmit ||

@@ -7,9 +7,8 @@ import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDe
 import _forEach from 'lodash/forEach';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import _find from 'lodash/find';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import isTomorrow from 'date-fns/isTomorrow';
-import { getIstTimestamp } from 'helpers/dateHelpers';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -29,6 +28,9 @@ import { useApolloClient } from 'react-apollo-hooks';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { useParams } from 'hooks/routerHooks';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import { cancellationPatientTracking } from 'webEngageTracking';
+import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
+import { DoctorType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -405,6 +407,7 @@ interface ConsultDoctorProfileProps {
   handleRescheduleOpen: any;
   srDoctorJoined: boolean;
   isConsultCompleted: boolean;
+  secretaryData: getSecretaryDetailsByDoctorId;
 }
 
 type Params = { appointmentId: string; doctorId: string };
@@ -416,7 +419,13 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const cancelAppointRef = useRef(null);
   const [isCancelPopoverOpen, setIsCancelPopoverOpen] = React.useState<boolean>(false);
 
-  const { doctorDetails, setRescheduleCount, handleRescheduleOpen, appointmentDetails } = props;
+  const {
+    doctorDetails,
+    setRescheduleCount,
+    handleRescheduleOpen,
+    appointmentDetails,
+    secretaryData,
+  } = props;
 
   const [showMore, setShowMore] = useState<boolean>(true);
   const [moreOrLessMessage, setMoreOrLessMessage] = useState<string>('MORE');
@@ -476,7 +485,29 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       onlineConsultationFees,
       physicalConsultationFees,
       doctorHospital,
+      mobileNumber,
+      chatDays,
     } = doctorDetails && doctorDetails.getDoctorDetailsById;
+
+    const { mobileNumber: secretaryNumber, name: secretaryName } = (secretaryData &&
+      secretaryData.getSecretaryDetailsByDoctorId) || { mobileNumber: '', name: '' };
+
+    const caseSheets =
+      appointmentDetails && appointmentDetails.caseSheet ? appointmentDetails.caseSheet : [];
+
+    const srdCaseSheet = caseSheets!.find(
+      (item) =>
+        item!.doctorType == DoctorType.STAR_APOLLO ||
+        item!.doctorType == DoctorType.APOLLO ||
+        item!.doctorType == DoctorType.PAYROLL
+    );
+
+    // const srdCaseSheet: any = null;
+
+    const followUpInDays =
+      srdCaseSheet && srdCaseSheet.followUpAfterInDays ? srdCaseSheet.followUpAfterInDays : 7;
+
+    // console.log(chatDays, '---------------------------', appointmentDetails);
 
     const shouldRefreshComponent = (differenceInMinutes: number) => {
       const id = setInterval(() => {
@@ -535,6 +566,15 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           setApiLoading(false);
           setShowCancelPopup(false);
           window.location.href = clientRoutes.appointments();
+          cancellationPatientTracking({
+            doctorName: fullName,
+            patientName:
+              (currentPatient && `${currentPatient.firstName} ${currentPatient.lastName}`) || '',
+            secretaryName: secretaryName || '',
+            doctorNumber: mobileNumber,
+            patientNumber: (currentPatient && currentPatient.mobileNumber) || '',
+            secretaryNumber: secretaryNumber || '',
+          });
         })
         .catch((e: string) => {
           setShowCancelPopup(false);
@@ -646,7 +686,10 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                   (appointmentDetails.status === STATUS.COMPLETED || props.isConsultCompleted ? (
                     <div className={classes.joinInSection}>
                       <span>
-                        {getAvailableFreeChatDays(appointmentDetails.appointmentDateTime)}
+                        {getAvailableFreeChatDays(
+                          appointmentDetails.appointmentDateTime,
+                          Number(followUpInDays)
+                        )}
                       </span>
                     </div>
                   ) : (

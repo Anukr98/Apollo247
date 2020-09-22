@@ -56,7 +56,14 @@ import { BookAppointmentCard } from 'components/Consult/V2/ChatRoom/BookAppointm
 import { isPastAppointment, consultWebengageEventsInfo } from 'helpers/commonHelpers';
 import { useParams } from 'hooks/routerHooks';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
-import { medicalDetailsFillTracking, callReceiveClickTracking } from 'webEngageTracking';
+import {
+  medicalDetailsFillTracking,
+  callReceiveClickTracking,
+  messageSentPostConsultTracking,
+} from 'webEngageTracking';
+import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
+import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
+import { DoctorType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -639,6 +646,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         height: 180,
+        padding: 15,
       },
     },
     slider: {
@@ -646,11 +654,13 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'static !important',
         [theme.breakpoints.down('xs')]: {
           position: 'absolute !important',
-          bottom: 50,
+          bottom: -20,
         },
         pointerEvents: 'none',
         '& li': {
-          margin: 0,
+          margin: '0 5px 0 0',
+          width: 8,
+          height: 8,
           '& button': {
             '&:before': {
               content: '.',
@@ -680,7 +690,10 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: '21px',
       textTransform: 'capitalize',
       [theme.breakpoints.down('xs')]: {
-        margin: '20px 10px 10px 2px',
+        margin: '20px 5px 10px 2px',
+        fontSize: 13,
+        minWidth: 50,
+        padding: 6,
       },
       '&:hover': {
         background: '#FFFFFF',
@@ -697,6 +710,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:disabled': {
         opacity: 0.5,
         pointerEvents: 'none',
+      },
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 40,
+        float: 'right',
       },
     },
     btnActive: {
@@ -832,6 +849,7 @@ interface ChatWindowProps {
   setSrDoctorJoined: (srDoctorJoined: boolean) => void;
   setIsConsultCompleted: (isConsultCompleted: boolean) => void;
   appointmentDetails: AppointmentHistory;
+  secretaryData: getSecretaryDetailsByDoctorId;
 }
 
 interface MessagesObjectProps {
@@ -883,7 +901,7 @@ type Params = { appointmentId: string; doctorId: string };
 export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const classes = useStyles({});
   const params = useParams<Params>();
-  const { appointmentDetails } = props;
+  const { appointmentDetails, secretaryData } = props;
   const { appointmentId, doctorId } = params;
   const [height, setHeight] = useState<string>('');
   const [weight, setWeight] = useState<string>('');
@@ -919,6 +937,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const doctorDisplayName = props.doctorDetails.getDoctorDetailsById.displayName;
+  const doctorChatDays = props.doctorDetails.getDoctorDetailsById.chatDays;
   const scrollDivRef = useRef(null);
   const apolloClient = useApolloClient();
   const doctorDetail = props.doctorDetails && props.doctorDetails.getDoctorDetailsById;
@@ -984,6 +1003,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         });
     });
   };
+
   const pubnubClient = new PubNub({
     publishKey: process.env.PUBLISH_KEY,
     subscribeKey: process.env.SUBSCRIBE_KEY,
@@ -1082,9 +1102,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         { channel: appointmentId, count: 100, stringifiedTimeToken: true },
         (status: PubnubStatus, response: HistoryResponse) => {
           if (response.messages.length === 0) sendWelcomeMessage();
-
-          console.log(response.messages, 'pubnub messages history.....');
-
           const newmessage: MessagesObjectProps[] = messages;
           response.messages.forEach((element: any, index: number) => {
             const item = element.entry;
@@ -1108,6 +1125,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     }
   }, [appointmentDetails]);
 
+  const { mobileNumber: secretaryNumber, name: secretaryName } = (secretaryData &&
+    secretaryData.getSecretaryDetailsByDoctorId) || { mobileNumber: '', name: '' };
+
   // publish a message to pubnub channel
   const publishMessage = (channelName: string, message: any) => {
     pubnubClient.publish(
@@ -1121,6 +1141,25 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           console.log('message not published', status.error);
         } else {
           console.log('message published', response);
+          if (appointmentDetails && appointmentDetails.status.toLowerCase() === 'completed') {
+            messageSentPostConsultTracking({
+              doctorName:
+                (appointmentDetails &&
+                  appointmentDetails.doctorInfo &&
+                  appointmentDetails.doctorInfo.fullName) ||
+                '',
+              patientName:
+                (currentPatient && `${currentPatient.firstName} ${currentPatient.lastName}`) || '',
+              secretaryName: secretaryName || '',
+              doctorNumber:
+                (appointmentDetails &&
+                  appointmentDetails.doctorInfo &&
+                  appointmentDetails.doctorInfo.mobileNumber) ||
+                '',
+              patientNumber: (currentPatient && currentPatient.mobileNumber) || '',
+              secretaryNumber: secretaryNumber || '',
+            });
+          }
         }
       }
     );
@@ -1155,6 +1194,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     };
     publishMessage(appointmentId, composeMessage);
   };
+
   const toggelChatVideo = () => {
     setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
@@ -1246,6 +1286,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       },
     }
   );
+
   const updateAppointmentSessionCall = () => {
     mutationResponse()
       .then((data) => {
@@ -1866,7 +1907,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     return (
       <div>
         <Grid spacing={2} container>
-          <Grid item xs={10} sm={9} md={9} lg={9}>
+          <Grid item xs={11} sm={9} md={9} lg={9}>
             <label>What is your body temperature right now (in °F) ?</label>
             <AphButton
               className={`${classes.quesButton}  ${
@@ -1901,7 +1942,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               No Idea
             </AphButton>
           </Grid>
-          <Grid item xs={2} sm={3} md={3} lg={3}>
+          <Grid item xs={1} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
               disabled={temperature.length === 0}
@@ -2032,14 +2073,30 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     );
   };
 
-  console.log(autoQuestionsCompleted);
+  // console.log(autoQuestionsCompleted);
 
   const showNextSlide = () => {
     sliderRef.current.slickNext();
   };
 
+  const caseSheets =
+    appointmentDetails && appointmentDetails.caseSheet ? appointmentDetails.caseSheet : [];
+
+  const srdCaseSheet = caseSheets!.find(
+    (item) =>
+      item!.doctorType == DoctorType.STAR_APOLLO ||
+      item!.doctorType == DoctorType.APOLLO ||
+      item!.doctorType == DoctorType.PAYROLL
+  );
+
+  // const srdCaseSheet: any = null;
+
+  const followUpInDays =
+    srdCaseSheet && srdCaseSheet.followUpAfterInDays ? srdCaseSheet.followUpAfterInDays : 7;
+
   const pastAppointment =
-    appointmentDetails && isPastAppointment(appointmentDetails.appointmentDateTime);
+    appointmentDetails &&
+    isPastAppointment(appointmentDetails.appointmentDateTime, Number(followUpInDays));
 
   // console.log(messages, 'messages from pubnub.....');
 
@@ -2167,11 +2224,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     props.setIsConsultCompleted(
                       messageDetails.message === autoMessageStrings.appointmentComplete
                     );
-                    return null;
+                    return messageDetails.message === '^^#startconsult' ? (
+                      <DoctorJoinedMessageCard
+                        doctorName={doctorDisplayName}
+                        messageDate={messageDetails.messageDate}
+                      />
+                    ) : null;
                   }
                   const duration = messageDetails.duration;
                   if (cardType === 'welcome') {
-                    return <WelcomeCard doctorName={doctorDisplayName} />;
+                    return <WelcomeCard doctorName={doctorDisplayName} chatDays={doctorChatDays} />;
                   } else if (cardType === 'doctor') {
                     return (
                       <DoctorCard

@@ -28,7 +28,8 @@
     "joinConsultRoomDescription": "Please click here to\n Join the Call with",
     "waitForDoctirToJoinCall": "doctor_name is not in the room yet.\nPlease wait for few seconds while doctor joins the call....",
     "exotelMessage": " is trying to call you from the number ",
-    "requestMessage": ". Request you to answer the call."
+    "requestMessage": ". Request you to answer the call.",
+    "consultCompleteMessage": "Please wait while {0} is preparing your prescription. The prescription will be sent here in the consult room itself. However, this might take a while!"
   },
   "consultType": {
     "mainHeading": "How would you like to consult with",
@@ -295,8 +296,8 @@
     "delivery_charges": "Delivery Charges",
     "packaging_charges": "Packaging Charges",
     "orderCancellationAfterBillingAlert": "Your order has already Billed and therefore cannot be cancelled from the App. In case you still wish to Cancel, please click on the link below to chat with out customer care executives for assistance during working hours (9:00 AM to 8:30 PM)",
-    "chatWithUs":"CHAT WITH US",
-    "tatBreach_InconvenienceText":"We are trying our best to expedite the process.\nSorry for the inconvenience"
+    "chatWithUs": "CHAT WITH US",
+    "tatBreach_InconvenienceText": "We are trying our best to expedite the process.\nSorry for the inconvenience"
   },
   "OrderSummaryText": {
     "total_order_billed": "Total Ordered Value",
@@ -319,7 +320,15 @@
         "count": "0"
       },
       {
-        "title": "Medical Records",
+        "title": "Tests",
+        "count": "0"
+      },
+      {
+        "title": "Health Check",
+        "count": "0"
+      },
+      {
+        "title": "Hospitalization",
         "count": "0"
       }
     ]
@@ -329,7 +338,9 @@
     "failure": "PAYMENT_FAILED",
     "pending": "PAYMENT_PENDING_PG",
     "refund": "PAYMENT_REFUND",
-    "aborted": "PAYMENT_ABORTED"
+    "aborted": "PAYMENT_ABORTED",
+    "askPermission1": "To make sure that you do not miss the call from Dr.",
+    "askPermission2": " for your consultation, Apollo 247 needs to have \"full screen overlay\" permission to display call notifications."
   },
   "PharmaPayment": {
     "success": "TXN_SUCCESS",
@@ -406,14 +417,14 @@
     "symptomTracker": "Symptom Tracker",
     "addAnotherSymptom": "Would you like to report another symptom?"
   },
-  "Prescription_Success":"Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).",
-  "cancelConsultationHeading":"Cancel Consultation",
+  "Prescription_Success": "Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).",
+  "cancelConsultationHeading": "Cancel Consultation",
   "cancelConsultationReasonHeading": "Why are you cancelling this consultation?",
-  "ReasonFor_Cancel_Consultation":{
-    "doctorDidNotJoin" : "Doctor did not join the consult",
-    "bookedForWrongUser":"Booked with wrong user details",
-    "doctorDeniedMode":"Doctor denied your preferable mode of consult",
+  "ReasonFor_Cancel_Consultation": {
+    "doctorDidNotJoin": "Doctor did not join the consult",
+    "bookedForWrongUser": "Booked with wrong user details",
+    "doctorDeniedMode": "Doctor denied your preferable mode of consult",
     "audioVideoIssue": "Audio Video Issues",
-    "otherReasons":"Others (Please specifiy)"
+    "otherReasons": "Others (Please specifiy)"
   }
 }

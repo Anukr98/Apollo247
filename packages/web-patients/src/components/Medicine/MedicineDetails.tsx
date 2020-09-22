@@ -8,20 +8,20 @@ import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
-import stripHtml from 'string-strip-html';
 import { MedicinesCartContext } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Alerts } from 'components/Alerts/Alerts';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { BottomLinks } from 'components/BottomLinks';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useCurrentPatient } from 'hooks/authHooks';
+import stripHtml from 'string-strip-html';
 import {
   uploadPrescriptionTracking,
   pharmacyPdpOverviewTracking,
@@ -50,6 +50,10 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
+    },
+    visibilityHidden: {
+      visibility: 'hidden',
+      position: 'absolute',
     },
     medicineDetailsPage: {
       backgroundColor: '#f7f8f5',
@@ -586,7 +590,7 @@ type MedicineOverViewDetails = {
 
 type MedicineOverView = MedicineOverViewDetails[] | string;
 
-export const MedicineDetails: React.FC = (props) => {
+const MedicineDetails: React.FC = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = React.useState<number>(0);
   const params = useParams<{ sku: string; searchText: string }>();
@@ -627,7 +631,7 @@ export const MedicineDetails: React.FC = (props) => {
           },
         }
       )
-      .then(async ({ data }) => {
+      .then(async ({ data }: any) => {
         await axios
           .post(
             apiDetails.url || '',
@@ -680,9 +684,8 @@ export const MedicineDetails: React.FC = (props) => {
               const desc = Overview.filter((desc: any) => desc.Caption === 'USES');
               description = desc.length ? desc[0].CaptionDesc : '';
             }
-            const similarProducts = (
-              similar_products && similar_products.map((key: MedicineProductDetails) => key.name)
-            ).join(', ');
+            const similarProducts =
+              similar_products && similar_products.map((key: MedicineProductDetails) => key.name);
             setProductSchemaJSON({
               '@context': 'https://schema.org/',
               '@type': 'Product',
@@ -735,7 +738,7 @@ export const MedicineDetails: React.FC = (props) => {
                 image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
               },
               gtin8: id,
-              isSimilarTo: similarProducts,
+              isSimilarTo: similarProducts ? similarProducts.join(', ') : '',
             });
             if (type_id && type_id.toLowerCase() === 'pharma') {
               const { generic, Doseform, Strengh, Unit, Overview } =
@@ -815,6 +818,34 @@ export const MedicineDetails: React.FC = (props) => {
                 },
               });
             /**Gtm code End  */
+
+            /**Gtm code start start */
+            dataLayerTracking({
+              event: 'pageviewEvent',
+              pagePath: window.location.href,
+              pageName: 'Pharmacy Details Page',
+              pageLOB: 'Pharmacy',
+              pageType: 'Details Page',
+              productlist: JSON.stringify([
+                {
+                  item_name: name, // Name or ID is required.
+                  item_id: sku,
+                  price: special_price || price,
+                  item_brand: manufacturer,
+                  item_category: 'Pharmacy',
+                  item_category_2: type_id
+                    ? type_id.toLowerCase() === 'pharma'
+                      ? 'Drugs'
+                      : 'FMCG'
+                    : null,
+                  item_variant: 'Default',
+                  index: 1,
+                  quantity: mou,
+                },
+              ]),
+            });
+            /**Gtm code start end */
+
             data &&
               data.productdp &&
               data.productdp.length &&
@@ -901,7 +932,7 @@ export const MedicineDetails: React.FC = (props) => {
         if (v.Caption === 'USES') {
           modifiedData.forEach((x) => {
             if (x.key === 'Overview') {
-              x.value = x.value.concat(stripHtml(v.CaptionDesc));
+              x.value = x.value.concat(stripHtml(v.CaptionDesc).result);
             }
           });
         } else if (v.Caption === 'SIDE EFFECTS') {
@@ -924,9 +955,9 @@ export const MedicineDetails: React.FC = (props) => {
           modifiedData.forEach((x) => {
             if (x.key === 'Usage') {
               if (v.Caption === 'HOW TO USE') {
-                x.value = `${stripHtml(v.CaptionDesc)}${x.value}`;
+                x.value = `${stripHtml(v.CaptionDesc).result}${x.value}`;
               } else {
-                x.value = `${x.value}${stripHtml(v.CaptionDesc)} `;
+                x.value = `${x.value}${stripHtml(v.CaptionDesc).result} `;
               }
             }
           });
@@ -973,7 +1004,7 @@ export const MedicineDetails: React.FC = (props) => {
         } else if (v.Caption === 'STORAGE') {
           modifiedData.forEach((x) => {
             if (x.key === 'Storage') {
-              x.value = x.value.concat(stripHtml(v.CaptionDesc));
+              x.value = x.value.concat(stripHtml(v.CaptionDesc).result);
             }
           });
         }
@@ -993,9 +1024,12 @@ export const MedicineDetails: React.FC = (props) => {
     if (typeof overView !== 'string') {
       return data.map((item, index) => (
         <div
-          style={{ display: tabValue === index ? 'block' : 'none' }}
           key={index}
-          className={classes.tabContainer}
+          className={
+            tabValue === index
+              ? `${classes.tabContainer}`
+              : `${classes.tabContainer} ${classes.visibilityHidden}`
+          }
         >
           {item.value.split(';').map((description, idx) => {
             if (item.key === 'Usage') {
@@ -1126,7 +1160,7 @@ export const MedicineDetails: React.FC = (props) => {
                       onClick={() =>
                         (window.location.href = clientRoutes.searchByMedicine(
                           'deals-of-the-day',
-                          '1195' // this is hardcoded as per the request.
+                          'exclusive-offers' // this is hardcoded as per the request.
                         ))
                       }
                     >
@@ -1325,3 +1359,5 @@ export const MedicineDetails: React.FC = (props) => {
     </div>
   );
 };
+
+export default MedicineDetails;

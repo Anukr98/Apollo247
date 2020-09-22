@@ -24,7 +24,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
-import { gtmTracking } from 'gtmTracking';
+import { gtmTracking, dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -360,6 +360,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
           response.data.getDoctorsBySpecialtyAndFilters.doctors.length
         ) {
           const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
+
           doctors.map((doctorDetails: docDetails) => {
             doctorDetails &&
               doctorDetails.fullName &&
@@ -378,6 +379,12 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
                     )}`,
               });
           });
+          /**Gtm code start start */
+          dataLayerTracking({
+            event: 'Doctors List Shown',
+            productlist: JSON.stringify(doctors),
+          });
+          /**Gtm code start end */
         }
         setStructuredJSON({
           '@context': 'https://schema.org/',
@@ -389,6 +396,7 @@ export const DoctorsListing: React.FC<DoctorsListingProps> = (props) => {
             target: potentialActionSchema,
           },
         });
+
         setData(response.data);
         setLoading(false);
       });

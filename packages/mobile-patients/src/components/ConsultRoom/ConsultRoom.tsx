@@ -45,15 +45,10 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
-  SAVE_DEVICE_TOKEN,
   SAVE_VOIP_DEVICE_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
-import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  saveDeviceToken,
-  saveDeviceTokenVariables,
-} from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
+import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   GenerateTokenforCM,
   notifcationsApi,
@@ -72,7 +67,6 @@ import {
   getlocationDataFromLatLang,
   postFirebaseEvent,
   postWebEngageEvent,
-  UnInstallAppsFlyer,
   setWebEngageScreenNames,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
@@ -105,7 +99,6 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps } from 'react-navigation';
@@ -801,7 +794,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setEnableCM(eneabled);
     }
     fetchData();
-    callDeviceTokenAPI();
   }, []);
 
   useEffect(() => {
@@ -925,7 +917,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   fullName,
                   keyHash,
                   buildSpecify,
-                  currentDeviceToken.deviceToken
+                  currentDeviceToken
                 );
             }
           }
@@ -947,55 +939,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const client = useApolloClient();
-
-  const callDeviceTokenAPI = async () => {
-    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
-    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
-    firebase
-      .messaging()
-      .getToken()
-      .then((token) => {
-        console.log('token', token);
-        // console.log('DeviceInfo', DeviceInfo);
-        UnInstallAppsFlyer(token);
-        if (token !== deviceToken2.deviceToken) {
-          const input = {
-            deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
-            deviceToken: token,
-            deviceOS: '',
-            // deviceOS: Platform.OS === 'ios' ? '' : DeviceInfo.getBaseOS(),
-            patientId: currentPatient ? currentPatient.id : '',
-          };
-          console.log('input', input);
-
-          if (currentPatient && !deviceTokenApICalled) {
-            setDeviceTokenApICalled(true);
-            client
-              .mutate<saveDeviceToken, saveDeviceTokenVariables>({
-                mutation: SAVE_DEVICE_TOKEN,
-                variables: {
-                  SaveDeviceTokenInput: input,
-                },
-                fetchPolicy: 'no-cache',
-              })
-              .then((data: any) => {
-                console.log('APICALLED', data.data.saveDeviceToken.deviceToken);
-                AsyncStorage.setItem(
-                  'deviceToken',
-                  JSON.stringify(data.data.saveDeviceToken.deviceToken)
-                );
-              })
-              .catch((e) => {
-                CommonBugFender('ConsultRoom_setDeviceTokenApICalled', e);
-                console.log('Error occured while adding Doctor', e);
-              });
-          }
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('ConsultRoom_callDeviceTokenAPI', e);
-      });
-  };
 
   const getPersonalizesAppointments = async () => {
     // const uhid = g(details, 'uhid');

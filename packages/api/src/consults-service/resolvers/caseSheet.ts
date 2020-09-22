@@ -234,8 +234,6 @@ export const caseSheetTypeDefs = gql`
     juniorDoctorNotes: String
     juniorDoctorCaseSheet: CaseSheet
     allowedDosages: [String]
-    diagnosticTestResult: String
-    clinicalObservationNotes: String
   }
 
   extend type PatientFullDetails @key(fields: "id") {
@@ -279,8 +277,6 @@ export const caseSheetTypeDefs = gql`
     referralSpecialtyName: String
     referralDescription: String
     version: Int
-    diagnosticTestResult: String
-    clinicalObservationNotes: String
   }
 
   type Diagnosis {
@@ -464,6 +460,8 @@ export const caseSheetTypeDefs = gql`
     temperature: String
     weight: String
     medicationHistory: String
+    diagnosticTestResult: String
+    clinicalObservationNotes: String
   }
 
   type PatientHealthVault {
@@ -658,8 +656,6 @@ const getCaseSheet: Resolver<
     juniorDoctorNotes: string;
     juniorDoctorCaseSheet: CaseSheet;
     allowedDosages: string[];
-    clinicalObservationNotes: string;
-    diagnosticTestResult: string;
   }
 > = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
   //check appointment id
@@ -694,8 +690,6 @@ const getCaseSheet: Resolver<
 
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   let juniorDoctorNotes = '';
-  let clinicalObservationNotes = '';
-  let diagnosticTestResult = '';
 
   //check whether there is a senior doctor case-sheet
   const caseSheetDetails = await caseSheetRepo.getSeniorDoctorLatestCaseSheet(appointmentData.id);
@@ -704,8 +698,6 @@ const getCaseSheet: Resolver<
   if (juniorDoctorCaseSheet == null)
     throw new AphError(AphErrorMessages.JUNIOR_DOCTOR_CASESHEET_NOT_CREATED);
   juniorDoctorNotes = juniorDoctorCaseSheet.notes;
-  clinicalObservationNotes = patientDetails.patientMedicalHistory.clinicalObservationNotes || '';
-  diagnosticTestResult = patientDetails.patientMedicalHistory.diagnosticTestResult || '';
   const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
 
   //get past appointment details
@@ -748,8 +740,6 @@ const getCaseSheet: Resolver<
     patientDetails,
     pastAppointments: pastAppointmentsWithUnreadMessages,
     juniorDoctorNotes,
-    clinicalObservationNotes,
-    diagnosticTestResult,
     juniorDoctorCaseSheet,
     allowedDosages: ApiConstants.ALLOWED_DOSAGES.split(','),
   };
@@ -905,6 +895,14 @@ const modifyCaseSheet: Resolver<
     //     getCaseSheetData.followUpAfterInDays
     //   );
     // }
+  }
+
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+  const getDoctorDetails = await doctorRepo.findDoctorByIdWithoutRelations(getCaseSheetData.appointment.doctorId);
+
+  // this check is necessary til doctor-app's new version is not released
+  if (!getCaseSheetData.followUpAfterInDays && (inputArguments.followUpAfterInDays === 0 || inputArguments.followUpAfterInDays === undefined || inputArguments.followUpAfterInDays === null)) {
+    getCaseSheetData.followUpAfterInDays = (getDoctorDetails && getDoctorDetails.chatDays) || 7;
   }
 
   if (!(inputArguments.status === undefined)) {

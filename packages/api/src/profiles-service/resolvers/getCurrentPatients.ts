@@ -115,6 +115,8 @@ export const getCurrentPatientsTypeDefs = gql`
     temperature: String
     weight: String
     medicationHistory: String
+    diagnosticTestResult: String
+    clinicalObservationNotes: String
   }
 
   type GetCurrentPatientsResult {

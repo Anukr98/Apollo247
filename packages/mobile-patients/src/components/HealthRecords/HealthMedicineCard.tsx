@@ -1,18 +1,21 @@
-import { More, TrackerBig } from '@aph/mobile-patients/src/components/ui/Icons';
-import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
+import {
+  More,
+  TrackerBig,
+  PHRHospitalIcon,
+  PHRSelfUploadIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
-} from '../../graphql/types/getPatientPrismMedicalRecords';
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
+import { FILTER_TYPE } from '@aph/mobile-patients/src/components/HealthRecords/MedicalRecords';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -52,6 +55,7 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 8,
     ...theme.fonts.IBMPlexSansMedium(16),
+    lineHeight: 21,
     color: theme.colors.SHERPA_BLUE,
   },
   separatorStyles: {
@@ -60,9 +64,10 @@ const styles = StyleSheet.create({
     marginVertical: 7,
   },
   descriptionTextStyles: {
-    paddingLeft: 0,
+    paddingLeft: 10,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.TEXT_LIGHT_BLUE,
+    lineHeight: 20,
   },
   profileImageStyle: { width: 40, height: 40, borderRadius: 20 },
   yellowTextStyle: {
@@ -72,51 +77,110 @@ const styles = StyleSheet.create({
   },
 });
 
-type rowData = {
-  id?: string;
-  salutation?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
-  fullName?: string | null;
-  qualification?: string | null;
-  mobileNumber?: string;
-  experience?: string | null;
-  specialization?: string | null;
-  languages?: string | null;
-  city?: string | null;
-  awards?: string | null;
-  photoUrl?: string | null;
-  specialty?: getDoctorDetailsById_getDoctorDetailsById_specialty;
-  registrationNumber?: string;
-  onlineConsultationFees?: string;
-  physicalConsultationFees?: string;
-  status: string;
-  desease: string;
-};
-
 export interface HealthMedicineCardProps {
   onPressDelete?: () => void;
   onPressOrder?: () => void;
   onClickCard?: () => void;
   disableDelete?: boolean;
+  filterApplied?: FILTER_TYPE | string;
+  prevItemData?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response;
   datalab?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response;
   dataprescription?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response;
+  datahealthcheck?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response;
+  datahospitalization?: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response;
 }
 
 export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => {
-  const { datalab, dataprescription, disableDelete } = props;
+  const {
+    datalab,
+    dataprescription,
+    disableDelete,
+    datahealthcheck,
+    prevItemData,
+    filterApplied,
+    datahospitalization,
+  } = props;
+
+  const healthCheckName = datahealthcheck?.healthCheckName || datahealthcheck?.healthCheckType;
+  const hospitalizationDoctorName = datahospitalization?.doctorName
+    ? 'Dr. ' + datahospitalization?.doctorName
+    : '';
+
+  const dateFilterApplied = datalab && filterApplied && filterApplied !== FILTER_TYPE.DATE;
+  const clubFilterData =
+    filterApplied && filterApplied === FILTER_TYPE.DATE
+      ? prevItemData?.date === datalab?.date
+      : filterApplied === FILTER_TYPE.TEST
+      ? prevItemData?.labTestName === datalab?.labTestName
+      : datalab?.packageName && datalab?.packageName.length > 0 && datalab?.packageName !== '-'
+      ? prevItemData?.packageName === datalab?.packageName
+      : prevItemData?.labTestName === datalab?.labTestName;
+
+  const reportSource =
+    datalab?.labTestSource ||
+    dataprescription?.source ||
+    datahealthcheck?.source ||
+    datahospitalization?.hospitalName;
+
+  const reportName =
+    dataprescription?.prescriptionName ||
+    datalab?.labTestName ||
+    healthCheckName ||
+    hospitalizationDoctorName;
+
+  const reportSourceSelf =
+    datahospitalization?.source === '247self' ||
+    datahospitalization?.source === 'self' ||
+    reportSource === '247self' ||
+    reportSource === 'self';
+
+  const getDateFormatted = () => {
+    const date_text = (date_t: any) => {
+      return moment(date_t).format('DD MMM YYYY');
+    };
+    return dataprescription && dataprescription.date
+      ? date_text(dataprescription.date)
+      : datalab && datalab.date
+      ? moment().format('DD/MM/YYYY') === moment(datalab.date).format('DD/MM/YYYY')
+        ? `Today, ${date_text(datalab.date)}`
+        : date_text(datalab.date)
+      : datahealthcheck && datahealthcheck.date
+      ? moment().format('DD/MM/YYYY') === moment(datahealthcheck.date).format('DD/MM/YYYY')
+        ? `Today, ${date_text(datahealthcheck.date)}`
+        : date_text(datahealthcheck.date)
+      : datahospitalization && datahospitalization.dateOfHospitalization && datahospitalization.date
+      ? `From ${moment(datahospitalization.dateOfHospitalization).format(
+          'DD MMM, YYYY'
+        )} to ${moment(datahospitalization.date).format('DD MMM, YYYY')}`
+      : date_text(datahospitalization?.date || '') || '';
+  };
+
+  const renderTrackerImage = () => {
+    return clubFilterData ? null : <TrackerBig />;
+  };
+
+  const getFilterAppliedText = () => {
+    return datalab && filterApplied === FILTER_TYPE.DATE
+      ? getDateFormatted()
+      : filterApplied === FILTER_TYPE.TEST
+      ? datalab?.labTestName
+      : datalab?.packageName && datalab?.packageName.length > 0 && datalab?.packageName !== '-'
+      ? datalab?.packageName
+      : datalab?.labTestName;
+  };
+
   return (
     <View style={styles.viewStyle}>
       <View style={styles.trackerViewStyle}>
-        <TrackerBig />
+        {datalab ? renderTrackerImage() : <TrackerBig />}
         <View style={styles.trackerLineStyle} />
       </View>
       <View style={styles.rightViewStyle}>
-        <Text style={styles.labelTextStyle}>
-          {moment((dataprescription && dataprescription.date) || (datalab && datalab.date)).format(
-            'DD MMM YYYY'
-          )}
-        </Text>
+        {datalab && clubFilterData ? null : (
+          <Text style={styles.labelTextStyle}>
+            {dateFilterApplied ? getFilterAppliedText() : getDateFormatted()}
+          </Text>
+        )}
         <TouchableOpacity
           activeOpacity={1}
           style={[styles.cardContainerStyle]}
@@ -129,8 +193,9 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.doctorNameStyles}>
-                  {(dataprescription && dataprescription.prescriptionName) ||
-                    (datalab && datalab.labTestName)}
+                  {datalab && filterApplied && filterApplied !== FILTER_TYPE.DATE
+                    ? getDateFormatted()
+                    : reportName}
                 </Text>
                 {disableDelete ? null : (
                   <TouchableOpacity onPress={props.onPressDelete}>
@@ -138,14 +203,18 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
                   </TouchableOpacity>
                 )}
               </View>
-              {datalab && !!datalab.labTestSource && (
-                <Text style={styles.descriptionTextStyles}>{datalab && datalab.labTestSource}</Text>
-              )}
-              {dataprescription && !!dataprescription.source && (
-                <Text style={styles.descriptionTextStyles}>
-                  {dataprescription && dataprescription.source}
-                </Text>
-              )}
+              {reportSource ? (
+                <View style={{ flexDirection: 'row', paddingLeft: 2 }}>
+                  {reportSourceSelf ? (
+                    <PHRSelfUploadIcon style={{ width: 16, height: 10.14, alignSelf: 'center' }} />
+                  ) : (
+                    <PHRHospitalIcon style={{ width: 14, height: 14, alignSelf: 'center' }} />
+                  )}
+                  <Text style={styles.descriptionTextStyles}>
+                    {reportSourceSelf ? 'Self upload' : datalab?.siteDisplayName}
+                  </Text>
+                </View>
+              ) : null}
             </View>
           </View>
         </TouchableOpacity>

@@ -180,7 +180,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
   ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     healthAreasUrlsList.shop_by_healthareas.forEach((link: any) => {
-      const url = process.env.SITEMAP_BASE_URL + 'medicine/healthareas/' + link.url_key;
+      const url = process.env.SITEMAP_BASE_URL + 'medicine/shop-by-healthareas/' + link.url_key;
       const urlInfo: SitemapUrls = {
         url,
         urlName: link.title,

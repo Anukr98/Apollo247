@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import { Theme } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { dataLayerTracking } from 'gtmTracking';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -87,24 +89,44 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const TermsAndConditions: React.FC = () => {
+const TermsAndConditions: React.FC = () => {
   const classes = useStyles({});
 
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Terms Page',
+      pageLOB: 'Others',
+      pageType: 'Terms Page',
+    });
+    /**Gtm code start end */
+  }, []);
+
+  const [metaTagProps, setMetaTagProps] = useState(null);
+  setMetaTagProps({
+    title: 'Apollo 247 - Terms and Conditions - Apollo Hospitals',
+    description:
+      'Apollo 247 - Read all of our terms and conditions. Apollo 24|7 is a part of the multi-specialty healthcare group Apollo Hospitals.',
+    canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+  });
   return (
     <div className={classes.root}>
+      {metaTagProps && <MetaTagsComp {...metaTagProps} />}
       <Header />
       <div className={classes.container}>
         <div className={classes.pageContainer}>
           <div className={classes.aboutUs}>
-            <div className={classes.headerText}>terms & conditions</div>
-            <div className={classes.headerSubText}>
+            <h1 className={classes.headerText}>terms & conditions</h1>
+            <h2 className={classes.headerSubText}>
               please read all of our terms and conditions before doing anything.
-            </div>
+            </h2>
           </div>
           <div className={classes.bodyMain}>
             <div className={classes.bodyPart}>
               <div className={classes.bodyText}>
-                <div className={classes.pointsHeading}>1. General</div>
+                <h3 className={classes.pointsHeading}>1. General</h3>
                 <p className={classes.content}>
                   We, at <i>Apollo247</i> (“<b>Apollo247</b>”, “<b>We</b>”, “<b>Us</b>”) provide
                   services to all individuals accessing or using our app Apollo247 (“<b>App</b>”)
@@ -123,7 +145,7 @@ export const TermsAndConditions: React.FC = () => {
                   of the Terms and Conditions, then you may discontinue access or use of the .
                 </p>
                 <hr className={classes.horizontalRule} />
-                <div className={classes.pointsHeading}>2. Eligibility</div>
+                <h3 className={classes.pointsHeading}>2. Eligibility</h3>
                 <p className={classes.content}>
                   When you use the App, you represent that you meet the following primary
                   eligibility criteria:
@@ -138,13 +160,13 @@ export const TermsAndConditions: React.FC = () => {
                   disqualified for any other reason, from availing the Services.
                 </p>
                 <hr className={classes.horizontalRule} />
-                <div className={classes.pointsHeading}>3. Our Services</div>
+                <h3 className={classes.pointsHeading}>3. Our Services</h3>
                 <p className={classes.content}>
                   Through , we provide you with the following services (“<b>Services</b>”):
                 </p>
                 <p className={classes.content}>
                   <div>
-                    <b>A. Creating and maintaining user accounts:</b>
+                    <h4>A. Creating and maintaining user accounts:</h4>
                   </div>
                   <div className={classes.mainPoints}>
                     To use avail our Services, Users need to register on the App in order to use the
@@ -155,7 +177,7 @@ export const TermsAndConditions: React.FC = () => {
                 </p>
                 <p className={classes.content}>
                   <div>
-                    <b>B. Scheduling an appointment:</b>
+                    <h4>B. Scheduling an appointment:</h4>
                   </div>
                   <ul>
                     <li className={classes.subPoints}>
@@ -191,3 +213,5 @@ export const TermsAndConditions: React.FC = () => {
     </div>
   );
 };
+
+export default TermsAndConditions;
