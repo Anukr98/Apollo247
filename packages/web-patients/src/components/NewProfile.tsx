@@ -289,7 +289,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                   });
                   /* webengage code end */
                   if (props.customSignUp.referral === 'HDFCBANK') {
-                    history.push(clientRoutes.membershipHdfc());
+                    history.push(clientRoutes.welcome());
                   } else {
                     setShowProfileSuccess(true);
                   }
