@@ -834,7 +834,7 @@ export const MedicineCart: React.FC = (props) => {
   };
   const checkForCartChanges = async (pincode: string, lat: string, lng: string) => {
     const items = cartItems.map((item: MedicineCartItem) => {
-      return { sku: item.sku, qty: item.quantity, couponFree: item.couponFree };
+      return { sku: item.sku, qty: item.quantity, couponFree: Number(item.couponFree) };
     });
     return await checkTatAvailability(items, pincode, lat, lng)
       .then((res: any) => {
@@ -977,7 +977,7 @@ export const MedicineCart: React.FC = (props) => {
               ).toFixed(2)
             ),
             mrp: cartItemDetails.price,
-            couponFree: cartItemDetails.couponFree || 0,
+            couponFree: Number(cartItemDetails.couponFree) || 0,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
             isMedicine:
@@ -1006,7 +1006,7 @@ export const MedicineCart: React.FC = (props) => {
             sku,
             mrp: item.price,
             quantity,
-            couponFree: couponFree || 0,
+            couponFree: Number(couponFree) || 0,
             categoryId: type_id || '',
             specialPrice: special_price || price,
           };

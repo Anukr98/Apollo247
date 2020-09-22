@@ -214,7 +214,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           sku,
           mrp: item.price,
           quantity,
-          couponFree: couponFree || 0,
+          couponFree: Number(couponFree) || 0,
           categoryId: type_id || '',
           specialPrice: special_price || price,
         };

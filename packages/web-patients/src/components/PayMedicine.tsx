@@ -527,7 +527,7 @@ const PayMedicine: React.FC = (props) => {
                 ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
-            couponFree: cartItemDetails.couponFree || 0,
+            couponFree: Number(cartItemDetails.couponFree) || 0,
             itemValue: Number((cartItemDetails.quantity * cartItemDetails.price).toFixed(2)),
             itemDiscount: Number(
               (
@@ -546,7 +546,7 @@ const PayMedicine: React.FC = (props) => {
                 : _lowerCase(cartItemDetails.type_id) === 'pl'
                 ? '2'
                 : '0',
-            specialPrice: cartItemDetails.couponFree
+            specialPrice: Number(cartItemDetails.couponFree)
               ? 0
               : Number(getItemSpecialPrice(cartItemDetails)),
           };
@@ -999,9 +999,8 @@ const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${
-                          totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)
-                        } on delivery`
+                        `Pay Rs.${totalWithCouponDiscount &&
+                          totalWithCouponDiscount.toFixed(2)} on delivery`
                       )}
                     </AphButton>
                   )}
