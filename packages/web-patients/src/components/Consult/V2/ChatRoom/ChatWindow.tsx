@@ -2227,7 +2227,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                       messageDetails.message === autoMessageStrings.appointmentComplete
                     );
 
-                    console.log(messageDetails.message, '------------');
+                    // console.log(messageDetails.message, '------------');
 
                     if (messageDetails.message === autoMessageStrings.startConsultMsg) {
                       return (
