@@ -1563,6 +1563,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const CheckDoctorPresentInChat = () => {
     if (status === STATUS.COMPLETED) return; // no need to show join button if consultation has been completed
 
+    updateNumberOfParticipants(USER_STATUS.ENTERING);
     pubnub
       .hereNow({
         channels: [channel],
@@ -1574,12 +1575,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           response.channels &&
           response.channels[appointmentData.id] &&
           response.channels[appointmentData.id].occupants;
-        const occupancyDoctor =
-          data &&
-          data.length > 0 &&
-          data.filter((obj: any) => {
-            return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
-          });
         const occupancyJrDoctor =
           data &&
           data.length > 0 &&
@@ -1589,7 +1584,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         if (occupancyJrDoctor && occupancyJrDoctor.length >= 1) {
           jrDoctorJoined.current = true;
         }
-        updateNumberOfParticipants(USER_STATUS.ENTERING);
       })
       .catch((error) => {
         console.log(error);
