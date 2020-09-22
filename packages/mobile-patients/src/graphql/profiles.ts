@@ -3079,3 +3079,23 @@ export const GET_SECRETARY_DETAILS_BY_DOCTOR_ID = gql`
     }
   }
 `;
+
+export const GET_PARTICIPANTS_LIVE_STATUS = gql`
+  query setAndGetNumberOfParticipants(
+    $appointmentId: String
+    $userType: USER_TYPE
+    $sourceType: BOOKINGSOURCE
+    $deviceType: DEVICETYPE
+    $userStatus: USER_STATUS
+  ) {
+    setAndGetNumberOfParticipants(
+      appointmentId: $appointmentId
+      userType: $userType
+      sourceType: $sourceType
+      deviceType: $deviceType
+      userStatus: $userStatus
+    ) {
+      NUMBER_OF_PARTIPANTS
+    }
+  }
+`;
