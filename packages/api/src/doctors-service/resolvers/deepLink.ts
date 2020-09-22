@@ -11,7 +11,7 @@ import { ApiConstants } from 'ApiConstants';
 import { DeeplinkRepository } from 'doctors-service/repositories/deepLinkRepository';
 import { format, addDays, differenceInDays } from 'date-fns';
 import { trim } from 'lodash';
-import path, { parse } from 'path';
+import path from 'path';
 import _ from 'lodash';
 
 export const deepLinkTypeDefs = gql`
