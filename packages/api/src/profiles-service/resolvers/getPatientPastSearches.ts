@@ -91,7 +91,7 @@ const getPatientPastMedicineSearches: Resolver<
         searchType: searchType,
         typeId: search.typeId,
         name: search.typeName,
-        image: 'http://dev.popcornapps.com/apolloImages/medicine.png',
+        image: search.image,
       };
       pastSearches.push(searchItem);
     });

@@ -180,6 +180,7 @@ export function generateDeepLinkBody(doctordata: Partial<Doctor>): DeepLinkInput
     doctordata.doctorType == DoctorType.DOCTOR_CONNECT
       ? ApiConstants.CHANNEL_NAME_NON_APOLLO.toString()
       : ApiConstants.CHANNEL_NAME_APOLLO.toString();
+  const webLink = ApiConstants.DOCTOR_DEEPLINK_WEB_URL.replace('<DoctorID>', doctordata.id!);
 
   const webLink = ApiConstants.DOCTOR_DEEPLINK_WEB_URL.replace('<DoctorID>', doctordata.id!);
 
