@@ -18,13 +18,6 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import fetchUtil from 'helpers/fetch';
 import { SpecialtyDivision } from './SpecialtyDivision';
-import {
-  SearchDoctorAndSpecialtyByNameVariables,
-  SearchDoctorAndSpecialtyByName,
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorsType,
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctorsNextAvailability as NextAvailability,
-} from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import { GET_DOCTOR_LIST } from 'graphql/doctors';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SpecialtySearch } from './SpecialtySearch';
@@ -36,6 +29,7 @@ import { MetaTagsComp } from 'MetaTagsComp';
 import { SchemaMarkup } from 'SchemaMarkup';
 import _debounce from 'lodash/debounce';
 import { DoctorDetails } from 'components/Doctors/SpecialtyDetails';
+import { GetDoctorList_getDoctorList_specialties } from 'graphql/types/GetDoctorList';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -631,11 +625,10 @@ const SpecialityListing: React.FC = (props) => {
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
-  const [searchSpecialty, setSearchSpecialty] = useState<SpecialtyType[] | null>(null);
-  const [searchDoctors, setSearchDoctors] = useState<DoctorDetails[] | null>(null);
-  const [searchDoctorsNextAvailability, setSearchDoctorsNextAvailability] = useState<
-    NextAvailability[] | null
+  const [searchSpecialty, setSearchSpecialty] = useState<
+    GetDoctorList_getDoctorList_specialties[] | null
   >(null);
+  const [searchDoctors, setSearchDoctors] = useState<DoctorDetails[] | null>(null);
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [faqs, setFaqs] = useState<any | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('');
@@ -723,7 +716,6 @@ const SpecialityListing: React.FC = (props) => {
         console.log(e);
         setSearchSpecialty([]);
         setSearchDoctors([]);
-        setSearchDoctorsNextAvailability([]);
       })
       .finally(() => {
         setSearchLoading(false);

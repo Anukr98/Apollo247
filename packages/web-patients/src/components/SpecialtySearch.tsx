@@ -13,6 +13,7 @@ import { AphInput } from '@aph/web-ui-components';
 import _lowerCase from 'lodash/lowerCase';
 import { Cities } from './Cities';
 import { DoctorDetails } from 'components/Doctors/SpecialtyDetails';
+import { GetDoctorList_getDoctorList_specialties } from 'graphql/types/GetDoctorList';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -174,12 +175,11 @@ interface SpecialtySearchProps {
   searchKeyword: string;
   selectedCity: string;
   setSelectedCity: (selectedCity: string) => void;
-  searchSpecialty: SpecialtyType[] | null;
-  searchDoctors: DoctorDetails[] | null;
-  searchLoading: boolean;
+  searchSpecialty?: GetDoctorList_getDoctorList_specialties[] | null;
+  searchDoctors?: DoctorDetails[] | null;
+  searchLoading?: boolean;
   setLocationPopup: (locationPopup: boolean) => void;
   locationPopup: boolean;
-  searchDoctorsNextAvailability?: NextAvailability[] | null;
 }
 
 export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
@@ -270,23 +270,25 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
                       <div className={classes.sContent}>
                         <Typography component="h6">Specialities</Typography>
                         <ul className={classes.sList}>
-                          {searchSpecialty.map((specialty: SpecialtyType) => (
-                            <Link
-                              key={specialty.id}
-                              to={
-                                selectedCity === ''
-                                  ? clientRoutes.specialties(readableParam(specialty.name))
-                                  : clientRoutes.citySpecialties(
-                                      _lowerCase(selectedCity),
-                                      readableParam(specialty.name)
-                                    )
-                              }
-                            >
-                              <li key={specialty.id} onClick={() => setSearchKeyword('')}>
-                                {specialty.name}
-                              </li>
-                            </Link>
-                          ))}
+                          {searchSpecialty.map(
+                            (specialty: GetDoctorList_getDoctorList_specialties) => (
+                              <Link
+                                key={specialty.id}
+                                to={
+                                  selectedCity === ''
+                                    ? clientRoutes.specialties(readableParam(specialty.name))
+                                    : clientRoutes.citySpecialties(
+                                        _lowerCase(selectedCity),
+                                        readableParam(specialty.name)
+                                      )
+                                }
+                              >
+                                <li key={specialty.id} onClick={() => setSearchKeyword('')}>
+                                  {specialty.name}
+                                </li>
+                              </Link>
+                            )
+                          )}
                         </ul>
                       </div>
                     )}

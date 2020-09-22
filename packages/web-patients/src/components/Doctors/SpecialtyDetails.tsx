@@ -447,10 +447,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [selectedCity, setSelectedCity] = useState<string>(
     params && params.city ? params.city : ''
   );
-  const [searchSpecialty, setSearchSpecialty] = useState<SpecialtyType[] | null>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
-  const [searchDoctors, setSearchDoctors] = useState<DoctorDetails[] | null>(null);
-  const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [slugName, setSlugName] = useState<string>('');
   const [faqData, setFaqData] = useState<any>();
@@ -497,6 +494,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
           currentPage = currentPage + 1;
           const newData = {
             getDoctorList: {
+              ...response.data.getDoctorList,
               doctors: data['getDoctorList'].doctors.concat(response.data['getDoctorList'].doctors),
             },
           };
@@ -803,7 +801,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   useEffect(() => {
     if (doctorData) {
       setLoading(true);
-      let filterDoctorsData = searchKeyword.length > 1 ? searchDoctors : doctorData;
+      let filterDoctorsData = doctorData;
       // if (doctorType) {
       //   filterDoctorsData = getFilteredDoctorList(filterDoctorsData);
       // }
@@ -821,7 +819,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
       setLoading(false);
     }
-  }, [isOnlineSelected, isPhysicalSelected, doctorData, searchDoctors]);
+  }, [isOnlineSelected, isPhysicalSelected, doctorData]);
 
   const metaTagProps = {
     title: (faqData && faqData[0].specialtyMetaTitle) || '',
@@ -867,9 +865,6 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 setSearchKeyword={setSearchKeyword}
                 searchKeyword={searchKeyword}
                 selectedCity={selectedCity}
-                searchSpecialty={searchSpecialty}
-                searchDoctors={searchDoctors}
-                searchLoading={searchLoading}
                 setLocationPopup={setLocationPopup}
                 locationPopup={locationPopup}
                 setSelectedCity={setSelectedCity}
