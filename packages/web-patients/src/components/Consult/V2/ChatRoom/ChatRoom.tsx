@@ -527,7 +527,6 @@ const ChatRoom: React.FC = () => {
   const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
   const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
   const [isConsultCompleted, setIsConsultCompleted] = useState<boolean>(false);
-  const [isValidAppointment, setIsValidAppointment] = useState<boolean>(false);
 
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -689,7 +688,6 @@ const ChatRoom: React.FC = () => {
     // fix - 15092020 - Kumar
     const appointmentPatientId = appointmentDetails.patientId;
     if (appointmentPatientId !== patientId) window.location.href = clientRoutes.welcome();
-    else setIsValidAppointment(true);
   }
 
   // console.log('appointment details', appointmentDetails, '-------------------');
@@ -699,11 +697,7 @@ const ChatRoom: React.FC = () => {
       <Header />
 
       <div className={classes.container}>
-        {!isSignedIn ||
-        appointmentLoading ||
-        loading ||
-        !isValidAppointment ||
-        secretaryDataLoading ? (
+        {!isSignedIn || appointmentLoading || loading || secretaryDataLoading ? (
           <LinearProgress />
         ) : appointmentDetails && data ? (
           <div className={classes.doctorListingPage}>
@@ -924,3 +918,5 @@ const ChatRoom: React.FC = () => {
     </div>
   );
 };
+
+export default ChatRoom;
