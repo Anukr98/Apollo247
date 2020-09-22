@@ -93,6 +93,7 @@ import {
   WebEngageEvent,
   CALL_FEEDBACK_RESPONSES_TYPES,
   DoctorType,
+  USER_STATUS,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   initateConferenceTelephoneCall,
@@ -108,7 +109,10 @@ import {
 } from '@aph/mobile-doctors/src/graphql/types/SendCallNotification';
 import { uploadChatDocument } from '@aph/mobile-doctors/src/graphql/types/uploadChatDocument';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
-import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
+import {
+  getPrismUrls,
+  updateParticipantsLiveStatus,
+} from '@aph/mobile-doctors/src/helpers/clientCalls';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import {
   callPermissions,
@@ -319,6 +323,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     });
 
     return () => {
+      updateNumberOfParticipants(USER_STATUS.LEAVING);
       sendDoctorLeavesEvent();
       postBackendWebEngage(WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW);
       didFocusSubscription && didFocusSubscription.remove();
@@ -2395,6 +2400,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       });
   };
 
+  const updateNumberOfParticipants = async (status: USER_STATUS) => {
+    await updateParticipantsLiveStatus(client, AppId, status);
+  };
+
   const onStartConsult = (successCallback?: () => void) => {
     getNetStatus().then((connected) => {
       postWebEngageEvent(WebEngageEventName.DOCTOR_START_CONSULT, {
@@ -2402,6 +2411,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       } as WebEngageEvents[WebEngageEventName.DOCTOR_START_CONSULT]);
       if (connected) {
         setShowLoading(true);
+        updateNumberOfParticipants(USER_STATUS.ENTERING);
         client
           .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
             mutation: CREATEAPPOINTMENTSESSION,
