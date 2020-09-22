@@ -492,10 +492,7 @@ const isAlternateVersion = () => {
   const urlString = window.location.href;
   const url = new URL(urlString);
   const alternateVariant = url.searchParams.get('variant');
-  if (alternateVariant && alternateVariant === '2') {
-    return true;
-  }
-  return false;
+  return alternateVariant && alternateVariant === '2' ? true : false;
 };
 export {
   isAlternateVersion,
