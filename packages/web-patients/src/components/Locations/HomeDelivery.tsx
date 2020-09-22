@@ -7,7 +7,6 @@ import {
 } from '@aph/web-ui-components';
 import { CircularProgress, FormControlLabel, Popover, Theme, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import axios, { AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
@@ -30,6 +29,7 @@ import moment from 'moment';
 import React, { useEffect, useRef } from 'react';
 import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import { gtmTracking } from '../../gtmTracking';
+import axios, { AxiosError } from 'axios';
 
 export const formatAddress = (address: Address) => {
   const addressFormat = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');

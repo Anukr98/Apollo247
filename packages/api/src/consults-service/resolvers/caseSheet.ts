@@ -888,6 +888,14 @@ const modifyCaseSheet: Resolver<
     // }
   }
 
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+  const getDoctorDetails = await doctorRepo.findDoctorByIdWithoutRelations(getCaseSheetData.appointment.doctorId);
+
+  // this check is necessary til doctor-app's new version is not released
+  if (!getCaseSheetData.followUpAfterInDays && (inputArguments.followUpAfterInDays === 0 || inputArguments.followUpAfterInDays === undefined || inputArguments.followUpAfterInDays === null)) {
+    getCaseSheetData.followUpAfterInDays = (getDoctorDetails && getDoctorDetails.chatDays) || 7;
+  }
+
   if (!(inputArguments.status === undefined)) {
     getCaseSheetData.status = inputArguments.status;
   }

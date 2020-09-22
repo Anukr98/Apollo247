@@ -22,6 +22,7 @@ import {
   DOCTOR_CATEGORY,
   SearchObject,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE as PAGE_SIZE,
+  deepLinkUtil,
 } from 'helpers/commonHelpers';
 import { useLocationDetails } from 'components/LocationProvider';
 import { GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as docDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -44,14 +45,13 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import _lowerCase from 'lodash/lowerCase';
-import axios from 'axios';
 import { gtmTracking } from 'gtmTracking';
 import { SpecialtySearch } from 'components/SpecialtySearch';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 // import Pagination from '@material-ui/lab/Pagination';
-
+import axios from 'axios';
 let currentPage = 1;
 let apolloDoctorCount = 0;
 let partnerDoctorCount = 0;
@@ -388,7 +388,7 @@ interface SpecialityProps {
   history: any;
 }
 
-export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
+const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const searchObject: SearchObject = {
     searchKeyword: '',
     cityName: [],
@@ -439,6 +439,10 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [slugName, setSlugName] = useState<string>('');
   const [faqData, setFaqData] = useState<any>();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    deepLinkUtil(`Speciality?${specialtyId}`);
+  }, [specialtyId]);
 
   useEffect(() => {
     if (!intialLoad) {
@@ -874,6 +878,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     description: (faqData && faqData[0].specialtyMetaDescription) || '',
     canonicalLink:
       (faqData && faqData[0].canonicalUrl) || (window && window.location && window.location.href),
+    deepLink: window.location.href,
   };
 
   return (
@@ -1043,3 +1048,5 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     </div>
   );
 };
+
+export default SpecialtyDetails;

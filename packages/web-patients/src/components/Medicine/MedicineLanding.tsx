@@ -40,6 +40,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { Route } from 'react-router-dom';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
+import { deepLinkUtil } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -504,6 +505,9 @@ const MedicineLanding: React.FC = (props: any) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
+  useEffect(() => {
+    deepLinkUtil(`Medicine`);
+  }, []);
 
   useEffect(() => {
     sessionStorage.removeItem('categoryClicked');
@@ -651,6 +655,7 @@ const MedicineLanding: React.FC = (props: any) => {
       'Order medicines and health products online at Apollo 247 - a leading online pharmacy store. Buy all medicines you need from home in just a few clicks. Apollo 247 is a one-stop solution for all your medical needs.',
     canonicalLink:
       window && window.location && window.location.origin && `${window.location.origin}/medicines`,
+    deepLink: window.location.href,
   };
 
   const getOrderSubtitle = (order: medicineOrderDetailsType) => {

@@ -496,7 +496,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-export const Prescription: React.FC = (props) => {
+const Prescription: React.FC = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const mascotRef = useRef(null);
@@ -855,6 +855,7 @@ export const Prescription: React.FC = (props) => {
                     <a
                       href={`${process.env.AZURE_PDF_BASE_URL}${caseSheetDetails.blobName}`}
                       target="_blank"
+                      rel="noopener noreferrer"
                     >
                       <div className={classes.shareIcon}>
                         <img src={require('images/ic_download.svg')} alt="download" />
@@ -1138,3 +1139,5 @@ export const Prescription: React.FC = (props) => {
     </div>
   );
 };
+
+export default Prescription;

@@ -378,7 +378,7 @@ export const getItemSpecialPrice = (cartItemDetails: MedicineCartItem) => {
   return cartItemDetails.special_price || cartItemDetails.price;
 };
 
-export const PayMedicine: React.FC = (props) => {
+const PayMedicine: React.FC = (props) => {
   const classes = useStyles({});
   const [checked, setChecked] = React.useState(false);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -736,8 +736,10 @@ export const PayMedicine: React.FC = (props) => {
               sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
             }`;
             window.location.href = pgUrl;
+            localStorage.removeItem('updatedFreeCoupon');
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
+            localStorage.removeItem('updatedFreeCoupon');
           } else if (errorMessage.length > 0) {
             setMutationLoading(false);
             setIsAlertOpen(true);
@@ -1177,3 +1179,5 @@ export const PayMedicine: React.FC = (props) => {
     </div>
   );
 };
+
+export default PayMedicine;

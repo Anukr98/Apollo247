@@ -19,7 +19,6 @@ import {
 } from '@aph/web-ui-components';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
-import axios from 'axios';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import {
   useShoppingCart,
@@ -81,6 +80,7 @@ import { getTypeOfProduct } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
 import fetchUtil from 'helpers/fetch';
 import { checkTatAvailability } from 'helpers/MedicineApiCalls';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -691,6 +691,7 @@ export const MedicineCart: React.FC = (props) => {
     setCartItems,
     removeFreeCartItems,
     addCartItems,
+    updateCartItemQty,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -729,6 +730,7 @@ export const MedicineCart: React.FC = (props) => {
   const [couponDiscount, setCouponDiscount] = useState<number>(0);
   const [latitude, setLatitude] = React.useState<string>('');
   const [longitude, setLongitude] = React.useState<string>('');
+  const [quantityUpdated, setQuantityUpdated] = React.useState<boolean>(true);
 
   const apiDetails = {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -1020,8 +1022,9 @@ export const MedicineCart: React.FC = (props) => {
                   : []
               );
               if (freeProductsSet.size) {
-                setValidateCouponResult(resp.response);
+                handleQuantityFreeProduct(resp.response);
                 addDiscountedProducts(resp.response);
+                setValidateCouponResult(resp.response);
                 setErrorMessage('');
                 return;
               }
@@ -1059,6 +1062,21 @@ export const MedicineCart: React.FC = (props) => {
     }
   };
 
+  const handleQuantityFreeProduct = (response: any) => {
+    if (response.products && Array.isArray(response.products) && response.products.length) {
+      response.products.forEach((cartItem: MedicineCartItem) => {
+        if (
+          cartItem.couponFree &&
+          cartItem.quantity > 1 &&
+          !localStorage.getItem('updatedFreeCoupon')
+        ) {
+          updateCartItemQty({ ...cartItem, quantity: cartItem.quantity, couponFree: true });
+        }
+      });
+      localStorage.setItem('updatedFreeCoupon', 'true');
+    }
+  };
+
   const addDiscountedProducts = (response: any) => {
     const skus: Array<string> = [];
     if (response.products && Array.isArray(response.products) && response.products.length) {
@@ -1069,7 +1087,6 @@ export const MedicineCart: React.FC = (props) => {
         response.products.forEach((data: any) => {
           if (!cartSkuSet.has(data.sku) && data.couponFree) skus.push(data.sku);
         });
-
         const allData: MedicineCartItem[] = [];
         if (skus && skus.length) {
           axios
@@ -1290,6 +1307,7 @@ export const MedicineCart: React.FC = (props) => {
       .catch((e) => {
         console.log({ e });
         setIsAlertOpen(true);
+
         setAlertMessage('Something went wrong, please try later.');
       })
       .finally(() => {
