@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, RadioGroup, FormControlLabel, CircularProgress } from '@material-ui/core';
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from 'components/Header';
 import { ManageProfile } from 'components/ManageProfile';
@@ -25,6 +25,7 @@ import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescri
 import { uploadPrescriptionTracking, pharmacyPrescriptionTracking } from '../../webEngageTracking';
 import { useCurrentPatient } from 'hooks/authHooks';
 import moment from 'moment';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -280,7 +281,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicinePrescriptions: React.FC = (props) => {
+const MedicinePrescriptions: React.FC = (props) => {
   const classes = useStyles({});
   const {
     durationDays,
@@ -309,9 +310,23 @@ export const MedicinePrescriptions: React.FC = (props) => {
   const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedValue = (event.target as HTMLInputElement).value;
     if (selectedValue === 'addmedicine') {
+      /**Gtm code start start */
+      dataLayerTracking({
+        event: 'Medicine Option Selected',
+        Type: 'Search and add',
+      });
+      /**Gtm code start end */
+
       window.location.href = clientRoutes.medicineSearch();
       pharmacyPrescriptionTracking('Search and add');
     } else {
+      /**Gtm code start start */
+      dataLayerTracking({
+        event: 'Medicine Option Selected',
+        Type: selectedValue === 'specified' ? 'All medicine' : 'call',
+      });
+      /**Gtm code start end */
+
       selectedValue === 'specified'
         ? pharmacyPrescriptionTracking('All medicine')
         : pharmacyPrescriptionTracking('call');
@@ -337,7 +352,27 @@ export const MedicinePrescriptions: React.FC = (props) => {
   const handleUploadPrescription = () => {
     uploadPrescriptionTracking({ ...patient, age });
     setIsUploadPreDialogOpen(true);
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'Upload Prescription Clicked',
+    });
+    /**Gtm code start end */
   };
+
+  const prescriptionsData = useMemo(() => prescriptions, [prescriptions]);
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Prescription Page',
+      pageLOB: 'Pharmacy',
+      pageType: 'Prescription',
+      productlist: JSON.stringify(prescriptionsData),
+    });
+    /**Gtm code start end */
+  }, [prescriptionsData]);
 
   return (
     <div className={classes.root}>
@@ -553,3 +588,5 @@ export const MedicinePrescriptions: React.FC = (props) => {
     </div>
   );
 };
+
+export default MedicinePrescriptions;

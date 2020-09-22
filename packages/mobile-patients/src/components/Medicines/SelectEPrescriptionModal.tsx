@@ -10,7 +10,6 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_PAST_CONSULTS_PRESCRIPTIONS,
-  GET_MEDICAL_RECORD,
   GET_MEDICAL_PRISM_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -20,38 +19,24 @@ import {
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  aphConsole,
-  g,
-  handleGraphQlError,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useQuery, useApolloClient } from 'react-apollo-hooks';
-import { Alert, SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Overlay } from 'react-native-elements';
-import { ScrollView, NavigationContext, NavigationScreenProps } from 'react-navigation';
+import { ScrollView, NavigationScreenProps } from 'react-navigation';
 import { SectionHeader } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import {
-  getPatientMedicalRecords,
-  getPatientMedicalRecordsVariables,
-  getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
-} from '../../graphql/types/getPatientMedicalRecords';
 import {
   getPatientPrismMedicalRecords,
   getPatientPrismMedicalRecordsVariables,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks,
-  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
-} from '../../graphql/types/getPatientPrismMedicalRecords';
-import { MedicalRecords } from '../HealthRecords/MedicalRecords';
+} from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import { CheckedIcon, UnCheck } from '../ui/Icons';
-import { getPrismUrls } from '../../helpers/clientCalls';
 import { MedicalTest } from '../HealthRecords/AddRecord';
 
 const styles = StyleSheet.create({
@@ -107,24 +92,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     },
     fetchPolicy: 'no-cache',
   });
-  // aphConsole.log({ data, loading, error });
-
-  const { data: medRecords, loading: medloading, error: mederror } = useQuery<
-    getPatientMedicalRecords,
-    getPatientMedicalRecordsVariables
-  >(GET_MEDICAL_RECORD, {
-    variables: {
-      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-    },
-    fetchPolicy: 'no-cache',
-  });
-
-  const [medicalRecords, setmedicalRecords] = useState<
-    (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[] | null | undefined
-  >([]);
-  useEffect(() => {
-    setmedicalRecords(g(medRecords, 'getPatientMedicalRecords', 'medicalRecords') || []);
-  }, [medRecords]);
 
   const { data: medPrismRecords, loading: medPrismloading, error: medPrismerror } = useQuery<
     getPatientPrismMedicalRecords,
@@ -135,21 +102,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     },
     fetchPolicy: 'no-cache',
   });
-  const [labTests, setlabTests] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests | null)[]
-    | null
-    | undefined
-  >([]);
-  const [healthChecks, sethealthChecks] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks | null)[]
-    | null
-    | undefined
-  >([]);
-  const [hospitalizations, sethospitalizations] = useState<
-    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations | null)[]
-    | null
-    | undefined
-  >([]);
   const [labResults, setLabResults] = useState<
     | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response | null)[]
     | null
@@ -162,13 +114,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   >([]);
 
   useEffect(() => {
-    console.log(medPrismRecords);
-
-    setlabTests(g(medPrismRecords, 'getPatientPrismMedicalRecords', 'labTests') || []);
-    sethealthChecks(g(medPrismRecords, 'getPatientPrismMedicalRecords', 'healthChecks') || []);
-    sethospitalizations(
-      g(medPrismRecords, 'getPatientPrismMedicalRecords', 'hospitalizations') || []
-    );
     setLabResults(
       g(medPrismRecords, 'getPatientPrismMedicalRecords', 'labResults', 'response') || []
     );
@@ -187,12 +132,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     }
   }, [medPrismerror]);
 
-  // useEffect(() => {
-  //   if (mederror) {
-  //     CommonBugFender('SelectEPrescriptionModal_mederror', mederror);
-  //   }
-  // }, [mederror]);
-
   const [combination, setCombination] = useState<
     { type: 'medical' | 'lab' | 'health' | 'hospital' | 'prescription'; data: any }[]
   >();
@@ -203,15 +142,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       type: 'medical' | 'lab' | 'health' | 'hospital' | 'prescription';
       data: any;
     }[] = [];
-    console.log('combination before', mergeArray);
-    // medicalRecords &&
-    //   medicalRecords.forEach((item) => {
-    //     mergeArray.push({ type: 'medical', data: item });
-    //   });
-    // labTests &&
-    //   labTests.forEach((item) => {
-    //     mergeArray.push({ type: 'lab', data: item });
-    //   });
     labResults &&
       labResults.forEach((item) => {
         mergeArray.push({ type: 'lab', data: item });
@@ -220,15 +150,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       prescriptions.forEach((item) => {
         mergeArray.push({ type: 'prescription', data: item });
       });
-    // healthChecks &&
-    //   healthChecks.forEach((item) => {
-    //     mergeArray.push({ type: 'health', data: item });
-    //   });
-    // hospitalizations &&
-    //   hospitalizations.forEach((item) => {
-    //     mergeArray.push({ type: 'hospital', data: item });
-    //   });
-    console.log('combination after', mergeArray);
     setCombination(sordByDate(mergeArray));
   }, [labResults, prescriptions]);
 
@@ -250,7 +171,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
           data2.dateOfHospitalization ||
           data2.date
       );
-      return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+      return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
     });
   };
 
@@ -387,15 +308,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       <View>
         {combination &&
           combination.map(({ type, data }, index) => {
-            // if (item.type === 'medical') {
-            //   data = item.data as getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords;
-            // } else if (item.type === 'lab') {
-            //   data = item.data as getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests;
-            // } else if (item.type === 'hospital') {
-            //   data = item.data as getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecks;
-            // } else if (item.type === 'health') {
-            //   data = item.data as getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizations;
-            // }
             const selected = selectedHealthRecord.findIndex((i) => i === index.toString()) > -1;
             return (
               <TouchableOpacity
@@ -521,7 +433,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             onPressLeftIcon={() => props.onSubmit([])}
           />
           <ScrollView bounces={false}>
-            {!(loading || (props.displayPrismRecords && (medloading || medPrismloading))) && (
+            {!(loading || (props.displayPrismRecords && medPrismloading)) && (
               <>
                 {renderNoPrescriptions()}
                 <View style={{ height: 16 }} />
@@ -556,8 +468,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                 );
                 if (combination) {
                   combination.forEach(({ type, data }, index) => {
-                    console.log(data, 'bdfiunio');
-
                     if (selectedHealthRecord.findIndex((i) => i === index.toString()) > -1) {
                       let date = '';
                       let name = '';
@@ -581,7 +491,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                         }`;
                         message += `---------------\n`;
                         (data.labTestResults || []).forEach((record: any) => {
-                          console.log(record);
                           if (record) {
                             if (record.parameterName) {
                               message += `${record.parameterName}\n`;
@@ -629,7 +538,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                         }`;
                         message += `---------------\n`;
                         (data.medicalRecordParameters || []).forEach((record: any) => {
-                          console.log(record);
                           if (record) {
                             message += `${record.parameterName}\n`;
                             message += `${
@@ -682,8 +590,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                     }
                   });
                 }
-                console.log(submitValues, 'sub anvio');
-
                 setSelectedHealthRecord([]);
                 props.onSubmit(submitValues);
               }}
@@ -691,7 +597,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
             />
           </View>
         </SafeAreaView>
-        {(loading || (props.displayPrismRecords && (medloading || medPrismloading))) && <Spinner />}
+        {(loading || (props.displayPrismRecords && medPrismloading)) && <Spinner />}
       </View>
     </Overlay>
   );

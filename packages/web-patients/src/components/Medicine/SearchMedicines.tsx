@@ -292,7 +292,7 @@ export const SearchMedicines: React.FC = (props) => {
                             Authorization: process.env.PHARMACY_MED_AUTH_TOKEN,
                           },
                           transformRequest: [
-                            (data, headers) => {
+                            (data: any, headers: any) => {
                               delete headers.common['Content-Type'];
                               return JSON.stringify(data);
                             },

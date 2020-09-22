@@ -115,6 +115,8 @@ type AddMedicalRecordResult = {
   status: boolean;
 };
 
+/* >= release 5.0.0 not used for lab tests */
+
 const addPatientMedicalRecord: Resolver<
   null,
   MedicalRecordInputArgs,

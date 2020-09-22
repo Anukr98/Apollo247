@@ -599,7 +599,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                       </div>
                       <div className={classes.reportsDetails}>
                         <label>Referring Doctor</label>
-                        <p>{!!activeConsult.prescribedBy ? activeConsult.prescribedBy : '-'}</p>
+                        <p>{activeConsult.prescribedBy ? `${activeConsult.prescribedBy}` : '-'}</p>
                       </div>
                     </div>
                     {(activeConsult.observations || activeConsult.additionalNotes) && (

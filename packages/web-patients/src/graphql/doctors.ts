@@ -22,6 +22,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       physicalConsultationFees
       qualification
       doctorType
+      chatDays
       starTeam {
         associatedDoctor {
           fullName
@@ -86,6 +87,17 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         isActive
         actualDay
       }
+    }
+  }
+`;
+
+export const GET_SECRETARY_DETAILS_BY_DOCTOR_ID = gql`
+  query getSecretaryDetailsByDoctorId($doctorId: String!) {
+    getSecretaryDetailsByDoctorId(doctorId: $doctorId) {
+      id
+      name
+      mobileNumber
+      isActive
     }
   }
 `;
@@ -518,6 +530,10 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isSeniorConsultStarted
         isJdQuestionsComplete
         symptoms
+        caseSheet {
+          followUpAfterInDays
+          doctorType
+        }
         doctorInfo {
           awards
           city

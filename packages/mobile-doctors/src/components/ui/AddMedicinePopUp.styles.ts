@@ -74,7 +74,7 @@ export default StyleSheet.create({
     borderBottomWidth: 2,
     borderColor: theme.colors.APP_GREEN,
     paddingTop: 0,
-    marginTop: 10,
+    marginTop: 4,
   },
   textInputDisabledStyles: {
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -84,7 +84,7 @@ export default StyleSheet.create({
     borderBottomWidth: 2,
     borderColor: theme.colors.SEPARATOR_LINE,
     paddingTop: 0,
-    marginTop: 10,
+    marginTop: 4,
   },
   textInputStyles2: {
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -94,7 +94,7 @@ export default StyleSheet.create({
     borderBottomWidth: 2,
     borderColor: theme.colors.APP_GREEN,
     paddingTop: 0,
-    marginTop: 10,
+    marginTop: 4,
   },
   materialContainer: {
     alignItems: 'flex-end',
@@ -128,7 +128,7 @@ export default StyleSheet.create({
   menuContainerStyle: {
     alignItems: 'flex-end',
     marginLeft: 10,
-    marginTop: 10,
+    marginTop: 4,
     width: width - 100,
   },
   seleTextStyle: {
@@ -144,7 +144,7 @@ export default StyleSheet.create({
   },
   dropDownValueView: {
     flexDirection: 'row',
-    marginTop: 10,
+    marginTop: 4,
   },
   dropdownView: {
     flexDirection: 'row',
@@ -160,12 +160,13 @@ export default StyleSheet.create({
   forLable: {
     ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT),
     paddingBottom: 0,
-    marginTop: 12,
   },
   forInputView: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
+    flex: 1,
+    marginTop: 20,
   },
   MMContainer: { alignItems: 'flex-end', marginLeft: (width - 110) / 2 - 130 },
   MMseleStyle: {
@@ -176,7 +177,7 @@ export default StyleSheet.create({
   MMitemContainer: { height: 44.8, marginHorizontal: 12, width: (width - 110) / 2 - 60 },
   forDropView: {
     flexDirection: 'row',
-    marginTop: 10,
+    marginTop: 4,
   },
   forDropTextView: {
     flexDirection: 'row',
@@ -191,7 +192,6 @@ export default StyleSheet.create({
   chipCardView: {
     flexDirection: 'row',
     width: width - 90,
-    marginTop: 10,
   },
   inTheText: {
     ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT),
@@ -202,6 +202,7 @@ export default StyleSheet.create({
     width: width - 90,
     marginTop: 0,
     flexWrap: 'wrap',
+    marginBottom: 20,
   },
   additionalInstrLabel: {
     ...theme.viewStyles.text('M', 14, theme.colors.INPUT_TEXT),
@@ -209,9 +210,10 @@ export default StyleSheet.create({
     marginTop: 10,
   },
   additionalInstrInputstyle: {
-    borderWidth: 2,
+    borderWidth: 1,
     borderRadius: 10,
     height: 80,
+    marginTop: 8,
     paddingLeft: 12,
     paddingRight: 12,
     paddingBottom: 12,
@@ -237,7 +239,7 @@ export default StyleSheet.create({
     elevation: 500,
   },
   touchableCloseIcon: {
-    marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 50,
+    marginTop: Platform.OS === 'ios' ? (isIphoneX() ? 58 : 34) : 50,
     backgroundColor: 'white',
     height: 28,
     width: 28,
@@ -255,7 +257,7 @@ export default StyleSheet.create({
     maxHeight: '85%',
   },
   customTextContainer: {
-    marginTop: 10,
+    marginTop: 20,
     flexWrap: 'wrap',
   },
   customTextStyle: {
@@ -271,4 +273,41 @@ export default StyleSheet.create({
     padding: 0,
     marginTop: 12,
   },
+  genericNameContainer: {
+    flexDirection: 'row',
+    borderColor: theme.colors.APP_GREEN,
+    alignItems: 'center',
+    marginTop: 12,
+    borderBottomWidth: 2,
+  },
+  genericTextStyle: {
+    paddingBottom: 4,
+    paddingTop: 0,
+    marginTop: 4,
+    justifyContent: 'center',
+    flex: 1,
+
+    ...theme.viewStyles.text('M', 18, theme.colors.SHARP_BLUE),
+  },
+  medicineInputContainer: {
+    flex: 1,
+    marginTop: 20,
+  },
+  headingTextStyle: theme.viewStyles.text(
+    'R',
+    12,
+    theme.colors.darkBlueColor(0.6),
+    undefined,
+    16,
+    0.02
+  ),
+  takeApplyContainer: { flexDirection: 'row', alignItems: 'flex-end' },
+  freeTextContainer: {
+    flexDirection: 'row',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: 5,
+  },
+  checkboxIconStyles: { width: 16, height: 16, marginRight: 16 },
 });

@@ -6,7 +6,6 @@ import {
   DOCTOR_ONLINE_STATUS,
   CityPincodeMapper,
   ConsultHours,
-  Secretary,
 } from 'doctors-service/entities';
 import { ES_DOCTOR_SLOT_STATUS } from 'consults-service/entities';
 import {
@@ -90,9 +89,10 @@ export class DoctorRepository extends Repository<Doctor> {
         },
       };
       slotsAdded += doctorId + ' - ' + format(stDate, 'yyyy-MM-dd') + ',';
-      const updateResp = await client.update(doc1);
+      await client.update(doc1);
       stDate = addDays(stDate, 1);
     }
+    client.close();
     return slotsAdded;
   }
 
@@ -287,6 +287,7 @@ export class DoctorRepository extends Repository<Doctor> {
       },
     };
     const getDetails = await client.search(searchParams);
+    client.close();
     let doctorData, facilities;
 
     if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
@@ -407,7 +408,12 @@ export class DoctorRepository extends Repository<Doctor> {
   getDoctorSecretary(id: string) {
     return this.findOne({
       where: [{ id, isActive: true }],
-      relations: ['doctorSecretary', 'doctorSecretary.secretary'],
+      relations: [
+        'doctorSecretary',
+        'doctorSecretary.secretary',
+        'doctorHospital',
+        'doctorHospital.facility',
+      ],
     });
   }
 
@@ -1122,7 +1128,13 @@ export class DoctorRepository extends Repository<Doctor> {
   getAllDocAdminsById(ids: string[]) {
     return this.find({
       where: { id: In(ids) },
-      relations: ['admindoctormapper', 'admindoctormapper.adminuser'],
+      relations: [
+        'admindoctormapper',
+        'admindoctormapper.adminuser',
+        'specialty',
+        'doctorHospital',
+        'doctorHospital.facility',
+      ],
     });
   }
 

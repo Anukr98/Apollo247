@@ -8,17 +8,20 @@ import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
-  ArrowRight,
   CartIcon,
   DropdownGreen,
   LocationOff,
   LocationOn,
+  NotificationIcon,
   SearchSendIcon,
   TestsIcon,
   ShieldIcon,
   HomeIcon,
+  PrimaryIcon,
   LinkedUhidIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
+import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -26,10 +29,17 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   GET_DIAGNOSTICS_CITES,
   GET_DIAGNOSTIC_DATA,
+  GET_DIAGNOSTIC_ORDER_LIST,
   SEARCH_DIAGNOSTICS,
   SAVE_SEARCH,
   SEARCH_DIAGNOSTICS_BY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import {
+  getDiagnosticOrdersList,
+  getDiagnosticOrdersListVariables,
+  getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
   getDiagnosticsCites,
   getDiagnosticsCitesVariables,
@@ -56,11 +66,13 @@ import {
   getPlaceInfoByLatLng,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
+  aphConsole,
   doRequestAndAccessLocation,
   g,
   getNetStatus,
   isValidSearch,
   postWebEngageEvent,
+  postWEGNeedHelpEvent,
   setWebEngageScreenNames,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -84,7 +96,7 @@ import {
   NativeScrollEvent,
   Platform,
 } from 'react-native';
-import { Image, Input, ListItem } from 'react-native-elements';
+import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -164,6 +176,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const { cartItems: shopCartItems } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
+  // const [data, setData] = useState<MedicinePageAPiResponse>();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
@@ -171,7 +184,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
-  const [searchQuery, setSearchQuery] = useState({});
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
+    currentPatient!
+  );
+
+  const [ordersFetched, setOrdersFetched] = useState<
+    (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList | null)[]
+  >([]);
 
   const { data: diagnosticsData, error: hError, loading: hLoading, refetch: hRefetch } = useQuery<
     getDiagnosticsData
@@ -192,10 +211,28 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
   const [showLocations, setshowLocations] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState({});
 
   useEffect(() => {
+    console.log(locationDetails, 'locationDetails');
     locationDetails && setcurrentLocation(locationDetails.displayName);
   }, [locationDetails]);
+
+  useEffect(() => {
+    if (currentPatient && profile && profile.id !== currentPatient.id) {
+      setLoadingContext!(true);
+      setProfile(currentPatient);
+      ordersRefetch()
+        .then((data: any) => {
+          const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+          setOrdersFetched(orderData);
+          setLoadingContext!(false);
+        })
+        .catch((e) => {
+          CommonBugFender('Tests_ordersRefetch_PATIENT_CHANGE', e);
+        });
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     if (diagnosticsCities.length) {
@@ -213,6 +250,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           },
         })
         .then(({ data }) => {
+          console.log('getDiagnosticsCites\n', { data });
           const cities = g(data, 'getDiagnosticsCites', 'diagnosticsCities') || [];
           setDiagnosticsCities!(
             cities as getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]
@@ -220,6 +258,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('Tests_GET_DIAGNOSTICS_CITES', e);
+          console.log('getDiagnosticsCites Error\n', { e });
           showAphAlert!({
             unDismissable: true,
             title: 'Uh oh! :(',
@@ -270,6 +309,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 setLoadingContext!(true);
                 doRequestAndAccessLocation()
                   .then((response) => {
+                    //console.log('response', { response });
                     setLoadingContext!(false);
                     response && setLocationDetails!(response);
                   })
@@ -300,25 +340,67 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, [locationDetails && diagnosticsCities]);
 
+  const [n, sN] = useState(0);
+
   useEffect(() => {
     if (locationForDiagnostics && locationForDiagnostics.cityId) {
       getTestsPackages(locationForDiagnostics.cityId, locationForDiagnostics.stateId)
         .then(({ data }) => {
           setLoading(false);
+          aphConsole.log('getTestsPackages\n', { data });
           setTestPackages(g(data, 'data') || []);
         })
         .catch((e) => {
           CommonBugFender('Tests_getTestsPackages', e);
           setLoading(false);
+          aphConsole.log('getTestsPackages Error\n', { e });
         });
+      // .finally(() => {
+      //   setLoading(false);
+      // });
     } else {
       setTestPackages([]);
       setLoading(false);
     }
   }, [locationForDiagnostics && locationForDiagnostics.cityId]);
 
+  const {
+    data: orders,
+    error: ordersError,
+    loading: ordersLoading,
+    refetch: ordersRefetch,
+  } = useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(
+    GET_DIAGNOSTIC_ORDER_LIST,
+    {
+      variables: {
+        patientId: currentPatient && currentPatient.id,
+      },
+      fetchPolicy: 'cache-first',
+    }
+  );
+
+  // let _orders = (!ordersLoading && g(orders, 'getDiagnosticOrdersList', 'ordersList')) || [];
+
+  useEffect(() => {
+    if (!ordersLoading) {
+      const orderData = g(orders, 'getDiagnosticOrdersList', 'ordersList') || [];
+      orderData.length > 0 && setOrdersFetched(orderData);
+    }
+  }, [ordersLoading]);
+
   useEffect(() => {
     setWebEngageScreenNames('Diagnostic Home Page');
+    hRefetch();
+    if (ordersFetched.length == 0) {
+      ordersRefetch()
+        .then((data: any) => {
+          const orderData = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+          orderData.length > 0 && setOrdersFetched(orderData);
+        })
+        .catch((e) => {
+          CommonBugFender('Tests_ordersRefetch_initial', e);
+        });
+    }
   }, []);
 
   const postFeaturedTestEvent = (name: string, id: string) => {
@@ -352,6 +434,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
       Price: price,
       'Discounted Price': discountedPrice,
       Quantity: 1,
+      // 'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      // 'Patient UHID': g(currentPatient, 'uhid'),
+      // Relation: g(currentPatient, 'relation'),
+      // 'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+      // 'Patient Gender': g(currentPatient, 'gender'),
+      // 'Mobile Number': g(currentPatient, 'mobileNumber'),
+      // 'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
   };
@@ -359,6 +448,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const postBrowsePackageEvent = (packageName: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.BROWSE_PACKAGE] = {
       'Package Name': packageName,
+      // Category: '',
       Source: 'Home',
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Patient UHID': g(currentPatient, 'uhid'),
@@ -401,6 +491,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         if (status) {
           autoCompletePlaceSearch(searchText)
             .then((obj) => {
+              console.log({});
+
               try {
                 if (obj.data.predictions) {
                   const address = obj.data.predictions.map(
@@ -424,6 +516,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             })
             .catch((error) => {
               CommonBugFender('Tests_autoSearch', error);
+              console.log(error);
             });
         }
       })
@@ -446,6 +539,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const saveLatlong = (item: { name: string; placeId: string }) => {
+    console.log('placeId\n', {
+      placeId: item.placeId,
+    });
     // update address to context here
     getPlaceInfoByPlaceId(item.placeId)
       .then((response) => {
@@ -500,6 +596,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('Tests_saveLatlong', error);
+        console.log('saveLatlong error\n', error);
       });
   };
 
@@ -705,32 +802,59 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
+            // style={{ right: 20 }}
           >
             <CartIcon />
             {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
           </TouchableOpacity>
+          {/* <NotificationIcon /> */}
         </View>
       </View>
     );
   };
 
-  const renderYourOrders = () => {
+  /*
+  const uploadPrescriptionCTA = () => {
     return (
-      <View style={{ ...theme.viewStyles.card(), paddingVertical: 0 }}>
-        <ListItem
-          title={'My Orders'}
-          leftAvatar={<TestsIcon />}
-          rightAvatar={<ArrowRight />}
-          pad={16}
-          Component={TouchableOpacity}
-          onPress={() => {
-            postMyOrdersClicked('Diagnostics', currentPatient);
-            props.navigation.navigate(AppRoutes.YourOrdersTest);
-          }}
-          containerStyle={{ paddingHorizontal: 0 }}
-          titleStyle={theme.viewStyles.text('M', 16, '#01475b', 1, 24)}
-        />
-      </View>
+      <ListCard
+        onPress={() => {
+          postMyOrdersClicked('Diagnostics', currentPatient);
+          props.navigation.navigate(AppRoutes.YourOrdersTest);
+        }}
+        container={{
+          marginBottom: 24,
+          marginTop: 20,
+        }}
+        title={'My Orders'}
+        leftIcon={<TestsIcon />}
+      />
+    );
+  };
+*/
+  const renderYourOrders = () => {
+    // if (ordersLoading) return renderSectionLoader(70);
+    return (
+      // (!ordersLoading && ordersFetched.length > 0 && (
+      <ListCard
+        onPress={() => {
+          postMyOrdersClicked('Diagnostics', currentPatient);
+          setLoadingContext!(true);
+          props.navigation.navigate(AppRoutes.YourOrdersTest, {
+            orders: ordersFetched,
+            isTest: true,
+            refetch: ordersRefetch,
+            error: ordersError,
+            loading: ordersLoading,
+          });
+        }}
+        container={{
+          marginBottom: 24,
+          marginTop: 20,
+        }}
+        title={'My Orders'}
+        leftIcon={<TestsIcon />}
+      />
+      // )) || <View style={{ height: 24 }} />
     );
   };
 
@@ -903,6 +1027,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
       });
     };
     const removeFromCart = () => removeCartItem!(`${diagnostics!.itemId}`);
+    // const specialPrice = special_price
+    //   ? typeof special_price == 'string'
+    //     ? parseInt(special_price)
+    //     : special_price
+    //   : price;
 
     return hotSellerCard({
       name: packageName!,
@@ -958,6 +1087,39 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </View>
     );
   };
+
+  // const renderBrowseByCondition = () => {
+  //   return (
+  //     <View>
+  //       <SectionHeader leftText={'BROWSE BY CONDITION'} />
+  //       <FlatList
+  //         bounces={false}
+  //         keyExtractor={(_, index) => `${index}`}
+  //         showsHorizontalScrollIndicator={false}
+  //         horizontal
+  //         data={shopByOrgans}
+  //         renderItem={({ item, index }) => {
+  //           return renderCatalogCard(
+  //             item.title,
+  //             `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
+  //             () =>
+  //               props.navigation.navigate(AppRoutes.SearchByBrand, {
+  //                 category_id: item.category_id,
+  //                 title: `${item.title || 'Products'}`.toUpperCase(),
+  //                 isTest: true,
+  //               }),
+  //             {
+  //               marginHorizontal: 4,
+  //               marginTop: 16,
+  //               marginBottom: 20,
+  //               ...(index == 0 ? { marginLeft: 20 } : {}),
+  //             }
+  //           );
+  //         }}
+  //       />
+  //     </View>
+  //   );
+  // };
 
   const renderPackageCard = (
     title: string,
@@ -1104,6 +1266,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         })
         .then(({ data }) => {
           setLoadingContext!(false);
+          aphConsole.log('searchDiagnostics\n', { data });
           const product = g(data, 'searchDiagnosticsById', 'diagnostics', '0' as any);
           if (product) {
             func && func(product);
@@ -1114,8 +1277,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
         .catch((e) => {
           CommonBugFender('Tests_fetchPackageDetails', e);
           setLoadingContext!(false);
+          aphConsole.log({ e });
           errorAlert();
         });
+      // .finally(() => {
+      //   setLoadingContext!(false);
+      // });
     }
   };
 
@@ -1124,6 +1291,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     getPackageData(id)
       .then(({ data }) => {
         setLoadingContext!(false);
+        console.log('getPackageData\n', { data });
         const product = g(data, 'data');
         if (product && product.length) {
           func && func(product);
@@ -1134,8 +1302,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
       .catch((e) => {
         CommonBugFender('Tests_fetchPackageInclusion', e);
         setLoadingContext!(false);
+        console.log('getPackageData Error\n', { e });
         errorAlert();
       });
+    // .finally(() => {
+    //   setLoadingContext!(false);
+    // });
   };
 
   const renderTestPackages = () => {
@@ -1205,6 +1377,55 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const preventiveTestCard = (name: string, price: number, style: ViewStyle) => {
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        style={[
+          {
+            ...theme.viewStyles.card(16, 4, 10, '#fff', 10),
+            paddingBottom: 12,
+          },
+          style,
+        ]}
+      >
+        <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22)}>{name}</Text>
+        <Spearator style={{ marginVertical: 7.5 }} />
+        <Text style={theme.viewStyles.text('B', 14, '#01475b', 1, 20)}>Rs. {price}</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderPreventiveTests = () => {
+    const preventiveTests = Array.from({
+      length: 10,
+    }).map((_) => ({
+      name: 'Blood Glucose Test',
+      price: 120,
+    }));
+
+    return (
+      <View>
+        <SectionHeader leftText={'SOME PREVENTIVE TESTS FOR YOU'} />
+        <FlatList
+          bounces={false}
+          keyExtractor={(_, index) => `${index}`}
+          showsHorizontalScrollIndicator={false}
+          horizontal
+          data={preventiveTests}
+          renderItem={({ item, index }) => {
+            return preventiveTestCard(item.name, item.price, {
+              marginHorizontal: 4,
+              marginTop: 16,
+              marginBottom: 20,
+              ...(index == 0 ? { marginLeft: 20 } : {}),
+            });
+          }}
+        />
+      </View>
+    );
+  };
+
   const renderTestsByOrgan = () => {
     const shopByOrgans = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticOrgans') ||
       []) as getDiagnosticsData_getDiagnosticsData_diagnosticOrgans[];
@@ -1247,6 +1468,21 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const renderNeedHelp = () => {
+    return (
+      <NeedHelpAssistant
+        navigation={props.navigation}
+        containerStyle={{
+          paddingBottom: 20,
+          paddingTop: 20,
+        }}
+        onNeedHelpPress={() => {
+          postWEGNeedHelpEvent(currentPatient, 'Tests');
+        }}
+      />
+    );
+  };
+
   const [searchText, setSearchText] = useState<string>('');
   const [medicineList, setMedicineList] = useState<
     searchDiagnostics_searchDiagnostics_diagnostics[]
@@ -1256,26 +1492,40 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const client = useApolloClient();
 
   const onSearchMedicine = (_searchText: string) => {
-    setsearchSate('load');
-    client
-      .query<searchDiagnostics, searchDiagnosticsVariables>({
-        query: SEARCH_DIAGNOSTICS,
-        variables: {
-          searchText: _searchText,
-          city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
-          patientId: (currentPatient && currentPatient.id) || '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
-        setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
-        setsearchSate('success');
-      })
-      .catch((e) => {
-        CommonBugFender('Tests_onSearchMedicine', e);
-        setsearchSate('fail');
-      });
+    if (isValidSearch(_searchText)) {
+      if (!g(locationForDiagnostics, 'cityId')) {
+        renderLocationNotServingPopup();
+        return;
+      }
+      setSearchText(_searchText);
+      if (!(_searchText && _searchText.length > 2)) {
+        setMedicineList([]);
+        console.log('onSearchMedicine');
+        return;
+      }
+      setsearchSate('load');
+      client
+        .query<searchDiagnostics, searchDiagnosticsVariables>({
+          query: SEARCH_DIAGNOSTICS,
+          variables: {
+            searchText: _searchText,
+            city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
+            patientId: (currentPatient && currentPatient.id) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          // aphConsole.log({ data });
+          const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
+          setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
+          setsearchSate('success');
+        })
+        .catch((e) => {
+          CommonBugFender('Tests_onSearchMedicine', e);
+          // aphConsole.log({ e });
+          setsearchSate('fail');
+        });
+    }
   };
 
   interface SuggestionType {
@@ -1342,6 +1592,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
               }}
               resizeMode="contain"
             />
+          ) : data.type == 'PACKAGE' ? (
+            <TestsIcon />
           ) : (
             <TestsIcon />
           )}
@@ -1366,6 +1618,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [scrollOffset, setScrollOffset] = useState<number>(0);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
     setScrollOffset(event.nativeEvent.contentOffset.y);
   };
 
@@ -1675,12 +1928,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
         style={{ flex: 1 }}
       >
         {renderBanner()}
+        {/* {uploadPrescriptionCTA()} */}
         {renderYourOrders()}
         <>
           {renderHotSellers()}
+          {/* {renderBrowseByCondition()} */}
           {renderTestPackages()}
           {renderTestsByOrgan()}
+          {/* {renderPreventiveTests()} */}
         </>
+        {/* {renderNeedHelp()} */}
       </TouchableOpacity>
     );
   };
@@ -1759,11 +2016,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 </View>
               </View>
             }
-            selectedProfile={currentPatient}
-          />
+            selectedProfile={profile}
+            unsetloaderDisplay={true}
+          ></ProfileList>
 
           <View style={[isSearchFocused ? { flex: 1 } : {}]}>
-            <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
+            <View
+              style={{
+                backgroundColor: 'white',
+              }}
+            >
+              {renderSearchBar()}
+            </View>
             {renderSearchBarAndSuggestions()}
           </View>
           <View style={[isSearchFocused && searchText.length > 2 ? { height: 0 } : {}]}>

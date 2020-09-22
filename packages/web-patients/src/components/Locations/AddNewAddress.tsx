@@ -9,12 +9,12 @@ import { PATIENT_ADDRESS_TYPE } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql/types/GetPatientAddressList';
-import axios, { AxiosError, AxiosPromise, AxiosResponse } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -273,9 +273,11 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   // ------------------------------------------------
   useEffect(() => {
     if (pincode && pincode.length === 6) {
+      const pincodeAndAddress = [pincode, address1].filter((v) => (v || '').trim()).join(',');
+
       axios
         .get(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
+          `https://maps.googleapis.com/maps/api/geocode/json?address=pincode:${pincodeAndAddress}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
         )
         .then(({ data }) => {
           if (data && data.results.length === 0) {
@@ -485,6 +487,15 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       label: 'Address Selected',
                     });
                     /**Gtm code End  */
+
+                    /**Gtm code start start */
+                    dataLayerTracking({
+                      event: 'Address Selected',
+                      PINCode: pincode,
+                      City: city,
+                    });
+                    /**Gtm code start end */
+
                     props.setIsAddAddressDialogOpen(false);
                     props.forceRefresh && props.forceRefresh(true);
                     props.setDeliveryTime && props.setDeliveryTime('');
@@ -532,6 +543,15 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                                 label: 'Address Selected',
                               });
                               /**Gtm code End  */
+
+                              /**Gtm code start start */
+                              dataLayerTracking({
+                                event: 'Address Selected',
+                                PINCode: pincode,
+                                City: city,
+                              });
+                              /**Gtm code start end */
+
                               props.setIsAddAddressDialogOpen(false);
                               props.forceRefresh && props.forceRefresh(true);
                               props.setDeliveryTime && props.setDeliveryTime('');

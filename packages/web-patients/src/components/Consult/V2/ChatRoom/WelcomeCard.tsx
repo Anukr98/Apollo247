@@ -53,6 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface WelcomeCardProps {
   doctorName: string;
+  chatDays: number;
 }
 
 export const WelcomeCard: React.FC<WelcomeCardProps> = (props) => {
@@ -66,9 +67,13 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = (props) => {
         Let’s get you feeling better by following simple steps :)
         <p>1. Answer some quick questions</p>
         <p>2. Please be present in this Consult Room at the time of consult</p>
-        <p>3. Connect with your doctor via on web Audio/Video call.</p>
+        <p>3. Connect with your doctor on web via Audio/Video call.</p>
         <p>4. Get a prescription and meds, if necessary</p>
-        <p>5. Follow up via text (validity 7 days)</p>
+        {props.chatDays > 0 && (
+          <p>
+            5. Follow up via text (validity {props.chatDays} day{props.chatDays > 0 ? 's' : ''})
+          </p>
+        )}
       </div>
       <div className={`${classes.blueBubble} ${classes.petient} `}>
         <p>

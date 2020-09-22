@@ -443,22 +443,23 @@ const getCouponByUserMobileNumber = () => {
   );
 };
 
-const isPastAppointment = (appointmentDateTime: string) =>
-  moment(appointmentDateTime)
-    .add(7, 'days')
-    .isBefore(moment());
+const isPastAppointment = (appointmentDateTime: string, followUpInDays: number = 7) => {
+  const appointmentDate = moment(appointmentDateTime).set({ hour: 0, minute: 0 }); // this been added because followupDays includes appointmentMent Completion date aswell and appointmentDateTime should be replace with completion date
+  const followUpDayMoment = appointmentDate.add(followUpInDays, 'days');
+  return followUpDayMoment.isBefore(moment());
+};
 
-const getAvailableFreeChatDays = (appointmentTime: string) => {
-  const appointmentDate = moment(appointmentTime);
-  const followUpDayMoment = appointmentDate.add(7, 'days');
-  let diffInDays = followUpDayMoment.diff(moment(), 'days'); // it will applicable if appointmentDate > followupDayMoment and diff shouldn't cross 7
-  if (appointmentDate < followUpDayMoment) {
-    // diff(moment(), 'days') gives 6 days x hours as 6days, to show it as 7 days adding +1
+const getAvailableFreeChatDays = (appointmentTime: string, followUpInDays: number = 7) => {
+  const appointmentDate = moment(appointmentTime).set({ hour: 0, minute: 0 }); // this been added because followupDays includes appointmentMent Completion date aswell and appointmentDateTime should be replace with completion date
+  const followUpDayMoment = appointmentDate.add(followUpInDays, 'days');
+  let diffInDays = followUpDayMoment.diff(moment(), 'days');
+  // below condition is added because diff of days will give xdays yhrs as xdays
+  if (moment() > moment(appointmentTime) && moment() < followUpDayMoment) {
     diffInDays += 1;
   }
   if (diffInDays === 0) {
-    const diffInHours = followUpDayMoment.diff(appointmentTime, 'hours');
-    const diffInMinutes = followUpDayMoment.diff(appointmentTime, 'minutes');
+    const diffInHours = followUpDayMoment.diff(moment(), 'hours');
+    const diffInMinutes = followUpDayMoment.diff(moment(), 'minutes');
     return diffInHours > 0
       ? `Valid for ${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'}`
       : diffInMinutes > 0

@@ -6,6 +6,7 @@ import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-au
 import { AllowLocation } from 'components/AllowLocation';
 import { useAuth } from 'hooks/authHooks';
 import { useLocationDetails } from 'components/LocationProvider';
+import { LazyIntersection } from './lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -431,7 +432,7 @@ export const LocationSearch: React.FC = (props) => {
               <img src={require('images/ic_cross_popup.svg')} alt="" />
             </div>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
+              <LazyIntersection src={require('images/ic-mascot.png')} alt="" />
             </div>
             <AllowLocation
               setIsLocationPopoverOpen={setIsLocationPopoverOpen}

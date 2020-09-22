@@ -35,6 +35,8 @@ import {
   ToogleOn,
   UserPlaceHolder,
   Video,
+  InfoGreen,
+  Dropdown,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { MaterialMenu, OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { SelectableButton } from '@aph/mobile-doctors/src/components/ui/SelectableButton';
@@ -103,6 +105,8 @@ import {
   TouchableOpacity,
   View,
   Keyboard,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -114,6 +118,14 @@ import {
 } from 'react-navigation';
 import { ReferralSelectPopup } from '@aph/mobile-doctors/src/components/ConsultRoom/ReferralSelectPopup';
 import firebase from 'react-native-firebase';
+import { isIphoneX } from 'react-native-iphone-x-helper';
+import { string } from '@aph/mobile-doctors/src/strings/string';
+import { AddMedicinePrescriptionPopUp } from '@aph/mobile-doctors/src/components/ui/AddMedicinePrescriptionPopUp';
+import {
+  postWebEngageEvent,
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 const { width } = Dimensions.get('window');
 
@@ -125,7 +137,7 @@ interface DataPair {
 export interface CaseSheetViewProps extends NavigationScreenProps {
   caseSheetVersion: number;
   inCall: boolean;
-  onStartConsult: () => void;
+  onStartConsult: (successCallback?: () => void) => void;
   onEndConsult: () => void;
   onStopConsult: () => void;
   startConsult: boolean;
@@ -204,12 +216,14 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   >;
   tests: {
     itemname: string;
+    testInstruction?: string;
     isSelected: boolean;
   }[];
   setTests: React.Dispatch<
     React.SetStateAction<
       {
         itemname: string;
+        testInstruction?: string;
         isSelected: boolean;
       }[]
     >
@@ -242,12 +256,8 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
       (GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription | null)[] | null
     >
   >;
-  switchValue: boolean | null;
-  setSwitchValue: React.Dispatch<React.SetStateAction<boolean | null>>;
-  followupDays: string | number | undefined;
-  setFollowupDays: React.Dispatch<React.SetStateAction<string | number | undefined>>;
-  followUpConsultationType: APPOINTMENT_TYPE | undefined;
-  setFollowUpConsultationType: React.Dispatch<React.SetStateAction<APPOINTMENT_TYPE | undefined>>;
+  followupChatDays: OptionsObject;
+  setFollowupChatDays: React.Dispatch<React.SetStateAction<OptionsObject>>;
   doctorNotes: string;
   setDoctorNotes: React.Dispatch<React.SetStateAction<string>>;
   displayId: string;
@@ -294,8 +304,6 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
 
   const [folloUpNotes, setFolloUpNotes] = useState<string>('');
 
-  const [ShowAddTestPopup, setShowAddTestPopup] = useState<boolean>(false);
-
   const { showAphAlert, setLoading, loading, hideAphAlert } = useUIElements();
   const { doctorDetails, specialties } = useAuth();
 
@@ -333,12 +341,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     setMedicinePrescriptionData,
     selectedMedicinesId,
     setSelectedMedicinesId,
-    switchValue,
-    setSwitchValue,
-    followupDays,
-    setFollowupDays,
-    followUpConsultationType,
-    setFollowUpConsultationType,
+    followupChatDays,
+    setFollowupChatDays,
     doctorNotes,
     setDoctorNotes,
     displayId,
@@ -359,7 +363,24 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     setRemovedMedicinePrescriptionData,
   } = props;
 
-  const sendToPatientAction = () => {
+  const basicAppointmentData = {
+    'Doctor name': g(doctorDetails, 'fullName') || '',
+    'Patient name': `${g(caseSheet, 'caseSheetDetails', 'patientDetails', 'firstName')} ${g(
+      caseSheet,
+      'caseSheetDetails',
+      'patientDetails',
+      'lastName'
+    )}`.trim(),
+    'Patient mobile number':
+      g(caseSheet, 'caseSheetDetails', 'patientDetails', 'mobileNumber') || '',
+    'Doctor Mobile number': g(doctorDetails, 'mobileNumber') || '',
+    'Appointment Date time':
+      g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || '',
+    'Appointment display ID': g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') || '',
+    'Appointment ID': AppId || g(caseSheet, 'caseSheetDetails', 'appointment', 'id') || '',
+  };
+
+  const sendToPatientAction = (callBack?: () => void) => {
     setLoading && setLoading(true);
     client
       .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
@@ -398,6 +419,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               },
               unDismissable: true,
             });
+          callBack && callBack();
         }
         firebase.analytics().logEvent('Doctor_send_prescription', {
           doctorName: doctorDetails ? doctorDetails.fullName : 'doctor',
@@ -434,20 +456,25 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const followUpMessage = (pdf?: string) => {
     const followupObj = {
       appointmentId: AppId,
-      folloupDateTime: followup
-        ? moment(
-            g(props.caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') ||
-              new Date()
-          )
-            .add(Number(followupDays), 'd')
-            .format('YYYY-MM-DD')
-        : '',
+      folloupDateTime: '',
       doctorId: g(props.caseSheet, 'caseSheetDetails', 'doctorId'),
       caseSheetId: g(props.caseSheet, 'caseSheetDetails', 'id'),
       doctorInfo: doctorDetails,
       pdfUrl: pdf || prescriptionPdf,
       isResend: pdf === undefined,
     };
+    postWebEngageEvent(
+      caseSheetVersion > 1
+        ? WebEngageEventName.DOCTOR_ISSUE_NEW_PRESCRIPTION
+        : pdf
+        ? WebEngageEventName.DOCTOR_SEND_PRESCRIPTION
+        : WebEngageEventName.DOCTOR_RESEND_PRESCRIPTION,
+      {
+        ...basicAppointmentData,
+        'Blob URL': pdf || prescriptionPdf,
+      } as WebEngageEvents[WebEngageEventName.DOCTOR_SEND_PRESCRIPTION]
+    );
+
     props.messagePublish &&
       props.messagePublish({
         id: followupObj.doctorId,
@@ -472,12 +499,13 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             )) ||
           [],
         removedMedicine: removedMedicinePrescriptionData,
-        tests: tests.filter((i) => i.isSelected).map((i) => ({ itemname: i.itemname })),
+        tests: tests
+          .filter((i) => i.isSelected)
+          .map((i) => ({ itemname: i.itemname, testInstruction: i.testInstruction })),
         advice: addedAdvices.map((i) => ({ instruction: i.value })),
         followUp: {
-          doFollowUp: switchValue,
-          followUpType: followUpConsultationType,
-          followUpDays: followupDays,
+          doFollowUp: followupChatDays.key > 0,
+          followUpDays: followupChatDays.key,
         },
         referralData: {
           referTo: selectedReferral.key !== '-1' ? selectedReferral.value.toString() : null,
@@ -489,9 +517,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           props.navigation.pop();
         },
         onSendPress: () => {
-          props.onStopConsult();
           setShowButtons(true);
-          saveDetails(true, undefined, sendToPatientAction);
+          saveDetails(true, undefined, () => {
+            sendToPatientAction(() => {
+              props.onStopConsult();
+            });
+          });
         },
       });
     }
@@ -573,8 +604,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   <Start style={{ right: 10, opacity: enableConsultButton ? 1 : 0.25 }} />
                 }
                 onPress={() => {
-                  setShowButtons(true);
-                  props.onStartConsult();
+                  props.onStartConsult(() => {
+                    setShowButtons(true);
+                  });
                 }}
               />
             </View>
@@ -873,7 +905,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     data: string,
     onChange: (text: string) => void,
     placeHolder?: string,
-    multiline?: boolean
+    multiline?: boolean,
+    placeholderTextColor?: string,
+    styles?: StyleProp<ViewStyle>
   ) => {
     return (
       <View>
@@ -881,15 +915,18 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           {heading}
         </Text>
         <View
-          style={{
-            minHeight: 44,
-            marginTop: 8,
-            marginBottom: 16,
-            backgroundColor: 'rgba(0, 0, 0, 0.03)',
-            borderWidth: 1,
-            borderRadius: 5,
-            borderColor: theme.colors.darkBlueColor(0.15),
-          }}
+          style={[
+            {
+              minHeight: 44,
+              marginTop: 8,
+              marginBottom: 16,
+              backgroundColor: 'rgba(0, 0, 0, 0.03)',
+              borderWidth: 1,
+              borderRadius: 5,
+              borderColor: theme.colors.darkBlueColor(0.15),
+            },
+            styles,
+          ]}
         >
           <TextInput
             style={{
@@ -904,7 +941,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             value={data}
             multiline={multiline}
             placeholder={placeHolder || ''}
-            placeholderTextColor={theme.colors.darkBlueColor(1)}
+            placeholderTextColor={placeholderTextColor || theme.colors.darkBlueColor(1)}
             textAlignVertical={multiline ? 'top' : undefined}
             selectionColor={theme.colors.INPUT_CURSOR_COLOR}
             onChange={(text) => onChange && caseSheetEdit && onChange(text.nativeEvent.text)}
@@ -1116,16 +1153,73 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-  const renderJuniorDoctorNotes = () => {
+  const renderNotes = () => {
     return (
       <View>
         <CollapseCard
-          heading={strings.case_sheet.jr_doctor_notes}
+          heading={strings.case_sheet.notes}
           collapse={juniorshow}
           onPress={() => setJuniorShow(!juniorshow)}
         >
-          <View style={styles.symptomsInputView}>
-            <Text style={[styles.symptomsText, { marginRight: 12 }]}>{juniordoctornotes}</Text>
+          <View style={styles.headerView}>
+            {renderHeaderText(strings.case_sheet.jrDoctorNotes)}
+          </View>
+          <View style={[styles.symptomsInputView, { borderRadius: 5 }]}>
+            <Text
+              style={[
+                styles.symptomsText,
+                { marginRight: 12, ...theme.fonts.IBMPlexSansRegular(14) },
+              ]}
+            >
+              {juniordoctornotes}
+            </Text>
+          </View>
+          <View style={{ marginHorizontal: 16 }}>
+            {renderFields(
+              strings.case_sheet.diagnosticTestResults,
+              (medicalHistory && medicalHistory.diagnosticTestResult) || '',
+              (text) => {
+                if (isValidSearch(text)) {
+                  setMedicalHistory({
+                    ...medicalHistory,
+                    diagnosticTestResult: text,
+                  } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
+                }
+              },
+              strings.case_sheet.typeDiagnosticTestResults,
+              true,
+              theme.colors.placeholderTextColor,
+              styles.activeBorderColor
+            )}
+            {renderFields(
+              strings.case_sheet.clinicalNotes,
+              (medicalHistory && medicalHistory.clinicalObservationNotes) || '',
+              (text) => {
+                if (isValidSearch(text)) {
+                  setMedicalHistory({
+                    ...medicalHistory,
+                    clinicalObservationNotes: text,
+                  } as GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patientMedicalHistory);
+                }
+              },
+              strings.case_sheet.typeClinicalNotes,
+              true,
+              theme.colors.placeholderTextColor,
+              styles.activeBorderColor
+            )}
+            {renderFields(
+              strings.case_sheet.personal_note,
+              doctorNotes,
+              (text) => {
+                if (isValidSearch(text)) {
+                  setDoctorNotes(text);
+                }
+              },
+              strings.case_sheet.typeYourNotes,
+              true,
+              theme.colors.placeholderTextColor,
+              styles.activeBorderColor
+            )}
           </View>
         </CollapseCard>
       </View>
@@ -1146,8 +1240,12 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               <View style={{ marginLeft: 20, marginRight: 20, marginBottom: 16 }}>
                 <DiagnosicsCard
                   diseaseName={item.itemname}
+                  subText={item.testInstruction}
                   containerStyle={{
                     backgroundColor: !item.isSelected ? theme.colors.WHITE : '#F9F9F9',
+                  }}
+                  onPress={() => {
+                    props.overlayDisplay(renderAddTestPopup(item));
                   }}
                   icon={
                     <TouchableOpacity
@@ -1160,6 +1258,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                             0,
                             {
                               itemname: item.itemname,
+                              testInstruction: item.testInstruction || '',
                               isSelected: !item.isSelected,
                             }
                           );
@@ -1208,12 +1307,23 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                                 setTests([
                                   ...tests.map((i) =>
                                     i.itemname === showdata.itemname
-                                      ? { itemname: i.itemname, isSelected: true }
+                                      ? {
+                                          itemname: i.itemname,
+                                          testInstruction: i.testInstruction || '',
+                                          isSelected: true,
+                                        }
                                       : i
                                   ),
                                 ]);
                               } else {
-                                setTests([...tests, { ...showdata, isSelected: true }]);
+                                setTests([
+                                  ...tests,
+                                  {
+                                    ...showdata,
+                                    testInstruction: '',
+                                    isSelected: true,
+                                  },
+                                ]);
                               }
                             }}
                           >
@@ -1229,7 +1339,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         {caseSheetEdit && (
           <AddIconLabel
             label={strings.buttons.add_tests}
-            onPress={() => setShowAddTestPopup(true)}
+            onPress={() => props.overlayDisplay(renderAddTestPopup())}
             style={{ marginBottom: 19, marginLeft: 16, marginTop: 0 }}
           />
         )}
@@ -1254,6 +1364,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         >
           {item.medicineName}
         </Text>
+        {item.includeGenericNameInPrescription && item.genericName ? (
+          <Text style={theme.viewStyles.text('S', 12, '#02475b', 1, undefined, 0.02)}>
+            {`Contains ${item.genericName}`}
+          </Text>
+        ) : null}
         {removedItem ? (
           <Text style={theme.viewStyles.text('S', 12, theme.colors.DARK_RED, 1, undefined, 0.02)}>
             {strings.case_sheet.med_remove}
@@ -1489,21 +1604,27 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                                           i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
                                         ) =>
                                           ((i || {}).externalId || (i || {}).id) !==
-                                          (data.externalId || data.id)
+                                          (data.externalId || data.medicineName)
                                       ) || []),
-                                      data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                                      {
+                                        ...data,
+                                        externalId: data.externalId || data.medicineName,
+                                      } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
                                     ]);
                                   } else {
                                     setMedicinePrescriptionData([
-                                      data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                                      {
+                                        ...data,
+                                        externalId: data.externalId || data.medicineName,
+                                      } as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
                                     ]);
                                   }
                                   setSelectedMedicinesId(
                                     [
                                       ...selectedMedicinesId.filter(
-                                        (i) => i !== (data.externalId || data.id)
+                                        (i) => i !== (data.externalId || data.medicineName)
                                       ),
-                                      data.externalId || data.id || '',
+                                      data.externalId || data.medicineName || '',
                                     ].filter((i) => i !== '')
                                   );
                                 }}
@@ -1524,50 +1645,134 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               )
             : null}
           {caseSheetEdit && (
-            <AddIconLabel
-              label={strings.smartPrescr.add_medicine}
-              onPress={() =>
-                props.overlayDisplay(
-                  <AddMedicinePopUp
-                    allowedDosages={g(caseSheet, 'allowedDosages')}
-                    onClose={() => props.overlayDisplay(null)}
-                    onAddnew={(data) => {
-                      if (
-                        (medicinePrescriptionData &&
-                          medicinePrescriptionData.findIndex(
-                            (
-                              i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
-                            ) => ((i || {}).externalId || (i || {}).id) === data.externalId
-                          ) < 0) ||
-                        medicinePrescriptionData === null ||
-                        medicinePrescriptionData === undefined
-                      ) {
-                        setMedicinePrescriptionData([
-                          ...(medicinePrescriptionData || []),
-                          data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
-                        ]);
-                        setSelectedMedicinesId(
-                          [
-                            ...selectedMedicinesId.filter((i) => i !== data.externalId || data.id),
-                            data.externalId || data.id || '',
-                          ].filter((i) => i !== '')
-                        );
-                      } else {
-                        Alert.alert('', strings.alerts.already_exists);
-                      }
-                    }}
-                  />
-                )
-              }
-              style={{ marginBottom: 0, marginTop: 5, marginLeft: 0 }}
-            />
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <AddIconLabel
+                label={strings.smartPrescr.add_medicine}
+                onPress={() =>
+                  props.overlayDisplay(
+                    <AddMedicinePopUp
+                      allowedDosages={g(caseSheet, 'allowedDosages')}
+                      onClose={() => props.overlayDisplay(null)}
+                      onAddnew={(data) => {
+                        if (
+                          (medicinePrescriptionData &&
+                            medicinePrescriptionData.findIndex(
+                              (
+                                i: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null
+                              ) => ((i || {}).externalId || (i || {}).id) === data.externalId
+                            ) < 0) ||
+                          medicinePrescriptionData === null ||
+                          medicinePrescriptionData === undefined
+                        ) {
+                          setMedicinePrescriptionData([
+                            ...(medicinePrescriptionData || []),
+                            data as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
+                          ]);
+                          setSelectedMedicinesId(
+                            [
+                              ...selectedMedicinesId.filter(
+                                (i) => i !== data.externalId || data.id
+                              ),
+                              data.externalId || data.id || '',
+                            ].filter((i) => i !== '')
+                          );
+                        } else {
+                          Alert.alert('', strings.alerts.already_exists);
+                        }
+                      }}
+                    />
+                  )
+                }
+                style={{ marginBottom: 0, marginTop: 5, marginLeft: 0 }}
+              />
+              {pastList && pastList.length > 0 ? (
+                <AddIconLabel
+                  label={'PREVIOUS Rx'}
+                  onPress={() => {
+                    props.overlayDisplay(
+                      <AddMedicinePrescriptionPopUp
+                        prescriptionData={pastList.sort(
+                          (a, b) =>
+                            moment(a ? a.sdConsultationDate || a.appointmentDateTime : new Date())
+                              .toDate()
+                              .getTime() -
+                            moment(b ? b.sdConsultationDate || b.appointmentDateTime : new Date())
+                              .toDate()
+                              .getTime()
+                        )}
+                        onClose={() => {
+                          props.overlayDisplay(null);
+                        }}
+                        onProceed={(medicineData) => {
+                          const tmpNewMedicine: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] = [];
+                          const tempSelectedId: string[] = [];
+                          const tempRemoveSelectedId: string[] = [];
+                          medicineData.forEach((data) => {
+                            if (data) {
+                              tmpNewMedicine.push(data);
+                              if (
+                                selectedMedicinesId.findIndex(
+                                  (i) => i === (data.externalId || data.id || '')
+                                ) > -1
+                              ) {
+                                tempSelectedId.push(data.externalId || data.id || '');
+                                tempRemoveSelectedId.push(data.externalId || data.id || '');
+                              } else {
+                                tempSelectedId.push(data.externalId || data.id || '');
+                              }
+                            }
+                          });
+                          setMedicinePrescriptionData([
+                            ...(medicinePrescriptionData
+                              ? medicinePrescriptionData.filter(
+                                  (item) =>
+                                    !tempRemoveSelectedId.includes(
+                                      (item || {}).externalId || (item || {}).id || ''
+                                    ) &&
+                                    !tempSelectedId.includes(
+                                      (item || {}).externalId || (item || {}).id || ''
+                                    )
+                                )
+                              : []),
+                            ...tmpNewMedicine,
+                          ]);
+                          setSelectedMedicinesId(
+                            [
+                              ...selectedMedicinesId.filter(
+                                (i) => !tempRemoveSelectedId.includes(i)
+                              ),
+                              ...tempSelectedId,
+                            ].filter((i) => i !== '')
+                          );
+                        }}
+                      />
+                    );
+                  }}
+                  style={{ marginBottom: 0, marginTop: 5, marginLeft: 0 }}
+                />
+              ) : null}
+            </View>
           )}
         </View>
       </CollapseCard>
     );
   };
 
-  //It will be used in future
+  const defaultChatDays = g(doctorDetails, 'chatDays');
+  const daysOptionArray: OptionsObject[] = Array(31)
+    .fill(0)
+    .map((_, i) => {
+      if (defaultChatDays && i < defaultChatDays) return { key: -1, value: -1 };
+      else return { key: i, value: i < 10 ? (i == 0 ? '0' : '0' + i.toString()) : i.toString() };
+    })
+    .filter((i) => i.key !== -1);
+
   const renderFollowUpView = () => {
     return (
       <View>
@@ -1576,222 +1781,44 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           collapse={followup}
           onPress={() => setFollowUp(!followup)}
         >
-          <View style={{ marginHorizontal: 16 }}>
-            {switchValue && (
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, '#02474b', 1, undefined, 0.02),
-                  marginRight: 20,
-                  marginBottom: 10,
-                }}
-              >
-                {strings.case_sheet.first_follow_up_descr}
-              </Text>
-            )}
-            <View
-              style={{
-                marginBottom: 20,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Text style={styles.medicineText}>
-                {strings.case_sheet.do_you_recommend_followup}
-              </Text>
-              {!switchValue ? (
-                <View>
-                  <TouchableOpacity onPress={() => caseSheetEdit && setSwitchValue(!switchValue)}>
-                    <View>
-                      <ToogleOff />
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <View>
-                  <TouchableOpacity onPress={() => caseSheetEdit && setSwitchValue(!switchValue)}>
-                    <View>
-                      <ToogleOn />
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-            {switchValue ? (
-              <View>
-                <View style={styles.medicineunderline}></View>
-                <View style={{ marginBottom: 20, marginRight: 25 }}>
-                  <Text style={[styles.medicineText, { marginBottom: 7 }]}>
-                    {strings.case_sheet.follow_up_after}
-                  </Text>
-                  <View style={{ flex: 1, justifyContent: 'center' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <TextInput
-                        autoCorrect={false}
-                        keyboardType={'number-pad'}
-                        multiline={false}
-                        maxLength={4}
-                        style={styles.inputSingleView}
-                        value={followupDays ? followupDays.toString() : ''}
-                        blurOnSubmit={false}
-                        // returnKeyType="send"
-                        onChangeText={(value) => {
-                          setFollowupDays(parseInt(value, 10) || '');
-                        }}
-                        editable={caseSheetEdit}
-                      />
-                      <Text
-                        style={{
-                          ...theme.viewStyles.text('M', 14, '#02475b', 1, undefined, 0.02),
-                          marginBottom: 7,
-                          marginLeft: 8,
-                        }}
-                      >
-                        {strings.common.days}
+          <View style={{ marginHorizontal: 16, marginBottom: 20 }}>
+            {renderHeaderText('Set your patient follow up chat days limit.')}
+            <View style={styles.rowContainer}>
+              <View style={{ width: '40%' }}>
+                <MaterialMenu
+                  options={daysOptionArray}
+                  selectedText={followupChatDays.key}
+                  onPress={(selectedOption) => {
+                    setFollowupChatDays(selectedOption);
+                  }}
+                  menuContainerStyle={styles.materialMenuContainer}
+                  itemContainer={styles.materialMenuItemContainer}
+                  itemTextStyle={styles.materialMenuItemText}
+                  selectedTextStyle={styles.materialMenuSelectedItemText}
+                  disable={!caseSheetEdit || caseSheetVersion > 1}
+                >
+                  <View style={styles.materialMenuViewContainer}>
+                    <View style={styles.materialMenuTextContainer}>
+                      <Text style={styles.materialMenuViewText}>
+                        {Number(followupChatDays.value) < 10 && Number(followupChatDays.value) > 0
+                          ? '0' + Number(followupChatDays.value).toString()
+                          : followupChatDays.value}
                       </Text>
+                      <View style={styles.materialMenuDropContainer}>
+                        <Dropdown />
+                      </View>
                     </View>
                   </View>
-                </View>
-                <TextInput
-                  placeholder={strings.common.add_instructions_here}
-                  style={[styles.inputView, { marginBottom: 18 }]}
-                  multiline={true}
-                  textAlignVertical={'top'}
-                  placeholderTextColor={theme.colors.placeholderTextColor}
-                  value={folloUpNotes}
-                  onChangeText={(value) => setFolloUpNotes(value)}
-                  autoCorrect={true}
-                  editable={caseSheetEdit}
-                />
-                {/* <View style={{ marginBottom: 20, zIndex: -1 }}>
-                  <Text
-                    style={{
-                      color: 'rgba(2, 71, 91, 0.6)',
-                      ...theme.fonts.IBMPlexSansMedium(14),
-                      marginBottom: 12,
-                    }}
-                  >
-                    Recommended Consult Type
-                  </Text>
-                  <View style={{ flexDirection: 'row' }}>
-                    <View>
-                      <SelectableButton
-                        containerStyle={{
-                          marginRight: 20,
-                          borderColor: '#00b38e',
-                          borderWidth: 1,
-                          minWidth: '40%',
-                          borderRadius: 5,
-                        }}
-                        onChange={() => {
-                          setConsultationPayType('PAID');
-                        }}
-                        title="Paid"
-                        isChecked={consultationPayType == 'PAID'}
-                      />
-                    </View>
-                    <View>
-                      <SelectableButton
-                        containerStyle={{
-                          marginRight: 20,
-                          borderColor: '#00b38e',
-                          borderWidth: 1,
-                          minWidth: '40%',
-                          borderRadius: 5,
-                        }}
-                        onChange={() => {
-                          setConsultationPayType('FREE');
-                        }}
-                        title="Free"
-                        isChecked={consultationPayType == 'FREE'}
-                      />
-                    </View>
-                  </View>
-                </View> */}
-                <View style={{ borderColor: '#00b38e', marginBottom: 12, zIndex: -1 }}>
-                  <Text
-                    style={{
-                      color: 'rgba(2, 71, 91, 0.6)',
-                      ...theme.fonts.IBMPlexSansMedium(14),
-                      marginBottom: 12,
-                    }}
-                  >
-                    {strings.case_sheet.recommend_consult_type}
-                  </Text>
-                  <View style={{ flexDirection: 'row' }}>
-                    <View>
-                      <SelectableButton
-                        containerStyle={{
-                          marginRight: 20,
-                          borderColor: '#00b38e',
-                          borderWidth: 1,
-                          minWidth: '40%',
-                          borderRadius: 5,
-                        }}
-                        onChange={() => {
-                          if (followUpConsultationType === APPOINTMENT_TYPE.ONLINE) {
-                            setFollowUpConsultationType(undefined);
-                          } else if (followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL) {
-                            setFollowUpConsultationType(APPOINTMENT_TYPE.BOTH);
-                          } else if (followUpConsultationType === APPOINTMENT_TYPE.BOTH) {
-                            setFollowUpConsultationType(APPOINTMENT_TYPE.PHYSICAL);
-                          } else {
-                            setFollowUpConsultationType(APPOINTMENT_TYPE.ONLINE);
-                          }
-                        }}
-                        title={strings.case_sheet.online}
-                        isChecked={
-                          followUpConsultationType === APPOINTMENT_TYPE.ONLINE ||
-                          followUpConsultationType === APPOINTMENT_TYPE.BOTH
-                        }
-                        icon={
-                          followUpConsultationType === APPOINTMENT_TYPE.ONLINE ||
-                          followUpConsultationType === APPOINTMENT_TYPE.BOTH ? (
-                            <PhysicalIcon />
-                          ) : (
-                            <GreenOnline />
-                          )
-                        }
-                      />
-                    </View>
-                    <View>
-                      <SelectableButton
-                        containerStyle={{
-                          marginRight: 20,
-                          borderColor: '#00b38e',
-                          borderWidth: 1,
-                          minWidth: '40%',
-                          borderRadius: 5,
-                        }}
-                        onChange={() => {
-                          if (followUpConsultationType === APPOINTMENT_TYPE.ONLINE) {
-                            setFollowUpConsultationType(APPOINTMENT_TYPE.BOTH);
-                          } else if (followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL) {
-                            setFollowUpConsultationType(undefined);
-                          } else if (followUpConsultationType === APPOINTMENT_TYPE.BOTH) {
-                            setFollowUpConsultationType(APPOINTMENT_TYPE.ONLINE);
-                          } else {
-                            setFollowUpConsultationType(APPOINTMENT_TYPE.PHYSICAL);
-                          }
-                        }}
-                        title={strings.case_sheet.in_person}
-                        isChecked={
-                          followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL ||
-                          followUpConsultationType === APPOINTMENT_TYPE.BOTH
-                        }
-                        icon={
-                          followUpConsultationType === APPOINTMENT_TYPE.PHYSICAL ||
-                          followUpConsultationType === APPOINTMENT_TYPE.BOTH ? (
-                            <InpersonWhiteIcon />
-                          ) : (
-                            <InpersonIcon />
-                          )
-                        }
-                      />
-                    </View>
-                  </View>
-                </View>
+                </MaterialMenu>
               </View>
-            ) : null}
+              {renderInfoText(followupChatDays.key == 1 ? 'Day' : 'Days')}
+            </View>
+            <View style={styles.rowContainer}>
+              <InfoGreen />
+              <Text style={styles.infoTextStyle}>
+                {string.case_sheet.followup_instruction.replace('{0}', defaultChatDays)}
+              </Text>
+            </View>
           </View>
         </CollapseCard>
       </View>
@@ -1935,75 +1962,76 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
   const renderPastConsults = () => {
     return (
       <View>
-        {pastList &&
-          pastList.map((i, index, array) => {
-            if (i)
-              return (
-                <>
-                  <View
-                    style={{
-                      flex: 1,
-                      flexDirection: 'row',
-                      // justifyContent: 'center',
-                      // alignItems: 'center',
-                    }}
-                  >
-                    {renderLeftTimeLineView(index !== 0, index !== array.length - 1)}
-                    <TouchableOpacity
-                      activeOpacity={1}
+        {pastList && pastList.length > 0
+          ? pastList.map((i, index, array) => {
+              if (i)
+                return (
+                  <>
+                    <View
                       style={{
-                        borderWidth: 1,
-                        borderColor: theme.colors.darkBlueColor(0.2),
-                        flexDirection: 'row',
-                        borderRadius: 10,
-                        backgroundColor: theme.colors.WHITE,
-                        height: 50,
-                        alignItems: 'center',
-                        paddingRight: 10,
-                        paddingLeft: 18,
-                        marginVertical: 4.5,
-                        marginRight: 20,
                         flex: 1,
-                        justifyContent: 'space-between',
-                      }}
-                      onPress={() => {
-                        if (!inCall) {
-                          props.navigation.navigate(AppRoutes.CaseSheetDetails, {
-                            consultDetails: i,
-                            patientDetails: props.patientDetails,
-                          });
-                        } else {
-                          showAphAlert &&
-                            showAphAlert({
-                              title: strings.common.alert,
-                              description: strings.alerts.disable_Casesheet_view,
-                            });
-                        }
+                        flexDirection: 'row',
+                        // justifyContent: 'center',
+                        // alignItems: 'center',
                       }}
                     >
-                      <Text
-                        style={theme.viewStyles.text(
-                          'M',
-                          12,
-                          theme.colors.darkBlueColor(0.6),
-                          1,
-                          12
-                        )}
+                      {renderLeftTimeLineView(index !== 0, index !== array.length - 1)}
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        style={{
+                          borderWidth: 1,
+                          borderColor: theme.colors.darkBlueColor(0.2),
+                          flexDirection: 'row',
+                          borderRadius: 10,
+                          backgroundColor: theme.colors.WHITE,
+                          height: 50,
+                          alignItems: 'center',
+                          paddingRight: 10,
+                          paddingLeft: 18,
+                          marginVertical: 4.5,
+                          marginRight: 20,
+                          flex: 1,
+                          justifyContent: 'space-between',
+                        }}
+                        onPress={() => {
+                          if (!inCall) {
+                            props.navigation.navigate(AppRoutes.CaseSheetDetails, {
+                              consultDetails: i,
+                              patientDetails: props.patientDetails,
+                            });
+                          } else {
+                            showAphAlert &&
+                              showAphAlert({
+                                title: strings.common.alert,
+                                description: strings.alerts.disable_Casesheet_view,
+                              });
+                          }
+                        }}
                       >
-                        {moment(i.sdConsultationDate || i.appointmentDateTime).format(
-                          'D MMM YYYY, HH:MM A'
-                        )}
-                      </Text>
-                      <View style={{ flexDirection: 'row' }}>
-                        <View style={{ marginRight: 24 }}>
-                          {i.appointmentType === APPOINTMENT_TYPE.ONLINE ? <Video /> : <Audio />}
+                        <Text
+                          style={theme.viewStyles.text(
+                            'M',
+                            12,
+                            theme.colors.darkBlueColor(0.6),
+                            1,
+                            12
+                          )}
+                        >
+                          {moment(i.sdConsultationDate || i.appointmentDateTime).format(
+                            'D MMM YYYY, HH:MM A'
+                          )}
+                        </Text>
+                        <View style={{ flexDirection: 'row' }}>
+                          <View style={{ marginRight: 24 }}>
+                            {i.appointmentType === APPOINTMENT_TYPE.ONLINE ? <Video /> : <Audio />}
+                          </View>
                         </View>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                </>
-              );
-          })}
+                      </TouchableOpacity>
+                    </View>
+                  </>
+                );
+            })
+          : renderInfoText('There are no past appointments.')}
       </View>
     );
   };
@@ -2118,7 +2146,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           collapse={patientHealthWallet}
           onPress={() => setPatientHealthWallet(!patientHealthWallet)}
         >
-          <View style={{ marginHorizontal: 16 }}>
+          <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
             {renderHeaderText(strings.case_sheet.photos_uploaded_by_patient)}
             {patientImages.length > 0
               ? renderRecordImages(patientImages, true)
@@ -2484,30 +2512,44 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     );
   };
 
-  const renderAddTestPopup = () => {
+  const renderAddTestPopup = (selectedTest?: {
+    itemname: string;
+    testInstruction?: string;
+    isSelected: boolean;
+  }) => {
     return (
       <AddTestPopup
-        // searchTestVal={searchTestVal}
+        searchTestVal={selectedTest ? selectedTest.itemname : undefined}
+        instructionVal={selectedTest ? selectedTest.testInstruction : undefined}
         onClose={() => {
-          setShowAddTestPopup(false);
+          props.overlayDisplay(null);
         }}
-        onPressDone={(searchTestVal, tempTestArray) => {
-          const tempTest = tests;
+        onPressDone={(searchTestVal, tempTestArray, instruction) => {
+          const tempTest = tests.filter((i) =>
+            selectedTest ? i.itemname !== selectedTest.itemname : true
+          );
           const newData = tempTestArray.length
             ? tempTestArray.map((ele) => {
-                const existingElement = tests.findIndex((i) => i.itemname === ele.itemName);
+                const existingElement = tempTest.findIndex(
+                  (i) => i.itemname.toLowerCase() === ele.itemName.toLowerCase()
+                );
                 if (existingElement > -1) {
                   tempTest[existingElement].isSelected = true;
-                  return { itemname: '', isSelected: false };
+                  tempTest[existingElement].testInstruction = instruction;
+                  return { itemname: '', testInstruction: instruction || '', isSelected: false };
                 } else {
-                  return { itemname: ele.itemName || '', isSelected: true };
+                  return {
+                    itemname: ele.itemName || '',
+                    testInstruction: instruction || '',
+                    isSelected: true,
+                  };
                 }
               })
-            : [{ itemname: searchTestVal, isSelected: true }];
-
+            : [{ itemname: searchTestVal, testInstruction: instruction || '', isSelected: true }];
           setTests([...tempTest, ...newData.filter((i) => i.itemname !== '')]);
-          setShowAddTestPopup(!ShowAddTestPopup);
+          props.overlayDisplay(null);
         }}
+        hasInstructions={true}
       />
     );
   };
@@ -2595,7 +2637,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             source={{
               uri: (patientDetails && patientDetails.photoUrl) || '',
             }}
-            style={{ height: width, width: width }}
+            style={{ height: width, width: width, backgroundColor: theme.colors.WHITE }}
             resizeMode={'contain'}
             placeholderStyle={{
               height: width,
@@ -2604,7 +2646,14 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               backgroundColor: 'transparent',
             }}
             PlaceholderContent={
-              loading ? <></> : <Spinner style={{ backgroundColor: 'transparent' }} />
+              loading ? (
+                <></>
+              ) : (
+                <Spinner
+                  style={{ backgroundColor: 'transparent' }}
+                  message={strings.common.imageLoading}
+                />
+              )
             }
           />
         ) : (
@@ -2629,7 +2678,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     if (specialties) {
       setSpecialtiesData([
         ...specialties.map((i) => {
-          return { key: i.id, value: i.name };
+          return { key: i.id, value: i.specialistSingularTerm || i.name };
         }),
       ]);
     }
@@ -2695,52 +2744,28 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
           enableOnAndroid={true}
           enableAutomaticScroll={true}
           style={{ flex: 1 }}
-          extraHeight={Platform.OS === 'android' ? 20 : 60}
-          extraScrollHeight={Platform.OS === 'android' ? 20 : 120}
+          extraHeight={Platform.OS === 'android' ? 20 : isIphoneX() ? 200 : 160}
           bounces={false}
         >
-          <ScrollView bounces={false} style={{ zIndex: 1 }}>
-            <View style={{ height: 20, backgroundColor: '#f0f4f5' }}></View>
+          <ScrollView
+            bounces={false}
+            contentContainerStyle={{ marginBottom: keyBoardVisible ? 0 : 80 }}
+          >
+            <View style={{ height: 20, backgroundColor: '#f0f4f5' }} />
             {renderPatientImage()}
             {renderBasicProfileDetails(displayId, Appintmentdatetimeconsultpage)}
             {renderSymptonsView()}
             {renderVitals()}
             {renderPatientHistoryLifestyle()}
             {renderPatientHealthWallet()}
-            {renderJuniorDoctorNotes()}
+            {renderNotes()}
             {renderDiagnosisView()}
             {renderMedicinePrescription()}
             {renderDiagonisticPrescription()}
+            {renderFollowUpView()}
             {renderAdviceInstruction()}
-            {/* {renderFollowUpView()} */}
             {renderReferral()}
-
-            <View style={{ zIndex: -1 }}>
-              {/* {renderOtherInstructionsView()} */}
-              <View style={styles.underlineend} />
-
-              <View style={styles.inputBorderView}>
-                <View style={{ margin: 16 }}>
-                  <Text style={styles.notes}>{strings.case_sheet.personal_note}</Text>
-                  <TextInput
-                    placeholder={strings.case_sheet.note_placeholder}
-                    textAlignVertical={'top'}
-                    placeholderTextColor={theme.colors.placeholderTextColor}
-                    style={styles.inputView}
-                    multiline={true}
-                    value={doctorNotes}
-                    onChangeText={(value) => caseSheetEdit && setDoctorNotes(value)}
-                    autoCorrect={true}
-                    editable={caseSheetEdit}
-                  />
-                </View>
-              </View>
-            </View>
-
             {showPopUp && CallPopUp()}
-            {ShowAddTestPopup && renderAddTestPopup()}
-
-            <View style={{ height: 80 }} />
           </ScrollView>
         </KeyboardAwareScrollView>
         {!keyBoardVisible

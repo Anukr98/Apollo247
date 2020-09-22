@@ -11,6 +11,7 @@ import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response as HospitalizationType } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
+import { MedicalRecordType } from '../../graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -443,8 +444,9 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
                   <MedicalCard
                     deleteReport={deleteReport}
                     name={combinedData.doctorName ? `Dr. ${combinedData.doctorName}` : '-'}
-                    source={combinedData.hospitalName || '-'}
-                    type={'Hospitalization'}
+                    source={combinedData.source || '-'}
+                    hospitalName={combinedData.hospitalName || '-'}
+                    recordType={MedicalRecordType.HOSPITALIZATION}
                     id={`Hospitalization-${combinedData.id}`}
                     isActiveCard={activeData && activeData.id === combinedData.id}
                   />

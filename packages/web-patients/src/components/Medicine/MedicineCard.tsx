@@ -16,6 +16,7 @@ import { NotifyMeNotification } from './NotifyMeNotification';
 import { useParams } from 'hooks/routerHooks';
 import _replace from 'lodash/replace';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { LazyIntersection } from '../lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -271,7 +272,10 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                 >
                   <div className={classes.pdHeader}>
                     <div className={classes.bigAvatar}>
-                      <img src={`${apiDetails.imageUrl}${product.thumbnail}`} alt="" />
+                      <LazyIntersection
+                        src={`${apiDetails.imageUrl}${product.thumbnail}`}
+                        alt={`Buy ${product.name} Online`}
+                      />
                     </div>
                     <div className={classes.productName}>{product.name}</div>
                   </div>
@@ -284,8 +288,10 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                     )}
                   </div>
                   {!isInCart(product) &&
-                    (!product.is_in_stock && !currentPatient ? (
+                    (!product.is_in_stock && !currentPatient && !!product.sell_online ? (
                       <div className={classes.noStock}>Out Of Stock</div>
+                    ) : !product.sell_online ? (
+                      <div>NOT FOR SALE</div>
                     ) : (
                       <AphButton
                         className={classes.addToCartBtn}

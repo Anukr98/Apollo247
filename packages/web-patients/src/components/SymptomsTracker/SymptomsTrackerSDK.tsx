@@ -20,6 +20,8 @@ import moment from 'moment';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
+import { dataLayerTracking } from 'gtmTracking';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -277,6 +279,10 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down(375)]: {
         maxWidth: '190px',
       },
+      '& h1': {
+        fontSize: 13,
+        fontWeight: 500,
+      },
     },
   };
 });
@@ -340,6 +346,7 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
       window.location.reload();
     }
   }, [props.stopRedirect, isRedirect]);
+
   return (
     <Route
       render={({ history }) => {
@@ -362,6 +369,11 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
                   if (specialities.length > 0) {
                     const specialitiesEncoded = encodeURI(specialities.join(','));
                     localStorage.setItem('symptomTracker', specialitiesEncoded);
+                    /**Gtm code start start */
+                    dataLayerTracking({
+                      event: 'Show Doctors Clicked',
+                    });
+                    /**Gtm code start end */
                     setIsRedirect(true);
                     props.setDoctorPopOver(true);
                   }
@@ -377,7 +389,7 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
   );
 };
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
-export const SymptomsTrackerSDK: React.FC = () => {
+const SymptomsTrackerSDK: React.FC = () => {
   const classes = useStyles({});
   const { isSignedIn, isSigningIn } = useAuth();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
@@ -393,6 +405,19 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const [stopRedirect, setStopRedirect] = useState('continue');
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isRedirect, setIsRedirect] = useState<boolean>(false);
+  const [metaTagProps, setMetaTagProps] = useState(null);
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Track Symptoms Page',
+      pageLOB: 'Consultation',
+      pageType: 'Track Symptom',
+    });
+    /**Gtm code start end */
+  }, []);
 
   const getAge = (dob: string) =>
     moment()
@@ -404,6 +429,12 @@ export const SymptomsTrackerSDK: React.FC = () => {
   const convertUserGenderToLowercase = (gender: string) => gender.toLowerCase();
 
   useEffect(() => {
+    setMetaTagProps({
+      title: 'Symptoms Tracker - Track Symptoms of All Your Health Problem',
+      description:
+        'Symptoms Tracker is designed to help you understand what your health issues are and provide you with treatments for health problems, skin problems, digestive problems, gastric problems and more.',
+      canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+    });
     if (isSignedIn && currentPatient && currentPatient.dateOfBirth && currentPatient.gender) {
       setUserAge(currentPatient.dateOfBirth);
       setPatientGender(convertUserGenderToLowercase(currentPatient.gender));
@@ -473,8 +504,10 @@ export const SymptomsTrackerSDK: React.FC = () => {
       setLoggedOutUserDetailPopover(true);
     }
   }, []);
+
   return (
     <div className={classes.root}>
+      {metaTagProps && <MetaTagsComp {...metaTagProps} />}
       <Header />
       {
         <div className={classes.container}>
@@ -486,7 +519,9 @@ export const SymptomsTrackerSDK: React.FC = () => {
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
               </Link>
-              <span className={classes.symptomsText}>UNDERSTAND YOUR SYMPTOMS</span>
+              <span className={classes.symptomsText}>
+                <h1>UNDERSTAND YOUR SYMPTOMS</h1>
+              </span>
               {isSignedIn && (
                 <div className={classes.profileDropdownMobile}>
                   <div className={classes.labelFor}>For</div>
@@ -687,7 +722,7 @@ export const SymptomsTrackerSDK: React.FC = () => {
           </Popover>
         </div>
       }
-      {!isSignedIn && !isSigningIn  && (
+      {!isSignedIn && !isSigningIn && (
         <Popover
           open={loggedOutUserDetailPopover}
           anchorEl={anchorEl}
@@ -727,3 +762,5 @@ export const SymptomsTrackerSDK: React.FC = () => {
     </div>
   );
 };
+
+export default SymptomsTrackerSDK;

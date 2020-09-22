@@ -8,7 +8,7 @@ import { readableParam } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { specialtyClickTracking } from 'webEngageTracking';
-
+import { LazyIntersection } from './lib/LazyIntersection';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     topSpeciality: {},
@@ -477,6 +477,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
                       }
                     >
                       <Typography component="h3">{specialityDetails.specialtyName}</Typography>
+                      {/* <LazyIntersection src={specialityDetails.image} alt={`Online Doctor Consultation - ${specialityDetails.specialtyName}`} /> */}
                       <img
                         src={specialityDetails.image}
                         title={`Online Doctor Consultation - ${specialityDetails.specialtyName}`}
