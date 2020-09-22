@@ -609,6 +609,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 onPress: () => {
                   setSelectedReason(cancellationReasons!);
                   setOverlayDropdown(false);
+                  setComment('');
                 },
                 optionText: cancellationReasons,
               } as Option)
@@ -625,7 +626,11 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         ]}
       >
         {selectedReason == OTHER_REASON ? (
-          <TouchableOpacity onPress={() => setSelectedReason('Others (Please specify)')}>
+          <TouchableOpacity
+            onPress={() => {
+              resetReasonForCancelFields();
+            }}
+          >
             <BackArrow />
           </TouchableOpacity>
         ) : null}
@@ -721,6 +726,11 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         </View>
       )
     );
+  };
+
+  const resetReasonForCancelFields = () => {
+    setSelectedReason('');
+    setComment('');
   };
 
   const postAppointmentWEGEvents = (
