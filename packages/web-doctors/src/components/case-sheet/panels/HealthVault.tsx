@@ -353,9 +353,12 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 export const HealthVault: React.FC = () => {
   const classes = useStyles({});
   const ischild: boolean = false;
-  const { healthVault, appointmentDocuments, pastAppointments, patientDetails } = useContext(
+  const { appointmentInfo, healthVault, appointmentDocuments, pastAppointments, patientDetails } = useContext(
     CaseSheetContext
   );
+  const filteredPastAppointments = pastAppointments && pastAppointments.length >0 ? pastAppointments.filter(function(e: any) {
+    return e.appointmentDateTime !== appointmentInfo.appointmentDateTime;
+  }) : [];
   const client = useApolloClient();
   var prismIdList: any = [];
   const [prismImageList, setPrismImageList] = useState<any>([]);
@@ -562,7 +565,7 @@ export const HealthVault: React.FC = () => {
           <Typography component="h5" variant="h5">
             Past Consultations
           </Typography>
-          <PastAppointment data={pastAppointments} isChild={ischild} />
+          <PastAppointment data={filteredPastAppointments} isChild={ischild} />
         </Typography>
       </Typography>
     </ThemeProvider>
