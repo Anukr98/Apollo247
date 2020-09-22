@@ -66,7 +66,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const [isLoadingMore, setLoadingMore] = useState(false);
   const [showListView, setShowListView] = useState<boolean>(true);
   const [products, setProducts] = useState<MedicineProduct[]>(productsNavProp);
-  const [productsTotal, setProductsTotal] = useState<number>(0);
+  const [productsTotal, setProductsTotal] = useState<number>(productsNavProp.length);
   const [pageId, setPageId] = useState(1);
   const [pageTitle, setPageTitle] = useState(titleNavProp);
   const [sortBy, setSortBy] = useState<SortByOption | null>(sortByNavProp);
@@ -314,7 +314,9 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     // consider heading from API for search (OR) title from navigation prop for category based products
     const _pageTitle = (searchText && pageTitle) || titleNavProp || '';
     const _productsTotal =
-      categoryId && !searchText && productsTotal ? ` | ${productsTotal} Products` : '';
+      (categoryId || Number(categoryId) == 0) && !searchText && productsTotal
+        ? ` | ${productsTotal} Products`
+        : '';
 
     const pageTitleView = !!_pageTitle && (
       <Text style={styles.pageTitle}>
