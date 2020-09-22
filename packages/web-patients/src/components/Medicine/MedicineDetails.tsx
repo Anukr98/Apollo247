@@ -1,5 +1,8 @@
-import React, { useRef, useEffect } from 'react';
-import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
+import React, { useEffect } from 'react';
+import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+import { Tab, Tabs, Theme, Typography } from '@material-ui/core';
+import { Helmet } from 'react-helmet';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import Scrollbars from 'react-custom-scrollbars';
@@ -7,19 +10,17 @@ import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
 import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
-import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
-import { MedicinesCartContext } from 'components/MedicinesCartProvider';
-import { NavigationBottom } from 'components/NavigationBottom';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import { Alerts } from 'components/Alerts/Alerts';
 import { ManageProfile } from 'components/ManageProfile';
-import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
-import { SchemaMarkup } from 'SchemaMarkup';
 import { BottomLinks } from 'components/BottomLinks';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
-import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
+import { MedicinesCartContext, useShoppingCart } from 'components/MedicinesCartProvider';
+import { NavigationBottom } from 'components/NavigationBottom';
+import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
+import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { getPackOfMedicine, deepLinkUtil } from 'helpers/commonHelpers';
 import { useCurrentPatient } from 'hooks/authHooks';
 import stripHtml from 'string-strip-html';
 import {
@@ -27,15 +28,15 @@ import {
   pharmacyPdpOverviewTracking,
   pharmacyProductViewTracking,
 } from 'webEngageTracking';
-import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
-import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
 import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
+import { SchemaMarkup } from 'SchemaMarkup';
+
+import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
-import { getPackOfMedicine } from 'helpers/commonHelpers';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -603,8 +604,12 @@ const MedicineDetails: React.FC = (props) => {
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
   const [metaTagProps, setMetaTagProps] = React.useState(null);
   const [imageClick, setImageClick] = React.useState<boolean>(false);
+  const [isSkuVersion, setIsSkuVersion] = React.useState<boolean>(false);
   const { cartItems } = useShoppingCart();
   const { diagnosticsCartItems } = useDiagnosticsCart();
+  useEffect(() => {
+    deepLinkUtil(`MedicineDetail?${params.sku}`);
+  });
 
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
@@ -731,7 +736,7 @@ const MedicineDetails: React.FC = (props) => {
                 validThrough: '',
                 warranty: '',
                 priceValidUntil: '2020-12-31',
-                url: `https://www.apollo247.com/medicine/${sku}`,
+                url: `https://www.apollo247.com/medicine/${url_key}`,
               },
               category: {
                 '@type': 'Thing',
@@ -751,7 +756,7 @@ const MedicineDetails: React.FC = (props) => {
                 '@context': 'https://schema.org/',
                 '@type': 'Drug',
                 name,
-                mainEntityOfPage: `https://www.apollo247.com/medicine/${sku}`,
+                mainEntityOfPage: `https://www.apollo247.com/medicine/${url_key}`,
                 image: process.env.PHARMACY_MED_IMAGES_BASE_URL + image,
                 description,
                 activeIngredient: `${generic}-${Strengh}${Unit}`,
@@ -780,7 +785,7 @@ const MedicineDetails: React.FC = (props) => {
                 isProprietary: true,
                 prescriptionStatus:
                   is_prescription_required == 1 ? 'Available by prescription' : 'over-the-counter',
-                url: `https://www.apollo247.com/medicine/${sku}`,
+                url: `https://www.apollo247.com/medicine/${url_key}`,
               });
             }
             /**schema markup End */
@@ -859,7 +864,7 @@ const MedicineDetails: React.FC = (props) => {
                   typeof window !== 'undefined' &&
                   window.location &&
                   window.location.origin &&
-                  `${window.location.origin}/medicine/${params.sku}`,
+                  `${window.location.origin}/medicine/${url_key}`,
               });
           })
           .catch((e) => {
@@ -875,6 +880,9 @@ const MedicineDetails: React.FC = (props) => {
   const history = useHistory();
 
   useEffect(() => {
+    if (params.sku.match('[A-Z]{3}[0-9]{4}')) {
+      setIsSkuVersion(true);
+    }
     getMedicineDetails(params.sku);
   }, [params.sku]);
 
@@ -1102,7 +1110,12 @@ const MedicineDetails: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
+      <Helmet>
+        <link rel="alternate" href={`apollopatients://MedicineDetail?${params.sku}`} />
+        {isSkuVersion && <meta name="robots" content="noindex, nofollow" />}
+      </Helmet>
       <MetaTagsComp {...metaTagProps} />
+
       {productSchemaJSON && <SchemaMarkup structuredJSON={productSchemaJSON} />}
       {drugSchemaJSON && <SchemaMarkup structuredJSON={drugSchemaJSON} />}
       <MedicinesCartContext.Consumer>

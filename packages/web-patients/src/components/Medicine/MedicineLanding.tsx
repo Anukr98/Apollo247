@@ -40,6 +40,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { Route } from 'react-router-dom';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
+import { deepLinkUtil } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -530,6 +531,9 @@ const MedicineLanding: React.FC = (props: any) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
+  useEffect(() => {
+    deepLinkUtil(`Medicine`);
+  }, []);
 
   useEffect(() => {
     sessionStorage.removeItem('categoryClicked');
@@ -694,6 +698,7 @@ const MedicineLanding: React.FC = (props: any) => {
       "Online Medicine Order - Buy medicines online from Apollo Pharmacy Stores (India's largest pharmacy chain) and get the home delivery. All kinds on medicines, health products & equipments are available at our online medicine store.",
     canonicalLink:
       window && window.location && window.location.origin && `${window.location.origin}/medicines`,
+    deepLink: window.location.href,
   };
 
   const getOrderSubtitle = (order: medicineOrderDetailsType) => {
