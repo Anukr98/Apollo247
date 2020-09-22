@@ -451,7 +451,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [slugName, setSlugName] = useState<string>('');
   const [faqData, setFaqData] = useState<any>();
-  const [searchQuery, setSearchQuery] = useState({});
+  const [searchQuery, setSearchQuery] = useState<any>({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -683,9 +683,6 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     specialtySearchType:
       prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 ? 'NAME' : 'ID',
     pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
-    // consultMode: ConsultMode.BOTH,
-    // doctorType: [''],
-    // sort: '',
     searchText: filter.searchKeyword,
   };
 
@@ -802,9 +799,6 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     if (doctorData) {
       setLoading(true);
       let filterDoctorsData = doctorData;
-      // if (doctorType) {
-      //   filterDoctorsData = getFilteredDoctorList(filterDoctorsData);
-      // }
       if (isOnlineSelected || isPhysicalSelected) {
         filterDoctorsData = getConsultModeDoctorList(filterDoctorsData);
         if (filterDoctorsData.length > 0) {
@@ -916,25 +910,12 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                     <Grid container spacing={2}>
                       {filteredDoctorData[doctorType].map((doctor: DoctorDetails) => {
                         if (doctor && doctor.id) {
-                          // const nextAvailability = doctorsNextAvailability.find(
-                          //   (nextAvailabilitySlot) => nextAvailabilitySlot.doctorId === doctor.id
-                          // );
-
-                          // const availabiltyMode = doctorsAvailability.find(
-                          //   (availability) => availability.doctorId === doctor.id
-                          // );
-
-                          // const doctorAvailableMode =
-                          //   availabiltyMode && availabiltyMode.availableModes[0];
-
                           return (
                             <Grid key={doctor.id} item xs={12} sm={12} md={12} lg={6}>
                               {doctorType.toLowerCase() === 'apollo' ? (
                                 <InfoCardPartner
                                   doctorInfo={doctor}
                                   doctorType={doctorType}
-                                  // nextAvailability={nextAvailability}
-                                  // consultMode={doctorAvailableMode}
                                   specialityType={(faqData && faqData[0].title) || ''}
                                   specialtyId={specialtyId}
                                 />
@@ -942,8 +923,6 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                                 <InfoCard
                                   doctorInfo={doctor}
                                   doctorType={doctorType}
-                                  // nextAvailability={nextAvailability}
-                                  // consultMode={doctorAvailableMode}
                                   specialityType={(faqData && faqData[0].title) || ''}
                                   specialtyId={specialtyId}
                                 />

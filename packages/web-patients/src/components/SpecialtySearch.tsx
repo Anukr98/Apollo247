@@ -4,16 +4,12 @@ import { readableParam } from 'helpers/commonHelpers';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import {
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorsType,
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctorsNextAvailability as NextAvailability,
-} from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import { AphInput } from '@aph/web-ui-components';
 import _lowerCase from 'lodash/lowerCase';
 import { Cities } from './Cities';
 import { DoctorDetails } from 'components/Doctors/SpecialtyDetails';
 import { GetDoctorList_getDoctorList_specialties } from 'graphql/types/GetDoctorList';
+import _get from 'lodash/get';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -312,10 +308,8 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
                                   <div className={classes.doctorDetails}>
                                     <Typography component="h2">{doctor.displayName}</Typography>
                                     <Typography>
-                                      {doctor.specialistSingularTerm
-                                        ? doctor.specialistSingularTerm
-                                        : ''}{' '}
-                                      | {getDoctorAvailability(doctor.earliestSlotInMinutes)} |{' '}
+                                      {_get(doctor, 'specialistSingularTerm', '')} |{' '}
+                                      {getDoctorAvailability(doctor.earliestSlotInMinutes)} |{' '}
                                       {doctor.fee} | {doctor.doctorfacility}
                                     </Typography>
                                   </div>

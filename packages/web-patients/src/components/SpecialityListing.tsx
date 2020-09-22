@@ -633,7 +633,7 @@ const SpecialityListing: React.FC = (props) => {
   const [faqs, setFaqs] = useState<any | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [faqSchema, setFaqSchema] = useState(null);
-  const [searchQuery, setSearchQuery] = useState({});
+  const [searchQuery, setSearchQuery] = useState<any>({});
   const onePrimaryUser =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
