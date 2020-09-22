@@ -609,7 +609,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 onPress: () => {
                   setSelectedReason(cancellationReasons!);
                   setOverlayDropdown(false);
-                  setComment('');
                 },
                 optionText: cancellationReasons,
               } as Option)
