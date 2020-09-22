@@ -1,13 +1,14 @@
 import { ReSchedulePopUp } from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp';
 import { UploadPrescriprionPopup } from '@aph/mobile-doctors/src/components/Appointments/UploadPrescriprionPopup';
 import { useAudioVideo } from '@aph/mobile-doctors/src/components/Chat/AudioVideoCotext';
-import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
+import { getFavoutires } from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomAPICalls';
 import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
 import { ChatRoom } from '@aph/mobile-doctors/src/components/ConsultRoom/ChatRoom';
 import { ConsultRoomScreenStyles } from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen.styles';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { RateCall } from '@aph/mobile-doctors/src/components/ConsultRoom/RateCall';
 import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
 import { BottomButtons } from '@aph/mobile-doctors/src/components/ui/BottomButtons';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import {
   BackArrow,
   Call,
@@ -16,12 +17,12 @@ import {
   ConnectCall,
   DotIcon,
   Down,
+  Join,
+  JoinWhite,
+  Minimize,
   RoundCallIcon,
   RoundChatIcon,
   RoundVideoIcon,
-  Join,
-  Minimize,
-  JoinWhite,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { ImageZoom } from '@aph/mobile-doctors/src/components/ui/ImageZoom';
 import { OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
@@ -32,6 +33,7 @@ import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsCompone
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import {
+  CALL_DISCONNECT_NOTIFICATION,
   CANCEL_APPOINTMENT,
   CREATEAPPOINTMENTSESSION,
   CREATE_CASESHEET_FOR_SRD,
@@ -40,11 +42,10 @@ import {
   EXO_TEL_CALL,
   GET_CASESHEET,
   MODIFY_CASESHEET,
+  POST_WEB_ENGAGE,
+  SAVE_APPOINTMENT_CALL_FEEDBACK,
   SEND_CALL_NOTIFICATION,
   UPLOAD_CHAT_FILE,
-  POST_WEB_ENGAGE,
-  CALL_DISCONNECT_NOTIFICATION,
-  SAVE_APPOINTMENT_CALL_FEEDBACK,
 } from '@aph/mobile-doctors/src/graphql/profiles';
 import {
   cancelAppointment,
@@ -78,21 +79,23 @@ import {
   GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
+import { GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteAdviceList';
+import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
+import { GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteTestList';
 import {
-  APPOINTMENT_TYPE,
   APPT_CALL_TYPE,
   BOOKINGSOURCE,
+  CALL_FEEDBACK_RESPONSES_TYPES,
+  ConsultMode,
   DEVICETYPE,
+  DoctorType,
   DOCTOR_CALL_TYPE,
+  exotelInput,
   MEDICINE_FORM_TYPES,
   ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
-  exotelInput,
-  ConsultMode,
   WebEngageEvent,
-  CALL_FEEDBACK_RESPONSES_TYPES,
-  DoctorType,
   USER_STATUS,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
@@ -103,6 +106,18 @@ import {
   modifyCaseSheet,
   modifyCaseSheetVariables,
 } from '@aph/mobile-doctors/src/graphql/types/modifyCaseSheet';
+import {
+  postDoctorConsultEvent,
+  postDoctorConsultEventVariables,
+} from '@aph/mobile-doctors/src/graphql/types/postDoctorConsultEvent';
+import {
+  saveAppointmentCallFeedback,
+  saveAppointmentCallFeedbackVariables,
+} from '@aph/mobile-doctors/src/graphql/types/saveAppointmentCallFeedback';
+import {
+  sendCallDisconnectNotification,
+  sendCallDisconnectNotificationVariables,
+} from '@aph/mobile-doctors/src/graphql/types/sendCallDisconnectNotification';
 import {
   SendCallNotification,
   SendCallNotificationVariables,
@@ -122,6 +137,11 @@ import {
   permissionHandler,
 } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-doctors/src/helpers/mimeType';
+import {
+  postWebEngageEvent,
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -150,26 +170,6 @@ import KeepAwake from 'react-native-keep-awake';
 import { PERMISSIONS } from 'react-native-permissions';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
-import { isIphoneX } from 'react-native-iphone-x-helper';
-import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
-import {
-  postDoctorConsultEventVariables,
-  postDoctorConsultEvent,
-} from '@aph/mobile-doctors/src/graphql/types/postDoctorConsultEvent';
-import {
-  sendCallDisconnectNotification,
-  sendCallDisconnectNotificationVariables,
-} from '@aph/mobile-doctors/src/graphql/types/sendCallDisconnectNotification';
-import { RateCall } from '@aph/mobile-doctors/src/components/ConsultRoom/RateCall';
-import {
-  saveAppointmentCallFeedback,
-  saveAppointmentCallFeedbackVariables,
-} from '@aph/mobile-doctors/src/graphql/types/saveAppointmentCallFeedback';
-import {
-  postWebEngageEvent,
-  WebEngageEventName,
-  WebEngageEvents,
-} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 const { width } = Dimensions.get('window');
 // let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
@@ -279,17 +279,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     CANCEL_APPOINTMENT
   );
   const { doctorDetails, specialties, getSpecialties } = useAuth();
-  const {
-    favList,
-    // favListError,
-    // favlistLoading,
-    favMed,
-    // favMedLoading,
-    // favMedError,
-    favTest,
-    // favTestLoading,
-    // favTestError,
-  } = CaseSheetAPI();
+  const [favList, setFavList] = useState<
+    (GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList | null)[] | null
+  >(null);
+  const [favMed, setFavMed] = useState<
+    (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null
+  >(null);
+  const [favTest, setFavTest] = useState<
+    (GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList | null)[] | null
+  >(null);
 
   const {
     setOpenTokKeys,
@@ -306,6 +304,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
      */
     updateNumberOfParticipants(USER_STATUS.LEAVING);
     getSpecialties();
+    getFavoutires(client, setFavList, setFavMed, setFavTest);
     // callAbandonmentCall();
     console.log('PatientConsultTime', PatientConsultTime);
     console.log(caseSheetEdit, 'caseSheetEdit');
