@@ -209,9 +209,15 @@ const refreshDoctorDeepLinks: Resolver<
           ? DoctorType.DOCTOR_CONNECT
           : DoctorType.APOLLO;
       const newLink = await refreshLink(element, doctorType);
+
+      const linkDetails = newLink.split('/');
+      const shortId = linkDetails[linkDetails.length - 1];
+
       element.linkRefreshDate = newRefreshDate;
       element.deepLink = newLink;
       element.updatedDate = new Date();
+      element.shortId = shortId;
+
       await linkRepository.upsertDeepLink(element);
     }, delayInMilliSeconds); //in milliseconds
   });
