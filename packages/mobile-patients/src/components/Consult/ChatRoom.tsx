@@ -771,10 +771,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const updateNumberOfParticipants = async (status: USER_STATUS = USER_STATUS.ENTERING) => {
+    /**
+     * This relation is for patient and senior doctor only(not for JD)
+     */
     const res: any = await getParticipantsLiveStatus(client, channel, status);
     if (res?.data?.setAndGetNumberOfParticipants?.NUMBER_OF_PARTIPANTS) {
       const totalParticipants: number = res.data.setAndGetNumberOfParticipants.NUMBER_OF_PARTIPANTS;
       if (totalParticipants > 1) {
+        jrDoctorJoined.current = false;
         setDoctorJoined(true);
         setDoctorJoinedChat && setDoctorJoinedChat(true);
         setTimeout(() => {
@@ -1585,14 +1589,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         if (occupancyJrDoctor && occupancyJrDoctor.length >= 1) {
           jrDoctorJoined.current = true;
         }
-        if (occupancyDoctor && occupancyDoctor.length >= 1 && response.totalOccupancy >= 2) {
-          jrDoctorJoined.current = false;
-          setDoctorJoined(true);
-          setDoctorJoinedChat && setDoctorJoinedChat(true);
-          setTimeout(() => {
-            setDoctorJoined(false);
-          }, 10000);
-        }
+        updateNumberOfParticipants(USER_STATUS.ENTERING);
       })
       .catch((error) => {
         console.log(error);
