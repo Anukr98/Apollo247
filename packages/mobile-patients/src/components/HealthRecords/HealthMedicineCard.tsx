@@ -16,6 +16,7 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import { FILTER_TYPE } from '@aph/mobile-patients/src/components/HealthRecords/MedicalRecords';
+import _ from 'lodash';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -120,13 +121,20 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
     datalab?.labTestSource ||
     dataprescription?.source ||
     datahealthcheck?.source ||
-    datahospitalization?.hospitalName;
+    datahospitalization?.source ||
+    '';
 
   const reportName =
     dataprescription?.prescriptionName ||
     datalab?.labTestName ||
     healthCheckName ||
-    hospitalizationDoctorName;
+    hospitalizationDoctorName ||
+    '';
+
+  const reportSourceNonSelf =
+    datalab?.siteDisplayName || datahealthcheck?.source || datahospitalization?.hospitalName || '';
+
+  const reportSourceSelf = reportSource === '247self' || _.lowerCase(reportSource) === 'self';
 
   const getDateFormatted = () => {
     const date_text = (date_t: any) => {
@@ -199,15 +207,18 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
               </View>
               {reportSource ? (
                 <View style={{ flexDirection: 'row', paddingLeft: 2 }}>
-                  {datahospitalization?.source === '247self' ||
-                  datahospitalization?.source === 'self' ||
-                  reportSource === '247self' ||
-                  reportSource === 'self' ? (
+                  {reportSourceSelf ? (
                     <PHRSelfUploadIcon style={{ width: 16, height: 10.14, alignSelf: 'center' }} />
                   ) : (
                     <PHRHospitalIcon style={{ width: 14, height: 14, alignSelf: 'center' }} />
                   )}
-                  <Text style={styles.descriptionTextStyles}>{reportSource}</Text>
+                  <Text style={styles.descriptionTextStyles}>
+                    {datahospitalization && reportSourceNonSelf !== '-'
+                      ? reportSourceNonSelf
+                      : reportSourceSelf
+                      ? 'Self upload'
+                      : reportSourceNonSelf}
+                  </Text>
                 </View>
               ) : null}
             </View>

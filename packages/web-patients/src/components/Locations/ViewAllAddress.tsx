@@ -9,7 +9,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { GetPatientAddressList_getPatientAddressList_addressList as Address } from 'graphql/types/GetPatientAddressList';
 import axios, { AxiosError } from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -164,6 +164,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [currentSelectedAddress, setcurrentSelectedAddress] = React.useState(null);
   const addToCartRef = useRef(null);
 
   const disableSubmit = localDeliveryAddressId === '';
@@ -233,6 +234,7 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                   setLocalDeliveryAddressId(addressDetails.id);
                   setLocalZipCode(addressDetails.zipcode || '');
                   setIsLoading(false);
+                  setcurrentSelectedAddress(addressDetails);
                 });
               }
             } catch {
@@ -317,6 +319,15 @@ export const ViewAllAddress: React.FC<ViewAllAddressProps> = (props) => {
                       label: 'Address Selected',
                     });
                     /**Gtm code End  */
+
+                    /**Gtm code start start */
+                    dataLayerTracking({
+                      event: 'Address Selected',
+                      PINCode: currentSelectedAddress ? currentSelectedAddress.zipcode : null,
+                      City: currentSelectedAddress ? currentSelectedAddress.city : null,
+                    });
+                    /**Gtm code start end */
+
                     props.setIsViewAllAddressDialogOpen(false);
                     props.setDeliveryTime && props.setDeliveryTime('');
                     setDeliveryAddressId && setDeliveryAddressId(localDeliveryAddressId);

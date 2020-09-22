@@ -572,7 +572,7 @@ const SearchDoctorAndSpecialtyByName: Resolver<
   finalPossibleDoctors = earlyAvailableApolloPossibleDoctors
     .concat(earlyAvailableNonApolloPossibleDoctors)
     .concat(possibleDoctors);
-
+  client.close();
   // matchedDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
   // possibleDoctorsNextAvailability.sort(fieldCompare('availableInMinutes'));
 

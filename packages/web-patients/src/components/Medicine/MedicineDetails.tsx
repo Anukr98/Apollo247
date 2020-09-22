@@ -14,13 +14,14 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { Alerts } from 'components/Alerts/Alerts';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { BottomLinks } from 'components/BottomLinks';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useCurrentPatient } from 'hooks/authHooks';
+import stripHtml from 'string-strip-html';
 import {
   uploadPrescriptionTracking,
   pharmacyPdpOverviewTracking,
@@ -34,7 +35,7 @@ import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
-import { getPackOfMedicine, stripHtml } from 'helpers/commonHelpers';
+import { getPackOfMedicine } from 'helpers/commonHelpers';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -817,6 +818,34 @@ const MedicineDetails: React.FC = (props) => {
                 },
               });
             /**Gtm code End  */
+
+            /**Gtm code start start */
+            dataLayerTracking({
+              event: 'pageviewEvent',
+              pagePath: window.location.href,
+              pageName: 'Pharmacy Details Page',
+              pageLOB: 'Pharmacy',
+              pageType: 'Details Page',
+              productlist: JSON.stringify([
+                {
+                  item_name: name, // Name or ID is required.
+                  item_id: sku,
+                  price: special_price || price,
+                  item_brand: manufacturer,
+                  item_category: 'Pharmacy',
+                  item_category_2: type_id
+                    ? type_id.toLowerCase() === 'pharma'
+                      ? 'Drugs'
+                      : 'FMCG'
+                    : null,
+                  item_variant: 'Default',
+                  index: 1,
+                  quantity: mou,
+                },
+              ]),
+            });
+            /**Gtm code start end */
+
             data &&
               data.productdp &&
               data.productdp.length &&
@@ -903,7 +932,7 @@ const MedicineDetails: React.FC = (props) => {
         if (v.Caption === 'USES') {
           modifiedData.forEach((x) => {
             if (x.key === 'Overview') {
-              x.value = x.value.concat(stripHtml(v.CaptionDesc));
+              x.value = x.value.concat(stripHtml(v.CaptionDesc).result);
             }
           });
         } else if (v.Caption === 'SIDE EFFECTS') {
@@ -913,6 +942,7 @@ const MedicineDetails: React.FC = (props) => {
                 .join('<')
                 .split('&gt;')
                 .join('>')
+                .replace(/&amp;bull;/g, '-')
                 .replace(/(<([^>]+)>)/gi, '')
                 .replace(/&amp;amp;/g, '&')
                 .replace(/&amp;nbsp;/g, ' ')
@@ -926,9 +956,9 @@ const MedicineDetails: React.FC = (props) => {
           modifiedData.forEach((x) => {
             if (x.key === 'Usage') {
               if (v.Caption === 'HOW TO USE') {
-                x.value = `${stripHtml(v.CaptionDesc)}${x.value}`;
+                x.value = `${stripHtml(v.CaptionDesc).result}${x.value}`;
               } else {
-                x.value = `${x.value}${stripHtml(v.CaptionDesc)} `;
+                x.value = `${x.value}${stripHtml(v.CaptionDesc).result} `;
               }
             }
           });
@@ -949,6 +979,7 @@ const MedicineDetails: React.FC = (props) => {
                 .join('>')
                 .replace(/(<([^>]+)>)/gi, '')
                 .replace(/&amp;amp;/g, '&')
+                .replace(/&amp;bull;/g, '-')
                 .replace(/&amp;nbsp;/g, ' ')
                 .replace(/&amp;/g, '&')
                 .replace(/\.t/g, '.')}; \n
@@ -966,8 +997,10 @@ const MedicineDetails: React.FC = (props) => {
                 .replace(/&amp;amp;/g, '&')
                 .replace(/&amp;nbsp;/g, ' ')
                 .replace(/&amp;/g, '&')
+                .replace(/&bull;/g, '-')
                 .replace(/&lt;/g, '')
                 .replace(/&gt/g, '')
+                .replace(/bull;/g, '-')
                 .replace(/br \//g, '')
                 .replace(/&#039;/g, '')}`;
             }
@@ -975,7 +1008,7 @@ const MedicineDetails: React.FC = (props) => {
         } else if (v.Caption === 'STORAGE') {
           modifiedData.forEach((x) => {
             if (x.key === 'Storage') {
-              x.value = x.value.concat(stripHtml(v.CaptionDesc));
+              x.value = x.value.concat(stripHtml(v.CaptionDesc).result);
             }
           });
         }

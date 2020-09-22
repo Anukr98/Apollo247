@@ -193,16 +193,16 @@ const sendDailyAppointmentSummary: Resolver<
         textInRow(pdfDoc, 'Appointment', 94, 441);
         flag = 1;
       }
-      if (rowHeadx == 90) {
-        rowx += 16;
+      if (rowHeadx == 45) {
+        rowx = rowx;
       }
-      if (index == 0) {
-        rowHeadx += 10;
-      } else {
-        rowHeadx += 10;
-      }
-      rowHeadx += 20;
+      rowHeadx += 30;
       rowx += 30;
+      if (index % 21 == 0 && index > 0) {
+        pdfDoc.addPage();
+        rowHeadx = 45;
+        rowx = 52;
+      }
       writeRow(pdfDoc, rowHeadx);
       textInRow(pdfDoc, appointment.patientName, rowx, 30);
       textInRow(
@@ -423,13 +423,13 @@ const sendAppointmentSummaryOps: Resolver<
                 if (rowHeadx == 45) {
                   rowx += 23;
                 }
-                if (index % 3 == 0) {
-                  rowHeadx += 24;
-                } else {
-                  rowHeadx += 24;
+                rowHeadx += 38;
+                rowx += 38;
+                if (index % 25 == 0 && index > 0) {
+                  pdfDoc.addPage();
+                  rowHeadx = 42;
+                  rowx = 58;
                 }
-                rowHeadx += 14;
-                rowx += 37;
                 writeBigRow(pdfDoc, rowHeadx);
                 textInRow(pdfDoc, doctorDetails[0].displayName, rowx, 28);
                 textInRow(pdfDoc, docAppointment.patientName, rowx, 200);
