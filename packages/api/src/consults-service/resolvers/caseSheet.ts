@@ -46,7 +46,7 @@ import { PatientLifeStyleRepository } from 'profiles-service/repositories/patien
 import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/patientMedicalHistory';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { SymptomsList } from 'types/appointmentTypes';
-import { differenceInSeconds, addDays } from 'date-fns';
+import { differenceInSeconds } from 'date-fns';
 import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 import { sendNotification } from 'notifications-service/handlers';
 import { NotificationType } from 'notifications-service/constants';
@@ -887,21 +887,20 @@ const modifyCaseSheet: Resolver<
     }
 
     getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
-    // getCaseSheetData.followUp = true;
-
-    // if (getCaseSheetData.appointment.sdConsultationDate) {
-    //   getCaseSheetData.followUpDate = addDays(
-    //     getCaseSheetData.appointment.sdConsultationDate,
-    //     getCaseSheetData.followUpAfterInDays
-    //   );
-    // }
   }
 
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const getDoctorDetails = await doctorRepo.findDoctorByIdWithoutRelations(getCaseSheetData.appointment.doctorId);
+  const getDoctorDetails = await doctorRepo.findDoctorByIdWithoutRelations(
+    getCaseSheetData.appointment.doctorId
+  );
 
   // this check is necessary til doctor-app's new version is not released
-  if (!getCaseSheetData.followUpAfterInDays && (inputArguments.followUpAfterInDays === 0 || inputArguments.followUpAfterInDays === undefined || inputArguments.followUpAfterInDays === null)) {
+  if (
+    !getCaseSheetData.followUpAfterInDays &&
+    (inputArguments.followUpAfterInDays === 0 ||
+      inputArguments.followUpAfterInDays === undefined ||
+      inputArguments.followUpAfterInDays === null)
+  ) {
     getCaseSheetData.followUpAfterInDays = (getDoctorDetails && getDoctorDetails.chatDays) || 7;
   }
 
@@ -1039,9 +1038,11 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.updatedDate,
     getCaseSheetData.createdDate
   );
-  delete getCaseSheetData.status;
+
+  //delete getCaseSheetData.status;
+
   //medicalHistory upsert ends
-  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
+  const caseSheetAttrs: Omit<Partial<Omit<Partial<CaseSheet>, 'status'>>, 'id'> = getCaseSheetData;
   await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs, getCaseSheetData);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(getCaseSheetData.appointment.id);
@@ -1161,7 +1162,7 @@ const createJuniorDoctorCaseSheet: Resolver<
     reason: 'JD ' + ApiConstants.CASESHEET_CREATED_HISTORY.toString() + ', ' + doctorData.id,
   };
   appointmentRepo.saveAppointmentHistory(historyAttrs);
-  await delCache(lockKey);
+  //await delCache(lockKey);
   return caseSheetDetails;
 };
 

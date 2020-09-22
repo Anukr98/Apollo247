@@ -40,6 +40,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     return this.createQueryBuilder('case_sheet')
       .where('case_sheet.appointment = :appointmentId', { appointmentId })
       .andWhere('case_sheet.doctorType = :type', { type: DoctorType.JUNIOR })
+      .orderBy('case_sheet.createdDate', 'DESC')
       .getOne()
       .catch((error) => {
         throw new AphError(AphErrorMessages.GET_CASESHEET_ERROR, undefined, { error });
@@ -55,6 +56,17 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .andWhere('case_sheet.doctorType = :juniorDoctorType', { juniorDoctorType })
       .orderBy('case_sheet.createdDate', 'DESC')
       .getOne();
+  }
+
+  getJDMultipleCaseSheets(appointmentId: string) {
+    const juniorDoctorType = DoctorType.JUNIOR;
+    return this.createQueryBuilder('case_sheet')
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+      .leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')
+      .where('case_sheet.appointment = :appointmentId', { appointmentId })
+      .andWhere('case_sheet.doctorType = :juniorDoctorType', { juniorDoctorType })
+      .orderBy('case_sheet.createdDate', 'DESC')
+      .getMany();
   }
 
   getSeniorDoctorCaseSheet(appointmentId: string) {
@@ -110,12 +122,17 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
   }
 
   async updateJDCaseSheet(appointmentId: string) {
-    const JDCaseSheetDetails = await this.getJuniorDoctorCaseSheet(appointmentId);
-    if (!JDCaseSheetDetails) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined);
-    Object.assign(JDCaseSheetDetails, {
-      status: CASESHEET_STATUS.COMPLETED,
+    const JDCaseSheetDetails: CaseSheet[] = await this.getJDMultipleCaseSheets(appointmentId);
+    if (JDCaseSheetDetails.length == 0)
+      throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined);
+    JDCaseSheetDetails.forEach((item) => {
+      Object.assign(item, {
+        status: CASESHEET_STATUS.COMPLETED,
+      });
     });
-    return JDCaseSheetDetails.save().catch((appointmentError) => {
+
+    console.log('JDCaseSheetDetails::', JDCaseSheetDetails);
+    return this.save(JDCaseSheetDetails).catch((appointmentError) => {
       throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { appointmentError });
     });
   }
@@ -171,10 +188,20 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     const endDate = new Date(format(currentDate, 'yyyy-MM-dd') + 'T18:29');
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
-      .where(` appointment.sdConsultationDate + (CASE WHEN (case_sheet.followUpAfterInDays IS NOT NULL ) THEN case_sheet.followUpAfterInDays ELSE ${ApiConstants.FREE_CHAT_DAYS} END * ${ "'1 day'::INTERVAL"}) >= :startDate `, { startDate })
-      .andWhere(` appointment.sdConsultationDate + (CASE WHEN (case_sheet.followUpAfterInDays IS NOT NULL ) THEN case_sheet.followUpAfterInDays ELSE ${ApiConstants.FREE_CHAT_DAYS} END * ${ "'1 day'::INTERVAL"}) < :endDate `, { endDate })
+      .where(
+        ` appointment.sdConsultationDate + (CASE WHEN (case_sheet.followUpAfterInDays IS NOT NULL ) THEN case_sheet.followUpAfterInDays ELSE ${
+          ApiConstants.FREE_CHAT_DAYS
+        } END * ${"'1 day'::INTERVAL"}) >= :startDate `,
+        { startDate }
+      )
+      .andWhere(
+        ` appointment.sdConsultationDate + (CASE WHEN (case_sheet.followUpAfterInDays IS NOT NULL ) THEN case_sheet.followUpAfterInDays ELSE ${
+          ApiConstants.FREE_CHAT_DAYS
+        } END * ${"'1 day'::INTERVAL"}) < :endDate `,
+        { endDate }
+      )
       .andWhere(` appointment.status = :status`, { status: STATUS.COMPLETED })
-      .select("appointment.id")
+      .select('appointment.id')
       .groupBy('appointment.id')
       .getRawMany();
   }
