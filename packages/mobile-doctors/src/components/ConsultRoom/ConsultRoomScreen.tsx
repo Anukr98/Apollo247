@@ -96,6 +96,7 @@ import {
   REQUEST_ROLES,
   STATUS,
   WebEngageEvent,
+  USER_STATUS,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   initateConferenceTelephoneCall,
@@ -123,7 +124,10 @@ import {
 } from '@aph/mobile-doctors/src/graphql/types/SendCallNotification';
 import { uploadChatDocument } from '@aph/mobile-doctors/src/graphql/types/uploadChatDocument';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
-import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
+import {
+  getPrismUrls,
+  updateParticipantsLiveStatus,
+} from '@aph/mobile-doctors/src/helpers/clientCalls';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import {
   callPermissions,
@@ -295,6 +299,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     giveRating,
   } = useAudioVideo();
   useEffect(() => {
+    /**
+     * in case doctor kills app after start consult so default USER_STATUS shouldn't be ENTERING
+     */
+    updateNumberOfParticipants(USER_STATUS.LEAVING);
     getSpecialties();
     getFavoutires(client, setFavList, setFavMed, setFavTest);
     // callAbandonmentCall();
@@ -318,6 +326,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     });
 
     return () => {
+      updateNumberOfParticipants(USER_STATUS.LEAVING);
       sendDoctorLeavesEvent();
       postBackendWebEngage(WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW);
       didFocusSubscription && didFocusSubscription.remove();
@@ -2394,6 +2403,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       });
   };
 
+  const updateNumberOfParticipants = async (status: USER_STATUS) => {
+    await updateParticipantsLiveStatus(client, AppId, status);
+  };
+
   const onStartConsult = (successCallback?: () => void) => {
     getNetStatus().then((connected) => {
       postWebEngageEvent(WebEngageEventName.DOCTOR_START_CONSULT, {
@@ -2401,6 +2414,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       } as WebEngageEvents[WebEngageEventName.DOCTOR_START_CONSULT]);
       if (connected) {
         setShowLoading(true);
+        updateNumberOfParticipants(USER_STATUS.ENTERING);
         client
           .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
             mutation: CREATEAPPOINTMENTSESSION,
