@@ -698,14 +698,15 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
-        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)', {
-        status1: STATUS.CANCELLED,
-        status2: STATUS.PAYMENT_PENDING,
-        status3: STATUS.UNAVAILABLE_MEDMANTRA,
-        status4: STATUS.PAYMENT_FAILED,
-        status5: STATUS.PAYMENT_PENDING_PG,
-        status6: STATUS.PAYMENT_ABORTED,
-      }
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
       )
       .offset(offset)
       .limit(limit)
@@ -982,9 +983,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-          .getUTCMinutes()
-          .toString()
-          .padStart(2, '0')}:00.000Z`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
       if (availableSlots.indexOf(sl) >= 0) {
         consultFlag = CONSULTFLAG.INCONSULTHOURS;
       }
@@ -1137,9 +1138,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1490,9 +1491,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1549,11 +1550,10 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-                .getUTCMinutes()
-                .toString()
-                .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           }
-
 
           Array(blockedSlotsCount)
             .fill(0)
