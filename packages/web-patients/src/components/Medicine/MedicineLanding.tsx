@@ -761,9 +761,11 @@ const MedicineLanding: React.FC = (props: any) => {
                             Upload
                           </AphButton>
                         </div>
-                        <div className={classes.prescriptionIcon}>
-                          <img src={require('images/ic_prescription_pad.svg')} alt="" />
-                        </div>
+                        {!isAlternateVersion() && (
+                          <div className={classes.prescriptionIcon}>
+                            <img src={require('images/ic_prescription_pad.svg')} alt="" />
+                          </div>
+                        )}
                       </div>
                       <div className={classes.medicineReview}>
                         <p>
