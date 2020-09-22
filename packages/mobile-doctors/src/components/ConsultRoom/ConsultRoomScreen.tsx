@@ -301,6 +301,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     giveRating,
   } = useAudioVideo();
   useEffect(() => {
+    /**
+     * in case doctor kills app after start consult so default USER_STATUS shouldn't be ENTERING
+     */
+    updateNumberOfParticipants(USER_STATUS.LEAVING);
     getSpecialties();
     // callAbandonmentCall();
     console.log('PatientConsultTime', PatientConsultTime);
