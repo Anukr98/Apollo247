@@ -38,7 +38,7 @@ import {
 } from '../../graphql/types/getPatientAddressList';
 import { GET_PATIENT_ADDRESS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { g } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { g, formatAddress } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
   availabilityApi247,
@@ -200,6 +200,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       } else {
         setDeliveryAddressId && setDeliveryAddressId('');
         setloading(false);
+        postPhamracyCartAddressSelectedFailure(address.zipcode!, formatAddress(address), 'No');
+        renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
       }
     } catch (error) {
       console.log(error);
@@ -349,7 +351,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         categoryId: item.productType,
         mrp: item.price,
         quantity: item.quantity,
-        specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
+        specialPrice: item.specialPrice ? item.specialPrice : item.price,
       })),
     };
     try {

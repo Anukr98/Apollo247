@@ -1,5 +1,4 @@
 import {
-  useShoppingCart,
   ShoppingCartItem,
   ShoppingCartContextProps,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -9,8 +8,6 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { g, postWebEngageEvent } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import moment from 'moment';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { Item } from 'react-native-paper/lib/typescript/src/components/Drawer/Drawer';
 
 export function postwebEngageProceedToPayEvent(
   shoppingCart: ShoppingCartContextProps,
