@@ -302,7 +302,12 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderLoadingMore = () => {
-    return isLoadingMore ? <ActivityIndicator color="green" size="small" /> : null;
+    return isLoadingMore
+      ? [
+          <ActivityIndicator color="green" size="small" />,
+          <Text style={styles.loadingMoreProducts}>Hold on, loading more products.</Text>,
+        ]
+      : null;
   };
 
   const renderSections = () => {
@@ -395,6 +400,11 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     ...text('SB', 14, '#02475B'),
+  },
+  loadingMoreProducts: {
+    ...text('M', 14, '#02475B'),
+    padding: 12,
+    textAlign: 'center',
   },
   productsTotal: {
     ...text('R', 14, '#02475B'),
