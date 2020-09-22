@@ -63,6 +63,7 @@ import {
 } from 'webEngageTracking';
 import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
 import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
+import { AppointmentCompleteCardMessage } from 'components/Consult/V2/ChatRoom/AppointmentCompleteCardMessage';
 import { DoctorType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -943,6 +944,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const doctorDetail = props.doctorDetails && props.doctorDetails.getDoctorDetailsById;
 
   // console.log(currentPatient.id, '------------------------', appointmentDetails.doctorId);
+  // console.log(messages, 'messages are ...........');
 
   //AV states
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
@@ -2224,12 +2226,26 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     props.setIsConsultCompleted(
                       messageDetails.message === autoMessageStrings.appointmentComplete
                     );
-                    return messageDetails.message === '^^#startconsult' ? (
-                      <DoctorJoinedMessageCard
-                        doctorName={doctorDisplayName}
-                        messageDate={messageDetails.messageDate}
-                      />
-                    ) : null;
+
+                    console.log(messageDetails.message, '------------');
+
+                    if (messageDetails.message === autoMessageStrings.startConsultMsg) {
+                      return (
+                        <DoctorJoinedMessageCard
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                        />
+                      );
+                    } else if (messageDetails.message === autoMessageStrings.appointmentComplete) {
+                      return (
+                        <AppointmentCompleteCardMessage
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                        />
+                      );
+                    } else {
+                      return null;
+                    }
                   }
                   const duration = messageDetails.duration;
                   if (cardType === 'welcome') {
