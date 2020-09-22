@@ -34,7 +34,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { CarouselBanner } from 'components/Medicine/CarouselBanner';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { BottomLinks } from 'components/BottomLinks';
 import { Route } from 'react-router-dom';
@@ -238,6 +238,8 @@ const useStyles = makeStyles((theme: Theme) => {
     groupTitle: {
       fontSize: 16,
       paddingBottom: 16,
+      margin: 0,
+      fontWeight: 500,
     },
     marginNone: {
       marginBottom: 0,
@@ -278,6 +280,14 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 'bold',
         color: '#fc9916',
       },
+    },
+    sectionHeading: {
+      fontSize: 14,
+      color: '#02475b',
+      fontWeight: 'bold',
+      margin: 0,
+      padding: 0,
+      textTransform: 'uppercase',
     },
     bottomPopover: {
       overflow: 'initial',
@@ -481,6 +491,22 @@ const MedicineLanding: React.FC = (props: any) => {
     sessionStorage.removeItem('utm_source');
   }
 
+  useEffect(() => {
+    if (params.orderStatus && params.orderAutoId) {
+      /**Gtm code start start */
+      dataLayerTracking({
+        event: 'pageviewEvent',
+        pagePath: window.location.href,
+        pageName: 'Pharmacy Order Completion Page',
+        pageLOB: 'Pharmacy',
+        pageType: 'Order Page',
+        Status: params.orderStatus,
+        OrderID: params.orderAutoId,
+      });
+      /**Gtm code start end */
+    }
+  }, [params.orderStatus, params.orderAutoId]);
+
   const [data, setData] = useState<MedicinePageAPiResponse | null>(null);
   const [metadata, setMetadata] = useState(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -561,6 +587,18 @@ const MedicineLanding: React.FC = (props: any) => {
     }
   }, [showOrderPopup, cartTotal]);
   /* Gtm code End */
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Pharmacy Index',
+      pageLOB: 'Pharmacy',
+      pageType: 'Index',
+    });
+    /**Gtm code start end */
+  }, []);
 
   const getMedicinePageProducts = async () => {
     await axios
@@ -644,11 +682,16 @@ const MedicineLanding: React.FC = (props: any) => {
     uploadPrescriptionTracking({ ...patient, age });
     pharmacyUploadPresClickTracking('Home');
     setIsUploadPreDialogOpen(true);
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'Prescription Uploaded',
+    });
+    /**Gtm code start end */
   };
   const metaTagProps = {
-    title: 'Buy/Order Medicines And Health Products - Online Pharmacy Store - Apollo 247',
+    title: 'Online Medicine Order & Delivery, Buy Medicines from Apollo Pharmacy',
     description:
-      'Order medicines and health products online at Apollo 247 - a leading online pharmacy store. Buy all medicines you need from home in just a few clicks. Apollo 247 is a one-stop solution for all your medical needs.',
+      "Online Medicine Order - Buy medicines online from Apollo Pharmacy Stores (India's largest pharmacy chain) and get the home delivery. All kinds on medicines, health products & equipments are available at our online medicine store.",
     canonicalLink:
       window && window.location && window.location.origin && `${window.location.origin}/medicines`,
   };
@@ -738,9 +781,9 @@ const MedicineLanding: React.FC = (props: any) => {
                     <div className={classes.preServiceType}>
                       <div className={classes.prescriptionGroup}>
                         <div>
-                          <div className={classes.groupTitle}>
+                          <h3 className={classes.groupTitle}>
                             Now place your order via prescription
-                          </div>
+                          </h3>
                           <AphButton
                             onClick={() => handleUploadPrescription()}
                             title={'Upload Prescription'}
@@ -842,7 +885,7 @@ const MedicineLanding: React.FC = (props: any) => {
                         <div className={classes.sectionTitle}>
                           {item.section_key === 'shop_by_brand' || item.viewAll ? (
                             <>
-                              <span>{item.section_name}</span>
+                              <h3 className={classes.sectionHeading}>{item.section_name}</h3>
                               <div className={classes.viewAllLink}>
                                 <Link
                                   to={
@@ -859,7 +902,7 @@ const MedicineLanding: React.FC = (props: any) => {
                               </div>
                             </>
                           ) : (
-                            item.section_name
+                            <h3 className={classes.sectionHeading}>{item.section_name}</h3>
                           )}
                         </div>
                         {item.value}

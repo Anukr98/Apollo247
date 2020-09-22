@@ -20,9 +20,7 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   CHECK_IF_FOLLOWUP_BOOKED,
-  DELETE_PATIENT_MEDICAL_RECORD,
   GET_MEDICAL_PRISM_RECORD,
-  GET_MEDICAL_RECORD,
   GET_PAST_CONSULTS_PRESCRIPTIONS,
   SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
   UPLOAD_DOCUMENT,
@@ -274,7 +272,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     return array.sort(({ data: data1 }, { data: data2 }) => {
       let date1 = new Date(data1.date || data1.bookingDate || data1.quoteDateTime);
       let date2 = new Date(data2.date || data2.bookingDate || data2.quoteDateTime);
-      return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+      return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
     });
   };
 

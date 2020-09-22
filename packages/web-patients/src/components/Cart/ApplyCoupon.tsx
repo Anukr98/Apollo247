@@ -16,7 +16,7 @@ import {
   validatePharmaCoupon,
 } from 'graphql/types/validatePharmaCoupon';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
 import fetchUtil from 'helpers/fetch';
 import { PharmaCoupon } from './MedicineCart';
@@ -208,6 +208,15 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
       fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', data, '', false)
         .then((resp: any) => {
           if (resp.errorCode == 0) {
+            /**Gtm code start start */
+            dataLayerTracking({
+              event: 'Coupon Code Applied',
+              'GT-Coupon-Code': selectCouponCode,
+              'GT-Discount-Given': resp.response.valid,
+              'GT-Discount': resp.response.discount,
+            });
+            /**Gtm code start end */
+
             if (resp.response.valid) {
               const freeProductsSet = new Set(
                 resp.response.products && resp.response.products.length
@@ -227,6 +236,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 label: `Coupon Applied - ${selectCouponCode}`,
                 value: resp.response.discount,
               });
+
               return resp;
             } else {
               props.setValidateCouponResult(null);

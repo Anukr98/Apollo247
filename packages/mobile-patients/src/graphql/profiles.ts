@@ -2009,31 +2009,10 @@ export const ADD_PATIENT_HOSPITALIZATION_RECORD = gql`
   }
 `;
 
-export const GET_MEDICAL_RECORD = gql`
-  query getPatientMedicalRecords($patientId: ID!) {
-    getPatientMedicalRecords(patientId: $patientId) {
-      medicalRecords {
-        id
-        testName
-        testDate
-        recordType
-        referringDoctor
-        observations
-        additionalNotes
-        sourceName
-        documentURLs
-        prismFileIds
-        issuingDoctor
-        location
-        medicalRecordParameters {
-          id
-          parameterName
-          unit
-          result
-          minimum
-          maximum
-        }
-      }
+export const ADD_PATIENT_LAB_TEST_RECORD = gql`
+  mutation addPatientLabTestRecord($AddLabTestRecordInput: AddLabTestRecordInput) {
+    addPatientLabTestRecord(addLabTestRecordInput: $AddLabTestRecordInput) {
+      status
     }
   }
 `;
@@ -2402,14 +2381,6 @@ export const BOOK_APPOINTMENT_RESCHEDULE = gql`
   }
 `;
 
-export const DELETE_PATIENT_MEDICAL_RECORD = gql`
-  mutation deletePatientMedicalRecord($recordId: ID!) {
-    deletePatientMedicalRecord(recordId: $recordId) {
-      status
-    }
-  }
-`;
-
 export const CHECK_IF_RESCHDULE = gql`
   query checkIfReschedule($existAppointmentId: String!, $rescheduleDate: DateTime!) {
     checkIfReschedule(existAppointmentId: $existAppointmentId, rescheduleDate: $rescheduleDate) {
@@ -2511,6 +2482,14 @@ export const ADD_TO_CONSULT_QUEUE = gql`
 export const CHECK_IF_FOLLOWUP_BOOKED = gql`
   query checkIfFollowUpBooked($appointmentId: String!) {
     checkIfFollowUpBooked(appointmentId: $appointmentId)
+  }
+`;
+
+export const SEND_PATIENT_WAIT_NOTIFICATION = gql`
+  query sendPatientWaitNotification($appointmentId: String!) {
+    sendPatientWaitNotification(appointmentId: $appointmentId) {
+      status
+    }
   }
 `;
 

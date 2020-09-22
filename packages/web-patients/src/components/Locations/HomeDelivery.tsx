@@ -28,7 +28,7 @@ import isNull from 'lodash/isNull';
 import moment from 'moment';
 import React, { useEffect, useRef } from 'react';
 import { useApolloClient, useMutation } from 'react-apollo-hooks';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import axios, { AxiosError } from 'axios';
 
 export const formatAddress = (address: Address) => {
@@ -212,8 +212,8 @@ const useStyles = makeStyles((theme: Theme) => {
       zIndex: 1,
       '& h2': {
         fontSize: 16,
-        fontWeight: 500
-      }
+        fontWeight: 500,
+      },
     },
     dialogBox: {
       '& >div': {
@@ -225,10 +225,10 @@ const useStyles = makeStyles((theme: Theme) => {
             margin: 0,
             height: '100vh',
             maxHeight: 'inherit',
-            background: '#F7F8F5'
+            background: '#F7F8F5',
           },
-        }
-      }
+        },
+      },
     },
     goBack: {
       display: 'none',
@@ -237,9 +237,9 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'absolute',
         top: 20,
         left: 20,
-        zIndex: 5
-      }
-    }
+        zIndex: 5,
+      },
+    },
   };
 });
 
@@ -616,53 +616,62 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
               <CircularProgress />
             </div>
           ) : (
-              <ul>
-                {deliveryAddresses.map(
-                  (address, idx) =>
-                    idx === selectedAddressDataIndex && (
-                      <li key={idx}>
-                        <FormControlLabel
-                          checked={address.id === deliveryAddressId}
-                          className={classes.radioLabel}
-                          value={address.id}
-                          control={<AphRadio color="primary" />}
-                          label={formatAddress(address)}
-                          onChange={() => {
-                            checkServiceAvailabilityCheck(address.zipcode)
-                              .then((res: any) => {
-                                if (res && res.data && res.data.response) {
-                                  /**Gtm code start  */
-                                  gtmTracking({
-                                    category: 'Pharmacy',
-                                    action: 'Order',
-                                    label: 'Address Selected',
-                                  });
-                                  /**Gtm code End  */
-                                  checkLatLongStateCodeAvailability(address);
-                                } else {
-                                  setShowPlaceNotFoundPopup(true);
-                                }
-                              })
-                              .catch((e: any) => {
-                                console.log(e);
-                              });
-                          }}
-                        />
-                      </li>
-                    )
-                )}
-              </ul>
-            )}
+            <ul>
+              {deliveryAddresses.map(
+                (address, idx) =>
+                  idx === selectedAddressDataIndex && (
+                    <li key={idx}>
+                      <FormControlLabel
+                        checked={address.id === deliveryAddressId}
+                        className={classes.radioLabel}
+                        value={address.id}
+                        control={<AphRadio color="primary" />}
+                        label={formatAddress(address)}
+                        onChange={() => {
+                          checkServiceAvailabilityCheck(address.zipcode)
+                            .then((res: any) => {
+                              if (res && res.data && res.data.response) {
+                                /**Gtm code start  */
+                                gtmTracking({
+                                  category: 'Pharmacy',
+                                  action: 'Order',
+                                  label: 'Address Selected',
+                                });
+                                /**Gtm code End  */
+
+                                /**Gtm code start start */
+                                dataLayerTracking({
+                                  event: 'Address Selected',
+                                  PINCode: address.zipcode,
+                                  City: address.city,
+                                });
+                                /**Gtm code start end */
+
+                                checkLatLongStateCodeAvailability(address);
+                              } else {
+                                setShowPlaceNotFoundPopup(true);
+                              }
+                            })
+                            .catch((e: any) => {
+                              console.log(e);
+                            });
+                        }}
+                      />
+                    </li>
+                  )
+              )}
+            </ul>
+          )}
         </>
       ) : (
-          <>
-            {isLoading && (
-              <div className={classes.alignCenter}>
-                <CircularProgress />
-              </div>
-            )}
-          </>
-        )}
+        <>
+          {isLoading && (
+            <div className={classes.alignCenter}>
+              <CircularProgress />
+            </div>
+          )}
+        </>
+      )}
 
       <div className={classes.bottomActions}>
         {!isSigningIn ? (
@@ -693,7 +702,14 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
       <AphDialog open={isAddAddressDialogOpen} className={classes.dialogBox}>
         <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} />
-        <a href="javascript:vois(0);" onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} className={classes.goBack}><img src={require('images/ic_back.svg')} alt="" /></a>
+        <a
+          href="javascript:vois(0);"
+          onClick={() => setIsAddAddressDialogOpen(false)}
+          title={'Close'}
+          className={classes.goBack}
+        >
+          <img src={require('images/ic_back.svg')} alt="" />
+        </a>
         <AphDialogTitle className={classes.dialogTitle}>Add New Address</AphDialogTitle>
         <AddNewAddress
           setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}

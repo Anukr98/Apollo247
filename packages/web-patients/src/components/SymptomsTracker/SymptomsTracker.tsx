@@ -255,7 +255,7 @@ const SymptomsTracker: React.FC = () => {
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
               </Link>
-              understand your symptoms
+              <h1>understand your symptoms</h1>
             </div>
             <Scrollbars
               autoHide={true}
