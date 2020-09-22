@@ -44,14 +44,15 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import _lowerCase from 'lodash/lowerCase';
-import axios from 'axios';
 import { gtmTracking } from 'gtmTracking';
 import { SpecialtySearch } from 'components/SpecialtySearch';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
-// import Pagination from '@material-ui/lab/Pagination';
+import { dataLayerTracking } from 'gtmTracking';
 
+// import Pagination from '@material-ui/lab/Pagination';
+import axios from 'axios';
 let currentPage = 1;
 let apolloDoctorCount = 0;
 let partnerDoctorCount = 0;
@@ -388,7 +389,7 @@ interface SpecialityProps {
   history: any;
 }
 
-export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
+const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const searchObject: SearchObject = {
     searchKeyword: '',
     cityName: [],
@@ -510,6 +511,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                       )}`,
                 });
             });
+
             const filteredObj = getDoctorObject(doctorData.concat(doctors));
             setDoctorData(doctorData.concat(doctors) || []);
             setOnlyFilteredCount(onlyFilteredCount + doctors.length || 0);
@@ -599,7 +601,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
           });
       });
 
-      gtmTracking({
+      /*gtmTracking({
         category: 'Consultations',
         action: 'Specialty Page',
         label: 'Specialty Details Page Viewed',
@@ -610,6 +612,14 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             items: ecommItems,
           },
         },
+      });*/
+      window.dataLayer.push({
+        event: 'pageviewEvent',
+        pagePath: window.location.href,
+        pageName: `${readableParam(specialtyName)} Listing Page`,
+        pageLOB: 'Consultation',
+        pageType: 'Index',
+        productlist: JSON.stringify(ecommItems),
       });
     }
   }, [doctorData]);
@@ -821,7 +831,7 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
           ? doctor.consultHours[0].consultMode
           : '';
       if (isOnlineSelected && isPhysicalSelected) {
-        return consultMode === ConsultMode.BOTH;
+        return true;
       } else if (isOnlineSelected) {
         return consultMode !== ConsultMode.PHYSICAL;
       } else if (isPhysicalSelected) {
@@ -834,18 +844,24 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     if (doctorData) {
       setLoading(true);
       let filterDoctorsData = searchKeyword.length > 1 ? searchDoctors : doctorData;
-      if (isOnlineSelected || isPhysicalSelected) {
-        filterDoctorsData = getConsultModeDoctorList(filterDoctorsData);
-      }
       if (doctorType) {
         filterDoctorsData = getFilteredDoctorList(filterDoctorsData);
       }
-      const filteredObj = getDoctorObject(filterDoctorsData);
+      if (isOnlineSelected || isPhysicalSelected) {
+        filterDoctorsData = getConsultModeDoctorList(filterDoctorsData);
+        if (filterDoctorsData.length > 0) {
+          const filteredObj = getDoctorObject(filterDoctorsData);
+          setFilteredDoctorData(filteredObj);
+        } else {
+          setFilteredDoctorData(null);
+        }
+      } else {
+        setFilteredDoctorData(null);
+      }
 
-      setFilteredDoctorData(filteredObj);
       setLoading(false);
     }
-  }, [isOnlineSelected, isPhysicalSelected, doctorData, searchKeyword, searchDoctors]);
+  }, [isOnlineSelected, isPhysicalSelected, doctorData, searchKeyword, searchDoctors, doctorType]);
 
   const getDoctorsCount = (data: DoctorDetails[], type: DOCTOR_CATEGORY) => {
     return _filter(data, (doctor: DoctorDetails) => {
@@ -1043,3 +1059,5 @@ export const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     </div>
   );
 };
+
+export default SpecialtyDetails;

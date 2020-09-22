@@ -48,7 +48,7 @@ export enum ApiConstants {
 
   //appointment reschedule by patient
   DOCTOR_APPOINTMENT_RESCHEDULE_TITLE = 'Appointment has been rescheduled',
-  DOCTOR_APPOINTMENT_RESCHEDULE_BODY = 'Hi Dr. {0}!  Your appointment {1} with {2} has been rescheduled  to {3}. ',
+  DOCTOR_APPOINTMENT_RESCHEDULE_BODY = 'Namaste Dr. {0}!  Your appointment {1} with {2} has been rescheduled  to {3}. ',
   //initiate junior doctor session
   JUNIOR_APPT_SESSION_TITLE = 'Junior doctor initiated the session',
   JUNIOR_APPT_SESSION_BODY = "Hi {0}! :) Dr. {2}'s team doctor is waiting to start your consultation prep. Please proceed to the Consult Room",
@@ -184,6 +184,7 @@ export enum ApiConstants {
   APPT_STATE_CHANGED_2 = 'Appointment state changed to RESCHEDULED',
   APPT_STATE_CHANGED_3 = 'Appointment cancelled due to max. reschedules',
   APPT_UPDATE_SEPERATOR = '-rescheduledBy247-',
+  SYSTEM_CANCELLED_REASON = 'System cancelled the appointment and refunded, as another appointment for same time for same doctor is booked by another patient',
 
   /*** push-notification messages end here ***/
 
@@ -457,12 +458,13 @@ export enum ApiConstants {
   WHATSAPP_SD_OTP = 'inf_sd_otp_message_namaste',
   WHATSAPP_DOCTOR_BOOKING_CONFIRMATION = 'inf_doctor_consult_booking_confirmation_namaste1',
   WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
-  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_button_2',
-  WHATSAPP_DOC_SUMMARY_NEW = 'inf_doc_8am_summary_namaste3',
+  WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_namaste3',
+
   WHATSAPP_DOC_SECRETARY_RESCHDULE = 'inf_secratory_consult_rescheduled',
   WHATSAPP_DOC_SECRETARY_CANCEL = 'inf_secratory_consult_cancelled',
   WHATSAPP_DOC_SECRETARY_BOOKING = 'inf_secratory_consult_booked',
-  DOCTOR_APP_APPTS_LINK = 'apollodoctors://appointments',
+
+  WHATSAPP_DOC_SUMMARY_NEW = 'inf_doc_8am_summary_namaste3',
 
   ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE = 'R000247',
 
@@ -470,6 +472,8 @@ export enum ApiConstants {
 
   PRESCRIPTION_DEEPLINK_PLACEHOLDER = '<appointmentId>',
   PRESCRIPTION_CLICK_HERE = 'You can now access it from here:',
+
+  DOCTOR_APP_APPTS_LINK = 'apollodoctors://appointments',
 }
 
 export enum PATIENT_REPO_RELATIONS {

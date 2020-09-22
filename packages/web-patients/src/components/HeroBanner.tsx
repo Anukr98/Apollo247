@@ -2,7 +2,6 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Popover } from '@material-ui/core';
 import React, { useState } from 'react';
 import Typography from '@material-ui/core/Typography';
-import { Link } from 'react-router-dom';
 import { AphButton, AphSelect } from '@aph/web-ui-components';
 import MenuItem from '@material-ui/core/MenuItem';
 import _isEmpty from 'lodash/isEmpty';
@@ -12,6 +11,7 @@ import { OurServices } from 'components/OurServices';
 import { AphDialogTitle, AphDialog, AphDialogClose } from '@aph/web-ui-components';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { MascotWithMessage } from './MascotWithMessage';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -121,9 +121,9 @@ const useStyles = makeStyles((theme: Theme) => {
     addMemberBtn: {
       boxShadow: 'none',
       backgroundColor: 'transparent',
-      marginLeft: 30,
       paddingBottom: 0,
       paddingRight: 0,
+      paddingLeft: 0,
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -201,6 +201,7 @@ export const HeroBanner: React.FC = () => {
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isAddNewProfileDialogOpen, setIsAddNewProfileDialogOpen] = useState<boolean>(false);
   const [isMeClicked, setIsMeClicked] = useState<boolean>(false);
+  const isDesktopOnly = useMediaQuery('(min-width:768px)');
 
   return (
     <div
@@ -208,16 +209,19 @@ export const HeroBanner: React.FC = () => {
       data-cypress="HeroBanner"
     >
       <div className={`${classes.bannerImg} ${isSignedIn ? classes.loginbannerImg : ''}`}>
-        <img
-          className={classes.mobileBanner}
-          src={require('images/img_doctors_xxhdpi.jpg')}
-          alt="Online Doctor Consultation & Medicines"
-        />
-        <img
-          className={classes.desktopBanner}
-          src={require('images/img-doctors@1x.png')}
-          alt="Online Doctor Consultation & Medicines"
-        />
+        {isDesktopOnly ? (
+          <img
+            className={classes.desktopBanner}
+            src={require('images/img-doctors@1x.jpg')}
+            alt="Online Doctor Consultation & Medicines"
+          />
+        ) : (
+          <img
+            className={classes.mobileBanner}
+            src={require('images/img_doctors_xxhdpi.jpg')}
+            alt="Online Doctor Consultation & Medicines"
+          />
+        )}
       </div>
       <div className={classes.bannerInfo}>
         {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
@@ -254,7 +258,7 @@ export const HeroBanner: React.FC = () => {
                   }}
                   title={'Add Member'}
                 >
-                  Add Member
+                  +Add Member
                 </AphButton>
               </MenuItem>
             </AphSelect>

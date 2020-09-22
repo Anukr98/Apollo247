@@ -17,7 +17,7 @@ import { Formik, FormikProps, Form, Field, FieldProps } from 'formik';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import isNumeric from 'validator/lib/isNumeric';
 import { useAuth } from 'hooks/authHooks';
-import { gtmTracking } from '../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -111,11 +111,12 @@ const OtpInput: React.FC<{
   const blockedMessage = 'You entered an incorrect OTP 3 times. Please try again after some time';
   const [otpStatusText, setOtpStatusText] = useState<string>(initialOTPMessage);
   const [otpInputRefs, setOtpInputRefs] = useState<RefObject<HTMLInputElement>[]>([]);
+  const incorrectOtpTimerValue = 120;
   const [otp, setOtp] = useState<string>('');
-  const countDown = useRef(900);
+  const countDown = useRef(incorrectOtpTimerValue);
   const [otpSubmitCount, setOtpSubmitCount] = useState(0);
   const [showTimer, setShowTimer] = useState<boolean>(false);
-  const [timer, setTimer] = useState<number>(900);
+  const [timer, setTimer] = useState<number>(incorrectOtpTimerValue);
   const [disableResendOtpButton, setDisableResendOtpButton] = useState<boolean>(false);
   const [disableResendOtpButtonCounter, setDisableResendOtpButtonCounter] = useState<number>(0);
   const maxAllowedAttempts = 3;
@@ -177,7 +178,7 @@ const OtpInput: React.FC<{
             clearInterval(interval);
             setOtpSubmitCount(0);
             setShowTimer(false);
-            countDown.current = 900;
+            countDown.current = incorrectOtpTimerValue;
           }
         }, 1000);
       }
@@ -189,11 +190,11 @@ const OtpInput: React.FC<{
           if (item.mobileNumber == mobileNumber) {
             const leftSeconds: number =
               (new Date().getTime() - Number(item.timerMiliSeconds)) / 1000;
-            if (leftSeconds < 900) {
+            if (leftSeconds < incorrectOtpTimerValue) {
               setOtpStatusText(blockedMessage);
               setOtpExeedError(true);
               setOtp('');
-              countDown.current = Math.floor(900 - leftSeconds);
+              countDown.current = Math.floor(incorrectOtpTimerValue - leftSeconds);
               const interval = setInterval(() => {
                 setShowTimer(true);
                 countDown.current--;
@@ -202,7 +203,7 @@ const OtpInput: React.FC<{
                   clearInterval(interval);
                   setOtpSubmitCount(0);
                   setShowTimer(false);
-                  countDown.current = 900;
+                  countDown.current = incorrectOtpTimerValue;
                 }
               }, 1000);
             } else {
@@ -307,6 +308,12 @@ const OtpInput: React.FC<{
                 });
                 /**Gtm code start end */
 
+                /**Gtm code start start */
+                dataLayerTracking({
+                  event: 'OTPSubmitted',
+                });
+                /**Gtm code start end */
+
                 verifyOtp(otp, customLoginId).then((authToken) => {
                   if (!authToken) {
                     setOtpSubmitCount(otpSubmitCount + 1);
@@ -373,6 +380,12 @@ export const SignIn: React.FC<signInProps> = (props) => {
         onSubmit={(values) => {
           /**Gtm code start start */
           gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Mobile Entered' });
+          /**Gtm code start end */
+
+          /**Gtm code start start */
+          dataLayerTracking({
+            event: 'OTPDemanded',
+          });
           /**Gtm code start end */
 
           const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;

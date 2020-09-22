@@ -2576,7 +2576,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             </Text>
             <View style={styles.line}></View>
             <Text style={styles.agetext}>
-              {age > -1 ? Math.round(age).toString() : '-'}
+              {age > -1 ? Math.floor(age).toString() : '-'}
               {patientDetails.gender ? `, ${patientDetails.gender.charAt(0)}` : ''}
               {patientDetails.patientAddress &&
               patientDetails.patientAddress[0] &&

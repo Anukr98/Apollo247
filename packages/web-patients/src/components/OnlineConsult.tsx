@@ -23,7 +23,7 @@ import {
   makeAppointmentPaymentVariables,
 } from 'graphql/types/makeAppointmentPayment';
 import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,
@@ -37,9 +37,14 @@ import {
   ValidateConsultCouponVariables,
 } from 'graphql/types/ValidateConsultCoupon';
 import { Alerts } from 'components/Alerts/Alerts';
-import { gtmTracking, _cbTracking } from '../gtmTracking';
+import { gtmTracking, _cbTracking, dataLayerTracking } from '../gtmTracking';
 import { useApolloClient } from 'react-apollo-hooks';
 import { ShowSlots } from './ShowSlots';
+import {
+  UpdateWhatsAppStatus,
+  UpdateWhatsAppStatusVariables,
+} from 'graphql/types/UpdateWhatsAppStatus';
+import { UPDATE_WHATSAPP_STATUS } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -75,6 +80,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       '& p': {
         marginTop: 0,
+      },
+      [theme.breakpoints.down('xs')]: {
+        padding: '16px 10px',
       },
     },
     consultNowInfo: {
@@ -133,6 +141,10 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 20,
       paddingLeft: 20,
       paddingRight: 20,
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 10,
+        paddingRight: 10,
+      },
     },
     timeSlots: {
       paddingTop: 0,
@@ -254,9 +266,17 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [availableSlotsError, setAvailableSlotsError] = useState<boolean>(false);
   const [availableSlotsLoading, setAvailableSlotsLoading] = useState<boolean>(false);
+  const [whatsappStatusUpdate, setWhatsappStatusUpdate] = useState<boolean>(false);
+  const [whatsappStatusMutationLoading, setWhatsappStatusMutationLoading] = useState<boolean>(
+    false
+  );
 
   const couponMutation = useMutation<ValidateConsultCoupon, ValidateConsultCouponVariables>(
     VALIDATE_CONSULT_COUPON
+  );
+
+  const whatsappStatusMutation = useMutation<UpdateWhatsAppStatus, UpdateWhatsAppStatusVariables>(
+    UPDATE_WHATSAPP_STATUS
   );
 
   const { currentPatient } = useAllCurrentPatients();
@@ -712,7 +732,31 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             I am free at any time during the consultation to request for the same.
           </p>
           <div className={classes.whatsUpContent}>
-            <AphCheckbox disabled={mutationLoading} className={classes.checkbox} color="primary" />
+            <AphCheckbox
+              disabled={whatsappStatusMutationLoading}
+              className={classes.checkbox}
+              color="primary"
+              checked={whatsappStatusUpdate}
+              onChange={(e) => {
+                setWhatsappStatusMutationLoading(true);
+                setWhatsappStatusUpdate(e.target.checked);
+                // hit mutation
+                whatsappStatusMutation({
+                  variables: {
+                    whatsAppConsult: e.target.checked,
+                    patientId: currentPatient && currentPatient.id,
+                  },
+                })
+                  .then(() => {
+                    setWhatsappStatusMutationLoading(false);
+                  })
+                  .catch(() => {
+                    setWhatsappStatusMutationLoading(false);
+                    setAlertMessage('Unable to process your request. Please try again.');
+                    setIsAlertOpen(true);
+                  });
+              }}
+            />
             <span className={classes.whatsupTxt}>
               Receive status updates on <img src={require('images/ic_whatsup.svg')} alt="" />{' '}
               Whatsapp
@@ -783,6 +827,15 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     speciality: getSpeciality(),
                   })
                 );
+                /**Gtm code start start */
+                dataLayerTracking({
+                  event: 'Pay Now Clicked',
+                  Price: revisedAmount,
+                  product: doctorId,
+                  Time: appointmentDateTime,
+                  Type: AppointmentType.ONLINE,
+                });
+                /**Gtm code start end */
               }}
               className={
                 disableSubmit ||

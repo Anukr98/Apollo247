@@ -1435,11 +1435,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       setStartConsultDisableReason(
         'This appointment is under reschedule and waiting for the patient to accept the new slot.'
       );
-    } else if (
-      appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-      appointmentInfo!.status !== STATUS.PENDING
-    ) {
-      console.log('Your appointment status is ' + appointmentInfo!.status);
     }
   };
   // timer for audio/video call end

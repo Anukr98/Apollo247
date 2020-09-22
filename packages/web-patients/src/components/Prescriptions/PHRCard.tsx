@@ -60,7 +60,7 @@ export const PHRCard: React.FC = (props) => {
           <img src={require('images/apollo-logo.jpg')} alt="" />
         </div>
         <div className={classes.fileInfo}>
-          <a href="" target="_blank" title="Download Document">
+          <a href="" target="_blank" title="Download Document" rel="noopener noreferrer">
             IMG_20190726
           </a>
           <AphLinearProgress

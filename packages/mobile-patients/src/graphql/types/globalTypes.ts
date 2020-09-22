@@ -279,6 +279,8 @@ export enum MEDICINE_UNIT {
 export enum MedicalRecordType {
   CONSULTATION = "CONSULTATION",
   EHR = "EHR",
+  HEALTHCHECK = "HEALTHCHECK",
+  HOSPITALIZATION = "HOSPITALIZATION",
   OPERATIVE_REPORT = "OPERATIVE_REPORT",
   PATHOLOGY_REPORT = "PATHOLOGY_REPORT",
   PHYSICAL_EXAMINATION = "PHYSICAL_EXAMINATION",
@@ -450,6 +452,16 @@ export enum UPLOAD_FILE_TYPES {
   PNG = "PNG",
 }
 
+export enum USER_STATUS {
+  ENTERING = "ENTERING",
+  LEAVING = "LEAVING",
+}
+
+export enum USER_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
 export enum WeekDay {
   FRIDAY = "FRIDAY",
   MONDAY = "MONDAY",
@@ -493,6 +505,18 @@ export interface AddHospitalizationRecordInput {
   hospitalName: string;
   doctorName: string;
   hospitalizationFiles?: (HospitalizationFileProperties | null)[] | null;
+}
+
+export interface AddLabTestRecordInput {
+  patientId: string;
+  recordType: MedicalRecordType;
+  labTestName: string;
+  labTestDate: any;
+  referringDoctor?: string | null;
+  observations?: string | null;
+  additionalNotes?: string | null;
+  labTestResults?: (LabTestParameters | null)[] | null;
+  testResultFiles?: (LabTestFileProperties | null)[] | null;
 }
 
 export interface AddMedicalRecordInput {
@@ -710,6 +734,7 @@ export interface FilterDoctorInput {
   sort?: string | null;
   pageNo?: number | null;
   pageSize?: number | null;
+  searchText?: string | null;
 }
 
 export interface Geolocation {
@@ -743,6 +768,20 @@ export interface LabResultFileProperties {
   content: string;
 }
 
+export interface LabTestFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
+export interface LabTestParameters {
+  maximum?: number | null;
+  minimum?: number | null;
+  parameterName?: string | null;
+  result?: number | null;
+  unit?: string | null;
+}
+
 export interface MediaPrescriptionFileProperties {
   fileName: string;
   mimeType: string;
@@ -762,6 +801,7 @@ export interface MediaPrescriptionUploadRequest {
 export interface MedicineCartOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
+  tatType?: string | null;
   estimatedAmount?: number | null;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
@@ -780,12 +820,12 @@ export interface MedicineCartOMSInput {
   showPrescriptionAtStore?: boolean | null;
   shopAddress?: ShopAddress | null;
   customerComment?: string | null;
-  tatType?: string | null;
 }
 
 export interface MedicineCartOMSItem {
   medicineSKU?: string | null;
   medicineName?: string | null;
+  couponFree?: boolean | null;
   price?: number | null;
   quantity?: number | null;
   mrp?: number | null;
@@ -840,6 +880,7 @@ export interface OrderLineItems {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
+  couponFree?: boolean | null;
 }
 
 export interface OtpVerificationInput {

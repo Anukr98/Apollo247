@@ -296,7 +296,10 @@ export const Filters: React.FC<FilterProps> = (props) => {
           />
         </div>
         <div className={classes.filterAction}>
-          <AphButton onClick={() => setisFilterOpen(true)}>
+          <AphButton
+            disabled={!isOnlineSelected && !isPhysicalSelected}
+            onClick={() => setisFilterOpen(true)}
+          >
             Filters(5) <img src={require('images/ic_filters.svg')} alt="" />
           </AphButton>
         </div>

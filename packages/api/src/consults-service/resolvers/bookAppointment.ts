@@ -323,8 +323,8 @@ const bookAppointment: Resolver<
     const amount = appointmentInput.actualAmount
       ? appointmentInput.actualAmount
       : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-      ? parseInt(docDetails.physicalConsultationFees.toString(), 10)
-      : parseInt(docDetails.onlineConsultationFees.toString(), 10);
+        ? parseInt(docDetails.physicalConsultationFees.toString(), 10)
+        : parseInt(docDetails.onlineConsultationFees.toString(), 10);
 
     const payload: ValidateCouponRequest = {
       mobile: patientDetails.mobileNumber.replace('+91', ''),
@@ -343,8 +343,8 @@ const bookAppointment: Resolver<
             appointmentInput.appointmentType == APPOINTMENT_TYPE.ONLINE
               ? 1
               : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-              ? 0
-              : -1,
+                ? 0
+                : -1,
           cost: parseInt(amount.toString(), 10),
           rescheduling: false,
         },

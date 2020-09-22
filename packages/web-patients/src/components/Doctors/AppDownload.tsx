@@ -3,6 +3,7 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { getAppStoreLink } from 'helpers/dateHelpers';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -68,7 +69,18 @@ export const AppDownload: React.FC = (props) => {
           <span>
             <img src={require('images/apollo-logo.jpg')} alt="" />
           </span>
-          <AphButton onClick={() => window.open(getAppStoreLink())}>Download the App</AphButton>
+          <AphButton
+            onClick={() => {
+              /**Gtm code start start */
+              dataLayerTracking({
+                event: 'Download App Clicked',
+              });
+              /**Gtm code start end */
+              window.open(getAppStoreLink());
+            }}
+          >
+            Download the App
+          </AphButton>
         </div>
       </div>
     </div>
