@@ -76,6 +76,7 @@ const AddressBook = loadable(() => import('components/MyAccount/AddressBook'));
 const MyAccount = loadable(() => import('components/MyAccount/MyAccount'));
 const MyPayments = loadable(() => import('components/MyAccount/MyPayments'));
 const Sitemap = loadable(() => import('components/Sitemap'));
+const KnowledgeArticleLanding = loadable(() => import('components/KnowledgeArticleLanding'));
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -223,6 +224,11 @@ const App: React.FC = () => {
         <Route exact path={clientRoutes.membershipPlanDetail()} component={MembershipPlanDetail} />
         <Route exact path={clientRoutes.sitemap(':sitemap')} component={Sitemap} />
         <Route exact path={clientRoutes.childSitemap(':sitemap', ':pageNo')} component={Sitemap} />
+        <Route
+          exact
+          path={clientRoutes.knowledgeBaseLanding()}
+          component={KnowledgeArticleLanding}
+        />
       </Switch>
     </div>
   );
