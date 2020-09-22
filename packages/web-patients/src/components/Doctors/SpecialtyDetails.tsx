@@ -49,6 +49,8 @@ import { SpecialtySearch } from 'components/SpecialtySearch';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
+import { dataLayerTracking } from 'gtmTracking';
+
 // import Pagination from '@material-ui/lab/Pagination';
 import axios from 'axios';
 import { GetDoctorList, GetDoctorList_getDoctorList } from 'graphql/types/GetDoctorList';
@@ -489,6 +491,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                       )}`,
                 });
             });
+
             const filteredObj = getDoctorObject(doctorData.concat(doctors));
             setDoctorData(doctorData.concat(doctors) || []);
             setOnlyFilteredCount(onlyFilteredCount + doctors.length || 0);
@@ -566,7 +569,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
           });
       });
 
-      gtmTracking({
+      /*gtmTracking({
         category: 'Consultations',
         action: 'Specialty Page',
         label: 'Specialty Details Page Viewed',
@@ -577,6 +580,14 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             items: ecommItems,
           },
         },
+      });*/
+      window.dataLayer.push({
+        event: 'pageviewEvent',
+        pagePath: window.location.href,
+        pageName: `${readableParam(specialtyName)} Listing Page`,
+        pageLOB: 'Consultation',
+        pageType: 'Index',
+        productlist: JSON.stringify(ecommItems),
       });
     }
   }, [doctorData]);
@@ -768,15 +779,25 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     }
   }, [currentLat, currentLong, filter, specialtyId, specialtyName]);
 
+  const getFilteredDoctorList = (data: DoctorDetails[]) => {
+    return _filter(data, (doctor: DoctorDetails) => {
+      if (doctorType === DOCTOR_CATEGORY.APOLLO) {
+        return doctor.doctorType !== DoctorType.DOCTOR_CONNECT;
+      } else {
+        return doctor.doctorType === DoctorType.DOCTOR_CONNECT;
+      }
+    });
+  };
+
   const getConsultModeDoctorList = (data: any) => {
     return _filter(data, (doctor: any) => {
       const consultMode = doctor.consultMode.toLowerCase();
       if (isOnlineSelected && isPhysicalSelected) {
-        return consultMode === 'both' || consultMode === 'physical' || consultMode === 'online';
+        return true;
       } else if (isOnlineSelected) {
-        return consultMode.toLowerCase() !== 'physical';
+        return consultMode !== 'physical';
       } else if (isPhysicalSelected) {
-        return consultMode.toLowerCase() !== 'online';
+        return consultMode !== 'online';
       }
       return false;
     });
@@ -784,13 +805,22 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   useEffect(() => {
     if (doctorData) {
       setLoading(true);
-      let filterDoctorsData = doctorData;
+      let filterDoctorsData = searchKeyword.length > 1 ? searchDoctors : doctorData;
+      // if (doctorType) {
+      //   filterDoctorsData = getFilteredDoctorList(filterDoctorsData);
+      // }
       if (isOnlineSelected || isPhysicalSelected) {
         filterDoctorsData = getConsultModeDoctorList(filterDoctorsData);
+        if (filterDoctorsData.length > 0) {
+          const filteredObj = getDoctorObject(filterDoctorsData);
+          setFilteredDoctorData(filteredObj);
+        } else {
+          setFilteredDoctorData(null);
+        }
+      } else {
+        setFilteredDoctorData(null);
       }
-      const filteredObj = getDoctorObject(filterDoctorsData);
 
-      setFilteredDoctorData(filteredObj);
       setLoading(false);
     }
   }, [isOnlineSelected, isPhysicalSelected, doctorData, searchDoctors]);

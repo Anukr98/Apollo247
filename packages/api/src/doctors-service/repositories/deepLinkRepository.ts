@@ -50,6 +50,16 @@ export class DeeplinkRepository extends Repository<Deeplink> {
     }
   }
 
+  async upsertDeepLink(deeplinkAttrs: Partial<Deeplink>) {
+    try {
+      return this.save(deeplinkAttrs);
+    } catch (deepLinkError) {
+      throw new AphError(AphErrorMessages.SAVE_DEEPLINK_ERROR, undefined, {
+        deepLinkError,
+      });
+    }
+  }
+
   async getDoctorsWithDeepLink() {
     return this.find({ select: ['doctorId'] }).catch((deepLinkError) => {
       throw new AphError(AphErrorMessages.GET_DEEPLINK_ERROR, undefined, {

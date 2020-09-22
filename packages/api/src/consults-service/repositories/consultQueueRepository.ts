@@ -125,29 +125,51 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .getMany();
   }
 
-  async getInvalidConsultQueueItems(appointmentStatuses: string[], isActive: boolean = true){
+  async getPastConsultQueue(doctorId: string, limit: number, offset: number) {
     return await this.createQueryBuilder('consultQueueItem')
-    .select([
-      'consultQueueItem.id' as 'id' 
-    ])
-    .innerJoinAndSelect(
-      'consultQueueItem.appointment',
-      'appointment',
-      'consultQueueItem.appointmentId = appointment.id'
-    )
-    .where('consultQueueItem.isActive = :isActive', { isActive })
-    .andWhere('appointment.status IN (:...appointmentStatuses)', {
-      appointmentStatuses,
-    })
-    .getMany();
+      .select([
+        'consultQueueItem.id',
+        'consultQueueItem.doctorId',
+        'consultQueueItem.isActive',
+        'appointment',
+      ])
+      .innerJoinAndSelect(
+        'consultQueueItem.appointment',
+        'appointment',
+        'consultQueueItem.appointmentId = appointment.id'
+      )
+      .where('consultQueueItem.doctorId = :doctorId', { doctorId })
+      .andWhere('consultQueueItem.isActive = :isActive', { isActive: false })
+      .andWhere('consultQueueItem.createdDate <= :createdDate', { createdDate: new Date() })
+      .andWhere('appointment.appointmentState NOT IN (:...appointmentStates)', {
+        appointmentStates: [APPOINTMENT_STATE.AWAITING_RESCHEDULE],
+      })
+      .orderBy('consultQueueItem.createdDate', 'DESC')
+      .offset(offset)
+      .limit(limit)
+      .getMany();
   }
 
-  async bulkUpdateInvalidConsultQueueItems(csQueueIds : number[]){
+  async getInvalidConsultQueueItems(appointmentStatuses: string[], isActive: boolean = true) {
+    return await this.createQueryBuilder('consultQueueItem')
+      .select(['consultQueueItem.id' as 'id'])
+      .innerJoinAndSelect(
+        'consultQueueItem.appointment',
+        'appointment',
+        'consultQueueItem.appointmentId = appointment.id'
+      )
+      .where('consultQueueItem.isActive = :isActive', { isActive })
+      .andWhere('appointment.status IN (:...appointmentStatuses)', {
+        appointmentStatuses,
+      })
+      .getMany();
+  }
+
+  async bulkUpdateInvalidConsultQueueItems(csQueueIds: number[]) {
     await this.createQueryBuilder()
-    .update(ConsultQueueItem)
-    .set({ isActive: false })
-    .where({ id: In(csQueueIds) })
-    .execute();
+      .update(ConsultQueueItem)
+      .set({ isActive: false })
+      .where({ id: In(csQueueIds) })
+      .execute();
   }
-
 }

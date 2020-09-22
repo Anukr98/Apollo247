@@ -13,6 +13,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -294,7 +295,10 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const physcalFee = doctorDetails && doctorDetails.physicalConsultationFees;
   const onlineFee = doctorDetails && doctorDetails.onlineConsultationFees;
   const doctorId = doctorDetails && doctorDetails.id;
+  const chatDays = doctorDetails && doctorDetails.chatDays;
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+
+  // console.log('doctor details...............', doctorDetails);
 
   const consultMode =
     doctorAvailableOnlineSlot.length > 0 && doctorAvailablePhysicalSlots.length > 0
@@ -469,7 +473,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span>
                   <img src={require('images/ic-followchat.svg')} alt="" />
                 </span>
-                <span>Follow Up via text - validity 7 days</span>
+                <span>Follow Up via text - validity {chatDays} days</span>
               </li>
             )}
           </ul>
@@ -481,6 +485,11 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
           <div className={classes.bottomActions}>
             <AphButton
               onClick={() => {
+                /**Gtm code start start */
+                dataLayerTracking({
+                  event: 'Book Appointment Clicked',
+                });
+                /**Gtm code start end */
                 if (!isSignedIn) {
                   protectWithLoginPopup();
                 } else {
@@ -513,6 +522,11 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                       console.log(e);
                     })
                     .finally(() => {
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Consult Now Pop-up Shown',
+                      });
+                      /**Gtm code start end */
                       setIsPopoverOpen(true);
                     });
                 }

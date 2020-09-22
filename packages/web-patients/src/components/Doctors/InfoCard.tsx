@@ -22,7 +22,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { consultNowClickTracking } from 'webEngageTracking';
 import { readableParam, getAvailability } from 'helpers/commonHelpers';
 import { GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability as NextAvailabilityType } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
-import moment from 'moment';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -286,6 +286,12 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
           <div className={classes.bottomAction}>
             <AphButton
               onClick={() => {
+                /**Gtm code start start */
+                dataLayerTracking({
+                  event: 'Consult Now Clicked',
+                  product: doctorInfo.id,
+                });
+                /**Gtm code start end */
                 if (!isSignedIn) {
                   protectWithLoginPopup();
                 } else {
@@ -329,6 +335,12 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
                     })
                     .finally(() => {
                       setIsPopoverOpen(true);
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Consult Now Pop-up Shown',
+                        product: doctorInfo.id,
+                      });
+                      /**Gtm code start end */
                     });
                 }
               }}

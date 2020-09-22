@@ -459,7 +459,7 @@ export const HowItWorks: React.FC = (props) => {
                   </li>
                   <li>
                     <img src={require('images/ic-followchat.svg')} />
-                    <Typography>Follow Up via text - validity 7 days</Typography>
+                    <Typography>Follow Up via text - Valid upto 7 days</Typography>
                   </li>
                 </ul>
               </div>
@@ -543,7 +543,7 @@ export const HowItWorks: React.FC = (props) => {
             </li>
             <li className={classes.highlight}>
               <img src={require('images/chat.svg')} />
-              <Typography>Chat with the doctor for 7 days after your consult</Typography>
+              <Typography>Chat with the doctor upto 7 days after your consult</Typography>
             </li>
           </ul>
           <div className={`${classes.appDetails} ${classes.appDetailsMobile}`}>

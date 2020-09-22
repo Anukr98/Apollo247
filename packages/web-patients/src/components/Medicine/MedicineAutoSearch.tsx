@@ -434,7 +434,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                         </div>
                       </Link>
                       <div className={classes.rightActions}>
-                        {!isInCart(medicine) && (
+                        {!isInCart(medicine) && !!medicine.sell_online && (
                           <AphButton
                             onClick={() => {
                               if (medicine.is_in_stock) {
@@ -523,6 +523,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                               : ''}
                           </AphButton>
                         )}
+                        {!medicine.sell_online ? <div>NOT FOR SALE</div> : null}
                         {isInCart(medicine) && (
                           <div className={classes.addQty}>
                             <AphButton

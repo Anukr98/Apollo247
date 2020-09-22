@@ -22,6 +22,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { readableParam, getAvailability } from 'helpers/commonHelpers';
 import { GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability as NextAvailabilityType } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
 import { consultNowClickTracking } from 'webEngageTracking';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -273,6 +274,13 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
           <div className={classes.bottomAction}>
             <AphButton
               onClick={() => {
+                /**Gtm code start start */
+                dataLayerTracking({
+                  event: 'Consult Now Clicked',
+                  product: doctorInfo.id,
+                });
+                /**Gtm code start end */
+
                 if (!isSignedIn) {
                   protectWithLoginPopup();
                 } else {
@@ -286,6 +294,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
                     specialty: specialityName,
                     listingType: '',
                   };
+
                   consultNowClickTracking(eventdata);
                   setPopupLoading(true);
                   saveSearchMutation({
@@ -316,6 +325,12 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
                     })
                     .finally(() => {
                       setIsPopoverOpen(true);
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Consult Now Pop-up Shown',
+                        product: doctorInfo.id,
+                      });
+                      /**Gtm code start end */
                     });
                 }
               }}
