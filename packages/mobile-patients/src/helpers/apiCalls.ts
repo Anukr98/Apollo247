@@ -86,15 +86,6 @@ interface SortBy {
   values: Value[];
 }
 
-/*
-export interface ProductsByCategoryResponse {
-  products: MedicineProduct[];
-  count: number;
-  filters: Filter[];
-  sort_by: SortBy;
-}
-*/
-
 export interface Brand {
   category_id: string;
   image_url: number;
@@ -463,15 +454,10 @@ export const getMedicineDetailsApi = (
   );
 };
 
-let cancelSearchMedicineApi: Canceler | undefined;
-
 export const searchMedicineApi = async (
   searchText: string,
   pageId: number = 1
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
-  const CancelToken = Axios.CancelToken;
-  cancelSearchMedicineApi && cancelSearchMedicineApi();
-
   return Axios({
     url: config.MED_SEARCH[0],
     method: 'POST',
@@ -482,10 +468,6 @@ export const searchMedicineApi = async (
     headers: {
       Authorization: config.MED_SEARCH[1],
     },
-    cancelToken: new CancelToken((c) => {
-      // An executor function receives a cancel function as a parameter
-      cancelSearchMedicineApi = c;
-    }),
   });
 };
 
@@ -593,14 +575,9 @@ export const trackTagalysEvent = (
   });
 };
 
-let cancelSearchSuggestionsApi: Canceler | undefined;
-
 export const getMedicineSearchSuggestionsApi = (
   searchText: string
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
-  const CancelToken = Axios.CancelToken;
-  cancelSearchSuggestionsApi && cancelSearchSuggestionsApi();
-
   return Axios({
     url: config.MED_SEARCH_SUGGESTION[0],
     method: 'POST',
@@ -610,10 +587,6 @@ export const getMedicineSearchSuggestionsApi = (
     headers: {
       Authorization: config.MED_SEARCH_SUGGESTION[1],
     },
-    cancelToken: new CancelToken((c) => {
-      // An executor function receives a cancel function as a parameter
-      cancelSearchSuggestionsApi = c;
-    }),
   });
 };
 
