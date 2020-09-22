@@ -697,10 +697,10 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
       <Fragment>
         <GoogleMap
           onLoad={(map) => setMapRef(map)}
-          onClick={(e) => {
-            const latLng = e.latLng.toJSON();
-            setLatitude(latLng.lat);
-            setLongitude(latLng.lng);
+          onCenterChanged={() => {
+            const latLng = mapRef ? mapRef.getCenter().toJSON() : {};
+            setLatitude(latLng.lat || latitude);
+            setLongitude(latLng.lng || longitude);
           }}
           center={{ lat: latitude, lng: longitude }}
           zoom={15}
