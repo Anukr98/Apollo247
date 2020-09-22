@@ -5,9 +5,9 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
 import { MedicineProduct } from '../../helpers/apiCalls';
-import { AppConfig } from '../../strings/AppConfig';
 import { QuantityButton } from '../ui/QuantityButton';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
+import { productsThumbnailUrl } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   containerStyle: {},
@@ -41,9 +41,8 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
   props
 ) => {
   const { data } = props;
-  const config = AppConfig.Configuration;
   const prescriptionRequired = data.is_prescription_required == '1';
-  const imageUri = data.thumbnail ? `${config.IMAGES_BASE_URL[0]}${data.thumbnail}` : '';
+  const imageUri = productsThumbnailUrl(data.thumbnail);
   const isOutOfStock = !data.is_in_stock;
   const isNotForOnlineSelling = !data.sell_online;
   const specialPrice = Number(data.special_price) || undefined;
