@@ -22,7 +22,7 @@ export const deepLinkTypeDefs = gql`
   extend type Mutation {
     upsertDoctorsDeeplink(doctorId: String): Deeplink
     insertBulkDeepLinks: String
-    refreshDoctorDeepLinks: String
+    refreshDoctorDeepLinks(offset: Int!): String
     generateDeepLinksByCron: String
   }
 `;
@@ -178,33 +178,48 @@ const insertBulkDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> = a
   return 'Data Insertion Completed :)';
 };
 
-const refreshDoctorDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> = async (
-  parent,
-  args,
-  { doctorsDb }
-) => {
+const refreshDoctorDeepLinks: Resolver<
+  null,
+  { offset: number },
+  DoctorsServiceContext,
+  string
+> = async (parent, args, { doctorsDb }) => {
   const linkRepository = doctorsDb.getCustomRepository(DeeplinkRepository);
-  const getDeeplinks: Deeplink[] = await linkRepository.getDeeplinks();
+
+  const bulkRefreshCount = process.env.DEEPLINKS_RESFRESH_COUNT
+    ? parseInt(process.env.DEEPLINKS_RESFRESH_COUNT, 10)
+    : 1000;
+  const delayInMilliSeconds = process.env.DEEPLINK_REFRESH_DELAY
+    ? parseInt(process.env.DEEPLINK_REFRESH_DELAY, 10)
+    : 3000;
+
+  const offset = args.offset == 0 ? args.offset : args.offset * bulkRefreshCount;
+  const limit = bulkRefreshCount;
+
+  const getDeeplinks: Deeplink[] = await linkRepository.getDeeplinksByLimit(offset, limit);
+  if (getDeeplinks.length == 0) return 'No Deeplinks to refresh';
 
   const refreshDays = ApiConstants.LINK_TTL ? parseInt(ApiConstants.LINK_TTL, 10) : 0;
   const newRefreshDate = addDays(new Date(), refreshDays);
 
-  const linksToBeRefreshed = _.chunk(getDeeplinks, 60);
+  getDeeplinks.map(async (element: Deeplink) => {
+    _.delay(async () => {
+      const doctorType =
+        element.templateId == ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO
+          ? DoctorType.DOCTOR_CONNECT
+          : DoctorType.APOLLO;
+      const newLink = await refreshLink(element, doctorType);
 
-  linksToBeRefreshed.map(async (chunk) => {
-    chunk.map(async (element: Deeplink) => {
-      _.delay(async () => {
-        const doctorType =
-          element.templateId == ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO
-            ? DoctorType.DOCTOR_CONNECT
-            : DoctorType.APOLLO;
-        const newLink = await refreshLink(element, doctorType);
-        element.linkRefreshDate = newRefreshDate;
-        element.deepLink = newLink;
-        element.updatedDate = new Date();
-        await linkRepository.upsertDeepLink(element);
-      }, 2000); //in milliseconds
-    });
+      const linkDetails = newLink.split('/');
+      const shortId = linkDetails[linkDetails.length - 1];
+
+      element.linkRefreshDate = newRefreshDate;
+      element.deepLink = newLink;
+      element.updatedDate = new Date();
+      element.shortId = shortId;
+
+      await linkRepository.upsertDeepLink(element);
+    }, delayInMilliSeconds); //in milliseconds
   });
 
   return 'Deeplink Refresh Completed :)';
