@@ -452,6 +452,16 @@ export enum UPLOAD_FILE_TYPES {
   PNG = "PNG",
 }
 
+export enum USER_STATUS {
+  ENTERING = "ENTERING",
+  LEAVING = "LEAVING",
+}
+
+export enum USER_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
 export enum WeekDay {
   FRIDAY = "FRIDAY",
   MONDAY = "MONDAY",

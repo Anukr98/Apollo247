@@ -75,6 +75,7 @@ import {
   mediaPrescriptionSource,
   MediaPrescriptionFileProperties,
   Gender,
+  USER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -92,6 +93,7 @@ import {
   getPastAppoinmentCount,
   updateExternalConnect,
   getSecretaryDetailsByDoctor,
+  getParticipantsLiveStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   WebEngageEventName,
@@ -765,7 +767,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isVoipCall || fromIncomingCall) {
       joinCallHandler();
     }
+    updateNumberOfParticipants();
   }, []);
+
+  const updateNumberOfParticipants = async (status: USER_STATUS = USER_STATUS.ENTERING) => {
+    const res: any = await getParticipantsLiveStatus(client, channel, status);
+    if (res?.data?.setAndGetNumberOfParticipants?.NUMBER_OF_PARTIPANTS) {
+      const totalParticipants: number = res.data.setAndGetNumberOfParticipants.NUMBER_OF_PARTIPANTS;
+      if (totalParticipants > 1) {
+        setDoctorJoined(true);
+        setDoctorJoinedChat && setDoctorJoinedChat(true);
+        setTimeout(() => {
+          setDoctorJoined(false);
+        }, 10000);
+      }
+    }
+  };
 
   const backDataFunctionality = () => {
     try {
@@ -800,9 +817,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     getSecretaryData();
     // requestToJrDoctor();
     // updateSessionAPI();
-    setTimeout(() => {
-      CheckDoctorPresentInChat();
-    }, 2000);
     if (isIos()) {
       handleCallkitEventListeners();
       handleVoipEventListeners();
@@ -2010,6 +2024,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       abondmentStarted = false;
       stopJoinTimer();
       // stopCallAbondmentTimer();
+      updateNumberOfParticipants(USER_STATUS.LEAVING);
       try {
         AppState.removeEventListener('change', _handleAppStateChange);
         BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
