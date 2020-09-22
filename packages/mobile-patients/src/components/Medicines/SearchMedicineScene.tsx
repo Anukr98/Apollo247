@@ -690,6 +690,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
             title: medicine.name,
+            movedFrom: 'search',
           });
         }}
         medicineName={stripHtml(medicine.name)}

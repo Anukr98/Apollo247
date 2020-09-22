@@ -574,6 +574,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
             title: medicine.name,
+            movedFrom: 'search',
           });
         }}
         medicineName={medicine.name}
