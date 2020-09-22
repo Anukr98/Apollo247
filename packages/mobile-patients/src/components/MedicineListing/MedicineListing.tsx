@@ -9,13 +9,9 @@ import {
   MedicineListingProducts,
   ProductProps,
 } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingProducts';
-import { OptionsDisplayView } from '@aph/mobile-patients/src/components/MedicineListing/OptionsDisplayView';
 import { OptionSelectionOverlay } from '@aph/mobile-patients/src/components/Medicines/OptionSelectionOverlay';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { CartIcon, FilterOutline } from '@aph/mobile-patients/src/components/ui/Icons';
-import { ListGridSelectionView } from '@aph/mobile-patients/src/components/ui/ListGridSelectionView';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   getProductsByCategoryApi,
@@ -31,13 +27,16 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { Divider } from 'react-native-elements';
+import { ActivityIndicator, SafeAreaView, StyleSheet, Text } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import {
+  MedicineListingSections,
+  Props as MedicineListingSectionsProps,
+} from './MedicineListingSections';
 
-type SortByOption = MedicineProductsResponse['sort_by']['values'][0];
-type Filter = MedicineProductsResponse['filters'][0];
-type SelectedFilters = { [key: string]: string[] };
+export type SortByOption = MedicineProductsResponse['sort_by']['values'][0];
+export type Filter = MedicineProductsResponse['filters'][0];
+export type SelectedFilters = { [key: string]: string[] };
 
 export interface Props
   extends NavigationScreenProps<{
@@ -84,7 +83,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   // custom variables
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
-  const isFiltersApplied = Object.keys(filterBy).find((k) => filterBy[k]?.length);
 
   useEffect(() => {
     if (searchText.length >= 3) {
@@ -185,8 +183,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     return <MedicineListingHeader navigation={navigation} movedFrom={movedFrom} />;
   };
 
-  const paddingView = <View style={styles.paddingView} />;
-
   const getMedListingProducts = (products: MedicineProduct[]): ProductProps[] => {
     const onPress = (sku: string) => {
       navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'search' });
@@ -232,6 +228,23 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         onPressNotify: () => onPressNotify(item.name),
       };
     });
+  };
+
+  const renderSections = () => {
+    const props: MedicineListingSectionsProps = {
+      searchText,
+      categoryId,
+      pageTitle,
+      titleNavProp,
+      productsTotal,
+      filterBy,
+      sortBy,
+      showListView,
+      setShowListView,
+      setFilterVisible,
+      setSortByVisible,
+    };
+    return <MedicineListingSections {...props} />;
   };
 
   const renderProducts = () => {
@@ -310,77 +323,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       : null;
   };
 
-  const renderSections = () => {
-    // consider heading from API for search (OR) title from navigation prop for category based products
-    const _pageTitle = (searchText && pageTitle) || titleNavProp || '';
-    const _productsTotal =
-      (categoryId || Number(categoryId) == 0) && !searchText && productsTotal
-        ? ` | ${productsTotal} Products`
-        : '';
-
-    const pageTitleView = !!_pageTitle && (
-      <Text style={styles.pageTitle}>
-        {_pageTitle}
-        {!!_productsTotal && <Text style={styles.productsTotal}>{_productsTotal}</Text>}
-      </Text>
-    );
-
-    const divider = !!_pageTitle && <Divider style={styles.divider} />;
-
-    const optionsView = (
-      <OptionsDisplayView
-        options={[
-          {
-            icon: <CartIcon />, // TODO: Replace icon
-            title: 'Sort By',
-            subtitle: sortBy?.label || 'Apply sorting',
-            onPress: () => setSortByVisible(true),
-            containerStyle: styles.sortByContainer,
-          },
-          {
-            icon: (
-              <View>
-                <FilterOutline style={styles.filterOutline} />
-                {isFiltersApplied && <Badge containerStyle={styles.filterBadgeContainer} />}
-              </View>
-            ),
-            title: 'Filter By',
-            subtitle: isFiltersApplied ? 'Filters applied' : 'Apply filters',
-            onPress: () => setFilterVisible(true),
-            containerStyle: styles.filterByContainer,
-          },
-          {
-            icon: (
-              <ListGridSelectionView
-                isListView={showListView}
-                onPressGridView={() => setShowListView(false)}
-                onPressListView={() => setShowListView(true)}
-              />
-            ),
-            onPress: () => {
-              setShowListView(!showListView);
-              MedicineListingEvents.categoryListGridView({
-                Source: searchText ? 'Search' : 'Category',
-                Type: showListView ? 'List' : 'Grid',
-                'Category id': !searchText ? categoryId : undefined,
-                'Category name': !searchText ? pageTitle : undefined,
-              });
-            },
-            containerStyle: styles.listGridSelectionContainer,
-          },
-        ]}
-      />
-    );
-
-    const views = [pageTitleView, [divider, optionsView]];
-
-    return (
-      <View style={styles.sectionWrapper}>
-        {views.map((view, index, array) => [view, index + 1 !== array.length && paddingView])}
-      </View>
-    );
-  };
-
   return (
     <SafeAreaView style={container}>
       {renderHeader()}
@@ -392,35 +334,11 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const { text, card, container } = theme.viewStyles;
+const { text, container } = theme.viewStyles;
 const styles = StyleSheet.create({
-  paddingView: { width: 20, height: 0 },
-  sectionWrapper: {
-    ...card(20, 0, 0, '#fff', 5),
-    paddingVertical: 10,
-    marginBottom: 16,
-  },
-  pageTitle: {
-    ...text('SB', 14, '#02475B'),
-  },
   loadingMoreProducts: {
     ...text('M', 14, '#02475B'),
     padding: 12,
     textAlign: 'center',
   },
-  productsTotal: {
-    ...text('R', 14, '#02475B'),
-  },
-  divider: { marginVertical: 10 },
-  sortByContainer: { justifyContent: 'flex-start', width: '37%' },
-  filterByContainer: { width: '37%' },
-  listGridSelectionContainer: { justifyContent: 'flex-end', width: '25%' },
-  filterBadgeContainer: {
-    width: 6,
-    height: 6,
-    backgroundColor: '#00B38E',
-    top: -2.5,
-    right: -2.5,
-  },
-  filterOutline: { width: 16, height: 17 },
 });
