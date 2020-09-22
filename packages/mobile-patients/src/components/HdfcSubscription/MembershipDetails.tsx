@@ -207,41 +207,44 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderActivePlans = () => {
     return (
       <>
-        <View style={styles.cardStyle}>
-          <TouchableOpacity onPress={() => {setIsActiveCouponVisible(!isActiveCouponVisible)}} style={styles.sectionsHeading}>
-            <Text style={theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35)}>
-              Active Coupons
-            </Text>
-            {
-              isActiveCouponVisible ? 
-              <DownOrange
-                style={styles.arrowStyle}
-              /> :
-              <UpOrange
-                style={styles.arrowStyle}
-              />
-            }
-          </TouchableOpacity>
-          {
-            isActiveCouponVisible &&
-            <View style={{
-              marginTop: 15,
-            }}>
-              <Text style={styles.eligibleText}>
-                You are eligible for the following coupons on Apollo 24|7
+        {  
+          (coupons && coupons.length) &&
+          <View style={styles.cardStyle}>
+            <TouchableOpacity onPress={() => {setIsActiveCouponVisible(!isActiveCouponVisible)}} style={styles.sectionsHeading}>
+              <Text style={theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35)}>
+                Active Coupons
               </Text>
               {
-                coupons &&
-                coupons.map(value => {
-                  return (
-                    renderCouponInfo(value.coupon, value.message)
-                  );
-                })
+                isActiveCouponVisible ? 
+                <DownOrange
+                  style={styles.arrowStyle}
+                /> :
+                <UpOrange
+                  style={styles.arrowStyle}
+                />
               }
-            </View>
-          }
-        </View>
+            </TouchableOpacity>
+            {
+              isActiveCouponVisible &&
+              <View style={{
+                marginTop: 15,
+              }}>
+                <Text style={styles.eligibleText}>
+                  You are eligible for the following coupons on Apollo 24|7
+                </Text>
+                {
+                  coupons.map(value => {
+                    return (
+                      renderCouponInfo(value.coupon, value.message)
+                    );
+                  })
+                }
+              </View>
+            }
+          </View>
+        }
         {
+          (benefits && benefits.length) &&
           benefits.map(value => {
             const {headerContent, description, ctaLabel, ctaAction} = value;
             const ctaLabelName = ctaLabel.toUpperCase();
