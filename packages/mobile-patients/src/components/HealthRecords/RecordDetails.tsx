@@ -10,7 +10,6 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
 import {
   PermissionsAndroid,
   Platform,
@@ -24,15 +23,12 @@ import {
 import { Image } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
-import { mimeType } from '../../helpers/mimeType';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { string } from '../../strings/string';
+import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { AppRoutes } from '../NavigatorContainer';
-import { BottomPopUp } from '../ui/BottomPopUp';
-import { Button } from '../ui/Button';
-import { useUIElements } from '../UIElementsProvider';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { MedicalTest } from './AddRecord';
-import { g } from '../../helpers/helperFunctions';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -114,18 +110,8 @@ export interface RecordDetailsProps extends NavigationScreenProps {}
 export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   const [showtopLine, setshowtopLine] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
-  const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
-  console.log('recorddetails', data);
-  const { currentPatient } = useAllCurrentPatients();
-  const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const [placeImage, setPlaceImage] = useState<any>();
-  const client = useApolloClient();
-  const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
-
-  useEffect(() => {
-    !!data.fileUrl ? setshowPopUp(false) : setshowPopUp(true);
-  }, []);
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
@@ -161,7 +147,6 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         description: 'Downloaded : ' + files[0].name,
         onPressOk: () => {
           hideAphAlert!();
-          console.log('this file is opened', files);
           Platform.OS === 'ios'
             ? RNFetchBlob.ios.previewDocument(files[0].path)
             : RNFetchBlob.android.actionViewIntent(files[0].path, mimeType(files[0].path));
@@ -210,28 +195,6 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                   : '-'
               }`}
             </Text>
-            {/* <Text style={styles.timeStyle}>
-              {`Check-up Date: ${moment(
-                (data.testDate && data.testDate) ||
-                  (data.dateOfHospitalization && data.dateOfHospitalization) ||
-                  (data.appointmentDate && data.appointmentDate) ||
-                  (data.labTestDate && data.labTestDate)
-              ).format('DD MMM YYYY')}\nSource: ${
-                !!data.sourceName
-                  ? data.sourceName
-                  : !!data.source
-                  ? data.source
-                  : !!data.labTestSource
-                  ? data.labTestSource
-                  : '-'
-              }\nReferring Doctor: Dr. ${
-                !!data.referringDoctor
-                  ? data.referringDoctor
-                  : !!data.signingDocName
-                  ? data.signingDocName
-                  : '-'
-              }`}
-            </Text> */}
           </View>
           <View style={styles.imageView}>
             <FileBig />
@@ -388,11 +351,6 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
       </View>
     );
   };
-  // const saveimageIos = (url: any) => {
-  //   if (Platform.OS === 'ios') {
-  //     Linking.openURL(url).catch((err) => console.error('An error occurred', err));
-  //   }
-  // };
 
   if (data)
     return (
@@ -405,61 +363,6 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
           <Header
             title="RECORD DETAILS"
             leftIcon="backArrow"
-            // rightComponent={
-            //   placeImage && (
-            //     <View style={{ flexDirection: 'row' }}>
-            //       <TouchableOpacity
-            //         activeOpacity={1}
-            //         onPress={() => {
-            //           placeImage.forEach((item: string) => {
-            //             let dirs = RNFetchBlob.fs.dirs;
-            //             let fileDownloaded: { path: string; name: string }[] = [];
-            //             setLoading && setLoading(true);
-            //             let fileName: string =
-            //               item
-            //                 .split('/')
-            //                 .pop()!
-            //                 .split('=')
-            //                 .pop() || 'Document';
-            //             const downloadPath =
-            //               Platform.OS === 'ios'
-            //                 ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + fileName
-            //                 : dirs.DownloadDir + '/' + fileName;
-            //             RNFetchBlob.config({
-            //               fileCache: true,
-            //               path: downloadPath,
-            //               addAndroidDownloads: {
-            //                 title: fileName,
-            //                 useDownloadManager: true,
-            //                 path: downloadPath,
-            //                 mime: mimeType(downloadPath),
-            //                 notification: true,
-            //                 description: 'File downloaded by download manager.',
-            //               },
-            //             })
-            //               .fetch('GET', item, {
-            //                 //some headers ..
-            //               })
-            //               .then((res) => {
-            //                 setLoading && setLoading(false);
-            //                 fileDownloaded.push({ path: res.path(), name: fileName });
-            //                 if (fileDownloaded.length > 0) {
-            //                   showMultiAlert(fileDownloaded);
-            //                 }
-            //               })
-            //               .catch((err) => {
-            //                 CommonBugFender('RecordDetails_DOWNLOAD', err);
-            //                 console.log('error ', err);
-            //                 setLoading && setLoading(false);
-            //               });
-            //           });
-            //         }}
-            //       >
-            //         <Download />
-            //       </TouchableOpacity>
-            //     </View>
-            //   )
-            // }
             onPressLeftIcon={() => props.navigation.goBack()}
           />
           <ScrollView bounces={false}>
@@ -467,26 +370,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
             {renderData()}
             {false && renderRecordDetails()}
           </ScrollView>
-          {showSpinner && <Spinner />}
         </SafeAreaView>
-        {showPopUp && (
-          <BottomPopUp
-            title={`Hi ${(currentPatient && currentPatient.firstName!.toLowerCase()) || ''},`}
-            description={'You do not have any images'}
-          >
-            <View style={{ height: 60, alignItems: 'flex-end' }}>
-              <TouchableOpacity
-                activeOpacity={1}
-                style={styles.gotItStyles}
-                onPress={() => {
-                  setshowPopUp(false);
-                }}
-              >
-                <Text style={styles.gotItTextStyles}>{string.LocalStrings.ok}</Text>
-              </TouchableOpacity>
-            </View>
-          </BottomPopUp>
-        )}
       </View>
     );
   return <Spinner />;
