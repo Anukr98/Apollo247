@@ -64,6 +64,31 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 16,
       fontWeight: 500,
     },
+    dialogBox: {
+      '& >div': {
+        '& >div': {
+          maxWidth: 400,
+          margin: '30px auto 0',
+          [theme.breakpoints.down('xs')]: {
+            borderRadius: 0,
+            margin: 0,
+            height: '100vh',
+            maxHeight: 'inherit',
+            background: '#F7F8F5',
+          },
+        },
+      },
+    },
+    goBack: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        zIndex: 5,
+      },
+    },
   };
 });
 
@@ -109,7 +134,15 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
   return (
     <Grid container spacing={1}>
       {addressDivs}
-      <AphDialog open={isEditAddressDialogOpen} maxWidth="sm">
+      <AphDialog open={isEditAddressDialogOpen} className={classes.dialogBox}>
+        <a
+          href="javascript:vois(0);"
+          onClick={() => setIsEditAddressDialogOpen(false)}
+          title={'Close'}
+          className={classes.goBack}
+        >
+          <img src={require('images/ic_back.svg')} alt="" />
+        </a>
         <AphDialogClose onClick={() => setIsEditAddressDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>
           Edit Address

@@ -16,6 +16,8 @@ import { Alerts } from 'components/Alerts/Alerts';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
+// import { Map, InfoWindow, Marker, GoogleApiWrapper } from 'google-maps-react';
+// import GoogleMaps from 'components/Locations/GoogleMaps';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -205,6 +207,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       top: 10,
       right: 10,
+      boxShadow: 'none',
     },
     saveUser: {
       position: 'absolute',
@@ -212,10 +215,10 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 10,
       fontSize: 14,
       fontWeight: 600,
-      color: '#FC9916',
+      boxShadow: 'none',
     },
     phoneNo: {
-      width: 110,
+      width: 150,
       textAlign: 'center',
       margin: '0 0 0 10px',
       '&:before': {
@@ -297,7 +300,7 @@ const useStyles = makeStyles((theme: Theme) => {
     mapcontent: {
       width: '100%',
       height: 360,
-      background: '#fff',
+      // background: '#fff',
       [theme.breakpoints.down('xs')]: {
         height: '100%',
       },
@@ -378,10 +381,13 @@ type Address = {
   types: Array<string>;
 };
 
+const AnyReactComponent = (props: any) => <div>{props.text}</div>;
+
 export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const classes = useStyles({});
   const [address1, setAddress1] = useState<string>('');
   const [address2, setAddress2] = useState<string>('');
+  const [landmark, setLandmark] = useState<string>('');
   const [pincode, setPincode] = useState<string>('');
   const [addressType, setAddressType] = useState<string>('');
   const [otherTextbox, setOtherTextBox] = useState<string>('');
@@ -400,17 +406,25 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const [isPincodevalid, setIsPincodeValid] = useState<boolean>(true);
   const [showPlaceNotFoundPopup, setShowPlaceNotFoundPopup] = useState(false);
+  const [addressScreen, setAddressScreen] = useState<string>('details');
+  const [patientName, setPatientName] = useState<string>(currentPatient.firstName);
+  const [patientNumber, setPatientNumber] = useState<string>(currentPatient.mobileNumber);
+  const [onSave, setOnSave] = useState<boolean>(true);
   const addToCartRef = useRef(null);
 
+  console.log('address1', address1, address1 && address1.length === 0);
+
   const disableSubmit =
-    (address1 && address1.length === 0) ||
-    (address2 && address2.length === 0) ||
-    (addressType && addressType.length <= 0) ||
-    (pincode && pincode.length < 6) ||
+    address1.length === 0 ||
+    address2.length === 0 ||
+    addressType.length <= 0 ||
+    pincode.length < 6 ||
     !isPincodevalid ||
+    patientName.length === 0 ||
+    patientNumber.length === 0 ||
     addressType === PATIENT_ADDRESS_TYPE.OTHER
       ? !otherTextbox
-      : addressType.length === 0;
+      : addressType.length === 0 || (state && state.length === 0) || (city && city.length === 0);
 
   const patientAddressTypes = [
     PATIENT_ADDRESS_TYPE.HOME,
@@ -462,6 +476,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
       setAddressId(addressId);
       setOtherTextBox(otherTextbox);
       setShowText(!!otherTextbox);
+      setLandmark(props.currentAddress.landmark || '');
+      setPatientName(props.currentAddress.name || currentPatient.firstName);
+      setPatientNumber(props.currentAddress.mobileNumber || currentPatient.mobileNumber);
     }
   }, [props.currentAddress]);
 
@@ -505,10 +522,6 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
               setState(state || '');
               setCity(city || '');
               setPincode(pincode || '');
-              const location = city ? (state ? city.concat(', ').concat(state) : city) : state;
-
-              setPincode(pincode || '');
-              setAddress2(location);
 
               const stateShortCode = pharmaStateCodeMapping[state] || '';
               if (stateShortCode) {
@@ -545,13 +558,18 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
 
   return (
     <div className={classes.addAddressContainer}>
-      {showTextbox ? (
+      {addressScreen === 'map' ? (
         <div className={classes.locateContainer}>
           <div className={classes.mapContainer}>
-            <div className={classes.mapcontent}></div>
+            <div className={classes.mapcontent}>{/* <GoogleMaps /> */}</div>
           </div>
           <div className={classes.locateContent}>
-            <AphButton className={classes.changeLocation}>Change</AphButton>
+            <AphButton
+              className={classes.changeLocation}
+              onClick={() => setAddressScreen('details')}
+            >
+              Change
+            </AphButton>
             <Typography component="h2">
               <img src={require('images//ic_location.svg')} alt="" /> Help us locate your address
             </Typography>
@@ -559,183 +577,12 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
               Bungalow no. 65, IAS colony, Gautam palli, Cantt., Lucknow, Uttar pradesh, 226001,
               India..
             </Typography>
-            <AphButton color="primary" className={classes.confirmLocation}>
-              Confirm Location
-            </AphButton>
-            <AphButton className={classes.skip}>Skip</AphButton>
-          </div>
-        </div>
-      ) : (
-        <div className={classes.dialogContent}>
-          <div className={classes.addAddressContent}>
-            <div className={classes.userDetails}>
-              <a href="javascript:void(0);" className={classes.editUser}>
-                <img src={require('images/edit.svg')} alt="Edit User Details" />{' '}
-              </a>
-              <div className={classes.dataGroup}>
-                <Typography>Name: </Typography>
-                <Typography> Divya Verma</Typography>
-              </div>
-              <div className={classes.dataGroup}>
-                <Typography>Phone number: </Typography>
-                <AphInput className={classes.phoneNo} />
-              </div>
-              <a href="javascript:void(0);" className={classes.saveUser}>
-                Save
-              </a>
-            </div>
-            <Typography component="h2" className={classes.addressTitle}>
-              Address Details
-            </Typography>
-            <div className={classes.addressGroup}>
-              <div className={classes.formGroup}>
-                <AphTextField
-                  multiline
-                  // label="Address"
-                  placeholder="*House no | Apartment name"
-                  onChange={(e) => {
-                    setAddress1(e.target.value);
-                  }}
-                  inputProps={{
-                    maxLength: 100,
-                  }}
-                  value={address1}
-                />
-              </div>
-              <div className={classes.formGroup}>
-                <AphTextField
-                  // label="Pin Code"
-                  placeholder="*Area Details"
-                  onChange={(e) => {
-                    if (e.target.value.length !== 6) {
-                      setAddress2('');
-                    }
-                    setPincode(e.target.value);
-                  }}
-                  onKeyPress={(e) => {
-                    if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
-                  }}
-                  inputProps={{
-                    maxLength: 6,
-                  }}
-                  value={pincode}
-                />
-              </div>
-              <div className={classes.formGroup}>
-                <AphTextField
-                  // label="Area / Locality"
-                  placeholder="Landmark (Optional)"
-                  onChange={(e) => {
-                    setAddress2(address2);
-                  }}
-                  inputProps={{
-                    maxLength: 100,
-                  }}
-                  value={address2}
-                  error={showError}
-                />
-              </div>
-              <div className={classes.addressOptions}>
-                <div className={classes.formGroup}>
-                  <AphTextField
-                    label="*Pincode"
-                    placeholder="*Pincode"
-                    inputProps={{
-                      maxLength: 100,
-                    }}
-                    value={' '}
-                    error={showError}
-                  />
-                </div>
-                <div className={classes.formGroup}>
-                  <label>City</label>
-                  <AphSelect
-                    value={' '}
-                    MenuProps={{
-                      classes: { paper: classes.menuPopover },
-                      anchorOrigin: {
-                        vertical: 'top',
-                        horizontal: 'right',
-                      },
-                      transformOrigin: {
-                        vertical: 'top',
-                        horizontal: 'right',
-                      },
-                    }}
-                  >
-                    <MenuItem value="Hyd" classes={{ selected: classes.menuSelected }}>
-                      Hyderabad
-                    </MenuItem>
-                    <MenuItem value="Bangalore" classes={{ selected: classes.menuSelected }}>
-                      Bangalore
-                    </MenuItem>
-                    <MenuItem value="Chenni" classes={{ selected: classes.menuSelected }}>
-                      Chennai
-                    </MenuItem>
-                    <MenuItem value="Delhi" classes={{ selected: classes.menuSelected }}>
-                      Delhi
-                    </MenuItem>
-                    <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
-                      Other
-                    </MenuItem>
-                  </AphSelect>
-                </div>
-              </div>
-              <div className={classes.formGroup}>
-                <AphTextField
-                  label="State"
-                  placeholder="State"
-                  inputProps={{
-                    maxLength: 100,
-                  }}
-                  value={' '}
-                  error={showError}
-                />
-              </div>
-              {showError ? (
-                <FormHelperText className={classes.helpText} component="div" error={showError}>
-                  Invalid zip code
-                </FormHelperText>
-              ) : (
-                ''
-              )}
-              <div className={classes.formGroup}>
-                <label>Choose nick name for the address</label>
-                <Grid container spacing={2} className={classes.btnGroup}>
-                  {patientAddressTypes.map((addressTypeValue) => {
-                    return (
-                      <Grid item xs={4} sm={4} key={`address_${addressTypeValue}`}>
-                        <AphButton
-                          color="secondary"
-                          className={`${classes.genderBtns} ${
-                            addressType === addressTypeValue ? classes.btnActive : ''
-                          }`}
-                          onClick={() => {
-                            setAddressType(addressTypeValue);
-                            setShowText(addressTypeValue === PATIENT_ADDRESS_TYPE.OTHER);
-                          }}
-                          value={addressType}
-                        >
-                          {_startCase(_toLower(addressTypeValue))}
-                        </AphButton>
-                      </Grid>
-                    );
-                  })}
-                </Grid>
-              </div>
-              {/* <div className={classes.formGroup}>
-                  <AphTextField placeholder="Enter Address Type" />
-                </div> */}
-            </div>
-          </div>
-          <div className={classes.dialogActions}>
             <AphButton
               color="primary"
-              fullWidth
-              disabled={disableSubmit}
-              className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
+              className={classes.confirmLocation}
               onClick={() => {
                 setMutationLoading(true);
+                // setAddressScreen('map')
                 addressId && addressId.length > 0
                   ? updateAddressMutation({
                       variables: {
@@ -790,12 +637,14 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                           city: city,
                           state: state,
                           zipcode: pincode,
-                          mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
+                          mobileNumber: patientNumber,
                           addressType: addressType as PATIENT_ADDRESS_TYPE,
                           otherAddressType: otherTextbox,
                           latitude,
                           longitude,
                           stateCode,
+                          name: patientName,
+                          landmark,
                         },
                       },
                     })
@@ -857,6 +706,192 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                         setIsAlertOpen(true);
                         setAlertMessage(error);
                       });
+              }}
+            >
+              Confirm Location
+            </AphButton>
+            <AphButton className={classes.skip}>Skip</AphButton>
+          </div>
+        </div>
+      ) : (
+        <div className={classes.dialogContent}>
+          <div className={classes.addAddressContent}>
+            <div className={classes.userDetails}>
+              {onSave && (
+                <AphButton
+                  color="primary"
+                  classes={{ root: classes.editUser }}
+                  onClick={() => setOnSave(false)}
+                >
+                  <img src={require('images/edit.svg')} alt="Edit User Details" />
+                </AphButton>
+              )}
+              <div className={classes.dataGroup}>
+                <Typography>Name: </Typography>
+                {onSave ? (
+                  <Typography> {patientName}</Typography>
+                ) : (
+                  <AphInput
+                    className={classes.phoneNo}
+                    value={patientName}
+                    onChange={(e) => setPatientName(e.target.value)}
+                  />
+                )}
+              </div>
+              <div className={classes.dataGroup}>
+                <Typography>Phone number: </Typography>
+                {onSave ? (
+                  <Typography> {patientNumber}</Typography>
+                ) : (
+                  <AphInput
+                    className={classes.phoneNo}
+                    value={patientNumber}
+                    onChange={(e) => setPatientNumber(e.target.value)}
+                  />
+                )}
+              </div>
+              {!onSave && (
+                <AphButton
+                  color="primary"
+                  classes={{ root: classes.saveUser }}
+                  onClick={() => setOnSave(true)}
+                >
+                  Save
+                </AphButton>
+              )}
+            </div>
+            <Typography component="h2" className={classes.addressTitle}>
+              Address Details
+            </Typography>
+            <div className={classes.addressGroup}>
+              <div className={classes.formGroup}>
+                <AphTextField
+                  multiline
+                  placeholder="*House no | Apartment name"
+                  onChange={(e) => {
+                    setAddress1(e.target.value);
+                  }}
+                  inputProps={{
+                    maxLength: 100,
+                  }}
+                  value={address1}
+                />
+              </div>
+              <div className={classes.formGroup}>
+                <AphTextField
+                  placeholder="*Area Details"
+                  onChange={(e) => {
+                    setAddress2(e.target.value);
+                  }}
+                  inputProps={{
+                    maxLength: 100,
+                  }}
+                  value={address2}
+                />
+              </div>
+              <div className={classes.formGroup}>
+                <AphTextField
+                  placeholder="Landmark (Optional)"
+                  onChange={(e) => {
+                    setLandmark(e.target.value);
+                  }}
+                  inputProps={{
+                    maxLength: 100,
+                  }}
+                  value={landmark}
+                />
+              </div>
+              <div className={classes.addressOptions}>
+                <div className={classes.formGroup}>
+                  <AphTextField
+                    label="*Pincode"
+                    placeholder="*Pincode"
+                    onChange={(e) => {
+                      if (e.target.value.length !== 6) {
+                        setPincode('');
+                      }
+                      setPincode(e.target.value);
+                    }}
+                    onKeyPress={(e) => {
+                      if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+                    }}
+                    inputProps={{
+                      maxLength: 6,
+                    }}
+                    value={pincode}
+                    error={showError}
+                  />
+                </div>
+                <div className={classes.formGroup}>
+                  <label>City</label>
+                  <AphTextField value={city} placeholder="City"></AphTextField>
+                </div>
+              </div>
+              <div className={classes.formGroup}>
+                <AphTextField
+                  label="State"
+                  placeholder="State"
+                  inputProps={{
+                    maxLength: 100,
+                  }}
+                  value={state}
+                />
+              </div>
+              {showError ? (
+                <FormHelperText className={classes.helpText} component="div" error={showError}>
+                  Invalid zip code
+                </FormHelperText>
+              ) : (
+                ''
+              )}
+              <div className={classes.formGroup}>
+                <label>Choose nick name for the address</label>
+                <Grid container spacing={2} className={classes.btnGroup}>
+                  {patientAddressTypes.map((addressTypeValue) => {
+                    return (
+                      <Grid item xs={4} sm={4} key={`address_${addressTypeValue}`}>
+                        <AphButton
+                          color="secondary"
+                          className={`${classes.genderBtns} ${
+                            addressType === addressTypeValue ? classes.btnActive : ''
+                          }`}
+                          onClick={() => {
+                            setAddressType(addressTypeValue);
+                            setShowText(addressTypeValue === PATIENT_ADDRESS_TYPE.OTHER);
+                          }}
+                          value={addressType}
+                        >
+                          {_startCase(_toLower(addressTypeValue))}
+                        </AphButton>
+                      </Grid>
+                    );
+                  })}
+                  {showTextbox ? (
+                    <AphTextField
+                      placeholder="Enter Address Type"
+                      onChange={(e) => {
+                        setOtherTextBox(e.target.value);
+                      }}
+                      inputProps={{
+                        maxLength: 100,
+                      }}
+                      value={otherTextbox || ''}
+                    />
+                  ) : (
+                    ''
+                  )}
+                </Grid>
+              </div>
+            </div>
+          </div>
+          <div className={classes.dialogActions}>
+            <AphButton
+              color="primary"
+              fullWidth
+              disabled={disableSubmit}
+              className={disableSubmit || mutationLoading ? classes.buttonDisable : ''}
+              onClick={() => {
+                setAddressScreen('map');
               }}
               title={'Save and use'}
             >
