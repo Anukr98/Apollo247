@@ -3,32 +3,25 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import {
-  DoctorType,
-  DOCTOR_ONLINE_STATUS,
-  WeekDay,
-  ConsultMode,
-  ConsultType,
-  AccountType,
-} from './globalTypes';
+import { DoctorType, DOCTOR_ONLINE_STATUS, WeekDay, ConsultMode, ConsultType, AccountType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorDetails
 // ====================================================
 
 export interface GetDoctorDetails_getDoctorDetails_doctorSecretary_secretary {
-  __typename: 'Secretary';
+  __typename: "Secretary";
   id: string;
   name: string;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_doctorSecretary {
-  __typename: 'DoctorSecretaryDetails';
+  __typename: "DoctorSecretaryDetails";
   secretary: GetDoctorDetails_getDoctorDetails_doctorSecretary_secretary | null;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_consultHours {
-  __typename: 'ConsultHours';
+  __typename: "ConsultHours";
   actualDay: WeekDay | null;
   consultMode: ConsultMode;
   startTime: string;
@@ -39,13 +32,13 @@ export interface GetDoctorDetails_getDoctorDetails_consultHours {
 }
 
 export interface GetDoctorDetails_getDoctorDetails_packages {
-  __typename: 'Packages';
+  __typename: "Packages";
   name: string;
   fees: string;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_bankAccount {
-  __typename: 'BankAccount';
+  __typename: "BankAccount";
   accountNumber: string;
   state: string | null;
   IFSCcode: string;
@@ -55,12 +48,12 @@ export interface GetDoctorDetails_getDoctorDetails_bankAccount {
 }
 
 export interface GetDoctorDetails_getDoctorDetails_specialty {
-  __typename: 'DoctorSpecialties';
+  __typename: "DoctorSpecialties";
   name: string;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_doctorHospital_facility {
-  __typename: 'Facility';
+  __typename: "Facility";
   name: string;
   streetLine1: string | null;
   streetLine2: string | null;
@@ -69,12 +62,12 @@ export interface GetDoctorDetails_getDoctorDetails_doctorHospital_facility {
 }
 
 export interface GetDoctorDetails_getDoctorDetails_doctorHospital {
-  __typename: 'DoctorHospital';
+  __typename: "DoctorHospital";
   facility: GetDoctorDetails_getDoctorDetails_doctorHospital_facility;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doctorHospital_facility {
-  __typename: 'Facility';
+  __typename: "Facility";
   streetLine1: string | null;
   streetLine2: string | null;
   streetLine3: string | null;
@@ -82,17 +75,17 @@ export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doc
 }
 
 export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doctorHospital {
-  __typename: 'DoctorHospital';
+  __typename: "DoctorHospital";
   facility: GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_doctorHospital_facility;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor_specialty {
-  __typename: 'DoctorSpecialties';
+  __typename: "DoctorSpecialties";
   name: string;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor {
-  __typename: 'Profile';
+  __typename: "Profile";
   country: string | null;
   doctorType: DoctorType;
   delegateNumber: string | null;
@@ -115,13 +108,14 @@ export interface GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor {
 }
 
 export interface GetDoctorDetails_getDoctorDetails_starTeam {
-  __typename: 'StarTeam';
+  __typename: "StarTeam";
   isActive: boolean | null;
   associatedDoctor: GetDoctorDetails_getDoctorDetails_starTeam_associatedDoctor | null;
 }
 
 export interface GetDoctorDetails_getDoctorDetails {
-  __typename: 'DoctorDetails';
+  __typename: "DoctorDetails";
+  chatDays: number | null;
   awards: string | null;
   city: string | null;
   country: string | null;
@@ -159,7 +153,6 @@ export interface GetDoctorDetails_getDoctorDetails {
   specialty: GetDoctorDetails_getDoctorDetails_specialty | null;
   doctorHospital: GetDoctorDetails_getDoctorDetails_doctorHospital[];
   starTeam: (GetDoctorDetails_getDoctorDetails_starTeam | null)[] | null;
-  chatDays: number | null;
 }
 
 export interface GetDoctorDetails {

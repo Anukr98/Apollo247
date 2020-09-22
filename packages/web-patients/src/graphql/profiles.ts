@@ -613,6 +613,14 @@ export const ADD_MEDICAL_RECORD = gql`
   }
 `;
 
+export const ADD_LAB_RESULT_RECORD = gql`
+  mutation addPatientLabTestRecord($AddLabTestRecordInput: AddLabTestRecordInput) {
+    addPatientLabTestRecord(addLabTestRecordInput: $AddLabTestRecordInput) {
+      status
+    }
+  }
+`;
+
 export const ADD_HEALTHCHECK_RECORD = gql`
   mutation addPatientHealthCheckRecord($AddHealthCheckRecordInput: AddHealthCheckRecordInput) {
     addPatientHealthCheckRecord(addHealthCheckRecordInput: $AddHealthCheckRecordInput) {
@@ -927,6 +935,22 @@ export const GET_LAB_RESULT_PDF = gql`
   query getLabResultpdf($patientId: ID!, $recordId: String!) {
     getLabResultpdf(patientId: $patientId, recordId: $recordId) {
       url
+    }
+  }
+`;
+
+export const UPDATE_WHATSAPP_STATUS = gql`
+  mutation UpdateWhatsAppStatus(
+    $whatsAppMedicine: Boolean
+    $whatsAppConsult: Boolean
+    $patientId: String!
+  ) {
+    updateWhatsAppStatus(
+      whatsAppMedicine: $whatsAppMedicine
+      whatsAppConsult: $whatsAppConsult
+      patientId: $patientId
+    ) {
+      status
     }
   }
 `;

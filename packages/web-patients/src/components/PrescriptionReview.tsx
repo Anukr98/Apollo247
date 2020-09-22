@@ -31,6 +31,8 @@ import {
   INVALID_FILE_TYPE_ERROR,
   toBase64,
 } from 'helpers/commonHelpers';
+import { dataLayerTracking } from 'gtmTracking';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -78,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '0 0 10px',
       borderBottom: '1px solid rgba(2, 71, 91, 0.3)',
       margin: '0 0 20px',
-      '& h6': {
+      '& h2': {
         margin: 0,
         fontSize: 14,
         textTransform: 'uppercase',
@@ -104,7 +106,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '20px 10px 0',
       overflow: 'hidden',
       position: 'relative',
-      '& h4': {
+      '& h1': {
         fontSize: 17,
         color: '#02475b',
         fontWeight: '600',
@@ -130,7 +132,7 @@ const useStyles = makeStyles((theme: Theme) => {
           order: 1,
           padding: '0 0 20px',
         },
-        '& h4': {
+        '& h1': {
           position: 'static',
           width: 'auto',
           paddingLeft: 0,
@@ -198,7 +200,7 @@ const useStyles = makeStyles((theme: Theme) => {
     vHead: {
       padding: '15px 20px',
       background: '#f7f8f5',
-      '& h4': {
+      '& h2': {
         fontSize: 17,
         textTransform: 'uppercase',
         color: '#02475b',
@@ -265,6 +267,11 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: '600',
         margin: '0 0 14px',
       },
+      '& h2': {
+        fontSize: 16,
+        fontWeight: '600',
+        margin: '0 0 14px',
+      },
       '& p': {
         fontSize: 13,
       },
@@ -298,7 +305,7 @@ const useStyles = makeStyles((theme: Theme) => {
     instructions: {
       padding: 16,
       background: '#f7f8f5',
-      '& h6': {
+      '& h2': {
         fontSize: 14,
         color: '#02475b',
         lineHeight: '20px',
@@ -519,7 +526,7 @@ const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
 );
-export const PrescriptionReview: React.FC = (props: any) => {
+const PrescriptionReview: React.FC = (props: any) => {
   const defPresObject = {
     name: '',
     imageUrl: '',
@@ -591,6 +598,18 @@ export const PrescriptionReview: React.FC = (props: any) => {
     });
   }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Pharmacy Prescription Review Page',
+      pageLOB: 'Pharmacy',
+      pageType: ' Prescription',
+    });
+    /**Gtm code start end */
+  }, []);
 
   useEffect(() => {
     if (prescriptionUploaded && prescriptionUploaded.imageUrl) {
@@ -667,27 +686,40 @@ export const PrescriptionReview: React.FC = (props: any) => {
     makeApi(savePharmacologistConsultInput);
   };
 
+  const metaTagProps = {
+    title: 'Consult A Pharmacologist Online and Check Medicine Interactions – Apollo 247',
+    description:
+      'Consult a Pharmacologist online to check medicine interactions. Upload and get your doctor’s prescription validated to order medicines online in 3 easy steps: 1. Upload the precreciption. 2. Get it validated. 3. Order your medicine online and experience the fastest home delivery.',
+    canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+    robotsMeta: 'index,follow',
+  };
+
   return (
     <div className={classes.prContainer}>
       <Header />
+      <MetaTagsComp {...metaTagProps} />
       <div className={classes.container}>
         <div className={classes.prContent}>
           {/* <div className={classes.backArrow}>
             <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
           </div> */}
           <div className={classes.pageHeader}>
-            <h6>Check Medicine Interactions</h6>
+            <h2>Check Medicine Interactions</h2>
           </div>
           <Grid container spacing={2} className={classes.reviewContainer}>
             <Grid item xs={12} sm={6}>
               <div className={classes.pContent}>
                 <div className={classes.consultDetails}>
                   <div className={classes.cdContent}>
-                    <img src={require('images/pharmacologist.svg')} />
+                    <img
+                      src={require('images/pharmacologist.svg')}
+                      alt="CONSULT A PHARMACOLOGIST"
+                      title="CONSULT A PHARMACOLOGIST"
+                    />
                     <div>
-                      <h4>
+                      <h1>
                         Consult a <span className={classes.whiteText}>Pharmacologist</span>
-                      </h4>
+                      </h1>
                       <ul className={classes.pList}>
                         <li>
                           If you are taking multiple medications, it’s important to understand the
@@ -711,28 +743,40 @@ export const PrescriptionReview: React.FC = (props: any) => {
                 </div>
                 <div className={classes.validateContainer}>
                   <div className={classes.vHead}>
-                    <h4>
+                    <h2>
                       Three Easy Steps{' '}
                       <span className={classes.yellowText}>
                         to Validate Prescription and Order Medicine
                       </span>
-                    </h4>
+                    </h2>
                   </div>
                   <div className={classes.vBody}>
                     <div className={classes.steps}>
                       <div className={classes.stepDetails}>
-                        <img src={require('images/upload.png')} />
+                        <img
+                          src={require('images/upload.png')}
+                          alt="CONSULT A PHARMACOLOGIST"
+                          title="CONSULT A PHARMACOLOGIST"
+                        />
                         <Typography>Share all of your prescriptions with us</Typography>
                       </div>
                       <div className={classes.stepDetails}>
-                        <img src={require('images/get-in-touch.png')} />
+                        <img
+                          src={require('images/get-in-touch.png')}
+                          alt="CONSULT A PHARMACOLOGIST"
+                          title="CONSULT A PHARMACOLOGIST"
+                        />
                         <Typography>
                           Our expert pharmacologist will analyze these for potential medicine and
                           food interaction risks
                         </Typography>
                       </div>
                       <div className={classes.stepDetails}>
-                        <img src={require('images/call.png')} />
+                        <img
+                          src={require('images/call.png')}
+                          alt="CONSULT A PHARMACOLOGIST"
+                          title="CONSULT A PHARMACOLOGIST"
+                        />
                         <Typography>
                           Order your medicines here if no risks identified, else consult a doctor
                           for a review of the medicines
@@ -746,6 +790,7 @@ export const PrescriptionReview: React.FC = (props: any) => {
                           href={`mailto:${pharmacologistEmail}`}
                           target="_blank"
                           className={classes.bold}
+                          rel="noopener noreferrer"
                         >
                           {pharmacologistEmail}
                         </a>
@@ -762,8 +807,12 @@ export const PrescriptionReview: React.FC = (props: any) => {
                     <div className={classes.beforeUpload} {...getRootProps()}>
                       <input {...getInputProps()} />
                       <div className={classes.uploadArea}>
-                        <img src={require('images/cloud-upload.png')} />
-                        <Typography component="h5">
+                        <img
+                          src={require('images/cloud-upload.png')}
+                          alt="CONSULT A PHARMACOLOGIST"
+                          title="CONSULT A PHARMACOLOGIST"
+                        />
+                        <Typography component="h2">
                           Drag &amp; Drop your prescription here
                         </Typography>
                         <Typography component="h5">or</Typography>
@@ -780,7 +829,7 @@ export const PrescriptionReview: React.FC = (props: any) => {
                         <Typography component="p">(Pdf,jpeg,jpg)</Typography>
                       </div>
                       <div className={classes.instructions}>
-                        <Typography component="h6">
+                        <Typography component="h2">
                           Instructions For Uploading Prescriptions
                         </Typography>
                         <Typography>
@@ -804,6 +853,8 @@ export const PrescriptionReview: React.FC = (props: any) => {
                                     <img
                                       className={classes.prescriptionThumb}
                                       src={pres.imageUrl}
+                                      alt="CONSULT A PHARMACOLOGIST"
+                                      title="CONSULT A PHARMACOLOGIST"
                                     />
                                     <div>
                                       <Typography component="h5">{pres.name}</Typography>
@@ -818,6 +869,8 @@ export const PrescriptionReview: React.FC = (props: any) => {
                                     <img
                                       src={require('images/ic_cross_onorange_small.svg')}
                                       width="20"
+                                      alt="CONSULT A PHARMACOLOGIST"
+                                      title="CONSULT A PHARMACOLOGIST"
                                     />
                                   </a>
                                 </li>
@@ -838,7 +891,11 @@ export const PrescriptionReview: React.FC = (props: any) => {
                               return (
                                 <li key={pres.id}>
                                   <div className={classes.recordDetails}>
-                                    <img src={require('images/rx.png')} />
+                                    <img
+                                      src={require('images/rx.png')}
+                                      alt="CONSULT A PHARMACOLOGIST"
+                                      title="CONSULT A PHARMACOLOGIST"
+                                    />
                                     <div>
                                       <Typography component="h5">{pres.doctorName}</Typography>
                                       <div className={classes.details}>
@@ -856,6 +913,8 @@ export const PrescriptionReview: React.FC = (props: any) => {
                                     <img
                                       src={require('images/ic_cross_onorange_small.svg')}
                                       width="20"
+                                      alt="CONSULT A PHARMACOLOGIST"
+                                      title="CONSULT A PHARMACOLOGIST"
                                     />
                                   </a>
                                 </li>
@@ -910,6 +969,13 @@ export const PrescriptionReview: React.FC = (props: any) => {
                           disabled={isPostSubmitDisable}
                           color="primary"
                           onClick={() => {
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Prescription Uploaded',
+                              pageType: 'Index',
+                            });
+                            /**Gtm code start end */
+
                             !isSignedIn ? protectWithLoginPopup() : submitPrescriptionForReview();
                           }}
                         >
@@ -960,3 +1026,5 @@ export const PrescriptionReview: React.FC = (props: any) => {
     </div>
   );
 };
+
+export default PrescriptionReview;

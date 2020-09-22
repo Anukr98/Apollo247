@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -6,6 +6,8 @@ import { makeStyles } from '@material-ui/styles';
 import { BottomLinks } from 'components/BottomLinks';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { dataLayerTracking } from 'gtmTracking';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -46,18 +48,36 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Privacy: React.FC = (props) => {
+const Privacy: React.FC = (props) => {
   const classes = useStyles({});
 
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Privacy Page',
+      pageLOB: 'Others',
+      pageType: 'Privacy Page',
+    });
+    /**Gtm code start end */
+  }, []);
+
+  const [metaTagProps, setMetaTagProps] = useState(null);
+  setMetaTagProps({
+    title: 'Apollo 247 - Privacy Policy - Apollo Hospitals',
+    description:
+      'Read the Privacy Policy of Apollo 247. Apollo 247 website and app ( “Website” /“App” respectively), respects your privacy, and seeks to comply with applicable legal requirements in respect of data collection, processing and transfer.',
+    canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+  });
   return (
     <div className={classes.root}>
+      {metaTagProps && <MetaTagsComp {...metaTagProps} />}
       <Header />
       <div className={classes.container}>
         <div className={classes.pageContainer}>
           <p>
-            <strong>
-              <u>Apollo247 Privacy Policy</u>
-            </strong>
+            <h1>Apollo 247 Privacy Policy</h1>
           </p>
           <p>
             This Privacy Policy governs how we, Apollo247,
@@ -86,9 +106,7 @@ export const Privacy: React.FC = (props) => {
           </p>
           <ol>
             <li>
-              <strong>
-                <em>What is Personal Information?</em>
-              </strong>
+              <h2>What is Personal Information?</h2>
             </li>
           </ol>
           <p>
@@ -123,9 +141,7 @@ export const Privacy: React.FC = (props) => {
           </p>
           <ol start={2}>
             <li>
-              <strong>
-                <em>What types of data do we collect?</em>
-              </strong>
+              <h2>What types of data do we collect?</h2>
             </li>
           </ol>
           <p>
@@ -170,9 +186,7 @@ export const Privacy: React.FC = (props) => {
           </ul>
           <ol start={3}>
             <li>
-              <strong>
-                <em>Where do we collect your data from?</em>
-              </strong>
+              <h2>Where do we collect your data from?</h2>
             </li>
           </ol>
           <p>
@@ -221,9 +235,7 @@ export const Privacy: React.FC = (props) => {
           </ul>
           <ol start={4}>
             <li>
-              <strong>
-                <em>How do we use your data? </em>
-              </strong>
+              <h2>How do we use your data? </h2>
             </li>
           </ol>
           <p>We use your Personal Information for purposes that include the following:</p>
@@ -306,9 +318,7 @@ export const Privacy: React.FC = (props) => {
           </ul>
           <ol start={5}>
             <li>
-              <strong>
-                <em>How long will we retain your data?</em>
-              </strong>
+              <h2>How long will we retain your data?</h2>
             </li>
           </ol>
           <p>
@@ -327,9 +337,7 @@ export const Privacy: React.FC = (props) => {
           </p>
           <ol start={6}>
             <li>
-              <strong>
-                <em>Disclosure and transfer of your data </em>
-              </strong>
+              <h2>Disclosure and transfer of your data </h2>
             </li>
           </ol>
           <p>
@@ -403,9 +411,7 @@ export const Privacy: React.FC = (props) => {
           </ul>
           <ol start={7}>
             <li>
-              <strong>
-                <em>How do we protect your data?</em>
-              </strong>
+              <h2>How do we protect your data?</h2>
             </li>
           </ol>
           <p>
@@ -435,9 +441,7 @@ export const Privacy: React.FC = (props) => {
           </p>
           <ol start={8}>
             <li>
-              <strong>
-                <em>What are your rights?</em>
-              </strong>
+              <h2>What are your rights?</h2>
             </li>
           </ol>
           <p>
@@ -482,9 +486,7 @@ export const Privacy: React.FC = (props) => {
           <p>We will respond to your request within a reasonable time</p>
           <ol start={9}>
             <li>
-              <strong>
-                <em>Third Party Websites and Services</em>
-              </strong>
+              <h2>Third Party Websites and Services</h2>
             </li>
           </ol>
           <p>
@@ -497,9 +499,7 @@ export const Privacy: React.FC = (props) => {
           </p>
           <ol start={10}>
             <li>
-              <strong>
-                <em>Changes to this Privacy Policy</em>
-              </strong>
+              <h2>Changes to this Privacy Policy</h2>
             </li>
           </ol>
           <p>
@@ -516,3 +516,5 @@ export const Privacy: React.FC = (props) => {
     </div>
   );
 };
+
+export default Privacy;

@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { MedicalRecordType } from '../../graphql/types/globalTypes';
+import _lowerCase from 'lodash/lowerCase';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -41,6 +42,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       color: 'rgba(2,71,91,0.6)',
       fontWeight: 500,
+      '& img': {
+        margin: '5px 10px 0 0',
+        position: 'relative',
+        top: 2,
+      },
     },
     doctorService: {
       paddingTop: 8,
@@ -110,16 +116,17 @@ const useStyles = makeStyles((theme: Theme) => {
 type MedicalCardProps = {
   name: string;
   source: string;
-  type: MedicalRecordType;
+  recordType: MedicalRecordType;
   isActiveCard: boolean;
   deleteReport: (id: string, type: string) => void;
   id: string;
+  hospitalName?: string;
 };
 
 export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
   const classes = useStyles({});
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const { name, source, type, isActiveCard, deleteReport, id } = props;
+  const { name, source, recordType, isActiveCard, deleteReport, id, hospitalName } = props;
 
   return (
     <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
@@ -130,8 +137,14 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
       </div>
       {source && source !== '-' && (
         <div className={classes.consultType}>
-          {/* {source === '247self' ? <img /> : <img />} // first image should have person image and second one should be hospital  */}
-          {type !== MedicalRecordType.HOSPITALIZATION && source === '247self'
+          {source === '247self' || _lowerCase(source) === 'self' ? (
+            <img src={require('images/ic_selfupload.svg')} alt="" />
+          ) : (
+            <img src={require('images/ic_hospitalgray.svg')} alt="" />
+          )}
+          {recordType === MedicalRecordType.HOSPITALIZATION && hospitalName && hospitalName !== '-'
+            ? hospitalName
+            : source === '247self' || _lowerCase(source) === 'self'
             ? 'Self upload'
             : source}
         </div>
@@ -160,7 +173,7 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
           <AphButton
             color="primary"
             onClick={() => {
-              deleteReport(id, type);
+              deleteReport(id, recordType);
               setShowPopup(false);
             }}
             autoFocus

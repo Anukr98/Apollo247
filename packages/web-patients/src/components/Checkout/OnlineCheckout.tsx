@@ -21,6 +21,7 @@ import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
 import { Route } from 'react-router-dom';
 import { consultPayButtonClickTracking } from 'webEngageTracking';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -355,7 +356,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const OnlineCheckout: React.FC = () => {
+const OnlineCheckout: React.FC = () => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
   const { isSignedIn } = useAuth();
@@ -403,6 +404,20 @@ export const OnlineCheckout: React.FC = () => {
 
   useEffect(() => {
     setLoading(true);
+
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Consultation Cart Page',
+      pageLOB: 'Consultation',
+      pageType: 'Cart Page',
+      Time: appointmentDateTime,
+      Type: appointmentType,
+      cartproductlist: JSON.stringify(pageData),
+    });
+    /**Gtm code start end */
+
     apolloClient
       .query<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>({
         query: GET_DOCTOR_DETAILS_BY_ID,
@@ -696,3 +711,5 @@ export const OnlineCheckout: React.FC = () => {
     return <LinearProgress className={classes.loader} />;
   }
 };
+
+export default OnlineCheckout;

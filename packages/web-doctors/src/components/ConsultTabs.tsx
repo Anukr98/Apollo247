@@ -109,6 +109,7 @@ import {
   saveAppointmentCallFeedbackVariables,
 } from 'graphql/types/saveAppointmentCallFeedback';
 import Alert from 'components/Alert';
+import { getAge } from 'helpers/Utils';
 import moment from 'moment';
 import { webEngageEventTracking } from 'webEngageTracking';
 
@@ -432,6 +433,8 @@ export const ConsultTabs: React.FC = () => {
 
   const [notes, setSRDNotes] = useState<string | null>(null);
   const [juniorDoctorNotes, setJuniorDoctorNotes] = useState<string | null>(null);
+  const [diagnosticTestResult, setDiagnosticTestResult] = useState<string | null>(null);
+  const [clinicalObservationNotes, setClinicalObservationNotes] = useState<string | null>(null);
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
@@ -976,6 +979,8 @@ export const ConsultTabs: React.FC = () => {
                 _data.data.getCaseSheet.patientDetails.patientMedicalHistory.temperature || ''
               );
               setWeight(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.weight || '');
+              setDiagnosticTestResult(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.diagnosticTestResult || '');
+              setClinicalObservationNotes(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.clinicalObservationNotes || '');
             }
 
             const patientFamilyHistory =
@@ -1109,6 +1114,27 @@ export const ConsultTabs: React.FC = () => {
           variables: { appointmentId: appointmentId },
         })
         .then((_data) => {
+          const webEngageData = {
+            doctorName: (currentPatient && currentPatient.fullName) || '',
+            doctorMobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
+            patientName:
+              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails &&
+              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.firstName
+                ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
+                  _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.lastName
+                : '',
+            patientMobileNumber:
+              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails &&
+              _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.mobileNumber
+                ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.mobileNumber
+                : '',
+            appointmentDateTime: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.appointmentDateTime,
+            appointmentDisplayId: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.displayId,
+            appointmentId: appointmentId,
+          };
+          setWebengageConsultTrackingObject(webEngageData);
           setCasesheetInfo(_data.data);
           setError('');
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails &&
@@ -1224,14 +1250,7 @@ export const ConsultTabs: React.FC = () => {
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth !== null &&
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth !== ''
           ) {
-            cardStripArr.push(
-              Math.abs(
-                new Date(Date.now()).getUTCFullYear() -
-                  new Date(
-                    _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth
-                  ).getUTCFullYear()
-              ).toString()
-            );
+            cardStripArr.push(getAge(_data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth));
           }
           if (
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender &&
@@ -1305,7 +1324,8 @@ export const ConsultTabs: React.FC = () => {
             setWeight(
               _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.weight || ''
             );
-
+            setDiagnosticTestResult(_data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.diagnosticTestResult || '');
+            setClinicalObservationNotes(_data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.clinicalObservationNotes || '');
             // Refferal
             if (
               _data &&
@@ -1489,6 +1509,20 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const sendToPatientAction = () => {
+    if (casesheetVersion < 2) {
+      webEngageEventTracking(
+        {
+          'Doctor name': webengageConsultTrackingObject.doctorName,
+          'Patient name': webengageConsultTrackingObject.patientName,
+          'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
+          'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
+          'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+          'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
+          'Appointment ID': webengageConsultTrackingObject.appointmentId,
+        },
+        'Front_end - Doctor Send Prescription'
+      );
+    }
     client
       .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
         mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
@@ -1514,20 +1548,7 @@ export const ConsultTabs: React.FC = () => {
           );
           setPrescriptionPdf(url);
           setShowConfirmPrescription(false);
-          if (casesheetVersion < 2) {
-            webEngageEventTracking(
-              {
-                'Doctor name': webengageConsultTrackingObject.doctorName,
-                'Patient name': webengageConsultTrackingObject.patientName,
-                'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
-                'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
-                'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
-                'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
-                'Appointment ID': webengageConsultTrackingObject.appointmentId,
-              },
-              'Front_end - Doctor Send Prescription'
-            );
-          } else {
+          if (casesheetVersion > 1) {
             webEngageEventTracking(
               {
                 'Doctor name': webengageConsultTrackingObject.doctorName,
@@ -1677,6 +1698,8 @@ export const ConsultTabs: React.FC = () => {
         occupationHistory: occupationHistory || '',
         referralSpecialtyName: referralSpecialtyName || '',
         referralDescription: referralDescription || '',
+        diagnosticTestResult: diagnosticTestResult || '',
+        clinicalObservationNotes: clinicalObservationNotes || '',
       };
       client
         .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
@@ -1941,6 +1964,7 @@ export const ConsultTabs: React.FC = () => {
     pubnub
       .hereNow({ channels: [appointmentId], includeUUIDs: true })
       .then((response: any) => {
+        console.log({ pubnubHereNowResponse: response });
         const occupants = response.channels[appointmentId].occupants;
         let doctorCount = 0;
         let paientsCount = 0;
@@ -2043,6 +2067,10 @@ export const ConsultTabs: React.FC = () => {
             notes,
             sdConsultationDate,
             setSRDNotes,
+            diagnosticTestResult,
+            setDiagnosticTestResult,
+            clinicalObservationNotes,
+            setClinicalObservationNotes,
             juniorDoctorNotes,
             diagnosis,
             setDiagnosis,
@@ -2127,11 +2155,11 @@ export const ConsultTabs: React.FC = () => {
             style={{ height: 'calc(100vh - 65px)' }}
 
           > */}
-          <RateCall
+          {/* <RateCall
             visible={giveRating}
             setGiveRating={setGiveRating}
             submitRatingCallback={(data) => submitRatingHandler(data)}
-          />
+          /> */}
           <div className={classes.container}>
             <CallPopover
               setGiveRating={setGiveRating}

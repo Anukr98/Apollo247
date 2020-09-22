@@ -381,7 +381,7 @@ const RecordType: RecordTypeType[] = [
   },
 ];
 
-export const AddRecords: React.FC = (props) => {
+const AddRecords: React.FC = (props) => {
   const classes = useStyles({});
   let refFileInput: any = useRef();
   const [typeOfRecord, setTypeOfRecord] = React.useState<string>('');
@@ -1180,3 +1180,5 @@ export const AddRecords: React.FC = (props) => {
 //       }
 //   );
 // };
+
+export default AddRecords;

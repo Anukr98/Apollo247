@@ -37,7 +37,12 @@ export const GET_APPOINTMENT_DATA = gql`
         isSeniorConsultStarted
         isConsultStarted
         symptoms
+        caseSheet {
+          followUpAfterInDays
+          doctorType
+        }
         doctorInfo {
+          mobileNumber
           id
           salutation
           firstName

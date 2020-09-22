@@ -536,12 +536,7 @@ const bookRescheduleAppointment: Resolver<
       appointmentId: bookRescheduleAppointmentInput.appointmentId,
       notificationType,
     };
-    const notificationResult = sendReminderNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
+    sendReminderNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
@@ -744,6 +739,7 @@ const bookRescheduleAppointment: Resolver<
   //   rescheduledapptDetails.doctorId,
   //   doctorsDb
   // );
+
   sendDoctorRescheduleAppointmentNotification(
     rescheduledapptDetails.appointmentDateTime,
     rescheduledapptDetails.patientName,
@@ -760,7 +756,7 @@ const bookRescheduleAppointment: Resolver<
   }
   const pushNotificationInput = {
     appointmentId: bookRescheduleAppointmentInput.appointmentId,
-    notificationType: NotificationType.ACCEPT_RESCHEDULED_APPOINTMENT,
+    notificationType: NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT,
   };
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
     // const notificationResult = await sendNotification(
@@ -776,12 +772,7 @@ const bookRescheduleAppointment: Resolver<
     //   appointmentId: bookRescheduleAppointmentInput.appointmentId,
     //   notificationType: NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT,
     // };
-    const notificationResult = await sendNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
+    sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
   }
   return { appointmentDetails };
 };

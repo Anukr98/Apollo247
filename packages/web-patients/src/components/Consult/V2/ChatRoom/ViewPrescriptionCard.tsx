@@ -347,7 +347,11 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
               <div>Hope your consultation went well… Here is your prescription.</div>
               <div>
                 {messageDetails.transferInfo && messageDetails.transferInfo.pdfUrl && (
-                  <a href={messageDetails.transferInfo.pdfUrl} target="_blank">
+                  <a
+                    href={messageDetails.transferInfo.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <button className={classes.downloadBtn}>Download</button>
                   </a>
                 )}
@@ -385,19 +389,11 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
               )}
 
               <div>
-                <button
-                  disabled={appointmentDetails.appointmentState === APPOINTMENT_STATE.RESCHEDULE}
-                  className={classes.downloadBtn}
-                  onClick={() => setIsModalOpen(true)}
-                >
+                <button className={classes.downloadBtn} onClick={() => setIsModalOpen(true)}>
                   CHANGE SLOT
                 </button>
 
-                <button
-                  disabled={appointmentDetails.appointmentState === APPOINTMENT_STATE.RESCHEDULE}
-                  className={classes.viewBtn}
-                  onClick={() => handleAcceptReschedule()}
-                >
+                <button className={classes.viewBtn} onClick={() => handleAcceptReschedule()}>
                   {apiLoading ? (
                     <CircularProgress size={22} color="secondary" />
                   ) : (
