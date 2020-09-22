@@ -390,7 +390,7 @@ interface SpecialityProps {
 export interface DoctorDetails {
   id: string;
   displayName: string;
-  consultMode: string;
+  consultMode: ConsultMode;
   doctorType: string;
   doctorfacility: string;
   earliestSlotInMinutes: number;
@@ -787,13 +787,13 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
   const getConsultModeDoctorList = (data: any) => {
     return _filter(data, (doctor: any) => {
-      const consultMode = doctor.consultMode.toLowerCase();
+      const consultMode = doctor.consultMode;
       if (isOnlineSelected && isPhysicalSelected) {
         return true;
       } else if (isOnlineSelected) {
-        return consultMode !== 'physical';
+        return consultMode !== ConsultMode.PHYSICAL;
       } else if (isPhysicalSelected) {
-        return consultMode !== 'online';
+        return consultMode !== ConsultMode.ONLINE;
       }
       return false;
     });

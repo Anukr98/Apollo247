@@ -161,7 +161,7 @@ interface InfoCardProps {
 
 export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
   const { doctorInfo, doctorType, specialtyId } = props;
-  const consultMode = doctorInfo.consultMode.toLowerCase();
+  const consultMode = doctorInfo.consultMode;
   const differenceInMinutes = doctorInfo ? doctorInfo.earliestSlotInMinutes : 0;
   const { isSignedIn } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
@@ -201,14 +201,14 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
               className={classes.doctorAvatar}
             />
             <div className={classes.consultType}>
-              {(consultMode === 'both' || consultMode === 'online') && (
+              {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE) && (
                 <span>
                   <img src={require('images/ic-video.svg')} alt="Online Consult" />
                   <br />
                   Online
                 </span>
               )}
-              {(consultMode === 'both' || consultMode === 'physical') && (
+              {(consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL) && (
                 <span>
                   <img src={require('images/fa-solid-hospital.svg')} alt="Clinic Visit" />
                   <br />

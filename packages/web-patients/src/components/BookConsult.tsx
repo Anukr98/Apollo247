@@ -75,14 +75,14 @@ interface DoctorCardProps {
   doctorId: string;
   setIsPopoverOpen: (popover: boolean) => void;
   doctorAvailableIn: number;
-  consultMode: string;
+  consultMode: ConsultMode;
 }
 
 export const BookConsult: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles({});
 
   const { doctorId, setIsPopoverOpen, consultMode } = props;
-  const [tabValue, setTabValue] = useState<number>(consultMode === 'physical' ? 1 : 0);
+  const [tabValue, setTabValue] = useState<number>(consultMode === ConsultMode.PHYSICAL ? 1 : 0);
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorDetailsById,
@@ -130,8 +130,10 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
     //   /* Gtm code end */
     // }, [])
 
-    const availableForVirtualConsultation = consultMode === 'both' || consultMode === 'online';
-    const availableForPhysicalConsultation = consultMode === 'both' || consultMode === 'physical';
+    const availableForVirtualConsultation =
+      consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE;
+    const availableForPhysicalConsultation =
+      consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL;
 
     return (
       <Paper className={classes.modalBox}>

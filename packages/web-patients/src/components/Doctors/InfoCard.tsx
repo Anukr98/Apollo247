@@ -175,7 +175,7 @@ interface InfoCardProps {
 
 export const InfoCard: React.FC<InfoCardProps> = (props) => {
   const { doctorInfo, doctorType, specialtyId } = props;
-  const consultMode = doctorInfo.consultMode.toLowerCase();
+  const consultMode = doctorInfo.consultMode;
   const differenceInMinutes = (doctorInfo && doctorInfo.earliestSlotInMinutes) || 0;
   const { isSignedIn } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
