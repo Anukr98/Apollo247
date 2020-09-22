@@ -165,7 +165,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   findByAppointmentId(id: string) {
     return this.find({
       where: { id },
-      relations: ['appointmentPayments'],
+      relations: ['appointmentPayments', 'caseSheet'],
     }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
@@ -698,7 +698,8 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
-        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',        {
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
           status1: STATUS.CANCELLED,
           status2: STATUS.PAYMENT_PENDING,
           status3: STATUS.UNAVAILABLE_MEDMANTRA,
@@ -1553,7 +1554,6 @@ export class AppointmentRepository extends Repository<Appointment> {
               .toString()
               .padStart(2, '0')}:00.000Z`;
           }
-
 
           Array(blockedSlotsCount)
             .fill(0)

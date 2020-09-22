@@ -235,7 +235,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                           {/* <img src={`${apiDetails.url}${hotSeller.thumbnail}`} alt="" /> */}
                           <LazyIntersection
                             src={`${apiDetails.url}${hotSeller.thumbnail}`}
-                            alt={hotSeller.name}
+                            alt={`Buy ${hotSeller.name} Online`}
                           />
                         </div>
                         <div className={classes.productTitle}>{hotSeller.name}</div>

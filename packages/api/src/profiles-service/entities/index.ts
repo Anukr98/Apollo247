@@ -417,6 +417,12 @@ export class MedicineOrders extends BaseEntity {
   isOmsOrder: boolean;
 
   @Column({ nullable: true })
+  clusterId: string;
+
+  @Column({ nullable: true })
+  allocationProfileName: string;
+
+  @Column({ nullable: true })
   updatedDate: Date;
 
   @BeforeInsert()

@@ -272,7 +272,10 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                 >
                   <div className={classes.pdHeader}>
                     <div className={classes.bigAvatar}>
-                      <LazyIntersection src={`${apiDetails.imageUrl}${product.thumbnail}`} alt="" />
+                      <LazyIntersection
+                        src={`${apiDetails.imageUrl}${product.thumbnail}`}
+                        alt={`Buy ${product.name} Online`}
+                      />
                     </div>
                     <div className={classes.productName}>{product.name}</div>
                   </div>
