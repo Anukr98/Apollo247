@@ -235,9 +235,9 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         display: 'block',
         position: 'absolute',
-        top: 20,
-        left: 20,
+        top: 10,
         zIndex: 5,
+        boxShadow: 'none',
       },
     },
   };
@@ -702,14 +702,13 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
 
       <AphDialog open={isAddAddressDialogOpen} className={classes.dialogBox}>
         <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} />
-        <a
-          href="javascript:vois(0);"
+        <AphButton
           onClick={() => setIsAddAddressDialogOpen(false)}
           title={'Close'}
           className={classes.goBack}
         >
-          <img src={require('images/ic_back.svg')} alt="" />
-        </a>
+          <img src={require('images/ic_back.svg')} alt="Back Button" />
+        </AphButton>
         <AphDialogTitle className={classes.dialogTitle}>Add New Address</AphDialogTitle>
         <AddNewAddress
           setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}

@@ -16,8 +16,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
-// import { Map, InfoWindow, Marker, GoogleApiWrapper } from 'google-maps-react';
-// import GoogleMaps from 'components/Locations/GoogleMaps';
+// import { MapContainer } from 'components/Locations/GoogleMaps';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -381,8 +380,6 @@ type Address = {
   types: Array<string>;
 };
 
-const AnyReactComponent = (props: any) => <div>{props.text}</div>;
-
 export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const classes = useStyles({});
   const [address1, setAddress1] = useState<string>('');
@@ -412,8 +409,6 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const [onSave, setOnSave] = useState<boolean>(true);
   const addToCartRef = useRef(null);
 
-  console.log('address1', address1, address1 && address1.length === 0);
-
   const disableSubmit =
     address1.length === 0 ||
     address2.length === 0 ||
@@ -424,7 +419,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
     patientNumber.length === 0 ||
     addressType === PATIENT_ADDRESS_TYPE.OTHER
       ? !otherTextbox
-      : addressType.length === 0 || (state && state.length === 0) || (city && city.length === 0);
+      : addressType.length === 0 || state.length === 0 || city.length === 0;
 
   const patientAddressTypes = [
     PATIENT_ADDRESS_TYPE.HOME,
@@ -556,12 +551,137 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
     showError = true;
   }
 
+  const onConfirmLocation = () => {
+    setMutationLoading(true);
+    addressId && addressId.length > 0
+      ? updateAddressMutation({
+          variables: {
+            UpdatePatientAddressInput: {
+              id: addressId,
+              addressLine1: address1,
+              addressLine2: address2,
+              city: city,
+              state: state,
+              zipcode: pincode,
+              mobileNumber: patientNumber,
+              addressType: addressType as PATIENT_ADDRESS_TYPE,
+              otherAddressType: otherTextbox,
+              latitude,
+              longitude,
+              stateCode,
+              name: patientName,
+              landmark,
+            },
+          },
+        })
+          .then(() => {
+            /**Gtm code start  */
+            gtmTracking({
+              category: 'Pharmacy',
+              action: 'Order',
+              label: 'Address Selected',
+            });
+            /**Gtm code End  */
+
+            /**Gtm code start start */
+            dataLayerTracking({
+              event: 'Address Selected',
+              PINCode: pincode,
+              City: city,
+            });
+            /**Gtm code start end */
+
+            props.setIsAddAddressDialogOpen(false);
+            props.forceRefresh && props.forceRefresh(true);
+            props.setDeliveryTime && props.setDeliveryTime('');
+            setDeliveryAddressId && setDeliveryAddressId(addressId);
+          })
+          .catch((error) => {
+            setIsAlertOpen(true);
+            setAlertMessage(error);
+          })
+      : saveAddressMutation({
+          variables: {
+            patientAddress: {
+              patientId: currentPatientId,
+              addressLine1: address1,
+              addressLine2: address2,
+              city: city,
+              state: state,
+              zipcode: pincode,
+              mobileNumber: patientNumber,
+              addressType: addressType as PATIENT_ADDRESS_TYPE,
+              otherAddressType: otherTextbox,
+              latitude,
+              longitude,
+              stateCode,
+              name: patientName,
+              landmark,
+            },
+          },
+        })
+          .then(({ data }: any) => {
+            if (data && data.savePatientAddress && data.savePatientAddress.patientAddress) {
+              const deliveryAddrsId = data.savePatientAddress.patientAddress.id;
+              if (props.checkServiceAvailability) {
+                props
+                  .checkServiceAvailability(pincode)
+                  .then((res: any) => {
+                    if (res && res.data && res.data.response) {
+                      /**Gtm code start  */
+                      gtmTracking({
+                        category: 'Profile',
+                        action: 'Update',
+                        label: 'Address Added',
+                      });
+                      gtmTracking({
+                        category: 'Pharmacy',
+                        action: 'Order',
+                        label: 'Address Selected',
+                      });
+                      /**Gtm code End  */
+
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Address Selected',
+                        PINCode: pincode,
+                        City: city,
+                      });
+                      /**Gtm code start end */
+
+                      props.setIsAddAddressDialogOpen(false);
+                      props.forceRefresh && props.forceRefresh(true);
+                      props.setDeliveryTime && props.setDeliveryTime('');
+                      setDeliveryAddressId && setDeliveryAddressId(deliveryAddrsId);
+                    } else {
+                      setMutationLoading(false);
+                      setShowPlaceNotFoundPopup(true);
+                    }
+                  })
+                  .catch((e: any) => {
+                    setMutationLoading(false);
+                    console.log(e);
+                  });
+              } else {
+                props.setIsAddAddressDialogOpen(false);
+                props.forceRefresh && props.forceRefresh(true);
+                setDeliveryAddressId &&
+                  setDeliveryAddressId(data.savePatientAddress.patientAddress.id);
+              }
+            }
+          })
+          .catch((error) => {
+            setIsAlertOpen(true);
+            setAlertMessage(error);
+          });
+  };
+
   return (
     <div className={classes.addAddressContainer}>
       {addressScreen === 'map' ? (
         <div className={classes.locateContainer}>
           <div className={classes.mapContainer}>
-            <div className={classes.mapcontent}>{/* <GoogleMaps /> */}</div>
+            <div className={classes.mapcontent}>{/* <MapContainer { ...props } /> */}</div>
           </div>
           <div className={classes.locateContent}>
             <AphButton
@@ -580,137 +700,13 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
             <AphButton
               color="primary"
               className={classes.confirmLocation}
-              onClick={() => {
-                setMutationLoading(true);
-                // setAddressScreen('map')
-                addressId && addressId.length > 0
-                  ? updateAddressMutation({
-                      variables: {
-                        UpdatePatientAddressInput: {
-                          id: addressId,
-                          addressLine1: address1,
-                          // addressLine2: address2,
-                          city: city,
-                          state: state,
-                          zipcode: pincode,
-                          mobileNumber: (currentPatient && currentPatient.mobileNumber) || '',
-                          addressType: addressType as PATIENT_ADDRESS_TYPE,
-                          otherAddressType: otherTextbox,
-                          latitude,
-                          longitude,
-                          stateCode,
-                        },
-                      },
-                    })
-                      .then(() => {
-                        /**Gtm code start  */
-                        gtmTracking({
-                          category: 'Pharmacy',
-                          action: 'Order',
-                          label: 'Address Selected',
-                        });
-                        /**Gtm code End  */
-
-                        /**Gtm code start start */
-                        dataLayerTracking({
-                          event: 'Address Selected',
-                          PINCode: pincode,
-                          City: city,
-                        });
-                        /**Gtm code start end */
-
-                        props.setIsAddAddressDialogOpen(false);
-                        props.forceRefresh && props.forceRefresh(true);
-                        props.setDeliveryTime && props.setDeliveryTime('');
-                        setDeliveryAddressId && setDeliveryAddressId(addressId);
-                      })
-                      .catch((error) => {
-                        setIsAlertOpen(true);
-                        setAlertMessage(error);
-                      })
-                  : saveAddressMutation({
-                      variables: {
-                        patientAddress: {
-                          patientId: currentPatientId,
-                          addressLine1: address1,
-                          addressLine2: address2,
-                          city: city,
-                          state: state,
-                          zipcode: pincode,
-                          mobileNumber: patientNumber,
-                          addressType: addressType as PATIENT_ADDRESS_TYPE,
-                          otherAddressType: otherTextbox,
-                          latitude,
-                          longitude,
-                          stateCode,
-                          name: patientName,
-                          landmark,
-                        },
-                      },
-                    })
-                      .then(({ data }: any) => {
-                        if (
-                          data &&
-                          data.savePatientAddress &&
-                          data.savePatientAddress.patientAddress
-                        ) {
-                          const deliveryAddrsId = data.savePatientAddress.patientAddress.id;
-                          if (props.checkServiceAvailability) {
-                            props
-                              .checkServiceAvailability(pincode)
-                              .then((res: any) => {
-                                if (res && res.data && res.data.response) {
-                                  /**Gtm code start  */
-                                  gtmTracking({
-                                    category: 'Profile',
-                                    action: 'Update',
-                                    label: 'Address Added',
-                                  });
-                                  gtmTracking({
-                                    category: 'Pharmacy',
-                                    action: 'Order',
-                                    label: 'Address Selected',
-                                  });
-                                  /**Gtm code End  */
-
-                                  /**Gtm code start start */
-                                  dataLayerTracking({
-                                    event: 'Address Selected',
-                                    PINCode: pincode,
-                                    City: city,
-                                  });
-                                  /**Gtm code start end */
-
-                                  props.setIsAddAddressDialogOpen(false);
-                                  props.forceRefresh && props.forceRefresh(true);
-                                  props.setDeliveryTime && props.setDeliveryTime('');
-                                  setDeliveryAddressId && setDeliveryAddressId(deliveryAddrsId);
-                                } else {
-                                  setMutationLoading(false);
-                                  setShowPlaceNotFoundPopup(true);
-                                }
-                              })
-                              .catch((e: any) => {
-                                setMutationLoading(false);
-                                console.log(e);
-                              });
-                          } else {
-                            props.setIsAddAddressDialogOpen(false);
-                            props.forceRefresh && props.forceRefresh(true);
-                            setDeliveryAddressId &&
-                              setDeliveryAddressId(data.savePatientAddress.patientAddress.id);
-                          }
-                        }
-                      })
-                      .catch((error) => {
-                        setIsAlertOpen(true);
-                        setAlertMessage(error);
-                      });
-              }}
+              onClick={() => onConfirmLocation()}
             >
               Confirm Location
             </AphButton>
-            <AphButton className={classes.skip}>Skip</AphButton>
+            <AphButton className={classes.skip} onClick={() => onConfirmLocation()}>
+              Skip
+            </AphButton>
           </div>
         </div>
       ) : (

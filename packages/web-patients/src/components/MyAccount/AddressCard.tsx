@@ -84,9 +84,9 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         display: 'block',
         position: 'absolute',
-        top: 20,
-        left: 20,
+        top: 10,
         zIndex: 5,
+        boxShadow: 'none',
       },
     },
   };
@@ -135,14 +135,13 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
     <Grid container spacing={1}>
       {addressDivs}
       <AphDialog open={isEditAddressDialogOpen} className={classes.dialogBox}>
-        <a
-          href="javascript:vois(0);"
+        <AphButton
           onClick={() => setIsEditAddressDialogOpen(false)}
           title={'Close'}
           className={classes.goBack}
         >
-          <img src={require('images/ic_back.svg')} alt="" />
-        </a>
+          <img src={require('images/ic_back.svg')} alt="Back Button" />
+        </AphButton>
         <AphDialogClose onClick={() => setIsEditAddressDialogOpen(false)} title={'Close'} />
         <AphDialogTitle>
           Edit Address
