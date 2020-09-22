@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography } from '@material-ui/core';
+import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { AphButton } from '@aph/web-ui-components';
@@ -68,6 +68,12 @@ const useStyles = makeStyles((theme: Theme) => {
           fontSize: 12,
         },
       },
+    },
+    loadingContainer: {
+      width: '100%',
+      height: '100%',
+      textAlign: 'center',
+      verticalAlign: 'middle',
     },
     mainContent: {
       background: '#fff',
@@ -581,6 +587,7 @@ const TabPanel = (props: any) => {
 export const MembershipPlanDetail: React.FC = (props) => {
   const classes = useStyles({});
   const [showMore, setShowMore] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(true);
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [value, setValue] = React.useState(0);
   const [subscriptionInclusions, setSubscriptionInclusions] = React.useState([]);
@@ -610,6 +617,15 @@ export const MembershipPlanDetail: React.FC = (props) => {
     }
   };
 
+  const getMedalImage = (planName: String) => {
+    if (planName == 'GOLD+ PLAN') {
+      return require('images/hdfc/medal_gold.svg');
+    }
+    if (planName == 'PLATINUM+ PLAN') {
+      return require('images/hdfc/medal_platinum.svg');
+    } else return require('images/hdfc/medal_silver.svg');
+  };
+
   useEffect(() => {
     apolloClient
       .query<
@@ -636,6 +652,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
             'active'
         );
         setCoupons(response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].coupons);
+        setLoading(false);
       })
       .catch((error) => {
         console.error('Failed fetching Subscription Inclusions');
@@ -662,7 +679,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
             />
           </Link>
           <Typography component="h1" className={classes.pageHeader}>
-            Membership Plan Detail
+            Subscription Plan Detail
           </Typography>
         </div>
         <div>
@@ -679,216 +696,225 @@ export const MembershipPlanDetail: React.FC = (props) => {
           </Link>
         </div>
       </header>
-      <div className={classes.container}>
-        <div className={classes.mainContent}>
-          <div className={classes.pcContent}>
-            <div className={classes.planCardContent}>
-              <div className={classes.planCard + ' ' + cardBg(planName)}>
-                <img src={require('images/hdfc/medal.svg')} alt="Gold MemberShip" />
-                <Typography component="h1">{planName}</Typography>
-                <Typography className={classes.benefitDesc}>Availing Benefits worth</Typography>
-                <Typography className={classes.cardWorth}>Rs. {benefitsWorth}</Typography>
-                <Typography className={classes.cardDesc}>
-                  {`A host of benefits await you with our`} {planName}{' '}
-                  {`curated for HDFC customers`}
-                </Typography>
-                <div className={classes.btnContainer}>
-                  <AphButton variant="contained" href={clientRoutes.welcome()}>
-                    {active ? 'Explore Now' : 'Activate Now'}
-                  </AphButton>
-                </div>
-              </div>
-
-              {active ? (
-                <div className={classes.couponContainer}>
-                  <Typography component="h2">Active Coupons</Typography>
-                  <Typography>You are eligible for the following coupons on Apollo 24|7</Typography>
-                  <div className={classes.couponContent}>
-                    {coupons.map((item) => {
-                      return (
-                        <div className={classes.couponDetails}>
-                          <Typography component="h3">{item.coupon}</Typography>
-                          <Typography>{item.message}</Typography>
-                        </div>
-                      );
-                    })}
+      {loading ? (
+        <div className={classes.loadingContainer}>
+          <CircularProgress size={30} />
+        </div>
+      ) : (
+        <div className={classes.container}>
+          <div className={classes.mainContent}>
+            <div className={classes.pcContent}>
+              <div className={classes.planCardContent}>
+                <div className={classes.planCard + ' ' + cardBg(planName)}>
+                  <img src={getMedalImage(planName)} alt="Gold MemberShip" />
+                  <Typography component="h1">{planName}</Typography>
+                  <Typography className={classes.benefitDesc}>Availing Benefits worth</Typography>
+                  <Typography className={classes.cardWorth}>Rs. {benefitsWorth}</Typography>
+                  <Typography className={classes.cardDesc}>
+                    {`A host of benefits await you with our`} {planName}{' '}
+                    {`curated for HDFC customers`}
+                  </Typography>
+                  <div className={classes.btnContainer}>
+                    <AphButton variant="contained" href={clientRoutes.welcome()}>
+                      {active ? 'Explore Now' : 'Activate Now'}
+                    </AphButton>
                   </div>
                 </div>
-              ) : (
-                <div className={classes.couponInactive}>
-                  <Typography>
-                    Your Plan is Currently INACTIVE. To activate your plan, make a transaction
-                    greater than Rs {minimumTransactionValue} on Apollo 24/7
-                  </Typography>
-                </div>
-              )}
-            </div>
-          </div>
 
-          <div className={classes.tabContainer}>
-            <Tabs
-              value={value}
-              classes={{
-                root: classes.tabsRoot,
-                indicator: classes.tabsIndicator,
-              }}
-              onChange={handleTabChange}
-              indicatorColor="primary"
-            >
-              <Tab
-                classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
-                }}
-                label="Available Benefits"
-              />
-              <Tab
-                classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
-                }}
-                label="Benefits Consumed"
-              />
-            </Tabs>
-            <div className={classes.tabContent}>
-              <TabPanel value={value} index={0}>
-                <div className={classes.expansionContainer}>
-                  {/* Show this title when tab is not active */}
-                  <Typography component="h2" className={classes.sectionTitle}>
-                    Benefits Available
-                  </Typography>
-                  <ul className={classes.couponList}>
-                    {subscriptionInclusions &&
-                      subscriptionInclusions[0] &&
-                      subscriptionInclusions[0].benefits.map((item: any) => {
+                {active ? (
+                  <div className={classes.couponContainer}>
+                    <Typography component="h2">Active Coupons</Typography>
+                    <Typography>
+                      You are eligible for the following coupons on Apollo 24|7
+                    </Typography>
+                    <div className={classes.couponContent}>
+                      {coupons.map((item) => {
                         return (
-                          <li>
-                            <div className={classes.couponCard}>
-                              <Typography component="h2">{item.header_content}</Typography>
-                              <Typography>{item.description}</Typography>
-                              {item.cta_label != 'NULL' && (
-                                <AphButton href={clientRoutes.welcome()}>
-                                  {item.cta_label}
-                                </AphButton>
-                              )}
-                            </div>
-                          </li>
+                          <div className={classes.couponDetails}>
+                            <Typography component="h3">{item.coupon}</Typography>
+                            <Typography>{item.message}</Typography>
+                          </div>
                         );
                       })}
+                    </div>
+                  </div>
+                ) : (
+                  <div className={classes.couponInactive}>
+                    <Typography>
+                      Your Plan is Currently INACTIVE. To activate your plan, make a transaction
+                      greater than Rs {minimumTransactionValue} on Apollo 24/7
+                    </Typography>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className={classes.tabContainer}>
+              <Tabs
+                value={value}
+                classes={{
+                  root: classes.tabsRoot,
+                  indicator: classes.tabsIndicator,
+                }}
+                onChange={handleTabChange}
+                indicatorColor="primary"
+              >
+                <Tab
+                  classes={{
+                    root: classes.tabRoot,
+                    selected: classes.tabSelected,
+                  }}
+                  label="Available Benefits"
+                />
+                <Tab
+                  classes={{
+                    root: classes.tabRoot,
+                    selected: classes.tabSelected,
+                  }}
+                  label="Benefits Consumed"
+                />
+              </Tabs>
+              <div className={classes.tabContent}>
+                <TabPanel value={value} index={0}>
+                  <div className={classes.expansionContainer}>
+                    {/* Show this title when tab is not active */}
+                    <Typography component="h2" className={classes.sectionTitle}>
+                      Benefits Available
+                    </Typography>
+                    <ul className={classes.couponList}>
+                      {subscriptionInclusions &&
+                        subscriptionInclusions[0] &&
+                        subscriptionInclusions[0].benefits.map((item: any) => {
+                          return (
+                            <li>
+                              <div className={classes.couponCard}>
+                                <Typography component="h2">{item.header_content}</Typography>
+                                <Typography>{item.description}</Typography>
+                                {item.cta_label != 'NULL' && active && (
+                                  <AphButton href={clientRoutes.welcome()}>
+                                    {item.cta_label}
+                                  </AphButton>
+                                )}
+                              </div>
+                            </li>
+                          );
+                        })}
+                    </ul>
+                  </div>
+                </TabPanel>
+                <TabPanel value={value} index={1}>
+                  Item two
+                </TabPanel>
+              </div>
+            </div>
+            <ExpansionPanel
+              expanded={expanded === 'panel3'}
+              onChange={handleChange('panel3')}
+              className={classes.panelRoot}
+            >
+              <ExpansionPanelSummary
+                expandIcon={<ExpandMoreIcon />}
+                classes={{
+                  root: classes.panelHeader,
+                  content: classes.summaryContent,
+                  expandIcon: classes.expandIcon,
+                  expanded: classes.panelExpanded,
+                }}
+              >
+                <Typography className={classes.panelHeading}>Terms &amp; Conditions</Typography>
+              </ExpansionPanelSummary>
+              <ExpansionPanelDetails className={classes.panelDetails}>
+                <div className={classes.detailsContent}>
+                  <ul className={classes.tncList}>
+                    <li>
+                      The Healthy Life offering is the marketing program offered by Apollo 24/7, an
+                      app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank
+                      customers.
+                    </li>
+                    <li>
+                      The validity of the program (“Term”) is till 31st August 2021, unless extended
+                      by Apollo 24/7 and HDFC Bank.
+                    </li>
+                    <li>
+                      The discounts applicable as per the Healthy Life program shall be applied at
+                      the time of payment checkout by the customer.
+                    </li>
+                    <li>
+                      This program is designed for select HDFC customers and offerings will vary
+                      with the different categories of HDFC customers. However, membership schemes
+                      can be upgraded on the basis of the spending on the Apollo 24/7 app as
+                      mentioned in the offer grid.
+                    </li>
+                    <li>
+                      The Healthy Life Program is open to all HDFC customers with a valid Indian
+                      mobile number only.
+                    </li>
+                    <li>
+                      The T&amp;C’s of the silver, gold and platinum membership offered in the
+                      Healthy Life program shall be governed by the terms &amp; conditions of the
+                      website -{' '}
+                      <a href="https://www.oneapollo.com/terms-conditions/">
+                        https://www.oneapollo.com/terms-conditions/
+                      </a>
+                    </li>
+                    <li>
+                      The Healthy Life offering will be applicable to all HDFC customers, whether
+                      they are existing customers of Apollo 24/7 or not. However, all the customers
+                      shall adhere to the offerings as mentioned in this marketing program.
+                    </li>
+                    <li>The Healthy Life program is non-transferable.</li>
+                    <li>
+                      The activation of the benefits for the Healthy Life program will be completed
+                      24 hours post the service delivery/fulfillment of the qualifying transaction.
+                      For e.g., to unlock benefits, the user is needed to make a qualifying
+                      transaction of INR 499, amount subject to change as per different tiers
+                    </li>
+                    <li>
+                      By enrolling for the Healthy Life program, a member consents to allow use and
+                      disclosure by Apollo Health centres, along with his/her personal and other
+                      information as provided by the member at the time of enrolment and/or
+                      subsequently.
+                    </li>
+                    <li>
+                      As a prerequisite to becoming a member, a customer will need to provide
+                      mandatory information including full name, valid and active Indian mobile
+                      number. He/she shall adhere to such terms and conditions as may be prescribed
+                      for membership from time to time.
+                    </li>
+                    <li>
+                      The Healthy Life membership program will be issued solely at the discretion of
+                      the management and the final discretion on all matters relating to the
+                      membership shall rest with Apollo 24/7(AHEL).
+                    </li>
+                    <li>
+                      Healthy Life program is a corporate offering exclusively for HDFC bank
+                      customers and not for individuals.
+                    </li>
+                    <li>
+                      Apollo 24/7 reserves the right to add, alter, amend and revise terms and
+                      conditions as well as rules and regulations governing the Healthy Life
+                      membership program without prior notice.
+                    </li>
+                    <li>
+                      Benefits and offers available through the program may change or be withdrawn
+                      without prior intimation. Apollo 24/7 will not be responsible for any
+                      liability arising from such situations or use of such offers.
+                    </li>
+                    <li>
+                      Any disputes arising out of the offer shall be subject to arbitration by a
+                      sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of
+                      the arbitration shall be conducted as per the provisions of Arbitration and
+                      Conciliation Act, 1996. The place of arbitration shall be at Chennai and
+                      language of arbitration shall be English. The existence of a dispute, if at
+                      all, shall not constitute a claim against Apollo 24/7.
+                    </li>
                   </ul>
                 </div>
-              </TabPanel>
-              <TabPanel value={value} index={1}>
-                Item two
-              </TabPanel>
-            </div>
+              </ExpansionPanelDetails>
+            </ExpansionPanel>
           </div>
-          <ExpansionPanel
-            expanded={expanded === 'panel3'}
-            onChange={handleChange('panel3')}
-            className={classes.panelRoot}
-          >
-            <ExpansionPanelSummary
-              expandIcon={<ExpandMoreIcon />}
-              classes={{
-                root: classes.panelHeader,
-                content: classes.summaryContent,
-                expandIcon: classes.expandIcon,
-                expanded: classes.panelExpanded,
-              }}
-            >
-              <Typography className={classes.panelHeading}>Terms &amp; Conditions</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails className={classes.panelDetails}>
-              <div className={classes.detailsContent}>
-                <ul className={classes.tncList}>
-                  <li>
-                    The Healthy Life offering is the marketing program offered by Apollo 24/7, an
-                    app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank
-                    customers.
-                  </li>
-                  <li>
-                    The validity of the program (“Term”) is till 31st August 2021, unless extended
-                    by Apollo 24/7 and HDFC Bank.
-                  </li>
-                  <li>
-                    The discounts applicable as per the Healthy Life program shall be applied at the
-                    time of payment checkout by the customer.
-                  </li>
-                  <li>
-                    This program is designed for select HDFC customers and offerings will vary with
-                    the different categories of HDFC customers. However, membership schemes can be
-                    upgraded on the basis of the spending on the Apollo 24/7 app as mentioned in the
-                    offer grid.
-                  </li>
-                  <li>
-                    The Healthy Life Program is open to all HDFC customers with a valid Indian
-                    mobile number only.
-                  </li>
-                  <li>
-                    The T&amp;C’s of the silver, gold and platinum membership offered in the Healthy
-                    Life program shall be governed by the terms &amp; conditions of the website -{' '}
-                    <a href="https://www.oneapollo.com/terms-conditions/">
-                      https://www.oneapollo.com/terms-conditions/
-                    </a>
-                  </li>
-                  <li>
-                    The Healthy Life offering will be applicable to all HDFC customers, whether they
-                    are existing customers of Apollo 24/7 or not. However, all the customers shall
-                    adhere to the offerings as mentioned in this marketing program.
-                  </li>
-                  <li>The Healthy Life program is non-transferable.</li>
-                  <li>
-                    The activation of the benefits for the Healthy Life program will be completed 24
-                    hours post the service delivery/fulfillment of the qualifying transaction. For
-                    e.g., to unlock benefits, the user is needed to make a qualifying transaction of
-                    INR 499, amount subject to change as per different tiers
-                  </li>
-                  <li>
-                    By enrolling for the Healthy Life program, a member consents to allow use and
-                    disclosure by Apollo Health centres, along with his/her personal and other
-                    information as provided by the member at the time of enrolment and/or
-                    subsequently.
-                  </li>
-                  <li>
-                    As a prerequisite to becoming a member, a customer will need to provide
-                    mandatory information including full name, valid and active Indian mobile
-                    number. He/she shall adhere to such terms and conditions as may be prescribed
-                    for membership from time to time.
-                  </li>
-                  <li>
-                    The Healthy Life membership program will be issued solely at the discretion of
-                    the management and the final discretion on all matters relating to the
-                    membership shall rest with Apollo 24/7(AHEL).
-                  </li>
-                  <li>
-                    Healthy Life program is a corporate offering exclusively for HDFC bank customers
-                    and not for individuals.
-                  </li>
-                  <li>
-                    Apollo 24/7 reserves the right to add, alter, amend and revise terms and
-                    conditions as well as rules and regulations governing the Healthy Life
-                    membership program without prior notice.
-                  </li>
-                  <li>
-                    Benefits and offers available through the program may change or be withdrawn
-                    without prior intimation. Apollo 24/7 will not be responsible for any liability
-                    arising from such situations or use of such offers.
-                  </li>
-                  <li>
-                    Any disputes arising out of the offer shall be subject to arbitration by a sole
-                    arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the
-                    arbitration shall be conducted as per the provisions of Arbitration and
-                    Conciliation Act, 1996. The place of arbitration shall be at Chennai and
-                    language of arbitration shall be English. The existence of a dispute, if at all,
-                    shall not constitute a claim against Apollo 24/7.
-                  </li>
-                </ul>
-              </div>
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
         </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -146,7 +146,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 240,
       margin: '0 30px 0 0',
       [theme.breakpoints.down('sm')]: {
-        width: 20,
+        width: 240,
       },
       '&:last-child': {
         margin: 0,
@@ -347,11 +347,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface HdfcCallDoctorProps {
+export interface HdfcRegistrationProps {
   patientPhone: string | null;
 }
 
-export const HdfcCallDoctor: React.FC<HdfcCallDoctorProps> = (props) => {
+export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
   const classes = useStyles({});
   const [callDoctorPopup, setCallDoctorPopup] = React.useState<boolean>(false);
   const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
@@ -376,15 +376,13 @@ export const HdfcCallDoctor: React.FC<HdfcCallDoctorProps> = (props) => {
       .query({
         query: IDENTIFY_HDFC_CUSTOMER,
         variables: {
-          mobile_number: localStorage.getItem('userMobileNo'),
+          mobile_number: props.patientPhone,
           DOB: currentPatient.dateOfBirth,
         },
         fetchPolicy: 'no-cache',
       })
       .then((response) => {
         setStatusOfUser(response.data.identifyHdfcCustomer.status);
-        console.log(response.data.identifyHdfcCustomer.status);
-        console.log(response.data.identifyHdfcCustomer.status == HDFC_CUSTOMER.OTP_GENERATED);
         if (response.data.identifyHdfcCustomer.status == HDFC_CUSTOMER.OTP_GENERATED) {
           setToken(response.data.identifyHdfcCustomer.token);
           setLoading(false);
@@ -502,6 +500,7 @@ export const HdfcCallDoctor: React.FC<HdfcCallDoctorProps> = (props) => {
                     setOtpError(false);
                     setOtp(e.target.value);
                   }}
+                  disabled={loading ? true : false}
                 />
                 {/* <AphInput className={classes.otp} />
               <AphInput className={classes.otp} />
@@ -514,9 +513,15 @@ export const HdfcCallDoctor: React.FC<HdfcCallDoctorProps> = (props) => {
                 </div>
               )}
               <div className={classes.btnAction}>
-                <AphButton onClick={() => queryIdentifyHDFCCustomer()}>Resend Otp</AphButton>
+                <AphButton onClick={() => queryIdentifyHDFCCustomer()}>
+                  {loading ? <CircularProgress size={30} /> : <Typography>Resend Otp</Typography>}
+                </AphButton>
                 <AphButton color="primary" variant="contained" onClick={() => validateHDFCOtp()}>
-                  {loading ? <CircularProgress size={30} /> : <Typography>Submit Otp</Typography>}
+                  {loading ? (
+                    <CircularProgress size={30} color="secondary" />
+                  ) : (
+                    <Typography>Submit Otp</Typography>
+                  )}
                   <img src={require('images/ic_arrow_forward.svg')} alt="" />
                 </AphButton>
               </div>
@@ -549,11 +554,10 @@ export const HdfcCallDoctor: React.FC<HdfcCallDoctorProps> = (props) => {
             <Typography className={classes.description}>
               Please Contact HDFC for further Updates
             </Typography>
-            {loading ? (
-              <CircularProgress size={30} />
-            ) : (
-              <AphButton onClick={() => queryIdentifyHDFCCustomer()}>Recheck Otp</AphButton>
-            )}
+            <AphButton onClick={() => queryIdentifyHDFCCustomer()}>
+              {' '}
+              {loading ? <CircularProgress size={30} /> : 'Recheck Otp'}{' '}
+            </AphButton>
           </div>
         )}
       </div>

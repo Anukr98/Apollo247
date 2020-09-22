@@ -179,6 +179,8 @@ export const MyProfile: React.FC = (props) => {
             ? 'Need Help'
             : currentPath === clientRoutes.myPayments()
             ? 'My Payments'
+            : currentPath === clientRoutes.myMembership()
+            ? 'My MemberShips'
             : 'Manage Profiles'}
         </div>
       </div>
