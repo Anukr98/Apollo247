@@ -21,6 +21,11 @@ import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
 import { Route } from 'react-router-dom';
 import { consultPayButtonClickTracking } from 'webEngageTracking';
+import { getCouponByUserMobileNumber } from 'helpers/commonHelpers';
+import fetchUtil from 'helpers/fetch';
+import { gtmTracking } from '../../gtmTracking';
+import { useLocationDetails } from 'components/LocationProvider';
+import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -357,6 +362,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const OnlineCheckout: React.FC = () => {
   const classes = useStyles({});
+  const { currentPincode } = useLocationDetails();
   const { currentPatient } = useAllCurrentPatients();
   const { isSignedIn } = useAuth();
   const [data, setData] = useState<any>();
@@ -367,6 +373,8 @@ const OnlineCheckout: React.FC = () => {
 
   const [validateCouponResult, setValidateCouponResult] = useState<any>({});
   const [validityStatus, setValidityStatus] = useState<boolean>(false);
+  const [mutationLoading, setMutationLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const apolloClient = useApolloClient();
 
@@ -382,23 +390,15 @@ const OnlineCheckout: React.FC = () => {
     appointmentType,
     doctorName,
   } = pageData;
-  let newAppointmentDateTime = moment(appointmentDateTime)
-    .format('DD MMMM[,] LT')
-    .toString();
+  let newAppointmentDateTime = moment(appointmentDateTime).format('DD MMMM[,] LT').toString();
   const today = moment().endOf('day');
-  const tomorrow = moment()
-    .add(1, 'day')
-    .endOf('day');
+  const tomorrow = moment().add(1, 'day').endOf('day');
   const bookingTime = moment(appointmentDateTime);
   if (bookingTime < tomorrow) {
-    newAppointmentDateTime = `Tomorrow, ${moment(appointmentDateTime)
-      .format('LT')
-      .toString()}`;
+    newAppointmentDateTime = `Tomorrow, ${moment(appointmentDateTime).format('LT').toString()}`;
   }
   if (bookingTime < today) {
-    newAppointmentDateTime = `Today, ${moment(appointmentDateTime)
-      .format('LT')
-      .toString()}`;
+    newAppointmentDateTime = `Today, ${moment(appointmentDateTime).format('LT').toString()}`;
   }
 
   useEffect(() => {
@@ -434,6 +434,95 @@ const OnlineCheckout: React.FC = () => {
       setCouponCode(consultCouponCodeInitial || '');
     }
   });
+
+  const getValidateCouponBody = (doctorDetails: DoctorDetails, coupon: string) => {
+    const { onlineConsultationFees } = doctorDetails;
+    const hospitalId =
+      doctorDetails.doctorHospital &&
+      doctorDetails.doctorHospital[0] &&
+      doctorDetails.doctorHospital[0].facility &&
+      doctorDetails.doctorHospital[0].facility.id;
+    const specialityId = (doctorDetails.specialty && doctorDetails.specialty.id) || null;
+    const validateCouponBody = {
+      mobile: currentPatient && currentPatient.mobileNumber,
+      billAmount: Number(revisedAmount),
+      coupon,
+      pinCode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
+      consultations: [
+        {
+          hospitalId,
+          doctorId,
+          specialityId,
+          consultationTime: new Date(appointmentDateTime).getTime(),
+          consultationType: appointmentType === 'PHYSICAL' ? 0 : 1,
+          cost: Number(onlineConsultationFees),
+          rescheduling: false,
+        },
+      ],
+    };
+    return validateCouponBody;
+  };
+
+  const verifyCoupon = (doctorDetails: DoctorDetails, couponCode: string) => {
+    if (doctorDetails && couponCode.length > 0) {
+      setMutationLoading(true);
+      const validateCouponBody = getValidateCouponBody(data.getDoctorDetailsById, couponCode);
+      const speciality = (doctorDetails.specialty && doctorDetails.specialty.name) || null;
+      fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', validateCouponBody, '', false)
+        .then((data: any) => {
+          if (data && data.response) {
+            const couponValidateResult = data.response;
+            setValidityStatus(couponValidateResult.valid);
+            setValidateCouponResult(couponValidateResult);
+            if (couponValidateResult.valid) {
+              /*GTM TRACKING START */
+              gtmTracking({
+                category: 'Consultations',
+                action: speciality,
+                label: `Coupon Applied - ${couponCode}`,
+                value:
+                  couponValidateResult && couponValidateResult.valid
+                    ? Number(parseFloat(couponValidateResult.discount).toFixed(2))
+                    : null,
+              });
+              /*GTM TRACKING END */
+              setErrorMessage('');
+            } else {
+              setErrorMessage(couponValidateResult.reason);
+            }
+          } else if (data && data.errorMsg && data.errorMsg.length > 0) {
+            setErrorMessage(data.errorMsg);
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => setMutationLoading(false));
+    }
+  };
+
+  const getCouponByMobileNumber = () => {
+    getCouponByUserMobileNumber()
+      .then((resp: any) => {
+        if (resp.errorCode == 0 && resp.response && resp.response.length > 0) {
+          const couponCode = resp.response[0].coupon;
+          setCouponCode(couponCode || '');
+          verifyCoupon(data.getDoctorDetailsById, couponCode);
+        } else {
+          setCouponCode('');
+        }
+      })
+      .catch((e: any) => {
+        console.log(e);
+        setCouponCode('');
+      });
+  };
+
+  useEffect(() => {
+    if (currentPatient && data && data.getDoctorDetailsById && couponCode === '') {
+      getCouponByMobileNumber();
+    }
+  }, [data, currentPatient]);
 
   const doctorDetails = data && data.getDoctorDetailsById ? data : null;
   if (doctorDetails) {
@@ -572,7 +661,9 @@ const OnlineCheckout: React.FC = () => {
                         Savings of Rs.{' '}
                         {validateCouponResult && validateCouponResult.valid
                           ? validateCouponResult.discount.toFixed(2)
-                          : consultCouponValue && consultCouponValue.toFixed(2)}{' '}
+                          : consultCouponValue
+                          ? consultCouponValue.toFixed(2)
+                          : 0}{' '}
                         on the bill
                       </div>
                     )}
@@ -619,17 +710,8 @@ const OnlineCheckout: React.FC = () => {
                     render={({ history }) => (
                       <AphButton
                         color="primary"
+                        disabled={mutationLoading}
                         onClick={() => {
-                          // const updatedValues = {
-                          //   ...pageData,
-                          //   consultCouponCodeInitial: couponCode,
-                          //   consultCouponValue:
-                          //     validateCouponResult && validateCouponResult.revisedAmount
-                          //       ? parseFloat(onlineConsultationFees) -
-                          //         parseFloat(validateCouponResult.revisedAmount)
-                          //       : '0',
-                          // };
-                          // localStorage.setItem('consultBookDetails', JSON.stringify(updatedValues));
                           history.push(clientRoutes.payMedicine('consults'));
                           const eventData = {
                             actualPrice: Number(amount),

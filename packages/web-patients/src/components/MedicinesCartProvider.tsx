@@ -29,7 +29,7 @@ export interface MedicineCartItem {
   mou: string;
   isShippable: boolean;
   MaxOrderQty: number;
-  couponFree?: boolean;
+  couponFree?: number;
 }
 
 export interface StoreAddresses {
@@ -451,7 +451,11 @@ export const MedicinesCartProvider: React.FC = (props) => {
     if (foundIndex !== -1) {
       if (cartItems && itemUpdates) {
         cartItems[foundIndex].quantity = itemUpdates.quantity;
-        cartItems[foundIndex].couponFree = itemUpdates.couponFree ? itemUpdates.couponFree : false;
+        cartItems[foundIndex].couponFree = cartItems[foundIndex].couponFree
+          ? cartItems[foundIndex].couponFree
+          : itemUpdates.couponFree
+          ? itemUpdates.couponFree
+          : 0;
         setCartItems([...cartItems]);
         setIsCartUpdated(true);
       }
@@ -484,15 +488,15 @@ export const MedicinesCartProvider: React.FC = (props) => {
   const cartTotal: MedicineCartContextProps['cartTotal'] = parseFloat(
     cartItems
       .reduce((currTotal, currItem) => {
-        if (currItem.special_price == 0 && currItem.couponFree) {
-          return currTotal + currItem.quantity * currItem.special_price;
-        }
-        if (currItem.couponFree && currItem.quantity > 1) {
+        if (currItem.couponFree > 0 && currItem.quantity > 1) {
           return (
             currTotal +
             currItem.quantity * (Number(currItem.special_price) || currItem.price) -
             currItem.price
           );
+        }
+        if (currItem.special_price === 0 && currItem.couponFree > 0 && currItem.quantity == 1) {
+          return currTotal + currItem.quantity * currItem.special_price;
         } else {
           return currTotal + currItem.quantity * (Number(currItem.special_price) || currItem.price);
         }

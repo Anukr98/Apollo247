@@ -114,6 +114,7 @@ export interface GetDoctorDetailsById_getDoctorDetailsById {
   physicalConsultationFees: string;
   qualification: string | null;
   doctorType: DoctorType;
+  chatDays: number | null;
   starTeam: (GetDoctorDetailsById_getDoctorDetailsById_starTeam | null)[] | null;
   specialty: GetDoctorDetailsById_getDoctorDetailsById_specialty | null;
   zip: string | null;

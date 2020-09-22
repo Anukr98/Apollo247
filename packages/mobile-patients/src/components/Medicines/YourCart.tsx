@@ -493,7 +493,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             items: availableItems,
             pincode: selectedAddress.zipcode || '',
             lat: selectedAddress?.latitude!,
-            lng: selectedAddress?.longitude!
+            lng: selectedAddress?.longitude!,
           };
           const tatRes = await getDeliveryTAT247(tatApiInput247);
 
@@ -511,18 +511,17 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               });
               if (serviceableSkus.length && !unserviceableSkus.length) {
                 const inventoryDataRes = g(tatRes, 'data', 'response', 'items') || [];
-                const availableInventory = inventoryDataRes
-                  .map((item) => {
-                    const availableItem = availableItems.filter(({sku}) => sku === item.sku)[0]
-                    return {
-                      itemId: item.sku,
-                      qty: availableItem ? availableItem.qty : item.qty,
-                      mrp: item.mrp,
-                    };
-                  });
+                const availableInventory = inventoryDataRes.map((item) => {
+                  const availableItem = availableItems.filter(({ sku }) => sku === item.sku)[0];
+                  return {
+                    itemId: item.sku,
+                    qty: availableItem ? availableItem.qty : item.qty,
+                    mrp: item.mrp,
+                  };
+                });
                 if (availableInventory && availableInventory.length) {
                   setStoreType(tatRes?.data?.response?.storeType);
-                  setShopId(tatRes?.data?.response?.storeCode)
+                  setShopId(tatRes?.data?.response?.storeCode);
                   fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, availableInventory);
                   updateserviceableItemsTat(deliveryDate, lookUp);
                 } else {
@@ -824,7 +823,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         categoryId: item.productType,
         mrp: item.price,
         quantity: item.quantity,
-        specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
+        specialPrice: item.specialPrice ? item.specialPrice : item.price,
       })),
     };
     validateConsultCoupon(data)
@@ -1806,13 +1805,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         deliveryTime,
         isChennaiOrder: true,
         tatType: storeType,
-        shopId: shopId
+        shopId: shopId,
       });
     } else {
       props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
         deliveryTime,
         tatType: storeType,
-        shopId: shopId
+        shopId: shopId,
       });
     }
   };
