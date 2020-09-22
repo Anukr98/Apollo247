@@ -23,7 +23,6 @@ import {
   Minimize,
   JoinWhite,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { ImageZoom } from '@aph/mobile-doctors/src/components/ui/ImageZoom';
 import { OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
 import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
@@ -135,6 +134,7 @@ import {
   Dimensions,
   FlatList,
   Keyboard,
+  Linking,
   Platform,
   SafeAreaView,
   Text,
@@ -167,6 +167,7 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 import { ImageViewer } from '@aph/mobile-doctors/src/components/ui/ImageViewer';
+import { chatFilesType } from '@aph/mobile-doctors/src/helpers/dataTypes';
 
 const { width } = Dimensions.get('window');
 // let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
@@ -254,7 +255,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     props.navigation.getParam('caseSheetEnableEdit') || false
   );
   const [showEditPreviewButtons, setShowEditPreviewButtons] = useState<boolean>(false);
-  const [chatFiles, setChatFiles] = useState<any[]>([]);
+  const [chatFiles, setChatFiles] = useState<chatFilesType[]>([]);
   const [symptonsData, setSymptonsData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null
   >([]);
@@ -1556,22 +1557,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
 
   const checkFiles = (
     checkUrl?: string,
-    callBack?: (newUrl?: string, allFiles?: any[]) => void
+    callBack?: (newUrl: string, allFiles: chatFilesType[]) => void
   ) => {
     let tempFiles = chatFiles.filter((item) => item);
     const tempMessage: any[] = messages.filter((item) => item);
     const expiredFiles = tempFiles.filter(
       (item) =>
-        item.prismId && moment(new Date()).diff(moment(item.urlTimeToken / 10000), 'minutes') > 10
+        item.prismId &&
+        moment(new Date()).diff(moment(Number(item.urlTimeToken) / 10000), 'minutes') > 10
     );
     const foundUrlIndex = tempFiles.findIndex((item) => item.url === checkUrl);
-    let newUrl = checkUrl;
+    let newUrl = checkUrl || '';
     if (expiredFiles.length > 0) {
-      getPrismUrls(
-        client,
-        patientId,
-        expiredFiles.map((item) => item.prismId).filter((item) => item)
-      )
+      getPrismUrls(client, patientId, expiredFiles
+        .map((item) => item.prismId)
+        .filter((item) => item) as string[])
         .then(({ urls }) => {
           if (urls) {
             tempFiles = tempFiles.map((item, index) => {
@@ -1594,7 +1594,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 return {
                   ...item,
                   url: urls[urlExistsIndex] || item.url,
-                  urlTimeToken: moment(new Date()).valueOf() * 10000,
+                  urlTimeToken: `${moment(new Date()).valueOf() * 10000}`,
                 };
               } else {
                 return item;
@@ -1754,7 +1754,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           if (messageText === messageCodes.imageconsult) {
             const asyncDisplay = async () => {
               const chatFileData = await AsyncStorage.getItem('chatFileData');
-              const chatFilesRetrived = JSON.parse(chatFileData || '[]');
+              const chatFilesRetrived = JSON.parse(chatFileData || '[]') as chatFilesType[];
               chatFilesRetrived.push({ ...message, urlTimeToken: message.timetoken });
               AsyncStorage.setItem('chatFileData', JSON.stringify(chatFilesRetrived));
               setChatFiles(chatFilesRetrived);
@@ -1871,7 +1871,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             }
             insertText = newmessage;
             setMessages(newmessage as []);
-            const files: any[] = [];
+            const files: chatFilesType[] = [];
             newmessage.forEach((messageItem, index) => {
               if (messageItem.message === messageCodes.imageconsult) {
                 files.push({ ...messageItem, urlTimeToken: messageItem.timetoken });
@@ -2242,6 +2242,30 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     }
   }, [SrollRef, activeTabIndex, tabsData]);
 
+  const openFiles = (url?: string, type?: 'pdf' | 'image' | 'other', isChatRoom?: boolean) => {
+    setShowLoading(true);
+    checkFiles(url, (newUrl, allFiles) => {
+      setShowLoading(false);
+      if (type === 'image') {
+        setOverlayDisplay(
+          <ImageViewer
+            scrollToURL={newUrl}
+            files={allFiles.filter(
+              (item) =>
+                item.fileType === 'image' && ((!isChatRoom && item.id === patientId) || isChatRoom)
+            )}
+            onClose={() => setOverlayDisplay(null)}
+          />
+        );
+      } else if (type === 'pdf') {
+        setUrl(newUrl || '');
+        setShowPDF(true);
+      } else {
+        Linking.openURL(newUrl).catch((err) => console.error('An error occurred', err));
+      }
+    });
+  };
+
   const renderTabPage = () => {
     return (
       <>
@@ -2292,9 +2316,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   }}
                   inCall={callOptions.isVideo || callOptions.isAudio}
                   chatFiles={chatFiles}
-                  setUrl={setUrl}
-                  setPatientImageshow={setPatientImageshow}
-                  setShowPDF={setShowPDF}
+                  openFiles={openFiles}
                   favList={favList}
                   favMed={favMed}
                   favTest={favTest}
@@ -2361,9 +2383,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   messages={messages}
                   send={send}
                   flatListRef={flatListRef}
-                  setShowPDF={setShowPDF}
-                  setPatientImageshow={setPatientImageshow}
-                  setUrl={setUrl}
+                  openFiles={openFiles}
                   isDropdownVisible={isDropdownVisible}
                   setDropdownVisible={setDropdownVisible}
                   patientDetails={patientDetails}
@@ -3203,36 +3223,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       />
     ) : null;
   };
-  const closeviews = () => {
-    setPatientImageshow(false);
-    setOverlayDisplay(null);
-    setUrl('');
-  };
-
-  useEffect(() => {
-    if (patientImageshow) {
-      setShowLoading(true);
-      if (url) {
-        checkFiles(url, (newUrl, allFiles) => {
-          setShowLoading(false);
-          // setOverlayDisplay(<ImageViewer files={allFiles} onClose={() => closeviews()} />);
-          setOverlayDisplay(
-            <ImageZoom source={{ uri: newUrl }} zoom pan onClose={() => closeviews()} />
-          );
-        });
-      }
-    }
-  }, [patientImageshow, url]);
-
-  useEffect(() => {
-    if (showPDF) {
-      if (url) {
-        checkFiles(url, (newUrl) => {
-          setUrl(newUrl || '');
-        });
-      }
-    }
-  }, [showPDF]);
 
   const showRateCallModal = () => {
     return (

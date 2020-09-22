@@ -126,6 +126,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
+import FastImage from 'react-native-fast-image';
 
 const { width } = Dimensions.get('window');
 
@@ -264,10 +265,12 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setDisplayId: React.Dispatch<React.SetStateAction<string>>;
   prescriptionPdf: string;
   setPrescriptionPdf: React.Dispatch<React.SetStateAction<string>>;
+  openFiles: (
+    url?: string | undefined,
+    type?: 'pdf' | 'image' | 'other' | undefined,
+    isChatRoom?: boolean | undefined
+  ) => void;
   chatFiles?: any[];
-  setShowPDF: Dispatch<SetStateAction<boolean>>;
-  setPatientImageshow: Dispatch<SetStateAction<boolean>>;
-  setUrl: Dispatch<SetStateAction<string>>;
   selectedReferral: OptionsObject;
   setSelectedReferral: React.Dispatch<React.SetStateAction<OptionsObject>>;
   referralReason: string;
@@ -345,9 +348,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     prescriptionPdf,
     setPrescriptionPdf,
     chatFiles,
-    setShowPDF,
-    setPatientImageshow,
-    setUrl,
+    openFiles,
     selectedReferral,
     setSelectedReferral,
     referralReason,
@@ -2031,68 +2032,103 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-  const renderRecordImages = (urls: (string | null)[], isImage: boolean) => {
+  const renderRecordImages = (files: { url: string | null; name: string }[], isImage: boolean) => {
     return (
       <View style={styles.healthvaultMainContainer}>
-        {urls.map((url) => {
-          if (url) {
-            return (
-              <View style={styles.healthvaultImageContainer}>
-                {isImage ? (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      setUrl(url);
-                      setPatientImageshow(true);
-                    }}
-                  >
-                    <Image source={{ uri: url }} style={styles.healthvaultImage} />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      setUrl(url);
-                      setShowPDF(true);
-                    }}
-                  >
-                    <FileBig style={styles.healthvaultImage} />
-                  </TouchableOpacity>
-                )}
-              </View>
-            );
-          } else {
-            return null;
-          }
-        })}
+        <ScrollView bounces={false} horizontal showsHorizontalScrollIndicator={false}>
+          {files.map((file) => {
+            if (file.url) {
+              return (
+                <View style={styles.healthvaultImageContainer}>
+                  {isImage ? (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      onPress={() => {
+                        openFiles(file.url || '', 'image', false);
+                      }}
+                    >
+                      <View style={{ maxWidth: 100 }}>
+                        <Text style={styles.imageHeadingText} numberOfLines={1}>
+                          {file.name}
+                        </Text>
+                        <FastImage
+                          source={{ uri: file.url }}
+                          style={styles.healthvaultImage}
+                          resizeMode={FastImage.resizeMode.cover}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      onPress={() => {
+                        openFiles(file.url || '', 'pdf', false);
+                      }}
+                    >
+                      <View style={{ maxWidth: 100 }}>
+                        <Text style={styles.imageHeadingText} numberOfLines={1}>
+                          {file.name}
+                        </Text>
+                        <FileBig style={styles.healthvaultImage} />
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              );
+            } else {
+              return null;
+            }
+          })}
+        </ScrollView>
       </View>
     );
   };
-  const [patientImages, setPatientImages] = useState<(string | null)[]>([]);
-  const [records, setRecords] = useState<(string | null)[]>([]);
+  const [patientImages, setPatientImages] = useState<{ url: string | null; name: string }[]>([]);
+  const [records, setRecords] = useState<{ url: string | null; name: string }[]>([]);
 
   useEffect(() => {
-    console.log(JSON.stringify(chatFiles), 'thissichatfile');
-
     const images =
-      (healthWalletArrayData && healthWalletArrayData.map((i) => i && i.imageUrls)) || [];
+      (healthWalletArrayData &&
+        healthWalletArrayData.map((i) => {
+          return { url: i && i.imageUrls, name: 'Image.jpeg' };
+        })) ||
+      [];
     const record =
-      (healthWalletArrayData && healthWalletArrayData.map((i) => i && i.reportUrls)) || [];
+      (healthWalletArrayData &&
+        healthWalletArrayData.map((i) => {
+          return { url: i && i.reportUrls, name: 'Document.pdf' };
+        })) ||
+      [];
+
     if (chatFiles) {
-      const onlyImageUrl: string[] = chatFiles
+      const onlyImageUrl: { url: string | null; name: string }[] = chatFiles
         .filter(
           (i) =>
             i.fileType === 'image' &&
             i.id === (g(patientDetails, 'id') || g(caseSheet, 'patientDetails', 'id'))
         )
-        .map((i) => i.url);
-      const onlyPdfUrl: string[] = chatFiles
+        .map((i) => {
+          return {
+            url: i.url,
+            name:
+              i.fileName ||
+              `Image_${moment(Number(i.timetoken) / 10000).format('DD_MM_YYYY')}.jpeg`,
+          };
+        });
+      const onlyPdfUrl: { url: string | null; name: string }[] = chatFiles
         .filter(
           (i) =>
             i.fileType === 'pdf' &&
             i.id === (g(patientDetails, 'id') || g(caseSheet, 'patientDetails', 'id'))
         )
-        .map((i) => i.url);
+        .map((i) => {
+          return {
+            url: i.url,
+            name:
+              i.fileName ||
+              `Document_${moment(Number(i.timetoken) / 10000).format('DD_MM_YYYY')}.pdf`,
+          };
+        });
       images.push(...onlyImageUrl);
       record.push(...onlyPdfUrl);
       setPatientImages(images);
