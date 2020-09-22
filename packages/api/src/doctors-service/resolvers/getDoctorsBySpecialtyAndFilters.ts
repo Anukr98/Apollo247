@@ -230,7 +230,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   { filterInput: FilterDoctorInput },
   DoctorsServiceContext,
   FilterDoctorsResult
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   apiCallId = Math.floor(Math.random() * 1000000);
   callStartTime = new Date();
   identifier = args.filterInput.patientId;
@@ -654,6 +654,22 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     gender: [],
   };
 
+  const brandMappings: any = {
+    'APOLLO': 'APOLLO_HOSPITALS',
+    'CLINIC': 'APOLLO_CLINIC',
+    'CRADLE': 'APOLLO_CRADLE',
+    'DOCTOR_CONNECT': 'DOCTOR_CONNECT',
+    'FERTILITY': 'APOLLO_FERTILITY',
+    'JUNIOR': 'JUNIOR',
+    'PAYROLL': 'APOLLO',
+    'SPECTRA': 'APOLLO_SPECTRA_HOSPITALS',
+    'STAR_APOLLO': 'STAR_APOLLO',
+    'SUGAR': 'APOLLO_SUGAR_CLINICS',
+    'APOLLO_HOMECARE': 'APOLLO_HOMECARE',
+    'WHITE_DENTAL': 'APOLLO_WHITE_DENTAL'
+  }
+
+
   function pushInFilters(esObject: any, field: string) {
     esObject[field]['buckets'].forEach((element: { key: 'string'; doc_count: number }) => {
       if (
@@ -665,7 +681,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         } else {
           filters[field].push({
             name: element['key'],
-            brandName: capitalize(element['key']),
+            brandName: capitalize(brandMappings[element['key']]),
             image: '',
           });
         }
@@ -740,7 +756,7 @@ const getDoctorList: Resolver<
   { filterInput: FilterDoctorInput },
   DoctorsServiceContext,
   DoctorsListResult
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   apiCallId = Math.floor(Math.random() * 1000000);
   callStartTime = new Date();
   identifier = args.filterInput.patientId;
