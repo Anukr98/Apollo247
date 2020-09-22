@@ -1541,7 +1541,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     category_id: categoryId == -1 ? undefined : categoryId,
                     products: categoryId == -1 ? products : null,
                     title: title || 'Products',
-                    movedFm: 'home',
+                    movedFrom: 'home',
                   })
               : undefined
           }
