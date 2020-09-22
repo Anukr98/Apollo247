@@ -192,32 +192,39 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     paymentOptions: {
-      display: 'grid',
-      gridTemplateColumns: 'auto auto',
-      gridGap: 20,
+      display: 'flex',
+      alignItems: 'flex-start',
       listStyleType: 'none',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
       padding: 0,
+      margin: '10px -10px',
       '& li': {
-        background: '#fff',
-        borderRadius: 10,
-        color: '#fc9916',
-        textTransform: 'uppercase',
-        boxShadow: '0px 5px 20px 5px rgba(0,0,0,0.1)',
-        fontWeight: 700,
-        fontSize: 13,
-        padding: 15,
-        display: 'flex',
-        alignItems: 'center',
-        lineHeight: 'normal',
-        '& >svg': {
-          margin: '0 10px 0 0',
-        },
+        padding: 10,
+        flex: '1 0 auto',
+        width: 320,
       },
       [theme.breakpoints.down('xs')]: {
         gridTemplateColumns: 'auto',
         '& li:last-child': {
           padding: 10,
         },
+      },
+    },
+    paymentCard: {
+      background: '#fff',
+      borderRadius: 10,
+      color: '#fc9916',
+      textTransform: 'uppercase',
+      boxShadow: '0px 5px 20px 5px rgba(0,0,0,0.1)',
+      fontWeight: 700,
+      fontSize: 13,
+      padding: 15,
+      display: 'flex',
+      alignItems: 'center',
+      lineHeight: 'normal',
+      '& >svg': {
+        margin: '0 10px 0 0',
       },
     },
     charges: {
@@ -377,6 +384,83 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 300,
       textTransform: 'none',
     },
+    healthCredit: {
+      padding: '0 0 20px',
+      '& h3': {
+        fontSize: 16,
+        fontWeight: 500,
+        lineHeight: '20px',
+        padding: '0 0 10px',
+      },
+    },
+    healthCreditSelection: {
+      display: 'flex',
+      alignItems: 'center',
+      background: '#fff',
+      borderRadius: 10,
+      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      padding: '14px 20px',
+      width: 320,
+      margin: '10px 0',
+    },
+    healthCreditAvailable: {
+      padding: '0 0 0 20px',
+      borderLeft: '1px solid rgba(2,71,91,0.3)',
+      width: '60%',
+      '& p': {
+        fontSize: 12,
+        fontWeight: 500,
+        color: 'rgba(2,71,91,0.6)',
+      },
+      '& h4': {
+        fontSize: 16,
+        fontWeight: 500,
+        lineHeight: '24px',
+      },
+    },
+    credits: {},
+    saveDetails: {
+      fontSize: 13,
+      fontWeight: 500,
+      color: '#00B38E',
+      '& span': {
+        fontWeight: 600,
+      },
+    },
+    formGroup: {
+      display: 'flex',
+      alignItems: 'center',
+      width: '40%',
+      position: 'relative',
+      '& img': {
+        position: 'absolute',
+        top: 0,
+        left: 40,
+      },
+      '& label': {
+        width: '100%',
+        position: 'relative',
+        zIndex: 2,
+      },
+    },
+    disabled: {
+      '& span': {
+        '&:last-child': {
+          color: 'rgba(8,76,96,0.4)',
+        },
+      },
+    },
+    codOption: {
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      justifyContent: 'flex-start',
+      '& p': {
+        fontSize: 14,
+        color: '#02475b',
+        textTransform: 'none',
+        fontWeight: 600,
+      },
+    },
   };
 });
 
@@ -385,7 +469,7 @@ export const getItemSpecialPrice = (cartItemDetails: MedicineCartItem) => {
 };
 
 const PayMedicine: React.FC = (props) => {
-	const client = useApolloClient();
+  const client = useApolloClient();
   const classes = useStyles({});
   const [checked, setChecked] = React.useState(false);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -548,8 +632,8 @@ const PayMedicine: React.FC = (props) => {
         })
         .then((res) => {
           if (res && res.data && res.data.getOneApolloUser) {
-						oneApolloHCsResponse(res.data.getOneApolloUser);
-						setOneAplloHcs(res.data.getOneApolloUser.availableHC);
+            oneApolloHCsResponse(res.data.getOneApolloUser);
+            setOneAplloHcs(res.data.getOneApolloUser.availableHC);
           }
         })
         .catch((e) => {
@@ -1024,18 +1108,29 @@ const PayMedicine: React.FC = (props) => {
               <Grid item xs={12} sm={8}>
                 <Paper className={`${classes.paper} ${classes.paperHeight}`}>
                   {setOneApolloHCsResponse && setOneApolloHCsResponse.availableHC && (
-                    <div>
-                      Would you like to use Apollo Health Creadits for this payments?
-                      <div>
-                        <FormGroup>
+                    <div className={classes.healthCredit}>
+                      <Typography component="h3">
+                        Would you like to use Apollo Health Credits for this payment?
+                      </Typography>
+                      <div className={classes.healthCreditSelection}>
+                        <FormGroup className={classes.formGroup}>
                           <FormControlLabel
                             className={classes.checkbox}
                             control={<Checkbox onChange={applyOneApolloHc} name="checked" />}
-                            label="Apollo Health Credits"
+                            label=""
                           />
+                          <img src={require('images/one-apollo.svg')} width="48" alt="One Apollo" />
                         </FormGroup>
-                        <span>Availabe Health Credis {setOneApolloHCsResponse.availableHC}</span>
+                        <div className={classes.healthCreditAvailable}>
+                          <Typography>Available Health Credits </Typography>
+                          <Typography component="h4" className={classes.credits}>
+                            {setOneApolloHCsResponse.availableHC}
+                          </Typography>
+                        </div>
                       </div>
+                      <Typography className={classes.saveDetails}>
+                        You will <span>save Rs. 100 </span> on your purchase.
+                      </Typography>
                     </div>
                   )}
 
@@ -1070,17 +1165,19 @@ const PayMedicine: React.FC = (props) => {
                           }}
                           style={{ cursor: 'pointer' }}
                         >
-                          <img
-                            src={
-                              'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
-                            }
-                            alt=""
-                            style={{ height: 30, width: 30 }}
-                          />
-                          <div style={{ paddingLeft: 10 }}>
-                            SBI YONO CASHLESS CARD
-                            <div className={classes.offerMessage}>
-                              You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}% cashback
+                          <div className={classes.paymentCard}>
+                            <img
+                              src={
+                                'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
+                              }
+                              alt=""
+                              style={{ height: 30, width: 30 }}
+                            />
+                            <div style={{ paddingLeft: 10 }}>
+                              SBI YONO CASHLESS CARD
+                              <div className={classes.offerMessage}>
+                                You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}% cashback
+                              </div>
                             </div>
                           </div>
                         </li>
@@ -1104,33 +1201,64 @@ const PayMedicine: React.FC = (props) => {
                               }}
                               style={{ cursor: 'pointer' }}
                             >
-                              <img
-                                src={payType.imageUrl}
-                                alt=""
-                                style={{ height: 30, width: 30 }}
-                              />
-                              <span style={{ paddingLeft: 10 }}>{payType.name}</span>
+                              <div className={classes.paymentCard}>
+                                <img
+                                  src={
+                                    'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
+                                  }
+                                  alt=""
+                                  style={{ height: 30, width: 30 }}
+                                />
+                                <div style={{ paddingLeft: 10 }}>
+                                  SBI YONO CASHLESS CARD
+                                  <div className={classes.offerMessage}>
+                                    You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}%
+                                    cashback
+                                  </div>
+                                </div>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      {paymentOptions.length > 0 &&
+                        paymentOptions.map((payType, index) => {
+                          return (
+                            <li
+                              key={index}
+                              onClick={() =>
+                                params.payType === 'pharmacy'
+                                  ? onClickPay(payType.paymentMode, payType.name)
+                                  : onClickConsultPay(payType.paymentMode)
+                              }
+                              style={{ cursor: 'pointer' }}
+                            >
+                              <div className={classes.paymentCard}>
+                                <img
+                                  src={payType.imageUrl}
+                                  alt=""
+                                  style={{ height: 30, width: 30 }}
+                                />
+                                <span style={{ paddingLeft: 10 }}>{payType.name}</span>
+                              </div>
                             </li>
                           );
                         })}
                       {params.payType === 'pharmacy' && (
                         <li>
-                          <FormGroup>
-                            <FormControlLabel
-                              className={`${classes.checkbox} ${
-                                isOneApolloHcApplied ? 'active' : ''
-                              }`}
-                              control={
-                                <Checkbox
-                                  onChange={handleChange}
-                                  name="checked"
-                                  disabled={isOneApolloHcApplied}
-                                />
-                              }
-                              label="Cash On Delivery"
-                            />
-                          </FormGroup>
-                          {isOneApolloHcApplied ? <div>COD Option is not available</div> : null}
+                          <div className={`${classes.paymentCard} ${classes.codOption}`}>
+                            <FormGroup>
+                              <FormControlLabel
+                                classes={{ root: classes.checkbox, disabled: classes.disabled }}
+                                control={
+                                  <Checkbox onChange={handleChange} name="checked" disabled />
+                                }
+                                label="Cash On Delivery"
+                              />
+                            </FormGroup>
+                            <Typography>
+                              ! COD option is not available along with OneApollo Health Credits.
+                            </Typography>
+                          </div>
                         </li>
                       )}
                     </ul>

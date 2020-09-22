@@ -295,6 +295,29 @@ export const MyProfile: React.FC = (props) => {
             <div className={classes.sectionGroup}>
               <Link
                 className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.oneApolloMembership() ? classes.menuActive : ''
+                }`}
+                to={clientRoutes.oneApolloMembership()}
+                title={'OneApollo Membership'}
+              >
+                <span className={classes.serviceImg}>
+                  <img
+                    src={require('images/one-apollo.svg')}
+                    alt="OneApollo Membership"
+                    width="25"
+                  />
+                </span>
+                <span className={classes.linkText} title={'OneApollo Membership'}>
+                  OneApollo Membership
+                </span>
+                <span className={classes.rightArrow}>
+                  <img src={require('images/ic_arrow_right.svg')} alt="Right Arrow" />
+                </span>
+              </Link>
+            </div>
+            <div className={classes.sectionGroup}>
+              <Link
+                className={`${classes.serviceType} ${classes.textVCenter} ${
                   currentPath === clientRoutes.needHelp() ? classes.menuActive : ''
                 }`}
                 to={clientRoutes.needHelp()}
