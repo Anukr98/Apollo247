@@ -794,7 +794,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
     setUserAnswers({ appointmentId: channel });
-    getAppointmentCount();
+    if (!disableChat && status !== STATUS.COMPLETED) {
+      getAppointmentCount();
+    }
     getSecretaryData();
     // requestToJrDoctor();
     // updateSessionAPI();

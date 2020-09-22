@@ -939,3 +939,18 @@ export const GET_LAB_RESULT_PDF = gql`
   }
 `;
 
+export const UPDATE_WHATSAPP_STATUS = gql`
+  mutation UpdateWhatsAppStatus(
+    $whatsAppMedicine: Boolean
+    $whatsAppConsult: Boolean
+    $patientId: String!
+  ) {
+    updateWhatsAppStatus(
+      whatsAppMedicine: $whatsAppMedicine
+      whatsAppConsult: $whatsAppConsult
+      patientId: $patientId
+    ) {
+      status
+    }
+  }
+`;

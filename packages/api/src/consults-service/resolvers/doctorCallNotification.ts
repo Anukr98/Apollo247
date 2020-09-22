@@ -22,6 +22,8 @@ import { PatientDeviceTokenRepository } from 'profiles-service/repositories/pati
 import { DEVICE_TYPE } from 'profiles-service/entities';
 import path from 'path';
 import fs from 'fs';
+import { CALL_STATUS } from 'consults-service/resolvers/ChatRoomLiveStatus';
+import { getCache, setCache } from 'consults-service/database/connectRedis';
 
 export const doctorCallNotificationTypeDefs = gql`
   type AppointmentCallDetails {
@@ -132,6 +134,15 @@ const endCallNotification: Resolver<
     doctorName = doctor.displayName;
   }
 
+  const REDIS_NUMBEROFPARTICIPANTS_KEY_PREFIX = `numberOfParticipants:key:`;
+  const redisKey = `${REDIS_NUMBEROFPARTICIPANTS_KEY_PREFIX}${callDetails.appointment.id}`;
+  const keyAppointment = await getCache(redisKey);
+  if (keyAppointment && typeof keyAppointment == 'string') {
+    const key_appointment = JSON.parse(keyAppointment);
+    key_appointment['CALL_STATUS'] = CALL_STATUS.COMPLETED;
+    await setCache(redisKey, JSON.stringify(key_appointment), ApiConstants.CACHE_EXPIRATION_14400);
+  }
+
   args.patientId = args.patientId || callDetails.appointment.patientId;
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
   let voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
@@ -139,7 +150,7 @@ const endCallNotification: Resolver<
     DEVICE_TYPE.IOS
   );
 
-  if(args.patientId != callDetails.appointment.patientId && (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])){
+  if (args.patientId != callDetails.appointment.patientId && (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])) {
     args.patientId = callDetails.appointment.patientId;
     voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
       args.patientId,
@@ -151,8 +162,8 @@ const endCallNotification: Resolver<
     args.isDev = false;
   }
 
-  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken']  &&
-  (!args.numberOfParticipants || (args.numberOfParticipants && args.numberOfParticipants < 2))) {
+  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
+    (!args.numberOfParticipants || (args.numberOfParticipants && args.numberOfParticipants < 2))) {
     hitCallKitCurl(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
       doctorName,
@@ -259,6 +270,16 @@ const sendCallNotification: Resolver<
       args.patientId,
     );
   }
+
+  const REDIS_NUMBEROFPARTICIPANTS_KEY_PREFIX = `numberOfParticipants:key:`;
+  const redisKey = `${REDIS_NUMBEROFPARTICIPANTS_KEY_PREFIX}${args.appointmentId}`;
+  const keyAppointment = await getCache(redisKey);
+  if (keyAppointment && typeof keyAppointment == 'string') {
+    const key_appointment = JSON.parse(keyAppointment);
+    key_appointment['CALL_STATUS'] = CALL_STATUS.IN_PROGRESS;
+    await setCache(redisKey, JSON.stringify(key_appointment), ApiConstants.CACHE_EXPIRATION_14400);
+  }
+
   return { status: true, callDetails: appointmentCallDetails };
 };
 
@@ -362,7 +383,7 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
   const apptDetails = await apptRepo.getNotStartedAppointments();
   const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   content += '\nappts length: ' + apptDetails.length.toString();
-  fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
+  fs.appendFile(assetsDir + '/' + fileName, content, (err) => { });
   if (apptDetails.length > 0) {
     const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
     apptDetails.forEach(async (appt) => {
@@ -372,7 +393,7 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
         //console.log(doctorDetails.id, doctorDetails.doctorSecretary, 'doc details');
         content +=
           doctorDetails.id + '-' + doctorDetails.doctorSecretary.secretary.mobileNumber + '\n';
-        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
+        fs.appendFile(assetsDir + '/' + fileName, content, (err) => { });
         const templateData: string[] = [appt.appointmentType, appt.patientName, devLink];
         sendDoctorNotificationWhatsapp(
           ApiConstants.WHATSAPP_SD_CONSULT_DELAY,

@@ -184,6 +184,7 @@ export enum ApiConstants {
   APPT_STATE_CHANGED_2 = 'Appointment state changed to RESCHEDULED',
   APPT_STATE_CHANGED_3 = 'Appointment cancelled due to max. reschedules',
   APPT_UPDATE_SEPERATOR = '-rescheduledBy247-',
+  SYSTEM_CANCELLED_REASON = 'System cancelled the appointment and refunded, as another appointment for same time for same doctor is booked by another patient',
 
   /*** push-notification messages end here ***/
 
