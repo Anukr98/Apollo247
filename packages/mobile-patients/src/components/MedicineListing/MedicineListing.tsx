@@ -6,9 +6,9 @@ import {
 } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingFilter';
 import { MedicineListingHeader } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingHeader';
 import {
-  MedListingProductProps,
-  MedListingProducts,
-} from '@aph/mobile-patients/src/components/MedicineListing/MedListingProducts';
+  MedicineListingProducts,
+  ProductProps,
+} from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingProducts';
 import { OptionsDisplayView } from '@aph/mobile-patients/src/components/MedicineListing/OptionsDisplayView';
 import { OptionSelectionOverlay } from '@aph/mobile-patients/src/components/Medicines/OptionSelectionOverlay';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -187,8 +187,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   const paddingView = <View style={styles.paddingView} />;
 
-  const getMedListingProducts = (products: MedicineProduct[]): MedListingProductProps[] => {
-    const onPress = (sku: string, name: string) => {
+  const getMedListingProducts = (products: MedicineProduct[]): ProductProps[] => {
+    const onPress = (sku: string) => {
       navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'search' });
     };
 
@@ -225,7 +225,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         ...item,
         quantity: qty,
         maxOrderQty: item.MaxOrderQty,
-        onPress: () => onPress(id, item.name),
+        onPress: () => onPress(id),
         onPressAddToCart: () => onPressAddToCart(item),
         onPressAdd: onPressAdd,
         onPressSubstract: onPressSubstract,
@@ -246,7 +246,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     };
 
     return (
-      <MedListingProducts
+      <MedicineListingProducts
         data={isLoading ? [] : getMedListingProducts(products)}
         view={showListView ? 'list' : 'grid'}
         onEndReached={onEndReached}

@@ -6,14 +6,14 @@ import { SearchMedicineGridCard } from '@aph/mobile-patients/src/components/ui/S
 import React from 'react';
 import { FlatList, FlatListProps, ListRenderItemInfo, StyleSheet, View } from 'react-native';
 
-export interface MedListingProductProps extends SearchMedicineCardProps {}
-type ListProps = FlatListProps<MedListingProductProps>;
+export interface ProductProps extends SearchMedicineCardProps {}
+type ListProps = FlatListProps<ProductProps>;
 
 export interface Props extends Omit<ListProps, 'renderItem'> {
   view: 'list' | 'grid';
 }
 
-export const MedListingProducts: React.FC<Props> = ({
+export const MedicineListingProducts: React.FC<Props> = ({
   data,
   view,
   contentContainerStyle,

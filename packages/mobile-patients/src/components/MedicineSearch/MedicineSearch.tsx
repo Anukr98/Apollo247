@@ -1,15 +1,15 @@
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { MedicineSearchSuggestionItemProps } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/SearchMedicine/MedicineSearchEvents';
-import { MedSearchBar } from '@aph/mobile-patients/src/components/SearchMedicine/MedSearchBar';
-import { MedSearchSection } from '@aph/mobile-patients/src/components/SearchMedicine/MedSearchSection';
+import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearchEvents';
+import { MedSearchBar } from '@aph/mobile-patients/src/components/MedicineSearch/MedSearchBar';
+import { MedSearchSection } from '@aph/mobile-patients/src/components/MedicineSearch/MedSearchSection';
 import {
   MedSearchSectionBadgeView,
   Props as MedSearchSectionBadgeViewProps,
-} from '@aph/mobile-patients/src/components/SearchMedicine/MedSearchSectionBadgeView';
-import { MedSearchSectionProductView } from '@aph/mobile-patients/src/components/SearchMedicine/MedSearchSectionProductView';
-import { MedSearchSuggestions } from '@aph/mobile-patients/src/components/SearchMedicine/MedSearchSuggestions';
+} from '@aph/mobile-patients/src/components/MedicineSearch/MedSearchSectionBadgeView';
+import { MedSearchSectionProductView } from '@aph/mobile-patients/src/components/MedicineSearch/MedSearchSectionProductView';
+import { MedSearchSuggestions } from '@aph/mobile-patients/src/components/MedicineSearch/MedSearchSuggestions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
