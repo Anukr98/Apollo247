@@ -3,7 +3,10 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { TouchableOpacityProps, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'react-native-elements';
-import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getDiscountPercentage,
+  productsThumbnailUrl,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -138,7 +141,7 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
           <Image
             PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
             placeholderStyle={{ backgroundColor: 'transparent' }}
-            source={{ uri: thumbnail }}
+            source={{ uri: productsThumbnailUrl(thumbnail) }}
             style={{ height: 40, width: 40 }}
             resizeMode="contain"
           />

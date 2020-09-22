@@ -2,7 +2,10 @@ import { MedicineIcon, MedicineRxIcon } from '@aph/mobile-patients/src/component
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps, View } from 'react-native';
-import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getDiscountPercentage,
+  productsThumbnailUrl,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Image } from 'react-native-elements';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
@@ -161,7 +164,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
           <Image
             PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
             placeholderStyle={{ backgroundColor: 'transparent' }}
-            source={{ uri: thumbnail }}
+            source={{ uri: productsThumbnailUrl(thumbnail) }}
             style={{ height: 40, width: 36 }}
             resizeMode="contain"
           />
