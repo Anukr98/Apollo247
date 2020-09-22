@@ -14,6 +14,7 @@ type SuccessTransactionInputForSubscription = {
   userSubscriptionId?: string;
   subscriptionInclusionId?: string;
 };
+
 export async function transactionSuccessTrigger(args: SuccessTransactionInputForSubscription) {
   const {
     amount,
@@ -26,9 +27,8 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
     userSubscriptionId,
     subscriptionInclusionId,
   } = args;
-  try {
-    const url = `${process.env.SUBSCRIPTION_SERVICE_HOST}`;
-    const query = `mutation {
+  const url = `${process.env.SUBSCRIPTION_SERVICE_HOST}`;
+  const query = `mutation {
       CreateUserSubscriptionTransactions(UserSubscriptionTransactions:{
        user_subscription_id: "${userSubscriptionId || ''}"
        subscription_inclusion_id: "${subscriptionInclusionId || ''}"
@@ -45,25 +45,32 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
      }
    }`;
 
-    axios({
-      url,
-      method: 'post',
-      data: {
-        query,
-      },
-      headers: {
-        Authorization: process.env.SUBSCRIPTION_AUTH_TOKEN,
-      },
-    }).then((response: any) => {
-      log('TransactionSucessLogger', 'transactionSuccessTrigger=>success', '', response.data, '');
+  axios({
+    url,
+    method: 'post',
+    data: {
+      query,
+    },
+    headers: {
+      Authorization: process.env.SUBSCRIPTION_AUTH_TOKEN,
+    },
+  })
+    .then((response: any) => {
+      log(
+        'TransactionSucessLogger',
+        'transactionSuccessTrigger=>success',
+        `orderId:${sourceTransactionIdentifier}`,
+        response.data,
+        ''
+      );
+    })
+    .catch((error: any) => {
+      log(
+        'TransactionSucessLogger',
+        'transactionSuccessTrigger=>failed',
+        `orderId:${sourceTransactionIdentifier}`,
+        '',
+        JSON.stringify(error)
+      );
     });
-  } catch (err) {
-    log(
-      'TransactionSucessLogger',
-      'transactionSuccessTrigger=>failed',
-      '',
-      '',
-      JSON.stringify(err)
-    );
-  }
 }
