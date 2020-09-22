@@ -245,13 +245,13 @@ const makeAppointmentPayment: Resolver<
       );
       const historyAttrs: Partial<AppointmentUpdateHistory> = {
         appointment: processingAppointment,
-        userType: APPOINTMENT_UPDATED_BY.PATIENT,
+        userType: APPOINTMENT_UPDATED_BY.SYSTEM,
         fromValue: currentStatus,
         toValue: STATUS.CANCELLED,
         fromState: processingAppointment.appointmentState,
         toState: processingAppointment.appointmentState,
         valueType: VALUE_TYPE.STATUS,
-        userName: processingAppointment.patientId,
+        userName: '',
         reason: ApiConstants.SYSTEM_CANCELLED_REASON.toString(),
       };
       apptsRepo.saveAppointmentHistory(historyAttrs);
