@@ -41,7 +41,6 @@ export class DeeplinkRepository extends Repository<Deeplink> {
   }
 
   async getDeeplinksByLimit(offset: number, limit: number) {
-    console.log('number::', offset, limit);
     return this.find({
       skip: offset,
       take: limit,
