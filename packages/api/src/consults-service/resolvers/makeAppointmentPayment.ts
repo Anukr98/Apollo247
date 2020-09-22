@@ -237,11 +237,24 @@ const makeAppointmentPayment: Resolver<
         `${JSON.stringify(processingAppointment)}`,
         'true'
       );
+      processingAppointment.patientCancelReason = ApiConstants.SYSTEM_CANCELLED_REASON.toString();
       await apptsRepo.systemCancelAppointment(
         processingAppointment.id,
         { paymentInfo },
         processingAppointment
       );
+      const historyAttrs: Partial<AppointmentUpdateHistory> = {
+        appointment: processingAppointment,
+        userType: APPOINTMENT_UPDATED_BY.PATIENT,
+        fromValue: currentStatus,
+        toValue: STATUS.CANCELLED,
+        fromState: processingAppointment.appointmentState,
+        toState: processingAppointment.appointmentState,
+        valueType: VALUE_TYPE.STATUS,
+        userName: processingAppointment.patientId,
+        reason: ApiConstants.SYSTEM_CANCELLED_REASON.toString(),
+      };
+      apptsRepo.saveAppointmentHistory(historyAttrs);
       let isRefunded: boolean = false;
       if (paymentInfo.amountPaid && paymentInfo.amountPaid >= 1) {
         let refundResponse = await initiateRefund(
