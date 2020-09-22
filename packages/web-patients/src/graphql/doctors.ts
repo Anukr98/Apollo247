@@ -173,6 +173,11 @@ export const GET_DOCTOR_LIST = gql`
   query GetDoctorList($filterInput: FilterDoctorInput) {
     getDoctorList(filterInput: $filterInput) {
       doctors
+      specialties {
+        id
+        name
+        specialtydisplayName
+      }
       apolloDoctorCount
       partnerDoctorCount
     }

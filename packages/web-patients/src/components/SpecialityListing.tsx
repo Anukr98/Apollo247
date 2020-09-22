@@ -640,6 +640,7 @@ const SpecialityListing: React.FC = (props) => {
   const [faqs, setFaqs] = useState<any | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [faqSchema, setFaqSchema] = useState(null);
+  const [searchQuery, setSearchQuery] = useState({});
   const onePrimaryUser =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
@@ -710,7 +711,6 @@ const SpecialityListing: React.FC = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((response) => {
-        console.log('res', response);
         const specialtiesAndDoctorsList = response && response.data && response.data.getDoctorList;
         if (specialtiesAndDoctorsList) {
           const doctorsArray = specialtiesAndDoctorsList.doctors || [];
@@ -729,7 +729,6 @@ const SpecialityListing: React.FC = (props) => {
         setSearchLoading(false);
       });
   };
-  const debounceLoadData = useCallback(_debounce(fetchData, 300), []);
 
   const debounceTracking = useCallback(
     _debounce((searchKeyword) => {
@@ -744,7 +743,14 @@ const SpecialityListing: React.FC = (props) => {
   useEffect(() => {
     if (searchKeyword.length > 2 || selectedCity.length) {
       setSearchLoading(true);
-      debounceLoadData(searchKeyword, selectedCity);
+      const search = _debounce(fetchData, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
+        }
+        return search;
+      });
+      search(searchKeyword, selectedCity);
     }
     if (searchKeyword.length > 2) {
       /**Gtm code start start */

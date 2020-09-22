@@ -458,6 +458,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [slugName, setSlugName] = useState<string>('');
   const [faqData, setFaqData] = useState<any>();
+  const [searchQuery, setSearchQuery] = useState({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -594,13 +595,14 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   /* Gtm code end */
 
   useEffect(() => {
-    // if (searchKeyword.length > 1) {
-    //   const doctorsSearch = doctorData.filter((doctorDetail: any) => {
-    //     return doctorDetail.displayName.toLowerCase().includes(searchKeyword.toLowerCase());
-    //   });
-    //   setSearchDoctors(doctorsSearch);
-    // }
-    setFilter({ ...filter, searchKeyword });
+    const search = _debounce(() => setFilter({ ...filter, searchKeyword }), 500);
+    setSearchQuery((prevSearch: any) => {
+      if (prevSearch.cancel) {
+        prevSearch.cancel();
+      }
+      return search;
+    });
+    search();
   }, [searchKeyword]);
 
   useEffect(() => {
