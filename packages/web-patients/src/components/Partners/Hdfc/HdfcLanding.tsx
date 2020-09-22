@@ -24,17 +24,17 @@ import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/Ge
 import { UpdatePatient, UpdatePatientVariables } from 'graphql/types/UpdatePatient';
 import {
   UPDATE_PATIENT,
-  CREATE_SUBSCRIPTION,
-  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  //   CREATE_SUBSCRIPTION,
+  //   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
 } from 'graphql/profiles';
 import { ProfileSuccess } from 'components/ProfileSuccess';
 import { NewProfile } from 'components/NewProfile';
 
-import { createSubscription, createSubscriptionVariables } from 'graphql/types/createSubscription';
-import {
-  getSubscriptionsOfUserByStatus,
-  getSubscriptionsOfUserByStatusVariables,
-} from 'graphql/types/getSubscriptionsOfUserByStatus';
+// import { createSubscription, createSubscriptionVariables } from 'graphql/types/createSubscription';
+// import {
+//   getSubscriptionsOfUserByStatus,
+//   getSubscriptionsOfUserByStatusVariables,
+// } from 'graphql/types/getSubscriptionsOfUserByStatus';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -480,11 +480,11 @@ export const HdfcLanding: React.FC = (props) => {
   const [isProfileUpdate, setisProfileUpdate] = React.useState<boolean>(false);
   const [showProfileSuccess, setShowProfileSuccess] = React.useState<boolean>(false);
   const [value, setValue] = React.useState('');
-  const [userSubscriptions, setUserSubscriptions] = React.useState([]);
+  // const [userSubscriptions, setUserSubscriptions] = React.useState([]);
 
-  const createSubscription = useMutation<createSubscription, createSubscriptionVariables>(
-    CREATE_SUBSCRIPTION
-  );
+  // const createSubscription = useMutation<createSubscription, createSubscriptionVariables>(
+  //   CREATE_SUBSCRIPTION
+  // );
 
   const apolloClient = useApolloClient();
 
@@ -494,28 +494,28 @@ export const HdfcLanding: React.FC = (props) => {
   const hasExistingProfile =
     allCurrentPatients && allCurrentPatients.some((p) => !_isEmpty(p.uhid));
 
-  useEffect(() => {
-    if (hasExistingProfile && currentPatient && userSubscriptions.length == 0) {
-      apolloClient
-        .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
-          query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-          variables: {
-            user: {
-              mobile_number: currentPatient.mobileNumber,
-              patiend_id: currentPatient.id,
-            },
-            status: ['active'],
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((response) => {
-          setUserSubscriptions(response.data.getSubscriptionsOfUserByStatus.response);
-        })
-        .catch((error) => {
-          alert('Something went wrong :(');
-        });
-    }
-  }, [isSignedIn]);
+  // useEffect(() => {
+  //   if (hasExistingProfile && currentPatient && userSubscriptions.length == 0) {
+  //     apolloClient
+  //       .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
+  //         query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  //         variables: {
+  //           user: {
+  //             mobile_number: currentPatient.mobileNumber,
+  //             patiend_id: currentPatient.id,
+  //           },
+  //           status: ['active'],
+  //         },
+  //         fetchPolicy: 'no-cache',
+  //       })
+  //       .then((response) => {
+  //         setUserSubscriptions(response.data.getSubscriptionsOfUserByStatus.response);
+  //       })
+  //       .catch((error) => {
+  //         alert('Something went wrong :(');
+  //       });
+  //   }
+  // }, [isSignedIn]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setValue((event.target as HTMLInputElement).value);
@@ -600,30 +600,27 @@ export const HdfcLanding: React.FC = (props) => {
                       onClick={() => {
                         if (!isSignedIn) setIsLoginPopupVisible(true);
                         else {
-                          userSubscriptions.length != 0
-                            ? history.push(clientRoutes.welcome())
-                            : createSubscription({
-                                variables: {
-                                  userSubscription: {
-                                    mobile_number: currentPatient.mobileNumber,
-                                  },
-                                },
-                              })
-                                .then(() => {
-                                  history.push(clientRoutes.membershipHdfc());
-                                })
-                                .catch((error) => {
-                                  console.error(error);
-                                  alert('Something went wrong :(');
-                                });
+                          history.push(clientRoutes.welcome());
+                          // userSubscriptions.length != 0
+                          //   ? history.push(clientRoutes.welcome())
+                          //   : createSubscription({
+                          //       variables: {
+                          //         userSubscription: {
+                          //           mobile_number: currentPatient.mobileNumber,
+                          //         },
+                          //       },
+                          //     })
+                          //       .then(() => {
+                          //         history.push(clientRoutes.membershipHdfc());
+                          //       })
+                          //       .catch((error) => {
+                          //         console.error(error);
+                          //         alert('Something went wrong :(');
+                          //       });
                         }
                       }}
                     >
-                      {isSignedIn
-                        ? userSubscriptions.length != 0
-                          ? 'Explore now'
-                          : 'Check Eligibility'
-                        : 'SignUp Now'}
+                      {isSignedIn ? 'Explore now' : 'SignUp Now'}
                     </AphButton>
                   )}
                 />
@@ -702,30 +699,27 @@ export const HdfcLanding: React.FC = (props) => {
                       onClick={() => {
                         if (!isSignedIn) setIsLoginPopupVisible(true);
                         else {
-                          userSubscriptions.length != 0
-                            ? history.push(clientRoutes.welcome())
-                            : createSubscription({
-                                variables: {
-                                  userSubscription: {
-                                    mobile_number: currentPatient.mobileNumber,
-                                  },
-                                },
-                              })
-                                .then(() => {
-                                  history.push(clientRoutes.membershipHdfc());
-                                })
-                                .catch((error) => {
-                                  console.error(error);
-                                  alert('Something went wrong :(');
-                                });
+                          history.push(clientRoutes.welcome());
+                          // userSubscriptions.length != 0
+                          //   ? history.push(clientRoutes.welcome())
+                          //   : createSubscription({
+                          //       variables: {
+                          //         userSubscription: {
+                          //           mobile_number: currentPatient.mobileNumber,
+                          //         },
+                          //       },
+                          //     })
+                          //       .then(() => {
+                          //         history.push(clientRoutes.membershipHdfc());
+                          //       })
+                          //       .catch((error) => {
+                          //         console.error(error);
+                          //         alert('Something went wrong :(');
+                          //       });
                         }
                       }}
                     >
-                      {isSignedIn
-                        ? userSubscriptions.length != 0
-                          ? 'Explore now'
-                          : 'Check Eligibility'
-                        : 'SignUp Now'}
+                      {isSignedIn ? 'Explore now' : 'SignUp Now'}
                     </AphButton>
                   )}
                 />

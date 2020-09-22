@@ -500,3 +500,8 @@ export const PharmaProductTypes = {
 export const PartnerId = {
   HDFCBANK: 'HDFCBANK',
 };
+export enum TransactionType {
+  PHARMA = 'PHARMA',
+  CONSULT = 'CONSULT',
+  DIAGNOSTICS = 'DIAGNOSTICS',
+}
