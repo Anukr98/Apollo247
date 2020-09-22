@@ -1078,10 +1078,7 @@ const MedicineDetails: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <Helmet>
-        <link rel="alternate" href={`apollopatients://MedicineDetail?${params.sku}`} />
-        {isSkuVersion && <meta name="robots" content="noindex, nofollow" />}
-      </Helmet>
+      <Helmet>{isSkuVersion && <meta name="robots" content="noindex, nofollow" />}</Helmet>
       <MetaTagsComp {...metaTagProps} />
 
       {productSchemaJSON && <SchemaMarkup structuredJSON={productSchemaJSON} />}
