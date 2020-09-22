@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom';
 import TagManager from 'react-gtm-module';
 
 const tagManagerArgs = {
-  gtmId: 'GTM-PNGHP4L',
+  gtmId: process.env.NODE_ENV === 'production' ? 'GTM-PNGHP4L' : 'GTM-MTDCHDP',
   auth: process.env.NODE_ENV === 'production' ? 'ZYg6LjWjUuzof34ZcHS7HA' : 'W92SKp1i2YZ7knnE2uBPtw',
   preview: process.env.NODE_ENV === 'production' ? 'env-1' : 'env-76',
 };
@@ -24,6 +24,8 @@ declare global {
     _cb(a: any, b: any, c: any, d: any, e: any, f: any, h: any): void;
 
     _ob(a: any, b: any, c: any, d: any, e: any, f: any, h: any): void;
+
+    dataLayer: any;
   }
 }
 

@@ -1,4 +1,9 @@
-import { More, TrackerBig } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  More,
+  TrackerBig,
+  PHRHospitalIcon,
+  PHRSelfUploadIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
@@ -59,7 +64,7 @@ const styles = StyleSheet.create({
     marginVertical: 7,
   },
   descriptionTextStyles: {
-    paddingLeft: 0,
+    paddingLeft: 10,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.TEXT_LIGHT_BLUE,
     lineHeight: 20,
@@ -97,7 +102,10 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
   } = props;
 
   const healthCheckName = datahealthcheck?.healthCheckName || datahealthcheck?.healthCheckType;
-  const hospitalizationDoctorName = datahospitalization?.doctorName;
+  const hospitalizationDoctorName = datahospitalization?.doctorName
+    ? 'Dr. ' + datahospitalization?.doctorName
+    : '';
+
   const dateFilterApplied = datalab && filterApplied && filterApplied !== FILTER_TYPE.DATE;
   const clubFilterData =
     filterApplied && filterApplied === FILTER_TYPE.DATE
@@ -107,6 +115,24 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
       : datalab?.packageName && datalab?.packageName.length > 0 && datalab?.packageName !== '-'
       ? prevItemData?.packageName === datalab?.packageName
       : prevItemData?.labTestName === datalab?.labTestName;
+
+  const reportSource =
+    datalab?.labTestSource ||
+    dataprescription?.source ||
+    datahealthcheck?.source ||
+    datahospitalization?.hospitalName;
+
+  const reportName =
+    dataprescription?.prescriptionName ||
+    datalab?.labTestName ||
+    healthCheckName ||
+    hospitalizationDoctorName;
+
+  const reportSourceSelf =
+    datahospitalization?.source === '247self' ||
+    datahospitalization?.source === 'self' ||
+    reportSource === '247self' ||
+    reportSource === 'self';
 
   const getDateFormatted = () => {
     const date_text = (date_t: any) => {
@@ -169,10 +195,7 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
                 <Text style={styles.doctorNameStyles}>
                   {datalab && filterApplied && filterApplied !== FILTER_TYPE.DATE
                     ? getDateFormatted()
-                    : dataprescription?.prescriptionName ||
-                      datalab?.labTestName ||
-                      healthCheckName ||
-                      hospitalizationDoctorName}
+                    : reportName}
                 </Text>
                 {disableDelete ? null : (
                   <TouchableOpacity onPress={props.onPressDelete}>
@@ -180,16 +203,17 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
                   </TouchableOpacity>
                 )}
               </View>
-              {datalab?.labTestSource ||
-              dataprescription?.source ||
-              datahealthcheck?.healthCheckSummary ||
-              datahospitalization?.hospitalName ? (
-                <Text style={styles.descriptionTextStyles}>
-                  {datalab?.labTestSource ||
-                    dataprescription?.source ||
-                    datahealthcheck?.healthCheckSummary ||
-                    datahospitalization?.hospitalName}
-                </Text>
+              {reportSource ? (
+                <View style={{ flexDirection: 'row', paddingLeft: 2 }}>
+                  {reportSourceSelf ? (
+                    <PHRSelfUploadIcon style={{ width: 16, height: 10.14, alignSelf: 'center' }} />
+                  ) : (
+                    <PHRHospitalIcon style={{ width: 14, height: 14, alignSelf: 'center' }} />
+                  )}
+                  <Text style={styles.descriptionTextStyles}>
+                    {reportSourceSelf ? 'Self upload' : datalab?.siteDisplayName}
+                  </Text>
+                </View>
               ) : null}
             </View>
           </View>

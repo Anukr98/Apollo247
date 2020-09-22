@@ -9,7 +9,7 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { gtmTracking } from '../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../gtmTracking';
 // import { SearchObject } from 'components/DoctorsFilter';
 import { BottomLinks } from 'components/BottomLinks';
 import { PastSearches } from 'components/PastSearches';
@@ -648,10 +648,17 @@ const SpecialityListing: React.FC = (props) => {
 
   useEffect(() => {
     /**Gtm code start start */
-    gtmTracking({
+    /*gtmTracking({
       category: 'Consultations',
       action: 'Landing Page',
       label: 'Listing Page Viewed',
+    });*/
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Consultation Index',
+      pageLOB: 'Consultation',
+      pageType: 'Index',
     });
     /**Gtm code start end */
   }, []);
@@ -725,10 +732,26 @@ const SpecialityListing: React.FC = (props) => {
       });
   };
   const debounceLoadData = useCallback(_debounce(fetchData, 300), []);
+
+  const debounceTracking = useCallback(
+    _debounce((searchKeyword) => {
+      dataLayerTracking({
+        event: 'Search Used',
+        query: searchKeyword,
+      });
+    }, 500),
+    []
+  );
+
   useEffect(() => {
     if (searchKeyword.length > 2 || selectedCity.length) {
       setSearchLoading(true);
       debounceLoadData(searchKeyword, selectedCity);
+    }
+    if (searchKeyword.length > 2) {
+      /**Gtm code start start */
+      debounceTracking(searchKeyword);
+      /**Gtm code start end */
     }
   }, [searchKeyword, selectedCity]);
 

@@ -684,6 +684,8 @@ const ChatRoom: React.FC = () => {
     displayId = appointmentDetails.displayId;
   }
 
+  // console.log('appointment details', appointmentDetails, '-------------------');
+
   return (
     <div className={classes.root}>
       <Header />

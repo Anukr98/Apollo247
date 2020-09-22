@@ -165,7 +165,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   findByAppointmentId(id: string) {
     return this.find({
       where: { id },
-      relations: ['appointmentPayments'],
+      relations: ['appointmentPayments', 'caseSheet'],
     }).catch((getApptError) => {
       throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
         getApptError,
@@ -697,13 +697,14 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
-        'appointment.status not in(:status1,:status2,:status3,:status4,:status5)',
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
         {
-          status1: STATUS.PAYMENT_PENDING,
-          status2: STATUS.UNAVAILABLE_MEDMANTRA,
-          status3: STATUS.PAYMENT_FAILED,
-          status4: STATUS.PAYMENT_PENDING_PG,
-          status5: STATUS.PAYMENT_ABORTED,
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
         }
       )
       .offset(offset)

@@ -92,6 +92,7 @@ const updateApptDoctorSlotStatus: Resolver<
       const updateResp = await client.update(doc1);
     });
   }
+  client.close();
   return 'slot status updated ' + slotsUpdated;
 };
 
@@ -124,6 +125,7 @@ const updateDoctorSlotStatus: Resolver<
     },
   };
   const updateResp = await client.update(doc1);
+  client.close();
   return 'slot status updated ' + args.id;
 };
 
@@ -206,6 +208,7 @@ const addAllDoctorSlotsElastic: Resolver<
     }
     slotsAdded += '},';
   }
+  client.close();
   return 'done ' + slotsAdded;
 };
 
@@ -274,6 +277,7 @@ const addDoctorSlotsElastic: Resolver<
     };
     const updateResp = await client.update(doc1);
   }
+  client.close();
   return 'Document updated: ' + args.id;
 };
 
@@ -317,7 +321,7 @@ const insertDataElastic: Resolver<
   }
   //await client.index(doc1);
   //await client.update(doc1);
-
+  client.close();
   return 'Elastic search query. NewdocData: ' + newDocData + ' ExtDocdata: ' + extDocData;
 };
 
