@@ -378,11 +378,11 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     gold: {
-      background: `url(${require('images/hdfc/gold.svg')}) no-repeat 0 0`,
+      background: `url(${require('images/hdfc/gold.png')}) no-repeat 0 0`,
       backgroundSize: 'cover',
     },
     platinum: {
-      background: `url(${require('images/hdfc/platinum.svg')}) no-repeat center center`,
+      background: `url(${require('images/hdfc/platinum.png')}) no-repeat center center`,
       backgroundSize: 'cover',
     },
     benefitDesc: {
@@ -482,6 +482,17 @@ export const MembershipPlanLocked: React.FC = (props) => {
     setExpanded(isExpanded ? panel : false);
   };
 
+  const cardBg = (plan: String) => {
+    if (plan === 'GOLD+ PLAN') {
+      return classes.gold;
+    }
+    if (plan === 'PLATINUM+ PLAN') {
+      return classes.platinum;
+    } else {
+      return classes.gold;
+    }
+  };
+
   useEffect(() => {
     apolloClient
       .query<
@@ -563,11 +574,11 @@ export const MembershipPlanLocked: React.FC = (props) => {
           <div className={classes.mainContent}>
             <div className={classes.pcContent}>
               <div className={classes.planCardContent}>
-                <div className={`${classes.planCard} ${classes.platinum}`}>
+                <div className={classes.planCard + ' ' + cardBg(planName)}>
                   <img src={require('images/hdfc/locked.svg')} alt="Gold MemberShip" />
                   <Typography component="h1">{planName}</Typography>
                   <Typography className={classes.benefitDesc}>Availing Benefits worth</Typography>
-                  <Typography className={classes.cardWorth}>Rs. {benefitsWorth}</Typography>
+                  <Typography className={classes.cardWorth}>Rs. {benefitsWorth}+</Typography>
                   <Typography className={classes.cardDesc}>
                     {`A host of benefits await you with our`} {planName}{' '}
                     {`curated for HDFC customers`}
@@ -636,7 +647,7 @@ export const MembershipPlanLocked: React.FC = (props) => {
                       </li>
                       <li>
                         Duration of membership is 1 year. It will be auto renewed if you spend more
-                        than Rs 25000 within 1 year on Apollo 24/7
+                        than Rs {minimumTransactionValue} within 1 year on Apollo 24/7
                       </li>
                     </ul>
                   </div>

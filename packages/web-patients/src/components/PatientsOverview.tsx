@@ -126,12 +126,12 @@ const PatientsOverview: React.FC = () => {
       {/* </Grid> */}
       {/* <Grid item xs={12} sm={6}> */}
       {currentPatient &&
-        currentPatient.referralCode === HDFC_REF_CODE &&
+        currentPatient.partnerId === HDFC_REF_CODE &&
         (userSubscriptionsLocalStorage == null || userSubscriptionsLocalStorage.length == 0) && (
           <HdfcRegistration patientPhone={currentPatient.mobileNumber} />
         )}
       {currentPatient &&
-        currentPatient.referralCode === HDFC_REF_CODE &&
+        currentPatient.partnerId === HDFC_REF_CODE &&
         userSubscriptionsLocalStorage &&
         userSubscriptionsLocalStorage.length != 0 && (
           <HdfcSlider patientPhone={currentPatient.mobileNumber} />

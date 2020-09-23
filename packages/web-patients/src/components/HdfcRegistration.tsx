@@ -359,6 +359,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
   const [token, setToken] = React.useState('');
   const [otp, setOtp] = React.useState('');
   const [otpError, setOtpError] = React.useState<boolean>(false);
+  const [planName, setPlanName] = React.useState('');
   const [userSubscriptionInput, setUserSubscriptionInput] = React.useState<
     CreateUserSubscriptionInput
   >();
@@ -409,6 +410,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
         variables: {
           otp: otp,
           token: token,
+          dateOfBirth: currentPatient.dateOfBirth,
         },
         fetchPolicy: 'no-cache',
       })
@@ -431,17 +433,6 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
   };
 
   const subscribeToHDFCPlan = (group_plan_id: string, mobile_number: string) => {
-    // const userSubInput: CreateUserSubscriptionInput = {
-    //   group_plan_id: group_plan_id,
-    //   mobile_number: mobile_number,
-    //   patientId: currentPatient.id,
-    //   firstName: currentPatient.firstName,
-    //   lastName: currentPatient.lastName,
-    //   gender: currentPatient.gender,
-    //   email: currentPatient.emailAddress,
-    //   DOB: currentPatient.dateOfBirth,
-    //   storeCode: 'WEBCUS',
-    // };
     apolloClient
       .query<CreateUserSubscription, CreateUserSubscriptionVariables>({
         query: CREATE_SUBSCRIPTION,
@@ -456,6 +447,13 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((response) => {
+        setPlanName(
+          response.data &&
+            response.data.CreateUserSubscription &&
+            response.data.CreateUserSubscription.response &&
+            response.data.CreateUserSubscription.response.group_plan &&
+            response.data.CreateUserSubscription.response.group_plan.name
+        );
         setShowOTPValidator(false);
         setShowCongratulations(true);
       })
@@ -535,7 +533,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
             <div className={classes.cContent}>
               <img src={require('images/hdfc/medal.svg')} alt="Otp" />
               <Typography component="h2">Congratulations ! </Typography>
-              <Typography> You Have Successfully Enrolled For Gold+ Plan</Typography>
+              <Typography> You Have Successfully Enrolled For {planName}</Typography>
               <Typography className={classes.description}>
                 You are now eligible for wide range of benefits !
               </Typography>
