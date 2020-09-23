@@ -974,10 +974,6 @@ export const SearchIcon: React.FC<IconProps> = (props) => (
   />
 );
 
-export const LinkUHIDReadMore: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/read-more.png')} />
-);
-
 export const RectangularIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/rectangleIcon.png')} />
 );

@@ -179,11 +179,28 @@ interface ApplyCouponProps {
 export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { cartItems, setCouponCode, cartTotal, addCartItems } = useShoppingCart();
+  const {
+    cartItems,
+    setCouponCode,
+    cartTotal,
+    addCartItems,
+    updateCartItemQty,
+  } = useShoppingCart();
   const [selectCouponCode, setSelectCouponCode] = useState<string>(props.couponCode);
   const [availableCoupons, setAvailableCoupons] = useState<(consult_coupon | null)[]>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [muationLoading, setMuationLoading] = useState<boolean>(false);
+
+  const handleQuantityFreeProduct = (response: any) => {
+    if (response.products && Array.isArray(response.products) && response.products.length) {
+      response.products.forEach((e: any) => {
+        if (e.couponFree && e.quantity > 1 && !localStorage.getItem('updatedFreeCoupon')) {
+          updateCartItemQty({ ...e, quantity: e.quantity, couponFree: 1 });
+        }
+      });
+      localStorage.setItem('updatedFreeCoupon', 'true');
+    }
+  };
 
   const verifyCoupon = () => {
     const data = {
@@ -197,7 +214,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           sku,
           mrp: item.price,
           quantity,
-          couponFree: couponFree || false,
+          couponFree: Number(couponFree) || 0,
           categoryId: type_id || '',
           specialPrice: special_price || price,
         };
@@ -225,6 +242,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
               );
               if (freeProductsSet.size) {
                 addDiscountedProducts(resp.response);
+                handleQuantityFreeProduct(resp.response);
               }
               props.setValidateCouponResult(resp.response);
               setCouponCode && setCouponCode(selectCouponCode);
@@ -302,7 +320,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                       price: e.price,
                       sku: e.sku,
                       special_price: 0,
-                      couponFree: true,
+                      couponFree: 1,
                       small_image: e.small_image,
                       status: e.status,
                       thumbnail: e.thumbnail,

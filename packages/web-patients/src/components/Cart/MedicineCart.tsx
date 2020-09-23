@@ -684,7 +684,7 @@ export interface CartProduct {
   quantity: number;
   discountAmt: number;
   onMrp: boolean;
-  couponFree: boolean;
+  couponFree: number;
 }
 
 export const MedicineCart: React.FC = (props) => {
@@ -712,6 +712,7 @@ export const MedicineCart: React.FC = (props) => {
     setCartItems,
     removeFreeCartItems,
     addCartItems,
+    updateCartItemQty,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -750,6 +751,7 @@ export const MedicineCart: React.FC = (props) => {
   const [couponDiscount, setCouponDiscount] = useState<number>(0);
   const [latitude, setLatitude] = React.useState<string>('');
   const [longitude, setLongitude] = React.useState<string>('');
+  const [quantityUpdated, setQuantityUpdated] = React.useState<boolean>(true);
 
   const apiDetails = {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -866,7 +868,7 @@ export const MedicineCart: React.FC = (props) => {
   };
   const checkForCartChanges = async (pincode: string, lat: string, lng: string) => {
     const items = cartItems.map((item: MedicineCartItem) => {
-      return { sku: item.sku, qty: item.quantity, couponFree: item.couponFree };
+      return { sku: item.sku, qty: item.quantity, couponFree: Number(item.couponFree) };
     });
     return await checkTatAvailability(items, pincode, lat, lng)
       .then((res: any) => {
@@ -1010,7 +1012,7 @@ export const MedicineCart: React.FC = (props) => {
               ).toFixed(2)
             ),
             mrp: cartItemDetails.price,
-            couponFree: cartItemDetails.couponFree || false,
+            couponFree: Number(cartItemDetails.couponFree) || 0,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
             isMedicine:
@@ -1039,7 +1041,7 @@ export const MedicineCart: React.FC = (props) => {
             sku,
             mrp: item.price,
             quantity,
-            couponFree: couponFree || false,
+            couponFree: Number(couponFree) || 0,
             categoryId: type_id || '',
             specialPrice: special_price || price,
           };
@@ -1055,8 +1057,9 @@ export const MedicineCart: React.FC = (props) => {
                   : []
               );
               if (freeProductsSet.size) {
-                setValidateCouponResult(resp.response);
+                handleQuantityFreeProduct(resp.response);
                 addDiscountedProducts(resp.response);
+                setValidateCouponResult(resp.response);
                 setErrorMessage('');
                 return;
               }
@@ -1094,6 +1097,21 @@ export const MedicineCart: React.FC = (props) => {
     }
   };
 
+  const handleQuantityFreeProduct = (response: any) => {
+    if (response.products && Array.isArray(response.products) && response.products.length) {
+      response.products.forEach((cartItem: MedicineCartItem) => {
+        if (
+          cartItem.couponFree &&
+          cartItem.quantity > 1 &&
+          !localStorage.getItem('updatedFreeCoupon')
+        ) {
+          updateCartItemQty({ ...cartItem, quantity: cartItem.quantity, couponFree: 1 });
+        }
+      });
+      localStorage.setItem('updatedFreeCoupon', 'true');
+    }
+  };
+
   const addDiscountedProducts = (response: any) => {
     const skus: Array<string> = [];
     if (response.products && Array.isArray(response.products) && response.products.length) {
@@ -1104,7 +1122,6 @@ export const MedicineCart: React.FC = (props) => {
         response.products.forEach((data: any) => {
           if (!cartSkuSet.has(data.sku) && data.couponFree) skus.push(data.sku);
         });
-
         const allData: MedicineCartItem[] = [];
         if (skus && skus.length) {
           axios
@@ -1134,7 +1151,7 @@ export const MedicineCart: React.FC = (props) => {
                       price: e.price,
                       sku: e.sku,
                       special_price: 0,
-                      couponFree: true,
+                      couponFree: 1,
                       small_image: e.small_image,
                       status: e.status,
                       thumbnail: e.thumbnail,
@@ -1325,6 +1342,7 @@ export const MedicineCart: React.FC = (props) => {
       .catch((e) => {
         console.log({ e });
         setIsAlertOpen(true);
+
         setAlertMessage('Something went wrong, please try later.');
       })
       .finally(() => {

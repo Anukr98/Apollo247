@@ -147,8 +147,19 @@ const getPatientAddressList: Resolver<
   ProfilesServiceContext,
   patientAddressListResult
 > = async (parent, args, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(args.patientId);
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
   const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
-  const addressList = await patientAddressRepo.getPatientAddressList(args.patientId);
+  const patients = await patientRepo.getIdsByMobileNumber(patientDetails.mobileNumber);
+  const addressResps = await Promise.all(
+    patients.map((patient) => {
+      return patientAddressRepo.getPatientAddressList(patient.id);
+    })
+  );
+  const addressList = addressResps.reduce((acc, addressResp) => acc.concat(addressResp), []);
   return { addressList };
 };
 

@@ -1,7 +1,7 @@
 import { Theme, Typography, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { useRef, useState } from 'react';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import _forEach from 'lodash/forEach';
@@ -19,6 +19,7 @@ import { cancelAppointment, cancelAppointmentVariables } from 'graphql/types/can
 import { CANCEL_APPOINTMENT } from 'graphql/profiles';
 import { GET_CONSULT_INVOICE } from 'graphql/consult';
 import { Alerts } from 'components/Alerts/Alerts';
+import { CancelConsult } from 'components/Consult/V2/ChatRoom/CancelConsult';
 import {
   isPastAppointment,
   getDiffInMinutes,
@@ -418,6 +419,10 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const appointmentId = params.appointmentId;
   const cancelAppointRef = useRef(null);
   const [isCancelPopoverOpen, setIsCancelPopoverOpen] = React.useState<boolean>(false);
+  const [isCancelConsultationDialogOpen, setIsCancelConsultationDialogOpen] = useState<boolean>(
+    false
+  );
+  const [cancelReasontext, setCancelReasonText] = useState<string>('');
 
   const {
     doctorDetails,
@@ -550,7 +555,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         variables: {
           cancelAppointmentInput: {
             appointmentId: appointmentId,
-            cancelReason: '',
+            cancelReason: cancelReasontext,
             cancelledBy: REQUEST_ROLES.PATIENT,
             cancelledById: patientId,
           },
@@ -792,7 +797,10 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                   Reschedule Instead
                 </AphButton>
 
-                <AphButton onClick={() => cancelAppointmentApi()}>
+                <AphButton
+                  // onClick={() => cancelAppointmentApi()}
+                  onClick={() => setIsCancelConsultationDialogOpen(true)}
+                >
                   {apiLoading ? (
                     <CircularProgress size={22} color="secondary" />
                   ) : (
@@ -829,6 +837,22 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           isAlertOpen={isAlertOpen}
           setIsAlertOpen={setIsAlertOpen}
         />
+        <AphDialog open={isCancelConsultationDialogOpen} maxWidth="sm">
+          <AphDialogClose
+            onClick={() => setIsCancelConsultationDialogOpen(false)}
+            title={'Close'}
+          />
+          <AphDialogTitle>Cancel Consultation</AphDialogTitle>
+          <CancelConsult
+            setIsCancelConsultationDialogOpen={(isCancelConsultationDialogOpen: boolean) =>
+              setIsCancelConsultationDialogOpen(isCancelConsultationDialogOpen)
+            }
+            cancelAppointmentApi={cancelAppointmentApi}
+            setCancelReasonText={(cancelReasontext: string) =>
+              setCancelReasonText(cancelReasontext)
+            }
+          />
+        </AphDialog>
       </div>
     );
   }

@@ -120,12 +120,13 @@ type MedicalCardProps = {
   isActiveCard: boolean;
   deleteReport: (id: string, type: string) => void;
   id: string;
+  hospitalName?: string;
 };
 
 export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
   const classes = useStyles({});
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const { name, source, recordType, isActiveCard, deleteReport, id } = props;
+  const { name, source, recordType, isActiveCard, deleteReport, id, hospitalName } = props;
 
   return (
     <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
@@ -136,9 +137,14 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
       </div>
       {source && source !== '-' && (
         <div className={classes.consultType}>
-          {source === '247self' ? <img src={require('images/ic_selfupload.svg')} alt="" /> : <img src={require('images/ic_hospitalgray.svg')} alt="" />}
-          {recordType !== MedicalRecordType.HOSPITALIZATION &&
-            (source === '247self' || _lowerCase(source) === 'self')
+          {source === '247self' || _lowerCase(source) === 'self' ? (
+            <img src={require('images/ic_selfupload.svg')} alt="" />
+          ) : (
+            <img src={require('images/ic_hospitalgray.svg')} alt="" />
+          )}
+          {recordType === MedicalRecordType.HOSPITALIZATION && hospitalName && hospitalName !== '-'
+            ? hospitalName
+            : source === '247self' || _lowerCase(source) === 'self'
             ? 'Self upload'
             : source}
         </div>
