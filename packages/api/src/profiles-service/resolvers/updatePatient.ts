@@ -104,17 +104,22 @@ const updatePatient: Resolver<
       throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
     }
   } else {
-    let identifyCustomer: boolean
+    let identifyCustomer: boolean;
     const mock_api = await getCache(MOCK_KEY);
     if (mock_api && mock_api === 'true') {
-      identifyCustomer = ((await customerIdentification(patient.mobileNumber, updateAttrs.dateOfBirth?))['decryptedResponse']['customerCASADetailsDTO']['existingCustomer'] === 'Y')
+      updateAttrs.dateOfBirth;
+      identifyCustomer =
+        (await customerIdentification(patient.mobileNumber, updateAttrs.dateOfBirth || new Date()))[
+          'decryptedResponse'
+        ]['customerCASADetailsDTO']['existingCustomer'] === 'Y';
+    } else {
+      identifyCustomer = checkForRegisteredPartner(
+        patient.mobileNumber,
+        updateAttrs.dateOfBirth || new Date(),
+        patient.partnerId
+      );
     }
-    else{
-      identifyCustomer = checkForRegisteredPartner(patient.mobileNumber,updateAttrs.dateOfBirth?,patient.partnerId )
-    }
-    if (
-      referralCode == PartnerId.HDFCBANK && identifyCustomer
-    ) {
+    if (referralCode == PartnerId.HDFCBANK && identifyCustomer) {
       updateAttrs.partnerId = PartnerId.HDFCBANK;
     }
   }
