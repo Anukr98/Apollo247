@@ -225,6 +225,9 @@ async function decryptHighResponse(response: any) {
 }
 
 async function highRequest(base_request: any, url: String, historyToken: string = '') {
+  console.log('-----------------------------------------------------------------');
+  console.log(`request ${url}`, base_request);
+  console.log('-----------------------------------------------------------------');
   const key = randomStringGenerator(32);
   const privateKey = fs.readFileSync(
     path.resolve(assetsDir, `${process.env.APOLLO_CERTIFICATE_KEY}`),
@@ -287,6 +290,9 @@ async function decryptMediumResponse(response: any) {
 }
 
 async function mediumRequest(base_request: any, url: String, historyToken: String = '') {
+  console.log('-----------------------------------------------------------------');
+  console.log(`request ${url}`, base_request);
+  console.log('-----------------------------------------------------------------');
   const key = randomStringGenerator(32);
   let iv = randomStringGenerator(16);
   const RequestEncryptedValue = cryptojs.AES.encrypt(
