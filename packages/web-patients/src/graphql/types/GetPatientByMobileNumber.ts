@@ -22,6 +22,7 @@ export interface GetPatientByMobileNumber_getPatientByMobileNumber_patients {
   emailAddress: string | null;
   photoUrl: string | null;
   referralCode: string | null;
+  partnerId: string | null;
 }
 
 export interface GetPatientByMobileNumber_getPatientByMobileNumber {
