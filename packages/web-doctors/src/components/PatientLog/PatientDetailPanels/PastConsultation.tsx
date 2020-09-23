@@ -314,9 +314,13 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 };
 interface pastConsultationProps {
   pastAppointments: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
+  appointmentDatetime: string;
 }
 export const PastConsultation: React.FC<pastConsultationProps> = (props) => {
-  const pastAppointments = props.pastAppointments;
+  const pastAppointments = props.pastAppointments && props.pastAppointments.length > 0 ? 
+  props.pastAppointments.filter(function(e: any) {
+    return e.appointmentDateTime !== props.appointmentDatetime;
+  }) : [];
   const classes = useStyles({});
   const ischild: boolean = false;
 

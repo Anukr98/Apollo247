@@ -189,11 +189,11 @@ const refreshDoctorDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> 
   const refreshDays = ApiConstants.LINK_TTL ? parseInt(ApiConstants.LINK_TTL, 10) : 0;
   const newRefreshDate = addDays(new Date(), refreshDays);
 
-  const linksToBeRefreshed = _.chunk(getDeeplinks, 100);
+  const linksToBeRefreshed = _.chunk(getDeeplinks, 60);
 
   linksToBeRefreshed.map(async (chunk) => {
-    _.delay(async () => {
-      chunk.map(async (element: Deeplink) => {
+    chunk.map(async (element: Deeplink) => {
+      _.delay(async () => {
         const doctorType =
           element.templateId == ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO
             ? DoctorType.DOCTOR_CONNECT
@@ -203,8 +203,8 @@ const refreshDoctorDeepLinks: Resolver<null, {}, DoctorsServiceContext, string> 
         element.deepLink = newLink;
         element.updatedDate = new Date();
         await linkRepository.upsertDeepLink(element);
-      });
-    }, 60000); //in milliseconds
+      }, 2000); //in milliseconds
+    });
   });
 
   return 'Deeplink Refresh Completed :)';

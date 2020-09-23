@@ -75,6 +75,7 @@ import {
   mediaPrescriptionSource,
   MediaPrescriptionFileProperties,
   Gender,
+  USER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -92,6 +93,7 @@ import {
   getPastAppoinmentCount,
   updateExternalConnect,
   getSecretaryDetailsByDoctor,
+  getParticipantsLiveStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   WebEngageEventName,
@@ -799,7 +801,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isVoipCall || fromIncomingCall) {
       joinCallHandler();
     }
+    updateNumberOfParticipants();
   }, []);
+
+  const updateNumberOfParticipants = async (status: USER_STATUS = USER_STATUS.ENTERING) => {
+    /**
+     * This relation is for patient and senior doctor only(not for JD)
+     */
+    const res: any = await getParticipantsLiveStatus(client, channel, status);
+    if (res?.data?.setAndGetNumberOfParticipants?.NUMBER_OF_PARTIPANTS) {
+      const totalParticipants: number = res.data.setAndGetNumberOfParticipants.NUMBER_OF_PARTIPANTS;
+      if (totalParticipants > 1) {
+        jrDoctorJoined.current = false;
+        setDoctorJoined(true);
+        setDoctorJoinedChat && setDoctorJoinedChat(true);
+        setTimeout(() => {
+          setDoctorJoined(false);
+        }, 10000);
+      }
+    }
+  };
 
   const backDataFunctionality = () => {
     try {
@@ -828,13 +849,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
     setUserAnswers({ appointmentId: channel });
-    getAppointmentCount();
+    if (!disableChat && status !== STATUS.COMPLETED) {
+      getAppointmentCount();
+    }
     getSecretaryData();
     // requestToJrDoctor();
     // updateSessionAPI();
-    setTimeout(() => {
-      CheckDoctorPresentInChat();
-    }, 2000);
     if (isIos()) {
       handleCallkitEventListeners();
       handleVoipEventListeners();
@@ -1577,6 +1597,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const CheckDoctorPresentInChat = () => {
     if (status === STATUS.COMPLETED) return; // no need to show join button if consultation has been completed
 
+    updateNumberOfParticipants(USER_STATUS.ENTERING);
     pubnub
       .hereNow({
         channels: [channel],
@@ -1588,12 +1609,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           response.channels &&
           response.channels[appointmentData.id] &&
           response.channels[appointmentData.id].occupants;
-        const occupancyDoctor =
-          data &&
-          data.length > 0 &&
-          data.filter((obj: any) => {
-            return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
-          });
         const occupancyJrDoctor =
           data &&
           data.length > 0 &&
@@ -1602,14 +1617,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           });
         if (occupancyJrDoctor && occupancyJrDoctor.length >= 1) {
           jrDoctorJoined.current = true;
-        }
-        if (occupancyDoctor && occupancyDoctor.length >= 1 && response.totalOccupancy >= 2) {
-          jrDoctorJoined.current = false;
-          setDoctorJoined(true);
-          setDoctorJoinedChat && setDoctorJoinedChat(true);
-          setTimeout(() => {
-            setDoctorJoined(false);
-          }, 10000);
         }
       })
       .catch((error) => {
@@ -2040,6 +2047,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       abondmentStarted = false;
       stopJoinTimer();
       // stopCallAbondmentTimer();
+      updateNumberOfParticipants(USER_STATUS.LEAVING);
       try {
         AppState.removeEventListener('change', _handleAppStateChange);
         BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);

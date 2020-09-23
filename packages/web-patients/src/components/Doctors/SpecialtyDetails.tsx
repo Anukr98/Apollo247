@@ -22,6 +22,7 @@ import {
   DOCTOR_CATEGORY,
   SearchObject,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE as PAGE_SIZE,
+  deepLinkUtil,
 } from 'helpers/commonHelpers';
 import { useLocationDetails } from 'components/LocationProvider';
 import { GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as docDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -440,6 +441,10 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [slugName, setSlugName] = useState<string>('');
   const [faqData, setFaqData] = useState<any>();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    deepLinkUtil(`Speciality?${specialtyId}`);
+  }, [specialtyId]);
 
   useEffect(() => {
     if (!intialLoad) {
@@ -890,6 +895,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     description: (faqData && faqData[0].specialtyMetaDescription) || '',
     canonicalLink:
       (faqData && faqData[0].canonicalUrl) || (window && window.location && window.location.href),
+    deepLink: window.location.href,
   };
 
   return (

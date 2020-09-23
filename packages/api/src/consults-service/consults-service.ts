@@ -131,6 +131,11 @@ import {
   appointmentCallFeedbackResolvers,
 } from 'consults-service/resolvers/appointmentCallFeedbackResolver';
 
+import {
+  liveStatusTypeDefs,
+  liveStatusResolvers,
+} from 'consults-service/resolvers/ChatRoomLiveStatus';
+
 (async () => {
   connect()
     .then((res) => {
@@ -287,6 +292,10 @@ import {
           {
             typeDefs: appointmentCallFeedbackTypeDefs,
             resolvers: appointmentCallFeedbackResolvers,
+          },
+          {
+            typeDefs: liveStatusTypeDefs,
+            resolvers: liveStatusResolvers,
           },
         ]),
         plugins: [
