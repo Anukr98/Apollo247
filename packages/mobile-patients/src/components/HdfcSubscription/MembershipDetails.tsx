@@ -1,5 +1,4 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
@@ -12,6 +11,7 @@ import { HdfcConnectPopup } from './HdfcConnectPopup';
 import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import { g } from '../../helpers/helperFunctions';
+import { AvailNowPopup } from './AvailNowPopup';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -62,6 +62,7 @@ const styles = StyleSheet.create({
   redeemButtonText: {
     ...theme.viewStyles.text('B', 15, '#FC9916', 1, 20, 0.35),
     textAlign: 'right',
+    textTransform: 'uppercase',
   },
   redeemableCardsHeading: {
     ...theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35),
@@ -130,51 +131,60 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const { hdfcUserSubscriptions } = useAppCommonData();
   const membershipDetails = membershipType === g(hdfcUserSubscriptions, 'name') ? hdfcUserSubscriptions : g(hdfcUserSubscriptions, 'canUpgradeTo');
+  const isCanUpgradeTo = membershipType === g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
   const isActivePlan = !!membershipDetails!.isActive;
   const benefits = membershipDetails!.benefits;
   const coupons = membershipDetails!.coupons;
-  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const areBenefitsAvailable = !!benefits.length;
+  const areCouponsAvailable = !!coupons.length;
   const [selectedTab, setSelectedTab] = useState<string>('Benefits Available');
   const [isActiveCouponVisible, setIsActiveCouponVisible] = useState<boolean>(true);
   const [isWhatWillYouGetVisible, setIsWhatWillYouGetVisible] = useState<boolean>(true);
   const [isHowToAvailVisible, setIsHowToAvailVisible] = useState<boolean>(true);
   const [isTnCVisible, setIsTnCVisible] = useState<boolean>(false);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
-  const { TnC, WhatWillYouGetPoints } = Hdfc_values;
+  const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
+  const { TnC } = Hdfc_values;
 
-  const benefitsActionsMapping = [
+  const benefitsActionMapping = [
     {
-      attribute: 'Call Exotel API',
+      attribute: 'CALL_EXOTEL_API',
       action: () => {
         setShowHdfcConnectPopup(true);
       }
     },
     {
-      attribute: 'Redirect to Specialty Listing',
+      attribute: 'SPECIALITY_LISTING',
       action: () => {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       }
     },
     {
-      attribute: 'Redirect to Pharmacy Landing',
+      attribute: 'PHARMACY_LANDING',
       action: () => {
         props.navigation.navigate('MEDICINES');
       }
     },
     {
-      attribute: 'Redirect to PHR',
+      attribute: 'PHR',
       action: () => {
         props.navigation.navigate('APPOINTMENTS');
       }
     },
     {
-      attribute: 'Redirect to doc listing with payroll docs selected',
+      attribute: 'DIAGNOSTICS_LANDING',
+      action: () => {
+        props.navigation.navigate('HEALTH RECORDS');
+      }
+    },
+    {
+      attribute: 'DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED',
       action: () => {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       }
     },
     {
-      attribute: 'Call Whatsapp API & open chat with ****',
+      attribute: 'WHATSAPP_OPEN_CHAT',
       action: () => {
         Linking.openURL(`whatsapp://send?text=&phone=+914048218743`);
       }
@@ -208,7 +218,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return (
       <>
         {  
-          (coupons && coupons.length) &&
+          areCouponsAvailable &&
           <View style={styles.cardStyle}>
             <TouchableOpacity onPress={() => {setIsActiveCouponVisible(!isActiveCouponVisible)}} style={styles.sectionsHeading}>
               <Text style={theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35)}>
@@ -244,12 +254,22 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           </View>
         }
         {
-          (benefits && benefits.length) &&
+          (areBenefitsAvailable) &&
           benefits.map(value => {
-            const {headerContent, description, ctaLabel, ctaAction} = value;
+            const {headerContent, description, ctaLabel, ctaAction, benefitCtaAction} = value;
+            const {action, message, type} = benefitCtaAction;
             const ctaLabelName = ctaLabel.toUpperCase();
             return (
-              ctaLabelName !== 'NULL' && renderRedeemableCards(headerContent, description, ctaLabel, ctaAction)
+              ctaLabelName !== 'NULL' && 
+              renderRedeemableCards(
+                headerContent, 
+                description, 
+                ctaLabelName, 
+                ctaAction,
+                action,
+                message,
+                type,
+              )
             )
           })
         }
@@ -328,11 +348,29 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
   };
 
-  const renderRedeemableCards = (heading: string, bodyText: string, ctaLabel: string, ctaAction: string) => {
-    const action = benefitsActionsMapping.filter((value) => {
-      return value.attribute === ctaAction
+  const renderRedeemableCards = (
+    heading: string, 
+    bodyText: string, 
+    ctaLabel: string, 
+    ctaAction: string,
+    action: string,
+    message: string,
+    type: string,
+  ) => {
+    let actionCta = benefitsActionMapping.filter((value) => {
+      return value.attribute === action
     });
-    const onCtaClick = action[0].action;
+    if (type === 'WHATSAPP_OPEN_CHAT') {
+      actionCta = [
+        {
+          attribute: type,
+          action: () => {
+            Linking.openURL(`whatsapp://send?text=${message}&phone=${action}`);
+          }
+        }
+      ]
+    };
+    const onCtaClick = actionCta[0].action;
     return (
       <View style={[styles.cardStyle, { marginVertical: 10 }]}>
         {renderRedeemableCardsContent(heading, bodyText)}
@@ -480,15 +518,20 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   };
 
   const renderBottomContainer = () => {
+    const buttonText = isCanUpgradeTo ? 'AVAIL NOW' : (isActivePlan ? 'EXPLORE NOW' : 'ACTIVATE NOW');
     return (
       <TouchableOpacity
         style={styles.bottomContainer}
         onPress={() => {
-          props.navigation.navigate(AppRoutes.ConsultRoom, {});
+          if (isCanUpgradeTo) {
+            setShowAvailPopup(true);
+          } else {
+            props.navigation.navigate(AppRoutes.ConsultRoom, {});
+          }
         }}
       >
         <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0.35)}>
-          {isActivePlan ? 'EXPLORE NOW' : 'ACTIVATE NOW'}
+          {buttonText}
         </Text>
       </TouchableOpacity>
     );
@@ -503,7 +546,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         }}
         bounces={false}
       >
-        {renderWhatWillYouGet()}
+        {areBenefitsAvailable && renderWhatWillYouGet()}
         {renderHowToAvail()}
         {renderBottomContainer()}
       </ScrollView>
@@ -533,9 +576,9 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             marginTop: 15,
           }}>
             {
-              WhatWillYouGetPoints.map(value => {
+              benefits.map(value => {
                 return (
-                  getEllipseBulletPoint(value)
+                  getEllipseBulletPoint(value.headerContent)
                 )
               })
             }
@@ -584,13 +627,13 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             <Text style={{
               ...theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35),
             }}>
-              Complete transactions worth Rs 25000+ on Apollo 24/7
+              {`Complete transactions worth Rs ${membershipDetails!.minTransactionValue}+ on Apollo 24/7`}
             </Text>
           </View>
           <View style={styles.howToAvail}>
             <TwoVectorNumber style={styles.oneVectorStyle} />
             <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
-              Duration of membership is 1 year. It will be auto renewed if you spend more than Rs 25000 within 1 year on Apollo 24/7
+              {`Duration of membership is 1 year. It will be auto renewed if you spend more than Rs ${membershipDetails!.minTransactionValue} within 1 year on Apollo 24/7`}
             </Text>
           </View>
         </View>
@@ -641,20 +684,32 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         <SubscriptionBanner 
           membershipType={membershipType} 
           benefitsWorth={membershipDetails!.benefitsWorth || ' '}
+          showLockIcon={isCanUpgradeTo}
         />
         {
-          isActivePlan ? 
-          renderTabComponent() : 
-          renderInactivePlansContainer()
+          isCanUpgradeTo ?
+          renderSubscribeContent() : 
+          (
+            isActivePlan ? 
+            renderTabComponent() : 
+            renderInactivePlansContainer()
+          )
         }
       </SafeAreaView>
-      {/* {
+      {
         showHdfcConnectPopup &&
         <HdfcConnectPopup
           onClose={() => setShowHdfcConnectPopup(false)}
         />
       }
-      {showSpinner && <Spinner />} */}
+      {
+        showAvailPopup && 
+        <AvailNowPopup 
+          onClose={() => setShowAvailPopup(false)} 
+          transactionAmount={membershipDetails!.minTransactionValue} 
+          navigation={props.navigation}
+        />
+      }
     </View>
   );
 };

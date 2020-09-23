@@ -50,9 +50,16 @@ export interface PlanBenefits {
   description: string;
   ctaLabel: string;
   ctaAction: string;
+  benefitCtaAction: BenefitCtaAction;
   attributeType: string;
   availableCount: number;
   refreshFrequency: number;
+}
+
+export interface BenefitCtaAction {
+  type: string;
+  action: string;
+  message: string;
 }
 
 export interface PlanCoupons {

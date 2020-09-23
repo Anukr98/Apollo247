@@ -5,6 +5,7 @@ import {
   SubscriptionData,
   GroupPlan,
   PlanBenefits,
+  BenefitCtaAction,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -412,7 +413,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [locationDetails, currentPatient]);
 
   useEffect(() => {
-    if (g(currentPatient, 'referralCode') === hdfc_values.Referral_Code) {
+    if (g(currentPatient, 'partnerId') === hdfc_values.REFERRAL_CODE) {
       if (hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id')) {
         setShowHdfcWidget(false);
         setShowHdfcConnectWidget(true);
@@ -488,7 +489,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setWEGFired(true);
         setWEGUserAttributes();
       }
-      if (currentPatient&& g(currentPatient, 'referralCode') === hdfc_values.Referral_Code) {
+      if (currentPatient&& g(currentPatient, 'partnerId') === hdfc_values.REFERRAL_CODE) {
         getUserSubscriptionsWithBenefits();
       }
     } catch (e) {}
@@ -694,7 +695,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     client
       .query<identifyHdfcCustomer, identifyHdfcCustomerVariables>({
         query: IDENTIFY_HDFC_CUSTOMER,
-        variables: { mobileNumber: g(currentPatient, 'mobileNumber'), DOB: g(currentPatient, 'dateOfBirth')},
+        variables: { 
+          mobileNumber: g(currentPatient, 'mobileNumber'), 
+          DOB: moment(g(currentPatient, 'dateOfBirth')).format('YYYY-MM-DD') 
+        },
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
@@ -702,7 +706,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         const hdfcCustomerData = g(data, 'data', 'identifyHdfcCustomer');
         const hdfcStatus = g(hdfcCustomerData, 'status');
         const hdfcToken = g(hdfcCustomerData, 'token') || '';
-        if (hdfcStatus === hdfc_values.Otp_Generated_Status && !!hdfcToken) {
+        if (hdfcStatus === hdfc_values.OTP_GENERATED_STATUS && !!hdfcToken) {
           setShowHdfcOtpView(true);
           setShowNotHdfcCustomer(false); 
         } else {
@@ -724,7 +728,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     client
       .query<validateHdfcOTP, validateHdfcOTPVariables>({
         query: VALIDATE_HDFC_OTP,
-        variables: { otp: hdfcOtpValue, token: hdfcToken},
+        variables: { 
+          otp: hdfcOtpValue, 
+          token: hdfcToken, 
+          dateOfBirth: moment(g(currentPatient, 'dateOfBirth')).format('YYYY-MM-DD') 
+        },
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
@@ -764,7 +772,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         if (createSubscriptionData!.success) {
           setShowHdfcOtpView(false);
           setShowCongratulations(true);
-          getUserSubscriptionsWithBenefits();
+          // getUserSubscriptionsWithBenefits();
         }
       })
       .catch((e) => {
@@ -773,6 +781,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const getUserSubscriptionsWithBenefits = () => {
+    setHdfcLoading(true);
     const mobile_number = g(currentPatient, 'mobileNumber');
     mobile_number &&
     client
@@ -782,6 +791,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
+        setHdfcLoading(false);
         const groupPlans = g(data, 'data', 'GetAllUserSubscriptionsWithPlanBenefits', 'response');
         if (groupPlans && groupPlans.length) {
           const plan = groupPlans[0];
@@ -791,6 +801,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
       })
       .catch((e) => {
+        setHdfcLoading(false);
         CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
       })
   };
@@ -807,6 +818,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const planBenefits: PlanBenefits[] = [];
       if (benefits && benefits.length) {
         benefits.forEach((item) =>{
+          const ctaAction = g(item, 'cta_action');
+          const benefitCtaAction: BenefitCtaAction = {
+            type: g(ctaAction, 'type'),
+            action: g(ctaAction, 'meta', 'action'),
+            message: g(ctaAction, 'meta', 'message'),
+          };
           const benefit: PlanBenefits = {
             _id: item!._id,
             attribute: item!.attribute,
@@ -814,6 +831,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             description: item!.description,
             ctaLabel: item!.cta_label,
             ctaAction: g(item, 'cta_action', 'cta_action'),
+            benefitCtaAction,
             attributeType: item!.attribute_type,
             availableCount: item!.available_count,
             refreshFrequency: item!.refresh_frequency,
@@ -832,10 +850,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         minTransactionValue: plan!.min_transaction_value,
         status: plan!.status || '',
         subscriptionStatus: plan!.subscriptionStatus || '',
-        isActive: plan!.subscriptionStatus === 'active',
+        isActive: plan!.subscriptionStatus === hdfc_values.ACTIVE_STATUS,
         group: groupData,
         benefits: planBenefits,
-        coupons: plan!.coupons,
+        coupons: plan!.coupons ? plan!.coupons : [],
         canUpgradeTo: g(upgradeToPlan, '_id') ? setSubscriptionData(upgradeToPlan) : {},
       }
       return subscription;
@@ -1586,6 +1604,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </View>
       </View>
       <TouchableOpacity onPress={() => {
+        getUserSubscriptionsWithBenefits();
         props.navigation.navigate(AppRoutes.MyMembership);
       }}>
         <Text style={styles.hdfcConnectButton}>GO TO DETAILS</Text>

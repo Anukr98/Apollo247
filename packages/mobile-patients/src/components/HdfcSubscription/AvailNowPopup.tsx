@@ -91,7 +91,7 @@ export const AvailNowPopup: React.FC<AvailNowPopupProps> = (props) => {
             </Text>
           </View>
         </View>
-        {renderBottomContainer()}
+        {/* {renderBottomContainer()} */}
       </View>
     );
   };

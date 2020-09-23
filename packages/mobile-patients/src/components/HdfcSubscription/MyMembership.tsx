@@ -1,7 +1,7 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { 
@@ -16,6 +16,8 @@ import {
 import { useAppCommonData, PlanBenefits } from '../AppCommonDataProvider';
 import { g } from '../../helpers/helperFunctions';
 import { AvailNowPopup } from './AvailNowPopup';
+import { Spinner } from '../ui/Spinner';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -103,6 +105,14 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const minTransactionToUpgrade = canUpgrade ? g(hdfcUserSubscriptions, 'canUpgradeTo', 'minTransactionValue') : 0;
   const isActive = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.isActive);
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const hdfc_values = string.Hdfc_values;
+
+  useEffect(() => {
+    if (hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id')) {
+      setshowSpinner(false);
+    }
+  }, [hdfcUserSubscriptions]);
 
   const getEllipseBulletPoint = (text: string, index: number) => {
     return (
@@ -139,7 +149,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     );
   };
 
-  const renderBottomButtons = (isActive: boolean, subscriptionName: string) => {
+  const renderBottomButtons = (isActive: boolean, subscriptionName: string, isCanUpgradeToPlan: boolean) => {
+    const buttonText = isCanUpgradeToPlan ? 'AVAIL NOW' : (isActive ? 'EXPLORE NOW' : 'ACTIVATE NOW');
     return (
       <View style={styles.membershipButtons}>
         <TouchableOpacity 
@@ -158,24 +169,25 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         <TouchableOpacity 
           style={{ padding: 10 }}
           onPress={() => {
-            if (isActive) {
+            if (isCanUpgradeToPlan) {
+              setShowAvailPopup(true);
+            } else {
               props.navigation.navigate(AppRoutes.ConsultRoom, {});
             }
-            setShowAvailPopup(true);
           }}
         >
           <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>
-            {isActive ? `EXPLORE NOW` : `AVAIL NOW`}
+            {buttonText}
           </Text>
         </TouchableOpacity>
       </View>
     );
   };
 
-  const renderMembershipCard = (subscription: any) => {
-    const isSilver = subscription!.name === 'SILVER+ PLAN';
-    const isGold = subscription!.name === 'GOLD+ PLAN';
-    const isPlatinum = subscription!.name === 'PLATINUM+ PLAN';
+  const renderMembershipCard = (subscription: any, isCanUpgradeToPlan: boolean) => {
+    const isSilver = subscription!.name === hdfc_values.SILVER_PLAN;
+    const isGold = subscription!.name === hdfc_values.GOLD_PLAN;
+    const isPlatinum = subscription!.name === hdfc_values.PLATINUM_PLAN;
     return (
       <View style={styles.cardStyle}>
         <View style={styles.membershipCardContainer}>
@@ -190,19 +202,19 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             {subscription!.name}
           </Text>
           {
-            subscription!.isActive ? (
+            isCanUpgradeToPlan ? (
+              <LockIcon style={styles.lockIcon} />
+            ) : (
               <>
               {isGold && <HdfcGoldMedal style={styles.medalIcon} />}
               {isPlatinum && <HdfcPlatinumMedal style={styles.medalIcon} />}
               {isSilver && <HdfcSilverMedal style={styles.medalIcon} />}
               </>
-            ) : (
-              <LockIcon style={styles.lockIcon} />
             )
           }
         </View>
         {renderCardBody(subscription!.benefits, subscription!.name)}
-        {renderBottomButtons(subscription!.isActive, subscription!.name)}
+        {renderBottomButtons(subscription!.isActive, subscription!.name, isCanUpgradeToPlan)}
       </View>
     );
   };
@@ -220,7 +232,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         {
           showSubscriptions && 
           <ScrollView bounces={false}>
-            {renderMembershipCard(hdfcUserSubscriptions)}
+            {renderMembershipCard(hdfcUserSubscriptions, false)}
             {
               canUpgrade &&
               <View>
@@ -232,7 +244,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                 }}>
                   OTHER PLANS
                 </Text>
-                {renderMembershipCard(hdfcUserSubscriptions!.canUpgradeTo)}
+                {renderMembershipCard(hdfcUserSubscriptions!.canUpgradeTo, true)}
               </View>
             }
           </ScrollView>
@@ -245,6 +257,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             navigation={props.navigation}
           />
         }
+        {showSpinner && <Spinner />}
       </SafeAreaView>
     </View>
   );
