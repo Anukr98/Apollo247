@@ -6937,29 +6937,31 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         {renderChatView()}
         {Platform.OS == 'ios' ? (
           <>
-            <TouchableOpacity
-              activeOpacity={1}
-              style={[styles.uploadButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
-              onPress={async () => {
-                if (!disableChat) {
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
-                  setDropdownVisible(!isDropdownVisible);
-                }
-              }}
-            >
-              <UploadHealthRecords
-                style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
-              />
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
-                  marginTop: 2,
-                  textAlign: 'center',
+            {!displayChatQuestions ? (
+              <TouchableOpacity
+                activeOpacity={1}
+                style={[styles.uploadButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
+                onPress={async () => {
+                  if (!disableChat) {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                    setDropdownVisible(!isDropdownVisible);
+                  }
                 }}
               >
-                {'Upload Records'}
-              </Text>
-            </TouchableOpacity>
+                <UploadHealthRecords
+                  style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
+                />
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
+                    marginTop: 2,
+                    textAlign: 'center',
+                  }}
+                >
+                  {'Upload Records'}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
             <View style={[styles.inputMainContainer, { opacity: disableChat ? 0.5 : 1 }]}>
               <View style={styles.textInputContainerStyles}>
                 <TextInput
@@ -7005,27 +7007,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
               )}
             </View>
-            <TouchableOpacity
-              activeOpacity={1}
-              style={[styles.sendButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
-              onPress={async () => {
-                if (!disableChat) {
-                  const textMessage = messageText.trim();
+            {!displayChatQuestions ? (
+              <TouchableOpacity
+                activeOpacity={1}
+                style={[styles.sendButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
+                onPress={async () => {
+                  if (!disableChat) {
+                    const textMessage = messageText.trim();
 
-                  if (textMessage.length == 0) {
-                    Alert.alert('Apollo', 'Please write something to send message.');
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
-                    return;
+                    if (textMessage.length == 0) {
+                      Alert.alert('Apollo', 'Please write something to send message.');
+                      CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
+                      return;
+                    }
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
+
+                    send(textMessage);
+                    setContentHeight(40);
                   }
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
-
-                  send(textMessage);
-                  setContentHeight(40);
-                }
-              }}
-            >
-              <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
-            </TouchableOpacity>
+                }}
+              >
+                <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
+              </TouchableOpacity>
+            ) : null}
           </>
         ) : (
           <>
