@@ -12,6 +12,7 @@ export const validateHDFCCustomerTypeDefs = gql`
   enum HDFC_CUSTOMER {
     NOT_HDFC_CUSTOMER
     OTP_GENERATED
+    OTP_NOT_GENERATED
   }
   type identifyHdfcCustomerResponse {
     status: HDFC_CUSTOMER!
