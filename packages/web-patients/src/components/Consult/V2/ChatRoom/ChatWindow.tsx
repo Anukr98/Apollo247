@@ -66,6 +66,7 @@ import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetails
 import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
 import { AppointmentCompleteCardMessage } from 'components/Consult/V2/ChatRoom/AppointmentCompleteCardMessage';
 import { DoctorType } from 'graphql/types/globalTypes';
+import { ExotelMessageCard } from 'components/Consult/V2/ChatRoom/ExotelMessageCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -837,6 +838,7 @@ interface AutoMessageStrings {
   leaveChatRoom: string;
   patientJoinedMeetingRoom: string;
   patientRejectedCall: string;
+  exotelCall: string;
 }
 
 interface ChatWindowProps {
@@ -896,6 +898,7 @@ const autoMessageStrings: AutoMessageStrings = {
   leaveChatRoom: '^^#leaveChatRoom',
   patientJoinedMeetingRoom: '^^#patientJoinedMeetingRoom',
   patientRejectedCall: '^^#PATIENT_REJECTED_CALL',
+  exotelCall: '^^#exotelCall',
 };
 
 type Params = { appointmentId: string; doctorId: string };
@@ -2202,7 +2205,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   const cardType = getCardType(messageDetails);
                   const message =
                     messageDetails && messageDetails.message ? messageDetails.message : '';
-
                   if (
                     messageDetails.message === autoMessageStrings.typingMsg ||
                     messageDetails.message === autoMessageStrings.endCallMsg ||
@@ -2221,7 +2223,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.consultPatientStartedMsg ||
                     messageDetails.message === autoMessageStrings.patientJoinedMeetingRoom ||
                     messageDetails.message === autoMessageStrings.patientRejectedCall ||
-                    messageDetails.message === autoMessageStrings.endCallMsg
+                    messageDetails.message === autoMessageStrings.endCallMsg ||
+                    messageDetails.message === autoMessageStrings.exotelCall
                   ) {
                     props.setSrDoctorJoined(
                       messageDetails.message === autoMessageStrings.startConsultMsg
@@ -2244,6 +2247,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         <AppointmentCompleteCardMessage
                           doctorName={doctorDisplayName}
                           messageDate={messageDetails.messageDate}
+                        />
+                      );
+                    } else if (messageDetails.message === autoMessageStrings.exotelCall) {
+                      return (
+                        <ExotelMessageCard
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                          exotelNumber={messageDetails.exotelNumber}
                         />
                       );
                     } else {
