@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, CircularProgress } from '@material-ui/core';
+import { Theme, Typography, CircularProgress, Paper } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { AphButton } from '@aph/web-ui-components';
@@ -12,6 +12,12 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useApolloClient } from 'react-apollo-hooks';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
 
 import {
   GetAllUserSubscriptionsWithPlanBenefits,
@@ -561,6 +567,8 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    benefitsConsumedContainer: {},
+    table: {},
   };
 });
 interface TabPanelProps {
@@ -568,6 +576,17 @@ interface TabPanelProps {
   index: any;
   value: any;
 }
+function createData(benefit: string, whatYouGet: string, redemptionLimit: string, status: string) {
+  return { benefit, whatYouGet, redemptionLimit, status };
+}
+
+const rows = [
+  createData('Frozen yoghurt', '159', '6.0', ' 24'),
+  createData('Ice cream sandwich', '237', '9.0', '37'),
+  createData('Eclair', '262', '16.0', '24'),
+  createData('Cupcake', '305', '3.7', '67'),
+  createData('Gingerbread', '356', '16.0', '49'),
+];
 
 const TabPanel = (props: any) => {
   const { children, value, index, ...other } = props;
@@ -803,7 +822,30 @@ export const MembershipPlanDetail: React.FC = (props) => {
                   </div>
                 </TabPanel>
                 <TabPanel value={value} index={1}>
-                  Item two
+                  <div className={classes.benefitsConsumedContainer}>
+                    <TableContainer component={Paper}>
+                      <Table className={classes.table} aria-label="simple table">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell> Benefit</TableCell>
+                            <TableCell>What Do You Get</TableCell>
+                            <TableCell>Redemption Limit</TableCell>
+                            <TableCell>Status</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {rows.map((row) => (
+                            <TableRow>
+                              <TableCell>{row.benefit}</TableCell>
+                              <TableCell>{row.whatYouGet}</TableCell>
+                              <TableCell>{row.redemptionLimit}</TableCell>
+                              <TableCell>{row.status}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </div>
                 </TabPanel>
               </div>
             </div>
