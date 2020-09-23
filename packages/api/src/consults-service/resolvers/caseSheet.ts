@@ -674,19 +674,23 @@ const getCaseSheet: Resolver<
 
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   //check if logged in mobile number is associated with doctor
-  const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
-  const secretaryDetails = await secretaryRepo.getSecretary(mobileNumber, true);
+  //const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
+  //const secretaryDetails = await secretaryRepo.getSecretary(mobileNumber, true);
 
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.findOne(appointmentData.doctorId);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  if (doctorData.mobileNumber != mobileNumber || patientDetails.mobileNumber != mobileNumber)
+    throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  /*const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (
     doctorData == null &&
     mobileNumber != patientDetails.mobileNumber &&
     secretaryDetails != null &&
     mobileNumber != secretaryDetails.mobileNumber
   )
-    throw new AphError(AphErrorMessages.UNAUTHORIZED);
+    throw new AphError(AphErrorMessages.UNAUTHORIZED);*/
 
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   let juniorDoctorNotes = '';
