@@ -7,6 +7,8 @@ import {
   verifyOtp,
   fetchEthnicCode,
 } from 'profiles-service/helpers/hdfc';
+import { getCache } from 'profiles-service/database/connectRedis';
+import { PartnerId } from 'ApiConstants';
 
 export const validateHDFCCustomerTypeDefs = gql`
   enum HDFC_CUSTOMER {
@@ -42,23 +44,37 @@ type validHdfcCustomerResponse = {
   status: boolean;
   defaultPlan: string;
 };
+const MOCK_KEY = 'mock:hdfc';
 const identifyHdfcCustomer: Resolver<
   null,
   { mobileNumber: string; DOB: Date },
   ProfilesServiceContext,
   identifyHdfcCustomerResponse
 > = async (parent, args, { profilesDb }) => {
-  const isHDFC =
-    (await customerIdentification(args.mobileNumber, args.DOB))?.decryptedResponse
-      ?.customerCASADetailsDTO?.existingCustomer === 'Y';
-  if (isHDFC) {
-    return { status: HDFC_CUSTOMER.NOT_HDFC_CUSTOMER };
-  }
-  const otpGenerationResponse = await generateOtp(args.mobileNumber);
-  if (otpGenerationResponse?.decryptedResponse?.ccotpserviceResponse?.ERROR_CODE === '0000') {
-    return { status: HDFC_CUSTOMER.OTP_GENERATED, token: args.mobileNumber };
+  const mock_api = await getCache(MOCK_KEY);
+  if (mock_api && mock_api === 'true') {
+    //mock api
+    const { mobileNumber, DOB } = args;
+    const isHDFC = checkForRegisteredPartner(mobileNumber, DOB, PartnerId.HDFCBANK);
+    if (!isHDFC) {
+      return { status: HDFC_CUSTOMER.NOT_HDFC_CUSTOMER };
+    }
+    const token = 'DummyToken';
+    return { status: HDFC_CUSTOMER.OTP_GENERATED, token };
   } else {
-    return { status: HDFC_CUSTOMER.OTP_NOT_GENERATED };
+    //real api
+    const isHDFC =
+      (await customerIdentification(args.mobileNumber, args.DOB))?.decryptedResponse
+        ?.customerCASADetailsDTO?.existingCustomer === 'Y';
+    if (isHDFC) {
+      return { status: HDFC_CUSTOMER.NOT_HDFC_CUSTOMER };
+    }
+    const otpGenerationResponse = await generateOtp(args.mobileNumber);
+    if (otpGenerationResponse?.decryptedResponse?.ccotpserviceResponse?.ERROR_CODE === '0000') {
+      return { status: HDFC_CUSTOMER.OTP_GENERATED, token: args.mobileNumber };
+    } else {
+      return { status: HDFC_CUSTOMER.OTP_NOT_GENERATED };
+    }
   }
 };
 
@@ -68,23 +84,34 @@ const validateHdfcOTP: Resolver<
   ProfilesServiceContext,
   validHdfcCustomerResponse
 > = async (parent, args, { profilesDb }) => {
-  const verifyOtpResponse = await verifyOtp(args.otp, args.token);
-  if (
-    verifyOtpResponse.decryptedResponse?.verifyPwdRequestResponse?.multiRef?.statusCode === '00'
-  ) {
-    const fetchEthnicCodeResponse = await fetchEthnicCode(
-      args.dateOfBirth,
-      args.token,
-      verifyOtpResponse.historyToken
-    );
+  const mock_api = await getCache(MOCK_KEY);
+  if (mock_api && mock_api === 'true') {
+    //mock api
 
-    const planName: string = fetchEthnicCodeResponse.decryptedResponse?.customerCASADetailsDTO
-      ? defaultPlan(fetchEthnicCodeResponse.decryptedResponse.customerCASADetailsDTO)
-      : '';
-    return { status: true, defaultPlan: planName };
+    const { otp, token } = args;
+
+    const otpAttrs = { otp, token };
+    return { status: validateOTP(otpAttrs), defaultPlan: 'HDFCGold' };
+  } else {
+    const verifyOtpResponse = await verifyOtp(args.otp, args.token);
+    if (
+      verifyOtpResponse.decryptedResponse?.verifyPwdRequestResponse?.multiRef?.statusCode === '00'
+    ) {
+      const fetchEthnicCodeResponse = await fetchEthnicCode(
+        args.dateOfBirth,
+        args.token,
+        verifyOtpResponse.historyToken
+      );
+
+      const planName: string = fetchEthnicCodeResponse.decryptedResponse?.customerCASADetailsDTO
+        ? defaultPlan(fetchEthnicCodeResponse.decryptedResponse.customerCASADetailsDTO)
+        : '';
+      return { status: true, defaultPlan: planName };
+    }
+    return { status: false, defaultPlan: '' };
   }
-  return { status: false, defaultPlan: '' };
 };
+
 const plan_map: { [index: string]: { hdfcCustomerType: string; plan: string; rank: number } } = {
   '7': { hdfcCustomerType: '', plan: 'HDFCPlatinum', rank: 3 },
   H: { hdfcCustomerType: '', plan: 'HDFCPlatinum', rank: 3 },
@@ -121,4 +148,25 @@ export const validateHDFCCustomer = {
     identifyHdfcCustomer,
     validateHdfcOTP,
   },
+};
+
+export const checkForRegisteredPartner = function(
+  mobileNumber: string,
+  dob: Date,
+  partnerId: string
+) {
+  // for hdfc
+  if (partnerId == PartnerId.HDFCBANK && parseInt(mobileNumber, 10) % 2 == 0) {
+    return true;
+  }
+  return false;
+};
+
+// const generateOTP = function() {
+//   return '123456';
+// };
+
+const validateOTP = function(otpAttrs: any) {
+  const { otp, token } = otpAttrs;
+  return token == 'DummyToken' && otp == '123456' ? true : false;
 };
