@@ -86,6 +86,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_lab
   packageId: string | null;
   packageName: string | null;
   date: any;
+  dateTime: any | null;
   labTestRefferedBy: string | null;
   siteDisplayName: string | null;
   tag: string | null;
@@ -110,6 +111,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_pre
   id: string;
   prescriptionName: string;
   date: any;
+  dateTime: any | null;
   prescribedBy: string | null;
   notes: string | null;
   prescriptionSource: string | null;
@@ -142,6 +144,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hea
   id: string;
   fileUrl: string;
   date: any;
+  dateTime: any | null;
   healthCheckName: string;
   healthCheckDate: number | null;
   healthCheckSummary: string | null;
@@ -176,6 +179,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hos
   id: string | null;
   fileUrl: string;
   date: any;
+  dateTime: any | null;
   hospitalizationDate: any | null;
   dateOfHospitalization: number | null;
   hospitalName: string | null;

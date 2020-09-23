@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: theme.palette.common.white,
       marginBottom: 5,
     },
-    petient: {
+    patient: {
       color: '#fff',
       textAlign: 'left',
       padding: 12,
@@ -51,29 +51,23 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-interface WelcomeCardProps {
+interface JdInfoCardProps {
   doctorName: string;
-  chatDays: number;
 }
 
-export const WelcomeCard: React.FC<WelcomeCardProps> = (props) => {
+export const JdInfoCard: React.FC<JdInfoCardProps> = (props) => {
   const classes = useStyles({});
+  const { doctorName } = props;
   return (
     <div className={classes.doctorCardMain}>
       <div className={classes.doctorAvatar}>
         <Avatar className={classes.avatar} src={require('images/ic_mascot_male.png')} alt="" />
       </div>
-      <div className={`${classes.blueBubble} ${classes.petient} `}>
-        Let’s get you feeling better by following simple steps :)
-        <p>1. Answer some quick questions</p>
-        <p>2. Please be present in this Consult Room at the time of consult</p>
-        <p>3. Connect with your doctor on web via Audio/Video call.</p>
-        <p>4. Get a prescription and meds, if necessary</p>
-        {props.chatDays > 0 && (
-          <p>
-            5. Follow up via text (validity {props.chatDays} day{props.chatDays > 0 ? 's' : ''})
-          </p>
-        )}
+      <div className={`${classes.blueBubble} ${classes.patient} `}>
+        <p>
+          A doctor from {doctorName}'s team will join you shortly to collect your medical details.
+          These details are essential for {doctorName} to help you and will take around 3-5 minutes.
+        </p>
       </div>
     </div>
   );
