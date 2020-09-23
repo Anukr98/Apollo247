@@ -106,10 +106,6 @@ target 'ApolloPatient' do
   
   # ServiceExtension Target
 
-  pod 'react-native-progress-bar-android', :path => '../node_modules/@react-native-community/progress-bar-android'
-
-  pod 'react-native-progress-view', :path => '../node_modules/@react-native-community/progress-view'
-
   target 'NotificationService' do
       platform :ios, '10.0'
       pod 'WebEngageBannerPush'

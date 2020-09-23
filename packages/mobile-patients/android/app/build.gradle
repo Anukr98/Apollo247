@@ -201,8 +201,6 @@ android {
 }
 
 dependencies {
-    implementation project(':@react-native-community_progress-view')
-    implementation project(':@react-native-community_progress-bar-android')
     implementation project(':@react-native-community_datetimepicker')
     implementation project(':react-native-image-resizer')
     implementation project(':react-native-code-push')
