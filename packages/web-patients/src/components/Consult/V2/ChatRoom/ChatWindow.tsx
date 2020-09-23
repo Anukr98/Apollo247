@@ -60,6 +60,7 @@ import {
   medicalDetailsFillTracking,
   callReceiveClickTracking,
   messageSentPostConsultTracking,
+  callEndedClickTracking,
 } from 'webEngageTracking';
 import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
 import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
@@ -1209,6 +1210,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     setShowVideoChat(false);
     setIsVideoCall(false);
     setIsCalled(false);
+    const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
+    callEndedClickTracking(eventInfo);
   };
 
   const convertCall = () => {
