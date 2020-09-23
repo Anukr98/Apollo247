@@ -17,6 +17,7 @@ import { ApiConstants, PATIENT_REPO_RELATIONS, PartnerId } from 'ApiConstants';
 import { createPrismUser } from 'helpers/phrV1Services';
 import { getCache, delCache, setCache } from 'profiles-service/database/connectRedis';
 import { customerIdentification } from 'profiles-service/helpers/hdfc';
+import { checkForRegisteredPartner } from 'profiles-service/resolvers/hdfcCustomerValidation';
 
 const REDIS_PATIENT_LOCK_PREFIX = `patient:lock:`;
 export const updatePatientTypeDefs = gql`
@@ -57,6 +58,7 @@ type UpdatePatientResult = {
 };
 
 type UpdatePatientArgs = { patientInput: Partial<Patient> & { id: Patient['id'] } };
+const MOCK_KEY = 'mock:hdfc';
 const updatePatient: Resolver<
   null,
   UpdatePatientArgs,
@@ -102,11 +104,16 @@ const updatePatient: Resolver<
       throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
     }
   } else {
+    let identifyCustomer: boolean
+    const mock_api = await getCache(MOCK_KEY);
+    if (mock_api && mock_api === 'true') {
+      identifyCustomer = ((await customerIdentification(patient.mobileNumber, updateAttrs.dateOfBirth?))['decryptedResponse']['customerCASADetailsDTO']['existingCustomer'] === 'Y')
+    }
+    else{
+      identifyCustomer = checkForRegisteredPartner(patient.mobileNumber,updateAttrs.dateOfBirth?,patient.partnerId )
+    }
     if (
-      referralCode == PartnerId.HDFCBANK &&
-      (await customerIdentification(patient.mobileNumber, patient.dateOfBirth))[
-        'decryptedResponse'
-      ]['customerCASADetailsDTO']['existingCustomer'] === 'Y'
+      referralCode == PartnerId.HDFCBANK && identifyCustomer
     ) {
       updateAttrs.partnerId = PartnerId.HDFCBANK;
     }

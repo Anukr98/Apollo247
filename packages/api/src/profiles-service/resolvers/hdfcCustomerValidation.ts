@@ -70,7 +70,7 @@ const identifyHdfcCustomer: Resolver<
       return { status: HDFC_CUSTOMER.NOT_HDFC_CUSTOMER };
     }
     const otpGenerationResponse = await generateOtp(args.mobileNumber);
-    if (otpGenerationResponse?.decryptedResponse?.ccotpserviceResponse?.ERROR_CODE === '0000') {
+    if (otpGenerationResponse?.decryptedResponse?.ccotpserviceResponse?.ERROR_CODE === '00000') {
       return { status: HDFC_CUSTOMER.OTP_GENERATED, token: args.mobileNumber };
     } else {
       return { status: HDFC_CUSTOMER.OTP_NOT_GENERATED };
