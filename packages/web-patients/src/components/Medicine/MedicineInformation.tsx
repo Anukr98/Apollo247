@@ -769,7 +769,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         }}
                         onClick={() => {
                           const { sku, name } = data;
-                          checkDeliveryTime(pinCode, sku);
+                          if (!pharmaAddressDetails.lat || !pharmaAddressDetails.lng) {
+                            getPlaceDetails(pinCode);
+                          } else {
+                            checkDeliveryTime(pinCode, sku);
+                          }
                           const eventData = {
                             pinCode,
                             productId: sku,
