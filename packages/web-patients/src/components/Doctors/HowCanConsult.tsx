@@ -275,6 +275,14 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       top: 3,
     },
+    followUpText: {
+      backgroundColor: '#DBEBEE',
+      borderRadius: 5,
+      padding: '14px 12px',
+      fontSize: 13,
+      fontFamily: 'IBM Plex Sans',
+      lineHeight: '18px',
+    },
   });
 });
 interface HowCanConsultProps {
@@ -332,6 +340,11 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   }, [consultMode]);
   return (
     <div className={classes.root}>
+      <div className={classes.followUpText}>
+        {doctorDetails.fullName} is available for a minimum of {doctorDetails.chatDays}
+        days for free follow-up text post Consult. However, doctor can decide to increase the
+        follow-up text days as per case basis.
+      </div>
       <div className={classes.headerGroup}>
         <h3>How can I consult with {doctorName}:</h3>
         <ul className={classes.tabButtons}>
