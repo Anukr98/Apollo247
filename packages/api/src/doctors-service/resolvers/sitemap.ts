@@ -6,9 +6,8 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import path from 'path';
 import fs from 'fs';
 import { format } from 'date-fns';
-import { keyCache, hgetAllCache } from 'doctors-service/database/connectRedis';
+import { hmsetCache, keyCache, hgetAllCache } from 'doctors-service/database/connectRedis';
 import { log } from 'customWinstonLogger';
-import { hmsetCache } from 'doctors-service/database/connectRedis';
 
 export const sitemapTypeDefs = gql`
   type SitemapUrls {
