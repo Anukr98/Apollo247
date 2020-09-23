@@ -78,8 +78,9 @@ type exotelInputArgs = { exotelInput: exotelInput };
 
 type ExotelRequest = {
   From: string;
-  To: string;
+  To?: string;
   CallerId: string | undefined;
+  Url?: string;
 };
 
 type callInputs = {
@@ -95,7 +96,7 @@ interface ExotelCalling {
   errorMessage: string;
 }
 
-async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
+export async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
   if (!callInputs.exotelUrl || !callInputs.exotelRequest.CallerId) {
     throw new AphError(AphErrorMessages.INVALID_EXOTEL_PARAMETERS, undefined, {});
   }
@@ -124,7 +125,7 @@ async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
       const exotelResult = {
         isError: false,
         from: callInputs.exotelRequest.From,
-        to: callInputs.exotelRequest.To,
+        to: callInputs.exotelRequest.To || callInputs.exotelRequest.Url || '',
         response: JSON.stringify(res),
         errorMessage: '',
       };
@@ -145,7 +146,7 @@ async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
       const exotelResult = {
         isError: true,
         from: callInputs.exotelRequest.From,
-        to: callInputs.exotelRequest.To,
+        to: callInputs.exotelRequest.To || callInputs.exotelRequest.Url || '',
         response: '',
         errorMessage: JSON.stringify(error),
       };
