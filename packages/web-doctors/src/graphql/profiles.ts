@@ -39,7 +39,7 @@ export const GET_ALL_SPECIALTIES = gql`
   }
 `;
 export const GET_SET_PARTICIPANTS_STATUS = gql`
- query setAndGetNumberOfParticipants(
+ query SetAndGetNumberOfParticipants(
     $appointmentId: String
     $userType: USER_TYPE
     $sourceType: BOOKINGSOURCE
