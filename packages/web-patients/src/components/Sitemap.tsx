@@ -321,7 +321,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 0,
       display: 'flex',
     },
-    testing: {
+    pageLink: {
       padding: '0 6px',
       borderWidth: 1,
       borderStyle: 'outset',
@@ -334,6 +334,9 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       alignItems: 'flex-start',
       cursor: 'pointer',
+    },
+    selectedPage: {
+      fontWeight: 'bold',
     },
   };
 });
@@ -553,8 +556,9 @@ const Sitemap: React.FC = (props) => {
                                 <a
                                   href={clientRoutes.childSitemap(selectedSitemap, page.toString())}
                                   type="link"
-                                  style={{ fontWeight: page === pageNo ? 'bold' : undefined }}
-                                  className={classes.testing}
+                                  className={`${classes.pageLink} ${
+                                    page === pageNo ? classes.selectedPage : ''
+                                  }`}
                                   {...item}
                                 >
                                   {page}
