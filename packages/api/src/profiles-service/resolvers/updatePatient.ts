@@ -16,7 +16,7 @@ import {
 import { ApiConstants, PATIENT_REPO_RELATIONS, PartnerId } from 'ApiConstants';
 import { createPrismUser } from 'helpers/phrV1Services';
 import { getCache, delCache, setCache } from 'profiles-service/database/connectRedis';
-import { checkForRegisteredPartner } from 'profiles-service/resolvers/hdfcCustomerValidation';
+import { customerIdentification } from 'profiles-service/helpers/hdfc';
 
 const REDIS_PATIENT_LOCK_PREFIX = `patient:lock:`;
 export const updatePatientTypeDefs = gql`
@@ -104,7 +104,9 @@ const updatePatient: Resolver<
   } else {
     if (
       referralCode == PartnerId.HDFCBANK &&
-      checkForRegisteredPartner(patient.mobileNumber, patient.dateOfBirth, PartnerId.HDFCBANK)
+      (await customerIdentification(patient.mobileNumber, patient.dateOfBirth))[
+        'decryptedResponse'
+      ]['customerCASADetailsDTO']['existingCustomer'] === 'Y'
     ) {
       updateAttrs.partnerId = PartnerId.HDFCBANK;
     }
