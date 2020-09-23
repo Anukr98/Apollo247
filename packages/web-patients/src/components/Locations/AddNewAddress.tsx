@@ -74,7 +74,6 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 5,
       },
     },
-    dialogContent: {},
     dialogActions: {
       padding: 20,
       paddingTop: 10,
@@ -474,7 +473,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
 
   const getLatLngFromAddress = (address: string) =>
     axios.get(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
+      `${process.env.GOOGLE_MAP_API}?address=${address}&components=country:in&key=${process.env.GOOGLE_API_KEY}`
     );
 
   // Auto-fetching the city and state using Pincode
@@ -727,7 +726,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
           </div>
         </div>
       ) : (
-        <div className={classes.dialogContent}>
+        <div>
           <div className={classes.addAddressContent}>
             <div className={classes.userDetails}>
               {onSave && (
