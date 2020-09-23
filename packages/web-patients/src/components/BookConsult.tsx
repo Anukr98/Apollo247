@@ -133,7 +133,7 @@ export const BookConsult: React.FC<DoctorCardProps> = (props) => {
     const availableForVirtualConsultation =
       consultMode === ConsultMode.BOTH || consultMode === ConsultMode.ONLINE;
     const availableForPhysicalConsultation =
-      consultMode === ConsultMode.BOTH || consultMode == ConsultMode.PHYSICAL;
+      consultMode === ConsultMode.BOTH || consultMode === ConsultMode.PHYSICAL;
 
     return (
       <Paper className={classes.modalBox}>
