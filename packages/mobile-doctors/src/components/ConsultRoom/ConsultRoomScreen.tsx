@@ -2475,7 +2475,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       } as WebEngageEvents[WebEngageEventName.DOCTOR_START_CONSULT]);
       if (connected) {
         setShowLoading(true);
-        updateNumberOfParticipants(USER_STATUS.ENTERING);
         client
           .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
             mutation: CREATEAPPOINTMENTSESSION,
@@ -2486,7 +2485,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               },
             },
           })
-          .then((_data: any) => {
+          .then(async (_data: any) => {
             firebase.analytics().logEvent('Doctor_start_consult', {
               doctorName: doctorDetails ? doctorDetails.fullName : doctorId,
               patientName: patientDetails
@@ -2511,6 +2510,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               sendCallNotificationAPI(APPT_CALL_TYPE.CHAT, true, patient + doctor);
             });
             console.log('onStartConsult');
+            await updateParticipantsLiveStatus(client, AppId, USER_STATUS.ENTERING);
             pubnub.publish(
               {
                 message: {
