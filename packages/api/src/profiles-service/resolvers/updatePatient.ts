@@ -107,8 +107,8 @@ const updatePatient: Resolver<
   } else {
     const identifyCustomer = checkForRegisteredPartner(
       patient.mobileNumber,
-      updateAttrs.dateOfBirth || new Date(),
-      patient.partnerId
+      patient.dateOfBirth,
+      PartnerId.HDFCBANK
     );
 
     if (referralCode == PartnerId.HDFCBANK && identifyCustomer) {
