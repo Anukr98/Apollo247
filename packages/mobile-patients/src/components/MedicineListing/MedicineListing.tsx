@@ -9,6 +9,10 @@ import {
   MedicineListingProducts,
   ProductProps,
 } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingProducts';
+import {
+  MedicineListingSections,
+  Props as MedicineListingSectionsProps,
+} from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingSections';
 import { OptionSelectionOverlay } from '@aph/mobile-patients/src/components/Medicines/OptionSelectionOverlay';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -29,10 +33,6 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import {
-  MedicineListingSections,
-  Props as MedicineListingSectionsProps,
-} from './MedicineListingSections';
 
 export type SortByOption = MedicineProductsResponse['sort_by']['values'][0];
 export type Filter = MedicineProductsResponse['filters'][0];

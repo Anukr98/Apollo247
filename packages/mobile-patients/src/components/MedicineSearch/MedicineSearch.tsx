@@ -27,6 +27,7 @@ import {
 import {
   addPharmaItemToCart,
   formatToCartItem,
+  productsThumbnailUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -173,16 +174,16 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderProducts = (array: RecentSearch[]) => {
-    const onPress = (sku: string, name: string) => {
-      navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'recent-search' });
+    const onPress = (sku: string) => {
+      navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'search' });
     };
 
     return array.map(({ typeId, name, image }) => (
       <MedSearchSectionProductView
         key={typeId!}
         title={name!}
-        image={image || ''}
-        onPress={() => onPress(typeId!, name!)}
+        image={image ? productsThumbnailUrl(image) : undefined}
+        onPress={() => onPress(typeId!)}
         containerStyle={styles.medSearchSectionProductViewContainer}
       />
     ));

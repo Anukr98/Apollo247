@@ -7,7 +7,7 @@ import { Image } from 'react-native-elements';
 export interface Props {
   onPress: () => void;
   title: string;
-  image: string;
+  image?: string;
   containerStyle?: StyleProp<ViewStyle>;
 }
 

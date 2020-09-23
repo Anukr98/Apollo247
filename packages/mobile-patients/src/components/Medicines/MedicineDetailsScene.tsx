@@ -366,6 +366,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             typeName: productDetails.name,
             type: SEARCH_TYPE.MEDICINE,
             patient: currentPatient?.id,
+            image: productDetails.thumbnail,
           });
 
           if (_deliveryError) {
