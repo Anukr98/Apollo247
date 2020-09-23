@@ -16,6 +16,7 @@ import FormHelperText from '@material-ui/core/FormHelperText';
 import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
 import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
+import _get from 'lodash/get';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -387,6 +388,13 @@ type Address = {
 
 export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const classes = useStyles({});
+  const {
+    setIsAddAddressDialogOpen,
+    currentAddress,
+    forceRefresh,
+    checkServiceAvailability,
+    setDeliveryTime,
+  } = props;
   const [address1, setAddress1] = useState<string>('');
   const [address2, setAddress2] = useState<string>('');
   const [landmark, setLandmark] = useState<string>('');
@@ -413,7 +421,6 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const [patientNumber, setPatientNumber] = useState<string>(currentPatient.mobileNumber);
   const [onSave, setOnSave] = useState<boolean>(true);
   const [mapRef, setMapRef] = useState(null);
-  const [center, setCenter] = useState({ lat: 44.076613, lng: -98.362239833 });
   const addToCartRef = useRef(null);
 
   const disableSubmit =
@@ -435,40 +442,17 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   ];
 
   useEffect(() => {
-    if (props.currentAddress) {
-      const address1 =
-        props.currentAddress && props.currentAddress.addressLine1
-          ? props.currentAddress.addressLine1
-          : '';
-      const address2 =
-        props.currentAddress &&
-        props.currentAddress.addressLine2 &&
-        props.currentAddress.addressLine2.length > 0
-          ? props.currentAddress.addressLine2
-          : '';
+    if (currentAddress) {
+      const address1 = _get(currentAddress, 'addressLine1', '');
+      const address2 = _get(currentAddress, 'addressLine2', '');
       const cityAndStateArr = address2 && address2.length > 0 ? address2.split(',') : [];
       const city = cityAndStateArr.length > 0 && cityAndStateArr[0] ? cityAndStateArr[0] : '';
       const state =
         cityAndStateArr.length > 0 && cityAndStateArr[1] ? cityAndStateArr[1].trim() : '';
-      const pincode =
-        props.currentAddress &&
-        props.currentAddress.zipcode &&
-        props.currentAddress.zipcode.length > 0
-          ? props.currentAddress.zipcode
-          : '';
-      const addressType =
-        props.currentAddress && props.currentAddress.addressType
-          ? props.currentAddress.addressType
-          : '';
-      const otherTextbox =
-        props.currentAddress && props.currentAddress.otherAddressType
-          ? props.currentAddress.otherAddressType
-          : '';
-      const addressId =
-        props.currentAddress && props.currentAddress.id && props.currentAddress.id.length > 0
-          ? props.currentAddress.id
-          : '';
-      // console.log(address1, address2, pincode, addressType, 'in use effect.......');
+      const pincode = _get(currentAddress, 'zipcode', '');
+      const addressType = _get(currentAddress, 'addressType', '');
+      const otherTextbox = _get(currentAddress, 'otherAddressType', '');
+      const addressId = _get(currentAddress, 'id', '');
       setAddress1(address1);
       setAddress2(address2);
       setState(state);
@@ -478,13 +462,13 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
       setAddressId(addressId);
       setOtherTextBox(otherTextbox);
       setShowText(!!otherTextbox);
-      setLandmark(props.currentAddress.landmark || '');
-      setPatientName(props.currentAddress.name || currentPatient.firstName);
-      setPatientNumber(props.currentAddress.mobileNumber || currentPatient.mobileNumber);
-      setLatitude(props.currentAddress.latitude);
-      setLongitude(props.currentAddress.longitude);
+      setLandmark(currentAddress.landmark || '');
+      setPatientName(currentAddress.name || currentPatient.firstName);
+      setPatientNumber(currentAddress.mobileNumber || currentPatient.mobileNumber);
+      setLatitude(currentAddress.latitude);
+      setLongitude(currentAddress.longitude);
     }
-  }, [props.currentAddress]);
+  }, [currentAddress]);
 
   let showError = false;
 
@@ -538,7 +522,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                 data.results[0] &&
                 data.results[0].geometry &&
                 data.results[0].geometry.location &&
-                !props.currentAddress
+                !currentAddress
               ) {
                 const { lat, lng } = data.results[0].geometry.location;
                 setLatitude(lat);
@@ -602,9 +586,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
             });
             /**Gtm code start end */
 
-            props.setIsAddAddressDialogOpen(false);
-            props.forceRefresh && props.forceRefresh(true);
-            props.setDeliveryTime && props.setDeliveryTime('');
+            setIsAddAddressDialogOpen(false);
+            forceRefresh && forceRefresh(true);
+            setDeliveryTime && setDeliveryTime('');
             setDeliveryAddressId && setDeliveryAddressId(addressId);
           })
           .catch((error) => {
@@ -634,9 +618,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
           .then(({ data }: any) => {
             if (data && data.savePatientAddress && data.savePatientAddress.patientAddress) {
               const deliveryAddrsId = data.savePatientAddress.patientAddress.id;
-              if (props.checkServiceAvailability) {
-                props
-                  .checkServiceAvailability(pincode)
+              if (checkServiceAvailability) {
+                checkServiceAvailability(pincode)
                   .then((res: any) => {
                     if (res && res.data && res.data.response) {
                       /**Gtm code start  */
@@ -660,9 +643,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       });
                       /**Gtm code start end */
 
-                      props.setIsAddAddressDialogOpen(false);
-                      props.forceRefresh && props.forceRefresh(true);
-                      props.setDeliveryTime && props.setDeliveryTime('');
+                      setIsAddAddressDialogOpen(false);
+                      forceRefresh && forceRefresh(true);
+                      setDeliveryTime && setDeliveryTime('');
                       setDeliveryAddressId && setDeliveryAddressId(deliveryAddrsId);
                     } else {
                       setMutationLoading(false);
@@ -674,8 +657,8 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                     console.log(e);
                   });
               } else {
-                props.setIsAddAddressDialogOpen(false);
-                props.forceRefresh && props.forceRefresh(true);
+                setIsAddAddressDialogOpen(false);
+                forceRefresh && forceRefresh(true);
                 setDeliveryAddressId &&
                   setDeliveryAddressId(data.savePatientAddress.patientAddress.id);
               }
@@ -689,7 +672,6 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.GOOGLE_API_KEY,
-    preventGoogleFontsLoading: false,
   });
 
   const renderMap = () => {
@@ -926,7 +908,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                 const pincodeAndAddress = [pincode, address1, address2, landmark, city, state]
                   .filter((v) => (v || '').trim())
                   .join(',');
-                if (!props.currentAddress) {
+                if (!currentAddress) {
                   getLatLngFromAddress(pincodeAndAddress)
                     .then(({ data }) => {
                       const latLang = data.results[0].geometry.location || {};
