@@ -10,7 +10,15 @@ import { chatFilesType } from '@aph/mobile-doctors/src/helpers/dataTypes';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Animated,
+  BackHandler,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {
   PanGestureHandler,
@@ -134,6 +142,18 @@ export const ImageViewer: React.FC<ImageViewerProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const carouselRef = useRef<Carousel<chatFilesType> | null>(null);
   const [panEnabled, setPanEnabled] = useState<boolean>(false);
+
+  const handleBack = async () => {
+    onClose();
+    return false;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
 
   /* Pinching */
 
