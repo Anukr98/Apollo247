@@ -629,6 +629,15 @@ export const AudioVideoProvider: React.FC = (props) => {
       // errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
       console.log('Subscriber stream disconnected!');
     },
+    videoDataReceived: () => {
+      setCallConnected(true);
+      if (audioTrack) {
+        setPrevVolume();
+        audioTrack.stop(() => {});
+      }
+      hidePopup();
+      console.log('Subscriber stream videoDataReceived!');
+    },
     videoDisabled: (event: OpentokVideoWarn) => {
       if (event.reason === 'quality') {
         errorPopup(strings.toastMessages.fallback, theme.colors.APP_RED);
@@ -718,12 +727,14 @@ export const AudioVideoProvider: React.FC = (props) => {
       console.log('session stream connectionCreated!', event);
     },
     connectionDestroyed: (event: string) => {
-      AsyncStorage.getItem('callDisconnected').then((data) => {
-        if (!JSON.parse(data || 'false')) {
-          setGiveRating(true);
-          errorPopup(strings.toastMessages.callDisconnected, theme.colors.APP_RED);
-        }
-      });
+      setTimeout(() => {
+        AsyncStorage.getItem('callDisconnected').then((data) => {
+          if (!JSON.parse(data || 'false')) {
+            setGiveRating(true);
+            errorPopup(strings.toastMessages.callDisconnected, theme.colors.APP_RED);
+          }
+        });
+      }, 50);
       if (connectionCount > 0) {
         if (leftAudioTrack) {
           leftAudioTrack.play();
@@ -779,10 +790,11 @@ export const AudioVideoProvider: React.FC = (props) => {
       if (event.stream.name !== name) {
         setCallerAudio(event.stream.hasAudio);
         setCallerVideo(event.stream.hasVideo);
-      }
-      if (audioTrack) {
-        setPrevVolume();
-        audioTrack.stop(() => {});
+      } else {
+        if (audioTrack) {
+          setPrevVolume();
+          audioTrack.stop(() => {});
+        }
       }
     },
   };
