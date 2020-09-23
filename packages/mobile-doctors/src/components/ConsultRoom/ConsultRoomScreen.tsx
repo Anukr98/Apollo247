@@ -2448,6 +2448,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             pubnubPresence((patient: number, doctor: number) => {
               sendCallNotificationAPI(APPT_CALL_TYPE.CHAT, true, patient + doctor);
             });
+            console.log('onStartConsult');
             await updateParticipantsLiveStatus(client, AppId, USER_STATUS.ENTERING);
             pubnub.publish(
               {
