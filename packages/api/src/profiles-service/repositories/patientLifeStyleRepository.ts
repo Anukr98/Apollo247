@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { PatientLifeStyle } from 'profiles-service/entities';
+import { Patient, PatientLifeStyle } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
@@ -39,5 +39,31 @@ export class PatientLifeStyleRepository extends Repository<PatientLifeStyle> {
 
   deletePatientLifeStyle(id: string) {
     return this.delete(id);
+  }
+
+  upsertPatientLifeStyle(inputArguments: Partial<PatientLifeStyle>, patientData: Patient){
+    if (inputArguments.description || inputArguments.occupationHistory) {
+      const lifeStyleInputs: Partial<PatientLifeStyle> = {
+        patient: patientData,
+      };
+      if (inputArguments.description) {
+        lifeStyleInputs.description = inputArguments.description;
+      }
+      if (inputArguments.occupationHistory) {
+        lifeStyleInputs.occupationHistory = inputArguments.occupationHistory;
+      }
+      // const lifeStyleRepo = patientsDb.getCustomRepository(PatientLifeStyleRepository);
+      const lifeStyleRecord = patientData.lifeStyle
+        ? patientData.lifeStyle[0]
+        : patientData.lifeStyle;
+  
+      if (lifeStyleRecord == null) {
+        //create
+        this.savePatientLifeStyle(lifeStyleInputs);
+      } else {
+        //update
+        this.updatePatientLifeStyle(lifeStyleRecord.id, lifeStyleInputs);
+      }
+    }
   }
 }

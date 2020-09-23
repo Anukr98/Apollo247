@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { PatientMedicalHistory } from 'profiles-service/entities';
+import { Patient, PatientMedicalHistory, Gender } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
@@ -46,5 +46,74 @@ export class PatientMedicalHistoryRepository extends Repository<PatientMedicalHi
 
   deletePatientMedicalHistory(id: string) {
     return this.delete(id);
+  }
+
+  upsertPatientMedicalHistory(inputArguments: Partial<PatientMedicalHistory>, patientData: Patient){
+    const medicalHistoryInputs: Partial<PatientMedicalHistory> = {
+      patient: patientData,
+    };
+    medicalHistoryInputs.clinicalObservationNotes = inputArguments.clinicalObservationNotes || '';
+    medicalHistoryInputs.diagnosticTestResult = inputArguments.diagnosticTestResult || '';
+  
+    if (patientData.patientMedicalHistory) {
+      medicalHistoryInputs.id = patientData.patientMedicalHistory.id;
+    }
+  
+    if (inputArguments.medicationHistory) {
+      medicalHistoryInputs.medicationHistory = inputArguments.medicationHistory;
+    }
+  
+    if (!(inputArguments.bp === undefined))
+      medicalHistoryInputs.bp = inputArguments.bp.length > 0 ? inputArguments.bp : '';
+  
+    if (!(inputArguments.weight === undefined))
+      medicalHistoryInputs.weight = inputArguments.weight.length > 0 ? inputArguments.weight : '';
+  
+    if (!(inputArguments.temperature === undefined))
+      medicalHistoryInputs.temperature =
+        inputArguments.temperature.length > 0 ? inputArguments.temperature : '';
+  
+    if (!(inputArguments.pastSurgicalHistory === undefined))
+      medicalHistoryInputs.pastSurgicalHistory =
+        inputArguments.pastSurgicalHistory && inputArguments.pastSurgicalHistory.length > 0
+          ? inputArguments.pastSurgicalHistory
+          : '';
+  
+    if (!(inputArguments.pastMedicalHistory === undefined))
+      medicalHistoryInputs.pastMedicalHistory =
+        inputArguments.pastMedicalHistory && inputArguments.pastMedicalHistory.length > 0
+          ? inputArguments.pastMedicalHistory
+          : '';
+  
+    if (!(inputArguments.menstrualHistory === undefined)) {
+      if (patientData.gender === Gender.FEMALE)
+        medicalHistoryInputs.menstrualHistory =
+          inputArguments.menstrualHistory && inputArguments.menstrualHistory.length > 0
+            ? inputArguments.menstrualHistory
+            : '';
+    }
+  
+    if (!(inputArguments.height === undefined)) medicalHistoryInputs.height = inputArguments.height;
+    if (!(inputArguments.drugAllergies === undefined))
+      medicalHistoryInputs.drugAllergies =
+        inputArguments.drugAllergies && inputArguments.drugAllergies.length > 0
+          ? inputArguments.drugAllergies
+          : '';
+  
+    // if (!inputArguments.dietAllergies))
+    medicalHistoryInputs.dietAllergies = inputArguments.dietAllergies || '';
+  
+    // const medicalHistoryRepo = patientsDb.getCustomRepository(PatientMedicalHistoryRepository);
+    // const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(
+    //   getCaseSheetData.patientId
+    // );
+    const medicalHistoryRecord = patientData.patientMedicalHistory;
+    if (medicalHistoryRecord == null) {
+      //create
+      this.savePatientMedicalHistory(medicalHistoryInputs);
+    } else {
+      //update
+      this.updatePatientMedicalHistory(medicalHistoryRecord.id, medicalHistoryInputs);
+    }
   }
 }

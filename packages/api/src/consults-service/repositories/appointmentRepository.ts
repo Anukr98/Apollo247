@@ -22,6 +22,9 @@ import {
   PATIENT_TYPE,
   AppointmentUpdateHistory,
   PaginateParams,
+  CaseSheet,
+  APPOINTMENT_UPDATED_BY,
+  VALUE_TYPE
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -36,7 +39,7 @@ import {
   addHours,
   differenceInDays,
 } from 'date-fns';
-import { ConsultHours, ConsultMode, Doctor } from 'doctors-service/entities';
+import { ConsultHours, ConsultMode, Doctor, DoctorType } from 'doctors-service/entities';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -2091,5 +2094,25 @@ export class AppointmentRepository extends Repository<Appointment> {
         getApptError,
       });
     });
+  }
+  caseSheetAppointmentHistoryUpdate(appointmentData:Appointment,caseSheetAttrs: Partial<CaseSheet>){
+    if (appointmentData) {
+      let reason = ApiConstants.CASESHEET_MODIFIED_HISTORY.toString();
+      if (caseSheetAttrs.doctorType == DoctorType.JUNIOR) {
+        reason = ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString();
+      }
+      const historyAttrs: Partial<AppointmentUpdateHistory> = {
+        appointment: appointmentData,
+        userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+        fromValue: appointmentData.status,
+        toValue: appointmentData.status,
+        valueType: VALUE_TYPE.STATUS,
+        fromState: appointmentData.appointmentState,
+        toState: appointmentData.appointmentState,
+        userName: caseSheetAttrs.createdDoctorId,
+        reason,
+      };
+      this.saveAppointmentHistory(historyAttrs);
+    }
   }
 }

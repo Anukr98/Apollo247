@@ -1,5 +1,5 @@
-import { EntityRepository, Repository } from 'typeorm';
-import { PatientFamilyHistory } from 'profiles-service/entities';
+import { EntityRepository, Repository, Connection } from 'typeorm';
+import { Patient, PatientFamilyHistory } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
@@ -39,5 +39,25 @@ export class PatientFamilyHistoryRepository extends Repository<PatientFamilyHist
 
   deletePatientFamilyHistory(id: string) {
     return this.delete(id);
+  }
+
+  upsertPatientFamilyHistory(description: string, patientData: Patient) {
+    if (!(description === undefined)) {
+      const familyHistoryInputs: Partial<PatientFamilyHistory> = {
+        patient: patientData,
+        description: description && description.length > 0 ? description : '',
+      };
+      //      const familyHistoryRepo = patientsDb.getCustomRepository(PatientFamilyHistoryRepository);
+      const familyHistoryRecord = patientData.familyHistory
+        ? patientData.familyHistory[0]
+        : patientData.familyHistory;
+      if (familyHistoryRecord == null) {
+        //create
+        this.savePatientFamilyHistory(familyHistoryInputs);
+      } else {
+        //update
+        this.updatePatientFamilyHistory(familyHistoryRecord.id, familyHistoryInputs);
+      }
+    }
   }
 }

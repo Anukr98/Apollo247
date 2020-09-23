@@ -752,7 +752,7 @@ type PatientPrescriptionSentResponse = {
   prescriptionGeneratedDate: Date | undefined;
 };
 
-type ModifyCaseSheetInput = {
+export type ModifyCaseSheetInput = {
   symptoms: CaseSheetSymptom[];
   notes: string;
   diagnosis: CaseSheetDiagnosis[];
@@ -797,121 +797,21 @@ const modifyCaseSheet: Resolver<
 
   //validate casesheetid
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const getCaseSheetData = await caseSheetRepo.getCaseSheetById(inputArguments.id);
-  if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
+  const getCaseSheetDetails = await caseSheetRepo.getCaseSheetById(inputArguments.id);
+  if (getCaseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
-  //stop updating data if PDF is generated already.
-  if (getCaseSheetData.blobName && getCaseSheetData.blobName.length > 0)
-    throw new AphError(AphErrorMessages.CASESHEET_SENT_TO_PATIENT_ALREADY);
-
-  if (!(inputArguments.symptoms === undefined)) {
-    if (inputArguments.symptoms && inputArguments.symptoms.length === 0)
-      throw new AphError(AphErrorMessages.INVALID_SYMPTOMS_LIST);
-    getCaseSheetData.symptoms = JSON.parse(JSON.stringify(inputArguments.symptoms));
-  }
-
-  if (inputArguments.referralSpecialtyName) {
-    getCaseSheetData.referralSpecialtyName = inputArguments.referralSpecialtyName;
-
-    if (inputArguments.referralDescription) {
-      getCaseSheetData.referralDescription = inputArguments.referralDescription;
-    } else {
-      throw new AphError(AphErrorMessages.INVALID_REFERRAL_DESCRIPTION);
-    }
-  }
-
-  if (inputArguments.notes) {
-    getCaseSheetData.notes = inputArguments.notes;
-  }
-
-  if (!(inputArguments.diagnosis === undefined)) {
-    if (inputArguments.diagnosis && inputArguments.diagnosis.length === 0)
-      throw new AphError(AphErrorMessages.INVALID_DIAGNOSIS_LIST);
-    getCaseSheetData.diagnosis = JSON.parse(JSON.stringify(inputArguments.diagnosis));
-  }
-
-  if (!(inputArguments.diagnosticPrescription === undefined)) {
-    if (inputArguments.diagnosticPrescription && inputArguments.diagnosticPrescription.length === 0)
-      throw new AphError(AphErrorMessages.INVALID_DIAGNOSTIC_PRESCRIPTION_LIST);
-    getCaseSheetData.diagnosticPrescription = JSON.parse(
-      JSON.stringify(inputArguments.diagnosticPrescription)
-    );
-  }
-
-  if (!(inputArguments.otherInstructions === undefined)) {
-    if (inputArguments.otherInstructions && inputArguments.otherInstructions.length === 0)
-      throw new AphError(AphErrorMessages.INVALID_OTHER_INSTRUCTIONS_LIST);
-    getCaseSheetData.otherInstructions = JSON.parse(
-      JSON.stringify(inputArguments.otherInstructions)
-    );
-  }
-
-  if (!(inputArguments.medicinePrescription === undefined)) {
-    if (inputArguments.medicinePrescription && inputArguments.medicinePrescription.length === 0)
-      throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_LIST);
-    getCaseSheetData.medicinePrescription = JSON.parse(
-      JSON.stringify(inputArguments.medicinePrescription)
-    );
-  }
-
-  if (!(inputArguments.removedMedicinePrescription === undefined)) {
-    getCaseSheetData.removedMedicinePrescription = JSON.parse(
-      JSON.stringify(inputArguments.removedMedicinePrescription)
-    );
-  }
-
-  if (!(inputArguments.followUp === undefined)) {
-    getCaseSheetData.followUp = inputArguments.followUp;
-  }
-
-  if (!(inputArguments.followUpDate === undefined)) {
-    getCaseSheetData.followUpDate = inputArguments.followUpDate;
-  }
-
-  if (!(inputArguments.followUpConsultType === undefined)) {
-    getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
-  }
-
-  if (
-    inputArguments &&
-    !(
-      inputArguments.followUpAfterInDays === undefined ||
-      inputArguments.followUpAfterInDays === null
-    )
-  ) {
-    if (
-      inputArguments.followUpAfterInDays > ApiConstants.CHAT_DAYS_LIMIT ||
-      inputArguments.followUpAfterInDays < 0
-    ) {
-      throw new AphError(AphErrorMessages.CHAT_DAYS_NOT_IN_RANGE_ERROR);
-    }
-
-    getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
-    // getCaseSheetData.followUp = true;
-
-    // if (getCaseSheetData.appointment.sdConsultationDate) {
-    //   getCaseSheetData.followUpDate = addDays(
-    //     getCaseSheetData.appointment.sdConsultationDate,
-    //     getCaseSheetData.followUpAfterInDays
-    //   );
-    // }
-  }
-
-  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const getDoctorDetails = await doctorRepo.findDoctorByIdWithoutRelations(getCaseSheetData.appointment.doctorId);
+  const getCaseSheetData =  caseSheetRepo.modifyCasesheetData(inputArguments,getCaseSheetDetails);
 
   // this check is necessary til doctor-app's new version is not released
   if (!getCaseSheetData.followUpAfterInDays && (inputArguments.followUpAfterInDays === 0 || inputArguments.followUpAfterInDays === undefined || inputArguments.followUpAfterInDays === null)) {
+    const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+    const getDoctorDetails = await doctorRepo.findDoctorByIdWithoutRelations(getCaseSheetData.appointment.doctorId);  
     getCaseSheetData.followUpAfterInDays = (getDoctorDetails && getDoctorDetails.chatDays) || 7;
-  }
-
-  if (!(inputArguments.status === undefined)) {
-    getCaseSheetData.status = inputArguments.status;
   }
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientData = await patientRepo.findByIdWithRelations(getCaseSheetData.patientId, [
-    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+    // PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
     PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
     PATIENT_REPO_RELATIONS.LIFESTYLE,
     PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
@@ -919,150 +819,31 @@ const modifyCaseSheet: Resolver<
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   //familyHistory upsert starts
-  if (!(inputArguments.familyHistory === undefined)) {
-    const familyHistoryInputs: Partial<PatientFamilyHistory> = {
-      patient: patientData,
-      description:
-        inputArguments.familyHistory && inputArguments.familyHistory.length > 0
-          ? inputArguments.familyHistory
-          : '',
-    };
-    const familyHistoryRepo = patientsDb.getCustomRepository(PatientFamilyHistoryRepository);
-    const familyHistoryRecord = patientData.familyHistory
-      ? patientData.familyHistory[0]
-      : patientData.familyHistory;
-    if (familyHistoryRecord == null) {
-      //create
-      familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
-    } else {
-      //update
-      familyHistoryRepo.updatePatientFamilyHistory(familyHistoryRecord.id, familyHistoryInputs);
-    }
-  }
+  const familyHistoryRepo = patientsDb.getCustomRepository(PatientFamilyHistoryRepository);
+  familyHistoryRepo.upsertPatientFamilyHistory(inputArguments.familyHistory,patientData);
   //familyHistory upsert ends
 
   //lifestyle upsert starts
-  if (inputArguments.lifeStyle || inputArguments.occupationHistory) {
-    const lifeStyleInputs: Partial<PatientLifeStyle> = {
-      patient: patientData,
-    };
-    if (inputArguments.lifeStyle) {
-      lifeStyleInputs.description = inputArguments.lifeStyle;
-    }
-    if (inputArguments.occupationHistory) {
-      lifeStyleInputs.occupationHistory = inputArguments.occupationHistory;
-    }
-    const lifeStyleRepo = patientsDb.getCustomRepository(PatientLifeStyleRepository);
-    const lifeStyleRecord = patientData.lifeStyle
-      ? patientData.lifeStyle[0]
-      : patientData.lifeStyle;
-
-    if (lifeStyleRecord == null) {
-      //create
-      lifeStyleRepo.savePatientLifeStyle(lifeStyleInputs);
-    } else {
-      //update
-      lifeStyleRepo.updatePatientLifeStyle(lifeStyleRecord.id, lifeStyleInputs);
-    }
-  }
+  const lifeStyleRepo = patientsDb.getCustomRepository(PatientLifeStyleRepository);
+  lifeStyleRepo.upsertPatientLifeStyle(
+    { description: inputArguments.lifeStyle, occupationHistory: inputArguments.occupationHistory },
+    patientData
+  );
   //lifestyle upsert ends
 
   //medicalHistory upsert starts
-  const medicalHistoryInputs: Partial<PatientMedicalHistory> = {
-    patient: patientData,
-  };
-  medicalHistoryInputs.clinicalObservationNotes = inputArguments.clinicalObservationNotes || '';
-  medicalHistoryInputs.diagnosticTestResult = inputArguments.diagnosticTestResult || '';
-
-  if (patientData.patientMedicalHistory) {
-    medicalHistoryInputs.id = patientData.patientMedicalHistory.id;
-  }
-
-  if (inputArguments.medicationHistory) {
-    medicalHistoryInputs.medicationHistory = inputArguments.medicationHistory;
-  }
-
-  if (!(inputArguments.bp === undefined))
-    medicalHistoryInputs.bp = inputArguments.bp.length > 0 ? inputArguments.bp : '';
-
-  if (!(inputArguments.weight === undefined))
-    medicalHistoryInputs.weight = inputArguments.weight.length > 0 ? inputArguments.weight : '';
-
-  if (!(inputArguments.temperature === undefined))
-    medicalHistoryInputs.temperature =
-      inputArguments.temperature.length > 0 ? inputArguments.temperature : '';
-
-  if (!(inputArguments.pastSurgicalHistory === undefined))
-    medicalHistoryInputs.pastSurgicalHistory =
-      inputArguments.pastSurgicalHistory && inputArguments.pastSurgicalHistory.length > 0
-        ? inputArguments.pastSurgicalHistory
-        : '';
-
-  if (!(inputArguments.pastMedicalHistory === undefined))
-    medicalHistoryInputs.pastMedicalHistory =
-      inputArguments.pastMedicalHistory && inputArguments.pastMedicalHistory.length > 0
-        ? inputArguments.pastMedicalHistory
-        : '';
-
-  if (!(inputArguments.menstrualHistory === undefined)) {
-    if (patientData.gender === Gender.FEMALE)
-      medicalHistoryInputs.menstrualHistory =
-        inputArguments.menstrualHistory && inputArguments.menstrualHistory.length > 0
-          ? inputArguments.menstrualHistory
-          : '';
-  }
-
-  if (!(inputArguments.height === undefined)) medicalHistoryInputs.height = inputArguments.height;
-  if (!(inputArguments.drugAllergies === undefined))
-    medicalHistoryInputs.drugAllergies =
-      inputArguments.drugAllergies && inputArguments.drugAllergies.length > 0
-        ? inputArguments.drugAllergies
-        : '';
-
-  // if (!inputArguments.dietAllergies))
-  medicalHistoryInputs.dietAllergies = inputArguments.dietAllergies || '';
-
   const medicalHistoryRepo = patientsDb.getCustomRepository(PatientMedicalHistoryRepository);
-  const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(
-    getCaseSheetData.patientId
-  );
-  if (medicalHistoryRecord == null) {
-    //create
-    medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
-  } else {
-    //update
-    medicalHistoryRepo.updatePatientMedicalHistory(medicalHistoryRecord.id, medicalHistoryInputs);
-  }
+  medicalHistoryRepo.upsertPatientMedicalHistory(inputArguments,patientData);
 
-  getCaseSheetData.updatedDate = new Date();
-  getCaseSheetData.preperationTimeInSeconds = differenceInSeconds(
-    getCaseSheetData.updatedDate,
-    getCaseSheetData.createdDate
-  );
   delete getCaseSheetData.status;
   //medicalHistory upsert ends
   const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
   await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs, getCaseSheetData);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointmentData = await appointmentRepo.findById(getCaseSheetData.appointment.id);
-  if (appointmentData) {
-    let reason = ApiConstants.CASESHEET_MODIFIED_HISTORY.toString();
-    if (caseSheetAttrs.doctorType == DoctorType.JUNIOR) {
-      reason = ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString();
-    }
-    const historyAttrs: Partial<AppointmentUpdateHistory> = {
-      appointment: appointmentData,
-      userType: APPOINTMENT_UPDATED_BY.DOCTOR,
-      fromValue: appointmentData.status,
-      toValue: appointmentData.status,
-      valueType: VALUE_TYPE.STATUS,
-      fromState: appointmentData.appointmentState,
-      toState: appointmentData.appointmentState,
-      userName: caseSheetAttrs.createdDoctorId,
-      reason,
-    };
-    appointmentRepo.saveAppointmentHistory(historyAttrs);
-  }
+
+  const appointmentData = getCaseSheetData.appointment;
+  appointmentRepo.caseSheetAppointmentHistoryUpdate(appointmentData,caseSheetAttrs);
+
   return getCaseSheetData;
 };
 
