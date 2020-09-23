@@ -28,19 +28,20 @@
     "joinConsultRoomDescription": "Please click here to\n Join the Call with",
     "waitForDoctirToJoinCall": "doctor_name is not in the room yet.\nPlease wait for few seconds while doctor joins the call....",
     "exotelMessage": " is trying to call you from the number ",
-    "requestMessage": ". Request you to answer the call."
+    "requestMessage": ". Request you to answer the call.",
+    "consultCompleteMessage": "Please wait while {0} is preparing your prescription. The prescription will be sent here in the consult room itself. However, this might take a while!"
   },
   "consultType": {
     "mainHeading": "How would you like to consult with",
     "checkBoxText": "I have consulted with {0} before",
     "online": {
       "heading": "In-App AUDIO/VIDEO",
-      "question": "How to consult via chat/audio/video?",
+      "question": "How to consult via text/audio/video?",
       "point1": "Choose the doctor",
       "point2": "Book a slot",
       "point3": "Make payment",
       "point4": "Be present in the consult room within Apollo247 app at the time of consult",
-      "point5": "Speak to the doctor via video/audio/chat",
+      "point5": "Speak to the doctor via video/audio/text",
       "point6": "Receive prescriptions instantly",
       "point7": "Follow Up via text - valid for 7 days"
     },
@@ -55,8 +56,9 @@
       "point6": "Follow Up via text - valid for 7 days"
     },
     "follow_up_chat_days_text": "Follow Up via text - valid for {0} days",
-    "follow_up_chat_message": "is available for a minimum of {0} days for free follow-up chat post Consult. However, doctor can decide to increase the follow-up chat days as per case basis.",
-    "chatDisabledHeader": "Free follow up chat days with the doctor are over. Please book a new appointment for consulting with {0} again!"
+    "follow_up_chat_message": "is available for a minimum of {0} days for free follow-up chat post Consult. However, doctor can decide to increase the follow-up text days as per case basis.",
+    "chatDisabledHeader": "Free follow up chat days with the doctor are over. Please book a new appointment for consulting with {0} again!",
+    "availableForInAppConsultsOnly": "Due to the current situation, {{doctor}} is available only for In-App Consults"
   },
   "login": {
     "hello": "hello!",
@@ -295,8 +297,8 @@
     "delivery_charges": "Delivery Charges",
     "packaging_charges": "Packaging Charges",
     "orderCancellationAfterBillingAlert": "Your order has already Billed and therefore cannot be cancelled from the App. In case you still wish to Cancel, please click on the link below to chat with out customer care executives for assistance during working hours (9:00 AM to 8:30 PM)",
-    "chatWithUs":"CHAT WITH US",
-    "tatBreach_InconvenienceText":"We are trying our best to expedite the process.\nSorry for the inconvenience"
+    "chatWithUs": "CHAT WITH US",
+    "tatBreach_InconvenienceText": "We are trying our best to expedite the process.\nSorry for the inconvenience"
   },
   "OrderSummaryText": {
     "total_order_billed": "Total Ordered Value",
@@ -416,14 +418,14 @@
     "symptomTracker": "Symptom Tracker",
     "addAnotherSymptom": "Would you like to report another symptom?"
   },
-  "Prescription_Success":"Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).",
-  "cancelConsultationHeading":"Cancel Consultation",
+  "Prescription_Success": "Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).",
+  "cancelConsultationHeading": "Cancel Consultation",
   "cancelConsultationReasonHeading": "Why are you cancelling this consultation?",
-  "ReasonFor_Cancel_Consultation":{
-    "doctorDidNotJoin" : "Doctor did not join the consult",
-    "bookedForWrongUser":"Booked with wrong user details",
-    "doctorDeniedMode":"Doctor denied your preferable mode of consult",
+  "ReasonFor_Cancel_Consultation": {
+    "doctorDidNotJoin": "Doctor did not join the consult",
+    "bookedForWrongUser": "Booked with wrong user details",
+    "doctorDeniedMode": "Doctor denied your preferable mode of consult",
     "audioVideoIssue": "Audio Video Issues",
-    "otherReasons":"Others (Please specifiy)"
+    "otherReasons": "Others (Please specifiy)"
   }
 }

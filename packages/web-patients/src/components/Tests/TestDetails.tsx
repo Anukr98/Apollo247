@@ -20,7 +20,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 
 import { searchDiagnostics_searchDiagnostics_diagnostics } from 'graphql/types/searchDiagnostics';
 import { useDiagnosticsCart, DiagnosticsCartItem } from 'components/Tests/DiagnosticsCartProvider';
-import { stripHtml } from 'helpers/commonHelpers';
+import stripHtml from 'string-strip-html';
 import { GET_DIAGNOSTIC_DATA } from 'graphql/profiles';
 import {
   getDiagnosticsData,
@@ -656,7 +656,7 @@ const TestDetails: React.FC = (props) => {
                                 params.searchTestType === 'hot-seller'
                                   ? params.itemName.split('_').join(' ')
                                   : testDetails.itemName
-                              ),
+                              ).result,
                               price: testDetails.rate,
                               thumbnail: '',
                               collectionMethod: testDetails.collectionType!,

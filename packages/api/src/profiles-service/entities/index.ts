@@ -422,6 +422,12 @@ export class MedicineOrders extends BaseEntity {
   isOmsOrder: boolean;
 
   @Column({ nullable: true })
+  clusterId: string;
+
+  @Column({ nullable: true })
+  allocationProfileName: string;
+
+  @Column({ nullable: true })
   updatedDate: Date;
 
   @BeforeInsert()
@@ -1312,6 +1318,9 @@ export class SearchHistory extends BaseEntity {
 
   @Column()
   type: SEARCH_TYPE;
+
+  @Column()
+  image: string;
 
   @Index()
   @Column()

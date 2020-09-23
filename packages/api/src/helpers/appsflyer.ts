@@ -148,7 +148,9 @@ export async function refreshLink(existingDeeplinkDetails: Deeplink, doctorType:
       'Call to apps flyer APPSFLYER_GET_DOCTORS_DEEPLINK_REFRESH___ERROR',
       `${apiUrl} --- ${JSON.stringify(deepLinkInput)} --- ${responseData}`
     );
-    throw new AphError(AphErrorMessages.DEEPLINK_EXTERNAL_CALL_FAILED);
+    if (responseData == 'Not Found') {
+      return getDeeplink(deepLinkInput, doctorType);
+    } else throw new AphError(AphErrorMessages.DEEPLINK_EXTERNAL_CALL_FAILED);
   }
 }
 
@@ -178,7 +180,6 @@ export function generateDeepLinkBody(doctordata: Partial<Doctor>): DeepLinkInput
     doctordata.doctorType == DoctorType.DOCTOR_CONNECT
       ? ApiConstants.CHANNEL_NAME_NON_APOLLO.toString()
       : ApiConstants.CHANNEL_NAME_APOLLO.toString();
-
   const webLink = ApiConstants.DOCTOR_DEEPLINK_WEB_URL.replace('<DoctorID>', doctordata.id!);
 
   const deepLinkAttrs: DeepLinkInput = {

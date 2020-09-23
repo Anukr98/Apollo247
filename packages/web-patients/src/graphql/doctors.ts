@@ -22,6 +22,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       physicalConsultationFees
       qualification
       doctorType
+      chatDays
       starTeam {
         associatedDoctor {
           fullName
@@ -161,6 +162,21 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
       doctorsAvailability {
         doctorId
         availableModes
+      }
+      apolloDoctorCount
+      partnerDoctorCount
+    }
+  }
+`;
+
+export const GET_DOCTOR_LIST = gql`
+  query GetDoctorList($filterInput: FilterDoctorInput) {
+    getDoctorList(filterInput: $filterInput) {
+      doctors
+      specialties {
+        id
+        name
+        specialtydisplayName
       }
       apolloDoctorCount
       partnerDoctorCount
@@ -529,6 +545,10 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isSeniorConsultStarted
         isJdQuestionsComplete
         symptoms
+        caseSheet {
+          followUpAfterInDays
+          doctorType
+        }
         doctorInfo {
           awards
           city

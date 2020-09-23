@@ -6,6 +6,7 @@ import {
   View,
   PixelRatio,
   Dimensions,
+  Image,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -14,9 +15,6 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
-import {
-  LinkUHIDReadMore,
-} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 
 const styles = StyleSheet.create({
@@ -35,13 +33,16 @@ const styles = StyleSheet.create({
   }
 });
 
+const readMoreImagePart1 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part1.png');
+const readMoreImagePart2 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part2.png');
+const readMoreImagePart3 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part3.png');
+const readMoreImagePart4 = require('@aph/mobile-patients/src/components/ui/icons/read_more/read-more-part4.png');
+
 export interface ReadMoreLinkUHIDProps extends NavigationScreenProps { }
 
 export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
 
-  const pixelRatio = PixelRatio.get();
-  const { height, width } = Dimensions.get("window");
-  const heightPercent = Math.round((5 * height) / 100);
+  const { width } = Dimensions.get("window");
 
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
@@ -71,11 +72,36 @@ export const ReadMoreLinkUHID: React.FC<ReadMoreLinkUHIDProps> = (props) => {
       {renderHeader()}
       <ScrollView bounces={false}>
         <View style={styles.cardContainer}>
-          <LinkUHIDReadMore
+          <Image
+            source={readMoreImagePart1}
+            resizeMode='contain'
             style={{
-              resizeMode: 'stretch',
               width: width - 40,
-              height: (width - 40) * 5.4,
+              height: width - 80,
+            }}
+          />
+          <Image
+            source={readMoreImagePart2}
+            resizeMode='contain'
+            style={{
+              width: width - 40,
+              height: width * 1.6,
+            }}
+          />
+          <Image
+            source={readMoreImagePart3}
+            resizeMode='contain'
+            style={{
+              width: width - 40,
+              height: width - 60,
+            }}
+          />
+          <Image
+            source={readMoreImagePart4}
+            resizeMode='contain'
+            style={{
+              width: width - 40,
+              height: width * 1.7,
             }}
           />
         </View>

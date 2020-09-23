@@ -1437,52 +1437,6 @@ export const ADD_SECRETARY = gql`
         id
         name
         mobileNumber
-        isActive
-      }
-      doctor {
-        city
-        country
-        doctorType
-        delegateNumber
-        emailAddress
-        experience
-        firstName
-        fullName
-        gender
-        id
-        lastName
-        mobileNumber
-        onlineStatus
-        photoUrl
-        qualification
-        salutation
-        state
-        streetLine1
-        streetLine2
-        streetLine3
-        thumbnailUrl
-        displayName
-        zip
-        registrationNumber
-        onlineConsultationFees
-        physicalConsultationFees
-        doctorHospital {
-          facility {
-            city
-            country
-            facilityType
-            id
-            imageUrl
-            latitude
-            longitude
-            name
-            state
-            streetLine1
-            streetLine2
-            streetLine3
-            zipcode
-          }
-        }
       }
     }
   }
@@ -1491,95 +1445,8 @@ export const ADD_SECRETARY = gql`
 export const REMOVE_SECRETARY = gql`
   mutation RemoveSecretary($secretaryId: ID!) {
     removeSecretary(secretaryId: $secretaryId) {
-      awards
-      city
-      country
-      dateOfBirth
-      displayName
-      doctorType
-      delegateNumber
-      emailAddress
-      experience
-      firebaseToken
-      firstName
-      fullName
-      gender
-      isActive
       id
-      languages
-      lastName
       mobileNumber
-      onlineConsultationFees
-      onlineStatus
-      photoUrl
-      physicalConsultationFees
-      qualification
-      registrationNumber
-      salutation
-      specialization
-      state
-      streetLine1
-      streetLine2
-      streetLine3
-      thumbnailUrl
-      zip
-      bankAccount {
-        accountHolderName
-        accountNumber
-        accountType
-        bankName
-        city
-        id
-        IFSCcode
-        state
-        streetLine1
-      }
-      consultHours {
-        consultMode
-        consultType
-        endTime
-        facility {
-          city
-          country
-          facilityType
-          id
-          name
-        }
-        id
-        isActive
-        startTime
-        weekDay
-      }
-      doctorHospital {
-        facility {
-          city
-        }
-      }
-      packages {
-        fees
-        id
-        name
-      }
-      specialty {
-        createdDate
-        id
-        image
-        name
-      }
-      starTeam {
-        isActive
-        associatedDoctor {
-          city
-          country
-          id
-          lastName
-          firstName
-          fullName
-          mobileNumber
-          onlineStatus
-          qualification
-        }
-      }
     }
   }
 `;

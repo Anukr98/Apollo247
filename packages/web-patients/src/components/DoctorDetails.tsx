@@ -30,7 +30,7 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
 import { BottomLinks } from 'components/BottomLinks';
-import { gtmTracking } from 'gtmTracking';
+import { gtmTracking, dataLayerTracking } from 'gtmTracking';
 import { getOpeningHrs, readableParam } from '../helpers/commonHelpers';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
@@ -41,7 +41,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetailsType } from 'graphql/types/GetDoctorDetailsById';
 import { doctorProfileViewTracking } from 'webEngageTracking';
-import { getDiffInMinutes } from 'helpers/commonHelpers';
+import { getDiffInMinutes, deepLinkUtil } from 'helpers/commonHelpers';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { useLocation } from 'react-router';
@@ -253,6 +253,10 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0];
 
   useEffect(() => {
+    deepLinkUtil(`Doctor?${doctorId}`);
+  }, []);
+
+  useEffect(() => {
     if (doctorSlots && doctorSlots.availableSlot) {
       const {
         doctorType,
@@ -335,6 +339,9 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               doctorHospital[0].facility.imageUrl ||
               'https://prodaphstorage.blob.core.windows.net/patientwebstaticfiles/hospital_image-e202f2.png';
           }
+
+          const docSpecialty = specialty && specialty.name ? specialty.name : '';
+
           setStructuredJSON({
             '@context': 'http://schema.org/',
             '@type': 'Physician',
@@ -418,18 +425,25 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             ],
           });
           setMetaTagProps({
-            title: `${fullName}: ${
-              specialty && specialty.name ? specialty.name : ''
-            } - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with ${fullName} - ${
-              specialty && specialty.name
-            } and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            title: `${fullName}, ${docSpecialty} in ${city}, Consult Online Now - Apollo 247`,
+            description: `Consult ${fullName} (${docSpecialty}) online now. Book online appointment and clinic visit with ${fullName} in just a few clicks. Know fees, availability, experience and more about ${fullName}.`,
             canonicalLink:
               window &&
               window.location &&
               window.location.origin &&
               `${window.location.origin}/doctors/${readableParam(fullName)}-${id}`,
+            deepLink: window.location.href,
           });
+          /**Gtm code start start */
+          dataLayerTracking({
+            event: 'pageviewEvent',
+            pagePath: window.location.href,
+            pageName: 'Doctor Details Page',
+            pageLOB: 'Consultation',
+            pageType: 'Details Page',
+            productlist: JSON.stringify(data.getDoctorDetailsById),
+          });
+          /**Gtm code start end */
         }
         setError(false);
       })

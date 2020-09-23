@@ -11,10 +11,12 @@ import fetchUtil from 'helpers/fetch';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import { GetPatientByMobileNumber_getPatientByMobileNumber_patients as CurrentPatient } from 'graphql/types/GetPatientByMobileNumber';
 
+import { getAppStoreLink } from 'helpers/dateHelpers';
 declare global {
   interface Window {
     opera: any;
     vendor: any;
+    dataLayer: any;
   }
 }
 
@@ -443,16 +445,17 @@ const getCouponByUserMobileNumber = () => {
   );
 };
 
-const isPastAppointment = (appointmentDateTime: string) => {
-  const appointmentDate = moment(appointmentDateTime).set({ hour: 0, minute: 0 });
-  const followUpDayMoment = appointmentDate.add(7, 'days');
+const isPastAppointment = (appointmentDateTime: string, followUpInDays: number = 7) => {
+  const appointmentDate = moment(appointmentDateTime).set({ hour: 0, minute: 0 }); // this been added because followupDays includes appointmentMent Completion date aswell and appointmentDateTime should be replace with completion date
+  const followUpDayMoment = appointmentDate.add(followUpInDays, 'days');
   return followUpDayMoment.isBefore(moment());
 };
 
-const getAvailableFreeChatDays = (appointmentTime: string) => {
-  const appointmentDate = moment(appointmentTime).set({ hour: 0, minute: 0 });
-  const followUpDayMoment = appointmentDate.add(7, 'days');
+const getAvailableFreeChatDays = (appointmentTime: string, followUpInDays: number = 7) => {
+  const appointmentDate = moment(appointmentTime).set({ hour: 0, minute: 0 }); // this been added because followupDays includes appointmentMent Completion date aswell and appointmentDateTime should be replace with completion date
+  const followUpDayMoment = appointmentDate.add(followUpInDays, 'days');
   let diffInDays = followUpDayMoment.diff(moment(), 'days');
+  // below condition is added because diff of days will give xdays yhrs as xdays
   if (moment() > moment(appointmentTime) && moment() < followUpDayMoment) {
     diffInDays += 1;
   }
@@ -480,7 +483,6 @@ const HEALTH_RECORDS_NO_DATA_FOUND =
 
 const HEALTH_RECORDS_NOTE =
   'Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!';
-const stripHtml = (originalString: any) => originalString.replace(/(<([^>]+)>)/gi, '');
 
 export const consultWebengageEventsInfo = (
   doctorDetail: DoctorDetails,
@@ -534,8 +536,18 @@ export const consultWebengageEventsCommonInfo = (data: any) => {
     'Hospital City': hospitalCity,
   };
 };
+const deepLinkUtil = (deepLinkPattern: string) => {
+  if (getDeviceType() !== DEVICETYPE.DESKTOP && !sessionStorage.getItem('deepLinkAccessed')) {
+    window.location.href = `apollopatients://${deepLinkPattern}`;
+    setTimeout(() => {
+      window.location.href = getAppStoreLink();
+    }, 1000);
+    sessionStorage.setItem('deepLinkAccessed', '1');
+  }
+};
 
 export {
+  deepLinkUtil,
   HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,
   getCouponByUserMobileNumber,
@@ -589,5 +601,4 @@ export {
   PINCODE_MAXLENGTH,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
   HEALTH_RECORDS_NOTE,
-  stripHtml,
 };

@@ -109,6 +109,7 @@ import {
   saveAppointmentCallFeedbackVariables,
 } from 'graphql/types/saveAppointmentCallFeedback';
 import Alert from 'components/Alert';
+import { getAge } from 'helpers/Utils';
 import moment from 'moment';
 import { webEngageEventTracking } from 'webEngageTracking';
 
@@ -1249,14 +1250,7 @@ export const ConsultTabs: React.FC = () => {
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth !== null &&
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth !== ''
           ) {
-            cardStripArr.push(
-              Math.abs(
-                new Date(Date.now()).getUTCFullYear() -
-                  new Date(
-                    _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth
-                  ).getUTCFullYear()
-              ).toString()
-            );
+            cardStripArr.push(getAge(_data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth));
           }
           if (
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender &&
@@ -1970,6 +1964,7 @@ export const ConsultTabs: React.FC = () => {
     pubnub
       .hereNow({ channels: [appointmentId], includeUUIDs: true })
       .then((response: any) => {
+        console.log({ pubnubHereNowResponse: response });
         const occupants = response.channels[appointmentId].occupants;
         let doctorCount = 0;
         let paientsCount = 0;

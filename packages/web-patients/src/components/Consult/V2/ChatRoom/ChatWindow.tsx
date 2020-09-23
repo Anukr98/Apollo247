@@ -60,9 +60,12 @@ import {
   medicalDetailsFillTracking,
   callReceiveClickTracking,
   messageSentPostConsultTracking,
+  callEndedClickTracking,
 } from 'webEngageTracking';
 import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
-import { DoctorJoinedMessageCard } from '../ChatRoom/DoctorJoinedMessageCard';
+import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
+import { AppointmentCompleteCardMessage } from 'components/Consult/V2/ChatRoom/AppointmentCompleteCardMessage';
+import { DoctorType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -936,11 +939,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const doctorDisplayName = props.doctorDetails.getDoctorDetailsById.displayName;
+  const doctorChatDays = props.doctorDetails.getDoctorDetailsById.chatDays;
   const scrollDivRef = useRef(null);
   const apolloClient = useApolloClient();
   const doctorDetail = props.doctorDetails && props.doctorDetails.getDoctorDetailsById;
 
   // console.log(currentPatient.id, '------------------------', appointmentDetails.doctorId);
+  // console.log(messages, 'messages are ...........');
 
   //AV states
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
@@ -1001,6 +1006,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         });
     });
   };
+
   const pubnubClient = new PubNub({
     publishKey: process.env.PUBLISH_KEY,
     subscribeKey: process.env.SUBSCRIBE_KEY,
@@ -1191,6 +1197,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     };
     publishMessage(appointmentId, composeMessage);
   };
+
   const toggelChatVideo = () => {
     setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
@@ -1203,6 +1210,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     setShowVideoChat(false);
     setIsVideoCall(false);
     setIsCalled(false);
+    const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
+    callEndedClickTracking(eventInfo);
   };
 
   const convertCall = () => {
@@ -1282,6 +1291,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       },
     }
   );
+
   const updateAppointmentSessionCall = () => {
     mutationResponse()
       .then((data) => {
@@ -2074,8 +2084,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     sliderRef.current.slickNext();
   };
 
+  const caseSheets =
+    appointmentDetails && appointmentDetails.caseSheet ? appointmentDetails.caseSheet : [];
+
+  const srdCaseSheet = caseSheets!.find(
+    (item) =>
+      item!.doctorType == DoctorType.STAR_APOLLO ||
+      item!.doctorType == DoctorType.APOLLO ||
+      item!.doctorType == DoctorType.PAYROLL
+  );
+
+  // const srdCaseSheet: any = null;
+
+  const followUpInDays =
+    srdCaseSheet && srdCaseSheet.followUpAfterInDays ? srdCaseSheet.followUpAfterInDays : 7;
+
   const pastAppointment =
-    appointmentDetails && isPastAppointment(appointmentDetails.appointmentDateTime);
+    appointmentDetails &&
+    isPastAppointment(appointmentDetails.appointmentDateTime, Number(followUpInDays));
 
   // console.log(messages, 'messages from pubnub.....');
 
@@ -2203,16 +2229,30 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     props.setIsConsultCompleted(
                       messageDetails.message === autoMessageStrings.appointmentComplete
                     );
-                    return messageDetails.message === '^^#startconsult' ? (
-                      <DoctorJoinedMessageCard
-                        doctorName={doctorDisplayName}
-                        messageDate={messageDetails.messageDate}
-                      />
-                    ) : null;
+
+                    // console.log(messageDetails.message, '------------');
+
+                    if (messageDetails.message === autoMessageStrings.startConsultMsg) {
+                      return (
+                        <DoctorJoinedMessageCard
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                        />
+                      );
+                    } else if (messageDetails.message === autoMessageStrings.appointmentComplete) {
+                      return (
+                        <AppointmentCompleteCardMessage
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                        />
+                      );
+                    } else {
+                      return null;
+                    }
                   }
                   const duration = messageDetails.duration;
                   if (cardType === 'welcome') {
-                    return <WelcomeCard doctorName={doctorDisplayName} />;
+                    return <WelcomeCard doctorName={doctorDisplayName} chatDays={doctorChatDays} />;
                   } else if (cardType === 'doctor') {
                     return (
                       <DoctorCard
