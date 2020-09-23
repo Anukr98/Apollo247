@@ -4,12 +4,12 @@ export class APP47441600842504566 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(
-            `ALTER TABLE "diagnostics" ADD COLUMN "subCategoryid" integer;`
+            `ALTER TABLE "diagnostics" ADD COLUMN "subCategoryId" integer;`
           );
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "diagnostics" DROP COLUMN "subCategoryid";`);
+        await queryRunner.query(`ALTER TABLE "diagnostics" DROP COLUMN "subCategoryId";`);
     }
 
 }
