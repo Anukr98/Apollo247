@@ -464,6 +464,7 @@ const PayMedicine: React.FC = (props) => {
     doctorName,
     hospitalId,
     speciality,
+    specialityId,
   } = consultBookDetails;
 
   const { city, currentPincode } = useLocationDetails();
@@ -511,28 +512,6 @@ const PayMedicine: React.FC = (props) => {
     }
   });
 
-  const getCouponByMobileNumber = () => {
-    getCouponByUserMobileNumber()
-      .then((resp: any) => {
-        if (resp.errorCode == 0 && resp.response && resp.response.length > 0) {
-          const couponCode = resp.response[0].coupon;
-          setConsultCouponCode(couponCode || '');
-        } else {
-          setConsultCouponCode('');
-        }
-      })
-      .catch((e: any) => {
-        console.log(e);
-        setConsultCouponCode('');
-      });
-  };
-
-  useEffect(() => {
-    if (params.payType === 'consults' && !consultCouponCode) {
-      getCouponByMobileNumber();
-    }
-  }, []);
-
   useEffect(() => {
     if (validateConsultCouponResult && validateConsultCouponResult.valid) {
       setRevisedAmount(
@@ -569,7 +548,7 @@ const PayMedicine: React.FC = (props) => {
                 ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
-            couponFree: cartItemDetails.couponFree || false,
+            couponFree: Number(cartItemDetails.couponFree) || 0,
             itemValue: Number((cartItemDetails.quantity * cartItemDetails.price).toFixed(2)),
             itemDiscount: Number(
               (
@@ -588,7 +567,7 @@ const PayMedicine: React.FC = (props) => {
                 : _lowerCase(cartItemDetails.type_id) === 'pl'
                 ? '2'
                 : '0',
-            specialPrice: cartItemDetails.couponFree
+            specialPrice: Number(cartItemDetails.couponFree)
               ? 0
               : Number(getItemSpecialPrice(cartItemDetails)),
           };
@@ -757,8 +736,10 @@ const PayMedicine: React.FC = (props) => {
               sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
             }`;
             window.location.href = pgUrl;
+            localStorage.removeItem('updatedFreeCoupon');
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
             placeOrder(orderId, orderAutoId, false, '');
+            localStorage.removeItem('updatedFreeCoupon');
           } else if (errorMessage.length > 0) {
             setMutationLoading(false);
             setIsAlertOpen(true);
@@ -1214,3 +1195,86 @@ const PayMedicine: React.FC = (props) => {
 };
 
 export default PayMedicine;
+// const [errorMessage, setErrorMessage] = useState<string>('');
+
+// const getValidateCouponBody = (coupon: string) => {
+//   const amountPayble: number = Number(amount) - Number(consultCouponValue);
+//   const validateCouponBody = {
+//     mobile: currentPatient && currentPatient.mobileNumber,
+//     billAmount: Number(amountPayble),
+//     coupon,
+//     pinCode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
+//     consultations: [
+//       {
+//         hospitalId,
+//         doctorId,
+//         specialityId,
+//         consultationTime: new Date(appointmentDateTime).getTime(),
+//         consultationType: appointmentType === 'PHYSICAL' ? 0 : 1,
+//         cost: Number(onlineConsultationFees),
+//         rescheduling: false,
+//       },
+//     ],
+//   };
+//   return validateCouponBody;
+// };
+
+// const verifyCoupon = (couponCode: string) => {
+//   if (couponCode.length > 0) {
+//     setMutationLoading(true);
+//     const validateCouponBody = getValidateCouponBody(couponCode);
+//     fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', validateCouponBody, '', false)
+//       .then((data: any) => {
+//         if (data && data.response) {
+//           const couponValidateResult = data.response;
+//           setValidityStatus(couponValidateResult.valid);
+//           setValidateConsultCouponResult(couponValidateResult);
+//           if (couponValidateResult.valid) {
+//             /*GTM TRACKING START */
+//             gtmTracking({
+//               category: 'Consultations',
+//               action: speciality,
+//               label: `Coupon Applied - ${couponCode}`,
+//               value:
+//                 couponValidateResult && couponValidateResult.valid
+//                   ? Number(parseFloat(couponValidateResult.discount).toFixed(2))
+//                   : null,
+//             });
+//             /*GTM TRACKING END */
+//             setErrorMessage('');
+//           } else {
+//             setErrorMessage(couponValidateResult.reason);
+//           }
+//         } else if (data && data.errorMsg && data.errorMsg.length > 0) {
+//           setErrorMessage(data.errorMsg);
+//         }
+//       })
+//       .catch((e) => {
+//         console.log(e);
+//       })
+//       .finally(() => setMutationLoading(false));
+//   }
+// };
+
+// const getCouponByMobileNumber = () => {
+//   getCouponByUserMobileNumber()
+//     .then((resp: any) => {
+//       if (resp.errorCode == 0 && resp.response && resp.response.length > 0) {
+//         const couponCode = resp.response[0].coupon;
+//         setConsultCouponCode(couponCode || '');
+//         verifyCoupon(couponCode);
+//       } else {
+//         setConsultCouponCode('');
+//       }
+//     })
+//     .catch((e: any) => {
+//       console.log(e);
+//       setConsultCouponCode('');
+//     });
+// };
+
+// useEffect(() => {
+//   if (currentPatient && params.payType === 'consults' && !consultCouponCode) {
+//     getCouponByMobileNumber();
+//   }
+// }, []);

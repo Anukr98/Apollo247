@@ -323,6 +323,7 @@ export interface WebEngageEvents {
     'Brand ID': string;
     'category name': string;
     'category ID': string;
+    'pincode': string;
   };
 
   [WebEngageEventName.CATEGORY_CLICKED]: {
