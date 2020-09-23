@@ -2036,10 +2036,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View style={styles.healthvaultMainContainer}>
         <ScrollView bounces={false} horizontal showsHorizontalScrollIndicator={false}>
-          {files.map((file) => {
+          {files.map((file, index) => {
             if (file.url) {
               return (
-                <View style={styles.healthvaultImageContainer}>
+                <View style={styles.healthvaultImageContainer} key={index}>
                   {isImage ? (
                     <TouchableOpacity
                       activeOpacity={1}
