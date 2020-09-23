@@ -374,7 +374,7 @@ const removeFromConsultQueue: Resolver<
   const consultQueueItemToDeactivate = await cqRepo.findOneOrFail(id);
   const { doctorId, appointmentId } = consultQueueItemToDeactivate;
   await checkAuth(docRepo, mobileNumber, doctorId);
-  await caseSheetRepo.updateJDCaseSheet(appointmentId);
+  await caseSheetRepo.updateAllJDCaseSheet(appointmentId);
   await cqRepo.update(consultQueueItemToDeactivate.id, { isActive: false });
   const consultQueue = await buildGqlConsultQueue(doctorId, context);
   return { consultQueue };

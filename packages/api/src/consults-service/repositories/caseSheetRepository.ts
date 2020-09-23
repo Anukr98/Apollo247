@@ -121,7 +121,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     });
   }
 
-  async updateJDCaseSheet(appointmentId: string) {
+  async updateAllJDCaseSheet(appointmentId: string) {
     const JDCaseSheetDetails: CaseSheet[] = await this.getJDMultipleCaseSheets(appointmentId);
     if (JDCaseSheetDetails.length == 0)
       throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined);
