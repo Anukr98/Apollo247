@@ -133,7 +133,9 @@ const PatientsOverview: React.FC = () => {
       {currentPatient &&
         currentPatient.partnerId === HDFC_REF_CODE &&
         userSubscriptionsLocalStorage &&
-        userSubscriptionsLocalStorage.length != 0 && (
+        userSubscriptionsLocalStorage.length != 0 &&
+        userSubscriptionsLocalStorage[0] &&
+        userSubscriptionsLocalStorage[0].status == 'ACTIVE' && (
           <HdfcSlider patientPhone={currentPatient.mobileNumber} />
         )}
       {/* </Grid>

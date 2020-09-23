@@ -875,6 +875,9 @@ export const GET_SUBSCRIPTIONS_OF_USER_BY_STATUS = gql`
         _id
         status
         group_plan {
+          group {
+            name
+          }
           _id
           plan_id
           name
