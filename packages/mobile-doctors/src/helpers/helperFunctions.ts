@@ -16,6 +16,7 @@ import { string } from '@aph/mobile-doctors/src/strings/string';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import { useRef, useEffect } from 'react';
 
 export const getBuildEnvironment = () => {
   return AppConfig.APP_ENV as string;
@@ -462,4 +463,12 @@ export const callPermissions = (doRequest?: () => void) => {
       );
     }
   );
+};
+
+export const usePrevious = <T>(value: T): T | undefined => {
+  const ref = useRef<T>();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
 };

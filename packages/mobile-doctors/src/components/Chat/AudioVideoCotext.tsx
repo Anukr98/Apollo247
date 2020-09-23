@@ -17,6 +17,7 @@ import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
+import { usePrevious } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -220,8 +221,10 @@ export const AudioVideoProvider: React.FC = (props) => {
   const [callerAudio, setCallerAudio] = useState<boolean>(true);
   const [callerVideo, setCallerVideo] = useState<boolean>(true);
   const [downgradeToAudio, setDowngradeToAudio] = useState<boolean>(false);
-  const [audioEnabled, setAudioEnabled] = useState<boolean>(true);
-  const [videoEnabled, setVideoEnabled] = useState<boolean>(true);
+  const [audioVideoEnabled, setAudioVideoEnabled] = useState<{
+    audio: boolean;
+    video: boolean;
+  }>({ audio: true, video: true });
   const [stremConnected, setStremConnected] = useState<boolean>(false);
   const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>('front');
   const otSessionRef = React.createRef();
@@ -279,16 +282,21 @@ export const AudioVideoProvider: React.FC = (props) => {
     if (isAudio || isVideo) {
       AppState.addEventListener('change', _handleAppStateChange);
       callDetector = new CallDetectorManager(
-        (
+        async (
           event: 'Connected' | 'Disconnected' | 'Dialing' | 'Incoming' | 'Offhook' | 'Missed',
           phoneNumber: string
         ) => {
+          const prevData: {
+            audio: boolean;
+            video: boolean;
+          } = JSON.parse(
+            (await AsyncStorage.getItem('prevAudioVideo')) || '{audio: true,video: true}'
+          );
+
           if (['Connected', 'Incoming', 'Dialing', 'Offhook'].includes(event)) {
-            setAudioEnabled(false);
-            setVideoEnabled(false);
+            setAudioVideoEnabled({ audio: false, video: false });
           } else if (['Disconnected', 'Missed'].includes(event)) {
-            setAudioEnabled(true);
-            setVideoEnabled(true);
+            setAudioVideoEnabled({ audio: prevData.audio, video: prevData.video });
           }
         },
         false,
@@ -301,18 +309,46 @@ export const AudioVideoProvider: React.FC = (props) => {
       );
     } else {
       AppState.removeEventListener('change', _handleAppStateChange);
+      AsyncStorage.removeItem('prevAppState');
       callDetector && callDetector.dispose();
     }
     AsyncStorage.setItem('isAudio', JSON.stringify(isAudio));
     AsyncStorage.setItem('isVideo', JSON.stringify(isVideo));
   }, [isAudio, isVideo]);
+  const prevAudioVideo = usePrevious({ audioVideoEnabled });
+
+  useEffect(() => {
+    AsyncStorage.setItem(
+      'prevAudioVideo',
+      JSON.stringify(prevAudioVideo ? prevAudioVideo.audioVideoEnabled : audioVideoEnabled)
+    );
+    AsyncStorage.setItem('currentAudioVideo', JSON.stringify(audioVideoEnabled));
+  }, [audioVideoEnabled]);
 
   const _handleAppStateChange = (nextAppState: AppStateStatus) => {
-    if (nextAppState === 'inactive' || nextAppState === 'background') {
-      setVideoEnabled(false);
-    } else if (nextAppState === 'active') {
-      setVideoEnabled(true);
-    }
+    setTimeout(async () => {
+      const prevData: {
+        audio: boolean;
+        video: boolean;
+      } = JSON.parse((await AsyncStorage.getItem('prevAudioVideo')) || '{audio: true,video: true}');
+      const currentAudioVideo: {
+        audio: boolean;
+        video: boolean;
+      } = JSON.parse(
+        (await AsyncStorage.getItem('currentAudioVideo')) || '{audio: true,video: true}'
+      );
+      console.log(prevData, 'nacskjd', nextAppState);
+      const prevAppState = (await AsyncStorage.getItem('prevAppState')) || 'active';
+      if (
+        ['inactive', 'background'].includes(nextAppState) &&
+        !['inactive', 'background'].includes(prevAppState)
+      ) {
+        setAudioVideoEnabled({ audio: currentAudioVideo.audio, video: false });
+      } else if (nextAppState === 'active') {
+        setAudioVideoEnabled({ audio: prevData.audio, video: prevData.video });
+      }
+      AsyncStorage.setItem('prevAppState', nextAppState);
+    }, 500);
   };
 
   const startTimer = (timer: number) => {
@@ -429,8 +465,7 @@ export const AudioVideoProvider: React.FC = (props) => {
     setCallConnected(false);
     setCallerAudio(true);
     setCallerVideo(true);
-    setAudioEnabled(true);
-    setVideoEnabled(true);
+    setAudioVideoEnabled({ audio: true, video: true });
     setDowngradeToAudio(false);
     setStremConnected(false);
     if (audioTrack) {
@@ -459,17 +494,28 @@ export const AudioVideoProvider: React.FC = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              setVideoEnabled(!videoEnabled);
+              setAudioVideoEnabled({
+                audio: audioVideoEnabled.audio,
+                video: !audioVideoEnabled.video,
+              });
             }}
           >
             <View style={styles.iconShadowEffect}>
-              {videoEnabled ? <VideoOnIcon /> : <VideoOffIcon />}
+              {audioVideoEnabled.video ? <VideoOnIcon /> : <VideoOffIcon />}
             </View>
           </TouchableOpacity>
         ) : null}
-        <TouchableOpacity activeOpacity={1} onPress={() => setAudioEnabled(!audioEnabled)}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            setAudioVideoEnabled({
+              audio: !audioVideoEnabled.audio,
+              video: audioVideoEnabled.video,
+            });
+          }}
+        >
           <View style={styles.iconShadowEffect}>
-            {audioEnabled ? <UnMuteIcon /> : <MuteIcon />}
+            {audioVideoEnabled.audio ? <UnMuteIcon /> : <MuteIcon />}
           </View>
         </TouchableOpacity>
         <TouchableOpacity activeOpacity={1} onPress={() => callEnd(true)}>
@@ -632,17 +678,21 @@ export const AudioVideoProvider: React.FC = (props) => {
     videoDataReceived: () => {
       setCallConnected(true);
       if (audioTrack) {
-        setPrevVolume();
-        audioTrack.stop(() => {});
+        if (audioTrack.isPlaying()) {
+          setPrevVolume();
+          audioTrack.stop(() => {});
+        }
       }
-      hidePopup();
-      console.log('Subscriber stream videoDataReceived!');
+      // console.log('Subscriber stream videoDataReceived!');
     },
     videoDisabled: (event: OpentokVideoWarn) => {
       if (event.reason === 'quality') {
         errorPopup(strings.toastMessages.fallback, theme.colors.APP_RED);
         setDowngradeToAudio(true);
-        setVideoEnabled(false);
+        setAudioVideoEnabled({
+          audio: audioVideoEnabled.audio,
+          video: false,
+        });
       }
       console.log('Subscriber stream videoDisabled!', event);
     },
@@ -650,7 +700,10 @@ export const AudioVideoProvider: React.FC = (props) => {
       if (event.reason === 'quality') {
         errorPopup(strings.toastMessages.videoBack, theme.colors.APP_GREEN);
         setDowngradeToAudio(false);
-        setVideoEnabled(true);
+        setAudioVideoEnabled({
+          audio: audioVideoEnabled.audio,
+          video: true,
+        });
       }
       console.log('Subscriber stream videoEnabled!', event);
     },
@@ -661,7 +714,10 @@ export const AudioVideoProvider: React.FC = (props) => {
     videoDisableWarningLifted: () => {
       errorPopup(strings.toastMessages.videoBack, theme.colors.APP_GREEN);
       setDowngradeToAudio(false);
-      setVideoEnabled(true);
+      setAudioVideoEnabled({
+        audio: audioVideoEnabled.audio,
+        video: true,
+      });
       console.log('Subscriber stream videoDisableWarningLifted!');
     },
     audioNetworkStats: (event: OpenTokAudioStream) => {
@@ -824,10 +880,10 @@ export const AudioVideoProvider: React.FC = (props) => {
               }
               properties={{
                 cameraPosition: cameraPosition,
-                publishVideo: isVideo && videoEnabled,
-                publishAudio: audioEnabled,
-                videoTrack: isVideo && videoEnabled,
-                audioTrack: audioEnabled,
+                publishVideo: isVideo && audioVideoEnabled.video,
+                publishAudio: audioVideoEnabled.audio,
+                videoTrack: isVideo && audioVideoEnabled.video,
+                audioTrack: audioVideoEnabled.audio,
                 audioVolume: 100,
                 name: name,
                 resolution: '640x480',
@@ -870,10 +926,14 @@ export const AudioVideoProvider: React.FC = (props) => {
           stopMissedCallTimer,
         },
         callData: {
-          audioEnabled,
-          setAudioEnabled,
-          videoEnabled,
-          setVideoEnabled,
+          audioEnabled: audioVideoEnabled.audio,
+          setAudioEnabled: (value) => {
+            setAudioVideoEnabled({ video: audioVideoEnabled.video, audio: value });
+          },
+          videoEnabled: audioVideoEnabled.video,
+          setVideoEnabled: (value) => {
+            setAudioVideoEnabled({ audio: audioVideoEnabled.audio, video: value });
+          },
           messageReceived,
           setMessageReceived,
           callDuration,
