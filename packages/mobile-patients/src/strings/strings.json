@@ -400,19 +400,13 @@
       "Benefits and offers available through the program may change or be withdrawn without prior intimation. Apollo 24/7 will not be responsible for any liability arising from such situations or use of such offers.",
       "Any disputes arising out of the offer shall be subject to arbitration by a sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the arbitration shall be conducted as per the provisions of Arbitration and Conciliation Act, 1996. The place of  arbitration  shall  be  at  Chennai  and  language  of  arbitration  shall  be  English.  The existence of a dispute, if at all, shall not constitute a claim against Apollo 24/7.",
     ],
-    "WhatWillYouGetPoints": [
-      "One Apollo Membership",
-      "Preferential access to COVID-19 home testing",
-      "Preffrential access to home and hotel care",
-      "Health essentials hamper gift",
-      "2 Vouchers for Doctor Consultation worth Rs 249 each",
-      "3 Vouchers of Rs 100 each for Apollo Pharmacy",
-      "15% Off on Apollo Labeled Products",
-      "Digital Vault for health records",
-      "Health assesment consultation by apollo Doctor",
-      "Base Diabetes management program"
-    ],
-    "Referral_Code": "HDFCBANK",
-    "Otp_Generated_Status": "OTP_GENERATED"
+    "REFERRAL_CODE": "HDFCBANK",
+    "OTP_GENERATED_STATUS": "OTP_GENERATED",
+    "ACTIVE_STATUS": "active",
+    "INACTIVE_STATUS": "inactive",
+    "DEFFERED_INACTIVE": "deferred_inactive",
+    "SILVER_PLAN": "SILVER+ PLAN",
+    "GOLD_PLAN": "GOLD+ PLAN",
+    "PLATINUM_PLAN": "PLATINUM+ PLAN"
   }
 }
