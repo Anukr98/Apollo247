@@ -1386,11 +1386,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               key={rowID}
             >
               <View style={styles.listSpecialistView}>
-                {rowData.image && (
+                {rowData?.image?.length !== 0 ? (
                   <Image
                     source={{
                       // uri: 'https://apollouatstg.blob.core.windows.net/hospitals/ic_cardiology.png',
-                      uri: rowData.image,
+                      uri: rowData?.image!,
                     }}
                     resizeMode={'contain'}
                     style={{
@@ -1400,7 +1400,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                       marginLeft: 16,
                     }}
                   />
-                )}
+                ) : null}
                 <View>
                   <Text numberOfLines={1} style={styles.rowSpecialistStyles}>
                     {rowData.name}
