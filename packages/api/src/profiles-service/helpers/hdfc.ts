@@ -258,11 +258,15 @@ async function highRequest(base_request: any, url: String, historyToken: string 
     body: JSON.stringify(request),
     agent: sslConfiguredAgent,
   });
-  console.log(request);
+  console.log('--------------------------------------------------------');
+  console.log('response highrequest', response);
+  console.log('--------------------------------------------------------');
   const decryptedResponse = await decryptHighResponse(
     JSON.parse((await response.text()).replace(/(\r\n|\n|\r)/gm, ''))
   );
-  console.log(decryptedResponse['decryptedResponse']);
+  console.log('--------------------------------------------------------');
+  console.log('response decryptedResponse', decryptedResponse['decryptedResponse']);
+  console.log('--------------------------------------------------------');
   return decryptedResponse;
 }
 
@@ -311,10 +315,15 @@ async function mediumRequest(base_request: any, url: String, historyToken: Strin
     body: JSON.stringify(request),
     agent: sslConfiguredAgent,
   });
-  console.log(response);
+  console.log('--------------------------------------------------------');
+  console.log('response medium request', response);
+  console.log('--------------------------------------------------------');
   const decryptedResponse = decryptMediumResponse(
     JSON.parse((await response.text()).replace(/(\r\n|\n|\r)/gm, ''))
   );
+  console.log('--------------------------------------------------------');
+  console.log('response medium decryptedResponse', decryptedResponse);
+  console.log('--------------------------------------------------------');
   return decryptedResponse;
 }
 
