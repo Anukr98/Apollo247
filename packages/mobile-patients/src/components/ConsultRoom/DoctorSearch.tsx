@@ -1390,7 +1390,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   <Image
                     source={{
                       // uri: 'https://apollouatstg.blob.core.windows.net/hospitals/ic_cardiology.png',
-                      uri: rowData!.image!,
+                      uri: rowData?.image!,
                     }}
                     resizeMode={'contain'}
                     style={{
