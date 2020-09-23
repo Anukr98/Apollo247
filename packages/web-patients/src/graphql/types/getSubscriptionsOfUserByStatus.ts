@@ -9,8 +9,14 @@ import { SubscriptionStatus, GroupPlanStatus } from "./globalTypes";
 // GraphQL query operation: getSubscriptionsOfUserByStatus
 // ====================================================
 
+export interface getSubscriptionsOfUserByStatus_GetSubscriptionsOfUserByStatus_response_group_plan_group {
+  __typename: "GroupType";
+  name: string;
+}
+
 export interface getSubscriptionsOfUserByStatus_GetSubscriptionsOfUserByStatus_response_group_plan {
   __typename: "GroupPlanType";
+  group: getSubscriptionsOfUserByStatus_GetSubscriptionsOfUserByStatus_response_group_plan_group;
   _id: string | null;
   plan_id: string;
   name: string;
