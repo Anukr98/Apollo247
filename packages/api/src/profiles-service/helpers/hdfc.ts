@@ -59,7 +59,7 @@ export async function generateOtp(mobile: String) {
       Transaction_DateTimeStamp: '',
       ATM_POS_IVR_ID: 'CCIVR1',
       Credit_Card_Number: linkData,
-      callerId: 'process.env.hdfc_Api',
+      callerId: process.env.HDFC_CALLER_ID,
       instanceId: INSTANCE_ID,
       linkData: linkData,
       messageHash: messageHash,
