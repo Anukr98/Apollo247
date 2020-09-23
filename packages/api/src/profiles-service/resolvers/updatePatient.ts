@@ -100,25 +100,17 @@ const updatePatient: Resolver<
   // partnerId && partnerid == HDFC --- check for correct reffral to handle error
 
   if (patient.partnerId && patient.partnerId == PartnerId.HDFCBANK) {
+    console.log('referralCode', referralCode);
     if (referralCode != PartnerId.HDFCBANK) {
       throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
     }
   } else {
-    let identifyCustomer: boolean;
-    const mock_api = await getCache(MOCK_KEY);
-    if (mock_api && mock_api === 'true') {
-      updateAttrs.dateOfBirth;
-      identifyCustomer =
-        (await customerIdentification(patient.mobileNumber, updateAttrs.dateOfBirth || new Date()))[
-          'decryptedResponse'
-        ]['customerCASADetailsDTO']['existingCustomer'] === 'Y';
-    } else {
-      identifyCustomer = checkForRegisteredPartner(
-        patient.mobileNumber,
-        updateAttrs.dateOfBirth || new Date(),
-        patient.partnerId
-      );
-    }
+    const identifyCustomer = checkForRegisteredPartner(
+      patient.mobileNumber,
+      updateAttrs.dateOfBirth || new Date(),
+      patient.partnerId
+    );
+
     if (referralCode == PartnerId.HDFCBANK && identifyCustomer) {
       updateAttrs.partnerId = PartnerId.HDFCBANK;
     }
