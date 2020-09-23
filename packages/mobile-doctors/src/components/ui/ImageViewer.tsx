@@ -466,6 +466,11 @@ export const ImageViewer: React.FC<ImageViewerProps> = (props) => {
             renderItem={(item: { item: chatFilesType; index: number }) =>
               renderItem(item.item, item.index)
             }
+            getItemLayout={(data, index) => ({
+              length: height * 0.7,
+              offset: height * 0.7 * index,
+              index,
+            })}
             sliderWidth={width}
             sliderHeight={height * 0.7}
             itemWidth={width}

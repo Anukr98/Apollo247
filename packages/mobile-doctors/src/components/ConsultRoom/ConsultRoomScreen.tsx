@@ -167,6 +167,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import firebase from 'react-native-firebase';
 import KeepAwake from 'react-native-keep-awake';
 import { PERMISSIONS } from 'react-native-permissions';
@@ -1563,6 +1564,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     }
   };
 
+  const preloadImages = (imageFiles: chatFilesType[]) => {
+    FastImage.preload(
+      imageFiles.map((item) => {
+        return { uri: item.url };
+      })
+    );
+  };
+
   const checkFiles = (
     checkUrl?: string,
     callBack?: (newUrl: string, allFiles: chatFilesType[]) => void
@@ -1620,6 +1629,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     } else {
       callBack && callBack(newUrl, tempFiles);
     }
+    preloadImages(tempFiles.filter((item) => item.fileType === 'image'));
   };
 
   useEffect(() => {
