@@ -7,10 +7,10 @@ import * as cryptojs from 'crypto-js';
 import * as jwt from 'jsonwebtoken';
 
 const INSTANCE_ID = '8888';
-
+const assetsDir = <string>process.env.ASSETS_DIRECTORY;
 const options = {
-  cert: fs.readFileSync(path.resolve(__dirname, `${process.env.APOLLO_CERTIFICATE}`), `utf-8`),
-  key: fs.readFileSync(path.resolve(__dirname, `${process.env.APOLLO_CERTIFICATE_KEY}`), 'utf-8'),
+  cert: fs.readFileSync(path.resolve(assetsDir, `${process.env.APOLLO_CERTIFICATE}`), `utf-8`),
+  key: fs.readFileSync(path.resolve(assetsDir, `${process.env.APOLLO_CERTIFICATE_KEY}`), 'utf-8'),
   passphrase: `${process.env.APOLLO_CERTIFICATE_PASSWORD}`,
   rejectUnauthorized: true,
   keepAlive: false,
@@ -226,7 +226,10 @@ async function decryptHighResponse(response: any) {
 
 async function highRequest(base_request: any, url: String, historyToken: string = '') {
   const key = randomStringGenerator(32);
-  const privateKey = fs.readFileSync(`${process.env.APOLLO_CERTIFICATE_KEY}`);
+  const privateKey = fs.readFileSync(
+    path.resolve(assetsDir, `${process.env.APOLLO_CERTIFICATE_KEY}`),
+    `utf-8`
+  );
   const jwt_request = jwt.sign(base_request, privateKey, { algorithm: 'RS256' });
   let iv = randomStringGenerator(16);
   let RequestSignatureEncryptedValue = cryptojs.AES.encrypt(
@@ -316,7 +319,10 @@ async function mediumRequest(base_request: any, url: String, historyToken: Strin
 }
 
 function symmetricKeyEncryptedValue(symmetricKey: String) {
-  const publicKey = fs.readFileSync(`${process.env.HDFC_PUBLIC_CERTIFICATE}`, 'utf8');
+  const publicKey = fs.readFileSync(
+    path.resolve(assetsDir, `${process.env.HDFC_PUBLIC_CERTIFICATE}`),
+    'utf8'
+  );
   return crypto
     .publicEncrypt(
       { key: publicKey, padding: crypto.constants.RSA_PKCS1_PADDING },
@@ -326,7 +332,10 @@ function symmetricKeyEncryptedValue(symmetricKey: String) {
 }
 
 function symmetricKeyDecryptedValue(symmetricKey: string) {
-  const privatKey = fs.readFileSync(`${process.env.APOLLO_CERTIFICATE_KEY}`);
+  const privatKey = fs.readFileSync(
+    path.resolve(assetsDir, `${process.env.APOLLO_CERTIFICATE_KEY}`),
+    'utf8'
+  );
   const value = crypto
     .privateDecrypt(
       { key: privatKey, padding: crypto.constants.RSA_PKCS1_PADDING },
