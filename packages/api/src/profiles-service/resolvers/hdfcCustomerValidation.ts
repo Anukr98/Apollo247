@@ -1,11 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import {
-  CustomerIdentification,
-  generateOtp,
-  verifyOtp,
-} from 'profiles-service/helpers/external_partner/hdfc';
+import { customerIdentification, generateOtp, verifyOtp,fetchEthnicCode} from 'profiles-service/helpers/hdfc';
 
 export const validateHDFCCustomerTypeDefs = gql`
   enum HDFC_CUSTOMER {
@@ -22,7 +18,7 @@ export const validateHDFCCustomerTypeDefs = gql`
   }
   extend type Query {
     identifyHdfcCustomer(mobileNumber: String!, DOB: Date!): identifyHdfcCustomerResponse
-    validateHdfcOTP(otp: String!, token: String!): validHdfcCustomerResponse
+    validateHdfcOTP(otp: String!, token: String!, dateOfBirth: Date!): validHdfcCustomerResponse
   }
 `;
 
@@ -46,66 +42,72 @@ const identifyHdfcCustomer: Resolver<
   ProfilesServiceContext,
   identifyHdfcCustomerResponse
 > = async (parent, args, { profilesDb }) => {
-  const isHDFC = (await CustomerIdentification(args.mobileNumber, args.DOB))['decryptedResponse'][
+  const isHDFC = (await customerIdentification(args.mobileNumber, args.DOB))['decryptedResponse'][
     'customerCASADetailsDTO'
   ]['existingCustomer'];
   if (isHDFC !== 'Y') {
     return { status: HDFC_CUSTOMER.NOT_HDFC_CUSTOMER };
   }
   const otpGenerationResponse = await generateOtp(args.mobileNumber);
-  if (
-    otpGenerationResponse &&
-    otpGenerationResponse['decryptedResponse'] &&
-    otpGenerationResponse['decryptedResponse']['ccotpserviceResponse'] &&
-    otpGenerationResponse['decryptedResponse']['ccotpserviceResponse']['ERROR_CODE'] === '0000'
-  ) {
-    return { status: HDFC_CUSTOMER.OTP_GENERATED, token: args.mobileNumber };
-  } else {
-    return { status: HDFC_CUSTOMER.OTP_NOT_GENERATED };
-  }
+  // if (otpGenerationResponse?.decryptedResponse?.ccotpserviceResponse?.ERROR_CODE === '0000') {
+  //   return { status: HDFC_CUSTOMER.OTP_GENERATED, token: args.mobileNumber };
+  // } else {
+  return { status: HDFC_CUSTOMER.OTP_NOT_GENERATED };
+  // }
 };
 
 const validateHdfcOTP: Resolver<
   null,
-  { otp: string; token: string },
+  { otp: string; token: string, dateOfBirth: Date },
   ProfilesServiceContext,
   validHdfcCustomerResponse
 > = async (parent, args, { profilesDb }) => {
-  const { otp, token } = args;
-  const verifyOtpResponse = await verifyOtp(otp, token);
+  const verifyOtpResponse = await verifyOtp(args.otp, args.token);
   if (
-    verifyOtpResponse['decryptedResponse'] &&
-    verifyOtpResponse['decryptedResponse']['verifyPwdRequestResponse'] &&
-    verifyOtpResponse['decryptedResponse']['verifyPwdRequestResponse']['multiRef'] &&
-    verifyOtpResponse['decryptedResponse']['verifyPwdRequestResponse']['multiRef']['statusCode'] ===
-      '00'
+    verifyOtpResponse.decryptedResponse?.verifyPwdRequestResponse?.multiRef?.statusCode === '00'
   ) {
-    // need to add call for fetchEthnicCode
-    return { status: true, defaultPlan: 'HDFCGold' };
+    const fetchEthnicCodeResponse = await fetchEthnicCode(args.dateOfbirth, args.token, verifyOtpResponse.historyToken);
+    
+    const planName: string = fetchEthnicCodeResponse.decryptedResponse?.customerCASADetailsDTO ?  defaultPlan(fetchEthnicCodeResponse.decryptedResponse.customerCASADetailsDTO) : '';
+    return { status: true, defaultPlan: planName };
   } else {
-    return { status: false, defaultPlan: '' };
-  }
+  return { status: false, defaultPlan: '' };
+  // }
 };
-
+const plan_map: { [index: string]: { hdfcCustomerType: string; plan: string; rank: number } } = {
+  '7': { hdfcCustomerType: '', plan: 'HDFCPlatinum', rank: 3 },
+  H: { hdfcCustomerType: '', plan: 'HDFCPlatinum', rank: 3 },
+  U: { hdfcCustomerType: '', plan: 'HDFCPlatinum', rank: 3 },
+  '18': { hdfcCustomerType: '', plan: 'HDFCPlatinum', rank: 3 },
+  '2': { hdfcCustomerType: '', plan: 'HDFCGold', rank: 2 },
+  W: { hdfcCustomerType: '', plan: 'HDFCGold', rank: 2 },
+  '20': { hdfcCustomerType: '', plan: 'HDFCGold', rank: 2 },
+  '8': { hdfcCustomerType: '', plan: 'HDFCGold', rank: 2 },
+  O: { hdfcCustomerType: '', plan: 'HDFCGold', rank: 2 },
+  S: { hdfcCustomerType: '', plan: 'HDFCGold', rank: 2 },
+  '4': { hdfcCustomerType: '', plan: 'HDFCGold', rank: 2 },
+  '19': { hdfcCustomerType: '', plan: 'HDFCGold', rank: 2 },
+  F: { hdfcCustomerType: '', plan: 'HDFCGold', rank: 2 },
+  E: { hdfcCustomerType: '', plan: 'HDFCGold', rank: 2 },
+  R: { hdfcCustomerType: '', plan: 'HDFCGold', rank: 2 },
+  '0': { hdfcCustomerType: '', plan: 'HDFCSilver', rank: 1 },
+  '9': { hdfcCustomerType: '', plan: 'HDFCSilver', rank: 1 },
+  '26': { hdfcCustomerType: '', plan: 'HDFCSilver', rank: 1 },
+};
+function defaultPlan(params: { [index: string]: string | number }[]): string {
+  let matchingPlan: { hdfcCustomerType: string; plan: string; rank: number } | null = null;
+  let current_rank = 0;
+  for (let index = 0; index < params.length; index++) {
+    if (current_rank < plan_map[params[index]['ethnicCode']].rank) {
+      current_rank = plan_map[params[index]['ethnicCode']].rank;
+      matchingPlan = plan_map[params[index]['ethnicCode']];
+    }
+  }
+  return matchingPlan ? matchingPlan.plan : '';
+}
 export const validateHDFCCustomer = {
   Query: {
     identifyHdfcCustomer,
     validateHdfcOTP,
   },
 };
-
-// const checkFromHDFC = function(mobileNumber: string) {
-//   if (parseInt(mobileNumber, 10) % 2 == 0) {
-//     return true;
-//   }
-//   return false;
-// };
-
-// const generateOTP = function() {
-//   return '123456';
-// };
-
-// const validateOTP = function(otpAttrs: any) {
-//   const { otp, token } = otpAttrs;
-//   return token == 'DummyToken' && otp == '123456' ? true : false;
-// };
