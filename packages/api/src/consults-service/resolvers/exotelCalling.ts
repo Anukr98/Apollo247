@@ -81,6 +81,7 @@ type ExotelRequest = {
   To?: string;
   CallerId: string | undefined;
   Url?: string;
+  CustomField?: string
 };
 
 type callInputs = {

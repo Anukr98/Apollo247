@@ -585,6 +585,9 @@ exports.appointmentReminderTemplate = (req, res) => {
     const appointmentDateTime = format(new Date(urlObject.query.CustomField.split('_')[0]), "h m a");
     const appointmentType = urlObject.query.CustomField.split('_')[1];
 
+    console.log(`Hi, You have an upcoming appointment at ${appointmentDateTime} today from Apollo 247. 
+    It will be ${appointmentType} consultation.Dial 1 to repeat the same message. `);
+
     return res.contentType('text/plain').status(200).send(`Hi, You have an upcoming appointment at ${appointmentDateTime} today from Apollo 247. 
          It will be ${appointmentType} consultation.Dial 1 to repeat the same message. `);
 
