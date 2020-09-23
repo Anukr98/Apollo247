@@ -131,7 +131,6 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       });
     });
 
-    console.log('JDCaseSheetDetails::', JDCaseSheetDetails);
     return this.save(JDCaseSheetDetails).catch((appointmentError) => {
       throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { appointmentError });
     });
