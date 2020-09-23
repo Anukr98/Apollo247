@@ -49,6 +49,7 @@ export class PatientMedicalHistoryRepository extends Repository<PatientMedicalHi
   }
 
   upsertPatientMedicalHistory(inputArguments: Partial<PatientMedicalHistory>, patientData: Patient){
+    let response: any;
     const medicalHistoryInputs: Partial<PatientMedicalHistory> = {
       patient: patientData,
     };
@@ -110,10 +111,11 @@ export class PatientMedicalHistoryRepository extends Repository<PatientMedicalHi
     const medicalHistoryRecord = patientData.patientMedicalHistory;
     if (medicalHistoryRecord == null) {
       //create
-      this.savePatientMedicalHistory(medicalHistoryInputs);
+      response = this.savePatientMedicalHistory(medicalHistoryInputs);
     } else {
       //update
-      this.updatePatientMedicalHistory(medicalHistoryRecord.id, medicalHistoryInputs);
+      response = this.updatePatientMedicalHistory(medicalHistoryRecord.id, medicalHistoryInputs);
     }
+    return response;
   }
 }

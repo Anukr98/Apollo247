@@ -42,6 +42,7 @@ export class PatientLifeStyleRepository extends Repository<PatientLifeStyle> {
   }
 
   upsertPatientLifeStyle(inputArguments: Partial<PatientLifeStyle>, patientData: Patient){
+    let response: any;
     if (inputArguments.description || inputArguments.occupationHistory) {
       const lifeStyleInputs: Partial<PatientLifeStyle> = {
         patient: patientData,
@@ -59,11 +60,12 @@ export class PatientLifeStyleRepository extends Repository<PatientLifeStyle> {
   
       if (lifeStyleRecord == null) {
         //create
-        this.savePatientLifeStyle(lifeStyleInputs);
+        response = this.savePatientLifeStyle(lifeStyleInputs);
       } else {
         //update
-        this.updatePatientLifeStyle(lifeStyleRecord.id, lifeStyleInputs);
+        response = this.updatePatientLifeStyle(lifeStyleRecord.id, lifeStyleInputs);
       }
     }
+    return response;
   }
 }

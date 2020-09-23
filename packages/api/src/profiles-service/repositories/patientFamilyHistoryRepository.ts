@@ -42,6 +42,7 @@ export class PatientFamilyHistoryRepository extends Repository<PatientFamilyHist
   }
 
   upsertPatientFamilyHistory(description: string, patientData: Patient) {
+    let response: any;
     if (!(description === undefined)) {
       const familyHistoryInputs: Partial<PatientFamilyHistory> = {
         patient: patientData,
@@ -53,11 +54,12 @@ export class PatientFamilyHistoryRepository extends Repository<PatientFamilyHist
         : patientData.familyHistory;
       if (familyHistoryRecord == null) {
         //create
-        this.savePatientFamilyHistory(familyHistoryInputs);
+        response = this.savePatientFamilyHistory(familyHistoryInputs);
       } else {
         //update
-        this.updatePatientFamilyHistory(familyHistoryRecord.id, familyHistoryInputs);
+        response = this.updatePatientFamilyHistory(familyHistoryRecord.id, familyHistoryInputs);
       }
     }
+    return response;
   }
 }

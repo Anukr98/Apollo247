@@ -2096,6 +2096,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
   caseSheetAppointmentHistoryUpdate(appointmentData:Appointment,caseSheetAttrs: Partial<CaseSheet>){
+    let response: any;
     if (appointmentData) {
       let reason = ApiConstants.CASESHEET_MODIFIED_HISTORY.toString();
       if (caseSheetAttrs.doctorType == DoctorType.JUNIOR) {
@@ -2112,7 +2113,8 @@ export class AppointmentRepository extends Repository<Appointment> {
         userName: caseSheetAttrs.createdDoctorId,
         reason,
       };
-      this.saveAppointmentHistory(historyAttrs);
+      response = this.saveAppointmentHistory(historyAttrs);
     }
+    return response;
   }
 }

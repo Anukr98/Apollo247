@@ -818,31 +818,57 @@ const modifyCaseSheet: Resolver<
   ]);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
-  //familyHistory upsert starts
   const familyHistoryRepo = patientsDb.getCustomRepository(PatientFamilyHistoryRepository);
-  familyHistoryRepo.upsertPatientFamilyHistory(inputArguments.familyHistory,patientData);
-  //familyHistory upsert ends
-
-  //lifestyle upsert starts
   const lifeStyleRepo = patientsDb.getCustomRepository(PatientLifeStyleRepository);
-  lifeStyleRepo.upsertPatientLifeStyle(
-    { description: inputArguments.lifeStyle, occupationHistory: inputArguments.occupationHistory },
-    patientData
-  );
-  //lifestyle upsert ends
-
-  //medicalHistory upsert starts
   const medicalHistoryRepo = patientsDb.getCustomRepository(PatientMedicalHistoryRepository);
-  medicalHistoryRepo.upsertPatientMedicalHistory(inputArguments,patientData);
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+
+  const promises: object[] = [
+    familyHistoryRepo
+      .upsertPatientFamilyHistory(inputArguments.familyHistory, patientData)
+      .catch((error: any) => {
+        throw new AphError(AphErrorMessages.SAVE_PATIENT_FAMILY_HISTORY_ERROR, undefined, {
+          error,
+        });
+      }),
+    lifeStyleRepo
+      .upsertPatientLifeStyle(
+        {
+          description: inputArguments.lifeStyle,
+          occupationHistory: inputArguments.occupationHistory,
+        },
+        patientData
+      )
+      .catch((error: any) => {
+        throw new AphError(AphErrorMessages.SAVE_PATIENT_LIFE_STYLE_ERROR, undefined, { error });
+      }),
+    medicalHistoryRepo
+      .upsertPatientMedicalHistory(inputArguments, patientData)
+      .catch((error: any) => {
+        throw new AphError(AphErrorMessages.SAVE_PATIENT_MEDICAL_HISTORY_ERROR, undefined, {
+          error,
+        });
+      }),
+  ];
 
   delete getCaseSheetData.status;
   //medicalHistory upsert ends
-  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
-  await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs, getCaseSheetData);
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-
-  const appointmentData = getCaseSheetData.appointment;
-  appointmentRepo.caseSheetAppointmentHistoryUpdate(appointmentData,caseSheetAttrs);
+  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;  
+  promises.push(
+    caseSheetRepo
+      .updateCaseSheet(inputArguments.id, caseSheetAttrs, getCaseSheetData)
+      .catch((error: any) => {
+        throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { error });
+      })
+  );
+  promises.push(
+    appointmentRepo
+      .caseSheetAppointmentHistoryUpdate(getCaseSheetData.appointment, caseSheetAttrs)
+      .catch((error: any) => {
+        throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_HISTORY_ERROR, undefined, { error });
+      })
+  );
+  await Promise.all(promises);
 
   return getCaseSheetData;
 };
