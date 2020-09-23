@@ -102,7 +102,7 @@ const updatePatient: Resolver<
   if (patient.partnerId && patient.partnerId == PartnerId.HDFCBANK) {
     console.log('referralCode', referralCode);
     if (referralCode != PartnerId.HDFCBANK) {
-      throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
+      referralCode = PartnerId.HDFCBANK;
     }
   } else {
     const identifyCustomer = checkForRegisteredPartner(
