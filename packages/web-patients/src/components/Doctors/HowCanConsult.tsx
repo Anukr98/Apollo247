@@ -278,10 +278,13 @@ const useStyles = makeStyles((theme: Theme) => {
     followUpText: {
       backgroundColor: '#DBEBEE',
       borderRadius: 5,
-      padding: '14px 12px',
-      fontSize: 13,
+      padding: '10px 12px',
+      fontSize: 12,
       fontFamily: 'IBM Plex Sans',
       lineHeight: '18px',
+      fontWeight: 'normal',
+      color: '#225E6F',
+      marginBottom: 15,
     },
   });
 });
@@ -312,10 +315,10 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
     doctorAvailableOnlineSlot.length > 0 && doctorAvailablePhysicalSlots.length > 0
       ? ConsultMode.BOTH
       : doctorAvailableOnlineSlot.length > 0
-      ? ConsultMode.ONLINE
-      : doctorAvailablePhysicalSlots.length > 0
-      ? ConsultMode.PHYSICAL
-      : null;
+        ? ConsultMode.ONLINE
+        : doctorAvailablePhysicalSlots.length > 0
+          ? ConsultMode.PHYSICAL
+          : null;
 
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
 
@@ -362,7 +365,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span
                   className={`${classes.availability} ${
                     differenceInOnlineMinutes < 15 ? classes.availableNow : null
-                  }`}
+                    }`}
                 >
                   {availabilityMarkup('online')}
                 </span>
@@ -384,7 +387,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span
                   className={`${classes.availability} ${
                     differenceInPhysicalMinutes < 15 ? classes.availableNow : null
-                  }`}
+                    }`}
                 >
                   {availabilityMarkup('physical')}
                 </span>
@@ -415,8 +418,8 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                       ? classes.availableSoon
                       : ''
                     : differenceInOnlineMinutes < 15
-                    ? classes.availableSoon
-                    : ''
+                      ? classes.availableSoon
+                      : ''
                 }
               >
                 {availabilityMarkup(physicalDirection ? 'physical' : 'online')}
@@ -546,7 +549,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               }}
               // fullWidth
               color="primary"
-              // className={classes.bottomActions}
+            // className={classes.bottomActions}
             >
               {popupLoading ? <CircularProgress size={22} color="secondary" /> : 'BOOK APPOINTMENT'}
             </AphButton>
