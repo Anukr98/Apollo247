@@ -368,10 +368,44 @@ const styles = StyleSheet.create({
   textInputContainerStyles: {
     backgroundColor: 'white',
     alignItems: 'center',
+    paddingBottom: 15,
+  },
+  inputMainContainer: {
+    width: width,
+    minHeight: 66,
+    backgroundColor: 'white',
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 15,
+    bottom: 20,
+  },
+  inputStyles: {
+    marginLeft: 20,
+    marginTop: 5,
+    width: width - 130,
+    ...theme.fonts.IBMPlexSansMedium(16),
+    display: 'flex',
+    flexGrow: 1,
+    flexWrap: 'wrap',
+    alignSelf: 'center',
+  },
+  sendButtonStyles: {
+    width: 50,
+    height: 50,
+    position: 'absolute',
+    zIndex: 1001,
+    right: 5,
+    bottom: 30,
+  },
+  uploadButtonStyles: {
+    width: 65,
+    height: 60,
+    position: 'absolute',
+    zIndex: 1001,
+    left: 5,
+    bottom: 20,
+    alignItems: 'center',
+    paddingVertical: 5,
   },
 });
 
@@ -382,7 +416,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const fromIncomingCall = props.navigation.state.params!.isCall;
   const { isIphoneX } = DeviceHelper();
-  const [contentHeight, setContentHeight] = useState(0);
+  const [contentHeight, setContentHeight] = useState(40);
 
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
@@ -1785,7 +1819,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     sessionDisconnected: (event: string) => {
       console.log('session stream sessionDisconnected!', event);
       eventsAfterConnectionDestroyed();
-      // disconnectCallText();
     },
     sessionReconnected: (event: string) => {
       setSnackbarState(false);
@@ -1806,7 +1839,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     streamDestroyed: (event: string) => {
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
       eventsAfterConnectionDestroyed();
-      // disconnectCallText();
     },
     streamPropertyChanged: (event: OptntokChangeProp) => {
       console.log('session streamPropertyChanged!', event); // is called when the doctor network is disconnected
@@ -5229,7 +5261,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <FlatList
           style={{
             flex: 1,
-            marginBottom: 30,
+            marginBottom: 80,
           }}
           // ListHeaderComponent={renderChatHeader()}
           keyboardShouldPersistTaps="always"
@@ -6278,37 +6310,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setLoading(false);
   };
 
-  const disconnectCallText = () => {
-    pubnub.publish(
-      {
-        message: {
-          isTyping: true,
-          message: isAudio.current ? 'Audio call ended' : 'Video call ended',
-          duration: callTimerStarted,
-          id: patientId,
-          messageDate: new Date(),
-        },
-        channel: channel,
-        storeInHistory: true,
-      },
-      (status, response) => {}
-    );
-
-    pubnub.publish(
-      {
-        message: {
-          isTyping: true,
-          message: endCallMsg,
-          id: patientId,
-          messageDate: new Date(),
-        },
-        channel: channel,
-        storeInHistory: true,
-      },
-      (status, response) => {}
-    );
-  };
-
   const options = {
     quality: 0.1,
     storageOptions: {
@@ -6928,188 +6929,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ) : null}
         {renderChatView()}
         {Platform.OS == 'ios' ? (
-          <View
-            style={{
-              width: width,
-              height: 66,
-              backgroundColor: 'white',
-              bottom: isIphoneX() ? 36 : 0,
-              top: isIphoneX() ? 2 : 0,
-              opacity: disableChat ? 0.5 : 1,
-            }}
-          >
-            <View style={{ flexDirection: 'row', width: width }}>
-              <TouchableOpacity
-                activeOpacity={1}
-                style={{
-                  width: 58,
-                  height: 50,
-                  marginLeft: 5,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1000,
-                }}
-                onPress={async () => {
-                  if (!disableChat) {
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
-                    setDropdownVisible(!isDropdownVisible);
-                  }
-                }}
-              >
-                <UploadHealthRecords
-                  style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
-                />
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
-                    marginTop: 2,
-                    textAlign: 'center',
-                  }}
-                >
-                  {'Upload Records'}
-                </Text>
-              </TouchableOpacity>
-              <View style={styles.textInputContainerStyles}>
-                <TextInput
-                  autoCorrect={false}
-                  placeholder="Type here…"
-                  multiline={true}
-                  style={{
-                    marginLeft: 6,
-                    marginTop: 5,
-                    height: Math.max(35, contentHeight),
-                    width: width - 120,
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    display: 'flex',
-                    flexGrow: 1,
-                    flexWrap: 'wrap',
-                    alignSelf: 'center',
-                  }}
-                  onContentSizeChange={(event) => {
-                    setContentHeight(event.nativeEvent.contentSize.height);
-                  }}
-                  numberOfLines={6}
-                  value={messageText}
-                  blurOnSubmit={false}
-                  // returnKeyType="send"
-                  onChangeText={(value) => {
-                    setMessageText(value);
-                    setDropdownVisible(false);
-                  }}
-                  onFocus={() => setDropdownVisible(false)}
-                  editable={!disableChat}
-                />
-                <View
-                  style={{
-                    marginLeft: 6,
-                    marginTop: 0,
-                    height: 2,
-                    width: width - 120,
-                    backgroundColor: '#00b38e',
-                  }}
-                />
-              </View>
-              <TouchableOpacity
-                activeOpacity={1}
-                style={{
-                  width: 50,
-                  height: 50,
-                  position: 'absolute',
-                  top: 10,
-                  right: 5,
-                }}
-                onPress={async () => {
-                  if (!disableChat) {
-                    const textMessage = messageText.trim();
-
-                    if (textMessage.length == 0) {
-                      Alert.alert('Apollo', 'Please write something to send message.');
-                      CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
-                      return;
-                    }
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
-
-                    send(textMessage);
-                    setContentHeight(35);
-                  }
-                }}
-              >
-                <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
-              </TouchableOpacity>
-            </View>
-            {displayChatQuestions && Platform.OS === 'ios' && (
-              <ChatQuestions
-                onItemDone={(value: { k: string; v: string[] }) => {
-                  console.log('and....', value);
-                  setAnswerData([value]);
-                }}
-                onDonePress={(values: { k: string; v: string[] }[]) => {
-                  setAnswerData(values);
-                  setDisplayChatQuestions(false);
-                  setDisplayUploadHealthRecords(true);
-                }}
+          <>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={[styles.uploadButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
+              onPress={async () => {
+                if (!disableChat) {
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                  setDropdownVisible(!isDropdownVisible);
+                }
+              }}
+            >
+              <UploadHealthRecords
+                style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
               />
-            )}
-          </View>
-        ) : (
-          //  <KeyboardAvoidingView behavior="padding" enabled>
-          <View
-            style={{
-              width: width,
-              height: 66,
-              backgroundColor: 'white',
-              bottom: isIphoneX() ? 36 : 0,
-              opacity: disableChat ? 0.5 : 1,
-            }}
-          >
-            <View style={{ flexDirection: 'row', width: width }}>
-              <TouchableOpacity
-                activeOpacity={1}
+              <Text
                 style={{
-                  width: 58,
-                  height: 50,
-                  marginLeft: 5,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1000,
-                }}
-                onPress={async () => {
-                  if (!disableChat) {
-                    consultWebEngageEvents(WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM);
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
-                    setDropdownVisible(!isDropdownVisible);
-                  }
+                  ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
+                  marginTop: 2,
+                  textAlign: 'center',
                 }}
               >
-                <UploadHealthRecords
-                  style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
-                />
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
-                    marginTop: 2,
-                    textAlign: 'center',
-                  }}
-                >
-                  {'Upload Records'}
-                </Text>
-              </TouchableOpacity>
+                {'Upload Records'}
+              </Text>
+            </TouchableOpacity>
+            <View style={[styles.inputMainContainer, { opacity: disableChat ? 0.5 : 1 }]}>
               <View style={styles.textInputContainerStyles}>
                 <TextInput
                   autoCorrect={false}
                   placeholder="Type here…"
                   multiline={true}
-                  style={{
-                    marginLeft: 6,
-                    marginTop: 5,
-                    height: Math.max(35, contentHeight),
-                    width: width - 120,
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    display: 'flex',
-                    flexGrow: 1,
-                    flexWrap: 'wrap',
-                    alignSelf: 'center',
-                  }}
+                  style={[styles.inputStyles, { height: Math.max(40, contentHeight) }]}
                   onContentSizeChange={(event) => {
                     setContentHeight(event.nativeEvent.contentSize.height);
                   }}
@@ -7126,46 +6976,131 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
                 <View
                   style={{
-                    marginLeft: 6,
+                    marginLeft: 20,
                     marginTop: 0,
                     height: 2,
-                    width: width - 120,
+                    width: width - 130,
                     backgroundColor: '#00b38e',
                   }}
                 />
               </View>
-              <TouchableOpacity
-                activeOpacity={1}
-                style={{
-                  width: 50,
-                  height: 50,
-                  position: 'absolute',
-                  top: 10,
-                  right: 5,
-                }}
-                onPress={async () => {
-                  if (!disableChat) {
-                    const textMessage = messageText.trim();
+              {displayChatQuestions && Platform.OS === 'ios' && (
+                <ChatQuestions
+                  onItemDone={(value: { k: string; v: string[] }) => {
+                    console.log('and....', value);
+                    setAnswerData([value]);
+                  }}
+                  onDonePress={(values: { k: string; v: string[] }[]) => {
+                    setAnswerData(values);
+                    setDisplayChatQuestions(false);
+                    setDisplayUploadHealthRecords(true);
+                  }}
+                />
+              )}
+            </View>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={[styles.sendButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
+              onPress={async () => {
+                if (!disableChat) {
+                  const textMessage = messageText.trim();
 
-                    if (textMessage.length == 0) {
-                      Alert.alert('Apollo', 'Please write something to send message.');
-                      CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
-                      return;
-                    }
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
-
-                    send(textMessage);
-                    setContentHeight(35);
+                  if (textMessage.length == 0) {
+                    Alert.alert('Apollo', 'Please write something to send message.');
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
+                    return;
                   }
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
+
+                  send(textMessage);
+                  setContentHeight(40);
+                }
+              }}
+            >
+              <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={[styles.uploadButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
+              onPress={async () => {
+                if (!disableChat) {
+                  consultWebEngageEvents(WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM);
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                  setDropdownVisible(!isDropdownVisible);
+                }
+              }}
+            >
+              <UploadHealthRecords
+                style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
+              />
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
+                  marginTop: 2,
+                  textAlign: 'center',
                 }}
               >
-                <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
-              </TouchableOpacity>
+                {'Upload Records'}
+              </Text>
+            </TouchableOpacity>
+            <View style={[styles.inputMainContainer, { opacity: disableChat ? 0.5 : 1 }]}>
+              <View style={styles.textInputContainerStyles}>
+                <TextInput
+                  autoCorrect={false}
+                  placeholder="Type here…"
+                  multiline={true}
+                  style={[styles.inputStyles, { height: Math.max(40, contentHeight) }]}
+                  onContentSizeChange={(event) => {
+                    setContentHeight(event.nativeEvent.contentSize.height);
+                  }}
+                  numberOfLines={6}
+                  value={messageText}
+                  blurOnSubmit={false}
+                  // returnKeyType="send"
+                  onChangeText={(value) => {
+                    setMessageText(value);
+                    setDropdownVisible(false);
+                  }}
+                  onFocus={() => setDropdownVisible(false)}
+                  editable={!disableChat}
+                />
+                <View
+                  style={{
+                    marginLeft: 20,
+                    marginTop: 0,
+                    height: 2,
+                    width: width - 130,
+                    backgroundColor: '#00b38e',
+                  }}
+                />
+              </View>
             </View>
-          </View>
-        )
-        // </KeyboardAvoidingView>
-        }
+            <TouchableOpacity
+              activeOpacity={1}
+              style={[styles.sendButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
+              onPress={async () => {
+                if (!disableChat) {
+                  const textMessage = messageText.trim();
+
+                  if (textMessage.length == 0) {
+                    Alert.alert('Apollo', 'Please write something to send message.');
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
+                    return;
+                  }
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
+
+                  send(textMessage);
+                  setContentHeight(40);
+                }
+              }}
+            >
+              <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
+            </TouchableOpacity>
+          </>
+        )}
 
         {displayChatQuestions && Platform.OS === 'android' && (
           <ChatQuestions
