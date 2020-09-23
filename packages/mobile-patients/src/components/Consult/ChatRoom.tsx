@@ -7032,7 +7032,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <>
             <TouchableOpacity
               activeOpacity={1}
-              style={[styles.uploadButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
+              style={[styles.uploadButtonStyles, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}
               onPress={async () => {
                 if (!disableChat) {
                   consultWebEngageEvents(WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM);
@@ -7054,7 +7054,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 {'Upload Records'}
               </Text>
             </TouchableOpacity>
-            <View style={[styles.inputMainContainer, { opacity: disableChat ? 0.5 : 1 }]}>
+            <View
+              style={[styles.inputMainContainer, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}
+            >
               <View style={styles.textInputContainerStyles}>
                 <TextInput
                   autoCorrect={false}
@@ -7088,7 +7090,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </View>
             <TouchableOpacity
               activeOpacity={1}
-              style={[styles.sendButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
+              style={[styles.sendButtonStyles, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}
               onPress={async () => {
                 if (!disableChat) {
                   const textMessage = messageText.trim();
