@@ -1960,7 +1960,23 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const onStartConsult = () => {
+    const text = {
+      id: props.doctorId,
+      message: startConsult,
+      isTyping: true,
+      automatedText: currentPatient!.displayName + ' has joined the consult room!',
+      messageDate: new Date(),
+      sentBy: REQUEST_ROLES.DOCTOR,
+    };
     subscribeBrowserButtonsListener();
+    pubnub.publish(
+      {
+        message: text,
+        channel: channel,
+        storeInHistory: true,
+      },
+      (status: any, response: any) => {}
+    );
   };
   const onStopConsult = (isResend: boolean) => {
     const text = {
@@ -2397,6 +2413,20 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           )}
           <Link
             to={localStorage.getItem('callBackUrl')}
+            onClick={() => {
+              pubnub.publish(
+                {
+                  message: {
+                    isTyping: true,
+                    message: leaveChatRoom,
+                  },
+                  channel: channel,
+                  storeInHistory: false,
+                  sendByPost: false,
+                },
+                (status: any, response: any) => {}
+              );
+            }}
           >
             <div className={classes.backArrow}>
               <img className={classes.blackArrow} src={require('images/ic_back.svg')} />

@@ -38,25 +38,6 @@ export const GET_ALL_SPECIALTIES = gql`
     }
   }
 `;
-export const GET_SET_PARTICIPANTS_STATUS = gql`
- query setAndGetNumberOfParticipants(
-    $appointmentId: String
-    $userType: USER_TYPE
-    $sourceType: BOOKINGSOURCE
-    $deviceType: DEVICETYPE
-    $userStatus: USER_STATUS
-  ) {
-    setAndGetNumberOfParticipants(
-    appointmentId: $appointmentId
-    userType: $userType
-    sourceType: $sourceType
-    deviceType: $deviceType
-    userStatus: $userStatus
-  ) {
-    NUMBER_OF_PARTIPANTS
-  }
- }
-`;
 export const MAKE_TEAM_DOCTOR_ACTIVE = gql`
   mutation MakeTeamDoctorActive($associatedDoctor: String, $starDoctor: String) {
     makeTeamDoctorActive(associatedDoctor: $associatedDoctor, starDoctor: $starDoctor)
