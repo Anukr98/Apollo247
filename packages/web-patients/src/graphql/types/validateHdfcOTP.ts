@@ -20,4 +20,5 @@ export interface validateHdfcOTP {
 export interface validateHdfcOTPVariables {
   otp: string;
   token: string;
+  dateOfBirth: any;
 }

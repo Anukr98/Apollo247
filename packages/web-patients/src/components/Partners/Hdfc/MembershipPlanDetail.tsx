@@ -277,15 +277,15 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     silver: {
-      background: `url(${require('images/hdfc/silver.svg')}) no-repeat 0 0`,
+      background: `url(${require('images/hdfc/silver.png')}) no-repeat 0 0`,
       backgroundSize: 'cover',
     },
     gold: {
-      background: `url(${require('images/hdfc/gold.svg')}) no-repeat 0 0`,
+      background: `url(${require('images/hdfc/gold.png')}) no-repeat 0 0`,
       backgroundSize: 'cover',
     },
     platinum: {
-      background: `url(${require('images/hdfc/platinum.svg')}) no-repeat 0 0`,
+      background: `url(${require('images/hdfc/platinum.png')}) no-repeat 0 0`,
       backgroundSize: 'cover',
     },
     benefitDesc: {
@@ -659,6 +659,11 @@ export const MembershipPlanDetail: React.FC = (props) => {
       });
   }, []);
 
+  // const handleCTAClick = (cta_action: any) => {
+  //   if(cta_action.meta.action=='CALL_EXOTEL_API'){console.log('call exotel api')}
+  //   else if(cta_action.meta.action=='SPECIALITY_LISTING'){history.push(clientRoutes.welcome());}
+  // }
+
   return (
     <div className={classes.mainContainer}>
       <header className={`${classes.header} ${classes.headerFixed}`}>
@@ -709,7 +714,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
                   <img src={getMedalImage(planName)} alt="Gold MemberShip" />
                   <Typography component="h1">{planName}</Typography>
                   <Typography className={classes.benefitDesc}>Availing Benefits worth</Typography>
-                  <Typography className={classes.cardWorth}>Rs. {benefitsWorth}</Typography>
+                  <Typography className={classes.cardWorth}>Rs. {benefitsWorth}+</Typography>
                   <Typography className={classes.cardDesc}>
                     {`A host of benefits await you with our`} {planName}{' '}
                     {`curated for HDFC customers`}
@@ -791,7 +796,10 @@ export const MembershipPlanDetail: React.FC = (props) => {
                                 <Typography component="h2">{item.header_content}</Typography>
                                 <Typography>{item.description}</Typography>
                                 {item.cta_label != 'NULL' && active && (
-                                  <AphButton href={clientRoutes.welcome()}>
+                                  <AphButton
+                                    // onClick={() => handleCTAClick(item.cta_action)}
+                                    href={clientRoutes.welcome()}
+                                  >
                                     {item.cta_label}
                                   </AphButton>
                                 )}
