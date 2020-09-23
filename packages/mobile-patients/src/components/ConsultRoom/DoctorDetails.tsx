@@ -220,6 +220,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { VirtualConsultationFee } = useAppCommonData();
   const [consultType, setConsultType] = useState<ConsultMode>(ConsultMode.BOTH);
   const [showVideo, setShowVideo] = useState<boolean>(false);
+  const [isFocused, setisFocused] = useState<boolean>(false);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const [secretaryData, setSecretaryData] = useState<any>([]);
 
@@ -229,6 +230,19 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setisFocused(true);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setisFocused(false);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  });
 
   const client = useApolloClient();
 
@@ -246,23 +260,24 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   });
 
   useEffect(() => {
-    setWebEngageScreenNames('Doctor Profile');
-    getNetStatus()
-      .then((status) => {
-        if (status) {
-          fetchDoctorDetails();
-          getSecretaryData();
-          fetchAppointmentHistory();
-        } else {
-          setshowSpinner(false);
-          setshowOfflinePopup(true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('DoctorDetails_getNetStatus', e);
-      });
+    if (isFocused) {
+      setWebEngageScreenNames('Doctor Profile');
+      getNetStatus()
+        .then((status) => {
+          if (status) {
+            fetchDoctorDetails();
+            fetchAppointmentHistory();
+          } else {
+            setshowSpinner(false);
+            setshowOfflinePopup(true);
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('DoctorDetails_getNetStatus', e);
+        });
+    }
     // callPermissions();
-  }, []);
+  }, [isFocused]);
 
   useEffect(() => {
     const display = props.navigation.state.params
@@ -760,7 +775,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     }}
                   >
                     <View>
-                      {doctorDetails.doctorType !== DoctorType.PAYROLL && (
+                      {doctorDetails.doctorType !== DoctorType.PAYROLL ? (
                         <>
                           <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
                           <Text style={styles.onlineConsultAmount}>
@@ -772,6 +787,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                             availableTime={physicalAvailableTime}
                           />
                         </>
+                      ) : (
+                        <Text style={styles.onlineConsultLabel}>
+                          {string.consultType.availableForInAppConsultsOnly.replace(
+                            '{{doctor}}',
+                            doctorDetails ? `${doctorDetails.fullName}` : ''
+                          )}
+                        </Text>
                       )}
                     </View>
                   </TouchableOpacity>
