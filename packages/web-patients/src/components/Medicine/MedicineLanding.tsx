@@ -657,9 +657,9 @@ const MedicineLanding: React.FC = (props: any) => {
     setIsUploadPreDialogOpen(true);
   };
   const metaTagProps = {
-    title: 'Online Medicine Order & Delivery, Buy Medicines from Apollo Pharmacy',
+    title: 'Apollo 247 Pharmacy-Online Medicine Order, Fastest Delivery',
     description:
-      "Online Medicine Order - Buy medicines online from Apollo Pharmacy Stores (India's largest pharmacy chain) and get the home delivery. All kinds on medicines, health products & equipments are available at our online medicine store.",
+      "Apollo 247 Pharmacy- Online Medicine Order - Buy medicines online from Apollo Pharmacy Stores (India's largest pharmacy chain) and experience the fastest home delivery. All kinds of medicines, health products & equipments are available at our online medicine store.",
     canonicalLink:
       window && window.location && window.location.origin && `${window.location.origin}/medicines`,
   };
