@@ -407,6 +407,7 @@ export const MyMembership: React.FC = (props) => {
   const [isHowToAvail, setIsHowToAvail] = React.useState<boolean>(false);
   const apolloClient = useApolloClient();
   const [loading, setLoading] = React.useState<boolean>(true);
+  const [active, setActive] = React.useState<boolean>(false);
 
   const [currentSubscription, setCurrentSubscription] = React.useState([]);
   const [upgradableSubscription, setUpgradableSubscription] = React.useState<
@@ -430,6 +431,10 @@ export const MyMembership: React.FC = (props) => {
         setUpgradableSubscription(
           response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to
         );
+        setActive(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].subscriptionStatus ===
+            'active'
+        );
         setLoading(false);
       })
       .catch((error) => {
@@ -438,12 +443,15 @@ export const MyMembership: React.FC = (props) => {
   }, []);
 
   const getMedalImage = (planName: String) => {
-    if (planName == 'GOLD+ PLAN') {
+    if (!active) {
+      return require('images/hdfc/locked.svg');
+    } else if (active && planName == 'GOLD+ PLAN') {
       return require('images/hdfc/medal_gold.svg');
-    }
-    if (planName == 'PLATINUM+ PLAN') {
+    } else if (active && planName == 'PLATINUM+ PLAN') {
       return require('images/hdfc/medal_platinum.svg');
-    } else return require('images/hdfc/medal_silver.svg');
+    } else if (active && planName == 'SILVER+ PLAN') {
+      return require('images/hdfc/medal_silver.svg');
+    }
   };
 
   return (

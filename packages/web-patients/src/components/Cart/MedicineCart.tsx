@@ -732,7 +732,7 @@ export const MedicineCart: React.FC = (props) => {
 
   const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
   var packageId: string;
-  if (userSubscriptions) {
+  if (userSubscriptions && userSubscriptions[0] && userSubscriptions[0].status == 'ACTIVE') {
     packageId = `${userSubscriptions[0].group_plan.group.name}:${userSubscriptions[0].group_plan.plan_id}`;
   }
 

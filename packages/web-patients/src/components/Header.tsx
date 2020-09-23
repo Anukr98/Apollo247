@@ -366,12 +366,12 @@ export const Header: React.FC<HeaderProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    const userSubscriptionsLocalStorage = JSON.parse(localStorage.getItem('userSubscriptions'));
-    userSubscriptionsLocalStorage ? setUserSubscriptions(userSubscriptionsLocalStorage) : '';
+    // const userSubscriptionsLocalStorage = JSON.parse(localStorage.getItem('userSubscriptions'));
+    // userSubscriptionsLocalStorage ? setUserSubscriptions(userSubscriptionsLocalStorage) : '';
     if (
       isSignedIn &&
-      userSubscriptions.length == 0 &&
-      (userSubscriptionsLocalStorage == null || userSubscriptionsLocalStorage.length == 0)
+      userSubscriptions.length == 0
+      // &&  (userSubscriptionsLocalStorage == null || userSubscriptionsLocalStorage.length == 0)
     ) {
       apolloClient
         .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({

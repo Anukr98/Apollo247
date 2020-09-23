@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, CircularProgress } from '@material-ui/core';
+import { useHistory } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { AphButton } from '@aph/web-ui-components';
@@ -596,7 +597,9 @@ export const MembershipPlanDetail: React.FC = (props) => {
   const [planName, setPlanName] = React.useState<string>('');
   const [benefitsWorth, setBenefitsWorth] = React.useState<string>('');
   const [minimumTransactionValue, setMinimumTransactionValue] = React.useState<string>('');
+
   const apolloClient = useApolloClient();
+  const history = useHistory();
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -659,10 +662,33 @@ export const MembershipPlanDetail: React.FC = (props) => {
       });
   }, []);
 
-  // const handleCTAClick = (cta_action: any) => {
-  //   if(cta_action.meta.action=='CALL_EXOTEL_API'){console.log('call exotel api')}
-  //   else if(cta_action.meta.action=='SPECIALITY_LISTING'){history.push(clientRoutes.welcome());}
-  // }
+  const handleWhatsappChat = (number: String, message: String) => {
+    window.open(`https://api.whatsapp.com/send?phone=91${number}&message=${message}`);
+  };
+
+  const handleCTAClick = (cta_action: any) => {
+    if (cta_action.meta.type == 'REDIRECT') {
+      if (cta_action.meta.action == 'SPECIALITY_LISTING') {
+        history.push(clientRoutes.specialityListing());
+      } else if (cta_action.meta.action == 'PHARMACY_LANDING') {
+        history.push(clientRoutes.medicines());
+      } else if (cta_action.meta.action == 'PHR') {
+        history.push(clientRoutes.healthRecords());
+      } else if (cta_action.meta.action == 'DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED') {
+        history.push(clientRoutes.doctorsLanding());
+      } else if (cta_action.meta.action == 'DIAGNOSTICS_LANDING') {
+        history.push(clientRoutes.tests());
+      }
+    } else if (cta_action.meta.type == 'CALL_API') {
+      if (cta_action.meta.action == 'CALL_EXOTEL_API') {
+        console.log('call exotel api');
+      }
+    } else if (cta_action.meta.type == 'WHATSAPP_OPEN_CHAT') {
+      handleWhatsappChat(cta_action.meta.action, cta_action.meta.message);
+    } else {
+      history.push(clientRoutes.tests());
+    }
+  };
 
   return (
     <div className={classes.mainContainer}>
@@ -795,10 +821,11 @@ export const MembershipPlanDetail: React.FC = (props) => {
                               <div className={classes.couponCard}>
                                 <Typography component="h2">{item.header_content}</Typography>
                                 <Typography>{item.description}</Typography>
-                                {item.cta_label != 'NULL' && active && (
+                                {item.cta_label != 'NULL' && (
                                   <AphButton
-                                    // onClick={() => handleCTAClick(item.cta_action)}
-                                    href={clientRoutes.welcome()}
+                                    disabled={!active}
+                                    onClick={() => handleCTAClick(item.cta_action)}
+                                    // href={clientRoutes.welcome()}
                                   >
                                     {item.cta_label}
                                   </AphButton>
