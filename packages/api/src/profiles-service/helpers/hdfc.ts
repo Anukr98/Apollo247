@@ -226,7 +226,7 @@ async function decryptHighResponse(response: any) {
 
 async function highRequest(base_request: any, url: String, historyToken: string = '') {
   const key = randomStringGenerator(32);
-  const privateKey = fs.readFileSync(process.env.APOLLO_CERTIFICATE_KEY);
+  const privateKey = fs.readFileSync(`${process.env.APOLLO_CERTIFICATE_KEY}`);
   const jwt_request = jwt.sign(base_request, privateKey, { algorithm: 'RS256' });
   let iv = randomStringGenerator(16);
   let RequestSignatureEncryptedValue = cryptojs.AES.encrypt(
@@ -250,7 +250,7 @@ async function highRequest(base_request: any, url: String, historyToken: string 
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      apiKey: process.env.HDFC_API_KEY,
+      apiKey: `${process.env.HDFC_API_KEY}`,
     },
     body: JSON.stringify(request),
     agent: sslConfiguredAgent,
@@ -303,7 +303,7 @@ async function mediumRequest(base_request: any, url: String, historyToken: Strin
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      apiKey: process.env.HDFC_API_KEY,
+      apiKey: `${process.env.HDFC_API_KEY}`,
     },
     body: JSON.stringify(request),
     agent: sslConfiguredAgent,
@@ -316,7 +316,7 @@ async function mediumRequest(base_request: any, url: String, historyToken: Strin
 }
 
 function symmetricKeyEncryptedValue(symmetricKey: String) {
-  const publicKey = fs.readFileSync(process.env.HDFC_PUBLIC_CERTIFICATE, 'utf8');
+  const publicKey = fs.readFileSync(`${process.env.HDFC_PUBLIC_CERTIFICATE}`, 'utf8');
   return crypto
     .publicEncrypt(
       { key: publicKey, padding: crypto.constants.RSA_PKCS1_PADDING },
@@ -326,7 +326,7 @@ function symmetricKeyEncryptedValue(symmetricKey: String) {
 }
 
 function symmetricKeyDecryptedValue(symmetricKey: string) {
-  const privatKey = fs.readFileSync(process.env.APOLLO_CERTIFICATE_KEY);
+  const privatKey = fs.readFileSync(`${process.env.APOLLO_CERTIFICATE_KEY}`);
   const value = crypto
     .privateDecrypt(
       { key: privatKey, padding: crypto.constants.RSA_PKCS1_PADDING },
@@ -349,16 +349,16 @@ function randomStringGenerator(length: number): string {
 
 // console.log(CustomerIdentification('9930207495', new Date('06-10-1960')));
 
-async function executeTestRun() {
-  // console.log(await generateOtp('9930207495'));
-  // console.log(await verifyOtp('123456', '9930207495'));
-  console.log(
-    await fetchEthnicCode(
-      new Date('06-10-1960'),
-      '9930207495',
-      'LBaersZSbFV8Mf-duaThViD3KJUhYDMfcqu7iNrtJHYZ-ZcF6ETOotkozensvZTd18yXNuejSxfi4tdPHL21T6QVomCrg9kOfrpOhOHdLjaWRqdLeokxlz5E-cuAcrnR-R0CHRGK1xJ97-oE1QxAAoBV2CWP1s81t94zglpwAWt4j3KV1d3Y4tJynCxn84lFV7_fokBJYepcNlLsUizB9tZFE7P8yypgO_DEdfK4VbAQcygTEIdp2qdePoiIdoxy50Y3gCj_v2-t0l-Oi90XVmXC6QLWOEXeb4PDbKdgKYG7I9r9cNPKYNnJFBn_B4TPWbOhQU9Z72BJSDKiioNIow.tLMxA8wle2g_nj2qUNAxjw.v4kGry4WLntw5tOHi5K94ZLIfUXa3HYH66MIteD4LX80YX_aszPq2I9seTy4hA81g58aMQU2JLTmpSymTZLCSQJ0xaf6DS8dpkJdUZzIIdF8AYEVIhOpZS_F91yyW0CvFcv3SR_a-yoFpHOSnxmWBxfVGv5AlB47B8xF0TdGFOP_JPvR5vD_Mql3qrwR9PUEcUvneajUK-qNJY11mp35UYyi6QiXEWa8RZpzJX-3NqbXzz2aBBcdNvAXDABEB--Ju0QPQXlrvkJNlPZT0sfdIZpPac7KkA7ZMuD0--Ln5q946xB7OBt0GWDokXpc1xLVlhwYrNagVn0orr1NYtJQr74REFeThPsXl8tcNxrkbXlyvYv6OOJ3VuEd98pAJc1yoBzRDNsH59mi-e-r4nPu19LWrcU0bHL5Tc2WxurnGZJNYEOjnKxo7epV5ZF_MQA4-z5HztFJss-h6sT4-xjvHkcVD12B9KchWE2zaZ56nZyp22TWk2C3HY4-F1cV-87DWKWBHPaUA14NqBr6MAdEzyQisxFcvKJmod6NVRH8Bm7n5cud9woHWSxMtW0L-timEvhIHAO4ZEFzF5OxWB_neXBjDJIv4bd5M0bT_SFMMdJU4sP60eTjBKxCIMfCAYNi8qtJl1FYAr7M06q-7NYczSFnwHQRh-7_3pN3AEq4sREZ-ilK20-Vxc-EALtXUAskqaQPcwUqetd_gxGv4RfvLjYib56l6oSLpDXJT2LPG4HOsA_A0232FAFqbXh-fEo8AM9N2LuQFYUgqQT5XEXsA0KLRbEk3Zs72ZPQiNybf7xtSTwC5kkpWY-cWk0axhNBsflarXVDeBS2n3H2ZXNwYWoV5IAHMCPsSxWi2PyQp8g.qUdeRV7hUS-1BCkGNHrbFw'
-    )
-  );
-}
+// async function executeTestRun() {
+// console.log(await generateOtp('9930207495'));
+// console.log(await verifyOtp('123456', '9930207495'));
+//   console.log(
+//     await fetchEthnicCode(
+//       new Date('06-10-1960'),
+//       '9930207495',
+//       'LBaersZSbFV8Mf-duaThViD3KJUhYDMfcqu7iNrtJHYZ-ZcF6ETOotkozensvZTd18yXNuejSxfi4tdPHL21T6QVomCrg9kOfrpOhOHdLjaWRqdLeokxlz5E-cuAcrnR-R0CHRGK1xJ97-oE1QxAAoBV2CWP1s81t94zglpwAWt4j3KV1d3Y4tJynCxn84lFV7_fokBJYepcNlLsUizB9tZFE7P8yypgO_DEdfK4VbAQcygTEIdp2qdePoiIdoxy50Y3gCj_v2-t0l-Oi90XVmXC6QLWOEXeb4PDbKdgKYG7I9r9cNPKYNnJFBn_B4TPWbOhQU9Z72BJSDKiioNIow.tLMxA8wle2g_nj2qUNAxjw.v4kGry4WLntw5tOHi5K94ZLIfUXa3HYH66MIteD4LX80YX_aszPq2I9seTy4hA81g58aMQU2JLTmpSymTZLCSQJ0xaf6DS8dpkJdUZzIIdF8AYEVIhOpZS_F91yyW0CvFcv3SR_a-yoFpHOSnxmWBxfVGv5AlB47B8xF0TdGFOP_JPvR5vD_Mql3qrwR9PUEcUvneajUK-qNJY11mp35UYyi6QiXEWa8RZpzJX-3NqbXzz2aBBcdNvAXDABEB--Ju0QPQXlrvkJNlPZT0sfdIZpPac7KkA7ZMuD0--Ln5q946xB7OBt0GWDokXpc1xLVlhwYrNagVn0orr1NYtJQr74REFeThPsXl8tcNxrkbXlyvYv6OOJ3VuEd98pAJc1yoBzRDNsH59mi-e-r4nPu19LWrcU0bHL5Tc2WxurnGZJNYEOjnKxo7epV5ZF_MQA4-z5HztFJss-h6sT4-xjvHkcVD12B9KchWE2zaZ56nZyp22TWk2C3HY4-F1cV-87DWKWBHPaUA14NqBr6MAdEzyQisxFcvKJmod6NVRH8Bm7n5cud9woHWSxMtW0L-timEvhIHAO4ZEFzF5OxWB_neXBjDJIv4bd5M0bT_SFMMdJU4sP60eTjBKxCIMfCAYNi8qtJl1FYAr7M06q-7NYczSFnwHQRh-7_3pN3AEq4sREZ-ilK20-Vxc-EALtXUAskqaQPcwUqetd_gxGv4RfvLjYib56l6oSLpDXJT2LPG4HOsA_A0232FAFqbXh-fEo8AM9N2LuQFYUgqQT5XEXsA0KLRbEk3Zs72ZPQiNybf7xtSTwC5kkpWY-cWk0axhNBsflarXVDeBS2n3H2ZXNwYWoV5IAHMCPsSxWi2PyQp8g.qUdeRV7hUS-1BCkGNHrbFw'
+//     )
+//   );
+// }
 
-console.log(executeTestRun());
+// console.log(executeTestRun());
