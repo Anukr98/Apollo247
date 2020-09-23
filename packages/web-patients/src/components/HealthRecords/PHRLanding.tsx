@@ -36,6 +36,7 @@ import {
 } from '../../webEngageTracking';
 import { BottomLinks } from 'components/BottomLinks';
 import { MedicalRecordType } from '../../graphql/types/globalTypes';
+import { isNumeric } from 'validator';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -229,8 +230,8 @@ const PHRLanding: React.FC<LandingProps> = (props) => {
         data1: HealthCheckType | HospitalizationType | LabResultsType,
         data2: HealthCheckType | HospitalizationType | LabResultsType
       ) => {
-        const date1 = moment(data1.date).toDate().getTime();
-        const date2 = moment(data2.date).toDate().getTime();
+        const date1 = moment(data1.dateTime).toDate().getTime();
+        const date2 = moment(data2.dateTime).toDate().getTime();
         return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
       }
     );
@@ -294,13 +295,13 @@ const PHRLanding: React.FC<LandingProps> = (props) => {
 
   const sortByDate = (array: any[]) => {
     return array.sort((a: any, b: any) => {
-      const date1 = moment(a.bookingDate || a.date || a.quoteDateTime)
+      const date1 = moment(a.bookingDate || a.dateTime || a.quoteDateTime)
         .toDate()
         .getTime();
-      const date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
+      const date2 = moment(b.bookingDate || b.dateTime || b.quoteDateTime)
         .toDate()
         .getTime();
-      return date1 > date2 ? -1 : date1 < date2 ? 1 : a.id - b.id;
+      return date1 > date2 ? -1 : date1 < date2 ? 1 : isNaN(parseInt(b.id)) ? 0 : b.id - a.id;
     });
   };
 
