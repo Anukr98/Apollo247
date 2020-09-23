@@ -143,11 +143,18 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       border: '1px solid #00485d',
       borderRadius: 10,
-      color: '#0     0485d',
+      color: '#00485d',
       fontSize: 14,
       padding: '9px 16px',
       cursor: 'pointer',
       fontWeight: 500,
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        margin: '0 0 15px',
+        '&:last-child': {
+          margin: 0,
+        },
+      },
       '& img': {
         verticalAlign: 'middle',
       },
@@ -188,6 +195,10 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
+      [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+      },
       '& p': {
         fontSize: 14,
         fontWeight: 500,
@@ -200,6 +211,9 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: 10,
         margin: '0 0 0 20px',
         textTransform: 'none',
+        [theme.breakpoints.down('sm')]: {
+          margin: '20px 0 0',
+        },
         '& img': {
           margin: '0 10px 0 0',
         },
@@ -209,6 +223,10 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
+      [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+      },
     },
     pt0: {
       paddingTop: 0,
@@ -256,7 +274,7 @@ export const WeAreHelpYou: React.FC = (props) => {
                 science-based articles for you on how to stay safe, prevention and what to do in
                 case you are infected.
               </Typography>
-              <AphButton href="#">
+              <AphButton href={clientRoutes.knowledgeBaseLanding()}>
                 <img src={'images/article.svg'} alt="" /> Read the latest articles
               </AphButton>
             </div>
@@ -291,12 +309,12 @@ export const WeAreHelpYou: React.FC = (props) => {
                 </a>
               </div>
 
-              {/* <div className={classes.serviceCard}>
+              <div className={classes.serviceCard}>
                 <span>
                   <img src={require('images/ic_psychologist.svg')} alt="" />
                 </span>
                 <span>Take a mental health scan</span>
-              </div> */}
+              </div>
 
               <div
                 onClick={() => {
@@ -314,7 +332,7 @@ export const WeAreHelpYou: React.FC = (props) => {
                 <span>Call our experts</span>
               </div>
 
-              <Link className={classes.serviceCard} to={clientRoutes.kavachLanding()}>
+              {/* <Link className={classes.serviceCard} to={clientRoutes.kavachLanding()}>
                 <span>
                   <LazyIntersection
                     src={require('images/apollo-kavach.png')}
@@ -323,7 +341,7 @@ export const WeAreHelpYou: React.FC = (props) => {
                   />
                 </span>
                 <span>Explore the Apollo Kavach Program</span>
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>
