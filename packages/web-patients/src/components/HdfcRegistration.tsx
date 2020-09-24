@@ -106,7 +106,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& >img': {
         position: 'absolute',
-        top: 20,
+        top: -35,
         right: 20,
         [theme.breakpoints.down('sm')]: {
           display: 'none',
@@ -261,6 +261,7 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'absolute',
         top: 20,
         right: 20,
+        width: 40,
         margin: 0,
         [theme.breakpoints.down('sm')]: {
           width: 16,
@@ -425,7 +426,9 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
             currentPatient.mobileNumber
           );
         }
-        setLoading(false);
+        if (response.data.validateHdfcOTP.status === false) {
+          setLoading(false);
+        }
       })
       .catch((error) => {
         console.error('Validating HDFC OTP Failed' + error);
@@ -454,10 +457,12 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
             response.data.CreateUserSubscription.response.group_plan &&
             response.data.CreateUserSubscription.response.group_plan.name
         );
+        setLoading(false);
         setShowOTPValidator(false);
         setShowCongratulations(true);
       })
       .catch((error) => {
+        setLoading(false);
         setShowOTPValidator(false);
         setShowIntro(true);
         console.error('Validating HDFC OTP Failed' + error);
