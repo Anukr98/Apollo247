@@ -4,6 +4,8 @@ import { makeStyles } from '@material-ui/styles';
 import { AphButton, AphDialog, AphInput } from '@aph/web-ui-components';
 import { callToExotelApi } from 'helpers/commonHelpers';
 import { HDFC_EXOTEL_CALLERID, HDFC_EXOTEL_NUMBER } from 'helpers/constants';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -32,15 +34,16 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
       '& h2': {
-        fontSize: 24,
+        fontSize: 30,
         fontWeight: 600,
+        marginTop: 10,
         color: '#07AE8B',
         lineHeight: '20px',
         [theme.breakpoints.down('sm')]: {
-          fontSize: 14,
+          fontSize: 24,
         },
       },
-      '& button': {
+      '& a, button': {
         boxShadow: 'none',
         display: 'block',
         marginLeft: 'auto',
@@ -52,16 +55,20 @@ const useStyles = makeStyles((theme: Theme) => {
     },
 
     hdcContent: {},
+    info: {
+      fontWeight: 'bold',
+      marginTop: 10,
+    },
     desc: {
-      fontSize: 12,
       fontWeight: 300,
+      fontSize: 12,
       color: '#01475B',
       lineHeight: '16px',
       fontStyle: 'italic',
       margin: '10px 0',
       [theme.breakpoints.down('sm')]: {
-        fontSize: 10,
         margin: ' 0 0 10px',
+        fontSize: 12,
       },
     },
     note: {
@@ -91,6 +98,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     otpError: {
+      fontWeight: 'bold',
       color: 'red',
       fontSize: 14,
       marginTop: 10,
@@ -135,14 +143,15 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export interface HdfcSliderProps {
+export interface HdfcHomePageProps {
   patientPhone: string | null;
 }
 
-export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
+export const HdfcHomePage: React.FC<HdfcHomePageProps> = (props) => {
   const classes = useStyles({});
   const [callDoctorPopup, setCallDoctorPopup] = React.useState<boolean>(false);
   const [showIntro, setShowIntro] = React.useState<boolean>(true);
+  const history = useHistory();
 
   return (
     <div className={classes.hdcContainer}>
@@ -152,14 +161,21 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
         {showIntro && (
           <div className={classes.hdfcIntro}>
             <img src={require('images/hdfc/doctor_connect.svg')} alt="Otp" />
+            <Typography component="h2">Hey!</Typography>
+            <Typography className={classes.info}>
+              You are Just One Step away from a World of Exclusive Benefits ..
+            </Typography>
             <Typography className={classes.desc}>
-              As our privileged customer in partnership with HDFC
+              Book a Doctor Consultation or Order Products on Apollo Pharmacy worth Rs 499 or more
+              to <span className={classes.otpError}>Activate Now</span>
             </Typography>
-            <Typography component="h2">You are eligible for a free call to a Doctor</Typography>
-            <Typography className={classes.otpError}>
-              Note: You will be connected to a General Physician
-            </Typography>
-            <AphButton onClick={() => setCallDoctorPopup(true)}> CONNECT NOW </AphButton>
+            <AphButton
+              onClick={() => {
+                history.push(clientRoutes.membershipPlanDetail());
+              }}
+            >
+              VIEW ALL MEMBERSHIP DETAILS
+            </AphButton>
           </div>
         )}
       </div>
