@@ -226,16 +226,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    if (
-      selectedTimeSlot &&
-      selectedTimeSlot!.slotInfo!.slot! &&
-      deliveryAddressId! &&
-      deliveryAddressId.length > 0
-    ) {
-      console.log('s');
-      fetchHC_ChargesForTest(selectedTimeSlot!.slotInfo!.slot!);
+    if (selectedTab == tabs[0].title) {
+      if (
+        selectedTimeSlot &&
+        selectedTimeSlot!.slotInfo!.slot! &&
+        deliveryAddressId! &&
+        deliveryAddressId.length > 0
+      ) {
+        console.log('s');
+        fetchHC_ChargesForTest(selectedTimeSlot!.slotInfo!.slot!);
+      }
+    } else {
+      setHcCharges!(0);
     }
-  }, [selectedTimeSlot, deliveryAddressId]);
+  }, [selectedTab, selectedTimeSlot, deliveryAddressId]);
 
   useEffect(() => {
     if (cartItems.length) {
@@ -1098,10 +1102,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
             </View>
           )}
-          <View style={styles.rowSpaceBetweenStyle}>
-            <Text style={styles.blueTextStyle}>Home Collection Charges</Text>
-            <Text style={styles.blueTextStyle}>Rs. {hcCharges.toFixed(2)}</Text>
-          </View>
+          {selectedTab == tabs[0].title && hcCharges > 0 && (
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={styles.blueTextStyle}>Home Collection Charges</Text>
+              <Text style={styles.blueTextStyle}>Rs. {hcCharges.toFixed(2)}</Text>
+            </View>
+          )}
           <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>To Pay </Text>
