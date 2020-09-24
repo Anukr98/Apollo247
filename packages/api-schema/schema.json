@@ -15345,8 +15345,8 @@
             "description": null,
             "args": [],
             "type": {
-              "kind": "SCALAR",
-              "name": "String",
+              "kind": "ENUM",
+              "name": "ConsultMode",
               "ofType": null
             },
             "isDeprecated": false,
