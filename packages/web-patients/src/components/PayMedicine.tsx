@@ -632,15 +632,20 @@ const PayMedicine: React.FC = (props) => {
         })
         .then((res) => {
           if (res && res.data && res.data.getOneApolloUser) {
+						const data = res.data.getOneApolloUser;
             oneApolloHCsResponse(res.data.getOneApolloUser);
-            setOneAplloHcs(res.data.getOneApolloUser.availableHC);
+						if (data.availableHC >= mrpTotal - productDiscount) {
+							setOneAplloHcs(mrpTotal - productDiscount);
+						} else {
+							setOneAplloHcs(data.availableHC);
+						}
           }
         })
         .catch((e) => {
           console.log('Error occured while getting Patient OneApollo HCs', e);
         });
     }
-  }, [currentPatient]);
+  }, [currentPatient, mrpTotal, productDiscount]);
 
   useEffect(() => {
     if (params.payType === 'consults') {
@@ -1107,7 +1112,7 @@ const PayMedicine: React.FC = (props) => {
             <Grid container spacing={2} className={classes.paymentContainer}>
               <Grid item xs={12} sm={8}>
                 <Paper className={`${classes.paper} ${classes.paperHeight}`}>
-                  {setOneApolloHCsResponse && setOneApolloHCsResponse.availableHC && (
+                  {setOneApolloHCsResponse && setOneApolloHCsResponse.availableHC > 0 && (
                     <div className={classes.healthCredit}>
                       <Typography component="h3">
                         Would you like to use Apollo Health Credits for this payment?
@@ -1128,9 +1133,16 @@ const PayMedicine: React.FC = (props) => {
                           </Typography>
                         </div>
                       </div>
-                      <Typography className={classes.saveDetails}>
-                        You will <span>save Rs. 100 </span> on your purchase.
-                      </Typography>
+											{isOneApolloHcApplied ? ( 
+												<Typography className={classes.saveDetails}>
+													You have <span>saved Rs. {oneApolloHcs} </span> on your purchase.
+												</Typography>
+												): (
+													<Typography className={classes.saveDetails}>
+														You will <span>save Rs. {oneApolloHcs} </span> on your purchase.
+													</Typography>
+												)}
+                      
                     </div>
                   )}
 
@@ -1182,44 +1194,7 @@ const PayMedicine: React.FC = (props) => {
                           </div>
                         </li>
                       )}
-                      {paymentOptions.length > 0 &&
-                        paymentOptions.map((payType, index) => {
-                          return (
-                            <li
-                              key={index}
-                              onClick={() => {
-                                /**Gtm code start start */
-                                dataLayerTracking({
-                                  event: 'Payment Option Selected',
-                                  Option: payType.paymentMode,
-                                });
-                                /**Gtm code start end */
 
-                                params.payType === 'pharmacy'
-                                  ? onClickPay(payType.paymentMode, payType.name)
-                                  : onClickConsultPay(payType.paymentMode);
-                              }}
-                              style={{ cursor: 'pointer' }}
-                            >
-                              <div className={classes.paymentCard}>
-                                <img
-                                  src={
-                                    'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
-                                  }
-                                  alt=""
-                                  style={{ height: 30, width: 30 }}
-                                />
-                                <div style={{ paddingLeft: 10 }}>
-                                  SBI YONO CASHLESS CARD
-                                  <div className={classes.offerMessage}>
-                                    You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}%
-                                    cashback
-                                  </div>
-                                </div>
-                              </div>
-                            </li>
-                          );
-                        })}
                       {paymentOptions.length > 0 &&
                         paymentOptions.map((payType, index) => {
                           return (
@@ -1248,16 +1223,18 @@ const PayMedicine: React.FC = (props) => {
                           <div className={`${classes.paymentCard} ${classes.codOption}`}>
                             <FormGroup>
                               <FormControlLabel
-                                classes={{ root: classes.checkbox, disabled: classes.disabled }}
+                                classes={{ root: classes.checkbox, disabled:  isOneApolloHcApplied ? classes.disabled : '' }}
                                 control={
-                                  <Checkbox onChange={handleChange} name="checked" disabled />
+                                  <Checkbox onChange={handleChange} name="checked" disabled={isOneApolloHcApplied} />
                                 }
                                 label="Cash On Delivery"
                               />
                             </FormGroup>
-                            <Typography>
+														{isOneApolloHcApplied && (
+															<Typography>
                               ! COD option is not available along with OneApollo Health Credits.
                             </Typography>
+														)}
                           </div>
                         </li>
                       )}

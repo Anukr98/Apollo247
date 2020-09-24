@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect }from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, Tabs, Tab, Grid } from '@material-ui/core';
+import { useApolloClient } from 'react-apollo-hooks';
 import { Header } from 'components/Header';
 import { MyProfile } from 'components/MyAccount/MyProfile';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { BottomLinks } from 'components/BottomLinks';
-import { AphButton } from '@aph/web-ui-components';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { GET_ONEAPOLLO_USERTXNS } from 'graphql/profiles';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { GetOneApollo, GetOneApolloVariables } from 'graphql/types/GetOneApollo';
+import { GET_ONE_APOLLO } from 'graphql/medicines';
+import moment from 'moment';
+import { MyMembership } from 'components/MyAccount/MyMembership';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -96,6 +103,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     mcUser: {
+			textTransform: 'capitalize',
       '& h2': {
         fontSize: 16,
         fontWeight: 500,
@@ -108,7 +116,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     healthCredits: {
-      width: 240,
+      width: 270,
       position: 'absolute',
       bottom: -30,
       left: 0,
@@ -233,121 +241,10 @@ const useStyles = makeStyles((theme: Theme) => {
     redeemed: {
       color: '#C3202B',
     },
-    benefitsContainer: {
-      padding: 30,
-    },
-    benefitContent: {
-      textAlign: 'center',
-
-      '& h3': {
-        fontSize: 16,
-        fontWeight: 500,
-        lineHeight: '20px',
-      },
-      '& p': {
-        fontSize: 12,
-        fontWeight: 500,
-        color: 'rgba(2,71,91,0.6)',
-      },
-    },
-    imgContainer: {
-      width: 120,
-      height: 120,
-      margin: '0 auto 10px',
-      border: '2px solid #00B38E',
-      '& img': {
-        width: '100%',
-        height: '100%',
-      },
-    },
-    creditList: {
-      margin: '10px 0',
-      padding: 0,
-      listStyle: 'none',
-      '& li': {
-        padding: '10px 10px 10px 30px',
-        fontSize: 13,
-        fontWeight: 500,
-        position: 'relative',
-        '&:before': {
-          content: "''",
-          position: 'absolute',
-          top: 12,
-          left: 0,
-          border: '8px solid transparent',
-          borderLeft: '10px solid #858585',
-        },
-      },
-    },
-    creditContent: {
-      padding: '20px 0',
-      '& h3': {
-        fontSize: 16,
-        fontWeight: 500,
-        textTransform: 'uppercase',
-        padding: '0 0 15px',
-        borderBottom: '1px solid rgba(2,71,91,0.2)',
-        margin: '0 0 10px',
-      },
-      '& p': {
-        fontSize: 14,
-        fontWeight: 500,
-        color: '#525252',
-        lineHeight: '24px',
-        '& span': {
-          color: '#02475b',
-        },
-      },
-    },
-    tncBtn: {
-      background: 'transparent',
-      color: '#00B38E',
-      fontSize: 12,
-      fontWeight: 500,
-      padding: 5,
-      boxShadow: 'none',
-      textTransform: 'capitalize',
-      '&:hover': {
-        background: 'transparent',
-        color: '#00B38E',
-      },
-    },
-    knowMore: {
-      padding: 5,
-      boxShadow: 'none',
-      fontSize: 12,
-      fontWeight: 500,
-      background: '#fff',
-      color: '#FC9916',
-      '&:hover': {
-        background: '#fff',
-        color: '#FC9916',
-      },
-    },
-    mUpgradeContainer: {
-      //   padding: '30px 0',
-      '& h3': {
-        fontSize: 16,
-        fontWeight: 500,
-        textTransform: 'uppercase',
-        padding: '0 0 15px',
-        borderBottom: '1px solid rgba(2,71,91,0.2)',
-      },
-    },
-    mCard: {
-      width: '100%',
+		circlularProgress: {
+      display: 'flex',
       padding: 20,
-      textAlign: 'center',
-      height: 150,
       justifyContent: 'center',
-      margin: '0 0 10px',
-    },
-    goldList: {
-      '& li': {
-        '&:before': {
-          borderLeftColor: '#E8AF13 !important',
-        },
-      },
     },
   };
 });
@@ -357,8 +254,56 @@ const TabContainer: React.FC = (props) => {
 };
 
 export const OneApolloMembership: React.FC = () => {
+	const { currentPatient } = useAllCurrentPatients();
+	const client = useApolloClient();
   const classes = useStyles({});
-  const [tabValue, setTabValue] = useState<number>(0);
+	const [tabValue, setTabValue] = useState<number>(0);
+	const [oneApolloHc, setOneApollo] = useState<any>({});
+	const [oneApolloTrxnList, setOneApolloTrxnList] = React.useState([]);
+	const [isLoading, setLoading] = useState<boolean>(true);
+	const [totalEarned, setTotalEarned] = useState<number>(0);
+	const [totalRedeemed, setTotalRedeemed] = useState<number>(0);
+	useEffect(() => {
+    client
+      .query({
+        query: GET_ONEAPOLLO_USERTXNS,
+        fetchPolicy: 'no-cache',
+      })
+      .then((res) => {
+				if (res && res.data && res.data.getOneApolloUserTransactions) {
+					const data = res.data.getOneApolloUserTransactions;
+					setOneApolloTrxnList(data);
+				}
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+	},[currentPatient]);
+
+	useEffect(() => {
+    if (currentPatient && currentPatient.id) {
+      client
+        .query<GetOneApollo, GetOneApolloVariables>({
+          query: GET_ONE_APOLLO,
+          variables: {
+            patientId: currentPatient ? currentPatient.id : '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((res) => {
+					setLoading(false)
+          if (res && res.data && res.data.getOneApolloUser) {
+						const data = res.data.getOneApolloUser;
+						setOneApollo(data);
+						setTotalEarned(data.earnedHC);
+						setTotalRedeemed(data.burnedCredits + data.blockedCredits );
+          }
+        })
+        .catch((e) => {
+          console.log('Error occured while getting Patient OneApollo HCs', e);
+        });
+    }
+  }, [currentPatient]);
   return (
     <div className={classes.oamContainer}>
       <Header />
@@ -366,22 +311,28 @@ export const OneApolloMembership: React.FC = () => {
         <div className={classes.oamContent}>
           <div className={classes.leftSection}>
             <MyProfile />
-          </div>
+          </div>					
           <div className={classes.rightSection}>
+							{ isLoading ? (
+							<div className={classes.circlularProgress}>
+								<CircularProgress />
+							</div>
+						) : (
             <div className={classes.membershipContainer}>
               <div className={classes.membershipCardContainer}>
-                <div className={`${classes.membershipCard} ${classes.silver}`}>
+								<div className={`${classes.membershipCard} ${ oneApolloHc.tier === 'Gold' ? classes.gold
+								: oneApolloHc.tier === 'Silver' ? classes.silver : classes.platinum}`}>
                   <div className={classes.mcContent}>
                     <img src={require('images/one-apollo.svg')} alt="OneApollo Membership" />
                     <div className={classes.mcUser}>
-                      <Typography component="h2">Archana Singh</Typography>
-                      <Typography>Silver Member</Typography>
+                      <Typography component="h2">{oneApolloHc.name}</Typography>
+                      <Typography>{oneApolloHc.tier} Member</Typography>
                     </div>
                   </div>
                   <div className={classes.healthCredits}>
                     <img src={require('images/rupee.svg')} alt="Health Credits" />
                     <Typography>Available HC</Typography>
-                    <Typography component="h3">316</Typography>
+											<Typography component="h3">{oneApolloHc.availableHC}</Typography>
                   </div>
                 </div>
               </div>
@@ -406,282 +357,55 @@ export const OneApolloMembership: React.FC = () => {
                 </Tabs>
                 <div className={classes.tabContent}>
                   {tabValue === 0 && (
-                    <TabContainer>
-                      <div className={classes.transactionHeader}>
-                        <Typography component="h2">My Membership Benefits</Typography>
-                      </div>
-                      <div className={classes.benefitsContainer}>
-                        <Grid container spacing={2}>
-                          <Grid item md={4}>
-                            <div className={classes.benefitContent}>
-                              <div className={classes.imgContainer}>
-                                <img
-                                  src={require('images/apollo-clinics.jpg')}
-                                  alt="Apollo Clinics"
-                                />
-                              </div>
-                              <Typography component="h3">Apollo Clinics</Typography>
-                              <Typography>
-                                Free home sample collections on clinic consultations
-                              </Typography>
-                            </div>
-                          </Grid>
-                          <Grid item md={4}>
-                            <div className={classes.benefitContent}>
-                              <div className={classes.imgContainer}>
-                                <img
-                                  src={require('images/apollo-cradle.jpg')}
-                                  alt="Apollo Cradle"
-                                />
-                              </div>
-                              <Typography component="h3">Apollo Cradle</Typography>
-                              <Typography>Avail 15% discount on Health Checks</Typography>
-                            </div>
-                          </Grid>
-                          <Grid item md={4}>
-                            <div className={classes.benefitContent}>
-                              <div className={classes.imgContainer}>
-                                <img
-                                  src={require('images/apollo-diagnostics.jpg')}
-                                  alt="Apollo Diagnostics"
-                                />
-                              </div>
-                              <Typography component="h3">Apollo Diagnostics</Typography>
-                              <Typography>
-                                Avail 5% discount on Lab &amp; Imaging Services in OP Diagnostics
-                              </Typography>
-                            </div>
-                          </Grid>
-                        </Grid>
-                        <Grid container spacing={3}>
-                          <Grid item md={6}>
-                            <div className={classes.creditContent}>
-                              <Typography component="h3">Health Credit Earnings</Typography>
-                              <Typography>
-                                On every pharmacy transaction at Apollo 247 earn HCs
-                              </Typography>
-                              <ul className={classes.creditList}>
-                                <li>5% of non-pharmaceutical products</li>
-                                <li>10% of pharmaceutical products</li>
-                                <li>10% of Apollo brand products</li>
-                              </ul>
-                              <AphButton color="primary" className={classes.tncBtn}>
-                                T&amp;C Apply
-                              </AphButton>
-                            </div>
-                          </Grid>
-                          <Grid item md={6}>
-                            <div className={classes.creditContent}>
-                              <Typography component="h3">Health Credit Redemption</Typography>
-                              <Typography>
-                                Redeem your health credits on transactions at Apollo 247 pharmacy
-                                orders at a value of <span>1 HC = ₹ 1</span>
-                              </Typography>
-                            </div>
-                          </Grid>
-                        </Grid>
-                        <div className={classes.mUpgradeContainer}>
-                          <Typography component="h3">Membership Upgrades</Typography>
-                          <Grid container spacing={3}>
-                            <Grid item md={6}>
-                              <div className={classes.creditContent}>
-                                <div
-                                  className={`${classes.membershipCard} ${classes.gold} ${classes.mCard}`}
-                                >
-                                  <div className={classes.mcUser}>
-                                    <img src={require('images/lock.svg')} alt="Membership Locked" />
-                                    <Typography>Gold</Typography>
-                                  </div>
-                                </div>
-                                <Typography>
-                                  Upgrade to gold and enjoy more benefits by satisfying either of
-                                  the conditions:
-                                </Typography>
-                                <ul className={`${classes.creditList} ${classes.goldList}`}>
-                                  <li>Spend Rs. 75,000 in one year period</li>
-                                  <li> Buy an annual gym membership from Apollo Life</li>
-                                </ul>
-                                <AphButton color="primary" className={classes.knowMore}>
-                                  Know More
-                                </AphButton>
-                              </div>
-                            </Grid>
-                            <Grid item md={6}>
-                              <div className={classes.creditContent}>
-                                <div
-                                  className={`${classes.membershipCard} ${classes.platinum} ${classes.mCard}`}
-                                >
-                                  <div className={classes.mcUser}>
-                                    <img src={require('images/lock.svg')} alt="Membership Locked" />
-                                    <Typography>Platinum</Typography>
-                                  </div>
-                                </div>
-                                <Typography>
-                                  Upgrade to gold and enjoy more benefits by satisfying either of
-                                  the conditions:
-                                </Typography>
-                                <ul className={classes.creditList}>
-                                  <li>Spend Rs. 2,00,000 in one year period</li>
-                                  <li>Maintain Gold membership for 2 consecutive years</li>
-                                </ul>
-                              </div>
-                            </Grid>
-                          </Grid>
-                        </div>
-                      </div>
-                    </TabContainer>
+                    <MyMembership />
                   )}
                   {tabValue === 1 && (
                     <TabContainer>
                       <div className={classes.transactionHeader}>
                         <div className={classes.thDetails}>
                           <Typography>Total Earned</Typography>
-                          <Typography component="h2">316</Typography>
+														<Typography component="h2">{totalEarned.toFixed(2)}</Typography>
                         </div>
                         <div className={classes.thDetails}>
                           <Typography>Total Redeemed</Typography>
-                          <Typography component="h2">316</Typography>
+													<Typography component="h2">{totalRedeemed.toFixed(2)}</Typography>
                         </div>
                       </div>
                       <ul className={classes.transactionList}>
-                        <li>
-                          <div className={classes.tContainer}>
-                            <div className={classes.tContent}>
-                              <img src={require('images/credit.svg')} alt="" />
-                              <div className={classes.hcDetails}>
-                                <Typography component="h3">Apollo Hospitals</Typography>
-                                <Typography>24 May 2020</Typography>
-                              </div>
-                            </div>
-                            <div className={classes.transactionDetails}>
-                              <Typography>
-                                <span className={classes.earned}>Earned</span> 20
-                              </Typography>
-                              <Typography>
-                                <span className={classes.redeemed}>Redeemed</span> 10
-                              </Typography>
-                            </div>
-                          </div>
-                          <Typography>
-                            Billing <span>Rs.200</span>
-                          </Typography>
-                        </li>
-                        <li>
-                          <div className={classes.tContainer}>
-                            <div className={classes.tContent}>
-                              <img src={require('images/credit.svg')} alt="" />
-                              <div className={classes.hcDetails}>
-                                <Typography component="h3">Apollo Hospitals</Typography>
-                                <Typography>24 May 2020</Typography>
-                              </div>
-                            </div>
-                            <div className={classes.transactionDetails}>
-                              <Typography>
-                                <span className={classes.earned}>Earned</span> 20
-                              </Typography>
-                              <Typography>
-                                <span className={classes.redeemed}>Redeemed</span> 10
-                              </Typography>
-                            </div>
-                          </div>
-                          <Typography>
-                            Billing <span>Rs.200</span>
-                          </Typography>
-                        </li>
-                        <li>
-                          <div className={classes.tContainer}>
-                            <div className={classes.tContent}>
-                              <img src={require('images/credit.svg')} alt="" />
-                              <div className={classes.hcDetails}>
-                                <Typography component="h3">Apollo Hospitals</Typography>
-                                <Typography>24 May 2020</Typography>
-                              </div>
-                            </div>
-                            <div className={classes.transactionDetails}>
-                              <Typography>
-                                <span className={classes.earned}>Earned</span> 20
-                              </Typography>
-                              <Typography>
-                                <span className={classes.redeemed}>Redeemed</span> 10
-                              </Typography>
-                            </div>
-                          </div>
-                          <Typography>
-                            Billing <span>Rs.200</span>
-                          </Typography>
-                        </li>
-                        <li>
-                          <div className={classes.tContainer}>
-                            <div className={classes.tContent}>
-                              <img src={require('images/credit.svg')} alt="" />
-                              <div className={classes.hcDetails}>
-                                <Typography component="h3">Apollo Hospitals</Typography>
-                                <Typography>24 May 2020</Typography>
-                              </div>
-                            </div>
-                            <div className={classes.transactionDetails}>
-                              <Typography>
-                                <span className={classes.earned}>Earned</span> 20
-                              </Typography>
-                              <Typography>
-                                <span className={classes.redeemed}>Redeemed</span> 10
-                              </Typography>
-                            </div>
-                          </div>
-                          <Typography>
-                            Billing <span>Rs.200</span>
-                          </Typography>
-                        </li>
-                        <li>
-                          <div className={classes.tContainer}>
-                            <div className={classes.tContent}>
-                              <img src={require('images/credit.svg')} alt="" />
-                              <div className={classes.hcDetails}>
-                                <Typography component="h3">Apollo Hospitals</Typography>
-                                <Typography>24 May 2020</Typography>
-                              </div>
-                            </div>
-                            <div className={classes.transactionDetails}>
-                              <Typography>
-                                <span className={classes.earned}>Earned</span> 20
-                              </Typography>
-                              <Typography>
-                                <span className={classes.redeemed}>Redeemed</span> 10
-                              </Typography>
-                            </div>
-                          </div>
-                          <Typography>
-                            Billing <span>Rs.200</span>
-                          </Typography>
-                        </li>
-                        <li>
-                          <div className={classes.tContainer}>
-                            <div className={classes.tContent}>
-                              <img src={require('images/credit.svg')} alt="" />
-                              <div className={classes.hcDetails}>
-                                <Typography component="h3">Apollo Hospitals</Typography>
-                                <Typography>24 May 2020</Typography>
-                              </div>
-                            </div>
-                            <div className={classes.transactionDetails}>
-                              <Typography>
-                                <span className={classes.earned}>Earned</span> 20
-                              </Typography>
-                              <Typography>
-                                <span className={classes.redeemed}>Redeemed</span> 10
-                              </Typography>
-                            </div>
-                          </div>
-                          <Typography>
-                            Billing <span>Rs.200</span>
-                          </Typography>
-                        </li>
+												{oneApolloTrxnList.length > 0 &&
+												oneApolloTrxnList.map((transaction, index) => {
+													return (
+														<li key={index}>
+															<div className={classes.tContainer}>
+																<div className={classes.tContent}>
+																	<img src={require('images/credit.svg')} alt="" />
+																	<div className={classes.hcDetails}>
+																		<Typography component="h3">{transaction.businessUnit}</Typography>
+																		<Typography>{moment(transaction.transactionDate).format('DD MMM YYYY')}</Typography>
+																	</div>
+																</div>
+																<div className={classes.transactionDetails}>
+																	<Typography>
+																		<span className={classes.earned}>Earned</span> {transaction.earnedHC}
+																	</Typography>
+																	<Typography>
+																		<span className={classes.redeemed}>Redeemed</span> {transaction.redeemedHC}
+																	</Typography>
+																</div>
+															</div>
+															<Typography>
+																Billing <span>Rs. {(transaction.netAmount + transaction.redeemedHC).toFixed(2)}</span>
+															</Typography>
+														</li>
+													)
+												})}
                       </ul>
                     </TabContainer>
                   )}
                 </div>
               </div>
             </div>
+						)}
           </div>
         </div>
       </div>
