@@ -27,7 +27,7 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
     userSubscriptionId,
     subscriptionInclusionId,
   } = args;
-  const url = `https://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
+  const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
   const query = `mutation {
       CreateUserSubscriptionTransactions(UserSubscriptionTransactions:{
        user_subscription_id: "${userSubscriptionId || ''}"
