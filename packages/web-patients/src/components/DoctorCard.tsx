@@ -227,18 +227,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         }}
       >
         <Avatar
-          alt={doctorDetails.firstName || ''}
+          alt={doctorDetails.displayName || ''}
           src={
             doctorDetails.thumbnailUrl && doctorDetails.thumbnailUrl !== ''
               ? doctorDetails.thumbnailUrl
               : require('images/no_photo_icon_round.svg')
           }
           title={
-            doctorDetails.fullName
-              ? doctorDetails.fullName
-              : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
-                  _toLower(doctorDetails.lastName)
-                )}`
+            doctorDetails.displayName
+              ? doctorDetails.displayName
+              : `${_startCase(doctorDetails.fullName)}`
           }
           className={classes.doctorAvatar}
         />
@@ -252,15 +250,15 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <div
             className={classes.doctorName}
             title={
-              doctorDetails.fullName
-                ? doctorDetails.fullName
+              doctorDetails.displayName
+                ? doctorDetails.displayName
                 : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
                     _toLower(doctorDetails.lastName)
                   )}`
             }
           >
-            {doctorDetails.fullName
-              ? doctorDetails.fullName
+            {doctorDetails.displayName
+              ? doctorDetails.displayName
               : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
                   _toLower(doctorDetails.lastName)
                 )}`}
