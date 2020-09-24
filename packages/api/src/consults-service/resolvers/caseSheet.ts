@@ -681,7 +681,7 @@ const getCaseSheet: Resolver<
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findOne(appointmentData.doctorId);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-  if (doctorData.mobileNumber != mobileNumber || patientDetails.mobileNumber != mobileNumber)
+  if (doctorData.mobileNumber != mobileNumber && patientDetails.mobileNumber != mobileNumber)
     throw new AphError(AphErrorMessages.UNAUTHORIZED);
   /*const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (
