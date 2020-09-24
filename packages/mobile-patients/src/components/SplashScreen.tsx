@@ -35,6 +35,7 @@ import {
   APPStateInActive,
   APPStateActive,
   postWebEngageEvent,
+  callPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -133,6 +134,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     DeviceEventEmitter.addListener('accept', (params) => {
       console.log('Accept Params', params);
       voipCallType.current = params.call_type;
+      callPermissions();
       getAppointmentDataAndNavigate(params.appointment_id, true);
     });
     DeviceEventEmitter.addListener('reject', (params) => {
@@ -338,6 +340,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           if (data.length === 2) {
             const params = linkId.split('+');
             voipCallType.current = params[1];
+            callPermissions();
             getAppointmentDataAndNavigate(params[0], true);
           }
           break;
