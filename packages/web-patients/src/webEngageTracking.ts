@@ -870,7 +870,7 @@ export const pharmaAvailabilityApiTracking = (data: any) => {
       resQty,
     } = data;
     try {
-      window.webengage.track('Pharmacy Proceed To Pay Clicked - web', {
+      window.webengage.track('Pharmacy Availability API Called Web', {
         Source: source,
         Input_SKU: inputSku,
         Input_Pincode: inputPincode,
@@ -910,7 +910,7 @@ export const pharmaTatApiTracking = (data: any) => {
       resTatU,
     } = data;
     try {
-      window.webengage.track('Pharmacy Proceed To Pay Clicked - web', {
+      window.webengage.track('Pharmacy TAT API Called Web', {
         Source: source,
         Input_SKU: inputSku,
         Input_qty: inputQty,
