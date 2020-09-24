@@ -770,7 +770,6 @@ const getDoctorList: Resolver<
   searchLogger(`API_CALL___START`);
 
   const doctors = [];
-  const specialties:Specialty[] = [];
   const elasticMatch = [];
   const elasticSort = [];
   let getDetails:any = [],
@@ -916,7 +915,7 @@ const getDoctorList: Resolver<
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
     const doctorObj: any = {};
-    const specialtyObj: any = {};
+
     let fee:number = doctor.onlineConsultationFees;
     doctorObj['id'] = doctor.doctorId;
     doctorObj['displayName'] = doctor.displayName;
@@ -932,10 +931,6 @@ const getDoctorList: Resolver<
     doctorObj['consultMode'] = [];
     doctorObj['slot'] = null;
     doctorObj['earliestSlotInMinutes'] = null;
-
-    specialtyObj['id'] = doctor.specialty.specialtyId;
-    specialtyObj['name'] = doctor.specialty.name;
-    specialtyObj['specialtydisplayName'] = doctor.specialty.userFriendlyNomenclature;
 
     for (const consultHour of doctor.consultHours) {
       if (!doctorObj['consultMode'].includes(consultHour.consultMode)) {
@@ -963,12 +958,6 @@ const getDoctorList: Resolver<
       );
     }
 
-    if (
-      specialties.findIndex((specialty) => specialty.id == specialtyObj['id']) == -1 &&
-      args.filterInput.searchText
-    ) {
-      specialties.push(specialtyObj);
-    }
     doctors.push(doctorObj);
   }
 
