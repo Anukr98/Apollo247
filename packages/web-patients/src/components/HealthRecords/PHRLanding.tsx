@@ -230,8 +230,12 @@ const PHRLanding: React.FC<LandingProps> = (props) => {
         data1: HealthCheckType | HospitalizationType | LabResultsType,
         data2: HealthCheckType | HospitalizationType | LabResultsType
       ) => {
-        const date1 = moment(data1.dateTime).toDate().getTime();
-        const date2 = moment(data2.dateTime).toDate().getTime();
+        const date1 = moment(data1.dateTime)
+          .toDate()
+          .getTime();
+        const date2 = moment(data2.dateTime)
+          .toDate()
+          .getTime();
         return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
       }
     );

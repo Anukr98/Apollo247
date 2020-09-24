@@ -180,7 +180,7 @@ const useStyles = makeStyles((theme: Theme) => {
           borderLeftColor: '#E8AF13 !important',
         },
       },
-		},
+    },
   };
 });
 
@@ -190,130 +190,111 @@ const TabContainer: React.FC = (props) => {
 
 export const MyMembership: React.FC = () => {
   const classes = useStyles({});
-  return (            
-		<TabContainer>
-			<div className={classes.transactionHeader}>
-				<Typography component="h2">My Membership Benefits</Typography>
-			</div>
-			<div className={classes.benefitsContainer}>
-				<Grid container spacing={2}>
-					<Grid item md={4}>
-						<div className={classes.benefitContent}>
-							<div className={classes.imgContainer}>
-								<img
-									src={require('images/apollo-clinics.jpg')}
-									alt="Apollo Clinics"
-								/>
-							</div>
-							<Typography component="h3">Apollo Clinics</Typography>
-							<Typography>
-								Free home sample collections on clinic consultations
-							</Typography>
-						</div>
-					</Grid>
-					<Grid item md={4}>
-						<div className={classes.benefitContent}>
-							<div className={classes.imgContainer}>
-								<img
-									src={require('images/apollo-cradle.jpg')}
-									alt="Apollo Cradle"
-								/>
-							</div>
-							<Typography component="h3">Apollo Cradle</Typography>
-							<Typography>Avail 15% discount on Health Checks</Typography>
-						</div>
-					</Grid>
-					<Grid item md={4}>
-						<div className={classes.benefitContent}>
-							<div className={classes.imgContainer}>
-								<img
-									src={require('images/apollo-diagnostics.jpg')}
-									alt="Apollo Diagnostics"
-								/>
-							</div>
-							<Typography component="h3">Apollo Diagnostics</Typography>
-							<Typography>
-								Avail 5% discount on Lab &amp; Imaging Services in OP Diagnostics
-							</Typography>
-						</div>
-					</Grid>
-				</Grid>
-				<Grid container spacing={3}>
-					<Grid item md={6}>
-						<div className={classes.creditContent}>
-							<Typography component="h3">Health Credit Earnings</Typography>
-							<Typography>
-								On every pharmacy transaction at Apollo 247 earn HCs
-							</Typography>
-							<ul className={classes.creditList}>
-								<li>5% of non-pharmaceutical products</li>
-								<li>10% of pharmaceutical products</li>
-								<li>10% of Apollo brand products</li>
-							</ul>
-							<AphButton color="primary" className={classes.tncBtn}>
-								T&amp;C Apply
-							</AphButton>
-						</div>
-					</Grid>
-					<Grid item md={6}>
-						<div className={classes.creditContent}>
-							<Typography component="h3">Health Credit Redemption</Typography>
-							<Typography>
-								Redeem your health credits on transactions at Apollo 247 pharmacy
-								orders at a value of <span>1 HC = ₹ 1</span>
-							</Typography>
-						</div>
-					</Grid>
-				</Grid>
-				<div className={classes.mUpgradeContainer}>
-					<Typography component="h3">Membership Upgrades</Typography>
-					<Grid container spacing={3}>
-						<Grid item md={6}>
-							<div className={classes.creditContent}>
-								<div
-									className={`${classes.membershipCard} ${classes.gold} ${classes.mCard}`}
-								>
-									<div className={classes.mcUser}>
-										<img src={require('images/lock.svg')} alt="Membership Locked" />
-										<Typography>Gold</Typography>
-									</div>
-								</div>
-								<Typography>
-									Upgrade to gold and enjoy more benefits by satisfying either of
-									the conditions:
-								</Typography>
-								<ul className={`${classes.creditList} ${classes.goldList}`}>
-									<li>Spend Rs. 75,000 in one year period</li>
-									<li> Buy an annual gym membership from Apollo Life</li>
-								</ul>
-								<AphButton color="primary" className={classes.knowMore}>
-									Know More
-								</AphButton>
-							</div>
-						</Grid>
-						<Grid item md={6}>
-							<div className={classes.creditContent}>
-								<div
-									className={`${classes.membershipCard} ${classes.platinum} ${classes.mCard}`}
-								>
-									<div className={classes.mcUser}>
-										<img src={require('images/lock.svg')} alt="Membership Locked" />
-										<Typography>Platinum</Typography>
-									</div>
-								</div>
-								<Typography>
-									Upgrade to gold and enjoy more benefits by satisfying either of
-									the conditions:
-								</Typography>
-								<ul className={classes.creditList}>
-									<li>Spend Rs. 2,00,000 in one year period</li>
-									<li>Maintain Gold membership for 2 consecutive years</li>
-								</ul>
-							</div>
-						</Grid>
-					</Grid>
-				</div>
-			</div>
-		</TabContainer>            
+  return (
+    <TabContainer>
+      <div className={classes.transactionHeader}>
+        <Typography component="h2">My Membership Benefits</Typography>
+      </div>
+      <div className={classes.benefitsContainer}>
+        <Grid container spacing={2}>
+          <Grid item md={4}>
+            <div className={classes.benefitContent}>
+              <div className={classes.imgContainer}>
+                <img src={require('images/apollo-clinics.jpg')} alt="Apollo Clinics" />
+              </div>
+              <Typography component="h3">Apollo Clinics</Typography>
+              <Typography>Free home sample collections on clinic consultations</Typography>
+            </div>
+          </Grid>
+          <Grid item md={4}>
+            <div className={classes.benefitContent}>
+              <div className={classes.imgContainer}>
+                <img src={require('images/apollo-cradle.jpg')} alt="Apollo Cradle" />
+              </div>
+              <Typography component="h3">Apollo Cradle</Typography>
+              <Typography>Avail 15% discount on Health Checks</Typography>
+            </div>
+          </Grid>
+          <Grid item md={4}>
+            <div className={classes.benefitContent}>
+              <div className={classes.imgContainer}>
+                <img src={require('images/apollo-diagnostics.jpg')} alt="Apollo Diagnostics" />
+              </div>
+              <Typography component="h3">Apollo Diagnostics</Typography>
+              <Typography>
+                Avail 5% discount on Lab &amp; Imaging Services in OP Diagnostics
+              </Typography>
+            </div>
+          </Grid>
+        </Grid>
+        <Grid container spacing={3}>
+          <Grid item md={6}>
+            <div className={classes.creditContent}>
+              <Typography component="h3">Health Credit Earnings</Typography>
+              <Typography>On every pharmacy transaction at Apollo 247 earn HCs</Typography>
+              <ul className={classes.creditList}>
+                <li>5% of non-pharmaceutical products</li>
+                <li>10% of pharmaceutical products</li>
+                <li>10% of Apollo brand products</li>
+              </ul>
+              <AphButton color="primary" className={classes.tncBtn}>
+                T&amp;C Apply
+              </AphButton>
+            </div>
+          </Grid>
+          <Grid item md={6}>
+            <div className={classes.creditContent}>
+              <Typography component="h3">Health Credit Redemption</Typography>
+              <Typography>
+                Redeem your health credits on transactions at Apollo 247 pharmacy orders at a value
+                of <span>1 HC = ₹ 1</span>
+              </Typography>
+            </div>
+          </Grid>
+        </Grid>
+        <div className={classes.mUpgradeContainer}>
+          <Typography component="h3">Membership Upgrades</Typography>
+          <Grid container spacing={3}>
+            <Grid item md={6}>
+              <div className={classes.creditContent}>
+                <div className={`${classes.membershipCard} ${classes.gold} ${classes.mCard}`}>
+                  <div className={classes.mcUser}>
+                    <img src={require('images/lock.svg')} alt="Membership Locked" />
+                    <Typography>Gold</Typography>
+                  </div>
+                </div>
+                <Typography>
+                  Upgrade to gold and enjoy more benefits by satisfying either of the conditions:
+                </Typography>
+                <ul className={`${classes.creditList} ${classes.goldList}`}>
+                  <li>Spend Rs. 75,000 in one year period</li>
+                  <li> Buy an annual gym membership from Apollo Life</li>
+                </ul>
+                <AphButton color="primary" className={classes.knowMore}>
+                  Know More
+                </AphButton>
+              </div>
+            </Grid>
+            <Grid item md={6}>
+              <div className={classes.creditContent}>
+                <div className={`${classes.membershipCard} ${classes.platinum} ${classes.mCard}`}>
+                  <div className={classes.mcUser}>
+                    <img src={require('images/lock.svg')} alt="Membership Locked" />
+                    <Typography>Platinum</Typography>
+                  </div>
+                </div>
+                <Typography>
+                  Upgrade to gold and enjoy more benefits by satisfying either of the conditions:
+                </Typography>
+                <ul className={classes.creditList}>
+                  <li>Spend Rs. 2,00,000 in one year period</li>
+                  <li>Maintain Gold membership for 2 consecutive years</li>
+                </ul>
+              </div>
+            </Grid>
+          </Grid>
+        </div>
+      </div>
+    </TabContainer>
   );
 };

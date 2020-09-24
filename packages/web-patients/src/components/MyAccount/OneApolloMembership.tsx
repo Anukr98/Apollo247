@@ -1,4 +1,4 @@
-import React, { useState, useEffect }from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, Tabs, Tab, Grid } from '@material-ui/core';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -103,7 +103,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     mcUser: {
-			textTransform: 'capitalize',
+      textTransform: 'capitalize',
       '& h2': {
         fontSize: 16,
         fontWeight: 500,
@@ -241,7 +241,7 @@ const useStyles = makeStyles((theme: Theme) => {
     redeemed: {
       color: '#C3202B',
     },
-		circlularProgress: {
+    circlularProgress: {
       display: 'flex',
       padding: 20,
       justifyContent: 'center',
@@ -254,33 +254,33 @@ const TabContainer: React.FC = (props) => {
 };
 
 export const OneApolloMembership: React.FC = () => {
-	const { currentPatient } = useAllCurrentPatients();
-	const client = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
   const classes = useStyles({});
-	const [tabValue, setTabValue] = useState<number>(0);
-	const [oneApolloHc, setOneApollo] = useState<any>({});
-	const [oneApolloTrxnList, setOneApolloTrxnList] = React.useState([]);
-	const [isLoading, setLoading] = useState<boolean>(true);
-	const [totalEarned, setTotalEarned] = useState<number>(0);
-	const [totalRedeemed, setTotalRedeemed] = useState<number>(0);
-	useEffect(() => {
+  const [tabValue, setTabValue] = useState<number>(0);
+  const [oneApolloHc, setOneApollo] = useState<any>({});
+  const [oneApolloTrxnList, setOneApolloTrxnList] = React.useState([]);
+  const [isLoading, setLoading] = useState<boolean>(true);
+  const [totalEarned, setTotalEarned] = useState<number>(0);
+  const [totalRedeemed, setTotalRedeemed] = useState<number>(0);
+  useEffect(() => {
     client
       .query({
         query: GET_ONEAPOLLO_USERTXNS,
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-				if (res && res.data && res.data.getOneApolloUserTransactions) {
-					const data = res.data.getOneApolloUserTransactions;
-					setOneApolloTrxnList(data);
-				}
+        if (res && res.data && res.data.getOneApolloUserTransactions) {
+          const data = res.data.getOneApolloUserTransactions;
+          setOneApolloTrxnList(data);
+        }
       })
       .catch((error) => {
         console.log(error);
       });
-	},[currentPatient]);
+  }, [currentPatient]);
 
-	useEffect(() => {
+  useEffect(() => {
     if (currentPatient && currentPatient.id) {
       client
         .query<GetOneApollo, GetOneApolloVariables>({
@@ -291,12 +291,12 @@ export const OneApolloMembership: React.FC = () => {
           fetchPolicy: 'no-cache',
         })
         .then((res) => {
-					setLoading(false)
+          setLoading(false);
           if (res && res.data && res.data.getOneApolloUser) {
-						const data = res.data.getOneApolloUser;
-						setOneApollo(data);
-						setTotalEarned(data.earnedHC);
-						setTotalRedeemed(data.burnedCredits + data.blockedCredits );
+            const data = res.data.getOneApolloUser;
+            setOneApollo(data);
+            setTotalEarned(data.earnedHC);
+            setTotalRedeemed(data.burnedCredits + data.blockedCredits);
           }
         })
         .catch((e) => {
@@ -311,101 +311,118 @@ export const OneApolloMembership: React.FC = () => {
         <div className={classes.oamContent}>
           <div className={classes.leftSection}>
             <MyProfile />
-          </div>					
+          </div>
           <div className={classes.rightSection}>
-							{ isLoading ? (
-							<div className={classes.circlularProgress}>
-								<CircularProgress />
-							</div>
-						) : (
-            <div className={classes.membershipContainer}>
-              <div className={classes.membershipCardContainer}>
-								<div className={`${classes.membershipCard} ${ oneApolloHc.tier === 'Gold' ? classes.gold
-								: oneApolloHc.tier === 'Silver' ? classes.silver : classes.platinum}`}>
-                  <div className={classes.mcContent}>
-                    <img src={require('images/one-apollo.svg')} alt="OneApollo Membership" />
-                    <div className={classes.mcUser}>
-                      <Typography component="h2">{oneApolloHc.name}</Typography>
-                      <Typography>{oneApolloHc.tier} Member</Typography>
+            {isLoading ? (
+              <div className={classes.circlularProgress}>
+                <CircularProgress />
+              </div>
+            ) : (
+              <div className={classes.membershipContainer}>
+                <div className={classes.membershipCardContainer}>
+                  <div
+                    className={`${classes.membershipCard} ${
+                      oneApolloHc.tier === 'Gold'
+                        ? classes.gold
+                        : oneApolloHc.tier === 'Silver'
+                        ? classes.silver
+                        : classes.platinum
+                    }`}
+                  >
+                    <div className={classes.mcContent}>
+                      <img src={require('images/one-apollo.svg')} alt="OneApollo Membership" />
+                      <div className={classes.mcUser}>
+                        <Typography component="h2">{oneApolloHc.name}</Typography>
+                        <Typography>{oneApolloHc.tier} Member</Typography>
+                      </div>
+                    </div>
+                    <div className={classes.healthCredits}>
+                      <img src={require('images/rupee.svg')} alt="Health Credits" />
+                      <Typography>Available HC</Typography>
+                      <Typography component="h3">{oneApolloHc.availableHC}</Typography>
                     </div>
                   </div>
-                  <div className={classes.healthCredits}>
-                    <img src={require('images/rupee.svg')} alt="Health Credits" />
-                    <Typography>Available HC</Typography>
-											<Typography component="h3">{oneApolloHc.availableHC}</Typography>
+                </div>
+                <div className={classes.membershipContent}>
+                  <Tabs
+                    value={tabValue}
+                    classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+                    onChange={(e, newValue) => {
+                      setTabValue(newValue);
+                    }}
+                  >
+                    <Tab
+                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                      label={`My Membership`}
+                      value={0}
+                    />
+                    <Tab
+                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                      label={`My Transcations`}
+                      value={1}
+                    />
+                  </Tabs>
+                  <div className={classes.tabContent}>
+                    {tabValue === 0 && <MyMembership />}
+                    {tabValue === 1 && (
+                      <TabContainer>
+                        <div className={classes.transactionHeader}>
+                          <div className={classes.thDetails}>
+                            <Typography>Total Earned</Typography>
+                            <Typography component="h2">{totalEarned.toFixed(2)}</Typography>
+                          </div>
+                          <div className={classes.thDetails}>
+                            <Typography>Total Redeemed</Typography>
+                            <Typography component="h2">{totalRedeemed.toFixed(2)}</Typography>
+                          </div>
+                        </div>
+                        <ul className={classes.transactionList}>
+                          {oneApolloTrxnList.length > 0 &&
+                            oneApolloTrxnList.map((transaction, index) => {
+                              return (
+                                <li key={index}>
+                                  <div className={classes.tContainer}>
+                                    <div className={classes.tContent}>
+                                      <img src={require('images/credit.svg')} alt="" />
+                                      <div className={classes.hcDetails}>
+                                        <Typography component="h3">
+                                          {transaction.businessUnit}
+                                        </Typography>
+                                        <Typography>
+                                          {moment(transaction.transactionDate).format(
+                                            'DD MMM YYYY'
+                                          )}
+                                        </Typography>
+                                      </div>
+                                    </div>
+                                    <div className={classes.transactionDetails}>
+                                      <Typography>
+                                        <span className={classes.earned}>Earned</span>{' '}
+                                        {transaction.earnedHC}
+                                      </Typography>
+                                      <Typography>
+                                        <span className={classes.redeemed}>Redeemed</span>{' '}
+                                        {transaction.redeemedHC}
+                                      </Typography>
+                                    </div>
+                                  </div>
+                                  <Typography>
+                                    Billing{' '}
+                                    <span>
+                                      Rs.{' '}
+                                      {(transaction.netAmount + transaction.redeemedHC).toFixed(2)}
+                                    </span>
+                                  </Typography>
+                                </li>
+                              );
+                            })}
+                        </ul>
+                      </TabContainer>
+                    )}
                   </div>
                 </div>
               </div>
-              <div className={classes.membershipContent}>
-                <Tabs
-                  value={tabValue}
-                  classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
-                  onChange={(e, newValue) => {
-                    setTabValue(newValue);
-                  }}
-                >
-                  <Tab
-                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                    label={`My Membership`}
-                    value={0}
-                  />
-                  <Tab
-                    classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                    label={`My Transcations`}
-                    value={1}
-                  />
-                </Tabs>
-                <div className={classes.tabContent}>
-                  {tabValue === 0 && (
-                    <MyMembership />
-                  )}
-                  {tabValue === 1 && (
-                    <TabContainer>
-                      <div className={classes.transactionHeader}>
-                        <div className={classes.thDetails}>
-                          <Typography>Total Earned</Typography>
-														<Typography component="h2">{totalEarned.toFixed(2)}</Typography>
-                        </div>
-                        <div className={classes.thDetails}>
-                          <Typography>Total Redeemed</Typography>
-													<Typography component="h2">{totalRedeemed.toFixed(2)}</Typography>
-                        </div>
-                      </div>
-                      <ul className={classes.transactionList}>
-												{oneApolloTrxnList.length > 0 &&
-												oneApolloTrxnList.map((transaction, index) => {
-													return (
-														<li key={index}>
-															<div className={classes.tContainer}>
-																<div className={classes.tContent}>
-																	<img src={require('images/credit.svg')} alt="" />
-																	<div className={classes.hcDetails}>
-																		<Typography component="h3">{transaction.businessUnit}</Typography>
-																		<Typography>{moment(transaction.transactionDate).format('DD MMM YYYY')}</Typography>
-																	</div>
-																</div>
-																<div className={classes.transactionDetails}>
-																	<Typography>
-																		<span className={classes.earned}>Earned</span> {transaction.earnedHC}
-																	</Typography>
-																	<Typography>
-																		<span className={classes.redeemed}>Redeemed</span> {transaction.redeemedHC}
-																	</Typography>
-																</div>
-															</div>
-															<Typography>
-																Billing <span>Rs. {(transaction.netAmount + transaction.redeemedHC).toFixed(2)}</span>
-															</Typography>
-														</li>
-													)
-												})}
-                      </ul>
-                    </TabContainer>
-                  )}
-                </div>
-              </div>
-            </div>
-						)}
+            )}
           </div>
         </div>
       </div>
