@@ -290,7 +290,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const { doctorDetails, doctorAvailablePhysicalSlots, doctorAvailableOnlineSlot } = props;
   const [onlineDirection, setOnlineDirection] = useState<boolean>(false);
   const [physicalDirection, setPhysicalDirection] = useState<boolean>(false);
-  const doctorName = doctorDetails && doctorDetails.fullName;
+  const doctorName = doctorDetails && doctorDetails.displayName;
   const physcalFee = doctorDetails && doctorDetails.physicalConsultationFees;
   const onlineFee = doctorDetails && doctorDetails.onlineConsultationFees;
   const doctorId = doctorDetails && doctorDetails.id;

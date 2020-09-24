@@ -257,14 +257,14 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       const {
         doctorType,
         experience,
-        fullName,
+        displayName,
         specialty: { name },
       } = doctorData;
       const eventData = {
         availableInMins: getDiffInMinutes(doctorSlots.availableSlot),
         docCategory: doctorType,
         exp: experience,
-        name: fullName,
+        name: displayName,
         specialty: name,
       };
       doctorProfileViewTracking(eventData);
@@ -287,10 +287,9 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           setDoctorData(data.getDoctorDetailsById);
           const {
             id,
-            fullName,
+            displayName,
             photoUrl,
             firstName,
-            displayName,
             lastName,
             doctorHospital,
             specialty,
@@ -423,13 +422,13 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             ],
           });
           setMetaTagProps({
-            title: `${fullName}, ${docSpecialty} in ${city}, Consult Online Now - Apollo 247`,
-            description: `Consult ${fullName} (${docSpecialty}) online now. Book online appointment and clinic visit with ${fullName} in just a few clicks. Know fees, availability, experience and more about ${fullName}.`,
+            title: `${displayName}, ${docSpecialty} in ${city}, Consult Online Now - Apollo 247`,
+            description: `Consult ${displayName} (${docSpecialty}) online now. Book online appointment and clinic visit with ${displayName} in just a few clicks. Know fees, availability, experience and more about ${displayName}.`,
             canonicalLink:
               window &&
               window.location &&
               window.location.origin &&
-              `${window.location.origin}/doctors/${readableParam(fullName)}-${id}`,
+              `${window.location.origin}/doctors/${readableParam(displayName)}-${id}`,
           });
         }
         setError(false);
@@ -505,7 +504,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     </>
                   ) : null}
 
-                  <span>{doctorData.fullName || ''}</span>
+                  <span>{doctorData.displayName || ''}</span>
                 </>
               )}
             </div>
