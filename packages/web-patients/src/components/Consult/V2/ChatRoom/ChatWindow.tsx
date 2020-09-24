@@ -18,7 +18,7 @@ import WarningModel from 'components/WarningModel';
 import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
 import { DoctorCard } from 'components/Consult/V2/ChatRoom/DoctorCard';
 import { WelcomeCard } from 'components/Consult/V2/ChatRoom/WelcomeCard';
-import { JdInfoCard } from 'components/Consult/V2/ChatRoom/JdInfoCard';
+import { JdInfoCard } from 'components/Consult/V2/ChatRoom/JuniordoctorInfoCard';
 import { BookRescheduleAppointmentInput, STATUS } from 'graphql/types/globalTypes';
 // import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import FormHelperText from '@material-ui/core/FormHelperText';
