@@ -1214,6 +1214,7 @@ export const uploadPdfBase64ToPrism = async (
       diagnosis: [],
       diagnosticPrescription: diagnosticPrescription,
       medicinePrescriptions: caseSheetMedicinePrescription,
+      appointmentDisplayId: caseSheet && caseSheet.appointment && caseSheet.appointment.displayId ? caseSheet.appointment.displayId : ''
     },
     uhid: patientDetails.uhid,
   };
