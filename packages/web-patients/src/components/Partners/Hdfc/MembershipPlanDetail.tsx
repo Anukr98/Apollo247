@@ -13,6 +13,12 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useApolloClient } from 'react-apollo-hooks';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
 
 import {
   GetAllUserSubscriptionsWithPlanBenefits,
@@ -147,12 +153,15 @@ const useStyles = makeStyles((theme: Theme) => {
       bottom: 16,
       right: 0,
       [theme.breakpoints.down('sm')]: {
-        bottom: -55,
+        bottom: 0,
         left: 0,
         padding: '12px 16px',
         background: '#fff',
+        position: 'fixed',
+        zIndex: 999,
       },
-      '& a, button': {
+
+      '& a': {
         color: '#FC9916',
         position: 'relative',
         background: '#fff',
@@ -176,7 +185,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     expansionContainer: {
-      //   padding: '20px 0 50px',
+      padding: 30,
+      [theme.breakpoints.down('sm')]: {
+        padding: 16,
+      },
     },
     panelRoot: {
       boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.16)',
@@ -351,9 +363,9 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
     },
     tabContent: {
-      padding: 30,
+      // padding: 30,
       [theme.breakpoints.down('sm')]: {
-        padding: 16,
+        // padding: 16,
       },
     },
     couponContent: {
@@ -565,6 +577,34 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    benefitsConsumedContainer: {},
+    benefitsContent: {
+      padding: 30,
+      [theme.breakpoints.down('sm')]: {
+        padding: 16,
+      },
+    },
+    table: {
+      '& th': {
+        fonsSize: 14,
+        fontWeight: 700,
+        color: '#00B38E',
+        textTransform: 'uppercase',
+      },
+      '& td': {
+        fontSize: 12,
+        fontWeight: 500,
+        color: '#000',
+        textTransform: 'uppercase',
+      },
+    },
+    tableContainer: {
+      boxShadow: '0px 1px 8px rgba(0, 0, 0, 0.16)',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        overflowX: 'auto',
+      },
+    },
   };
 });
 interface TabPanelProps {
@@ -646,6 +686,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
       })
       .then((response) => {
         setSubscriptionInclusions(response.data.GetAllUserSubscriptionsWithPlanBenefits.response);
+
         setPlanName(response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].name);
         setBenefitsWorth(
           response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].benefits_worth
@@ -818,9 +859,9 @@ export const MembershipPlanDetail: React.FC = (props) => {
                     <ul className={classes.couponList}>
                       {subscriptionInclusions &&
                         subscriptionInclusions[0] &&
-                        subscriptionInclusions[0].benefits.map((item: any) => {
+                        subscriptionInclusions[0].benefits.map((item: any, index: any) => {
                           return (
-                            <li>
+                            <li key={index}>
                               <div className={classes.couponCard}>
                                 <Typography component="h2">{item.header_content}</Typography>
                                 <Typography>{item.description}</Typography>
@@ -842,7 +883,36 @@ export const MembershipPlanDetail: React.FC = (props) => {
                   </div>
                 </TabPanel>
                 <TabPanel value={value} index={1}>
-                  Item two
+                  <div className={classes.benefitsConsumedContainer}>
+                    <div className={classes.benefitsContent}>
+                      <TableContainer className={classes.tableContainer}>
+                        <Table className={classes.table} aria-label="simple table">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Benefits)</TableCell>
+                              <TableCell>What You Get</TableCell>
+                              <TableCell>Redemption Limit</TableCell>
+                              <TableCell>Status</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {subscriptionInclusions &&
+                              subscriptionInclusions[0] &&
+                              subscriptionInclusions[0].benefits.map((item: any, index: any) => {
+                                return (
+                                  <TableRow key={index}>
+                                    <TableCell>{item.header_content}</TableCell>
+                                    <TableCell>{item.description}</TableCell>
+                                    <TableCell>once</TableCell>
+                                    <TableCell>{item.attribute_type.remaining}</TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </div>
+                  </div>
                 </TabPanel>
               </div>
             </div>

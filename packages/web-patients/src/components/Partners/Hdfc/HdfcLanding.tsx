@@ -77,6 +77,9 @@ const useStyles = makeStyles((theme: Theme) => {
     mainBanner: {
       width: '100%',
       position: 'relative',
+      '& img': {
+        width: '100%',
+      },
       [theme.breakpoints.down('sm')]: {
         borderRadius: 10,
         overflow: 'hidden',
