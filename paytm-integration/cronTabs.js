@@ -3,6 +3,8 @@ const Constants = require('./Constants');
 const fs = require('fs');
 const format = require('date-fns/format');
 const addDays = require('date-fns/addDays');
+const addHours = require('date-fns/addHours');
+const url = require('url');
 
 exports.autoSubmitJDCasesheet = (req, res) => {
   const requestJSON = {
@@ -73,7 +75,7 @@ exports.FollowUpNotification = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendFollowUpNotification +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -102,7 +104,7 @@ exports.ApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -131,7 +133,7 @@ exports.DoctorApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendDoctorReminderNotifications.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -160,7 +162,38 @@ exports.DailyAppointmentSummary = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendDailyAppointmentSummary +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
+        if (err) throw err;
+        console.log('Updated!');
+      });
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
+
+exports.DailyAppointmentSummaryOps = (req, res) => {
+  const requestJSON = {
+    query: Constants.DAILY_APPOINTMENT_SUMMARY_OPS,
+  };
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      const fileName =
+        process.env.PHARMA_LOGS_PATH +
+        new Date().toDateString() +
+        '-dailyAppointmentSummaryOps.txt';
+      let content =
+        new Date().toString() +
+        '\n---------------------------\n' +
+        response.data.data.sendDailyAppointmentSummaryOps +
+        '\n-------------------\n';
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -190,7 +223,7 @@ exports.PhysicalApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendPhysicalApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -248,7 +281,7 @@ exports.updateSdSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateSdSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -314,7 +347,7 @@ exports.updateJdSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateJdSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -386,7 +419,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateDoctorFeeSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -464,7 +497,7 @@ exports.updateDoctorSlotsEs = (req, res) => {
                       .reason;
                 }
                 console.log(response.data.data.addAllDoctorSlotsElastic);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -539,6 +572,31 @@ exports.sendCallStartNotification = (req, res) => {
       console.log('error', error);
     });
 };
+
+exports.appointmentReminderTemplate = (req, res) => {
+
+  try {
+
+    console.log(`\n\n url*********`, req.url);
+    console.log(`\n\n headers*********`, req.headers);
+    console.log(`\n\n params*********`, req.params);
+
+    let urlObject = url.parse(req.url, true);
+    const appointmentDateTime = format(new Date(urlObject.query.CustomField.split('_')[0]), "h m a");
+    const appointmentType = urlObject.query.CustomField.split('_')[1];
+
+    console.log(`Hi, You have an upcoming appointment at ${appointmentDateTime} today from Apollo 247. 
+    It will be ${appointmentType} consultation.Dial 1 to repeat the same message. `);
+
+    return res.contentType('text/plain').status(200).send(`Hi, You have an upcoming appointment at ${appointmentDateTime} today from Apollo 247. 
+         It will be ${appointmentType} consultation.Dial 1 to repeat the same message. `);
+
+  } catch (ex) {
+    console.error(ex);
+    return res.status(400).end();
+  }
+
+}
 
 exports.saveMedicineInfoRedis = (req, res) => {
   console.log(req.body, 'input body');

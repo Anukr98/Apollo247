@@ -78,7 +78,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     partnerDoctorCount: Int
   }
 
-  type Specialty  {
+  type Specialty {
     id: String
     name: String
     specialtydisplayName: String
@@ -416,26 +416,25 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         unit: 'km',
       },
     });
-  } 
-    elasticSort.push({
-      'doctorSlots.slots.slot': {
-        order: 'asc',
-        nested_path: 'doctorSlots.slots',
-        nested_filter: {
-          bool: {
-            must: [
-              { match: { 'doctorSlots.slots.status': 'OPEN' } },
-              {
-                range: {
-                  'doctorSlots.slots.slotThreshold': { gt: 'now' },
-                },
+  }
+  elasticSort.push({
+    'doctorSlots.slots.slot': {
+      order: 'asc',
+      nested_path: 'doctorSlots.slots',
+      nested_filter: {
+        bool: {
+          must: [
+            { match: { 'doctorSlots.slots.status': 'OPEN' } },
+            {
+              range: {
+                'doctorSlots.slots.slotThreshold': { gt: 'now' },
               },
-            ],
-          },
+            },
+          ],
         },
       },
-    });
-  
+    },
+  });
 
   if (!process.env.ELASTIC_INDEX_DOCTORS) {
     throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
@@ -668,18 +667,35 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     gender: [],
   };
 
+  const brandMappings: any = {
+    APOLLO: 'APOLLO_HOSPITALS',
+    CLINIC: 'APOLLO_CLINIC',
+    CRADLE: 'APOLLO_CRADLE',
+    DOCTOR_CONNECT: 'DOCTOR_CONNECT',
+    FERTILITY: 'APOLLO_FERTILITY',
+    JUNIOR: 'JUNIOR',
+    PAYROLL: 'APOLLO',
+    SPECTRA: 'APOLLO_SPECTRA_HOSPITALS',
+    STAR_APOLLO: 'STAR_APOLLO',
+    SUGAR: 'APOLLO_SUGAR_CLINICS',
+    APOLLO_HOMECARE: 'APOLLO_HOMECARE',
+    WHITE_DENTAL: 'APOLLO_WHITE_DENTAL',
+  };
+
   function pushInFilters(esObject: any, field: string) {
     esObject[field]['buckets'].forEach((element: { key: 'string'; doc_count: number }) => {
       if (
         element['key'] &&
         !('name' in ifKeyExist(filters[field], 'name', capitalize(element['key'])))
       ) {
-        if (field != 'brands') {
+        if (field == 'gender') {
+          filters[field].push({ name: element['key'].toUpperCase() });
+        } else if (field != 'brands') {
           filters[field].push({ name: capitalize(element['key']) });
         } else {
           filters[field].push({
             name: element['key'],
-            brandName: capitalize(element['key']),
+            brandName: capitalize(brandMappings[element['key']]),
             image: '',
           });
         }
@@ -855,7 +871,7 @@ const getDoctorList: Resolver<
   if (!args.filterInput.searchText) {
     if (args.filterInput.geolocation && args.filterInput.sort === 'distance') {
       elasticSort.push(elasticDoctorDistanceSort(args.filterInput));
-    } 
+    }
     elasticSort.push(elasticDoctorAvailabilitySort());
     elasticSort.push(elasticDoctorDoctorTypeSort());
   }

@@ -28,6 +28,8 @@ export interface UIElementsContextProps {
   hidePopup: () => void;
   showNeedHelp: boolean;
   setShowNeedHelp: (show: boolean) => void;
+  showFloatingCotainer: (params: FloatingContainerParams) => void;
+  hideFloatingContainer: () => void;
 }
 
 export const UIElementsContext = createContext<UIElementsContextProps>({
@@ -40,6 +42,8 @@ export const UIElementsContext = createContext<UIElementsContextProps>({
   hidePopup: () => {},
   showNeedHelp: false,
   setShowNeedHelp: (show) => {},
+  showFloatingCotainer: (params: FloatingContainerParams) => {},
+  hideFloatingContainer: () => {},
 });
 
 export type AphAlertCTAs = {
@@ -81,6 +85,14 @@ type PopUpParams = {
   timer?: number;
 };
 
+type FloatingContainerParams = {
+  child?: React.ReactNode;
+  mainContainerStyle?: StyleProp<ViewStyle>;
+  backHandleEnabled?: boolean;
+  unDismissable?: boolean;
+  customBack?: () => void;
+};
+
 export const UIElementsProvider: React.FC = (props) => {
   const [loading, setLoading] = useState(false);
   const [isAlertVisible, setAlertVisible] = useState(false);
@@ -88,9 +100,11 @@ export const UIElementsProvider: React.FC = (props) => {
   const [showNeedHelp, setShowNeedHelp] = useState<boolean>(false);
   const [isPopUpVisible, setIsPopUpVisible] = useState(false);
   const [popUpData, setPopUpData] = useState<PopUpParams>({});
+  const [floatingContainer, setFloatingContainer] = useState<boolean>(false);
+  const [floatingValue, setFloatingValue] = useState<FloatingContainerParams>({});
 
   useEffect(() => {
-    if (isAlertVisible || loading || isPopUpVisible) {
+    if (isAlertVisible || loading || isPopUpVisible || floatingValue.backHandleEnabled) {
       BackHandler.addEventListener('hardwareBackPress', handleBack);
     } else {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -98,7 +112,7 @@ export const UIElementsProvider: React.FC = (props) => {
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
-  }, [isAlertVisible, loading, isPopUpVisible]);
+  }, [isAlertVisible, loading, isPopUpVisible, floatingValue]);
 
   const handleBack = async () => {
     console.log('handleBack Called');
@@ -108,6 +122,13 @@ export const UIElementsProvider: React.FC = (props) => {
     }
     if (!popUpData.unDismissable) {
       hidePopup();
+    }
+    if (!floatingValue.unDismissable) {
+      if (floatingValue.customBack) {
+        floatingValue.customBack();
+      } else {
+        hideFloatingContainer();
+      }
     }
     return true;
   };
@@ -233,13 +254,13 @@ export const UIElementsProvider: React.FC = (props) => {
             <View style={[styles.popUpMainContainer, style]}>
               {icon ? icon : null}
               <View style={[styles.popUpPointer, popUpPointerStyle]} />
-              <View>
-                {title && <Text style={[styles.popUpTitleText, titleStyle]}>{title}</Text>}
-                {description && (
+              <View style={{ flex: 1 }}>
+                {title ? <Text style={[styles.popUpTitleText, titleStyle]}>{title}</Text> : null}
+                {description ? (
                   <Text style={[styles.popUpDescriptionText, descriptionTextStyle]}>
                     {description}
                   </Text>
-                )}
+                ) : null}
                 {!hideOk ? (
                   <TouchableOpacity
                     style={[styles.okContainer, okContainerStyle]}
@@ -267,6 +288,23 @@ export const UIElementsProvider: React.FC = (props) => {
     setPopUpData({});
   };
 
+  const renderFloatingContainer = () => {
+    if (floatingContainer) {
+      const { child, mainContainerStyle } = floatingValue;
+      return <View style={mainContainerStyle}>{child}</View>;
+    }
+  };
+
+  const showFloatingCotainer = (params: FloatingContainerParams) => {
+    setFloatingValue(params);
+    setFloatingContainer(true);
+  };
+
+  const hideFloatingContainer = () => {
+    setFloatingContainer(false);
+    setFloatingValue({});
+  };
+
   return (
     <UIElementsContext.Provider
       value={{
@@ -279,6 +317,8 @@ export const UIElementsProvider: React.FC = (props) => {
         hidePopup,
         showNeedHelp,
         setShowNeedHelp,
+        showFloatingCotainer,
+        hideFloatingContainer,
       }}
     >
       <View style={{ flex: 1 }}>
@@ -287,6 +327,7 @@ export const UIElementsProvider: React.FC = (props) => {
           {renderNeedHelp()}
           {renderLoading()}
           {renderPopUp()}
+          {renderFloatingContainer()}
         </View>
         {renderAphAlert()}
       </View>

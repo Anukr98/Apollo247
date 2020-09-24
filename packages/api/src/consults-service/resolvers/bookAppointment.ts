@@ -24,6 +24,7 @@ import { DoctorPatientExternalConnectRepository } from 'doctors-service/reposito
 import { ApiConstants } from 'ApiConstants';
 import { validateCoupon } from 'helpers/couponServices';
 import { ValidateCouponRequest } from 'types/coupons';
+import { sendMessageToASBQueue } from 'consults-service/resolvers/appointmentReminderIVRForDoctors';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -323,8 +324,8 @@ const bookAppointment: Resolver<
     const amount = appointmentInput.actualAmount
       ? appointmentInput.actualAmount
       : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-      ? parseInt(docDetails.physicalConsultationFees.toString(), 10)
-      : parseInt(docDetails.onlineConsultationFees.toString(), 10);
+        ? parseInt(docDetails.physicalConsultationFees.toString(), 10)
+        : parseInt(docDetails.onlineConsultationFees.toString(), 10);
 
     const payload: ValidateCouponRequest = {
       mobile: patientDetails.mobileNumber.replace('+91', ''),
@@ -343,8 +344,8 @@ const bookAppointment: Resolver<
             appointmentInput.appointmentType == APPOINTMENT_TYPE.ONLINE
               ? 1
               : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-              ? 0
-              : -1,
+                ? 0
+                : -1,
           cost: parseInt(amount.toString(), 10),
           rescheduling: false,
         },
@@ -400,6 +401,10 @@ const bookAppointment: Resolver<
     reason: ApiConstants.BOOK_APPOINTMENT_HISTORY_REASON.toString(),
   };
   appts.saveAppointmentHistory(historyAttrs);
+
+  if (docDetails.isIvrSet) {
+    sendMessageToASBQueue(docDetails, appointmentAttrs);
+  }
 
   return { appointment };
 };

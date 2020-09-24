@@ -159,6 +159,9 @@ export enum WebEngageEventName {
   HOME_PAGE_VIEWED = 'Pharmacy Home page viewed',
   PRODUCT_PAGE_VIEWED = 'Product page viewed',
   CATEGORY_PAGE_VIEWED = 'Category page viewed',
+
+  //chatRoom Events
+  PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
 }
 
 export interface PatientInfo {
@@ -320,6 +323,7 @@ export interface WebEngageEvents {
     'Brand ID': string;
     'category name': string;
     'category ID': string;
+    'pincode': string;
   };
 
   [WebEngageEventName.CATEGORY_CLICKED]: {
@@ -343,8 +347,8 @@ export interface WebEngageEvents {
   [WebEngageEventName.CATEGORY_LIST_GRID_VIEW]: {
     'Category name'?: string;
     'Category id'?: string;
-    'Type': 'Grid' | 'List';
-    'Source': 'Search' | 'Category';
+    Type: 'Grid' | 'List';
+    Source: 'Search' | 'Category';
   };
   [WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED]: {
     value: boolean;
@@ -647,6 +651,9 @@ export interface WebEngageEvents {
     'Speciality ID': string;
     'Hospital Name': string;
     'Hospital City': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.TYPE_OF_CONSULT_SELECTED]: {
     'Consultation Type': string;
@@ -686,6 +693,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    Rank: number;
   };
   [WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK]: {
     'Online Price': number;
@@ -745,6 +753,48 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Patient UHID': string;
+  };
+
+  //chat room
+  [WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
+  };
+  [WebEngageEventName.CHAT_WITH_DOCTOR]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   // confirm the type of data for the below
   [WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
@@ -976,6 +1026,9 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
 
   [WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER]: {
@@ -994,6 +1047,9 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.FILL_MEDICAL_DETAILS]: {
     'Doctor Name': string;
@@ -1084,6 +1140,9 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.CONTINUE_CONSULTATION_CLICKED]: {
     'Doctor Name': string;
@@ -1102,6 +1161,9 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.CANCEL_CONSULTATION_CLICKED]: {
     'Doctor Name': string;
@@ -1120,6 +1182,9 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.PRESCRIPTION_RECEIVED]: {
     'Doctor Name': string;
@@ -1138,6 +1203,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    City: string;
   };
   [WebEngageEventName.SD_CONSULTATION_STARTED]: {
     'Doctor Name': string;
@@ -1242,23 +1308,6 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
-  [WebEngageEventName.CHAT_WITH_DOCTOR]: {
-    'Doctor Name': string;
-    'Speciality Name': string;
-    'Speciality ID': string;
-    'Doctor Category': DoctorType;
-    'Consult Date Time': Date;
-    'Consult Mode': 'Online' | 'Physical';
-    'Hospital Name': string;
-    'Hospital City': string;
-    'Consult ID': string;
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Customer ID': string;
-  };
   [WebEngageEventName.NO_SLOTS_FOUND]: {
     'Doctor Name': string;
     'Speciality Name': string;
@@ -1288,7 +1337,7 @@ export interface WebEngageEvents {
     source: 'deeplink' | 'widget' | 'search';
     ProductId: string;
     ProductName: string;
-    "Stock availability": YesOrNo;
+    'Stock availability': YesOrNo;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink';

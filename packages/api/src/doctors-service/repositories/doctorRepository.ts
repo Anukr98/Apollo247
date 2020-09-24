@@ -6,7 +6,6 @@ import {
   DOCTOR_ONLINE_STATUS,
   CityPincodeMapper,
   ConsultHours,
-  Secretary,
 } from 'doctors-service/entities';
 import { ES_DOCTOR_SLOT_STATUS } from 'consults-service/entities';
 import {
@@ -90,7 +89,7 @@ export class DoctorRepository extends Repository<Doctor> {
         },
       };
       slotsAdded += doctorId + ' - ' + format(stDate, 'yyyy-MM-dd') + ',';
-      const updateResp = await client.update(doc1);
+      await client.update(doc1);
       stDate = addDays(stDate, 1);
     }
     client.close();
@@ -238,9 +237,9 @@ export class DoctorRepository extends Repository<Doctor> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${appt.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
             if (availableSlots.indexOf(sl) >= 0) {
               doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
             }
@@ -369,7 +368,7 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
-  getDoctorDetailswithRelations() {}
+  getDoctorDetailswithRelations() { }
 
   updateFirebaseId(id: string, firebaseToken: string) {
     return this.update(id, { firebaseToken: firebaseToken });
@@ -385,6 +384,10 @@ export class DoctorRepository extends Repository<Doctor> {
 
   updateDoctorChatDays(id: string, chatDays: number) {
     return this.update(id, { chatDays });
+  }
+
+  async updateAppointmentReminderIVR(id: string, IVRSettings: Partial<Doctor>) {
+    return this.update(id, IVRSettings);
   }
 
   findById(id: string) {
@@ -409,7 +412,12 @@ export class DoctorRepository extends Repository<Doctor> {
   getDoctorSecretary(id: string) {
     return this.findOne({
       where: [{ id, isActive: true }],
-      relations: ['doctorSecretary', 'doctorSecretary.secretary'],
+      relations: [
+        'doctorSecretary',
+        'doctorSecretary.secretary',
+        'doctorHospital',
+        'doctorHospital.facility',
+      ],
     });
   }
 
@@ -840,8 +848,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 fee.maximum === -1
                   ? qb.where('doctor.onlineConsultationFees >= ' + fee.minimum)
                   : qb
-                      .where('doctor.onlineConsultationFees >= ' + fee.minimum)
-                      .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
+                    .where('doctor.onlineConsultationFees >= ' + fee.minimum)
+                    .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
               })
             );
           });
@@ -858,8 +866,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 exp.maximum === -1
                   ? qb.where('doctor.experience >= ' + exp.minimum)
                   : qb
-                      .where('doctor.experience >= ' + exp.minimum)
-                      .andWhere('doctor.experience <= ' + exp.maximum);
+                    .where('doctor.experience >= ' + exp.minimum)
+                    .andWhere('doctor.experience <= ' + exp.maximum);
               })
             );
           });
@@ -1119,6 +1127,19 @@ export class DoctorRepository extends Repository<Doctor> {
 
   getAllDocsById(ids: string[]) {
     return this.find({ where: { id: In(ids) } });
+  }
+
+  getAllDocAdminsById(ids: string[]) {
+    return this.find({
+      where: { id: In(ids) },
+      relations: [
+        'admindoctormapper',
+        'admindoctormapper.adminuser',
+        'specialty',
+        'doctorHospital',
+        'doctorHospital.facility',
+      ],
+    });
   }
 
   getAllDoctors(doctorId: string, limit: number, offset: number) {

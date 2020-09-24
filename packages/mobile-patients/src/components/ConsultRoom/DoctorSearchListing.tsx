@@ -880,7 +880,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     const movedata = props.navigation.getParam('MoveDoctor') || '';
     if (movedata == 'MoveDoctor') {
-      props.navigation.push(AppRoutes.SymptomChecker);
+      props.navigation.goBack();
     } else {
       try {
         const MoveDoctor = props.navigation.getParam('movedFrom') || '';
@@ -1026,6 +1026,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       return (
         <DoctorCard
           key={index}
+          rowId={index + 1}
           rowData={rowData}
           navigation={props.navigation}
           doctorsNextAvailability={doctorsNextAvailability}

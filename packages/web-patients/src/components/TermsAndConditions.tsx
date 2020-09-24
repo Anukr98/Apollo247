@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import { Theme } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { dataLayerTracking } from 'gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -90,6 +91,19 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const TermsAndConditions: React.FC = () => {
   const classes = useStyles({});
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Terms Page',
+      pageLOB: 'Others',
+      pageType: 'Terms Page',
+    });
+    /**Gtm code start end */
+  }, []);
+
   const [metaTagProps, setMetaTagProps] = useState(null);
   setMetaTagProps({
     title: 'Apollo 247 - Terms and Conditions - Apollo Hospitals',

@@ -423,7 +423,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
         }}
       >
         <ul>
-          <li
+          {/* <li
             onClick={() => {
               setHeaderPincodeError(null);
               locateCurrentLocation();
@@ -431,7 +431,7 @@ export const MedicineLocationSearch: React.FC = (props) => {
             }}
           >
             Auto Select Location
-          </li>
+          </li> */}
           <li
             onClick={() => {
               setIsLocationPopover(false);

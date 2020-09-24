@@ -334,6 +334,90 @@ export interface NotificationResponse {
   data: { data: [] };
 }
 
+export interface SymptomTrackerChatRequest {
+  userID: string;
+  profileID: string;
+  userProfile: SymptomTrackerUserProfile;
+}
+
+interface SymptomTrackerUserProfile {
+  age: number;
+  gender: string;
+}
+
+export interface SymptomTrackerChatResponse {
+  dialogue: SymptomTrackerInfo;
+  id: string;
+  msg?: string;
+}
+
+interface SymptomTrackerInfo {
+  options: DefaultSymptoms[];
+  sender?: string;
+  status?: string;
+  text: string;
+}
+
+export interface DefaultSymptoms {
+  name: string;
+  id: string;
+  description: string;
+  url?: string;
+}
+
+export interface AutoCompleteSymptomsParams {
+  text: string;
+  filter: string;
+}
+
+interface AutoCompleteSymptomsResponse {
+  hits?: number;
+  results: AutoCompleteSymptoms[];
+  status?: string;
+}
+
+export interface AutoCompleteSymptoms {
+  name: string;
+  id: string;
+  description: string;
+  url?: string;
+  type?: string;
+}
+
+export interface UpdateSymptomTrackerChatRequest {
+  dialogue: {
+    text: string;
+    options: [];
+    status: string;
+    sender: string;
+  };
+}
+
+interface SymptomsTrackerResultResponse {
+  diseases: SymptomsDiseases[];
+  specialities: SymptomsSpecialities[];
+  symptoms: {
+    id: string;
+    name: string;
+  }[];
+}
+
+interface SymptomsDiseases {
+  description: string;
+  id: string;
+  name: string;
+  score: number;
+  speciality: string;
+  url?: string;
+}
+
+export interface SymptomsSpecialities {
+  departmentID?: string[];
+  description?: string;
+  diseases?: string[];
+  name: string;
+}
+
 const config = AppConfig.Configuration;
 
 export const getMedicineDetailsApi = (
@@ -558,11 +642,13 @@ export const getPlaceInfoByPlaceId = (
   return Axios.get(url);
 };
 
-export const getLatLongFromAddress = (address: string) : Promise<AxiosResponse<PlacesApiResponse>> =>{
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}`
+export const getLatLongFromAddress = (
+  address: string
+): Promise<AxiosResponse<PlacesApiResponse>> => {
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${googlePlacesApiKey}`;
   return Axios.get(url);
-}
-  
+};
+
 // let cancelAutoCompletePlaceSearchApi: Canceler | undefined;
 
 export const autoCompletePlaceSearch = (
@@ -580,14 +666,14 @@ export const autoCompletePlaceSearch = (
   });
 };
 
-let cancelGetDeliveryTAT247 : Canceler | undefined;
+let cancelGetDeliveryTAT247: Canceler | undefined;
 
 export const getDeliveryTAT247 = (
-  params : TatApiInput247
-) : Promise<AxiosResponse<GetTatResponse247>> => {
+  params: TatApiInput247
+): Promise<AxiosResponse<GetTatResponse247>> => {
   const CancelToken = Axios.CancelToken;
   cancelGetDeliveryTAT247 && cancelGetDeliveryTAT247();
-  const url = `${config.UATTAT_CONFIG[0]}/tat`
+  const url = `${config.UATTAT_CONFIG[0]}/tat`;
   return Axios.post(url, params, {
     headers: {
       Authorization: config.UATTAT_CONFIG[1],
@@ -727,5 +813,40 @@ export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> =>
 export const userSpecificCoupon = (mobileNumber: string): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
   const url = `${baseUrl}/availableCoupons?mobile=${mobileNumber}`;
+  return Axios.get(url);
+};
+
+export const startSymptomTrackerChat = async (
+  data: SymptomTrackerChatRequest
+): Promise<AxiosResponse<SymptomTrackerChatResponse>> => {
+  const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
+  return Axios.post(baseUrl, data);
+};
+
+export const fetchAutocompleteSymptoms = (
+  chatId: string,
+  params: AutoCompleteSymptomsParams
+): Promise<AxiosResponse<AutoCompleteSymptomsResponse>> => {
+  const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
+  const url = `${baseUrl}/${chatId}/autosuggest`;
+  return Axios.get(url, {
+    params: params,
+  });
+};
+
+export const updateSymptomTrackerChat = async (
+  chatId: string,
+  data: UpdateSymptomTrackerChatRequest
+): Promise<AxiosResponse<SymptomTrackerChatResponse>> => {
+  const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
+  const url = `${baseUrl}/${chatId}`;
+  return Axios.patch(url, data);
+};
+
+export const getSymptomsTrackerResult = (
+  chatId: string
+): Promise<AxiosResponse<SymptomsTrackerResultResponse>> => {
+  const baseUrl = AppConfig.Configuration.SYMPTOM_TRACKER;
+  const url = `${baseUrl}/${chatId}/specialities`;
   return Axios.get(url);
 };

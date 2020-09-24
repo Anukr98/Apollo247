@@ -22,6 +22,7 @@ import {
   postWebEngageEvent,
   postAppsFlyerEvent,
   SetAppsFlyerCustID,
+  UnInstallAppsFlyer,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -68,6 +69,7 @@ import { Relation } from '../graphql/types/globalTypes';
 import { ApolloLogo } from './ApolloLogo';
 import AsyncStorage from '@react-native-community/async-storage';
 import SmsRetriever from 'react-native-sms-retriever';
+import { saveTokenDevice } from '../helpers/clientCalls';
 
 const { height, width } = Dimensions.get('window');
 
@@ -148,7 +150,7 @@ const styles = StyleSheet.create({
   },
 });
 
-let timer = 900;
+let timer = 120;
 export type ReceivedSmsMessage = {
   originatingAddress: string;
   body: string;
@@ -167,7 +169,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [isValidOTP, setIsValidOTP] = useState<boolean>(false);
   const [invalidOtpCount, setInvalidOtpCount] = useState<number>(0);
   const [showErrorMsg, setShowErrorMsg] = useState<boolean>(false);
-  const [remainingTime, setRemainingTime] = useState<number>(900);
+  const [remainingTime, setRemainingTime] = useState<number>(120);
   const [intervalId, setIntervalId] = useState<number>(0);
   const [otp, setOtp] = useState<string>('');
   const [isresent, setIsresent] = useState<boolean>(false);
@@ -271,10 +273,10 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             const seconds = Math.ceil(dif / 1000);
             console.log(seconds, 'seconds');
             if (obj.invalidAttems === 3) {
-              if (seconds < 900) {
+              if (seconds < 120) {
                 setInvalidOtpCount(3);
                 setIsValidOTP(false);
-                timer = 900 - seconds;
+                timer = 120 - seconds;
                 console.log(timer, 'timertimer');
                 setRemainingTime(timer);
                 // startInterval(timer);
@@ -591,6 +593,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         navigateTo(AppRoutes.MultiSignup);
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
+        deviceTokenAPI(mePatient.id);
         navigateTo(AppRoutes.ConsultRoom);
       }
     } else {
@@ -602,6 +605,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         navigateTo(AppRoutes.SignUp);
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
+        deviceTokenAPI(mePatient.id);
         navigateTo(AppRoutes.ConsultRoom);
       }
     }
@@ -638,19 +642,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   useEffect(() => {
-    // const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
-    //   const newOtp = message.body.match(/-*[0-9]+/);
-    //   const otpString = newOtp ? newOtp[0] : '';
-    //   console.log(otpString, otpString.length, 'otpString');
-    //   setOtp(otpString.trim());
-    //   setIsValidOTP(true);
-    // });
-    // setSubscriptionId(subscriptionId);
-    // textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
-    // backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-    //   console.log('hardwareBackPress');
-    //   return false;
-    // });
+    getDeviceToken();
     AppState.addEventListener('change', _handleAppStateChange);
     if (Platform.OS === 'android') {
       smsListenerAndroid();
@@ -669,22 +661,28 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     };
   }, [subscriptionId]);
 
-  // useEffect(() => {
-  //   if (timer === 1 || timer === 0) {
-  //     console.log('timer', 'wedfrtgy5u676755ertyuiojkhgfghjkgf');
-  //     timer = 900;
-  //     setRemainingTime(900);
-  //     setShowErrorMsg(false);
-  //     setInvalidOtpCount(0);
-  //     setIsValidOTP(true);
-  //     clearInterval(intervalId);
-  //     _removeFromStore();
-  //   }
-  // }, [intervalId, _removeFromStore]);
+  const getDeviceToken = () => {
+    firebase
+      .messaging()
+      .getToken()
+      .then((token) => {
+        console.log('token', token);
+        AsyncStorage.setItem('deviceToken', JSON.stringify(token));
+        UnInstallAppsFlyer(token);
+      })
+      .catch((e) => {
+        CommonBugFender('OTPVerification_getDeviceToken', e);
+      });
+  };
+
+  const deviceTokenAPI = async (patientId: string) => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
+    saveTokenDevice(client, deviceToken2, patientId);
+  };
 
   const onStopTimer = () => {
-    // timer = 900;
-    setRemainingTime(900);
+    setRemainingTime(120);
     setShowErrorMsg(false);
     setInvalidOtpCount(0);
     setIsValidOTP(true);

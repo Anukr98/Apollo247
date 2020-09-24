@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Avatar, Modal, Paper, CircularProgress, Popover } from '@material-ui/core';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -15,8 +15,9 @@ import {
 import { BOOK_APPOINTMENT_RESCHEDULE } from 'graphql/profiles';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
-import { removeGraphQLKeyword } from 'helpers/commonHelpers';
+import { removeGraphQLKeyword, consultWebengageEventsInfo } from 'helpers/commonHelpers';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import { prescriptionReceivedTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -272,6 +273,15 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
   const { messageDetails, chatTime, appointmentDetails } = props;
 
   const { currentPatient } = useAllCurrentPatients();
+  const doctorDetail =
+    messageDetails && messageDetails.transferInfo && messageDetails.transferInfo.doctorInfo;
+
+  useEffect(() => {
+    if (doctorDetail) {
+      const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
+      prescriptionReceivedTracking(eventInfo);
+    }
+  }, [doctorDetail]);
 
   const bookAppointment = useMutation(BOOK_APPOINTMENT_RESCHEDULE);
   const rescheduleAPI = (
@@ -379,19 +389,11 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
               )}
 
               <div>
-                <button
-                  disabled={appointmentDetails.appointmentState === APPOINTMENT_STATE.RESCHEDULE}
-                  className={classes.downloadBtn}
-                  onClick={() => setIsModalOpen(true)}
-                >
+                <button className={classes.downloadBtn} onClick={() => setIsModalOpen(true)}>
                   CHANGE SLOT
                 </button>
 
-                <button
-                  disabled={appointmentDetails.appointmentState === APPOINTMENT_STATE.RESCHEDULE}
-                  className={classes.viewBtn}
-                  onClick={() => handleAcceptReschedule()}
-                >
+                <button className={classes.viewBtn} onClick={() => handleAcceptReschedule()}>
                   {apiLoading ? (
                     <CircularProgress size={22} color="secondary" />
                   ) : (

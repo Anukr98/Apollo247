@@ -310,6 +310,7 @@ const relationArray1: RelationArray[] = [
 export interface EditProfileProps extends NavigationScreenProps {
   isEdit: boolean;
   isPoptype?: boolean;
+  screenName?: string;
 }
 {
 }
@@ -320,6 +321,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   );
   const relationArray: RelationArray[] = getRelations() || selectedGenderRelationArray;
   const isEdit = props.navigation.getParam('isEdit');
+  const screenName = props.navigation.getParam('screenName');
   const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
@@ -357,6 +359,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
       value
     );
+
+  const isSatisfyEmailRegex = (value: string) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value);
 
   const _setFirstName = (value: string) => {
     if (/^[a-zA-Z'’ ]*$/.test(value)) {
@@ -726,7 +730,13 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       .then((data) => {
         setLoading && setLoading(false);
         getPatientApiCall();
-        props.navigation.goBack();
+        if (screenName === string.symptomChecker.symptomTracker) {
+          const { navigation } = props;
+          navigation.goBack();
+          navigation.state.params!.goBackCallback(data.data!.addNewProfile.patient);
+        } else {
+          props.navigation.goBack();
+        }
         selectUser(data.data!.addNewProfile.patient);
       })
       .catch((e) => {
@@ -1173,6 +1183,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           value={`${email}`}
           onChangeText={(email) => setEmail(email)}
           placeholder={'name@email.com'}
+          autoCapitalize="none"
+          keyboardType="email-address"
         />
       </View>
     );
@@ -1209,6 +1221,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                   validationMessage = 'Select a valid relation';
                 } else if (!(email === '' || (email && isSatisfyingEmailRegex(email.trim())))) {
                   validationMessage = 'Enter valid email';
+                } else if (!(email === '' || (email && isSatisfyEmailRegex(email.trim())))) {
+                  validationMessage = 'Enter valid email2';
                 }
                 if (validationMessage) {
                   showAphAlert && showAphAlert({ title: 'Alert!', description: validationMessage });

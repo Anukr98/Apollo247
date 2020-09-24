@@ -17,7 +17,7 @@ import { Formik, FormikProps, Form, Field, FieldProps } from 'formik';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import isNumeric from 'validator/lib/isNumeric';
 import { useAuth } from 'hooks/authHooks';
-import { gtmTracking } from '../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -89,28 +89,34 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 12,
       },
     },
+    backArrow: {
+      cursor: 'pointer',
+    },
   };
 });
 
 const mobileNumberPrefix = '+91';
 const numOtpDigits = 6;
 
-const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }> = (
-  props: any
-) => {
+const OtpInput: React.FC<{
+  mobileNumber: string;
+  setOtp: (otp: string) => void;
+  setDisplayOtpInput: (displayOtpInput: boolean) => void;
+}> = (props: any) => {
   const classes = useStyles({});
-  const { mobileNumber, setOtp: setOtpMain } = props;
+  const { mobileNumber, setOtp: setOtpMain, setDisplayOtpInput } = props;
   const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
   const initialOTPMessage = 'Now type in the OTP sent to you for authentication';
   const resentOTPMessage = 'Type in the OTP that has been resent to your mobile number';
   const blockedMessage = 'You entered an incorrect OTP 3 times. Please try again after some time';
   const [otpStatusText, setOtpStatusText] = useState<string>(initialOTPMessage);
   const [otpInputRefs, setOtpInputRefs] = useState<RefObject<HTMLInputElement>[]>([]);
+  const incorrectOtpTimerValue = 120;
   const [otp, setOtp] = useState<string>('');
-  const countDown = useRef(900);
+  const countDown = useRef(incorrectOtpTimerValue);
   const [otpSubmitCount, setOtpSubmitCount] = useState(0);
   const [showTimer, setShowTimer] = useState<boolean>(false);
-  const [timer, setTimer] = useState<number>(900);
+  const [timer, setTimer] = useState<number>(incorrectOtpTimerValue);
   const [disableResendOtpButton, setDisableResendOtpButton] = useState<boolean>(false);
   const [disableResendOtpButtonCounter, setDisableResendOtpButtonCounter] = useState<number>(0);
   const maxAllowedAttempts = 3;
@@ -172,7 +178,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
             clearInterval(interval);
             setOtpSubmitCount(0);
             setShowTimer(false);
-            countDown.current = 900;
+            countDown.current = incorrectOtpTimerValue;
           }
         }, 1000);
       }
@@ -184,11 +190,11 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
           if (item.mobileNumber == mobileNumber) {
             const leftSeconds: number =
               (new Date().getTime() - Number(item.timerMiliSeconds)) / 1000;
-            if (leftSeconds < 900) {
+            if (leftSeconds < incorrectOtpTimerValue) {
               setOtpStatusText(blockedMessage);
               setOtpExeedError(true);
               setOtp('');
-              countDown.current = Math.floor(900 - leftSeconds);
+              countDown.current = Math.floor(incorrectOtpTimerValue - leftSeconds);
               const interval = setInterval(() => {
                 setShowTimer(true);
                 countDown.current--;
@@ -197,7 +203,7 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                   clearInterval(interval);
                   setOtpSubmitCount(0);
                   setShowTimer(false);
-                  countDown.current = 900;
+                  countDown.current = incorrectOtpTimerValue;
                 }
               }, 1000);
             } else {
@@ -212,6 +218,9 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
 
   return (
     <div className={`${classes.loginFormWrap}`}>
+      <div className={classes.backArrow} onClick={() => setDisplayOtpInput(false)}>
+        <img src={require('images/ic_loginback.svg')} />
+      </div>
       <Typography variant="h2">
         {(verifyOtpError && otpSubmitCount === 3) || otpExeedError ? 'oops!' : 'great'}
       </Typography>
@@ -299,6 +308,12 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                 });
                 /**Gtm code start end */
 
+                /**Gtm code start start */
+                dataLayerTracking({
+                  event: 'OTPSubmitted',
+                });
+                /**Gtm code start end */
+
                 verifyOtp(otp, customLoginId).then((authToken) => {
                   if (!authToken) {
                     setOtpSubmitCount(otpSubmitCount + 1);
@@ -367,12 +382,24 @@ export const SignIn: React.FC<signInProps> = (props) => {
           gtmTracking({ category: 'Profile', action: 'Register / Login', label: 'Mobile Entered' });
           /**Gtm code start end */
 
+          /**Gtm code start start */
+          dataLayerTracking({
+            event: 'OTPDemanded',
+          });
+          /**Gtm code start end */
+
           const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
           sendOtp(mobileNumberWithPrefix).then(() => setDisplayOtpInput(true));
         }}
         render={({ errors, values }: FormikProps<{ mobileNumber: string }>) => {
           if (displayOtpInput)
-            return <OtpInput mobileNumber={mobileNumber} setOtp={(otp: string) => setOtp(otp)} />;
+            return (
+              <OtpInput
+                mobileNumber={mobileNumber}
+                setOtp={(otp: string) => setOtp(otp)}
+                setDisplayOtpInput={setDisplayOtpInput}
+              />
+            );
           return (
             <div className={classes.loginFormWrap}>
               <Typography variant="h2">hi</Typography>

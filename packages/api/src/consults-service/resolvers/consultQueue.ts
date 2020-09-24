@@ -47,6 +47,7 @@ export const consultQueueTypeDefs = gql`
 
   extend type Query {
     getConsultQueue(doctorId: String!, isActive: Boolean): GetConsultQueueResult!
+    getPastConsultQueue(doctorId: String!, limit: Int, offset: Int): GetConsultQueueResult!
   }
 
   type JuniorDoctorsList {
@@ -135,7 +136,9 @@ const buildGqlConsultQueue = async (doctorId: string, context: ConsultServiceCon
   let dbConsultQueue: ConsultQueueItem[] = [...activeQueueItems, ...inActiveQueueItems];
   //Get all the appointments of the queue items
   const appointmentIds = dbConsultQueue.map((queueItem) => queueItem.appointmentId);
-  if (!appointmentIds.length) { return []; }
+  if (!appointmentIds.length) {
+    return [];
+  }
 
   const appointments = await apptRepo.getAppointmentsByIds(appointmentIds);
 
@@ -185,6 +188,12 @@ type GetConsultQueueInput = {
   isActive: boolean;
 };
 
+type GetPastConsultQueueInput = {
+  doctorId: string;
+  limit: number;
+  offset: number;
+};
+
 const getConsultQueue: Resolver<
   null,
   GetConsultQueueInput,
@@ -196,6 +205,43 @@ const getConsultQueue: Resolver<
   const result: GetConsultQueueResult = { consultQueue: [] };
   let consultQueueItems: ConsultQueueItem[] = [];
   consultQueueItems = await cqRepo.getConsultQueue(doctorId, isActive);
+  const patientIds = consultQueueItems.map((item) => item.appointment.patientId);
+  let patients: Patient[] = [];
+  if (patientIds && patientIds.length > 0) {
+    patients = await patRepo.getPatientDetailsByIds(patientIds);
+  }
+  let patient: Patient;
+  consultQueueItems.map((item) => {
+    const res: GqlConsultQueueItem = {
+      id: item.id,
+      isActive: item.isActive,
+      patient,
+      appointment: item.appointment,
+    };
+    result.consultQueue.push(res);
+  });
+
+  patients.map((patient) => {
+    result.consultQueue.map((item) => {
+      if (patient.id == item.appointment.patientId) {
+        item.patient = patient;
+      }
+    });
+  });
+  return result;
+};
+
+const getPastConsultQueue: Resolver<
+  null,
+  GetPastConsultQueueInput,
+  ConsultServiceContext,
+  GetConsultQueueResult
+> = async (parent, { doctorId, limit, offset }, context) => {
+  const { docRepo, cqRepo, mobileNumber, patRepo } = getRepos(context);
+  await checkAuth(docRepo, mobileNumber, doctorId);
+  const result: GetConsultQueueResult = { consultQueue: [] };
+  let consultQueueItems: ConsultQueueItem[] = [];
+  consultQueueItems = await cqRepo.getPastConsultQueue(doctorId, limit, offset);
   const patientIds = consultQueueItems.map((item) => item.appointment.patientId);
   let patients: Patient[] = [];
   if (patientIds && patientIds.length > 0) {
@@ -328,7 +374,7 @@ const removeFromConsultQueue: Resolver<
   const consultQueueItemToDeactivate = await cqRepo.findOneOrFail(id);
   const { doctorId, appointmentId } = consultQueueItemToDeactivate;
   await checkAuth(docRepo, mobileNumber, doctorId);
-  await caseSheetRepo.updateJDCaseSheet(appointmentId);
+  await caseSheetRepo.updateAllJDCaseSheet(appointmentId);
   await cqRepo.update(consultQueueItemToDeactivate.id, { isActive: false });
   const consultQueue = await buildGqlConsultQueue(doctorId, context);
   return { consultQueue };
@@ -344,11 +390,11 @@ const removeInvalidConsultQueueItems: Resolver<
   String
 > = async (parent, { appointmentStatuses }, { consultsDb }) => {
   const cqRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
-  let cQueue: any =  await cqRepo.getInvalidConsultQueueItems(appointmentStatuses, true);
+  let cQueue: any = await cqRepo.getInvalidConsultQueueItems(appointmentStatuses, true);
   cQueue = cQueue.map((queue: any) => {
     return queue.id;
   });
-  if(cQueue.length){
+  if (cQueue.length) {
     await cqRepo.bulkUpdateInvalidConsultQueueItems(cQueue);
   }
   return <String>'success';
@@ -441,9 +487,9 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
         isJdAllowed === false
           ? ApiConstants.NOT_APPLICABLE
           : ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
-            '{0}',
-            ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
-          ),
+              '{0}',
+              ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+            ),
       isJdConsultStarted: true,
     };
     caseSheetRepo.savecaseSheet(casesheetAttrs);
@@ -677,6 +723,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
 export const consultQueueResolvers = {
   Query: {
     getConsultQueue,
+    getPastConsultQueue,
   },
   Mutation: {
     addToConsultQueue,

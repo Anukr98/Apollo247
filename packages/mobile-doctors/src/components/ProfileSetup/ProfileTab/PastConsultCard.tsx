@@ -125,7 +125,7 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
                     }
                   >
                     <Text style={styles.TouchableText}>
-                      {moment(i.appointmentDateTime).format('D MMMM, HH:MM A')}
+                      {moment(i.appointmentDateTime).format('D MMMM, hh:MM A')}
                     </Text>
                     <View style={{ flexDirection: 'row' }}>
                       <View style={{ marginRight: 24 }}>

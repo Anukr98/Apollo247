@@ -3,7 +3,12 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
-import { Gift, Mascot, WhiteTickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Gift,
+  Mascot,
+  WhiteTickIcon,
+  BackArrow,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -111,6 +116,15 @@ const styles = StyleSheet.create({
   placeholderStyle: {
     color: theme.colors.placeholderTextColor,
   },
+  backArrowStyles: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 40,
+    width: 40,
+    marginLeft: 12,
+    marginTop: 15,
+    position: 'absolute',
+  },
 });
 
 type genderOptions = {
@@ -166,6 +180,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       value
     );
 
+  const isSatisfyEmailRegex = (value: string) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value);
+
   // const isSatisfyingEmailRegex = (value: string) =>
   //   /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/.test(value);
 
@@ -173,6 +189,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
     const trimmedValue = (value || '').trim();
     setEmail(trimmedValue);
     setEmailValidation(isSatisfyingEmailRegex(trimmedValue));
+    setEmailValidation(isSatisfyEmailRegex(trimmedValue));
   };
 
   const _setFirstName = (value: string) => {
@@ -300,7 +317,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             shadowRadius: 20,
             backgroundColor: theme.colors.WHITE,
           }}
-          headingTextStyle={{ paddingBottom: 20 }}
+          headingTextStyle={{ paddingBottom: 20, marginTop: 25 }}
           heading={string.login.welcome_text}
           description={string.login.welcome_desc}
           descriptionTextStyle={{ paddingBottom: 45 }}
@@ -308,6 +325,25 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
           <View style={styles.mascotStyle}>
             <Mascot />
           </View>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.backArrowStyles}
+            onPress={() => {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [
+                    NavigationActions.navigate({
+                      routeName: AppRoutes.Login,
+                    }),
+                  ],
+                })
+              );
+            }}
+          >
+            <BackArrow />
+          </TouchableOpacity>
           <TextInputComponent
             label={'Full Name'}
             placeholder={'First Name'}
@@ -394,9 +430,11 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             placeholder={'name@email.com'}
             onChangeText={(text: string) => _setEmail(text)}
             value={email}
-            textInputprops={{
-              autoCapitalize: 'none',
-            }}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            // textInputprops={{
+            //   autoCapitalize: 'none',
+            // }}
           />
           {/* <View style={{ height: 80 }} /> */}
           {showReferralCode && renderReferral()}

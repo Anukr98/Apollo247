@@ -17,6 +17,7 @@ export const GET_DOCTOR_DETAILS = gql`
       firstName
       isActive
       id
+      chatDays
       languages
       lastName
       mobileNumber
@@ -34,7 +35,11 @@ export const GET_DOCTOR_DETAILS = gql`
       zip
       signature
       specialty {
+        id
         name
+        specialistSingularTerm
+        specialistPluralTerm
+        userFriendlyNomenclature
       }
       consultHours {
         consultMode
@@ -132,6 +137,15 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
         isFollowUp
         followUpParentId
         isJdQuestionsComplete
+        doctorInfo {
+          id
+          displayName
+          mobileNumber
+          firstName
+          lastName
+          fullName
+          doctorType
+        }
         caseSheet {
           id
           blobName
@@ -160,6 +174,9 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
             medicineConsumptionDurationUnit
             routeOfAdministration
             medicineCustomDosage
+            medicineCustomDetails
+            includeGenericNameInPrescription
+            genericName
           }
           removedMedicinePrescription {
             id
@@ -177,6 +194,9 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
             medicineConsumptionDurationUnit
             routeOfAdministration
             medicineCustomDosage
+            medicineCustomDetails
+            includeGenericNameInPrescription
+            genericName
           }
           otherInstructions {
             instruction
@@ -193,6 +213,7 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
           }
           diagnosticPrescription {
             itemname
+            testInstruction
           }
           followUp
           followUpDate
@@ -249,6 +270,7 @@ export const GET_PATIENT_LOG = gql`
         appointmentdatetime
         patientInfo {
           firstName
+          lastName
           dateOfBirth
           id
           emailAddress
@@ -335,6 +357,8 @@ export const MODIFY_CASESHEET = gql`
           temperature
           weight
           medicationHistory
+          diagnosticTestResult
+          clinicalObservationNotes
         }
         photoUrl
         uhid
@@ -416,6 +440,7 @@ export const MODIFY_CASESHEET = gql`
       }
       diagnosticPrescription {
         itemname
+        testInstruction
       }
       doctorId
       doctorType
@@ -440,6 +465,9 @@ export const MODIFY_CASESHEET = gql`
         medicineConsumptionDurationUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        includeGenericNameInPrescription
+        genericName
       }
       removedMedicinePrescription {
         id
@@ -457,6 +485,9 @@ export const MODIFY_CASESHEET = gql`
         medicineConsumptionDurationUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        includeGenericNameInPrescription
+        genericName
       }
       notes
       otherInstructions {
@@ -609,6 +640,7 @@ export const GET_JUNIOR_DOCTOR_CASESHEET = gql`
         }
         diagnosticPrescription {
           itemname
+          testInstruction
         }
         followUp
         followUpDate
@@ -718,6 +750,8 @@ export const GET_CASESHEET = gql`
             temperature
             weight
             medicationHistory
+            diagnosticTestResult
+            clinicalObservationNotes
           }
           photoUrl
           uhid
@@ -734,6 +768,27 @@ export const GET_CASESHEET = gql`
           appointmentType
           displayId
           doctorId
+          doctorInfo {
+            id
+            fullName
+            doctorType
+            mobileNumber
+            onlineConsultationFees
+            physicalConsultationFees
+            doctorHospital {
+              facility {
+                id
+                facilityType
+              }
+            }
+            specialty {
+              id
+              name
+              specialistSingularTerm
+              specialistPluralTerm
+              userFriendlyNomenclature
+            }
+          }
           hospitalId
           patientId
           parentId
@@ -793,6 +848,9 @@ export const GET_CASESHEET = gql`
           medicineConsumptionDurationUnit
           routeOfAdministration
           medicineCustomDosage
+          medicineCustomDetails
+          includeGenericNameInPrescription
+          genericName
         }
         removedMedicinePrescription {
           id
@@ -810,6 +868,9 @@ export const GET_CASESHEET = gql`
           medicineConsumptionDurationUnit
           routeOfAdministration
           medicineCustomDosage
+          medicineCustomDetails
+          includeGenericNameInPrescription
+          genericName
         }
         otherInstructions {
           instruction
@@ -826,6 +887,7 @@ export const GET_CASESHEET = gql`
         }
         diagnosticPrescription {
           itemname
+          testInstruction
         }
         followUp
         followUpDate
@@ -856,6 +918,7 @@ export const GET_CASESHEET = gql`
           }
           diagnosticPrescription {
             itemname
+            testInstruction
           }
           symptoms {
             symptom
@@ -883,6 +946,9 @@ export const GET_CASESHEET = gql`
             medicineConsumptionDurationUnit
             routeOfAdministration
             medicineCustomDosage
+            medicineCustomDetails
+            includeGenericNameInPrescription
+            genericName
           }
           removedMedicinePrescription {
             id
@@ -900,6 +966,9 @@ export const GET_CASESHEET = gql`
             medicineConsumptionDurationUnit
             routeOfAdministration
             medicineCustomDosage
+            medicineCustomDetails
+            includeGenericNameInPrescription
+            genericName
           }
           otherInstructions {
             instruction
@@ -950,6 +1019,7 @@ export const CREATE_CASESHEET_FOR_SRD = gql`
       }
       diagnosticPrescription {
         itemname
+        testInstruction
       }
       doctorId
       doctorType
@@ -1212,6 +1282,9 @@ export const SAVE_DOCTORS_FAVOURITE_MEDICINE = gql`
         medicineUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        includeGenericNameInPrescription
+        genericName
       }
     }
   }
@@ -1240,6 +1313,9 @@ export const UPDATE_DOCTOR_FAVOURITE_MEDICINE = gql`
         medicineUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        includeGenericNameInPrescription
+        genericName
       }
     }
   }
@@ -1264,6 +1340,9 @@ export const REMOVE_FAVOURITE_MEDICINE = gql`
         medicineUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        includeGenericNameInPrescription
+        genericName
       }
     }
   }
@@ -1416,6 +1495,9 @@ export const GET_DOCTOR_FAVOURITE_MEDICINE_LIST = gql`
         medicineUnit
         routeOfAdministration
         medicineCustomDosage
+        medicineCustomDetails
+        includeGenericNameInPrescription
+        genericName
       }
       allowedDosages
     }
@@ -1482,6 +1564,8 @@ export const SEND_CALL_NOTIFICATION = gql`
     $deviceType: DEVICETYPE
     $callSource: BOOKINGSOURCE
     $appVersion: String
+    $numberOfParticipants: Int
+    $patientId: String
   ) {
     sendCallNotification(
       appointmentId: $appointmentId
@@ -1490,6 +1574,8 @@ export const SEND_CALL_NOTIFICATION = gql`
       deviceType: $deviceType
       callSource: $callSource
       appVersion: $appVersion
+      numberOfParticipants: $numberOfParticipants
+      patientId: $patientId
     ) {
       status
       callDetails {
@@ -1500,8 +1586,16 @@ export const SEND_CALL_NOTIFICATION = gql`
 `;
 
 export const END_CALL_NOTIFICATION = gql`
-  query EndCallNotification($appointmentCallId: String) {
-    endCallNotification(appointmentCallId: $appointmentCallId) {
+  query EndCallNotification(
+    $appointmentCallId: String
+    $patientId: String
+    $numberOfParticipants: Int
+  ) {
+    endCallNotification(
+      appointmentCallId: $appointmentCallId
+      patientId: $patientId
+      numberOfParticipants: $numberOfParticipants
+    ) {
       status
     }
   }
@@ -1610,10 +1704,10 @@ export const GET_ALL_SPECIALTIES = gql`
       id
       name
       image
-      # specialistSingularTerm
-      # specialistPluralTerm
+      specialistSingularTerm
+      specialistPluralTerm
       userFriendlyNomenclature
-      # displayOrder
+      displayOrder
     }
   }
 `;
@@ -1643,6 +1737,76 @@ export const EXO_TEL_CALL = gql`
       to
       response
       errorMessage
+    }
+  }
+`;
+
+export const POST_WEB_ENGAGE = gql`
+  mutation postDoctorConsultEvent($doctorConsultEventInput: DoctorConsultEventInput) {
+    postDoctorConsultEvent(doctorConsultEventInput: $doctorConsultEventInput) {
+      response {
+        status
+      }
+    }
+  }
+`;
+
+export const CALL_DISCONNECT_NOTIFICATION = gql`
+  query sendCallDisconnectNotification($appointmentId: String, $callType: APPT_CALL_TYPE) {
+    sendCallDisconnectNotification(appointmentId: $appointmentId, callType: $callType) {
+      status
+    }
+  }
+`;
+
+export const GET_DOCTOR_HELPLINE = gql`
+  query getDoctorHelpline {
+    getDoctorHelpline {
+      doctorType
+      mobileNumber
+    }
+  }
+`;
+
+export const SAVE_APPOINTMENT_CALL_FEEDBACK = gql`
+  mutation saveAppointmentCallFeedback(
+    $saveAppointmentCallFeedback: SaveAppointmentCallFeedbackInput
+  ) {
+    saveAppointmentCallFeedback(saveAppointmentCallFeedbackInput: $saveAppointmentCallFeedback) {
+      id
+      appointmentCallDetailsId
+      ratingValue
+      feedbackResponseType
+      feedbackResponses
+    }
+  }
+`;
+
+export const UPDATE_CHAT_DAYS = gql`
+  mutation updateDoctorChatDays($doctorId: String!, $chatDays: Int) {
+    updateDoctorChatDays(doctorId: $doctorId, chatDays: $chatDays) {
+      isError
+      response
+    }
+  }
+`;
+
+export const GET_PARTICIPANTS_LIVE_STATUS = gql`
+  query setAndGetNumberOfParticipants(
+    $appointmentId: String
+    $userType: USER_TYPE
+    $sourceType: BOOKINGSOURCE
+    $deviceType: DEVICETYPE
+    $userStatus: USER_STATUS
+  ) {
+    setAndGetNumberOfParticipants(
+      appointmentId: $appointmentId
+      userType: $userType
+      sourceType: $sourceType
+      deviceType: $deviceType
+      userStatus: $userStatus
+    ) {
+      NUMBER_OF_PARTIPANTS
     }
   }
 `;

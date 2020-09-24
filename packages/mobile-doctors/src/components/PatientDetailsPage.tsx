@@ -100,7 +100,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
             source={{
               uri: (patientDetails && patientDetails.photoUrl) || '',
             }}
-            style={{ height: width, width: width }}
+            style={{ height: width, width: width, backgroundColor: theme.colors.WHITE }}
             resizeMode={'contain'}
             placeholderStyle={{
               height: width,
@@ -166,7 +166,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                   marginLeft: 20,
                 }}
               >
-                {age > -1 ? Math.round(age).toString() : '-'}
+                {age > -1 ? Math.floor(age).toString() : '-'}
                 {PatientInfo && PatientInfo.gender ? `, ${PatientInfo.gender.charAt(0)} ` : ''}
                 {PatientInfo && PatientInfo.addressList && PatientInfo.addressList.length > 0
                   ? `, ${PatientInfo.addressList[0].city}`

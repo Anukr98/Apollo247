@@ -19,8 +19,8 @@ import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
 
 const Welcome = loadable(() => import('components/Welcome'));
 
-const NotificationSettings = loadable(() =>
-  import('components/Notifications/NotificationSettings')
+const NotificationSettings = loadable(
+  () => import('components/Notifications/NotificationSettings')
 );
 const SbiLandingPage = loadable(() => import('components/Partners/SBI/SbiLandingPage'));
 const PatientsList = loadable(() => import('components/PatientsList'));
@@ -51,7 +51,7 @@ const ChatRoom = loadable(() => import('components/Consult/V2/ChatRoom/ChatRoom'
 const Prescription = loadable(() => import('components/Consult/V2/Prescription'));
 const OrdersLanding = loadable(() => import('components/Orders/OrdersLanding'));
 const PayMedicine = loadable(() => import('components/PayMedicine'));
-const AddRecords = loadable(() => import('components/HealthRecords/AddRecords'));
+const AddHealthRecords = loadable(() => import('components/HealthRecords/AddHealthRecords'));
 const PHRLanding = loadable(() => import('components/HealthRecords/PHRLanding'));
 const MedicinePrescriptions = loadable(() => import('./Prescriptions/MedicinePrescriptions'));
 const PrescriptionsLanding = loadable(() => import('./Prescriptions/PrescriptionsLanding'));
@@ -98,8 +98,6 @@ const useStyles = makeStyles((theme: Theme) => {
 const App: React.FC = () => {
   const classes = useStyles({});
   const { signInError, isSignedIn } = useAuth();
-  const currentPath = window.location.pathname;
-  const pageName = window.location.pathname;
 
   useEffect(() => {
     if (signInError) console.log('Error signing in :(');
@@ -188,7 +186,11 @@ const App: React.FC = () => {
           component={NotificationSettings}
         />
         <AuthRouted exact path={clientRoutes.healthRecords()} component={PHRLanding} />
-        <AuthRouted exact path={clientRoutes.addRecords()} component={AddRecords} />
+        <AuthRouted
+          exact
+          path={clientRoutes.addHealthRecords(':type')}
+          component={AddHealthRecords}
+        />
         <AuthRouted exact path={clientRoutes.yourOrders()} component={OrdersLanding} />
         <Route exact path={clientRoutes.symptomsTrackerFor()} component={SymptomsTracker} />
         <Route exact path={clientRoutes.symptomsTracker()} component={SymptomsTrackerSDK} />

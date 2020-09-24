@@ -80,10 +80,10 @@ interface DayDealsProps {
 export const DayDeals: React.FC<DayDealsProps> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
-    infinite: true,
+    infinite: false,
     speed: 500,
     slidesToShow: 3,
-    slidesToScroll: 1,
+    slidesToScroll: 2,
     nextArrow: <img src={require('images/ic_arrow_right.svg')} alt="" />,
     prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
     responsive: [
@@ -92,7 +92,7 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
-          infinite: true,
+          infinite: false,
           dots: true,
         },
       },
@@ -112,7 +112,6 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          // centerMode: true,
           nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
           prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },

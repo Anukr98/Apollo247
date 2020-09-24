@@ -267,7 +267,12 @@ export const styles = StyleSheet.create({
     height: 100,
     width: 100,
     resizeMode: 'cover',
-    borderRadius: 10,
+    borderRadius: 5,
+  },
+  imageHeadingText: {
+    ...theme.viewStyles.text('R', 10, '#4A4A4A'),
+    marginRight: 16,
+    marginBottom: 4,
   },
   materialContainer: {
     alignItems: 'flex-end',
@@ -311,5 +316,47 @@ export const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'flex-end',
     marginRight: 0,
+  },
+  materialMenuContainer: { marginTop: 34, marginLeft: 0 },
+  materialMenuItemContainer: { height: 44.8, marginHorizontal: 12, width: '50%' },
+  materialMenuItemText: {
+    ...theme.viewStyles.text('M', 16, theme.colors.SHARP_BLUE, 1, undefined, 0.03),
+    paddingHorizontal: 0,
+  },
+  materialMenuSelectedItemText: {
+    ...theme.viewStyles.text('M', 16, theme.colors.APP_GREEN, 1, undefined, 0.03),
+    alignSelf: 'flex-start',
+  },
+  materialMenuViewContainer: { flexDirection: 'row', marginBottom: 8, marginTop: 8 },
+  materialMenuTextContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    borderBottomWidth: 2,
+    paddingTop: 0,
+    paddingBottom: 3,
+    paddingRight: 8,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  materialMenuViewText: theme.viewStyles.text('M', 16, theme.colors.SHARP_BLUE, 1, undefined, 0.03),
+  materialMenuDropContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 5,
+    flexDirection: 'row',
+  },
+  rowContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 12 },
+  infoTextStyle: {
+    ...theme.viewStyles.text('R', 12, theme.colors.APP_GREEN, 1, 16, 1),
+    marginLeft: 12,
+  },
+  headerView: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+  },
+  activeBorderColor: {
+    borderColor: theme.colors.INPUT_CURSOR_COLOR,
+    minHeight: 64,
   },
 });

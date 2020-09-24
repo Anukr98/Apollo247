@@ -73,6 +73,14 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
+export const CREATE_ONE_APOLLO_USER = gql`
+  mutation createOneAPolloUser($patientId: String!) {
+    createOneApolloUser(patientId: $patientId) {
+      success
+    }
+  }
+`;
+
 export const CANCEL_APPOINTMENT = gql`
   mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
     cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
@@ -420,6 +428,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           packageName
           # labTestDate
           date
+          dateTime
           labTestRefferedBy
           siteDisplayName
           tag
@@ -452,6 +461,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           id
           prescriptionName
           date
+          dateTime
           # dateOfPrescription
           # startDate
           # endDate
@@ -475,6 +485,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           id
           fileUrl
           date
+          dateTime
           healthCheckName
           healthCheckDate
           healthCheckSummary
@@ -501,6 +512,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           id
           fileUrl
           date
+          dateTime
           hospitalizationDate
           dateOfHospitalization
           hospitalName
@@ -600,6 +612,32 @@ export const DOWNLOAD_DOCUMENT = gql`
 export const ADD_MEDICAL_RECORD = gql`
   mutation addPatientMedicalRecord($AddMedicalRecordInput: AddMedicalRecordInput) {
     addPatientMedicalRecord(addMedicalRecordInput: $AddMedicalRecordInput) {
+      status
+    }
+  }
+`;
+
+export const ADD_LAB_RESULT_RECORD = gql`
+  mutation addPatientLabTestRecord($AddLabTestRecordInput: AddLabTestRecordInput) {
+    addPatientLabTestRecord(addLabTestRecordInput: $AddLabTestRecordInput) {
+      status
+    }
+  }
+`;
+
+export const ADD_HEALTHCHECK_RECORD = gql`
+  mutation addPatientHealthCheckRecord($AddHealthCheckRecordInput: AddHealthCheckRecordInput) {
+    addPatientHealthCheckRecord(addHealthCheckRecordInput: $AddHealthCheckRecordInput) {
+      status
+    }
+  }
+`;
+
+export const ADD_HOSPITALIZATION_RECORD = gql`
+  mutation addPatientHospitalizationRecord(
+    $AddHospitalizationRecordInput: AddHospitalizationRecordInput
+  ) {
+    addPatientHospitalizationRecord(addHospitalizationRecordInput: $AddHospitalizationRecordInput) {
       status
     }
   }
@@ -905,3 +943,18 @@ export const GET_LAB_RESULT_PDF = gql`
   }
 `;
 
+export const UPDATE_WHATSAPP_STATUS = gql`
+  mutation UpdateWhatsAppStatus(
+    $whatsAppMedicine: Boolean
+    $whatsAppConsult: Boolean
+    $patientId: String!
+  ) {
+    updateWhatsAppStatus(
+      whatsAppMedicine: $whatsAppMedicine
+      whatsAppConsult: $whatsAppConsult
+      patientId: $patientId
+    ) {
+      status
+    }
+  }
+`;

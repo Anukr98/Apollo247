@@ -382,17 +382,19 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                       </View>
                     </View>
                     <View>
-                    { hospitalName ?
-                      <Text style={[
-                        styles.descriptionTextStyles,
-                        {
-                          ...theme.fonts.IBMPlexSansMedium(13),
-                          marginTop: 10,
-                        }
-                      ]}>
-                        {hospitalName}
-                      </Text> : null
-                    }
+                      {hospitalName ? (
+                        <Text
+                          style={[
+                            styles.descriptionTextStyles,
+                            {
+                              ...theme.fonts.IBMPlexSansMedium(13),
+                              marginTop: 10,
+                            },
+                          ]}
+                        >
+                          {hospitalName}
+                        </Text>
+                      ) : null}
                     </View>
                   </View>
                 </View>
@@ -777,7 +779,11 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                       </View>
                       {props.PastData && !!props.PastData.source && (
                         <Text style={styles.descriptionTextStyles}>
-                          {props.PastData && (props.PastData.hospital_name || props.PastData.source)}
+                          {props.PastData &&
+                            (props.PastData?.source === '247self' ||
+                            props.PastData?.source === 'self'
+                              ? 'Self upload'
+                              : props.PastData.hospital_name)}
                         </Text>
                       )}
                     </View>

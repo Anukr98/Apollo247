@@ -1,4 +1,3 @@
-import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
 import { WebEngageEvent, WebEngageResponse, postEvent, WebEngageInput } from 'helpers/webEngage';
@@ -57,6 +56,26 @@ const postDoctorConsultEvent: Resolver<
       break;
   }
 
+  const consultsDb = getConnection();
+  const appointmentRepo = consultsDb.getRepository(Appointment);
+  const appointmentDetails = await appointmentRepo.findOne({
+    select: ['displayId', 'appointmentType', 'doctorId', 'patientId'],
+    where: { id: doctorConsultEventInput.consultID },
+  });
+
+  const doctorsDb = getConnection('doctors-db');
+  const doctorRepo = doctorsDb.getRepository(Doctor);
+  const doctorDetails = await doctorRepo.find({
+    select: ['fullName', 'mobileNumber'],
+    where: { id: appointmentDetails!.doctorId },
+    relations: ['doctorSecretary', 'doctorSecretary.secretary'],
+  });
+
+  //get patient details
+  const patientsDb = getConnection('patients-db');
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findByIdWithRelations(appointmentDetails!.patientId, []);
+
   const postBody: Partial<WebEngageInput> = {
     userId: doctorConsultEventInput.mobileNumber,
     eventName: eventName,
@@ -64,7 +83,17 @@ const postDoctorConsultEvent: Resolver<
       consultID: doctorConsultEventInput.consultID,
       displayID: doctorConsultEventInput.displayId,
       consultMode: doctorConsultEventInput.consultMode,
-      doctorName: doctorConsultEventInput.doctorFullName,
+      doctorName: doctorDetails && doctorDetails[0] ? doctorDetails[0].fullName : '',
+      doctorNumber: doctorDetails && doctorDetails[0] ? doctorDetails[0].mobileNumber : '',
+      patientName: patientDetails ? patientDetails.firstName + patientDetails.lastName : '',
+      secretaryName:
+        doctorDetails && doctorDetails[0] && doctorDetails[0].doctorSecretary
+          ? doctorDetails[0].doctorSecretary.secretary.name
+          : '',
+      secretaryNumber:
+        doctorDetails && doctorDetails[0] && doctorDetails[0].doctorSecretary
+          ? doctorDetails[0].doctorSecretary.secretary.mobileNumber
+          : '',
     },
   };
   return await postEvent(postBody);
@@ -81,10 +110,12 @@ export async function trackWebEngageEventForDoctorReschedules(
     //get doctor details
     const doctorsDb = getConnection('doctors-db');
     const doctorRepo = doctorsDb.getRepository(Doctor);
-    const doctorDetails = await doctorRepo.findOne({
-      select: ['fullName'],
+    const doctorDetails = await doctorRepo.find({
+      select: ['fullName', 'mobileNumber'],
       where: { id: appointmentDetails.doctorId },
+      relations: ['doctorSecretary', 'doctorSecretary.secretary'],
     });
+
     //get patient details
     const patientsDb = getConnection('patients-db');
     const patientRepo = patientsDb.getCustomRepository(PatientRepository);
@@ -99,7 +130,17 @@ export async function trackWebEngageEventForDoctorReschedules(
         consultID: appointmentDetails.id,
         displayID: appointmentDetails.displayId.toString(),
         consultMode: appointmentDetails.appointmentType.toString(),
-        doctorName: doctorDetails ? doctorDetails.fullName : '',
+        doctorName: doctorDetails && doctorDetails[0] ? doctorDetails[0].fullName : '',
+        doctorNumber: doctorDetails && doctorDetails[0] ? doctorDetails[0].mobileNumber : '',
+        patientName: patientDetails ? patientDetails.firstName + patientDetails.lastName : '',
+        secretaryName:
+          doctorDetails && doctorDetails[0] && doctorDetails[0].doctorSecretary
+            ? doctorDetails[0].doctorSecretary.secretary.name
+            : '',
+        secretaryNumber:
+          doctorDetails && doctorDetails[0] && doctorDetails[0].doctorSecretary
+            ? doctorDetails[0].doctorSecretary.secretary.mobileNumber
+            : '',
       },
     };
     return await postEvent(postBody);
@@ -115,10 +156,12 @@ export async function trackWebEngageEventForDoctorCancellation(appointmentDetail
     //get doctor details
     const doctorsDb = getConnection('doctors-db');
     const doctorRepo = doctorsDb.getRepository(Doctor);
-    const doctorDetails = await doctorRepo.findOne({
-      select: ['fullName'],
+    const doctorDetails = await doctorRepo.find({
+      select: ['fullName', 'mobileNumber'],
       where: { id: appointmentDetails.doctorId },
+      relations: ['doctorSecretary', 'doctorSecretary.secretary'],
     });
+
     //get patient details
     const patientsDb = getConnection('patients-db');
     const patientRepo = patientsDb.getCustomRepository(PatientRepository);
@@ -137,7 +180,17 @@ export async function trackWebEngageEventForDoctorCancellation(appointmentDetail
         consultID: appointmentDetails.id,
         displayID: appointmentDetails.displayId.toString(),
         consultMode: appointmentDetails.appointmentType.toString(),
-        doctorName: doctorDetails ? doctorDetails.fullName : '',
+        doctorName: doctorDetails && doctorDetails[0] ? doctorDetails[0].fullName : '',
+        doctorNumber: doctorDetails && doctorDetails[0] ? doctorDetails[0].mobileNumber : '',
+        patientName: patientDetails ? patientDetails.firstName + patientDetails.lastName : '',
+        secretaryName:
+          doctorDetails && doctorDetails[0] && doctorDetails[0].doctorSecretary
+            ? doctorDetails[0].doctorSecretary.secretary.name
+            : '',
+        secretaryNumber:
+          doctorDetails && doctorDetails[0] && doctorDetails[0].doctorSecretary
+            ? doctorDetails[0].doctorSecretary.secretary.mobileNumber
+            : '',
       },
     };
     return await postEvent(postBody);
@@ -213,9 +266,10 @@ export async function trackWebEngageEventForCasesheetUpdate(caseSheetDetails: Ca
   //get doctor details
   const doctorsDb = getConnection('doctors-db');
   const doctorRepo = doctorsDb.getRepository(Doctor);
-  const doctorDetails = await doctorRepo.findOne({
-    select: ['fullName'],
+  const doctorDetails = await doctorRepo.find({
+    select: ['fullName', 'mobileNumber'],
     where: { id: caseSheetDetails.doctorId },
+    relations: ['doctorSecretary', 'doctorSecretary.secretary'],
   });
 
   //get patient details
@@ -235,7 +289,17 @@ export async function trackWebEngageEventForCasesheetUpdate(caseSheetDetails: Ca
       consultID: appointmentDetails.id,
       displayID: appointmentDetails.displayId.toString(),
       consultMode: appointmentDetails.appointmentType.toString(),
-      doctorName: doctorDetails ? doctorDetails.fullName : '',
+      doctorName: doctorDetails && doctorDetails[0] ? doctorDetails[0].fullName : '',
+      doctorNumber: doctorDetails && doctorDetails[0] ? doctorDetails[0].mobileNumber : '',
+      patientName: patientDetails ? patientDetails.firstName + patientDetails.lastName : '',
+      secretaryName:
+        doctorDetails && doctorDetails[0] && doctorDetails[0].doctorSecretary
+          ? doctorDetails[0].doctorSecretary.secretary.name
+          : '',
+      secretaryNumber:
+        doctorDetails && doctorDetails[0] && doctorDetails[0].doctorSecretary
+          ? doctorDetails[0].doctorSecretary.secretary.mobileNumber
+          : '',
     },
   };
   return await postEvent(postBody);
@@ -276,12 +340,14 @@ export async function trackWebEngageEventForCasesheetInsert(caseSheetDetails: Ca
 export async function trackWebEngageEventForAppointmentComplete(appointmentDetails: Appointment) {
   try {
     if (appointmentDetails?.status !== STATUS.COMPLETED) return '';
+
     //get doctor details
     const doctorsDb = getConnection('doctors-db');
     const doctorRepo = doctorsDb.getRepository(Doctor);
-    const doctorDetails = await doctorRepo.findOne({
-      select: ['fullName'],
+    const doctorDetails = await doctorRepo.find({
+      select: ['fullName', 'mobileNumber'],
       where: { id: appointmentDetails.doctorId },
+      relations: ['doctorSecretary', 'doctorSecretary.secretary'],
     });
 
     //get patient details
@@ -293,13 +359,23 @@ export async function trackWebEngageEventForAppointmentComplete(appointmentDetai
     );
 
     const postBody: Partial<WebEngageInput> = {
-      userId: patientDetails?.mobileNumber || '',
+      userId: patientDetails ? patientDetails.mobileNumber : '',
       eventName: ApiConstants.DOCTOR_ENDED_CONSULTATION_EVENT_NAME.toString(),
       eventData: {
         consultID: appointmentDetails.id,
         displayID: appointmentDetails.displayId.toString(),
         consultMode: appointmentDetails.appointmentType.toString(),
-        doctorName: doctorDetails?.fullName || '',
+        doctorName: doctorDetails && doctorDetails[0] ? doctorDetails[0].fullName : '',
+        doctorNumber: doctorDetails && doctorDetails[0] ? doctorDetails[0].mobileNumber : '',
+        patientName: patientDetails ? patientDetails.firstName + patientDetails.lastName : '',
+        secretaryName:
+          doctorDetails && doctorDetails[0] && doctorDetails[0].doctorSecretary
+            ? doctorDetails[0].doctorSecretary.secretary.name
+            : '',
+        secretaryNumber:
+          doctorDetails && doctorDetails[0] && doctorDetails[0].doctorSecretary
+            ? doctorDetails[0].doctorSecretary.secretary.mobileNumber
+            : '',
       },
     };
 

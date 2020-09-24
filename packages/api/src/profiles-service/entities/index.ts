@@ -26,6 +26,8 @@ import { log } from 'customWinstonLogger';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
+import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
+import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
 
 export interface PaginateParams {
   take?: number;
@@ -194,6 +196,7 @@ export enum DiscountType {
   PRICEOFF = 'PRICEOFF',
 }
 
+/* to be deprecated soon - Free text string is used as unit input from user >= release 5.0.0 */
 export enum MedicalTestUnit {
   GM = 'GM',
   _PERCENT_ = '_PERCENT_',
@@ -209,6 +212,8 @@ export enum MedicalRecordType {
   TEST_REPORT = 'TEST_REPORT',
   CONSULTATION = 'CONSULTATION ',
   PRESCRIPTION = 'PRESCRIPTION',
+  HEALTHCHECK = 'HEALTHCHECK',
+  HOSPITALIZATION = 'HOSPITALIZATION',
 }
 
 export enum DIAGNOSTIC_ORDER_STATUS {
@@ -1055,6 +1060,18 @@ export class Patient extends BaseEntity {
   medicalRecords: MedicalRecords[];
 
   @OneToMany(
+    (type) => HealthCheckRecords,
+    (healthCheckRecord) => healthCheckRecord.patient
+  )
+  healthCheckRecords: HealthCheckRecords[];
+
+  @OneToMany(
+    (type) => HospitalizationRecords,
+    (hospitalizationRecords) => hospitalizationRecords.patient
+  )
+  hospitalizationRecords: HospitalizationRecords[];
+
+  @OneToMany(
     (type) => PatientFeedback,
     (patientfeedback) => patientfeedback.patient
   )
@@ -1301,6 +1318,9 @@ export class SearchHistory extends BaseEntity {
 
   @Column()
   type: SEARCH_TYPE;
+
+  @Column()
+  image: string;
 
   @Index()
   @Column()
@@ -1680,7 +1700,7 @@ export class MedicalRecordParameters extends BaseEntity {
   result: number;
 
   @Column()
-  unit: MedicalTestUnit;
+  unit: string;
 
   @Column({ type: 'timestamp', nullable: true })
   updatedDate: Date;
@@ -1944,6 +1964,12 @@ export class PatientMedicalHistory extends BaseEntity {
 
   @Column({ nullable: true })
   weight: string;
+
+  @Column({ nullable: true, type: 'text' })
+  clinicalObservationNotes: string;
+
+  @Column({ nullable: true, type: 'text' })
+  diagnosticTestResult: string;
 
   @BeforeInsert()
   updateDateCreation() {

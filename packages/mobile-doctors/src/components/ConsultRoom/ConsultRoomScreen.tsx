@@ -1,13 +1,14 @@
 import { ReSchedulePopUp } from '@aph/mobile-doctors/src/components/Appointments/ReSchedulePopUp';
 import { UploadPrescriprionPopup } from '@aph/mobile-doctors/src/components/Appointments/UploadPrescriprionPopup';
 import { useAudioVideo } from '@aph/mobile-doctors/src/components/Chat/AudioVideoCotext';
-import { CaseSheetAPI } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetAPI';
 import { CaseSheetView } from '@aph/mobile-doctors/src/components/ConsultRoom/CaseSheetView';
 import { ChatRoom } from '@aph/mobile-doctors/src/components/ConsultRoom/ChatRoom';
+import { getFavoutires } from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomAPICalls';
 import { ConsultRoomScreenStyles } from '@aph/mobile-doctors/src/components/ConsultRoom/ConsultRoomScreen.styles';
-import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
+import { RateCall } from '@aph/mobile-doctors/src/components/ConsultRoom/RateCall';
 import { AphOverlay } from '@aph/mobile-doctors/src/components/ui/AphOverlay';
 import { BottomButtons } from '@aph/mobile-doctors/src/components/ui/BottomButtons';
+import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import {
   BackArrow,
   Call,
@@ -16,11 +17,14 @@ import {
   ConnectCall,
   DotIcon,
   Down,
+  Join,
+  JoinWhite,
+  Minimize,
   RoundCallIcon,
   RoundChatIcon,
   RoundVideoIcon,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { ImageZoom } from '@aph/mobile-doctors/src/components/ui/ImageZoom';
+import { ImageViewer } from '@aph/mobile-doctors/src/components/ui/ImageViewer';
 import { OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
 import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
@@ -29,6 +33,7 @@ import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsCompone
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import {
+  CALL_DISCONNECT_NOTIFICATION,
   CANCEL_APPOINTMENT,
   CREATEAPPOINTMENTSESSION,
   CREATE_CASESHEET_FOR_SRD,
@@ -37,6 +42,8 @@ import {
   EXO_TEL_CALL,
   GET_CASESHEET,
   MODIFY_CASESHEET,
+  POST_WEB_ENGAGE,
+  SAVE_APPOINTMENT_CALL_FEEDBACK,
   SEND_CALL_NOTIFICATION,
   UPLOAD_CHAT_FILE,
 } from '@aph/mobile-doctors/src/graphql/profiles';
@@ -72,16 +79,24 @@ import {
   GetCaseSheet_getCaseSheet_patientDetails_familyHistory,
 } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
+import { GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteAdviceList';
+import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
+import { GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteTestList';
 import {
-  APPOINTMENT_TYPE,
   APPT_CALL_TYPE,
+  BOOKINGSOURCE,
+  CALL_FEEDBACK_RESPONSES_TYPES,
+  ConsultMode,
+  DEVICETYPE,
+  DoctorType,
   DOCTOR_CALL_TYPE,
+  exotelInput,
   MEDICINE_FORM_TYPES,
   ModifyCaseSheetInput,
   REQUEST_ROLES,
   STATUS,
-  BOOKINGSOURCE,
-  DEVICETYPE,
+  USER_STATUS,
+  WebEngageEvent,
 } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import {
   initateConferenceTelephoneCall,
@@ -92,16 +107,44 @@ import {
   modifyCaseSheetVariables,
 } from '@aph/mobile-doctors/src/graphql/types/modifyCaseSheet';
 import {
+  postDoctorConsultEvent,
+  postDoctorConsultEventVariables,
+} from '@aph/mobile-doctors/src/graphql/types/postDoctorConsultEvent';
+import {
+  saveAppointmentCallFeedback,
+  saveAppointmentCallFeedbackVariables,
+} from '@aph/mobile-doctors/src/graphql/types/saveAppointmentCallFeedback';
+import {
+  sendCallDisconnectNotification,
+  sendCallDisconnectNotificationVariables,
+} from '@aph/mobile-doctors/src/graphql/types/sendCallDisconnectNotification';
+import {
   SendCallNotification,
   SendCallNotificationVariables,
 } from '@aph/mobile-doctors/src/graphql/types/SendCallNotification';
 import { uploadChatDocument } from '@aph/mobile-doctors/src/graphql/types/uploadChatDocument';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
-import { getPrismUrls } from '@aph/mobile-doctors/src/helpers/clientCalls';
+import {
+  getPrismUrls,
+  updateParticipantsLiveStatus,
+} from '@aph/mobile-doctors/src/helpers/clientCalls';
+import { chatFilesType } from '@aph/mobile-doctors/src/helpers/dataTypes';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
-import { callPermissions, g, messageCodes } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import {
+  callPermissions,
+  g,
+  getNetStatus,
+  messageCodes,
+  permissionHandler,
+} from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import { mimeType } from '@aph/mobile-doctors/src/helpers/mimeType';
+import {
+  postWebEngageEvent,
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
-import strings from '@aph/mobile-doctors/src/strings/strings.json';
+import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
 import { ApolloError } from 'apollo-client';
@@ -117,15 +160,19 @@ import {
   Dimensions,
   FlatList,
   Keyboard,
+  Linking,
+  Platform,
   SafeAreaView,
   Text,
   TouchableOpacity,
   View,
-  Platform,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import firebase from 'react-native-firebase';
 import KeepAwake from 'react-native-keep-awake';
+import { PERMISSIONS } from 'react-native-permissions';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import RNFetchBlob from 'rn-fetch-blob';
 
 const { width } = Dimensions.get('window');
 // let joinTimerNoShow: NodeJS.Timeout;  //APP-2812: removed NoShow
@@ -159,8 +206,8 @@ interface DataPair {
 
 export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const tabsData = [
-    { title: strings.consult_room.case_sheet, key: '0' },
-    { title: strings.consult_room.chat, key: '1' },
+    { title: string.consult_room.case_sheet, key: '0' },
+    { title: string.consult_room.chat, key: '1' },
   ];
   const reasons = [
     'Not related to my specialty',
@@ -171,9 +218,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   ];
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [overlayDisplay, setOverlayDisplay] = useState<React.ReactNode>(null);
-  const [chatReceived, setChatReceived] = useState(false);
   const client = useApolloClient();
-  const { showAphAlert, hideAphAlert, loading, setLoading, showPopup, hidePopup } = useUIElements();
+  const {
+    showAphAlert,
+    hideAphAlert,
+    loading,
+    setLoading,
+    showPopup,
+    hidePopup,
+    showFloatingCotainer,
+    hideFloatingContainer,
+  } = useUIElements();
   const AppId = props.navigation.getParam('AppId');
   const [Appintmentdatetime, setAppintmentdatetime] = useState(
     props.navigation.getParam('Appintmentdatetime')
@@ -194,20 +249,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   );
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const [messageText, setMessageText] = useState<string>('');
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [displayReSchedulePopUp, setDisplayReSchedulePopUp] = useState<boolean>(false);
 
   const [showPopUp, setShowPopUp] = useState<boolean>(false);
   const [startConsult, setStartConsult] = useState<boolean>(false);
-  const [returnToCall, setReturnToCall] = useState<boolean>(false);
+
   const [caseSheet, setcaseSheet] = useState<GetCaseSheet_getCaseSheet | null | undefined>();
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(
     props.navigation.getParam('caseSheetEnableEdit') || false
   );
   const [showEditPreviewButtons, setShowEditPreviewButtons] = useState<boolean>(false);
-  const [chatFiles, setChatFiles] = useState<
-    { prismId: string | null; url: string; fileType: 'image' | 'pdf' }[]
-  >([]);
+  const [chatFiles, setChatFiles] = useState<chatFilesType[]>([]);
   const [symptonsData, setSymptonsData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null
   >([]);
@@ -226,21 +279,32 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     CANCEL_APPOINTMENT
   );
   const { doctorDetails, specialties, getSpecialties } = useAuth();
+  const [favList, setFavList] = useState<
+    (GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList | null)[] | null
+  >(null);
+  const [favMed, setFavMed] = useState<
+    (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[] | null
+  >(null);
+  const [favTest, setFavTest] = useState<
+    (GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList | null)[] | null
+  >(null);
+
   const {
-    favList,
-    // favListError,
-    // favlistLoading,
-    favMed,
-    // favMedLoading,
-    // favMedError,
-    favTest,
-    // favTestLoading,
-    // favTestError,
-  } = CaseSheetAPI();
-  const { setOpenTokKeys, setCallBacks, callData, callOptions } = useAudioVideo();
+    setOpenTokKeys,
+    setCallBacks,
+    callData,
+    callOptions,
+    errorPopup,
+    setGiveRating,
+    giveRating,
+  } = useAudioVideo();
   useEffect(() => {
+    /**
+     * in case doctor kills app after start consult so default USER_STATUS shouldn't be ENTERING
+     */
+    updateNumberOfParticipants(USER_STATUS.LEAVING);
     getSpecialties();
-    console.log(appointmentData, 'appointmentData');
+    getFavoutires(client, setFavList, setFavMed, setFavTest);
     // callAbandonmentCall();
     console.log('PatientConsultTime', PatientConsultTime);
     console.log(caseSheetEdit, 'caseSheetEdit');
@@ -250,7 +314,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     setTimeout(() => {
       flatListRef.current && flatListRef.current.scrollToEnd();
     }, 1000);
-    getCaseSheetAPI();
+    getCaseSheetAPI(() => {
+      postBackendWebEngage(WebEngageEvent.DOCTOR_IN_CHAT_WINDOW);
+    });
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
     });
@@ -260,6 +326,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     });
 
     return () => {
+      updateNumberOfParticipants(USER_STATUS.LEAVING);
+      sendDoctorLeavesEvent();
+      postBackendWebEngage(WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW);
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
       // stopNoShow();
@@ -270,16 +339,114 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       AsyncStorage.removeItem('chatFileData');
       AsyncStorage.removeItem('scrollToEnd');
       AsyncStorage.removeItem('callDataSend');
+      AsyncStorage.removeItem('patientName');
+      AsyncStorage.removeItem('postWebEngageData');
+      AsyncStorage.removeItem('basicAppointmentData');
+      AsyncStorage.setItem('AppointmentSelect', 'false');
       KeepAwake.deactivate();
       pubnub.unsubscribeAll();
       pubnub.stop();
+      hideFloatingContainer();
     };
   }, []);
+
+  const showJoinPopUp = async () => {
+    const patientName = (await AsyncStorage.getItem('patientName')) || '';
+    showFloatingCotainer({
+      child: renderJoinView(patientName),
+      mainContainerStyle: styles.floatingContainerFullScreen,
+      backHandleEnabled: true,
+      customBack: () => {
+        showFloatingCotainer({
+          child: renderJoinMinimizedView(),
+          mainContainerStyle: styles.floatingContainerButton,
+          backHandleEnabled: true,
+          customBack: () => {
+            showAphAlert &&
+              showAphAlert({
+                title: string.common.alert,
+                description: 'Patient has joined consult room, Do you want to leave?',
+                CTAs: [
+                  {
+                    text: 'YES',
+                    onPress: () => {
+                      hideAphAlert && hideAphAlert();
+                      backDataFunctionality();
+                    },
+                  },
+                  {
+                    text: 'NO',
+                    type: 'white-button',
+                    onPress: () => {
+                      hideAphAlert && hideAphAlert();
+                    },
+                  },
+                ],
+              });
+          },
+        });
+      },
+    });
+  };
+
+  const renderJoinMinimizedView = () => {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          connectCall('V', true);
+        }}
+      >
+        <View style={styles.joinFloatingButtonContainer}>
+          <JoinWhite />
+          <Text style={styles.joinFloatingText}>JOIN</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderJoinView = (name: string) => {
+    return (
+      <View style={styles.joinMainContainer}>
+        <View style={styles.joinSubContainer}>
+          <View style={styles.joinMinimizeIconContainer}>
+            <TouchableOpacity
+              onPress={() => {
+                showFloatingCotainer({
+                  child: renderJoinMinimizedView(),
+                  mainContainerStyle: styles.floatingContainerButton,
+                });
+              }}
+            >
+              <View style={styles.exobuttonContainer}>
+                <Text style={styles.notNowText}>Not Now</Text>
+                <Minimize />
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.joinTextContainer}>
+            <Join />
+            <Text style={styles.joinDisplayTextStyle}>
+              {string.case_sheet.join_heading.replace('{0}', name)}
+            </Text>
+          </View>
+          <View style={styles.joinButtonContainer}>
+            <Button
+              onPress={() => {
+                connectCall('V', true);
+              }}
+              title={'JOIN'}
+              style={styles.joinButtonStyle}
+            />
+          </View>
+        </View>
+      </View>
+    );
+  };
 
   useEffect(() => {
     if ((appointmentData || {}).appointmentState == 'AWAITING_RESCHEDULE') {
       showPopup({
-        description: strings.popUP.awaiting_reschedule,
+        description: string.popUP.awaiting_reschedule,
       });
     }
   }, [appointmentData]);
@@ -307,6 +474,65 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     }
   };
 
+  const sendDoctorLeavesEvent = () => {
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: messageCodes.leaveChatRoom,
+        },
+        channel: channel,
+        storeInHistory: false,
+        sendByPost: false,
+      },
+      (status: any, response: any) => {}
+    );
+  };
+
+  const postBackendWebEngage = async (eventType: WebEngageEvent) => {
+    const postData: {
+      consultMode: ConsultMode;
+      displayId: string;
+      doctorFullName: string;
+      mobileNumber: string;
+    } | null = JSON.parse((await AsyncStorage.getItem('postWebEngageData')) || '');
+    client
+      .mutate<postDoctorConsultEvent, postDoctorConsultEventVariables>({
+        mutation: POST_WEB_ENGAGE,
+        variables: {
+          doctorConsultEventInput: {
+            consultID: channel,
+            consultMode:
+              (postData && postData.consultMode) ||
+              g(appointmentData, 'appointmentType') ||
+              g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentType') ||
+              ConsultMode.BOTH,
+            displayId:
+              (
+                (postData && postData.displayId) ||
+                g(appointmentData, 'displayId') ||
+                g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') ||
+                ''
+              ).toString() ||
+              (g(appointmentData, 'displayId') || '').toString() ||
+              '',
+            doctorFullName:
+              (postData && postData.doctorFullName) ||
+              g(doctorDetails, 'fullName') ||
+              g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'fullName') ||
+              '',
+            eventName: eventType,
+            mobileNumber:
+              (postData && postData.mobileNumber) ||
+              g(caseSheet, 'patientDetails', 'mobileNumber') ||
+              '',
+          },
+        },
+      })
+      .then((data) => {})
+      .catch((error) => {});
+  };
+
   const createCaseSheetSRDAPI = () => {
     setLoading && setLoading(true);
     client
@@ -323,7 +549,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         setLoading && setLoading(false);
         showAphAlert &&
           showAphAlert({
-            title: strings.common.alert,
+            title: string.common.alert,
             description: 'Error occured while creating Case Sheet. Please try again',
           });
       });
@@ -346,7 +572,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [healthWalletArrayData, setHealthWalletArrayData] = useState<
     (GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_healthVault | null)[] | null
   >([]);
-  const [tests, setTests] = useState<{ itemname: string; isSelected: boolean }[]>([]);
+  const [tests, setTests] = useState<
+    { itemname: string; testInstruction?: string; isSelected: boolean }[]
+  >([]);
   const [addedAdvices, setAddedAdvices] = useState<DataPair[]>([]);
   const [juniordoctornotes, setJuniorDoctorNotes] = useState<string | null>('');
   const [diagnosisData, setDiagnosisData] = useState<
@@ -361,18 +589,45 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const [existingMedicineId, setExistingMedicingId] = useState<string[]>([]);
   const [selectedMedicinesId, setSelectedMedicinesId] = useState<string[]>([]);
   const [caseSheetVersion, setCaseSheetVersion] = useState<number>(1);
-
-  const [switchValue, setSwitchValue] = useState<boolean | null>(true);
-  const [followupDays, setFollowupDays] = useState<number | string>();
-  const [followUpConsultationType, setFollowUpConsultationType] = useState<APPOINTMENT_TYPE>();
+  const [followupChatDays, setFollowupChatDays] = useState<OptionsObject>({
+    key: g(doctorDetails, 'chatDays') || '',
+    value: g(doctorDetails, 'chatDays') || '',
+  });
   const [doctorNotes, setDoctorNotes] = useState<string>('');
   const [displayId, setDisplayId] = useState<string>('');
   const [prescriptionPdf, setPrescriptionPdf] = useState('');
   const [selectedReferral, setSelectedReferral] = useState<OptionsObject>({
     key: '-1',
-    value: strings.case_sheet.select_Speciality,
+    value: string.case_sheet.select_Speciality,
   });
   const [referralReason, setReferralReason] = useState<string>('');
+
+  const basicAppointmentData = {
+    'Doctor name': g(doctorDetails, 'fullName') || '',
+    'Patient name': `${g(caseSheet, 'caseSheetDetails', 'patientDetails', 'firstName') ||
+      g(patientDetails, 'firstName')} ${g(
+      caseSheet,
+      'caseSheetDetails',
+      'patientDetails',
+      'lastName'
+    ) || g(patientDetails, 'lastName')}`.trim(),
+    'Patient mobile number':
+      g(caseSheet, 'caseSheetDetails', 'patientDetails', 'mobileNumber') ||
+      g(patientDetails, 'mobileNumber') ||
+      '',
+    'Doctor Mobile number': g(doctorDetails, 'mobileNumber') || '',
+    'Appointment Date time':
+      g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || '',
+    'Appointment display ID':
+      g(appointmentData, 'displayId') ||
+      g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') ||
+      '',
+    'Appointment ID': AppId || g(caseSheet, 'caseSheetDetails', 'appointment', 'id') || '',
+  };
+
+  useEffect(() => {
+    AsyncStorage.setItem('basicAppointmentData', JSON.stringify(basicAppointmentData));
+  }, [basicAppointmentData]);
 
   const getFamilyHistoryText = (
     familyValues:
@@ -418,6 +673,19 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     return famHist;
   };
   const setData = (caseSheet: GetCaseSheet_getCaseSheet | null | undefined) => {
+    AsyncStorage.setItem(
+      'postWebEngageData',
+      JSON.stringify({
+        consultMode:
+          g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentType') || ConsultMode.BOTH,
+        displayId:
+          (g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') || '').toString() || '',
+        doctorFullName:
+          g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'fullName') || '',
+        mobileNumber: g(caseSheet, 'patientDetails', 'mobileNumber') || '',
+      })
+    );
+
     callData.setCallerName(
       `${g(caseSheet, 'patientDetails', 'firstName') || ''} ${g(
         caseSheet,
@@ -437,19 +705,43 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       )
     );
     setPatientDetails(g(caseSheet, 'caseSheetDetails', 'patientDetails') || null);
+    AsyncStorage.setItem(
+      'patientName',
+      `${g(caseSheet, 'caseSheetDetails', 'patientDetails', 'firstName')} ${g(
+        caseSheet,
+        'caseSheetDetails',
+        'patientDetails',
+        'lastName'
+      )}`
+    );
     setHealthWalletArrayData(
       g(caseSheet, 'caseSheetDetails', 'patientDetails', 'healthVault') || null
     );
     setPastList(
-      (g(caseSheet, 'pastAppointments') || []).sort(
-        (a, b) =>
-          moment(b ? b.sdConsultationDate || b.appointmentDateTime : new Date())
-            .toDate()
-            .getTime() -
-          moment(a ? a.sdConsultationDate || a.appointmentDateTime : new Date())
-            .toDate()
-            .getTime()
-      )
+      (g(caseSheet, 'pastAppointments') || [])
+        .filter(
+          (item) =>
+            g(item, 'displayId') !== g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId')
+        )
+        .sort(
+          (a, b) =>
+            moment(b ? b.sdConsultationDate || b.appointmentDateTime : new Date())
+              .toDate()
+              .getTime() -
+            moment(a ? a.sdConsultationDate || a.appointmentDateTime : new Date())
+              .toDate()
+              .getTime()
+        )
+        .map((item) => {
+          if (item) {
+            if (item.caseSheet) {
+              item.caseSheet
+                .sort((a, b) => (a.doctorType !== DoctorType.JUNIOR ? -1 : 1))
+                .sort((a, b) => (b ? b.version || 1 : 1) - (a ? a.version || 1 : 1));
+            }
+          }
+          return item;
+        })
     );
     setAppintmentdatetime(g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime'));
     setappointmentData(g(caseSheet, 'caseSheetDetails', 'appointment'));
@@ -471,9 +763,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         )
         .map((i) => {
           if (i) {
-            return { itemname: i.itemname || '', isSelected: true };
+            return {
+              itemname: i.itemname || '',
+              testInstruction: i.testInstruction || '',
+              isSelected: true,
+            };
           } else {
-            return { itemname: '', isSelected: false };
+            return { itemname: '', testInstruction: '', isSelected: false };
           }
         })
         .filter((i) => i.isSelected)
@@ -574,11 +870,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           return i;
         })
     );
-    setSwitchValue(g(caseSheet, 'caseSheetDetails', 'followUp') || null);
-    setFollowupDays(g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays') || '');
-    setFollowUpConsultationType(
-      g(caseSheet, 'caseSheetDetails', 'followUpConsultType') || undefined
-    );
+    setFollowupChatDays({
+      key:
+        g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays') ||
+        g(doctorDetails, 'chatDays') ||
+        0,
+      value:
+        g(caseSheet, 'caseSheetDetails', 'followUpAfterInDays') ||
+        g(doctorDetails, 'chatDays') ||
+        '0',
+    });
     setDoctorNotes(g(caseSheet, 'caseSheetDetails', 'notes') || '');
 
     setDisplayId(g(caseSheet, 'caseSheetDetails', 'appointment', 'displayId') || '');
@@ -598,7 +899,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     }
     setCaseSheetVersion(g(caseSheet, 'caseSheetDetails', 'version') || 1);
   };
-  const getCaseSheetAPI = () => {
+  const getCaseSheetAPI = (callBack?: () => void) => {
     setLoading && setLoading(true);
     client
       .query<GetCaseSheet>({
@@ -608,59 +909,72 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       })
       .then((_data) => {
         const caseSheet = g(_data, 'data', 'getCaseSheet');
-        setcaseSheet(caseSheet);
-        setData(caseSheet);
-        if (props.navigation.getParam('prevCaseSheet')) {
-          setExistingMedicingId([
-            ...((g(props.navigation.getParam('prevCaseSheet'), 'medicinePrescription') || [])
-              .filter(
-                (item, index, self) =>
-                  index ===
-                  self.findIndex(
-                    (t) =>
-                      t &&
-                      item &&
-                      (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
-                        (item.externalId || item.id || item.medicineName || '').toLowerCase()
-                  )
-              )
-              .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
-              .filter((i) => i !== null || i !== '') as string[]),
-          ]);
+        if (g(caseSheet, 'caseSheetDetails', 'doctorId') !== g(doctorDetails, 'id')) {
+          showAphAlert &&
+            showAphAlert({
+              title: string.common.alert,
+              description: 'Unauthorized Access',
+              unDismissable: true,
+              onPressOk: () => {
+                backDataFunctionality();
+                hideAphAlert && hideAphAlert();
+              },
+            });
         } else {
-          setExistingMedicingId([
-            ...((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
-              .filter(
-                (item, index, self) =>
-                  index ===
-                  self.findIndex(
-                    (t) =>
-                      t &&
-                      item &&
-                      (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
-                        (item.externalId || item.id || item.medicineName || '').toLowerCase()
-                  )
-              )
-              .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
-              .filter((i) => i !== null || i !== '') as string[]),
-            ...((g(caseSheet, 'caseSheetDetails', 'removedMedicinePrescription') || [])
-              .filter(
-                (item, index, self) =>
-                  index ===
-                  self.findIndex(
-                    (t) =>
-                      t &&
-                      item &&
-                      (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
-                        (item.externalId || item.id || item.medicineName || '').toLowerCase()
-                  )
-              )
-              .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
-              .filter((i) => i !== null || i !== '') as string[]),
-          ]);
+          setcaseSheet(caseSheet);
+          setData(caseSheet);
+          if (props.navigation.getParam('prevCaseSheet')) {
+            setExistingMedicingId([
+              ...((g(props.navigation.getParam('prevCaseSheet'), 'medicinePrescription') || [])
+                .filter(
+                  (item, index, self) =>
+                    index ===
+                    self.findIndex(
+                      (t) =>
+                        t &&
+                        item &&
+                        (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                          (item.externalId || item.id || item.medicineName || '').toLowerCase()
+                    )
+                )
+                .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
+                .filter((i) => i !== null || i !== '') as string[]),
+            ]);
+          } else {
+            setExistingMedicingId([
+              ...((g(caseSheet, 'caseSheetDetails', 'medicinePrescription') || [])
+                .filter(
+                  (item, index, self) =>
+                    index ===
+                    self.findIndex(
+                      (t) =>
+                        t &&
+                        item &&
+                        (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                          (item.externalId || item.id || item.medicineName || '').toLowerCase()
+                    )
+                )
+                .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
+                .filter((i) => i !== null || i !== '') as string[]),
+              ...((g(caseSheet, 'caseSheetDetails', 'removedMedicinePrescription') || [])
+                .filter(
+                  (item, index, self) =>
+                    index ===
+                    self.findIndex(
+                      (t) =>
+                        t &&
+                        item &&
+                        (t.externalId || t.id || t.medicineName || '').toLowerCase() ===
+                          (item.externalId || item.id || item.medicineName || '').toLowerCase()
+                    )
+                )
+                .map((i) => (i ? i.externalId || i.id || i.medicineName : ''))
+                .filter((i) => i !== null || i !== '') as string[]),
+            ]);
+          }
+          callBack && callBack();
+          setLoading && setLoading(false);
         }
-
-        setLoading && setLoading(false);
       })
       .catch((e) => {
         const message = e.message ? e.message.split(':')[1].trim() : '';
@@ -668,6 +982,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           createCaseSheetSRDAPI();
         } else {
           setLoading && setLoading(false);
+          showAphAlert &&
+            showAphAlert({
+              title: string.common.alert,
+              description: string.alerts.something_went_wrong,
+              onPressOk: () => {
+                hideAphAlert && hideAphAlert();
+                backDataFunctionality();
+              },
+            });
         }
         console.log('Error occured while fetching Doctor GetJuniorDoctorCaseSheet', message);
       });
@@ -679,9 +1002,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     doctorNotes,
     diagnosisData,
     tests,
-    switchValue,
-    followupDays,
-    followUpConsultationType,
+    followupChatDays,
     addedAdvices,
     medicinePrescriptionData,
     selectedMedicinesId,
@@ -731,18 +1052,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           ? tests
               .filter((i) => i.isSelected)
               .map((i) => {
-                return { itemname: i.itemname || '' };
+                return { itemname: i.itemname || '', testInstruction: i.testInstruction || '' };
               })
           : null,
       status: g(caseSheet, 'caseSheetDetails', 'status'),
-      followUp: switchValue,
+      followUp: followupChatDays.key > 0,
       followUpDate: moment(
         g(caseSheet, 'caseSheetDetails', 'appointment', 'appointmentDateTime') || new Date()
       )
-        .add(Number(followupDays), 'd')
+        .add(Number(followupChatDays.key), 'd')
         .format('YYYY-MM-DD'),
-      followUpAfterInDays: Number(followupDays),
-      followUpConsultType: followUpConsultationType,
+      followUpAfterInDays: Number(followupChatDays.key),
+      followUpConsultType: g(caseSheet, 'caseSheetDetails', 'followUpConsultType'),
       otherInstructions:
         addedAdvices && addedAdvices.length > 0
           ? addedAdvices.map((i) => {
@@ -774,6 +1095,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     medicineUnit: i.medicineUnit,
                     routeOfAdministration: i.routeOfAdministration,
                     medicineCustomDosage: i.medicineCustomDosage || '',
+                    medicineCustomDetails: i.medicineCustomDetails || null,
+                    includeGenericNameInPrescription: i.includeGenericNameInPrescription,
+                    genericName: i.genericName,
                   };
                 } else {
                   return '';
@@ -801,6 +1125,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     medicineUnit: i.medicineUnit,
                     routeOfAdministration: i.routeOfAdministration,
                     medicineCustomDosage: i.medicineCustomDosage || '',
+                    medicineCustomDetails: i.medicineCustomDetails || null,
+                    includeGenericNameInPrescription: i.includeGenericNameInPrescription,
+                    genericName: i.genericName,
                   };
                 } else {
                   return '';
@@ -842,6 +1169,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       bp: medicalHistory ? medicalHistory.bp || '' : '',
       referralSpecialtyName: selectedReferral.key !== '-1' ? selectedReferral.value : null,
       referralDescription: selectedReferral.key !== '-1' ? referralReason : null,
+      diagnosticTestResult: medicalHistory ? medicalHistory.diagnosticTestResult || '' : '',
+      clinicalObservationNotes: medicalHistory ? medicalHistory.clinicalObservationNotes || '' : '',
     } as ModifyCaseSheetInput;
   };
 
@@ -889,14 +1218,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           if (errorMessage.includes('INVALID_REFERRAL_DESCRIPTION')) {
             showAphAlert &&
               showAphAlert({
-                title: strings.common.alert,
-                description: strings.alerts.missing_referral_description,
+                title: string.common.alert,
+                description: string.alerts.missing_referral_description,
               });
           } else if (errorMessage.includes('CASESHEET_SENT_TO_PATIENT_ALREADY')) {
             showAphAlert &&
               showAphAlert({
-                title: strings.common.uh_oh,
-                description: strings.alerts.casesheet_already_send,
+                title: string.common.uh_oh,
+                description: string.alerts.casesheet_already_send,
                 onPressOk: () => {
                   hideAphAlert && hideAphAlert();
                   getCaseSheetAPI();
@@ -906,8 +1235,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           } else {
             showAphAlert &&
               showAphAlert({
-                title: strings.common.uh_oh,
-                description: strings.common.oops_msg_saving,
+                title: string.common.uh_oh,
+                description: string.common.oops_msg_saving,
               });
           }
         });
@@ -999,7 +1328,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       const stoptext = {
         id: doctorId,
         message: `${callOptions.isVideo || callType === 'V' ? 'Video' : 'Audio'} ${
-          strings.consult_room.call_ended
+          string.consult_room.call_ended
         }`,
         duration: callData.callDuration,
         isTyping: true,
@@ -1021,16 +1350,16 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const callAbandonmentCall = () => {
     showAphAlert &&
       showAphAlert({
-        title: `${strings.common.hi},`,
-        description: strings.consult_room.patient_is_not_acitve_descr,
+        title: `${string.common.hi},`,
+        description: string.consult_room.patient_is_not_acitve_descr,
         CTAs: [
           {
-            text: strings.consult_room.continue,
+            text: string.consult_room.continue,
             onPress: () => hideAphAlert!(),
             type: 'white-button',
           },
           {
-            text: strings.consult_room.reschedule,
+            text: string.consult_room.reschedule,
             onPress: () => {
               endAppointmentApiCall(STATUS.CALL_ABANDON);
               hideAphAlert!();
@@ -1086,7 +1415,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         if (status === STATUS.NO_SHOW) {
           showAphAlert &&
             showAphAlert({
-              title: strings.common.alert,
+              title: string.common.alert,
               description:
                 'Since the patient is not responding from last 10 mins, we are rescheduling this appointment.',
               unDismissable: true,
@@ -1098,7 +1427,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         } else {
           showAphAlert &&
             showAphAlert({
-              title: strings.common.alert,
+              title: string.common.alert,
               description: 'Successfully Rescheduled',
               unDismissable: true,
               onPressOk: () => {
@@ -1115,13 +1444,28 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while End casesheet', errorMessage, error);
-        // Alert.alert(strings.common.error, errorMessage);
-        Alert.alert(strings.common.uh_oh, strings.common.oops_msg);
+        // Alert.alert(string.common.error, errorMessage);
+        Alert.alert(string.common.uh_oh, string.common.oops_msg);
       });
   };
   const [callId, setCallId] = useState<string>();
   const [chatId, setChatId] = useState<string>();
-  const sendCallNotificationAPI = (callType: APPT_CALL_TYPE, isCall: boolean) => {
+
+  const sendEndCallNotificationAPI = (callType: APPT_CALL_TYPE) => {
+    client
+      .query<sendCallDisconnectNotification, sendCallDisconnectNotificationVariables>({
+        query: CALL_DISCONNECT_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables: {
+          appointmentId: AppId,
+          callType: callType,
+        },
+      })
+      .then((_data) => {})
+      .catch((error) => {});
+  };
+
+  const sendCallNotificationAPI = (callType: APPT_CALL_TYPE, isCall: boolean, count: number) => {
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
         query: SEND_CALL_NOTIFICATION,
@@ -1136,6 +1480,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             Platform.OS === 'ios'
               ? AppConfig.Configuration.iOS_Version
               : AppConfig.Configuration.Android_Version,
+          numberOfParticipants: count,
+          patientId: g(caseSheet, 'patientDetails', 'id'),
         },
       })
       .then((_data) => {
@@ -1151,15 +1497,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
 
   const endCallNotificationAPI = (isCall: boolean) => {
-    client
-      .query<EndCallNotification, EndCallNotificationVariables>({
-        query: END_CALL_NOTIFICATION,
-        fetchPolicy: 'no-cache',
-        variables: {
-          appointmentCallId: isCall ? callId : chatId,
-        },
-      })
-      .catch((error) => {});
+    pubnubPresence((patient: number, doctor: number) => {
+      if ((isCall && callId) || (!isCall && chatId)) {
+        client
+          .query<EndCallNotification, EndCallNotificationVariables>({
+            query: END_CALL_NOTIFICATION,
+            fetchPolicy: 'no-cache',
+            variables: {
+              appointmentCallId: isCall ? callId : chatId,
+              patientId: g(caseSheet, 'patientDetails', 'id'),
+              numberOfParticipants: patient + doctor,
+            },
+          })
+          .catch((error) => {});
+      }
+    });
   };
 
   // const startInterval = (timer: number) => { //Consult remaning time
@@ -1186,10 +1538,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   // };
 
   const config: Pubnub.PubnubConfig = {
+    origin: 'apollo.pubnubapi.com',
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
-    uuid: REQUEST_ROLES.DOCTOR,
+    uuid: `DOCTOR_${g(doctorDetails, 'id') || ''}`,
     restore: true,
     keepAlive: true,
     // autoNetworkDetection: true,
@@ -1210,6 +1563,81 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     if (nextAppState === 'inactive' || nextAppState === 'background') {
     }
   };
+
+  const preloadImages = (imageFiles: chatFilesType[]) => {
+    FastImage.preload(
+      imageFiles.map((item) => {
+        return { uri: item.url };
+      })
+    );
+  };
+
+  const checkFiles = (
+    checkUrl?: string,
+    callBack?: (newUrl: string, allFiles: chatFilesType[]) => void
+  ) => {
+    let tempFiles = chatFiles.filter((item) => item);
+    const tempMessage: any[] = messages.filter((item) => item);
+    const expiredFiles = tempFiles.filter(
+      (item) =>
+        item.prismId &&
+        moment(new Date()).diff(moment(Number(item.urlTimeToken) / 10000), 'minutes') > 10
+    );
+    const foundUrlIndex = tempFiles.findIndex((item) => item.url === checkUrl);
+    let newUrl = checkUrl || '';
+    if (expiredFiles.length > 0) {
+      getPrismUrls(client, patientId, expiredFiles
+        .map((item) => item.prismId)
+        .filter((item) => item) as string[])
+        .then(({ urls }) => {
+          if (urls) {
+            tempFiles = tempFiles.map((item, index) => {
+              const urlExistsIndex = urls.findIndex(
+                (fileLink) => fileLink.indexOf('recordId=' + item.prismId) > -1
+              );
+              if (urlExistsIndex > -1 && item.prismId) {
+                const messageIndex = tempMessage.findIndex(
+                  (messageData) => g(messageData, 'prismId') === item.prismId
+                );
+                if (messageIndex > -1) {
+                  tempMessage[messageIndex] = {
+                    ...tempMessage[messageIndex],
+                    url: urls[urlExistsIndex] || item.url,
+                  };
+                }
+                if (foundUrlIndex === index) {
+                  newUrl = urls[urlExistsIndex] || item.url;
+                }
+                return {
+                  ...item,
+                  url: urls[urlExistsIndex] || item.url,
+                  urlTimeToken: `${moment(new Date()).valueOf() * 10000}`,
+                };
+              } else {
+                return item;
+              }
+            });
+          }
+          callBack && callBack(newUrl, tempFiles);
+          setMessages(tempMessage);
+          setChatFiles(tempFiles);
+          AsyncStorage.setItem('chatFileData', JSON.stringify(tempFiles));
+        })
+        .catch((error) => {
+          callBack && callBack(newUrl, tempFiles);
+        });
+    } else {
+      callBack && callBack(newUrl, tempFiles);
+    }
+    preloadImages(tempFiles.filter((item) => item.fileType === 'image'));
+  };
+
+  useEffect(() => {
+    if (chatFiles.length > 0) {
+      checkFiles();
+    }
+  }, [chatFiles]);
+
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
@@ -1225,11 +1653,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           console.log(statusEvent.operation);
         }
       },
-      message: ({ message }) => {
+      message: ({ message: messageInfo, timetoken }) => {
+        const message = { ...messageInfo, timetoken };
         console.log('addListener', message);
         const messageText = message.message;
         if (message.isTyping) {
           const audioVideoMethod = () => {
+            AsyncStorage.setItem('callDisconnected', 'true');
             callhandelBack = true;
             addMessages(message);
             callOptions.stopCalls(false);
@@ -1259,6 +1689,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 }
               };
               callBack();
+              hideFloatingContainer();
               callOptions.stopCalls(false);
               callOptions.setCallAccepted(false);
               break;
@@ -1271,10 +1702,31 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               callOptions.setIsAudio(true);
               break;
             case 'Audio call ended':
-              audioVideoMethod();
-              break;
             case 'Video call ended':
               audioVideoMethod();
+              setGiveRating(true);
+              break;
+            case messageCodes.patientJoined:
+              AsyncStorage.multiGet(['isAudio', 'isVideo']).then((data) => {
+                if (data) {
+                  const values = data.map((item) => item && item[1]);
+                  if (!values.includes('true')) {
+                    showJoinPopUp();
+                  }
+                }
+              });
+              break;
+            case messageCodes.patientRejected:
+              AsyncStorage.setItem('callDisconnected', 'true');
+              hideFloatingContainer();
+              callOptions.stopCalls(true);
+              callOptions.setCallAccepted(false);
+              errorPopup('Patient has rejected the call.', theme.colors.APP_YELLOW, 10);
+              break;
+            case messageCodes.imageconsult:
+            case messageCodes.exotelCall:
+            case messageCodes.startConsultMsg:
+              addMessages(message);
               break;
             default:
           }
@@ -1291,6 +1743,24 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         ) {
           callData.setMessageReceived(true);
           addMessages(message);
+        } else if (messageCodes.patientJoined === messageText) {
+          AsyncStorage.multiGet(['isAudio', 'isVideo']).then((data) => {
+            if (data) {
+              const values = data.map((item) => item && item[1]);
+              if (!values.includes('true')) {
+                showJoinPopUp();
+              }
+            }
+          });
+        } else if (
+          message === messageCodes.patientRejected ||
+          messageText === messageCodes.patientRejected
+        ) {
+          AsyncStorage.setItem('callDisconnected', 'true');
+          hideFloatingContainer();
+          callOptions.stopCalls(true);
+          callOptions.setCallAccepted(false);
+          errorPopup('Patient has rejected the call.', theme.colors.APP_YELLOW, 10);
         } else {
           callData.setMessageReceived(true);
           addMessages(message);
@@ -1299,16 +1769,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           }, 500);
         }
         try {
-          if (message.fileType && message.id === patientId) {
+          if (messageText === messageCodes.imageconsult) {
             const asyncDisplay = async () => {
               const chatFileData = await AsyncStorage.getItem('chatFileData');
-              const chatFilesRetrived = JSON.parse(chatFileData || '[]');
-
-              chatFilesRetrived.push({
-                prismId: message.prismId,
-                url: message.url,
-                fileType: message.fileType,
-              });
+              const chatFilesRetrived = JSON.parse(chatFileData || '[]') as chatFilesType[];
+              chatFilesRetrived.push({ ...message, urlTimeToken: message.timetoken });
               AsyncStorage.setItem('chatFileData', JSON.stringify(chatFilesRetrived));
               setChatFiles(chatFilesRetrived);
             };
@@ -1348,7 +1813,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       //   stopAllCalls(isAudio ? 'A' : isVideo ? 'V' : undefined);
       //   showAphAlert &&
       //     showAphAlert({
-      //       title: strings.common.alert,
+      //       title: string.common.alert,
       //       description: 'Call Disconnected',
       //     });
       // }
@@ -1386,9 +1851,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     const addMessages = (message: Pubnub.MessageEvent) => {
       insertText[insertText.length] = message;
       setMessages(() => [...(insertText as [])]);
-      if (!callOptions.isVideo || !callOptions.isAudio) {
-        setChatReceived(true);
-      }
       setTimeout(() => {
         flatListRef.current && flatListRef.current.scrollToEnd();
       }, 200);
@@ -1418,19 +1880,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           const end: any = res.endTimeToken ? res.endTimeToken : 1;
           res &&
             res.messages.forEach((element, index) => {
-              const item = element.entry;
-              if (item.prismId) {
-                getPrismUrls(client, patientId, item.prismId)
-                  .then((data) => {
-                    if (data && data.urls) {
-                      item.url = data.urls[0] || item.url;
-                    }
-                  })
-                  .catch((e) => {
-                    CommonBugFender('ChatRoom_getPrismUrls', e);
-                  });
-              }
-              newmessage[newmessage.length] = item;
+              newmessage[newmessage.length] = { ...element.entry, timetoken: element.timetoken };
             });
           if (messages.length !== newmessage.length) {
             if (res.messages.length == 100) {
@@ -1439,23 +1889,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             }
             insertText = newmessage;
             setMessages(newmessage as []);
-            const files: { prismId: string | null; url: string; fileType: 'image' | 'pdf' }[] = [];
-
-            newmessage.forEach((element, index) => {
-              if (element.id === patientId && element.message === messageCodes.imageconsult) {
-                files.push({
-                  prismId: element.prismId,
-                  url: element.url,
-                  fileType: element.fileType,
-                });
+            const files: chatFilesType[] = [];
+            newmessage.forEach((messageItem, index) => {
+              if (messageItem.message === messageCodes.imageconsult) {
+                files.push({ ...messageItem, urlTimeToken: messageItem.timetoken });
               }
             });
             setChatFiles(files);
             AsyncStorage.setItem('chatFileData', JSON.stringify(files));
-            if (!callOptions.isVideo || !callOptions.isAudio) {
-              console.log('chat icon', chatReceived);
-              setChatReceived(true);
-            }
           }
         } catch (error) {
           console.log('chat error', error);
@@ -1479,87 +1920,184 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         sendByPost: true,
       },
       (status, response) => {
+        if (g(caseSheet, 'caseSheetDetails', 'appointment', 'status') === STATUS.COMPLETED) {
+          postBackendWebEngage(WebEngageEvent.DOCTOR_SENT_MESSAGE);
+          postWebEngageEvent(WebEngageEventName.DOCTOR_SEND_MSG, {
+            ...basicAppointmentData,
+          } as WebEngageEvents[WebEngageEventName.DOCTOR_SEND_MSG]);
+        }
         console.log(response, 'response');
       }
     );
   };
 
-  const connectCall = (callType: 'A' | 'V') => {
-    if (!startConsult) {
-      Alert.alert(strings.common.apollo, strings.consult_room.please_start_consultation);
-      return;
-    }
+  const pubnubPresence = (callBack: (patientCount: number, doctorCount: number) => void) => {
+    pubnub
+      .hereNow({ channels: [channel], includeUUIDs: true })
+      .then((response: HereNowResponse) => {
+        const data = response.channels[appointmentData.id].occupants;
+        let doctorCount = 0;
+        let paientsCount = 0;
+        data.forEach((item) => {
+          if (item.uuid.indexOf('PATIENT') > -1) {
+            paientsCount = 1;
+          } else if (item.uuid.indexOf('DOCTOR') > -1) {
+            doctorCount = 1;
+          }
+        });
+        callBack(paientsCount, doctorCount);
+      })
+      .catch((error) => {
+        CommonBugFender('ChatRoom_PUBNUB_PRESENCE', error);
+      });
+  };
 
-    if (callOptions.isAudio || callOptions.isVideo) {
-      return;
-    }
+  const connectCall = (callType: 'A' | 'V', isJoin?: boolean) => {
+    getNetStatus().then(async (connected) => {
+      if (connected) {
+        const startConsultStorage = JSON.parse(
+          (await AsyncStorage.getItem('showInAppNotification')) || 'false'
+        );
+        const storedBasicAppointmentData = JSON.parse(
+          (await AsyncStorage.getItem('basicAppointmentData')) || 'false'
+        );
+        if (!startConsult && startConsultStorage) {
+          Alert.alert(string.common.apollo, string.consult_room.please_start_consultation);
+          return;
+        }
 
-    callType === 'A' ? callOptions.setIsAudio(true) : callOptions.setIsAudio(false);
-    callType === 'V' ? callOptions.setIsVideo(true) : callOptions.setIsVideo(false);
-    callOptions.setIsMinimized(false);
-    setCallBacks({
-      onCallEnd: (consultType, callDuration) => {
-        callOptions.stopMissedCallTimer();
-        endCallNotificationAPI(true);
+        if (callOptions.isAudio || callOptions.isVideo) {
+          return;
+        }
+        if (isJoin) {
+          callOptions.setCallAccepted(true);
+          hideFloatingContainer();
+          setTimeout(() => {
+            callData.setVideoEnabled(false);
+          }, 1000);
+        }
+        callType === 'A' ? callOptions.setIsAudio(true) : callOptions.setIsAudio(false);
+        callType === 'V' ? callOptions.setIsVideo(true) : callOptions.setIsVideo(false);
+        callOptions.setIsMinimized(false);
+        setCallBacks({
+          onCallEnd: (consultType, callDuration) => {
+            callOptions.stopMissedCallTimer();
+            endCallNotificationAPI(true);
+            if (callDuration === '00 : 00') {
+              sendEndCallNotificationAPI(
+                callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO
+              );
+            }
+            setGiveRating(true);
+            firebase
+              .analytics()
+              .logEvent(callType == 'A' ? 'Doctor_audio_call_end' : 'Doctor_video_call_end', {
+                caseSheet: caseSheet,
+                callDuration: callDuration,
+              });
+            postWebEngageEvent(
+              !isJoin
+                ? callType === 'V'
+                  ? WebEngageEventName.DOCTOR_STOP_VIDEO_CALL
+                  : WebEngageEventName.DOCTOR_STOP_AUDIO_CALL
+                : WebEngageEventName.DOCTOR_ACCEPTED_JOIN_END,
+              {
+                ...(storedBasicAppointmentData || basicAppointmentData),
+                'Type of call': !isJoin
+                  ? callType === 'V'
+                    ? 'Video'
+                    : 'Audio'
+                  : 'Join Acceptance',
+                'Call Duration': callDuration,
+              }
+            );
+            AsyncStorage.setItem('callDataSend', 'true');
+            pubnub.publish(
+              {
+                message: {
+                  isTyping: true,
+                  message:
+                    callType === 'V'
+                      ? string.consult_room.video_call_ended
+                      : string.consult_room.audio_call_ended,
+                  duration: callDuration,
+                  messageDate: new Date(),
+                  id: doctorId,
+                },
+                channel: channel,
+                storeInHistory: true,
+              },
+              (status, response) => {}
+            );
+          },
+          onCallMinimize: () => {},
+        });
+        callhandelBack = false;
+        setShowPopUp(false);
+        pubnubPresence((patient: number, doctor: number) => {
+          sendCallNotificationAPI(
+            callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO,
+            true,
+            patient + doctor
+          );
+        });
+        Keyboard.dismiss();
+        AsyncStorage.setItem('callDisconnected', 'false');
+        postWebEngageEvent(
+          !isJoin
+            ? callType === 'V'
+              ? WebEngageEventName.DOCTOR_START_VIDEO_CALL
+              : WebEngageEventName.DOCTOR_START_AUDIO_CALL
+            : WebEngageEventName.DOCTOR_ACCEPTED_JOIN,
+          {
+            ...(storedBasicAppointmentData || basicAppointmentData),
+            'Type of call': !isJoin ? (callType === 'V' ? 'Video' : 'Audio') : 'Join Acceptance',
+          }
+        );
         firebase
           .analytics()
-          .logEvent(callType == 'A' ? 'Doctor_audio_call_end' : 'Doctor_video_call_end', {
-            caseSheet: caseSheet,
-            callDuration: callDuration,
-          });
-        AsyncStorage.setItem('callDataSend', 'true');
-        pubnub.publish(
-          {
-            message: {
-              isTyping: true,
-              message:
-                callType === 'V'
-                  ? strings.consult_room.video_call_ended
-                  : strings.consult_room.audio_call_ended,
-              duration: callDuration,
-              messageDate: new Date(),
-              id: doctorId,
+          .logEvent(
+            !isJoin
+              ? callType == 'A'
+                ? 'Doctor_audio_call'
+                : 'Doctor_video_call'
+              : 'Doctor_Join_Call',
+            {
+              caseSheet: caseSheet,
+            }
+          );
+        AsyncStorage.setItem('callDataSend', 'false');
+        if (!isJoin) {
+          pubnub.publish(
+            {
+              message: {
+                isTyping: true,
+                message: callType === 'V' ? messageCodes.videoCallMsg : messageCodes.audioCallMsg,
+                messageDate: new Date(),
+              },
+              channel: channel,
+              storeInHistory: true,
             },
-            channel: channel,
-            storeInHistory: true,
-          },
-          (status, response) => {}
-        );
-      },
-      onCallMinimize: () => {},
-    });
-    callhandelBack = false;
-    setShowPopUp(false);
-    sendCallNotificationAPI(callType === 'V' ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO, true);
-    Keyboard.dismiss();
-    AsyncStorage.setItem('callDisconnected', 'false');
-    firebase.analytics().logEvent(callType == 'A' ? 'Doctor_audio_call' : 'Doctor_video_call', {
-      caseSheet: caseSheet,
-    });
-    AsyncStorage.setItem('callDataSend', 'false');
-    pubnub.publish(
-      {
-        message: {
-          isTyping: true,
-          message: callType === 'V' ? messageCodes.videoCallMsg : messageCodes.audioCallMsg,
-          messageDate: new Date(),
-        },
-        channel: channel,
-        storeInHistory: true,
-      },
-      (status, response) => {
-        if (response) {
-          callOptions.startMissedCallTimer(45, (count) => {
-            stopAllCalls(callType);
-            // if (missedCallCounter < 2) {
+            (status, response) => {
+              if (response) {
+                callOptions.startMissedCallTimer(45, (count) => {
+                  stopAllCalls(callType);
+                  setGiveRating(true);
+                  // if (missedCallCounter < 2) {
 
-            // } else {
-            //   callAbandonmentCall();
-            // }
-          });
+                  // } else {
+                  //   callAbandonmentCall();
+                  // }
+                });
+              }
+            }
+          );
         }
+      } else {
+        showAphAlert &&
+          showAphAlert({ title: string.common.alert, description: string.alerts.no_internet });
       }
-    );
+    });
   };
 
   const CallPopUp = () => {
@@ -1621,7 +2159,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               ...theme.fonts.IBMPlexSansSemiBold(20),
             }}
           >
-            {strings.consult_room.how_do_you_talk}
+            {string.consult_room.how_do_you_talk}
           </Text>
           <TouchableOpacity onPress={() => connectCall('A')}>
             <View
@@ -1649,7 +2187,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     ...theme.fonts.IBMPlexSansBold(13),
                   }}
                 >
-                  {strings.buttons.audio_call}
+                  {string.buttons.audio_call}
                 </Text>
               </View>
             </View>
@@ -1680,7 +2218,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                     ...theme.fonts.IBMPlexSansBold(13),
                   }}
                 >
-                  {strings.buttons.video_call}
+                  {string.buttons.video_call}
                 </Text>
               </View>
             </View>
@@ -1692,6 +2230,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const onEndConsult = () => {
     stopAllCalls();
     endCallNotificationAPI(false);
+    postWebEngageEvent(WebEngageEventName.DOCTOR_STOP_CONSULT, {
+      ...basicAppointmentData,
+    } as WebEngageEvents[WebEngageEventName.DOCTOR_STOP_CONSULT]);
     firebase.analytics().logEvent('Doctor_end_consult', {
       doctorName: doctorDetails ? doctorDetails.fullName : doctorId,
       patientName: patientDetails
@@ -1718,6 +2259,30 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       }
     }
   }, [SrollRef, activeTabIndex, tabsData]);
+
+  const openFiles = (url?: string, type?: 'pdf' | 'image' | 'other', isChatRoom?: boolean) => {
+    setShowLoading(true);
+    checkFiles(url, (newUrl, allFiles) => {
+      setShowLoading(false);
+      if (type === 'image') {
+        setOverlayDisplay(
+          <ImageViewer
+            scrollToURL={newUrl}
+            files={allFiles.filter(
+              (item) =>
+                item.fileType === 'image' && ((!isChatRoom && item.id === patientId) || isChatRoom)
+            )}
+            onClose={() => setOverlayDisplay(null)}
+          />
+        );
+      } else if (type === 'pdf') {
+        setUrl(newUrl || '');
+        setShowPDF(true);
+      } else {
+        Linking.openURL(newUrl).catch((err) => console.error('An error occurred', err));
+      }
+    });
+  };
 
   const renderTabPage = () => {
     return (
@@ -1769,9 +2334,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   }}
                   inCall={callOptions.isVideo || callOptions.isAudio}
                   chatFiles={chatFiles}
-                  setUrl={setUrl}
-                  setPatientImageshow={setPatientImageshow}
-                  setShowPDF={setShowPDF}
+                  openFiles={openFiles}
                   favList={favList}
                   favMed={favMed}
                   favTest={favTest}
@@ -1815,12 +2378,8 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   existingMedicineId={existingMedicineId}
                   removedMedicinePrescriptionData={removedMedicinePrescriptionData}
                   setRemovedMedicinePrescriptionData={setRemovedMedicinePrescriptionData}
-                  switchValue={switchValue}
-                  setSwitchValue={setSwitchValue}
-                  followupDays={followupDays}
-                  setFollowupDays={setFollowupDays}
-                  followUpConsultationType={followUpConsultationType}
-                  setFollowUpConsultationType={setFollowUpConsultationType}
+                  followupChatDays={followupChatDays}
+                  setFollowupChatDays={setFollowupChatDays}
                   doctorNotes={doctorNotes}
                   setDoctorNotes={setDoctorNotes}
                   displayId={displayId}
@@ -1838,16 +2397,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                   messageText={messageText}
                   setMessageText={setMessageText}
                   patientId={patientId}
-                  returnToCall={returnToCall}
-                  setReturnToCall={setReturnToCall}
-                  setChatReceived={setChatReceived}
                   navigation={props.navigation}
                   messages={messages}
                   send={send}
                   flatListRef={flatListRef}
-                  setShowPDF={setShowPDF}
-                  setPatientImageshow={setPatientImageshow}
-                  setUrl={setUrl}
+                  openFiles={openFiles}
                   isDropdownVisible={isDropdownVisible}
                   setDropdownVisible={setDropdownVisible}
                   patientDetails={patientDetails}
@@ -1864,76 +2418,154 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
 
-  const onStartConsult = () => {
+  const submitRatingHandler = (data: {
+    rating: number;
+    feedbackResponseType: CALL_FEEDBACK_RESPONSES_TYPES | null;
+    audioFeedbacks: {}[];
+    videoFeedbacks: {}[];
+  }) => {
+    setShowLoading!(true);
+    setGiveRating(false);
+    const query = {
+      appointmentCallDetailsId: `${callId}`,
+      ratingValue: data.rating,
+      feedbackResponseType: data.feedbackResponseType,
+      feedbackResponses:
+        data.audioFeedbacks.length === 0 && data.videoFeedbacks.length === 0
+          ? null
+          : JSON.stringify({
+              audio: data.audioFeedbacks,
+              video: data.videoFeedbacks,
+            }),
+    };
+
     client
-      .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-        mutation: CREATEAPPOINTMENTSESSION,
+      .mutate<saveAppointmentCallFeedback, saveAppointmentCallFeedbackVariables>({
+        mutation: SAVE_APPOINTMENT_CALL_FEEDBACK,
         variables: {
-          createAppointmentSessionInput: {
-            appointmentId: AppId,
-            requestRole: REQUEST_ROLES.DOCTOR,
-          },
+          saveAppointmentCallFeedback: query,
         },
       })
       .then((_data: any) => {
-        firebase.analytics().logEvent('Doctor_start_consult', {
-          doctorName: doctorDetails ? doctorDetails.fullName : doctorId,
-          patientName: patientDetails
-            ? `${patientDetails.firstName} ${patientDetails.lastName}`
-            : patientId,
-          appointmentData: appointmentData,
-        });
-
-        setCaseSheetEdit(true);
-        console.log('createsession', _data);
-        console.log('sessionid', _data.data.createAppointmentSession.sessionId);
-        console.log('appointmentToken', _data.data.createAppointmentSession.appointmentToken);
-        setOpenTokKeys({
-          sessionId: _data.data.createAppointmentSession.sessionId,
-          token: _data.data.createAppointmentSession.appointmentToken,
-        });
-        //
-        setTimeout(() => {
-          flatListRef.current && flatListRef.current.scrollToEnd();
-        }, 1000);
-        sendCallNotificationAPI(APPT_CALL_TYPE.CHAT, false);
-        console.log('onStartConsult');
-        pubnub.publish(
-          {
-            message: {
-              isTyping: true,
-              message: messageCodes.startConsultMsg,
-              messageDate: new Date(),
-            },
-            channel: channel,
-            storeInHistory: true,
-          },
-          (status, response) => {
-            setActiveTabIndex(tabsData[0].title);
-            setStartConsult(true);
-            // if (timediffInSec > 0) { //APP-2812: removed NoShow
-            //   startNoShow(timediffInSec, () => {
-            //     console.log('countdown ', joinTimerNoShow);
-            //     startNoShow(600, () => {
-            //       console.log('Trigger no ShowAPi');
-            //       console.log(joinTimerNoShow, 'joinTimerNoShow');
-
-            //       endAppointmentApiCall(STATUS.NO_SHOW);
-            //     });
-            //   });
-            // } else {
-            //   startNoShow(600, () => {
-            //     console.log('Trigger no ShowAPi');
-            //     endAppointmentApiCall(STATUS.NO_SHOW);
-            //   });
-            // }
-            // startInterval(timer);
-          }
-        );
+        setShowLoading!(false);
+        showAphAlert &&
+          showAphAlert({
+            title: string.common.alert,
+            description: 'Thank you for sharing your reviews.',
+          });
       })
       .catch((e: any) => {
-        console.log('Error occured while adding Doctor', e);
+        setShowLoading!(false);
+        showAphAlert &&
+          showAphAlert({
+            title: string.common.alert,
+            description: 'Error in giving feedback. Please try again!',
+          });
       });
+  };
+
+  const updateNumberOfParticipants = async (status: USER_STATUS) => {
+    await updateParticipantsLiveStatus(client, AppId, status);
+  };
+
+  const onStartConsult = (successCallback?: () => void) => {
+    getNetStatus().then((connected) => {
+      postWebEngageEvent(WebEngageEventName.DOCTOR_START_CONSULT, {
+        ...basicAppointmentData,
+      } as WebEngageEvents[WebEngageEventName.DOCTOR_START_CONSULT]);
+      if (connected) {
+        setShowLoading(true);
+        client
+          .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+            mutation: CREATEAPPOINTMENTSESSION,
+            variables: {
+              createAppointmentSessionInput: {
+                appointmentId: AppId,
+                requestRole: REQUEST_ROLES.DOCTOR,
+              },
+            },
+          })
+          .then(async (_data: any) => {
+            firebase.analytics().logEvent('Doctor_start_consult', {
+              doctorName: doctorDetails ? doctorDetails.fullName : doctorId,
+              patientName: patientDetails
+                ? `${patientDetails.firstName} ${patientDetails.lastName}`
+                : patientId,
+              appointmentData: appointmentData,
+            });
+
+            setCaseSheetEdit(true);
+            console.log('createsession', _data);
+            console.log('sessionid', _data.data.createAppointmentSession.sessionId);
+            console.log('appointmentToken', _data.data.createAppointmentSession.appointmentToken);
+            setOpenTokKeys({
+              sessionId: _data.data.createAppointmentSession.sessionId,
+              token: _data.data.createAppointmentSession.appointmentToken,
+            });
+            //
+            setTimeout(() => {
+              flatListRef.current && flatListRef.current.scrollToEnd();
+            }, 1000);
+            pubnubPresence((patient: number, doctor: number) => {
+              sendCallNotificationAPI(APPT_CALL_TYPE.CHAT, true, patient + doctor);
+            });
+            console.log('onStartConsult');
+            await updateParticipantsLiveStatus(client, AppId, USER_STATUS.ENTERING);
+            pubnub.publish(
+              {
+                message: {
+                  id: g(doctorDetails, 'id'),
+                  isTyping: true,
+                  message: messageCodes.startConsultMsg,
+                  automatedText: g(doctorDetails, 'displayName') + ' has joined the consult room!',
+                  messageDate: new Date(),
+                  sentBy: REQUEST_ROLES.DOCTOR,
+                },
+                channel: channel,
+                storeInHistory: true,
+              },
+              (status, response) => {
+                setActiveTabIndex(tabsData[0].title);
+                setStartConsult(true);
+                // if (timediffInSec > 0) { //APP-2812: removed NoShow
+                //   startNoShow(timediffInSec, () => {
+                //     console.log('countdown ', joinTimerNoShow);
+                //     startNoShow(600, () => {
+                //       console.log('Trigger no ShowAPi');
+                //       console.log(joinTimerNoShow, 'joinTimerNoShow');
+
+                //       endAppointmentApiCall(STATUS.NO_SHOW);
+                //     });
+                //   });
+                // } else {
+                //   startNoShow(600, () => {
+                //     console.log('Trigger no ShowAPi');
+                //     endAppointmentApiCall(STATUS.NO_SHOW);
+                //   });
+                // }
+                // startInterval(timer);
+              }
+            );
+            successCallback && successCallback();
+            setShowLoading(false);
+          })
+          .catch((e: any) => {
+            console.log('Error occured while adding Doctor', e);
+            showAphAlert &&
+              showAphAlert({
+                title: string.common.alert,
+                description: 'Error in starting consult. Please try again!',
+              });
+            setShowLoading(false);
+          });
+      } else {
+        showAphAlert &&
+          showAphAlert({
+            title: string.common.alert,
+            description: string.alerts.no_internet,
+          });
+      }
+    });
   };
 
   const onStopConsult = () => {
@@ -1957,6 +2589,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           // stopNoShow();
         }
       );
+      if (followupChatDays.key > 0) {
+        send(
+          `Congratulations! ${g(doctorDetails, 'displayName')} has provided you with ${
+            followupChatDays.key
+          } days of complimentary follow-up chat.`
+        );
+      }
     }
   };
 
@@ -1968,7 +2607,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           zIndex: 1,
           ...theme.viewStyles.shadowStyle,
         }}
-        heading={strings.consult.cancel_consult}
+        heading={string.consult.cancel_consult}
         onClose={() => {
           // setfavAdvice('');
           // setIsAdvice(false);
@@ -2016,12 +2655,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           )}
         </View>
         <BottomButtons
-          whiteButtontitle={strings.buttons.cancel}
+          whiteButtontitle={string.buttons.cancel}
           disabledOrange={showLoading ? true : selectedReason === 'Other' && otherReason === ''}
           cancelFun={() => {
             setshowCancelPopup(false);
           }}
-          yellowButtontitle={strings.consult.cancel_consult}
+          yellowButtontitle={string.consult.cancel_consult}
           successFun={() => {
             console.log('successFun:');
             setShowLoading(true);
@@ -2036,7 +2675,10 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               },
             })
               .then((response) => {
-                console.log(response, 'cancel response');
+                postWebEngageEvent(WebEngageEventName.DOCTOR_APPOINTMETNT_CANCELLED, {
+                  ...basicAppointmentData,
+                  'Cancel reason': selectedReason === 'Other' ? otherReason : selectedReason,
+                } as WebEngageEvents[WebEngageEventName.DOCTOR_APPOINTMETNT_CANCELLED]);
                 const text = {
                   id: doctorDetails ? doctorDetails.id : '',
                   message: messageCodes.cancelConsultInitiated,
@@ -2061,7 +2703,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 setShowLoading(false);
                 showAphAlert &&
                   showAphAlert({
-                    title: strings.common.alert,
+                    title: string.common.alert,
                     description: 'Error occured while cancelling appointment. Please try again',
                   });
                 Alert.alert(e.graphQLErrors[0].message);
@@ -2115,20 +2757,27 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
   const makeCall = () => {
     setShowExoPopup(false);
-    if (g(doctorDetails, 'mobileNumber') && g(patientDetails, 'mobileNumber')) {
+    if (
+      (g(doctorDetails, 'mobileNumber') ||
+        g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'mobileNumber')) &&
+      (g(patientDetails, 'mobileNumber') || g(caseSheet, 'patientDetails', 'mobileNumber'))
+    ) {
       setShowLoading(true);
-      const exotelInput = {
+      const exotelInputData: exotelInput = {
         appointmentId: g(caseSheet, 'caseSheetDetails', 'appointment', 'id') || AppId,
-        from: g(doctorDetails, 'mobileNumber'),
-        to: g(patientDetails, 'mobileNumber'),
+        from:
+          g(doctorDetails, 'mobileNumber') ||
+          g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'mobileNumber'),
+        to: g(patientDetails, 'mobileNumber') || g(caseSheet, 'patientDetails', 'mobileNumber'),
+        deviceType: Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
       };
-      firebase.analytics().logEvent('DOCTOR_CALL_EXOTEL', { callBy: exotelInput });
+      firebase.analytics().logEvent('DOCTOR_CALL_EXOTEL', { callBy: exotelInputData });
       client
         .query<initateConferenceTelephoneCall, initateConferenceTelephoneCallVariables>({
           query: EXO_TEL_CALL,
           fetchPolicy: 'no-cache',
           variables: {
-            exotelInput: exotelInput,
+            exotelInput: exotelInputData,
           },
         })
         .then((data) => {
@@ -2136,14 +2785,34 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           if (g(data, 'data', 'initateConferenceTelephoneCall', 'isError')) {
             showAphAlert &&
               showAphAlert({
-                title: strings.common.alert,
+                title: string.common.alert,
                 description:
                   'Error: ' + g(data, 'data', 'initateConferenceTelephoneCall', 'errorMessage') ||
                   'Try again',
               });
           } else {
+            postWebEngageEvent(WebEngageEventName.DOCTOR_START_EXOTEL_CALL, {
+              ...basicAppointmentData,
+              'Type of call': 'Telephonic',
+              'Exotel number': string.exoTel.exotelNumber,
+            } as WebEngageEvents[WebEngageEventName.DOCTOR_START_EXOTEL_CALL]);
+            pubnub.publish(
+              {
+                message: {
+                  id: doctorId,
+                  message: messageCodes.exotelCall,
+                  exotelNumber: string.exoTel.exotelNumber,
+                  isTyping: true,
+                  sentBy: REQUEST_ROLES.DOCTOR,
+                  messageDate: new Date(),
+                },
+                channel: AppId,
+                storeInHistory: true,
+              },
+              (status, response) => {}
+            );
             showPopup({
-              description: strings.exoTel.toastMessage,
+              description: string.exoTel.toastMessage,
               style: styles.exoToastContainer,
               popUpPointerStyle: { width: 0, height: 0 },
               descriptionTextStyle: theme.viewStyles.text('M', 12, theme.colors.WHITE, 1, 20),
@@ -2163,10 +2832,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     } else {
       showAphAlert &&
         showAphAlert({
-          title: strings.common.alert,
+          title: string.common.alert,
           description: `${
-            g(doctorDetails, 'mobileNumber')
-              ? g(patientDetails, 'mobileNumber')
+            g(doctorDetails, 'mobileNumber') ||
+            g(caseSheet, 'caseSheetDetails', 'appointment', 'doctorInfo', 'mobileNumber')
+              ? g(patientDetails, 'mobileNumber') || g(caseSheet, 'patientDetails', 'mobileNumber')
                 ? ''
                 : "Patient's"
               : "Doctor's"
@@ -2179,21 +2849,21 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     return (
       <View style={styles.exoTelPopupContainer}>
         <View style={styles.exoTelPopupMainContainer}>
-          <Text style={styles.exoHeader}>{strings.exoTel.heading}</Text>
-          <Text style={styles.exosubHeader}>{strings.exoTel.subHeading}</Text>
+          <Text style={styles.exoHeader}>{string.exoTel.heading}</Text>
+          <Text style={styles.exosubHeader}>{string.exoTel.subHeading}</Text>
           <View style={styles.exopointContainer}>
             <View style={styles.exoPointMain}>
               <Text style={styles.exoPointNumberText}>1</Text>
             </View>
-            <Text style={styles.exoPointText}>{strings.exoTel.point1}</Text>
+            <Text style={styles.exoPointText}>{string.exoTel.point1}</Text>
           </View>
           <View style={styles.exopointContainer}>
             <View style={styles.exoPointMain}>
               <Text style={styles.exoPointNumberText}>2</Text>
             </View>
-            <Text style={styles.exoPointText}>{strings.exoTel.point2}</Text>
+            <Text style={styles.exoPointText}>{string.exoTel.point2}</Text>
           </View>
-          <Text style={styles.exonoteText}>{strings.exoTel.note}</Text>
+          <Text style={styles.exonoteText}>{string.exoTel.note}</Text>
           <View style={styles.exobuttonContainer}>
             <TouchableOpacity
               activeOpacity={1}
@@ -2202,12 +2872,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 setShowExoPopup(false);
               }}
             >
-              <Text style={styles.exoCancelText}>{strings.buttons.cancel}</Text>
+              <Text style={styles.exoCancelText}>{string.buttons.cancel}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity activeOpacity={1} onPress={makeCall}>
               <View style={styles.exobuttonStyle}>
-                <Text style={styles.exoProceedText}>{strings.exoTel.proceed}</Text>
+                <Text style={styles.exoProceedText}>{string.exoTel.proceed}</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -2226,7 +2896,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         >
           <View style={styles.exobuttonContainer}>
             <ConnectCall />
-            <Text style={styles.exoConnectText}>{strings.exoTel.connect_via_call}</Text>
+            <Text style={styles.exoConnectText}>{string.exoTel.connect_via_call}</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -2251,7 +2921,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             onPress: () => backDataFunctionality(),
           },
         ]}
-        middleText={strings.consult_room.consult_room}
+        middleText={string.consult_room.consult_room}
         // timerremaintext={!consultStarted ? PatientConsultTime : undefined}
         timerremaintext={
           isAutoSaved && moment(savedTime).isValid()
@@ -2285,7 +2955,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             ),
             onPress: () => {
               showPopup({
-                description: strings.popUP.awaiting_reschedule,
+                description: string.popUP.awaiting_reschedule,
               });
             },
           },
@@ -2344,13 +3014,13 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   };
   const menuOptions = [
     {
-      title: strings.consult_room.reschedule,
+      title: string.consult_room.reschedule,
       onPress: () => {
         setDisplayReSchedulePopUp(true);
       },
     },
     {
-      title: strings.consult.end_cancel_consult,
+      title: string.consult.end_cancel_consult,
       onPress: () => {
         if (
           (appointmentData || {}).status === STATUS.PENDING ||
@@ -2362,7 +3032,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         } else {
           showAphAlert &&
             showAphAlert({
-              title: strings.common.alert,
+              title: string.common.alert,
               description: 'You are not allowed to cancel the appointment.',
             });
         }
@@ -2375,6 +3045,68 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       onPress: () => {
         createCaseSheetSRDAPI();
         setCaseSheetEdit(true);
+      },
+    },
+    {
+      title: 'Download Prescription',
+      onPress: () => {
+        permissionHandler(
+          Platform.OS === 'ios' ? undefined : PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
+          'Enable storage permission from settings to save pdf.',
+          () => {
+            const dirs = RNFetchBlob.fs.dirs;
+            const pdfTitle = `${appointmentData.displayId}_${
+              appointmentData.patientInfo
+                ? appointmentData.patientInfo.firstName || 'Patient'
+                : 'Patient'
+            }.pdf`;
+            const downloadPath =
+              Platform.OS === 'ios'
+                ? (dirs.DocumentDir || dirs.MainBundleDir) + '/' + pdfTitle
+                : dirs.DownloadDir + '/' + pdfTitle;
+            setLoading!(true);
+            RNFetchBlob.config({
+              fileCache: true,
+              path: downloadPath,
+              addAndroidDownloads: {
+                title: pdfTitle,
+                mime: mimeType(downloadPath),
+                useDownloadManager: true,
+                notification: true,
+                description: 'File downloaded by download manager.',
+                path: downloadPath,
+              },
+            })
+              .fetch(
+                'GET',
+                `${AppConfig.Configuration.DOCUMENT_BASE_URL}${g(
+                  caseSheet,
+                  'caseSheetDetails',
+                  'blobName'
+                )}`,
+                {
+                  //some headers ..
+                }
+              )
+              .then((res) => {
+                setLoading!(false);
+                showAphAlert!({
+                  title: 'Alert!',
+                  description: 'Downloaded : ' + pdfTitle,
+                  onPressOk: () => {
+                    Platform.OS === 'ios'
+                      ? RNFetchBlob.ios.previewDocument(res.path())
+                      : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
+                    hideAphAlert!();
+                  },
+                });
+              })
+              .catch((err) => {
+                CommonBugFender('downloadPDF', err);
+                setLoading!(false);
+              });
+          }
+        );
       },
     },
   ];
@@ -2442,15 +3174,15 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
   const uploadPrescriptionPopup = () => {
     return isDropdownVisible ? (
       <UploadPrescriprionPopup
-        heading={strings.consult_room.attach_files}
-        instructionHeading={strings.consult_room.instruction_for_upload}
-        instructions={[strings.consult_room.instruction_list]}
-        disabledOption={strings.consult_room.none}
+        heading={string.consult_room.attach_files}
+        instructionHeading={string.consult_room.instruction_for_upload}
+        instructions={[string.consult_room.instruction_list]}
+        disabledOption={string.consult_room.none}
         blockCamera={callOptions.isVideo}
-        blockCameraMessage={strings.alerts.Open_camera_in_video_call}
+        blockCameraMessage={string.alerts.Open_camera_in_video_call}
         optionTexts={{
-          camera: strings.consult_room.take_a_photo,
-          gallery: strings.consult_room.choose_from_gallery,
+          camera: string.consult_room.take_a_photo,
+          gallery: string.consult_room.choose_from_gallery,
         }}
         hideTAndCs={true}
         onClickClose={() => setDropdownVisible(false)}
@@ -2486,6 +3218,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                       fileType: 'image',
                       url: g(data, 'data', 'uploadChatDocument', 'filePath') || '',
                       messageDate: new Date(),
+                      sentBy: REQUEST_ROLES.DOCTOR,
                     };
                     pubnub.publish(
                       {
@@ -2513,17 +3246,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       />
     ) : null;
   };
-  const closeviews = () => {
-    setPatientImageshow(false);
-    setOverlayDisplay(null);
-    setUrl('');
-  };
 
-  useEffect(() => {
-    if (patientImageshow) {
-      setOverlayDisplay(<ImageZoom source={{ uri: url }} zoom pan onClose={() => closeviews()} />);
-    }
-  }, [patientImageshow, url]);
+  const showRateCallModal = () => {
+    return (
+      <RateCall visible={giveRating} submitRatingCallback={(data) => submitRatingHandler(data)} />
+    );
+  };
 
   return (
     <View
@@ -2537,6 +3265,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           flex: 1,
         }}
       >
+        {/* {showRateCallModal()} */}
         {showHeaderView()}
         {overlayDisplay}
         {showExoPopup && exoTelPopup()}
@@ -2548,6 +3277,12 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
             date={Appintmentdatetime}
             loading={(val) => setLoading && setLoading(val)}
             onDone={(reschduleObject) => {
+              postWebEngageEvent(WebEngageEventName.DOCTOR_APPOINTMENT_RESCHEDULED, {
+                ...basicAppointmentData,
+                'Reschedule date ': moment(reschduleObject.transferDateTime).format('DD-MM-YYYY'),
+                'Reschedule time': moment(reschduleObject.transferDateTime).format('hh:mm A'),
+                'Reschedule reason ': reschduleObject.reason,
+              } as WebEngageEvents[WebEngageEventName.DOCTOR_APPOINTMENT_RESCHEDULED]);
               console.log(reschduleObject, 'reschduleObject');
               pubnub.publish(
                 {
@@ -2562,7 +3297,17 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 },
                 (status, response) => {}
               );
-              props.navigation.push(AppRoutes.TabBar);
+              setDisplayReSchedulePopUp(false);
+              showAphAlert &&
+                showAphAlert({
+                  title: string.common.alert,
+                  description: string.alerts.reschedule_alert,
+                  onPressOk: () => {
+                    setLoading && setLoading(true);
+                    backDataFunctionality();
+                    hideAphAlert && hideAphAlert();
+                  },
+                });
             }}
           />
         )}
@@ -2573,13 +3318,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         {showPDF && (
           <RenderPdf
             uri={url}
-            title={
-              url
-                .split('/')
-                .pop()!
-                .split('=')
-                .pop() || 'Document'
-            }
+            title={`${patientDetails ? patientDetails.firstName || 'Patient' : 'Patient'}_${url
+              .split('/')
+              .pop()!
+              .split('.pdf')[0] || 'Appointment_Document'}`}
+            pdfTitle={`${patientDetails ? patientDetails.firstName || 'Patient' : 'Patient'}_${url
+              .split('/')
+              .pop()!
+              .split('.pdf')[0] || 'Appointment_Document'}.pdf`}
             isPopup={true}
             setDisplayPdf={() => {
               setShowPDF(false);

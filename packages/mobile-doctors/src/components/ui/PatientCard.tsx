@@ -1,6 +1,5 @@
 import { Star, UserPlaceHolder } from '@aph/mobile-doctors/src/components/ui/Icons';
 import PatientCardStyles from '@aph/mobile-doctors/src/components/ui/PatientCard.styles';
-import { getPatientLog_getPatientLog_patientInfo } from '@aph/mobile-doctors/src/graphql/types/getPatientLog';
 import { isValidImageUrl } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React from 'react';
@@ -21,7 +20,7 @@ const styles = PatientCardStyles;
 
 export interface CalendarCardProps {
   containerStyle?: StyleProp<ViewStyle>;
-  doctorname?: getPatientLog_getPatientLog_patientInfo;
+  patientName?: string;
   timing?: string;
   image?: ImageSourcePropType;
   imageStyle?: StyleProp<ImageStyle>;
@@ -78,7 +77,7 @@ export const PatientCard: React.FC<CalendarCardProps> = (props) => {
           >
             <View style={styles.iconview}>
               <Text style={styles.doctorNameStyles} numberOfLines={1}>
-                {props.doctorname}
+                {props.patientName}
               </Text>
               <View style={{ marginBottom: 4 }}>{props.icon}</View>
             </View>

@@ -1,6 +1,7 @@
 import { makeStyles } from '@material-ui/styles';
 import HeadsetMicIcon from '@material-ui/icons/HeadsetMic';
 import React from 'react';
+import { webEngageEventTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles(() => {
   return {
@@ -25,13 +26,19 @@ export const TestCall: React.FC = () => {
   const classes = useStyles({});
 
   return (
-    <a
+    <div onClick={() => {
+      webEngageEventTracking(null,
+        'Front_end - Doctor started test'
+      );
+    }}>
+      <a
       href="https://tokbox.com/developer/tools/precall/"
       target="_blank"
-      className={classes.testCall}
-    >
-      <HeadsetMicIcon className={classes.testCallIcon} />
-      <span>Test Audio/Video</span>
-    </a>
+      className={classes.testCall}>
+        <HeadsetMicIcon className={classes.testCallIcon} />
+        <span>Test Audio/Video</span>
+      </a>
+    </div>
+    
   );
 };
