@@ -17,6 +17,7 @@ import {
   elasticDoctorAvailabilitySort,
   elasticDoctorDoctorTypeSort,
   elasticDoctorSearch,
+  elasticSpecialtySearch
 } from 'doctors-service/entities/doctorElastic';
 import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
@@ -772,6 +773,8 @@ const getDoctorList: Resolver<
   const specialties:Specialty[] = [];
   const elasticMatch = [];
   const elasticSort = [];
+  let getDetails:any = [],
+  matchedSpecialties:any = [];
 
   let apolloDoctorCount: number = 0,
     partnerDoctorCount: number = 0;
@@ -781,9 +784,13 @@ const getDoctorList: Resolver<
   const pageSize = args.filterInput.pageSize ? args.filterInput.pageSize : 1000;
   const offset = (pageNo - 1) * pageSize;
 
+  let searchText = args.filterInput.searchText.trim().toLowerCase();
+  if (searchText.slice(0, 3) === 'dr.' || searchText.slice(0, 3) === 'dr ') {
+    searchText = searchText.slice(3);
+  }
   // check elastic search index  /package/api/helpers/elasticIndex.ts
   if (args.filterInput.searchText) {
-    elasticMatch.push(elasticDoctorTextSearch(args.filterInput.searchText));
+    elasticMatch.push(elasticDoctorTextSearch(searchText));
   }
   if (args.filterInput.availability || args.filterInput.availableNow) {
     elasticMatch.push(elasticDoctorAvailabilityFilter(args.filterInput));
@@ -793,7 +800,7 @@ const getDoctorList: Resolver<
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
     elasticMatch.push({ terms: { 'specialty.name.keyword': args.filterInput.specialtyName } });
   }
-  if (args.filterInput.specialty) {
+  if (args.filterInput.specialty && !args.filterInput.searchText) {
     elasticMatch.push({ match_phrase: { 'specialty.specialtyId': args.filterInput.specialty } });
   }
   if (
@@ -865,7 +872,36 @@ const getDoctorList: Resolver<
     elasticMatch
   );
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
-  const getDetails = await client.search(searchParams);
+
+  if (!args.filterInput.searchText) {
+     getDetails = await client.search(searchParams);
+  } else {
+    const specialtiesSearchParams: RequestParams.Search = elasticSpecialtySearch(args.filterInput.searchText);
+    const promises: object[] = [
+      client.search(searchParams),
+      client.search(specialtiesSearchParams),
+    ];
+
+    await Promise.all(promises).then((res) => {
+      [getDetails, matchedSpecialties] = res;
+    });
+
+    const specialityBuckets = matchedSpecialties.body.aggregations.matched_specialities.buckets;
+    if (specialityBuckets && specialityBuckets.length) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      matchedSpecialties = specialityBuckets.map((speciality: any) => {
+        speciality = speciality.matched_specialities_hits.hits.hits[0]['_source']['specialty'];
+        if (!speciality['id']) {
+          speciality['id'] = speciality['specialtyId'];
+        }
+        speciality['specialtydisplayName'] = speciality['userFriendlyNomenclature'];
+        return speciality;
+      }); 
+    } else {
+      matchedSpecialties = specialityBuckets;
+    }
+  }
+
   client.close();
 
   const doctorTypeCount = getDetails.body.aggregations.doctorTypeCount.buckets;
@@ -939,7 +975,7 @@ const getDoctorList: Resolver<
   searchLogger(`API_CALL___END`);
   return {
     doctors: doctors,
-    specialties: specialties,
+    specialties: matchedSpecialties,
     apolloDoctorCount,
     partnerDoctorCount,
   };

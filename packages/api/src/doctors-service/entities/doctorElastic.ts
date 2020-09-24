@@ -221,6 +221,7 @@ export function elasticDoctorTextSearch(searchText: string){
                   `displayName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
                   `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
                   `specialty.groupName^${ES_FIELDS_PRIORITY.speciality_groupName}`,
+                  `specialty.symptoms^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                 ],
@@ -235,6 +236,7 @@ export function elasticDoctorTextSearch(searchText: string){
                   `displayName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
                   `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
                   `specialty.groupName^${ES_FIELDS_PRIORITY.speciality_groupName}`,
+                  `specialty.symptoms^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                 ],
@@ -449,4 +451,56 @@ export function elasticDoctorSearch(
       },
     };
     return searchParams;
+}
+export function elasticSpecialtySearch(searchText: string) {
+  const specialtiesSearchParams: RequestParams.Search = {
+    index: process.env.ELASTIC_INDEX_DOCTORS,
+    body: {
+      size: 0,
+      _source: ['specialty'],
+      query: {
+        bool: {
+          must: [
+            {
+              multi_match: {
+                fields: [
+                  'specialty.name^5',
+                  'specialty.userFriendlyNomenclature^4',
+                  'specialty.specialistSingularTerm^4',
+                  'specialty.symptoms^3',
+                ],
+                type: 'phrase_prefix',
+                //fuzziness: 'AUTO',
+                query: `*${searchText.trim().toLowerCase()}*`,
+              },
+            },
+          ],
+        },
+      },
+      aggs: {
+        matched_specialities: {
+          terms: {
+            field: 'specialty.name.keyword',
+            size: 1000,
+          },
+          aggs: {
+            matched_specialities_hits: {
+              top_hits: {
+                sort: [
+                  {
+                    _score: {
+                      order: 'desc',
+                    },
+                  },
+                ],
+                _source: ['specialty'],
+                size: 1,
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+  return specialtiesSearchParams;
 }
