@@ -863,7 +863,7 @@ export const MedicineCart: React.FC = (props) => {
             inputLng: lng,
             inputPincode: pincode,
             inputMrp: special_price || price,
-            itemsInCart: 1,
+            itemsInCart: cartItems.length,
             resExist: exist,
             resMrp: mrp,
             resQty: qty,
