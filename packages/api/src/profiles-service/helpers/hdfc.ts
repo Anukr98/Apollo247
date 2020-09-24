@@ -185,7 +185,7 @@ export async function fetchEthnicCode(dateOfBirth: Date, mobile: String, history
   const requestBeforeEncryption = {
     FetchCustomerCASADetailsReqDTO: {
       dateOfBirth: formattedDateOfBirth,
-      mobileNumber: `91${formattedMobile}`,
+      mobileNumber: `${formattedMobile}`,
       panNumber: '',
     },
     sessionContext: {
