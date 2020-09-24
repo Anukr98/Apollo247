@@ -102,10 +102,7 @@ const updatePatient: Resolver<
       throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
     }
   } else {
-    if (
-      referralCode == PartnerId.HDFCBANK &&
-      checkForRegisteredPartner(patient.mobileNumber, patient.dateOfBirth, PartnerId.HDFCBANK)
-    ) {
+    if (referralCode == PartnerId.HDFCBANK) {
       updateAttrs.partnerId = PartnerId.HDFCBANK;
     }
   }
