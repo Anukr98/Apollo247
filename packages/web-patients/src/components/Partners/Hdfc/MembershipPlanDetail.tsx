@@ -485,7 +485,7 @@ const useStyles = makeStyles((theme: Theme) => {
           borderRadius: 5,
           display: 'block',
           width: 'auto',
-          position: 'static',
+          bottom: 10,
           '&:hover': {
             background: '#fff',
             color: '#FC9916',

@@ -94,7 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     mainContent: {
       background: '#fff',
-      padding: 0,
+      padding: '0 0 60px',
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
         padding: '20px 3px 20px 20px',

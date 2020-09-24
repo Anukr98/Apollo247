@@ -16,6 +16,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import { HdfcRegistration } from 'components/HdfcRegistration';
 import { HdfcSlider } from 'components/HdfcSlider';
 import { HDFC_REF_CODE } from 'helpers/constants';
+import { HdfcHomePage } from 'components/HdfcHomePage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -129,6 +130,14 @@ const PatientsOverview: React.FC = () => {
         currentPatient.partnerId === HDFC_REF_CODE &&
         (userSubscriptionsLocalStorage == null || userSubscriptionsLocalStorage.length == 0) && (
           <HdfcRegistration patientPhone={currentPatient.mobileNumber} />
+        )}
+      {currentPatient &&
+        currentPatient.partnerId === HDFC_REF_CODE &&
+        userSubscriptionsLocalStorage &&
+        userSubscriptionsLocalStorage.length != 0 &&
+        userSubscriptionsLocalStorage[0] &&
+        userSubscriptionsLocalStorage[0].status == 'DEFERRED_INACTIVE' && (
+          <HdfcHomePage patientPhone={currentPatient.mobileNumber} />
         )}
       {currentPatient &&
         currentPatient.partnerId === HDFC_REF_CODE &&
