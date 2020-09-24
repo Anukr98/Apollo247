@@ -216,61 +216,63 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
               for (let i = value.length; i < digits; i++) {
                 modvalue += '0';
               }
-            } else if (value.length > digits) {
-              modvalue = value.substr(0, digits);
             }
-            return parseFloat(modvalue);
+            return Number(modvalue);
           };
-          const androidVersionLength = AppConfig.Configuration.Android_Version.replace(/\./g, '')
-            .length;
-          const iosVersionLength = AppConfig.Configuration.iOS_Version.replace(/\./g, '').length;
-          const Android_version = parseFloat(
-            AppConfig.Configuration.Android_Version.replace(/\./g, '')
-          );
-          const iOS_version = parseFloat(AppConfig.Configuration.iOS_Version.replace(/\./g, ''));
+          const Android_version = AppConfig.Configuration.Android_Version.replace(/\./g, '');
+          const iOS_version = AppConfig.Configuration.iOS_Version.replace(/\./g, '');
           const environment = AppConfig.APP_ENV;
-          const iosVersion = fixVersion(
-            (getConfigData('ios_doctor_Latest_version') || '1.0').toString().replace(/\./g, ''),
-            iosVersionLength
-          );
+          const iosVersion = (getConfigData('ios_doctor_Latest_version') || '1.0')
+            .toString()
+            .replace(/\./g, '');
           const iosMandatory = getConfigData('ios_doctor_mandatory');
-          const androidVersion = fixVersion(
-            (getConfigData('android_doctor_latest_version') || '1.0').toString().replace(/\./g, ''),
-            androidVersionLength
-          );
+          const androidVersion = (getConfigData('android_doctor_latest_version') || '1.0')
+            .toString()
+            .replace(/\./g, '');
 
           const androidMandatory = getConfigData('Android_doctor_mandatory');
-          const qaiosVersion = fixVersion(
-            (getConfigData('QA_ios_doctor_latest_version') || '1.0').toString().replace(/\./g, ''),
-            iosVersionLength
-          );
+          const qaiosVersion = (getConfigData('QA_ios_doctor_latest_version') || '1.0')
+            .toString()
+            .replace(/\./g, '');
           const qaiosMandatory = getConfigData('QA_ios_doctor_mandatory');
-          const qaAndroidVersion = fixVersion(
-            (getConfigData('QA_android_doctor_latest_version') || '1.0')
-              .toString()
-              .replace(/\./g, ''),
-            androidVersionLength
-          );
+          const qaAndroidVersion = (getConfigData('QA_android_doctor_latest_version') || '1.0')
+            .toString()
+            .replace(/\./g, '');
           const qaAndroidMandatory = getConfigData('QA_Doctor_Android_mandatory');
 
           if (Platform.OS === 'ios') {
             if (environment === AppEnv.PROD) {
-              if (iOS_version < iosVersion && (!reCheck || (reCheck && iosMandatory))) {
+              const versionLength = Math.max(iOS_version.length, iosVersion.length);
+              if (
+                fixVersion(iOS_version, versionLength) < fixVersion(iosVersion, versionLength) &&
+                (!reCheck || (reCheck && iosMandatory))
+              ) {
                 showUpdateAlert(iosMandatory);
               }
             } else {
-              if (iOS_version < qaiosVersion && (!reCheck || (reCheck && qaiosMandatory))) {
+              const versionLength = Math.max(iOS_version.length, qaiosVersion.length);
+              if (
+                fixVersion(iOS_version, versionLength) < fixVersion(qaiosVersion, versionLength) &&
+                (!reCheck || (reCheck && qaiosMandatory))
+              ) {
                 showUpdateAlert(qaiosMandatory);
               }
             }
           } else {
             if (environment === AppEnv.PROD) {
-              if (Android_version < androidVersion && (!reCheck || (reCheck && androidMandatory))) {
+              const versionLength = Math.max(Android_version.length, androidVersion.length);
+              if (
+                fixVersion(Android_version, versionLength) <
+                  fixVersion(androidVersion, versionLength) &&
+                (!reCheck || (reCheck && androidMandatory))
+              ) {
                 showUpdateAlert(androidMandatory);
               }
             } else {
+              const versionLength = Math.max(Android_version.length, qaAndroidVersion.length);
               if (
-                Android_version < qaAndroidVersion &&
+                fixVersion(Android_version, versionLength) <
+                  fixVersion(qaAndroidVersion, versionLength) &&
                 (!reCheck || (reCheck && qaAndroidMandatory))
               ) {
                 showUpdateAlert(qaAndroidMandatory);

@@ -20,6 +20,8 @@ import { DOWNLOAD_DOCUMENTS } from 'graphql/profiles';
 import { downloadDocuments } from 'graphql/types/downloadDocuments';
 import {
   REQUEST_ROLES,
+  USER_STATUS,
+  USER_TYPE,
   Gender,
   DOCTOR_CALL_TYPE,
   APPT_CALL_TYPE,
@@ -61,6 +63,7 @@ import {
   UpdatePatientPrescriptionSentStatusVariables,
 } from 'graphql/types/UpdatePatientPrescriptionSentStatus';
 import {
+  GET_SET_PARTICIPANTS_STATUS,
   CREATE_APPOINTMENT_SESSION,
   GET_CASESHEET,
   GET_CASESHEET_JRD,
@@ -72,7 +75,10 @@ import {
   SAVE_APPOINTMENT_CALL_FEEDBACK,
 } from 'graphql/profiles';
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
-
+import {
+  SetAndGetNumberOfParticipants,
+  SetAndGetNumberOfParticipantsVariables,
+} from 'graphql/types/SetAndGetNumberOfParticipants';
 import {
   PostDoctorConsultEvent,
   PostDoctorConsultEventVariables,
@@ -576,6 +582,19 @@ export const ConsultTabs: React.FC = () => {
         WebEngageEvent.DOCTOR_LEFT_CHAT_WINDOW,
         getCookieValue('displayId')
       );
+      getSetNumberOfParticipants(appointmentId, USER_STATUS.LEAVING);
+      pubnub.publish(
+        {
+          message: {
+            isTyping: true,
+            message: '^^#leaveChatRoom',
+          },
+          channel: appointmentId,
+          storeInHistory: false,
+          sendByPost: false,
+        },
+        (status: any, response: any) => {}
+      );
       pubnub.unsubscribe({ channels: [appointmentId] });
     };
   }, []);
@@ -695,6 +714,45 @@ export const ConsultTabs: React.FC = () => {
       }
     );
   };
+
+  const getSetNumberOfParticipants = (appointmentId: string, userStatus: USER_STATUS) => {
+    client
+    .query<SetAndGetNumberOfParticipants, SetAndGetNumberOfParticipantsVariables>({
+      query: GET_SET_PARTICIPANTS_STATUS,
+      fetchPolicy: 'no-cache',
+      variables: { 
+        appointmentId: appointmentId,
+        userType: USER_TYPE.DOCTOR,
+        sourceType: BOOKINGSOURCE.WEB,
+        deviceType: DEVICETYPE.DESKTOP,
+        userStatus: userStatus 
+      },
+    })
+    .then((_data) => {
+      if(userStatus === USER_STATUS.ENTERING){
+        const text = {
+          id: doctorId,
+          message: '^^#startconsult',
+          isTyping: true,
+          automatedText: currentPatient!.displayName + ' has joined your chat!',
+          messageDate: new Date(),
+          sentBy: REQUEST_ROLES.DOCTOR,
+        };
+        pubnub.publish(
+          {
+            message: text,
+            channel: appointmentId,
+            storeInHistory: true,
+          },
+          (status: any, response: any) => {}
+        );
+      }
+    })
+    .catch((e) => {
+      console.log(e, 'error occured in SetAndGetNumberOfParticipants api');
+    });
+  }
+
   const createSDCasesheetCall = (flag: boolean) => {
     setError('Creating Casesheet. Please wait....');
     mutationCreateSrdCaseSheet()
@@ -1866,6 +1924,7 @@ export const ConsultTabs: React.FC = () => {
         },
       })
       .then((_data: any) => {
+        getSetNumberOfParticipants(paramId, USER_STATUS.ENTERING);
         setAppointmentStatus(STATUS.IN_PROGRESS);
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
@@ -1964,6 +2023,7 @@ export const ConsultTabs: React.FC = () => {
     pubnub
       .hereNow({ channels: [appointmentId], includeUUIDs: true })
       .then((response: any) => {
+        console.log({ pubnubHereNowResponse: response });
         const occupants = response.channels[appointmentId].occupants;
         let doctorCount = 0;
         let paientsCount = 0;

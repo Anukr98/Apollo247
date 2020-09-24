@@ -50,7 +50,6 @@ const getToken = async () => {
 };
 
 const updateItems = async (client, token, cityStateMapping) => {
-  await updateDiagnosticItemAsInActive(client);
   const totalCities = cityStateMapping.length;
   let currentCity = 0;
   for (const map of cityStateMapping) {
@@ -74,36 +73,49 @@ const updateItems = async (client, token, cityStateMapping) => {
   process.kill(process.pid);
 };
 
-const updateDiagnosticItemAsInActive = async (client) => {
-  const str = `UPDATE diagnostics SET "isActive" = false`;
-  try {
-    const result = await client.query(str);
-    if (result.rowCount != 1) {
-      console.log('rows updated', result.rowCount, 'query:', str);
-    }
-  } catch (err) {
-    console.log(err);
-    process.kill(process.pid);
-  }
-};
-
 const updateItem = async (client, items, stateId, cityId, state, city) => {
   let itemtypemismatch = 0;
   let rowsUpdated = 0;
   let rowsCreated = 0;
+
+  let itemsInDB = await getDiagnosticItem(client, cityId);
   for (const item of items) {
-    let itemInDB = await getDiagnosticItem(client, item.itemid, stateId, cityId, item.LabCode);
-    if (itemInDB.length > 0) {
-      itemInDB = itemInDB[0]; // not considering labid and labcode
-      await updateDiagnosticItem(client, item, stateId, cityId, state, city);
-      rowsUpdated++;
-      if (item.ItemType.toLowerCase() != itemInDB.itemType.toLowerCase()) {
-        itemtypemismatch++;
+    let matched = false;
+    for (const index in itemsInDB) {
+      const itemInDB = itemsInDB[index];
+      if (itemInDB.itemCode == item.itemcode && itemInDB.itemId == item.itemid) {
+        matched = true;
+        if (
+          itemInDB.rate != item.Rate ||
+          itemInDB.itemName != item.itemname ||
+          itemInDB.toAgeInDays != item.ToAgeInDays ||
+          itemInDB.isActive != true ||
+          itemInDB.city != city ||
+          itemInDB.state != state
+        ) {
+          await updateDiagnosticItem(client, item, stateId, cityId, state, city);
+          rowsUpdated++;
+        }
+
+        if (item.ItemType.toLowerCase() != itemInDB.itemType.toLowerCase()) {
+          itemtypemismatch++;
+        }
+        delete itemsInDB[index];
+        break;
       }
-    } else {
+    }
+    if (!matched) {
       await saveDiagnosticItem(client, item, stateId, cityId, state, city);
       rowsCreated++;
     }
+  }
+
+  var itemsToDeActive = itemsInDB.filter(function (el) {
+    return el != null;
+  });
+
+  if (itemsToDeActive.length > 0) {
+    await updateDiagnosticItemDeActive(client, itemsToDeActive);
   }
   console.log(
     'item type mismatch',
@@ -116,12 +128,31 @@ const updateItem = async (client, items, stateId, cityId, state, city) => {
   console.log('\n');
 };
 
+const updateDiagnosticItemDeActive = async (client, itemsToDeActive) => {
+  let itemsMap = [];
+  for (item of itemsToDeActive) {
+    itemsMap.push(`'${item.id}'`);
+  }
+  const str = `UPDATE diagnostics SET "isActive" = false WHERE "isActive" = true AND "id" IN (${itemsMap.join(
+    ','
+  )})`;
+  try {
+    const result = await client.query(str);
+    if (result.rowCount != 0) {
+      console.log('Deactivated items', result.rowCount, 'query:', str);
+    }
+  } catch (err) {
+    console.log(err);
+    process.kill(process.pid);
+  }
+};
+
 const updateDiagnosticItem = async (client, item, stateId, cityId, state, city) => {
-  const str = `UPDATE diagnostics SET "rate" = ${item.Rate}, "itemName" = '${item.itemname}', "toAgeInDays" = ${item.ToAgeInDays}, "isActive" = true, "itemAliasName" = '', "testInPackage" = 0, "NABL_CAP" = '', "itemRemarks" = '', "discounted" = 'N', "testPreparationData" = '', "state" = '${state}', "city" = '${city}' WHERE "itemId" = '${item.itemid}' AND "stateId" = ${stateId} AND "cityId" = ${cityId}`;
+  const str = `UPDATE diagnostics SET "rate" = ${item.Rate}, "itemName" = '${item.itemname}', "toAgeInDays" = ${item.ToAgeInDays}, "isActive" = true, "itemAliasName" = '', "testInPackage" = 0, "NABL_CAP" = '', "itemRemarks" = '', "discounted" = 'N', "testPreparationData" = '', "state" = '${state}', "city" = '${city}' WHERE "itemId" = ${item.itemid} AND "stateId" = ${stateId} AND "cityId" = ${cityId} AND "itemCode" = '${item.itemcode}'`;
   try {
     const result = await client.query(str);
     if (result.rowCount != 1) {
-      console.log('unexpected rows updated', result.rowCount, 'query:', str);
+      //console.log('unexpected rows updated', result.rowCount, 'query:', str);
     }
   } catch (err) {
     console.log(err);
@@ -147,8 +178,8 @@ const saveDiagnosticItem = async (client, item, stateId, cityId, state, city) =>
   }
 };
 
-const getDiagnosticItem = async (client, itemid, stateId, cityId, labCode) => {
-  const str = `SELECT * from diagnostics WHERE "itemId" = '${itemid}' AND "stateId" = ${stateId} AND "cityId" = ${cityId}`;
+const getDiagnosticItem = async (client, cityId) => {
+  const str = `SELECT * from diagnostics WHERE "cityId" = ${cityId} AND "isActive" = true`;
   try {
     docs = await client.query(str);
     return docs.rows;
@@ -196,12 +227,32 @@ const getDistinctCityState = async (client) => {
   }
 };
 
+const updateInactiveCities = async (client, cityStateMapping) => {
+  let cityMap = [];
+  for (map in cityStateMapping) {
+    cityMap.push(cityStateMapping[map].city_id);
+  }
+  const str = `UPDATE diagnostics SET "isActive" = false WHERE "isActive" = true AND NOT "cityId" IN (${cityMap.join(
+    ','
+  )})`;
+  try {
+    const result = await client.query(str);
+    if (result.rowCount != 0) {
+      console.log('cities have been removed', result.rowCount, 'query:', str);
+    }
+  } catch (err) {
+    console.log(err);
+    process.kill(process.pid);
+  }
+};
+
 const start = async () => {
   const token = await getToken();
   client.connect().catch(function (err) {
     console.log('error while connection', err);
   });
   const cityStateMapping = await getDistinctCityState(client);
+  await updateInactiveCities(client, cityStateMapping);
   await updateItems(client, token, cityStateMapping);
 };
 

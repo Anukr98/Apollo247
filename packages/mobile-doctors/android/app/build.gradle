@@ -135,7 +135,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 12
-        versionName "1.05"
+        versionName "1.0501"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -191,6 +191,8 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-fast-image')
+    implementation project(':react-native-device-info')
     implementation project(':react-native-webengage')
     implementation project(':react-native-incall-manager')
     implementation project(':react-native-system-setting')

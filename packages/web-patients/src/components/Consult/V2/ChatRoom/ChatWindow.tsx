@@ -18,6 +18,7 @@ import WarningModel from 'components/WarningModel';
 import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
 import { DoctorCard } from 'components/Consult/V2/ChatRoom/DoctorCard';
 import { WelcomeCard } from 'components/Consult/V2/ChatRoom/WelcomeCard';
+import { JdInfoCard } from 'components/Consult/V2/ChatRoom/JuniordoctorInfoCard';
 import { BookRescheduleAppointmentInput, STATUS } from 'graphql/types/globalTypes';
 // import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import FormHelperText from '@material-ui/core/FormHelperText';
@@ -60,9 +61,11 @@ import {
   medicalDetailsFillTracking,
   callReceiveClickTracking,
   messageSentPostConsultTracking,
+  callEndedClickTracking,
 } from 'webEngageTracking';
 import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
 import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
+import { AppointmentCompleteCardMessage } from 'components/Consult/V2/ChatRoom/AppointmentCompleteCardMessage';
 import { DoctorType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -405,10 +408,7 @@ const useStyles = makeStyles((theme: Theme) => {
     none: {
       display: 'block',
     },
-    doctorAvatar: {
-      position: 'absolute',
-    },
-    petient: {
+    patient: {
       color: '#fff',
       textAlign: 'left',
       padding: 12,
@@ -751,9 +751,6 @@ const useStyles = makeStyles((theme: Theme) => {
         minHeight: 'calc(100vh - 90px)',
       },
     },
-    doctorCardMain: {
-      paddingLeft: 15,
-    },
     patientCardMain: {
       textAlign: 'right',
     },
@@ -823,6 +820,7 @@ interface AutoMessageStrings {
   imageconsult: string;
   startConsultjr: string;
   consultPatientStartedMsg: string;
+  jdInfoMsg: string;
   firstMessage: string;
   secondMessage: string;
   languageQue: string;
@@ -882,6 +880,7 @@ const autoMessageStrings: AutoMessageStrings = {
   imageconsult: '^^#DocumentUpload',
   startConsultjr: '^^#startconsultJr',
   consultPatientStartedMsg: '^^#PatientConsultStarted',
+  jdInfoMsg: '^^#JdInfoMsg',
   firstMessage: '^^#firstMessage',
   secondMessage: '^^#secondMessage',
   languageQue: '^^#languageQue',
@@ -943,6 +942,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const doctorDetail = props.doctorDetails && props.doctorDetails.getDoctorDetailsById;
 
   // console.log(currentPatient.id, '------------------------', appointmentDetails.doctorId);
+  // console.log(messages, 'messages are ...........');
 
   //AV states
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
@@ -1207,6 +1207,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     setShowVideoChat(false);
     setIsVideoCall(false);
     setIsCalled(false);
+    const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
+    callEndedClickTracking(eventInfo);
   };
 
   const convertCall = () => {
@@ -2047,6 +2049,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     },
                   })
                     .then((response) => {
+                      if (
+                        response &&
+                        response.data &&
+                        response.data.addToConsultQueueWithAutomatedQuestions &&
+                        response.data.addToConsultQueueWithAutomatedQuestions.isJdAllowed
+                      ) {
+                        const composeMessage = {
+                          id: currentPatient && currentPatient.id,
+                          message: 'jdInfo',
+                          automatedText: autoMessageStrings.jdInfoMsg,
+                          duration: '',
+                          url: '',
+                          transferInfo: '',
+                          messageDate: new Date(),
+                          cardType: 'jdInfo',
+                        };
+                        publishMessage(appointmentId, composeMessage);
+                      }
                       setAutoQuestionsCompleted(true);
                       const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
                       medicalDetailsFillTracking(eventInfo);
@@ -2224,16 +2244,32 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     props.setIsConsultCompleted(
                       messageDetails.message === autoMessageStrings.appointmentComplete
                     );
-                    return messageDetails.message === '^^#startconsult' ? (
-                      <DoctorJoinedMessageCard
-                        doctorName={doctorDisplayName}
-                        messageDate={messageDetails.messageDate}
-                      />
-                    ) : null;
+
+                    // console.log(messageDetails.message, '------------');
+
+                    if (messageDetails.message === autoMessageStrings.startConsultMsg) {
+                      return (
+                        <DoctorJoinedMessageCard
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                        />
+                      );
+                    } else if (messageDetails.message === autoMessageStrings.appointmentComplete) {
+                      return (
+                        <AppointmentCompleteCardMessage
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                        />
+                      );
+                    } else {
+                      return null;
+                    }
                   }
                   const duration = messageDetails.duration;
                   if (cardType === 'welcome') {
                     return <WelcomeCard doctorName={doctorDisplayName} chatDays={doctorChatDays} />;
+                  } else if (cardType === 'jdInfo') {
+                    return <JdInfoCard doctorName={doctorDisplayName} />;
                   } else if (cardType === 'doctor') {
                     return (
                       <DoctorCard

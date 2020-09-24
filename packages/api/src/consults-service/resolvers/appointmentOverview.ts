@@ -189,6 +189,11 @@ const getPastAppointmentsCount: Resolver<
 > = async (parent, { doctorId, patientId, appointmentId }, context) => {
   if (!doctorId) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
   if (!patientId) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  const patientRepo = context.patientsDb.getCustomRepository(PatientRepository);
+  const patientIdCheck = patientRepo.checkMobileIdInfo(context.mobileNumber, '', patientId);
+  if (!patientIdCheck) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  }
   const { apptRepo } = getRepos(context);
   const count = await apptRepo.getAppointmentsCount(doctorId, patientId);
   const completedCount = await apptRepo.getAppointmentsCompleteCount(doctorId, patientId);

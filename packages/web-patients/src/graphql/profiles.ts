@@ -428,6 +428,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           packageName
           # labTestDate
           date
+          dateTime
           labTestRefferedBy
           siteDisplayName
           tag
@@ -460,6 +461,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           id
           prescriptionName
           date
+          dateTime
           # dateOfPrescription
           # startDate
           # endDate
@@ -483,6 +485,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           id
           fileUrl
           date
+          dateTime
           healthCheckName
           healthCheckDate
           healthCheckSummary
@@ -509,6 +512,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           id
           fileUrl
           date
+          dateTime
           hospitalizationDate
           dateOfHospitalization
           hospitalName
