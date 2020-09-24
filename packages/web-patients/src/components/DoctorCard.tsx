@@ -142,7 +142,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [popupLoading, setPopupLoading] = React.useState<boolean>(false);
   const doctorId = doctorDetails.id;
-  const doctorName = doctorDetails && doctorDetails.fullName;
+  const doctorName = doctorDetails && doctorDetails.displayName;
 
   const clinics: any = [];
 

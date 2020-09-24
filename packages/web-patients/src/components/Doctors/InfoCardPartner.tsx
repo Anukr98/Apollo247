@@ -172,7 +172,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
   const classes = useStyles({});
   const [popupLoading, setPopupLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const doctorValue = doctorInfo.fullName.toLowerCase();
+  const doctorValue = doctorInfo.displayName.toLowerCase();
   const specialityName =
     doctorInfo &&
     doctorInfo.specialty &&
@@ -227,7 +227,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
         <div className={classes.topContent}>
           <div className={classes.iconGroup}>
             <Avatar
-              alt={`Consult ${doctorInfo.fullName} (${props.specialityType}) Online`}
+              alt={`Consult ${doctorInfo.displayName} (${props.specialityType}) Online`}
               src={doctorInfo.photoUrl || require('images/no_photo_icon_round.svg')}
               className={classes.doctorAvatar}
             />
@@ -261,7 +261,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
                 alt="Apollo 24|7"
               />
             </div>
-            <div className={classes.doctorName}>{`${doctorInfo.fullName}`}</div>
+            <div className={classes.doctorName}>{`${doctorInfo.displayName}`}</div>
             <div className={classes.doctorType}>
               <span title={'Specialty'}>{doctorInfo.specialty.name}</span>
               <span className={classes.doctorExp} title={'Experience'}>
@@ -308,7 +308,7 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
                     docCategory: doctorType,
                     exp: doctorInfo.experience,
                     hospital: hospitalName,
-                    name: doctorInfo.fullName,
+                    name: doctorInfo.displayName,
                     specialty: specialityName,
                     listingType: '',
                   };
